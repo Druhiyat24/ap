@@ -1,0 +1,24 @@
+Status di tabel kontra bon:
+1-->Cancel
+2-->Post
+3-->Draft
+4-->Approved
+
+Alur:
+
+-Saat no BPB atau no FTR dibuatkan kontra bon, maka status kontrabon itu 2 (Post)
+-Menu kontra bon akan menampilkan data yang berstatus POst atau 2, Jadi secara logika,
+semua kontra bon yang dibuat akan tampil di menu kontra bon,kecuali untuk kotrabon
+yang dicancel maka status nya akan berubah tadi 1
+-data kontrabon ini yang akan dipanggil di payment berdasarkan nomor kontrabon, tapi
+sebelum data ini masuk ke payment/listpayment, data ini akan masuk ke menu maintain
+(pengurusan)
+-syarat maintain kontrabon adalah untuk data berstatus Post/2, jadi secara logika semua
+kontrabon yang dibuat dan tidak di cancel itu bisa masuk di menu maintain
+-saat data masuk di maintain, data yang dipilih untuk diajukan harus memiliki file bukti
+yang berbentuk pdf yang telah ditanda tangani oleh si pemohon,dimana file pdf itu diunduh
+di menu kontrabon  berdasarkan nomor kontra bon, file tersebut harus di print out,lalu
+ditanda tangani oleh si pemohon,kemudian di scan untuk nanti nya diupload sebagai file
+bukti.
+-semua pengajuan yang terkirim itu akan diperiksa oleh Manager Finance, dan ada 2 pilihan
+yaitu diterima atau ditolak

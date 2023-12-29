@@ -1,0 +1,18 @@
+Perubahan Ap
+1. verifikasi BPB dan verifikasi BPB Return
+-double data
+-data yang sudah di approve masih muncul (0434)
+-data yang dicancel ikut terupdate status menjadi approve saat yang baru di approve (Done)
+
+2. kontrabobn 
+-pdf,ditambahkan user made,check,approved(done - tanyakan untuk keterangan)
+-check all dihapus (done)
+-return sementara bisa diedit (progress sementara done)
+
+3.list payment
+-pdf ditambahkan user, made, check, approved(done)
+-outstanding dan amount ditukar(done)
+
+4. payment
+-pembatasan rate untuk idr
+-pembayaran idr ke bank usd

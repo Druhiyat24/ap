@@ -1,0 +1,20 @@
+no payment baru
+tanggal pelunasan (baru)
+
+nama suplier from masatersuplier
+
+no list payment from list_payment
+tanggal list payment from list_payment
+
+no_kontrabon from kontrabon
+tanggal kontrabon from kontrabon
+valuta -- curr from kontrabon
+total bayar from kontabon
+
+cara pembayaran -- input manual
+
+account from masterbank
+bank from masterbak
+valuta from masterbank
+
+nominal (baru

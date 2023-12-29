@@ -1,0 +1,48 @@
+	1.memastikan semua fungsi dalam aplikasi yang ada di php v5 bisa berjalan 
+di php v7, seperti fungsi create,read,sorot,approved,cancel dan print pdf.
+
+2.menambah ikon pada action dan menambahkan kata canceled setelah aksi ikon 
+di klik yang dari sebelum nya kosongan
+
+3.menambahkan filter berdasarkan nama suplier, status, dan rentang tanggal 
+pada semua form read kecuali di menu pelunasan belum ditambahkan.
+
+dimana data yang akan ditampilkan itu adalah data yang dibuat hari ini,
+dan akan menampilkan seluruh data jika di klik tombol search dan akan kembali ke awal
+jika di klik tombol reset 
+
+4.menu pelunasan dirombak
+
+Alur kerja AP
+
+1. read
+akan menampilkan data yang sudah di create/dibuat di form tambah, dan akan
+menampilkan action berdasarkan status, jika status nya draft action yang akan
+muncul ada 2 yaitu, action Approved dan cancel. Jika status nya Approved maka
+akan muncul action print to pdf.
+2.create
+akan membuat data baru dengan request berdasarkan suplier ke tabel
+yang dituju dengan ketentuan id tabel tersebut, lalu akan disimpan oleh tombol simpan,
+jika diklik tombol batal akan kembali ke submenu read.
+
+fungsi cancel
+mengembalikan semua data dalam keadaan semula
+
+fungsi approved
+menerima data dan menyatakan bahwa data yang telah dibuat itu benar
+
+fungsi print to pdf
+menampilkan data dalam bentuk file pdf dimana data tersebut bisa untuk diunduh
+dan di print out
+
+
+if conditional fungsi
+1. jika status draf maka di field action:
+-->status login : Staff -> semua fungsi off
+-->status login : bukan staff -> fungsi approved dan cancel on
+
+2. jika status approved di field action akan muncul fungsi print to pdf baik login
+    sebagai staff atau bukan
+
+3. jika status canceled di field action akan muncul tulisan "cancelled" baik login
+    sebagai staff atau bukan

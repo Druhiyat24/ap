@@ -1,0 +1,1 @@
+SELECT v_idgroup,id,curr,max(tanggal)tos,min(tanggal)froms, rate,rate_jual,rate_beli,v_codecurr,'N' is_old FROM masterrate GROUP BY v_idgroup having v_codecurr = 'pajak' AND v_idgroup != 'X'

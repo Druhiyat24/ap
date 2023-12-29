@@ -1,0 +1,16 @@
+1. Untuk Filter pada modul AP tolong disesuaikan untuk template / formatnya, karena apabila
+hanya field input free text dapat terjadi kesalahan format tanggal sehingga data tidak terfilter
+sesuai dengan kebutuhan (ujikan)
+
+
+2. FTR CBD ( Done )
+
+3. FTR DP butuh PO untuk digunakan sebagai bahan testing (bisa diujikan)
+
+4. KB FTR CBD data tidak tersimpan saat disave meskipun muncul notifikasi data berhasil 
+	(local bisa pas naik ke server tidak bisa)
+
+5. KB Reguler juga sama seperti KB FTR CBD (masalah nya sama)
+
+6. Untuk maintain KB regular pembatalan done , tetapi belum bisa dicoba untuk dibuatkan kembali
+KB nya. ( sesuai poin no 5 modul AP ) (ujikan)
