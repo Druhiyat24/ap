@@ -15,7 +15,7 @@ $pph = $_POST['pph'];
 $idtax = $_POST['idtax'];
 $ppn = $_POST['ppn'];
 $id_ppn = $_POST['id_ppn'];
-$user = $_POST['user'];
+$user = $_POST['create_user'];
 
 
 
@@ -60,8 +60,14 @@ if(!$execute){
 $query2 = "delete from tbl_pv_memo_temp where no_memo = '$no_ref' and user = '$user' ";
 $execute2 = mysqli_query($conn2,$query2);
 
-$query2 = "UPDATE memo_h set no_pv = '$doc_number',status='PAYMENT DRAFT' where nm_memo = '$no_ref' ";
-$execute2 = mysqli_query($conn2,$query2);
+$query3 = "UPDATE memo_h set no_pv = '$doc_number',status='PAYMENT DRAFT' where nm_memo = '$no_ref' ";
+$execute3 = mysqli_query($conn2,$query3);
+
+$query2_ = "delete from tbl_pv_ftr_temp where no_memo = '$no_ref' and user = '$user' ";
+$execute2_ = mysqli_query($conn2,$query2_);
+
+$query3_ = "UPDATE memo_h set status='Paid' where no_payment = '$no_ref' ";
+$execute3_ = mysqli_query($conn2,$query3_);
 	
 }
 

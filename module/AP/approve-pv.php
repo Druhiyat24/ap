@@ -92,6 +92,8 @@
             // if(empty($nama_supp) or $nama_supp == 'ALL'){
             // $sql = mysqli_query($conn2,"select id, no_bpb, tgl_bpb, create_date, pono, supplier, top, curr, confirm1, tgl_po, SUM((qty * price) + ((qty * price) * (tax /100))) as total from bpb_new where confirm2 = '' and status != 'Cancel' group by no_bpb");                
             // }else {
+            // $sql = mysqli_query($conn2,"select a.no_pv,a.pv_date,max(b.due_date) as due_date,if(a.curr = '','-',a.curr) as curr ,a.total,a.outstanding,a.status,a.nama_supp as pay_to,a.pay_date,a.pay_meth,a.frm_akun, a.to_akun,if(a.no_cek = '','-',a.no_cek) as no_cek,a.cek_date,a.for_pay from tbl_pv_h a inner join tbl_pv b on b.no_pv = a.no_pv where a.no_pv = 'PV/NAG/0124/00125' group by a.no_pv");
+
             $sql = mysqli_query($conn2,"select a.no_pv,a.pv_date,max(b.due_date) as due_date,if(a.curr = '','-',a.curr) as curr ,a.total,a.outstanding,a.status,a.nama_supp as pay_to,a.pay_date,a.pay_meth,a.frm_akun, a.to_akun,if(a.no_cek = '','-',a.no_cek) as no_cek,a.cek_date,a.for_pay from tbl_pv_h a inner join tbl_pv b on b.no_pv = a.no_pv where a.status = 'draft' group by a.no_pv");
             // }
                                                                          
@@ -281,6 +283,10 @@ $(function() {
     data : {'no_pv': no_pv},
     success : function(data){
     $('#details').html(data); //menampilkan data ke dalam modal
+    // $('#mytdmodal').dataTable({
+    //     scrollX: true,
+    // scrollY: true
+    // });
         }
     });         
         //make your ajax call populate items or what even you need

@@ -2073,7 +2073,7 @@ function addListener(elm,index){
         var frcc = $('select[name=frcc] option').filter(':selected').val();
         var tocc = $('select[name=tocc] option').filter(':selected').val();
 
-        if (total >= '1' && curr !='' && pay_mth != '' && forpay != '' && ctb != '' && nama_supp != '' && frcc != tocc || total >= '1' && curr !='' && pay_mth != '' && forpay != '-' && ctb != '' && nama_supp != '' && frcc != tocc) {
+        if (total >= '1' && curr !='' && pay_mth != '' && forpay != '' && ctb != '' && nama_supp != '' || total >= '1' && curr !='' && pay_mth != '' && forpay != '-' && ctb != '' && nama_supp != '') {
         $.ajax({
             type:'POST',
             url:'copy_data.php',

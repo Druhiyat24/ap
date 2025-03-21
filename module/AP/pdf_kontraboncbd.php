@@ -385,7 +385,7 @@ while($data=mysqli_fetch_array($query)){
 		</td>
 			
 		<td>
-			Ppn 10% 
+			Ppn 11% 
 		</td>
 <td style="width:1%">:</td>
 		<td style="text-align:right">
@@ -513,7 +513,7 @@ while($data=mysqli_fetch_array($query)){
 <tr>    
             <td style="font-size:12px;text-align:center;">AP Staff</td>
             <td style="font-size:12px;text-align:center">Supervisor</td>
-            <td style="font-size:12px;text-align:center">Finance Accounting Manager</td>
+            <td style="font-size:12px;text-align:center">Finance Manager</td>
         </tr> 			
 				
 	
@@ -533,6 +533,7 @@ include("../../mpdf8/vendor/mpdf/mpdf/src/mpdf.php");
 $mpdf=new \mPDF\mPDF();
 
 $mpdf->WriteHTML($html);
+ob_clean();
 $mpdf->Output();
 exit;
 ?>

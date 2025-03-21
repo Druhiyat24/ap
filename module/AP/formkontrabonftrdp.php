@@ -10,22 +10,17 @@
             <div class="col-md-3 mb-3">            
             <label for="nokontrabon"><b>No Kontra Bon</b></label>
             <?php
-            $sql = mysqli_query($conn2,"select max(no_kbon) from kontrabon_dp");
+            $sql = mysqli_query($conn2,"select CONCAT('SI/DP/',DATE_FORMAT(CURRENT_DATE(), '%Y'),'/',DATE_FORMAT(CURRENT_DATE(), '%m'),'/',LPAD((COALESCE(max(SUBSTR(no_kbon,15)),0) + 1),5,0)) nomor from kontrabon_h_dp WHERE YEAR(tgl_kbon) = YEAR (CURRENT_DATE())");
             $row = mysqli_fetch_array($sql);
-            $kodeBarang = $row['max(no_kbon)'];
-            $urutan = (int) substr($kodeBarang, 14, 5);
-            $urutan++;
-            $bln = date("m");
-            $thn = date("Y");
-            $huruf = "SI/DP/$thn/$bln/";                
-            $kodeBarang = $huruf . sprintf("%05s", $urutan);
+            $kodeBarang = $row['nomor'];
+            
 
             echo'<input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="nokontrabon" name="nokontrabon" value="'.$kodeBarang.'">'
             ?>
             </div>
             <div class="col-md-3 mb-3">            
             <label for="tanggal"><b>Kontra Bon Date <i style="color: red;">*</i></b></label>          
-            <input type="text" style="font-size: 14px;" name="tanggal" id="tanggal" class="form-control tanggal" 
+            <input type="text" style="font-size: 14px;" name="tanggal" id="tanggal" class="form-control tanggal" onchange="ubahtanggal(this.value)" 
             value="<?php             
             if(!empty($_POST['tanggal'])) {
                 echo $_POST['tanggal'];
@@ -436,6 +431,25 @@ function SidebarCollapse () {
         startDate: new Date()
     });
 });
+</script>
+
+<script type="text/javascript"> 
+    var tgl = 0;
+    var tgl2 = '';
+    function ubahtanggal(value){  
+        var tanggal = document.getElementById('tanggal').value; 
+        var coba = new Date();
+        // alert(tanggal);
+        $.ajax({
+            type: 'POST', 
+            url: 'getnomor_kbondp.php', 
+            data: {'tanggal':tanggal},
+            success: function(response) { 
+                // alert(response);
+                $('#nokontrabon').val(response); 
+            }
+        });
+    };
 </script>
 
 <script>

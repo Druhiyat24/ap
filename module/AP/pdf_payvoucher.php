@@ -758,7 +758,7 @@ table {
                   SPV Bank 
                 </td>
                 <td style="width: 14%;font-size: 11px;text-align: center;font-weight: bold;">
-                  Fin&Acc Manager 
+                  Fin Manager 
                 </td>
                 <td style="width: 14%;font-size: 11px;text-align: center;font-weight: bold;">
                   Kadept Fin&Acc  

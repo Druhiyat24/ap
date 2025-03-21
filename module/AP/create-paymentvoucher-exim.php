@@ -9,6 +9,7 @@
         <div style="padding-left: 10px;padding-top: 5px;">
             <button style="-ms-transform: skew(10deg);-webkit-transform: skew(10deg);transform: skew(15deg);" id="btnpv" type="button" class="btn-secondary btn-xs"><span></span> Payment Voucher</button>
             <button style="-ms-transform: skew(10deg);-webkit-transform: skew(10deg);transform: skew(15deg);" id="btnpve" type="button" class="btn-primary btn-xs"><span>Payment Voucher EXIM</span></button>
+            <button style="-ms-transform: skew(10deg);-webkit-transform: skew(10deg);transform: skew(15deg);" id="btnpvftr" type="button" class="btn-secondary btn-xs"><span></span>Payment Voucher FTR</button>
         </div>
         <div class="form-row">
             <div class="col-md-3 mb-3">            
@@ -214,7 +215,7 @@
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $nama_supp = isset($_POST['curre']) ? $_POST['curre']: null;
                 }                 
-                $sql = mysqli_query($conn1,"select DISTINCT curr from b_masterbank ");
+                $sql = mysqli_query($conn1,"select DISTINCT curr from b_masterbank union select 'EUR' curr  ");
                 while ($row = mysqli_fetch_array($sql)) {
                     $data = $row['curr'];
                     if($row['curr'] == $_POST['curre']){
@@ -2160,6 +2161,12 @@ $("#select_all").click(function() {
 <script type="text/javascript">
     document.getElementById('btnpve').onclick = function () {
     location.href = "create-paymentvoucher-exim.php";
+};
+</script>
+
+<script type="text/javascript">
+    document.getElementById('btnpvftr').onclick = function () {
+    location.href = "create-paymentvoucher-ftr.php";
 };
 </script>
 

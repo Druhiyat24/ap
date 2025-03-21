@@ -34,7 +34,7 @@
                 </div> 
 
         <div class="form-row">
-            <div class="col-md-6"> 
+            <div class="col-md-6 mt-1"> 
             <label for="start_date"><b>From</b></label>          
             <input type="text" style="font-size: 12px;" class="form-control tanggal" id="start_date" name="start_date" 
             value="<?php
@@ -51,7 +51,7 @@
             placeholder="Start Date" autocomplete='off'>
             </div>
 
-            <div class="col-md-6 mb-1">
+            <div class="col-md-6 mt-1">
             <label for="end_date"><b>To</b></label>          
             <input type="text" style="font-size: 12px;" class="form-control tanggal" id="end_date" name="end_date" 
             value="<?php
@@ -69,7 +69,7 @@
             </div>
         </div>
 
-            <div class="input-group-append col">                                   
+            <div class="input-group-append col mt-1">                                   
             <button type="submit" id="submit" value=" Search " style="margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
     line-height: 1;
     padding: -2px 8px;
@@ -303,8 +303,8 @@ $saldo__ = $saldoawal * $rates;
 
      $sql = mysqli_query($conn1," SELECT '',q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
 FROM
-   (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '$accountid' and transaksi_date between '$start_date' and '$end_date' and status != 'Cancel') AS q1 JOIN
-     (SELECT @runtot:= $saldoswal) runtot ");
+   (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '$accountid' and transaksi_date between '$start_date' and '$end_date' and status != 'Cancel' order by transaksi_date asc) AS q1 JOIN
+     (SELECT @runtot:= $saldoswal) runtot order by date asc");
     }
 
 
@@ -327,7 +327,7 @@ $maxidss2 = $rowxss2['id'];
 
 $sqlyss2 = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where id = '$maxidss' and v_codecurr = 'HARIAN'");
 $rowyss2 = mysqli_fetch_array($sqlyss2);
-$rates2 = $rowyss2['rate'];
+$rates2 = isset($rowyss2['rate']) ? $rowyss2['rate'] : 1;
 }
 
     // $balanc = $saldo_awal + $blc;
@@ -391,7 +391,7 @@ $rates2 = $rowyss2['rate'];
      $saldoakhir = isset($rows6['saldo_akhir']) ? $rows6['saldo_akhir'] : 0;
      $dateakhir = isset($rows6['date']) ? $rows6['date'] : null;
 
-     $sqlrates3 = mysqli_query($conn1,"select id,rate FROM masterrate where v_codecurr = 'PAJAK' and tanggal = '$dateakhir'");
+     $sqlrates3 = mysqli_query($conn1,"select id,rate FROM masterrate where v_codecurr = 'HARIAN' and tanggal = '$dateakhir'");
 $rowrates3 = mysqli_fetch_array($sqlrates3);
 $maxidrate3 = isset($rowrates3['id']) ? $rowrates3['id'] : null;
 

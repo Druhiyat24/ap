@@ -9,7 +9,7 @@ $doc_num=$_GET['doc_num'];
 $sql= "select doc_num,date,customer,akun,ref_data,bank,deskripsi,curr,create_by,approve_by FROM tbl_bankin_arcollection where doc_num = '$doc_num'";
 $rs=mysqli_fetch_array(mysqli_query($conn2,$sql));
 
-$sqlys = "select no_coa,nama_coa,nama_costcenter,reff_doc,reff_date,curr,debit,credit, keterangan from tbl_list_journal where debit > 0 and no_journal = '$doc_num' || credit > 0 and no_journal = '$doc_num'";
+$sqlys = "select no_coa,nama_coa,nama_costcenter,b.profit_center,reff_doc,reff_date,curr,debit,credit, keterangan from tbl_list_journal a left join b_master_cc b on b.no_cc = a.no_costcenter where debit > 0 and no_journal = '$doc_num' || credit > 0 and no_journal = '$doc_num'";
 
 
 ob_start();
@@ -334,14 +334,15 @@ table {
         <table border="1" cellspacing="0" style="width:100%;font-size:10px;">
   <tr style="line-height: 10px;">
       <th style="width: 7%;text-align:center;">Coa No</th>
-      <th style="width: 13%;text-align:center;">Coa Name</th>
-      <th style="width: 13%;text-align:center;">Cost Center</th>
-      <th style="width: 13%;text-align:center;">Reff Doc</th>
+      <th style="width: 11%;text-align:center;">Coa Name</th>
+      <th style="width: 10%;text-align:center;">Cost Center</th>
+      <th style="width: 11%;text-align:center;">Profit Center</th>
+      <th style="width: 10%;text-align:center;">Reff Doc</th>
       <th style="width: 10%;text-align:center;">Reff Date</th>
       <th style="width: 7%;text-align:center;">Curr</th>
-      <th style="width: 12%;text-align:center;">Debit</th>
-      <th style="width: 12%;text-align:center;">Credit</th>
-      <th style="width: 13%;text-align:center;">Description</th>
+      <th style="width: 11%;text-align:center;">Debit</th>
+      <th style="width: 11%;text-align:center;">Credit</th>
+      <th style="width: 12%;text-align:center;">Description</th>
       <th style="display: none;"></th>  
     </tr>
 <tbody >
@@ -360,6 +361,7 @@ while($data=mysqli_fetch_array($query)){
         <td style="text-align: center" value="'.$data['no_coa'].'">'.$data['no_coa'].'</td>
         <td style="text-align: left" value="'.$data['nama_coa'].'">'.$data['nama_coa'].'</td>
         <td style="text-align: left" value="'.$data['nama_costcenter'].'">'.$data['nama_costcenter'].'</td>
+        <td style="text-align: left" value="'.$data['profit_center'].'">'.$data['profit_center'].'</td>
         <td style="text-align: left" value="'.$data['reff_doc'].'">'.$data['reff_doc'].'</td> 
         <td style="text-align: left" value="'.$reff_date.'">'.$reff_date.'</td>                                                                      
         <td style="text-align: left" value="'.$data['curr'].'">'.$data['curr'].'</td> 

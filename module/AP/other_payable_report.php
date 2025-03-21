@@ -211,7 +211,18 @@ select reff_doc,tgl_journal,sum((debit * rate) - (credit * rate)) total, '0','0'
         $rowmm = mysqli_fetch_array($sqlmm);
         $no_journal = isset($rowmm['no_journal']) ? $rowmm['no_journal'] : null;
         if ($no_journal != null) {
-        $beg_balance = $row2['beg_balance'];
+        $sql_mj_b = mysqli_query($conn2,"select reff_doc,tgl_journal,sum((debit * rate) - (credit * rate)) total, '0','0',((debit * rate) - (credit * rate)) total2, '0' from tbl_list_journal where no_coa = '2.18.02' and no_journal like '%GM/%' and tgl_journal < '$start_date' and reff_doc = '$nm_memo'");
+        $row_mj_b = mysqli_fetch_array($sql_mj_b);
+        $val_mj_b = isset($row_mj_b['total']) ? $row_mj_b['total'] : 0;
+        // echo $val_mj_b;
+
+        if ($val_mj_b > 0) {
+             $beg_balance = $row2['beg_balance'] - $val_mj_b;
+        }else{
+             $beg_balance = $row2['beg_balance'];
+        }
+
+        // $beg_balance = $row2['beg_balance'];
         $addition = $row2['addition'];
         $deduction = $row2['deduction'];
         $deduction2 = $row2['deduction2'];
@@ -238,13 +249,16 @@ select reff_doc,tgl_journal,sum((debit * rate) - (credit * rate)) total, '0','0'
         $ttl_for +=$forex;
         $ttl_end +=$end_balance;
         $ttl_mj  +=$val_mj;
+        if ($beg_balance == 0 && $addition == 0) {
+            // code...
+        }else{
 
         echo ' <tr style="font-size:12px;text-align:center;">
             <td style="text-align : left;" value = "'.$row2['nm_memo'].'">'.$row2['nm_memo'].'</td>
             <td style="width: 100px;" value = "'.$row2['tgl_memo'].'">'.date("d-M-Y",strtotime($row2['tgl_memo'])).'</td>
             <td style="text-align : left;" value = "'.$row2['no_invoice'].'">'.$row2['no_invoice'].'</td>
             <td style="text-align : left;" value = "'.$row2['supplier'].'">'.$row2['supplier'].'</td>
-            <td style="text-align : right;" value = "'.$row2['beg_balance'].'">'.number_format($row2['beg_balance'],2).'</td>
+            <td style="text-align : right;" value = "'.$beg_balance.'">'.number_format($beg_balance,2).'</td>
             <td style="text-align : right;" value = "'.$row2['addition'].'">'.number_format($row2['addition'],2).'</td>
             <td style="text-align : right;" value = "'.$row2['deduction'].'">'.number_format($row2['deduction'],2).'</td>
             <td style="text-align : right;" value = "'.$val_mj.'">'.number_format($val_mj,2).'</td>
@@ -253,6 +267,7 @@ select reff_doc,tgl_journal,sum((debit * rate) - (credit * rate)) total, '0','0'
             </tr>
             ';
         }
+    }
         
 
         }else{
@@ -260,7 +275,7 @@ select reff_doc,tgl_journal,sum((debit * rate) - (credit * rate)) total, '0','0'
 }
 
         echo ' <tr >
-            <th colspan="3" style="text-align : center;" value = "Total">Total</td>
+            <th colspan="4" style="text-align : center;" value = "Total">Total</td>
             <th style="text-align : right;" value = "'.$ttl_beg.'">'.number_format($ttl_beg,2).'</th>
             <th style="text-align : right;" value = "'.$ttl_add.'">'.number_format($ttl_add,2).'</th>
             <th style="text-align : right;" value = "'.$ttl_ded.'">'.number_format($ttl_ded,2).'</th>

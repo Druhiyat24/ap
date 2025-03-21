@@ -13,7 +13,7 @@ if ($refdoc == 'Cash Out') {
     $sql3 = mysqli_query($conn1,"select amount from c_petty_cashin_h where no_pci = '$no_ib'");
     $row3 = mysqli_fetch_assoc($sql3);
     $amount = $row3['amount'];
-}elseif ($refdoc == 'None') {
+}elseif ($refdoc == 'None' || $refdoc == 'Settlement') {
     $sql = mysqli_query($conn1,"select DISTINCT if(a.no_coa = '-', '-',CONCAT(b.no_coa,' ',b.nama_coa)) as coa,if(a.no_costcenter = '-','-',c.cc_name) as cost_center,if(a.buyer = '','-',a.buyer) as buyer ,if(a.no_ws = '','-',a.no_ws) as no_ws,a.curr,a.debit,a.credit from c_petty_cashin_none a left join mastercoa_v2 b on b.no_coa = a.no_coa left join b_master_cc c on c.no_cc = a.no_costcenter where a.no_pci = '$no_ib'");
     $sql3 = mysqli_query($conn1,"select amount from c_petty_cashin_h where no_pci = '$no_ib'");
     $row3 = mysqli_fetch_assoc($sql3);
@@ -23,7 +23,7 @@ if ($refdoc == 'Cash Out') {
 }
   
 
-if($refdoc == 'None'){
+if($refdoc == 'None' || $refdoc == 'Settlement'){
     $table = '<table id="mytdmodal" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
                     <thead>
                         <tr>                       

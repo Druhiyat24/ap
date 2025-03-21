@@ -156,7 +156,7 @@
             placeholder="Tanggal Awal">
             </div>
             <div class="input-group-append col">                                   
-            <button  type="submit" id="submit" value=" Search " style="margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
+            <button  type="submit" id="submit" value=" Search " style="margin-top: 30px; margin-bottom: 15px;margin-right: 15px;border: 0;
     line-height: 1;
     padding: -2px 8px;
     font-size: 1rem;
@@ -165,7 +165,7 @@
     text-shadow: 1px 1px 1px #000;
     border-radius: 6px;
     background-color: rgb(46, 139, 87);"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
-            <button type="button" id="reset" value=" Reset " style="margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
+            <button type="button" id="reset" value=" Reset " style="margin-top: 30px; margin-bottom: 15px;margin-right: 15px;border: 0;
     line-height: 1;
     padding: -2px 8px;
     font-size: 1rem;
@@ -217,10 +217,12 @@
         $id2 = isset($rs2['id']) ? $rs2['id'] : 0;
 
         if($id2 == '55'){
-    echo '<button id="btnupload" type="button" class="btn-success btn-xs" style="border-radius: 6%"><span class="fa fa-upload" aria-hidden="true"></span> Upload</button>';
+    echo '<button id="btnupload" type="button" class="btn-success btn-xs" style="border-radius: 6%"><span class="fa fa-upload" aria-hidden="true"></span> Upload</button>&nbsp';
         }else{
     echo '';
     }
+
+    echo '<button id="btnverifikasi" type="button" class="btn-warning btn-xs" style="border-radius: 6%"><span class="fa fa-paper-plane" aria-hidden="true"></span> Verifikasi</button>';
 ?>
     </div>
     <div class="box body">
@@ -289,13 +291,13 @@
           $status = $row['status'];                 
         echo '<tr style="font-size:12px;text-align:center;">
             <td style="" value = "'.$row['no_mj'].'">'.$row['no_mj'].'</td>
-            <td style="" value = "'.$row['mj_date'].'">'.date("d-M-Y",strtotime($row['mj_date'])).'</td>
+            <td style="width: 100px;" value = "'.$row['mj_date'].'">'.date("d-M-Y",strtotime($row['mj_date'])).'</td>
             <td style="" value = "'.$row['nama_cmj'].'">'.$row['nama_cmj'].'</td>
             <td style="" value = "'.$row['curr'].'">'.$row['curr'].'</td>
             <td style=" text-align : center;" value="'.$row['debit'].'">'.number_format($row['debit'],2).'</td>
             <td style=" text-align : center;" value="'.$row['credit'].'">'.number_format($row['credit'],2).'</td>
             <td style="" value = "'.$row['status'].'">'.$row['status'].'</td>
-            <td style="" value = "'.$row['keterangan'].'">'.$row['keterangan'].'</td>';
+            <td style="text-align: left" value = "'.$row['keterangan'].'">'.$row['keterangan'].'</td>';
 
             $querys = mysqli_query($conn1,"select Groupp, finance, ap_apprv_lp from userpassword where username = '$user'");
             $rs = mysqli_fetch_array($querys);
@@ -303,16 +305,22 @@
             $fin = $rs['finance'];
             $app = $rs['ap_apprv_lp'];
 
-            echo '<td >';
+            echo '<td style="width: 160px;">';
             if($status == 'Draft' and $fin == '1'){
                 echo '<a id="approve" href=""><button style="border-radius: 6px" type="button" class="btn-xs btn-info"><i class="fa fa-paper-plane"aria-hidden="true" style="padding-right: 10px; padding-left: 5px;" onclick="alert_approve();"> Post</i></button></a>
                 <a href="edit-memorial-journal.php?no_mj='.base64_encode($row['no_mj']).' "><button style="border-radius: 6px" type="button" class="btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Edit</i></button></a>                
                 <a id="delete" href=""><button style="border-radius: 6px" type="button" class="btn-xs btn-danger"><i class="fa fa-trash"aria-hidden="true" style="padding-right: 10px; padding-left: 5px;" onclick="alert_cancel();"> Cancel</i></button></a>';
             }elseif($status == 'Post' and $fin == '1'and $app != '1'){
                 echo '<p style="font-size: 13px;margin-bottom: -1px"><i class="fa fa-paper-plane" style="padding-right: 3px; padding-left: 5px; color: green" ></i><b>Post</b></p>';
+                if ($row['id_cmj'] != 'CMJ001') {
+                    echo '<a href="edit-memorial-journal.php?no_mj='.base64_encode($row['no_mj']).' "><button style="border-radius: 6px" type="button" class="btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Edit</i></button></a>';
+                }
             }elseif($status == 'Post' and $fin == '1' and $app == '1'){
                 echo '<a id="delete" href=""><button style="border-radius: 6px" type="button" class="btn-xs btn-danger"><i class="fa fa-trash"aria-hidden="true" style="padding-right: 10px; padding-left: 5px;" onclick="alert_cancel();"> Cancel</i></button></a>
                 ';
+                if ($row['id_cmj'] != 'CMJ001') {
+                    echo '<a href="edit-memorial-journal.php?no_mj='.base64_encode($row['no_mj']).' "><button style="border-radius: 6px" type="button" class="btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Edit</i></button></a>';
+                }
             }elseif($status == 'Cancel' and $fin == '1') {
                 echo ' <p style="font-size: 13px;margin-bottom: -1px"><i class="fa fa-ban fa-lg" style="padding-right: 3px; padding-left: 5px; color: red" ></i><b>Canceled</b></p>';                    
             }else{
@@ -579,6 +587,12 @@ $(function() {
 <script type="text/javascript">
     document.getElementById('btnupload').onclick = function () {
     location.href = "upload-memorial-journal.php";
+};
+</script>
+
+<script type="text/javascript">
+    document.getElementById('btnverifikasi').onclick = function () {
+    location.href = "formverifikasimj.php";
 };
 </script>
 

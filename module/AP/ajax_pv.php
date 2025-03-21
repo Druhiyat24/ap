@@ -5,7 +5,7 @@ $tax = 0;
 $total = 0; 
 $no_pv = isset($_POST['no_pv']) ? $_POST['no_pv']: null;
 
-$sql = mysqli_query($conn1,"select a.no_pv,b.nama_coa,IF(c.cc_name is null,'-',c.cc_name) cc_name, if(a.reff_doc = '','-',a.reff_doc) as reff_doc,a.reff_date,if(a.deskripsi = '','-',a.deskripsi) as deskripsi,a.amount,a.ded_add,a.due_date from tbl_pv a inner join mastercoa_v2 b on b.no_coa = a.coa left join b_master_cc c on c.no_cc = a.no_cc where no_pv = '$no_pv' and amount != '0' OR no_pv = '$no_pv' and ded_add != '0' order by a.id asc");
+$sql = mysqli_query($conn1,"select a.no_pv,concat(b.no_coa,' ',b.nama_coa) nama_coa,IF(c.cc_name is null,'-',c.cc_name) cc_name, if(a.reff_doc = '','-',a.reff_doc) as reff_doc,a.reff_date,if(a.deskripsi = '','-',a.deskripsi) as deskripsi,a.amount,a.ded_add,a.due_date from tbl_pv a inner join mastercoa_v2 b on b.no_coa = a.coa left join b_master_cc c on c.no_cc = a.no_cc where no_pv = '$no_pv' and amount != '0' OR no_pv = '$no_pv' and ded_add != '0' order by a.id asc");
 
 	$table = '<table id="mytdmodal" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 11px;text-align:center;">
                     <thead>

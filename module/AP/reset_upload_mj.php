@@ -9,6 +9,9 @@ $create_date = date("Y-m-d H:i:s");
 $sql = "DELETE from tbl_memorial_journal_temp where create_by = '$create_user'";
    $update = mysqli_query($conn2,$sql);
 
+$sql2 = "DELETE from sb_memorial_journal_temp where create_by = '$create_user'";
+   $update2 = mysqli_query($conn2,$sql2);
+
 
 
 if(!$execute){	

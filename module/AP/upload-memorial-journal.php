@@ -41,19 +41,29 @@
             $thn =  date("y",strtotime($txt_periode));
             $huruf = "GM/NAG/$bln$thn/";
             $kodepay = $huruf . sprintf("%05s", $urutan);
+
+            $sql_sb = mysqli_query($conn2,"select max(no_mj) from sb_memorial_journal where MONTH(mj_date) = MONTH('$txt_periode') and YEAR(mj_date) = YEAR('$txt_periode')");
+            $row_sb = mysqli_fetch_array($sql_sb);
+            $kodepay_sb = $row_sb['max(no_mj)'];
+            $urutan_sb = (int) substr($kodepay_sb, 13, 5);
+            // $urutan++;
+            $bln_sb =  date("m",strtotime($txt_periode));
+            $thn_sb =  date("y",strtotime($txt_periode));
+            $huruf_sb = "GM/NAG/$bln$thn/";
+            $kodepay_sb = $huruf_sb . sprintf("%05s", $urutan_sb);
             
 
             // echo '<label><i style="color: red;">Notes : Journal Number Start from '.$kodepay.'</i></label>'
              // echo'<input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="no_doc" name="no_doc" value="'.$kodepay.'">'
             
-echo '<form method="post" enctype="multipart/form-data" action="proses_upload_mj.php?kodepay='.$kodepay.' && periode='.$txt_periode.'">';
+echo '<form method="post" enctype="multipart/form-data" action="proses_upload_mj.php?kodepay='.$kodepay.' && kodepay_sb='.$kodepay_sb.' && periode='.$txt_periode.'">';
             ?>
     <div class="form-row">
         <div class="col-md-3 mb-3"> 
                 <label>Choose File</label>
                 <input style="height: 40px;" class="form-control" name="fileexcel" type="file" required="required">
         </div>
-        <div class="col-md-2 mb-3">
+        <div class="col-md-6 mb-3">
             <label>Action</label>
         </br>
             <button style="padding-left: 100px;" class="btn btn-sm btn-info" type="submit">Submit</button>
@@ -235,7 +245,7 @@ echo '<form method="post" enctype="multipart/form-data" action="proses_upload_mj
                 <div class="input-group" >
                 <label for="nama_supp" class="col-form-label" style="width: 180px;"><b>Total Credit</b></label>
                 <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="txt_credit" name="txt_credit" value="<?php             
-            $sqldes = mysqli_query($conn2,"select format(sum(credit),2) as credit from tbl_memorial_journal_temp");
+            $sqldes = mysqli_query($conn2,"select format(sum(credit),2) as credit from tbl_memorial_journal_temp where create_by = '$user'");
             $row = mysqli_fetch_array($sqldes);      
             $credit = isset($row['credit']) ? $row['credit'] : 0;                  
            if($credit != '0') {
@@ -245,7 +255,7 @@ echo '<form method="post" enctype="multipart/form-data" action="proses_upload_mj
                 echo '';
             }?>" placeholder="0.00" readonly>
                  <input type="hidden" name="txt_credit_h" id="txt_credit_h" value="<?php             
-            $sqldes = mysqli_query($conn2,"select sum(credit) as credit from tbl_memorial_journal_temp");
+            $sqldes = mysqli_query($conn2,"select sum(credit) as credit from tbl_memorial_journal_temp where create_by = '$user'");
             $row = mysqli_fetch_array($sqldes);      
             $credit = isset($row['credit']) ? $row['credit'] : 0;                  
             
@@ -257,7 +267,7 @@ echo '<form method="post" enctype="multipart/form-data" action="proses_upload_mj
             <div class="input-group" >
                 <label for="nama_supp" class="col-form-label" style="width: 180px;"><b>Total Debit</b></label>
                 <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="txt_debit" name="txt_debit" value="<?php             
-            $sqldes = mysqli_query($conn2,"select format(sum(debit),2) as debit from tbl_memorial_journal_temp");
+            $sqldes = mysqli_query($conn2,"select format(sum(debit),2) as debit from tbl_memorial_journal_temp where create_by = '$user'");
             $row = mysqli_fetch_array($sqldes);      
             $debit = isset($row['debit']) ? $row['debit'] : 0;   
              if($debit != '0') {
@@ -267,7 +277,7 @@ echo '<form method="post" enctype="multipart/form-data" action="proses_upload_mj
                 echo '';
             }?>" placeholder="0.00" readonly>
                  <input type="hidden" name="txt_debit_h" id="txt_debit_h" value="<?php             
-            $sqldes = mysqli_query($conn2,"select sum(debit) as debit from tbl_memorial_journal_temp");
+            $sqldes = mysqli_query($conn2,"select sum(debit) as debit from tbl_memorial_journal_temp where create_by = '$user'");
             $row = mysqli_fetch_array($sqldes);      
             $debit = isset($row['debit']) ? $row['debit'] : 0;                    
                 echo $debit;
@@ -277,7 +287,7 @@ echo '<form method="post" enctype="multipart/form-data" action="proses_upload_mj
             <div class="input-group" >
                 <label for="nama_supp" class="col-form-label" style="width: 180px;"><b>Total Credit IDR</b></label>
                 <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="txt_credit_idr" name="txt_credit_idr" value="<?php             
-            $sqldes = mysqli_query($conn2,"select format(sum(credit_idr),2) as credit_idr from tbl_memorial_journal_temp");
+            $sqldes = mysqli_query($conn2,"select format(sum(credit_idr),2) as credit_idr from tbl_memorial_journal_temp where create_by = '$user'");
             $row = mysqli_fetch_array($sqldes);      
             $credit_idr = isset($row['credit_idr']) ? $row['credit_idr'] : 0;                    
             if($credit_idr != '0') {
@@ -287,7 +297,7 @@ echo '<form method="post" enctype="multipart/form-data" action="proses_upload_mj
                 echo '';
             } ?>" placeholder="0.00"  readonly>
                  <input type="hidden" name="txt_credit_idr_h" id="txt_credit_idr_h" value="<?php             
-            $sqldes = mysqli_query($conn2,"select sum(credit_idr) as credit_idr from tbl_memorial_journal_temp");
+            $sqldes = mysqli_query($conn2,"select sum(credit_idr) as credit_idr from tbl_memorial_journal_temp where create_by = '$user'");
             $row = mysqli_fetch_array($sqldes);      
             $credit_idr = isset($row['credit_idr']) ? $row['credit_idr'] : 0;                                    
                 echo $credit_idr;
@@ -297,7 +307,7 @@ echo '<form method="post" enctype="multipart/form-data" action="proses_upload_mj
             <div class="input-group" >
                 <label for="nama_supp" class="col-form-label" style="width: 180px;"><b>Total Debit IDR</b></label>
                 <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="txt_debit_idr" name="txt_debit_idr" value="<?php             
-            $sqldes = mysqli_query($conn2,"select format(sum(debit_idr),2) as debit_idr from tbl_memorial_journal_temp");
+            $sqldes = mysqli_query($conn2,"select format(sum(debit_idr),2) as debit_idr from tbl_memorial_journal_temp where create_by = '$user'");
             $row = mysqli_fetch_array($sqldes);      
             $debit_idr = isset($row['debit_idr']) ? $row['debit_idr'] : 0;               
             if($debit_idr != '0') {
@@ -307,7 +317,7 @@ echo '<form method="post" enctype="multipart/form-data" action="proses_upload_mj
                 echo '';
             } ?>" placeholder="0.00" readonly>
                  <input type="hidden" name="txt_debit_idr_h" id="txt_debit_idr_h" value="<?php             
-            $sqldes = mysqli_query($conn2,"select sum(debit_idr) as debit_idr from tbl_memorial_journal_temp");
+            $sqldes = mysqli_query($conn2,"select sum(debit_idr) as debit_idr from tbl_memorial_journal_temp where create_by = '$user'");
             $row = mysqli_fetch_array($sqldes);      
             $debit_idr = isset($row['debit_idr']) ? $row['debit_idr'] : 0;                 
                 echo $debit_idr;

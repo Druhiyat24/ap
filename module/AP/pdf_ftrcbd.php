@@ -6,7 +6,7 @@ $noftrcbd=$_GET['noftrcbd'];
 ?>
 
 <?php
-$sql= "select no_ftr_cbd, tgl_ftr_cbd, no_po, no_pi, tgl_po, supp, SUM(subtotal) as subtotal, SUM(tax) as tax, SUM(total) as total,biaya_tambahan, curr, create_user, status from ftr_cbd where no_ftr_cbd = '$noftrcbd' and status !='Cancel'";
+$sql= "select no_ftr_cbd, tgl_ftr_cbd,tgl_bayar, no_po, no_pi, tgl_po, supp, SUM(subtotal) as subtotal, SUM(tax) as tax, SUM(total) as total,biaya_tambahan, curr, create_user, status from ftr_cbd where no_ftr_cbd = '$noftrcbd' and status !='Cancel' GROUP BY no_po";
 
 $rs=mysqli_fetch_array(mysqli_query($conn2,$sql));
 ob_start();
@@ -105,7 +105,7 @@ CSS HEADER
 
 	width:100%;
 
-	border:1px solid #000000;
+	border:1Spx solid #000000;
 
 }
 
@@ -148,8 +148,6 @@ table {
 	
 
 }
-
-
 
 </style>
 
@@ -199,8 +197,9 @@ table {
 <table style="font-size:12px;">
 	<thead>
     <tr>
-      <th style="text-align:left;width: 20%;padding-top: -5px;">DATE CREATED  :</th>
-      <th style="text-align:left;width: 80%;padding-top: -5px;">TGL FTR CBD  :</th>                               
+      <th style="text-align:left;width: 30%;padding-top: -5px;">DATE CREATED :</th>
+      <th style="text-align:left;width: 30%;padding-top: -5px;">FTR CBD DATE :</th>
+      <th style="text-align:left;width: 40%;padding-top: -5px;">PAYMENT DATE :</th>                               
     </tr>
 
 	<tbody>
@@ -220,80 +219,69 @@ table {
       	$tglftrcbd = $rows3['tgl_ftr_cbd'];
 		echo date("d M Y", strtotime($tglftrcbd));
 		?>		
-	</td>									      
+	</td>	
+	<td style="text-align:left;padding-left: 15px;padding-top: -15px;padding-bottom: -10px;">
+      <?php
+      $sql4 = mysqli_query($conn2,"select tgl_bayar from ftr_cbd where no_ftr_cbd = '$noftrcbd'");
+      $rows4 = mysqli_fetch_array($sql4);
+      	$tgl_bayar = $rows4['tgl_bayar'];
+      	if ($tgl_bayar == '1970-01-01' OR $tgl_bayar == '0000-00-00' OR $tgl_bayar == '' OR $tgl_bayar == null) {
+      		echo '-';
+      	}else{
+			echo date("d M Y", strtotime($tgl_bayar));
+      	}
+		?>		
+	</td>										      
 	</tr>
 </tbody>
 </table>
 <hr />
 
 <table  border="1" cellspacing="0" style="width:100%;font-size:12px;border-spacing:2px;">
-  <tr>
-      <th style="width:20%;border: 1px solid black;text-align:center;">No.PO</th>
-      <th style="width:20%;border: 1px solid black;text-align:center;">No.PI</th>
-      <th style="width:20%;border: 1px solid black;text-align:center;">Tanggal PO</th>
+	<thead>
+  	<tr>
+      <th style="width:25%;border: 1px solid black;text-align:center;">No.PO</th>
+      <th style="width:25%;border: 1px solid black;text-align:center;">No.PI</th>
+      <th style="width:25%;border: 1px solid black;text-align:center;">Tanggal PO</th>
       <th style="width:25%;border: 1px solid black;text-align:center;">Amount CBD</th>      
-<!-- 	  <th style="width:20%;border: 1px solid black;text-align:center;">Item Description</th>
-      <th colspan="2" style="width:20%;border: 1px solid black;text-align:center;">Quantity</th>
-      <th colspan="2" style="width:20%;border: 1px solid black;text-align:center;">Unit Price</th> -->
-
-<!--      <th style="width:15%;border: 1px solid black;text-align:center;display: none;">Jatuh Tempo</th>
-      <th style="width:15%;border: 1px solid black;text-align:center;display: none;">No Invoice</th>	  
-	  <th style="width:15%;border: 1px solid black;text-align:center;display: none;">No Faktur Pajak</th>-->
     </tr>
+</thead>
 <tbody>
 <?php
+$no_po = '';
+$no_pi = '';
+$tgl_po = '';
+$create_user = '';	
+$curr = '';
+$subtotal = 0;
+$tambahan = 0;
+$ppn = 0;
+$total = 0;
 $query = mysqli_query($conn2,$sql)or die(mysqli_error());
 while($data=mysqli_fetch_array($query)){
 	$no_po = $data['no_po'];
 	$no_pi = $data['no_pi'];
 	$tgl_po = $data['tgl_po'];
 	$create_user = $data['create_user'];	
-	// $item_desc = $data['itemdesc'];
-	// $qty = $data['qty'];
-	// $uom = $data['uom'];
 	$curr = $data['curr'];
-	// $price = $data['price'];
-	$subtotal = $data['subtotal'];
+	$subtotal += $data['subtotal'];
 	$tambahan = $data['biaya_tambahan'];
-	// $tgl_tempo = $data['tgl_tempo'];
-	// $supp_inv = $data['supp_inv'];
-	// $no_faktur = $data['no_faktur'];
-	// $ws = $data['ws'];
 	$ppn = $data['tax'];
-	// $sum_qty += $qty;
-	$total = $data['total'] + $tambahan;
+	$total += $data['total'] + $tambahan;
    echo '<tr>
-      <td style="width:20%;text-align:center;">'.$no_po.'</td>
-      <td style="width:20%;text-align:center;">'.$no_pi.'</td>
-	  <td style="width:20%;text-align:center;">'.date("d M Y",strtotime($tgl_po)).'</td>
-	  <td style="width:auto;text-align:right;border-left:none">'.$curr.' '.number_format($subtotal, 2).'</td>
+      <td style="width:25%;text-align:center;">'.$no_po.'</td>
+      <td style="width:25%;text-align:center;">'.$no_pi.'</td>
+	  <td style="width:25%;text-align:center;">'.date("d M Y",strtotime($tgl_po)).'</td>
+	  <td style="width:25%;text-align:right;border-left:none">'.$curr.' '.number_format($data['subtotal'], 2).'</td>
     </tr>';	
 };	
 ?>
 
-<!-- <?php
-//$qty1 +=$qty1+ $qty;				
-//$mata_uang = $data['curr'];
-//$unit = $data['uom']; 
 
-//$total_curr_bef_tax  = $total_curr_bef_tax + $data['subtotal'];
-//$total_curr = $total_curr + $data['subtotal'];	
- 
-//$grand_total = $total_curr_bef_tax + $ppn_nya_____ - $value_pph + $total_utang_debit + $total_other;
- 
-?> -->
 
-<tr>
+	<tr>
       <td colspan="3" style="width:20%;text-align:center;"><b>Jumlah</b></td>
-<!--       <td style="width:20%;text-align:center;"></td> -->
-<!-- 	  <td style="width:9%;text-align:center;border-right:none"><?php echo number_format($sum_qty,2) ?></td> 
-	  <td style="width:5%;text-align:left;border-left:none"><?php echo $uom ?></td> 
-      <td style="width:5%;text-align:center;border-right:none"></td>
-	  <td style="width:9%;text-align:center;border-left:none"></td> -->
 	  <td style="width:auto;text-align:right;border-left:none"><?php echo $curr.' '.number_format($subtotal, 2) ?></td>
-<!-- 	  <td style="width:15%;text-align:center;display: none;"></td>
-	  <td style="width:15%;text-align:center;display: none;"></td> 
-      <td style="width:15%;text-align:center;display: none;"></td> -->
     </tr>
 
   </tbody>
@@ -465,6 +453,7 @@ include("../../mpdf8/vendor/mpdf/mpdf/src/mpdf.php");
 $mpdf=new \mPDF\mPDF();
 
 $mpdf->WriteHTML($html);
+ob_clean();
 $mpdf->Output();
 exit;
 ?>

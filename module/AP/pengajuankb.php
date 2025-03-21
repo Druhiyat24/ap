@@ -2,7 +2,7 @@
 
     <!-- MAIN -->
     <div class="col p-4">
-        <h2 class="text-center">LIST MAINTAIN KONTRA BON</h2>
+        <h3 class="text-center">LIST MAINTAIN KONTRA BON</h3>
 <div class="box">
     <div class="box header">
 
@@ -173,11 +173,11 @@
             <th style="text-align: center;vertical-align: middle;display: none;">No PO</th>
             <th style="text-align: center;vertical-align: middle;width: 150px">Supplier</th>
             <th style="text-align: center;vertical-align: middle;width: 80px">Total</th>
-            <th style="text-align: center;vertical-align: middle;width: 40px">Currency</th>
+            <th style="text-align: center;vertical-align: middle;width: 35px">Currency</th>
             <th style="text-align: center;vertical-align: middle; width: 120px">Maintain Date</th>
             <th style="text-align: center;vertical-align: middle;">Name</th>
             <th style="text-align: center;vertical-align: middle;width: 200px;">Message</th>
-            <th style="text-align: center;vertical-align: middle;width: 90px">Approve by</th>            
+            <th style="text-align: center;vertical-align: middle;width: 100px">Approve by</th>            
             <th style="text-align: center;vertical-align: middle;width: 90px">Cancel by</th>
             <th style="text-align: center;vertical-align: middle;width: 190px;">Status</th>                                                                          
         </tr>

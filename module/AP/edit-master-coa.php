@@ -118,9 +118,9 @@
                     <select class="form-control select2bs4" name="nama_ctg5" id="nama_ctg5" onchange='changeValuectg34(this.value)' required disabled>
                     <?php
                      $no_coa = base64_decode($_GET['no_coa']); 
-                        $sql2 = mysqli_query($conn2,"select id_ctg2 from mastercoa_v2  where no_coa = '$no_coa'");
+                        $sql2 = mysqli_query($conn2,"select id_ctg2,id_ctg5 from mastercoa_v2  where no_coa = '$no_coa'");
                         $row2 = mysqli_fetch_array($sql2);
-                        $idctg2 = $row2['id_ctg2'];
+                        $id_ctg5 = $row2['id_ctg5'];
 
                          if(!empty($no_coa)) {
                                 echo '';
@@ -129,7 +129,7 @@
                                 echo '<option value="" disabled selected="true">Select Category 5</option> '; 
                         }
 
-                        $sqlacc = mysqli_query($conn1,"select a.ind_name name5,a.id_ctg5,CONCAT(a.id_ctg5,'.') as no_coa,CONCAT(a.id_ctg5,' - ',a.ind_name) as name,b.id_ctg3,b.ind_name as name3,c.id_ctg4,c.ind_name as name4 from master_coa_ctg5 a inner join master_coa_ctg3 b on b.id_ctg3 = a.id_ctg3 inner join master_coa_ctg4 c on c.id_ctg4 = a.id_ctg4 where a.id_ctg2 = '$idctg2' group by a.id");
+                        $sqlacc = mysqli_query($conn1,"select a.ind_name name5,a.id_ctg5,CONCAT(a.id_ctg5,'.') as no_coa,CONCAT(a.id_ctg5,' - ',a.ind_name) as name,b.id_ctg3,b.ind_name as name3,c.id_ctg4,c.ind_name as name4 from master_coa_ctg5 a inner join master_coa_ctg3 b on b.id_ctg3 = a.id_ctg3 inner join master_coa_ctg4 c on c.id_ctg4 = a.id_ctg4 where a.id_ctg5 = '$id_ctg5' group by a.id");
                         $jsArray2 = "var prdName2 = new Array();\n";
 
                         while ($row = mysqli_fetch_array($sqlacc)) {

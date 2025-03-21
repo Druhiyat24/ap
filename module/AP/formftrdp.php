@@ -2,7 +2,7 @@
 
     <!-- MAIN -->
     <div class="col p-4">
-        <h2 class="text-center">FORM TRANSFER REQUEST (DP)</h2>
+        <h3 class="text-center">FORM TRANSFER REQUEST (DP)</h3>
 <div class="box">
     <div class="box header">
 <form id="form-data" method="post">
@@ -20,12 +20,12 @@
             $huruf = "FTR/D/NAG/$bln$thn/";
             $kodeftr = $huruf . sprintf("%05s", $urutan);
 
-            echo'<input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="noftrdp" name="noftrdp" value="'.$kodeftr.'">'
+            echo'<input type="text" readonly style="font-size: 13px;" class="form-control-plaintext" id="noftrdp" name="noftrdp" value="'.$kodeftr.'">'
             ?>
             </div>
-            <div class="col-md-3 mb-3">            
+            <div class="col-md-2 mb-3">            
             <label for="tanggal"><b>FTR DP Date<i style="color: red;">*</i></b></label>          
-            <input type="text" style="font-size: 14px;" name="tanggal" id="tanggal" class="form-control tanggal" 
+            <input type="text" style="font-size: 13px;" name="tanggal" id="tanggal" class="form-control tanggal" 
             value="<?php             
             if(!empty($_POST['tanggal'])) {
                 echo $_POST['tanggal'];
@@ -35,9 +35,21 @@
             } ?>">
             </div>
 
+            <div class="col-md-2 mb-3">            
+            <label for="payment_date"><b>Payment Date<i style="color: red;">*</i></b></label>          
+            <input type="text" style="font-size: 13px;" name="payment_date" id="payment_date" class="form-control tanggal" 
+            value="<?php             
+            if(!empty($_POST['payment_date'])) {
+                echo $_POST['payment_date'];
+            }
+            else{
+                echo '-';
+            } ?>">
+            </div>
+
             <div class="col-md-4 mb-3">            
             <label for="memo"><b>Descriptions</b></label>          
-            <input type="text" style="font-size: 14px;" class="form-control" name="memo" id="memo" 
+            <input type="text" style="font-size: 13px;" class="form-control" name="memo" id="memo" 
             value="<?php             
             if(!empty($_POST['memo'])) {
                 echo $_POST['memo'];
@@ -66,7 +78,7 @@
             <div class="col-md-9 mb-3">
             <label for="nama_supp"><b>Supplier</b></label>            
             <div class="input-group">
-            <input type="text" readonly style="font-size: 14px; width: 300px;" class="form-control" name="txt_supp" id="txt_supp" 
+            <input type="text" readonly style="font-size: 13px; width: 300px;" class="form-control" name="txt_supp" id="txt_supp" 
             value="<?php 
             $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
                 echo $nama_supp; 
@@ -259,7 +271,7 @@ where po_header.app = 'A' and supplier = '$nama_supp' and po_header.podate BETWE
                             <input type="number" style="font-size: 14px;text-align: right;" class="form-control" id="txt_dp" name="txt_dp" data-value="" value="" disabled>
                             </td>                            
                             <td style="width:100px;">
-                            <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="txt_dp_value" name="txt_dp_value" value="" disabled>
+                            <input type="text" style="font-size: 12px;text-align: right;" class="form-control" id="txt_dp_value" name="txt_dp_value" value="" disabled>
                             </td>
                             <td style="width:50px;" value="'.$row['matauang'].'">'.$row['matauang'].'</td>                                                                                                                                          
                             <td style="display: none;" value="'.$row['supplier'].'">'.$row['supplier'].'</td>
@@ -272,22 +284,22 @@ where po_header.app = 'A' and supplier = '$nama_supp' and po_header.podate BETWE
             </table>                    
 <div class="box footer">   
         <form id="form-simpan">
-            <div class="form-row col">
+            <div class="form-row col mt-2">
                 <label for="subtotal" class="col-form-label" style="width: 100px;"><b>Total PO</b></label>
             <div class="col-md-3 mb-3">                              
-                <input type="text" class="form-control-plaintext" name="subtotal" id="subtotal" value="" placeholder="0.00" style="font-size: 14px;text-align: right;" readonly>
+                <input type="text" class="form-control-plaintext" name="subtotal" id="subtotal" value="" placeholder="0.00" style="font-size: 12px;text-align: right;" readonly>
             </div>
             </div>
             <div class="form-row col">
                 <label for="pajak" class="col-form-label" style="width: 100px;"><b>DP Amount</b></label>
             <div class="col-md-3 mb-3">                              
-                <input type="text" class="form-control-plaintext" name="pajak" id="pajak" value="" placeholder="0.00" style="font-size: 14px;text-align: right;" readonly>
+                <input type="text" class="form-control-plaintext" name="pajak" id="pajak" value="" placeholder="0.00" style="font-size: 12px;text-align: right;" readonly>
             </div>
             </div>          
            <div class="form-row col">
                 <label for="total" class="col-form-label" style="width: 100px;"><b>Balance</b></label>
             <div class="col-md-3 mb-3">                              
-                <input type="text" class="form-control-plaintext" name="total" id="total" value="" placeholder="0.00" style="font-size: 14px;text-align: right;" readonly>
+                <input type="text" class="form-control-plaintext" name="total" id="total" value="" placeholder="0.00" style="font-size: 12px;text-align: right;" readonly>
             </div>
             </div>
            <div class="form-row col">
@@ -576,6 +588,7 @@ function addListener(elm,index){
         $("input[type=checkbox]:checked").each(function () {
         var noftrdp = document.getElementById('noftrdp').value;        
         var tglftrdp = document.getElementById('tanggal').value;
+        var tgl_bayar = document.getElementById('payment_date').value;
         var keterangan = document.getElementById('memo').value;        
         var nama_supp = $('select[name=nama_supp] option').filter(':selected').val();       
         var curr = $(this).closest('tr').find('td:eq(7)').attr('value');                               
@@ -588,11 +601,11 @@ function addListener(elm,index){
         var dp_value = $(this).closest('tr').find('td:eq(6) input').attr('data-value');
         var balance = 0;
         balance += total - dp_value;
-        if(no_pi != '' && dp_code != ''){        
+        if(no_pi != '' && dp_code != '' && tgl_bayar != '-'){        
         $.ajax({
             type:'POST',
             url:'insertftrdp.php',
-            data: {'noftrdp':noftrdp, 'tglftrdp':tglftrdp, 'keterangan':keterangan, 'no_po':no_po, 'no_pi':no_pi, 'tgl_po':tgl_po, 'nama_supp':nama_supp, 'curr':curr, 'create_user':create_user, 'total':total, 'dp_code':dp_code, 'dp_value':dp_value, 'balance':balance},
+            data: {'noftrdp':noftrdp, 'tglftrdp':tglftrdp, 'tgl_bayar':tgl_bayar, 'keterangan':keterangan, 'no_po':no_po, 'no_pi':no_pi, 'tgl_po':tgl_po, 'nama_supp':nama_supp, 'curr':curr, 'create_user':create_user, 'total':total, 'dp_code':dp_code, 'dp_value':dp_value, 'balance':balance},
             cache: 'false',
             close: function(e){
                 e.preventDefault();
@@ -609,7 +622,10 @@ function addListener(elm,index){
         });
     }
         });                
-        if(document.querySelectorAll("input[name='select[]']:checked").length == 0){
+        if(document.getElementById('payment_date').value == '-'){
+            alert("Please Input Payment Date");
+            document.getElementById('payment_date').focus();
+        }else if(document.querySelectorAll("input[name='select[]']:checked").length == 0){
             alert("Please check the PO number");
         }else if (document.getElementById('txt_pi').value == ''){
         document.getElementById('txt_pi').focus();

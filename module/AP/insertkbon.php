@@ -1,6 +1,8 @@
 <?php
 include '../../conn/conn.php';
 ini_set('date.timezone', 'Asia/Jakarta');
+ini_set('max_execution_time', 0);
+ini_set('memory_limit', '4096M');
 
 $no_kbon = $_POST['no_kbon'];
 $unik_code = $_POST['unik_code'];
@@ -181,9 +183,13 @@ $kata1 = "KONTRABON";
 
 $keter = $kata1 ." ". $nama_supp;
 
-$sqlbppb = mysqli_query($conn1,"select tgl_bppb from bppb_new where no_bppb = '$no_bppb'");
+$sqlbppb = mysqli_query($conn1,"select tgl_bppb,tax,round(sum((qty*price) * tax / 100),2) tax_ro from bppb_new where no_bppb = '$no_bppb' GROUP BY no_bppb");
 $rowbppb = mysqli_fetch_array($sqlbppb);
 $tgl_bppb = isset($rowbppb['tgl_bppb']) ? $rowbppb['tgl_bppb'] : 0;
+$val_tax_ro = isset($rowbppb['tax']) ? $rowbppb['tax'] : 0;
+$tax_ro = isset($rowbppb['tax_ro']) ? $rowbppb['tax_ro'] : 0;
+$idr_tax_ro = $tax_ro * $rate;
+
 
 
 $sqlcoa = mysqli_query($conn1,"SELECT no_coa, nama_coa from mastercoa_v2 where cus_ctg like '%$cus_ctg%' and mattype like '%$mattype%' and matclass like '%$matclass%' and n_code_category like '%$n_code_category%' and inv_type like '%bpb_credit%' Limit 1");
@@ -197,6 +203,22 @@ VALUES
    ('$kode', '$create_date', 'AP - Kontrabon', '$no_coa_deb', '$nama_coa_deb', '-', '-', '$no_bppb', '$tgl_bppb', '-', '-', '$curr', '$rate', '0', '$ttl_ro', '0', '$idr_ttl_ro', 'Draft', '$keter','$create_user', '$create_date', '', '', '', '')";
 
  $executess5 = mysqli_query($conn2,$queryss5);
+
+ if ($val_tax_ro > 0) {
+	
+$queryss6 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
+VALUES 
+   ('$kode', '$create_date', 'AP - Kontrabon', '1.52.07', 'PAJAK DIBAYAR DIMUKA PPN MASUKAN (UNBILLED)', '-', '-', '$no_bppb', '$tgl_bppb', '-', '-', '$curr', '$rate', '$tax_ro', '0', '$idr_tax_ro', '0', 'Draft', '$keter','$create_user', '$create_date', '', '', '', '')";
+
+ $executess6 = mysqli_query($conn2,$queryss6);
+
+ $queryss7 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
+VALUES 
+   ('$kode', '$create_date', 'AP - Kontrabon', '1.52.04', 'PAJAK DIBAYAR DIMUKA PPN MASUKAN', '-', '-', '$no_bppb', '$tgl_bppb', '-', '-', '$curr', '$rate', '0', '$tax_ro', '0', '$idr_tax_ro', 'Draft', '$keter','$create_user', '$create_date', '', '', '', '')";
+
+ $executess7 = mysqli_query($conn2,$queryss7);
+
+}
 
 
 }else{
@@ -223,44 +245,6 @@ $queryac = mysqli_query($conn2,$sqlac);
 }
 	
 
-// echo $no_kbon;
-// echo $tgl_kbon;
-// echo $jurnal;
-// echo $nama_supp;
-// echo $no_faktur;
-// echo $supp_inv;
-// echo $tgl_inv;
-// echo $tgl_tempo;
-// echo $pph;
-// echo $cash;
-// echo $idtax;
-// echo $curr;
-// echo $ceklist;
-// echo $create_date;
-// echo $post_date;
-// echo $update_date;
-// echo $status;
-// echo $status_int;
-// echo $create_user;
-// echo $no_bpb;
-// echo $no_po;
-// echo $tgl_bpb;
-// echo $tgl_po;
-// echo $sum_sub;
-// echo $sum_tax;
-// echo $sum_dp;
-// echo $sum_pph;
-// echo $sum_total;
-// echo $status_invoice;
-// echo $start_date;
-// echo $end_date;
-// echo $status_update;
-// echo $no_ro;
-
-//	echo 'Data Berhasil Di Simpan';
-//}else{
-//    die('Error: ' . mysql_error());	
-//}
 mysqli_close($conn2);
 //$execute = mysql_query($query,$conn2);
 ?>

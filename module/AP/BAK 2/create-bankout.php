@@ -156,11 +156,6 @@
     background-color: rgb(95, 158, 160);" type="submit" id="send" name="send" class="btn btn-primary btn-lg" style="width: 100%;"><span class="fa fa-search"></span>
                 
                 </div> 
-         
-                
-              
- 
-         
                 </div>           
             </form>
     <div class="form-row">
@@ -685,6 +680,7 @@ select '',list_payment_dp.curr as valuta, list_payment_dp.nama_supp as supplier,
                     <thead>
         <tr><th class="text-center">-</th>
             <th class="text-center">COA</th>
+            <th class="text-center">Cost Center</th>
             <th class="text-center">Reff Document</th>
             <th class="text-center">Reff Date</th>
             <th class="text-center">Description</th>
@@ -698,6 +694,10 @@ select '',list_payment_dp.curr as valuta, list_payment_dp.nama_supp as supplier,
             <td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>
             <td style="width: 200px;">
                 <select class="form-control" name="nomor_coa" id="nomor_coa" style="width: 250px"> <option value="-" > - </option> <?php $sql = mysqli_query($conn1," select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $cc) : echo'<option value="'.$cc["id_coa"].'"> '.$cc["coa"].' </option>'; endforeach; ?>
+                </select>
+            </td>
+            <td style="width: 200px;">
+                <select class="form-control" name="nomor_coc" id="nomor_coc" style="width: 250px"> <option value="-" > - </option> <?php $sqlcoc = mysqli_query($conn1," select no_cc as code_combine,cc_name as cost_name from b_master_cc where status = 'Active'"); foreach ($sqlcoc as $coc) : echo'<option value="'.$coc["code_combine"].'"> '.$coc["cost_name"].' </option>'; endforeach; ?>
                 </select>
             </td>
             <td>
@@ -722,8 +722,8 @@ select '',list_payment_dp.curr as valuta, list_payment_dp.nama_supp as supplier,
     <tfoot>
           <tr>
             <td colspan="8" align="center">
-            <button type="button" class="btn btn-primary" onclick="addRow('tbody3')">Add Row</button>
-            <button type="button" class="btn btn-warning" onclick="InsertRow('tbody3')">Interject Row</button>
+            <button type="button" class="btn btn-primary" onclick="addRow2('tbody3')">Add Row</button>
+            <button type="button" class="btn btn-warning" onclick="InsertRow2('tbody3')">Interject Row</button>
             <button type="button" class="btn btn-danger" onclick="hapus()">Delete Row</button>
             </td>
           </tr>
@@ -799,6 +799,7 @@ select '',list_payment_dp.curr as valuta, list_payment_dp.nama_supp as supplier,
   <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
   <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
   <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
+  <script language="JavaScript" src="../css/4.1.1/select2.full.min.js"></script>
 
 <script>
   // Hide submenus
@@ -930,35 +931,65 @@ $(function() {
     
    // JavaScript Document
 function addRow(tableID) {
-    var table = document.getElementById(tableID);
-    var rowCount = table.rows.length;
-    var row = table.insertRow(rowCount);
-    var colCount = table.rows[0].cells.length;
-    for(var i=0; i<colCount; i++) {
-        var newcell = row.insertCell(i);
-        newcell.innerHTML = table.rows[0].cells[i].innerHTML;
-        var child = newcell.children;
-        for(var i2=0; i2<child.length; i2++) {
-            var test = newcell.children[i2].tagName;
-            switch(test) {
-                case "INPUT":
-                    if(newcell.children[i2].type=='checkbox'){
-                        // newcell.children[i2].value = "";
-                        newcell.children[i2].checked[0] = true;
+    var tableID = "tbody2";
+ var table = document.getElementById(tableID);
+ var rowCount = table.rows.length;
+ var row = table.insertRow(rowCount);
 
-                    }else{
-                        // newcell.children[i2].value = "";
-                    }
-                break;
-                case "SELECT":
-                    // newcell.children[i2].value = "";
-                break;
-                default:
-                break;
-            }
-        }
+$(function() {
+    $('.selectpicker').selectpicker();
+});
+$(document).ready(function () {
+    $('.tanggal').datepicker({
+        format: "dd-mm-yyyy",
+        autoclose:true
+    });
+});
+$(function() {
+      //Initialize Select2 Elements
+      var selectcoba = rowCount;
+      $('.rowCount').select2({
+         theme: 'bootstrap4'
+      })
+      //Initialize Select2 Elements
+      $('.select2add').select2({
+        theme: 'bootstrap4'
+      })
+    });
+ $coa = '';
+ var element1 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td style="width: 50px"><select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="220px" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td ><select class="form-control selectpicker" name="cost_ctr" id="cost_ctr" data-live-search="true" data-width="200px" data-size="5"> <option value="-" > - </option><?php $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name as cost_name from b_master_cc where status = 'Active'"); foreach ($sql2 as $cc) : ?> <option value="<?= $cc["code_combine"]; ?>"><?= $cc["cost_name"]; ?> </option><?php endforeach; ?></select></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><select class="form-control select2add" name="currenc" data-live-search="true"><option value="IDR">IDR</option><option value="USD">USD</option></select></td><td><input style="text-align: right;" type="number" min="0" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="input_debit(value)" autocomplete = "off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_credit" name="txt_credit" oninput="input_credit(value)" autocomplete = "off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
+
+
+ row.innerHTML = element1;    
     }
-}
+
+
+function addRow2(tableID) {
+    var tableID = "tbody3";
+ var table = document.getElementById(tableID);
+ var rowCount = table.rows.length;
+ var row = table.insertRow(rowCount);
+
+$(function() {
+    $('.selectpicker').selectpicker();
+});
+$(document).ready(function () {
+    $('.tanggal').datepicker({
+        format: "dd-mm-yyyy",
+        autoclose:true
+    });
+});
+$(document).ready(function () {
+      $('.select2add').select2({
+        theme: 'bootstrap4'
+      })
+    });
+ $coa = '';
+ var element1 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td style="width: 50px"><select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="220px" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td ><select class="form-control selectpicker" name="cost_ctr" id="cost_ctr" data-live-search="true" data-width="200px" data-size="5"> <option value="-" > - </option><?php $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name as cost_name from b_master_cc where status = 'Active'"); foreach ($sql2 as $cc) : ?> <option value="<?= $cc["code_combine"]; ?>"><?= $cc["cost_name"]; ?> </option><?php endforeach; ?></select></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input type="text" style="font-size: 12px;" name="tgl_active" id="tgl_active" class="form-control tanggal" autocomplete="off" placeholder="dd-mm-yyyy"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_cre(value)" autocomplete = "off"></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
+
+
+ row.innerHTML = element1;    
+    }
     
 function deleteRow()
 
@@ -970,7 +1001,7 @@ function deleteRow()
             for(var i=0; i<rowCount; i++)
                 {
                 var row = table.rows[i];
-                var chkbox = row.cells[7].childNodes[0];
+                var chkbox = row.cells[8].childNodes[0];
                 if (null != chkbox && true == chkbox.checked)
                     {
                     if (rowCount <= 1)
@@ -1017,7 +1048,7 @@ function deleteRow()
     }
  }
  
- function InsertRow(tableID)
+function InsertRow(tableID)
 {
     try{
         var table = document.getElementById(tableID);
@@ -1025,34 +1056,60 @@ function deleteRow()
             for(var i=0; i<rowCount; i++)
                 {
                 var row = table.rows[i];
-                var chkbox = row.cells[7].childNodes[0];
+                var chkbox = row.cells[9].childNodes[0];
                 if (null != chkbox && true == chkbox.checked)
                     {
-                    var newRow = table.insertRow(i+1);
-                    var colCount = table.rows[0].cells.length;
-                        for (h=0; h<colCount; h++){
-                            var newCell = newRow.insertCell(h);
-                            newCell.innerHTML = table.rows[0].cells[h].innerHTML;
-                            var child = newCell.children;
-                            for(var i2=0; i2<child.length; i2++) {
-                                var test = newCell.children[i2].tagName;
-                                switch(test) {
-                                    case "INPUT":
-                                        if(newCell.children[i2].type=='checkbox'){
-                                            newCell.children[i2].value = "";
-                                            newCell.children[i2].checked[8] = true;
-                                        }else{
-                                            newCell.children[i2].value = "";
-                                        }
-                                    break;
-                                    case "SELECT":
-                                        newCell.children[i2].value = "";
-                                    break;
-                                    default:
-                                    break;
-                                }
-                            }
-                        }
+$(function() {
+    $('.selectpicker').selectpicker();
+
+});
+
+$(document).ready(function () {
+    $('.tanggal').datepicker({
+        format: "dd-mm-yyyy",
+        autoclose:true
+    });
+});
+        var element2 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td style="width: 50px"><select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="220px" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td ><select class="form-control selectpicker" name="cost_ctr" id="cost_ctr" data-live-search="true" data-width="200px" data-size="5"> <option value="-" > - </option><?php $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name as cost_name from b_master_cc where status = 'Active'"); foreach ($sql2 as $cc) : ?> <option value="<?= $cc["code_combine"]; ?>"><?= $cc["cost_name"]; ?> </option><?php endforeach; ?></select></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><select class="form-control selectpicker" name="currenc" id="currenc" data-live-search="true"><option value="IDR">IDR</option><option value="USD">USD</option></select></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="input_debit(value)" autocomplete = "off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_credit" name="txt_credit" oninput="input_credit(value)" autocomplete = "off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
+        var newRow = table.insertRow(i+1);
+        newRow.innerHTML = element2;
+                    
+                    }
+                    
+                }
+            } catch(e)
+    {
+    alert(e);
+    }
+ }
+
+
+ function InsertRow2(tableID)
+{
+    try{
+        var table = document.getElementById(tableID);
+        var rowCount = table.rows.length;
+            for(var i=0; i<rowCount; i++)
+                {
+                var row = table.rows[i];
+                var chkbox = row.cells[9].childNodes[0];
+                if (null != chkbox && true == chkbox.checked)
+                    {
+$(function() {
+    $('.selectpicker').selectpicker();
+
+});
+
+$(document).ready(function () {
+    $('.tanggal').datepicker({
+        format: "dd-mm-yyyy",
+        autoclose:true
+    });
+});
+        var element2 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td style="width: 50px"><select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="220px" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td ><select class="form-control selectpicker" name="cost_ctr" id="cost_ctr" data-live-search="true" data-width="200px" data-size="5"> <option value="-" > - </option><?php $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name as cost_name from b_master_cc where status = 'Active'"); foreach ($sql2 as $cc) : ?> <option value="<?= $cc["code_combine"]; ?>"><?= $cc["cost_name"]; ?> </option><?php endforeach; ?></select></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input type="text" style="font-size: 12px;" name="tgl_active" id="tgl_active" class="form-control tanggal" autocomplete="off" placeholder="dd-mm-yyyy"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_cre(value)" autocomplete = "off"></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
+        var newRow = table.insertRow(i+1);
+        newRow.innerHTML = element2;
+                    
                     }
                     
                 }
@@ -1077,8 +1134,8 @@ function deleteRow()
     var total_deb = parseFloat(document.getElementById('total_cek_idr_h').value,10) || 0;
             for(var i=0; i<rowCount2; i++){
 
-    var price = parseFloat(document.getElementById("tbody3").rows[i].cells[5].children[0].value,10) || 0;
-    var price2 = parseFloat(document.getElementById("tbody3").rows[i].cells[6].children[0].value,10) || 0;
+    var price = parseFloat(document.getElementById("tbody3").rows[i].cells[6].children[0].value,10) || 0;
+    var price2 = parseFloat(document.getElementById("tbody3").rows[i].cells[7].children[0].value,10) || 0;
 
     if(price == ''){
         tot_price = price2;
@@ -1196,8 +1253,8 @@ function hitungulang2(){
     var totall = 0;
             for (var i = 1; i < (table.rows.length); i++) {
 
-    var price = document.getElementById("tbody3").rows[i].cells[5].children[0].value;
-    var price2 = document.getElementById("tbody3").rows[i].cells[6].children[0];
+    var price = document.getElementById("tbody3").rows[i].cells[6].children[0].value;
+    var price2 = document.getElementById("tbody3").rows[i].cells[7].children[0];
     if (price == '') {
         harga = 0;
         price2.readOnly = false;
@@ -1228,8 +1285,8 @@ function hitungulang2(){
     var totall = 0;
             for (var i = 1; i < (table.rows.length); i++) {
 
-    var price = document.getElementById("tbody3").rows[i].cells[6].children[0].value;
-    var price2 = document.getElementById("tbody3").rows[i].cells[5].children[0];
+    var price = document.getElementById("tbody3").rows[i].cells[7].children[0].value;
+    var price2 = document.getElementById("tbody3").rows[i].cells[6].children[0];
     if (price == '') {
         harga = 0;
         price2.readOnly = false;
@@ -1914,12 +1971,13 @@ function addListener(elm,index){
                 $("input[type=checkbox]:checked").each(function () {
         var no_bankout = document.getElementById('no_doc').value; 
         var bankout_date = document.getElementById('tgl_active').value;
-        var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[name=nomor_coa] option').filter(':selected').val();     
-        var reff_doc = $(this).closest('tr').find('td:eq(2) input').val();
-        var reff_date = $(this).closest('tr').find('td:eq(3) input').val();
-        var deskripsi = $(this).closest('tr').find('td:eq(4) input').val();
-        var debit = $(this).closest('tr').find('td:eq(5) input').val(); 
-        var credit = $(this).closest('tr').find('td:eq(6) input').val(); 
+        var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[name=nomor_coa] option').filter(':selected').val();
+        var no_coc = $(this).closest('tr').find('td:eq(2)').find('select[name=nomor_coc] option').filter(':selected').val();     
+        var reff_doc = $(this).closest('tr').find('td:eq(3) input').val();
+        var reff_date = $(this).closest('tr').find('td:eq(4) input').val();
+        var deskripsi = $(this).closest('tr').find('td:eq(5) input').val();
+        var debit = $(this).closest('tr').find('td:eq(6) input').val(); 
+        var credit = $(this).closest('tr').find('td:eq(7) input').val(); 
         var no_pay = $(this).closest('tr').find('td:eq(1)').attr('value-nopay');
         var pay_date = $(this).closest('tr').find('td:eq(2)').attr('value-tanggal');
         var due_date = $(this).closest('tr').find('td:eq(3)').attr('value-tempo');
@@ -1945,7 +2003,7 @@ function addListener(elm,index){
         $.ajax({
             type:'POST',
             url:'insert_bankout_det.php',
-            data: {'no_bankout':no_bankout, 'no_coa':no_coa, 'reff_doc':reff_doc, 'reff_date':reff_date, 'deskripsi':deskripsi, 'debit':debit, 'credit':credit, 'no_pay':no_pay, 'pay_date':pay_date, 'due_date':due_date, 'dpp':dpp, 'ppn':ppn, 'pph':pph, 'total':total, 'total_idr':total_idr, 'curr':curr, 'kodelp':kodelp, 'rates':rates, 'amount_input':amount_input, 'curr_h':curr_h, 'rate_h':rate_h,'bankout_date':bankout_date,'pesan':pesan},
+            data: {'no_bankout':no_bankout, 'no_coa':no_coa, 'no_coc':no_coc, 'reff_doc':reff_doc, 'reff_date':reff_date, 'deskripsi':deskripsi, 'debit':debit, 'credit':credit, 'no_pay':no_pay, 'pay_date':pay_date, 'due_date':due_date, 'dpp':dpp, 'ppn':ppn, 'pph':pph, 'total':total, 'total_idr':total_idr, 'curr':curr, 'kodelp':kodelp, 'rates':rates, 'amount_input':amount_input, 'curr_h':curr_h, 'rate_h':rate_h,'bankout_date':bankout_date,'pesan':pesan},
             cache: 'false',
             close: function(e){
                 e.preventDefault();

@@ -7,13 +7,12 @@
     <div class="box header">
 <form id="form-data" method="post">
         <div class="form-row">
-            <div class="col-md-3 mb-3">            
+            <div class="col-md-4 mb-3">            
             <label for="noftrcbd"><b>No Dokumen</b></label>
             <?php
-            $sql = mysqli_query($conn2,"select max(no_dok) from bpb_faktur_inv where jenis = 'INV'");
+            $sql = mysqli_query($conn2,"select max(SUBSTR(no_dok,14,5)) no_dok from bpb_faktur_inv where jenis = 'INV'");
             $row = mysqli_fetch_array($sql);
-            $kodeftr = $row['max(no_dok)'];
-            $urutan = (int) substr($kodeftr, 14, 5);
+            $urutan = $row['no_dok'];
             $urutan++;
             $bln = date("m");
             $thn = date("y");
@@ -40,16 +39,41 @@
             } ?>" disabled>
             </div>
 
-            <div class="col-md-7 mb-3">            
+            <div class="col-md-6 mb-3">            
             </div> 
 
-            <div class="col-md-3 mb-3">            
-            <label for="no_inv"><b>Nomor Invoice</b> <i style="color: red;">*</i></label>          
+            <div class="col-md-4 mb-3">            
+            <label for="no_inv"><b>Nomor Invoice</b> <i style="color: red;">*</i></label>
+            <div>
+                <select class="form-control select2bs4" name="namasupp" id="namasupp" data-dropup-auto="false" data-live-search="true">
+                <option value="" disabled selected="true">Select Supplier</option>
+                <?php
+                $namasupp ='';
+                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                $namasupp = isset($_POST['namasupp']) ? $_POST['namasupp']: null;
+                }                 
+                $sql = mysqli_query($conn1,"select distinct(Supplier) from mastersupplier where tipe_sup = 'S' order by Supplier ASC");
+                while ($row = mysqli_fetch_array($sql)) {
+                    $data = $row['Supplier'];
+                    if($row['Supplier'] == $_POST['namasupp']){
+                        $isSelected = ' selected="selected"';
+                    }else{
+                        $isSelected = '';
+                    }
+                    echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
+                }?>
+                </select>
+            </div>
+<br>
+            <div class="input-group">                                                         
+            <select style="width:50px" class="form-control select2bs4" name="fil_noinv" id="fil_noinv" data-dropup-auto="false" data-live-search="true" onchange="ganti_inv()">
+                       
             <input type="text" style="font-size: 14px;" class="form-control" name="no_inv" id="no_inv" 
             value="<?php 
             $no_faktur = isset($_POST['no_faktur']) ? $_POST['no_faktur']: null;
             echo $no_faktur; 
             ?>" required autocomplete = 'off'>
+            </div>
             </div>
             <div class="col-md-2 mb-3">            
             <label for="tanggal_inv"><b>Tanggal Invoice</b> <i style="color: red;">*</i></label>          
@@ -63,10 +87,10 @@
             } ?>">
             </div>
 
-            <div class="col-md-7 mb-3">            
+            <div class="col-md-6 mb-3">            
             </div> 
 
-            <div class="col-md-3 mb-3">            
+            <div class="col-md-4 mb-3">            
             <label for="no_faktur"><b>Nomor Faktur Pajak</b></label>          
             <input type="text" style="font-size: 14px;" class="form-control" name="no_faktur" id="no_faktur" 
             value="<?php 
@@ -86,7 +110,8 @@
             } ?>">
             </div>
 
-            <div class="col-md-7 mb-3">            
+            <div class="col-md-6 mb-3"> 
+                          
             </div>            
                                         
     </div>
@@ -273,7 +298,8 @@
   <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
   <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
   <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
-
+  <script language="JavaScript" src="../css/4.1.1/html5-qrcode.min.js"></script>
+  <script language="JavaScript" src="../css/4.1.1/select2.full.min.js"></script>
 <script>
   // Hide submenus
 $('#body-row .collapse').collapse('hide'); 
@@ -312,6 +338,102 @@ function SidebarCollapse () {
      $("[data-toggle=tooltip]").tooltip();
     
 } );
+</script>
+
+<script>
+    $(function() {
+      //Initialize Select2 Elements
+      $('.select2').select2()
+      //Initialize Select2 Elements
+      $('.select2bs4').select2({
+        theme: 'bootstrap4'
+      })
+    });
+
+  </script>
+
+
+<script type="text/javascript">
+// function ganti_fillinv(){
+//     var nama_supp = $('select[name=namasupp] option').filter(':selected').val();
+//     $.ajax({
+//             type:'POST',
+//             url:'get_invoice_received.php',
+//             data: {'nama_supp':nama_supp},
+//             cache: 'false',
+//             success: function(data){
+//                 $('#fil_noinv').html(data);
+//                 // alert(data);  
+//                 }
+//         }); 
+// }
+
+$('#namasupp').change(function() { 
+        var nama_supp = $(this).val(); 
+        $.ajax({
+            type: 'POST', 
+            url: 'get_invoice_received.php', 
+            data: {'nama_supp':nama_supp},
+            success: function(response) { 
+                $('#fil_noinv').html(response); 
+            }
+        });
+    });
+
+function ganti_inv(){
+    var inv = $('select[name=fil_noinv] option').filter(':selected').val();
+     $('#no_inv').val(inv);
+
+}
+</script>
+
+
+<script type="text/javascript">
+    var html5QrcodeScanner = null;
+
+        // Function List :
+        // -Initialize Scanner-
+        async function initScan() {
+            if (document.getElementById("reader")) {
+                if (html5QrcodeScanner) {
+                    await html5QrcodeScanner.clear();
+                }
+
+                function onScanSuccess(decodedText, decodedResult) {
+                    // handle the scanned code as you like, for example:
+                    console.log(`Code matched = ${decodedText}`, decodedResult);
+
+                    // store to input text
+                    let breakDecodedText = decodedText.split('-');
+
+                    document.getElementById('txt_barcode').value = breakDecodedText[0];
+                    getdataitem(breakDecodedText[0]);
+
+                    // getScannedItem(breakDecodedText[0]);
+
+                    html5QrcodeScanner.clear();
+                }
+
+                function onScanFailure(error) {
+                    // handle scan failure, usually better to ignore and keep scanning.
+                    // for example:
+                    console.warn(`Code scan error = ${error}`);
+                }
+
+                html5QrcodeScanner = new Html5QrcodeScanner(
+                    "reader", {
+                        fps: 10,
+                        qrbox: {
+                            width: 250,
+                            height: 250
+                        }
+                    },
+                    /* verbose= */
+                    false);
+
+                html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+            }
+        }
 </script>
 
 <script type="text/javascript">

@@ -11,6 +11,7 @@ $bank = $_POST['bank'];
 $curr = $_POST['curr'];
 $pesan = $_POST['pesan'];
 $maxid = $_POST['maxid'];
+$cek_sb1 = $_POST['cek_sb1'];
 $status = "Active";
 $create_user = $_POST['create_user'];
 $create_date = date("Y-m-d H:i:s");
@@ -40,9 +41,9 @@ $create_date = date("Y-m-d H:i:s");
 // echo $tgl_active2;
 
 
-$query = "INSERT INTO b_masterbank (id, active_date, doc_number, sob, bank_account, bank_name, curr, deskripsi, status, create_by, create_date, active_by, date_active) 
+$query = "INSERT INTO b_masterbank (id, active_date, doc_number, sob, bank_account, bank_name, curr, deskripsi, status, create_by, create_date, active_by, date_active, jurnal_sb) 
 VALUES 
-	('$maxid', '$tgl_active', '$no_doc', '$sob', '$account', '$bank', '$curr', '$pesan', '$status', '$create_user', '$create_date', '$create_user', '$tgl_active2')";
+	('$maxid', '$tgl_active', '$no_doc', '$sob', '$account', '$bank', '$curr', '$pesan', '$status', '$create_user', '$create_date', '$create_user', '$tgl_active2', '$cek_sb1')";
 
 $execute = mysqli_query($conn2,$query);
 

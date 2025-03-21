@@ -235,7 +235,8 @@
             <th style="text-align: center; vertical-align: middle; display: none;">TOP</th>                                    
             <th style="text-align: center; vertical-align: middle; display: none;">Curr</th>
             <th style="text-align: center; vertical-align: middle; display: none;">Tgl PO</th>    
-            <th style="text-align: center; vertical-align: middle; display: none;">Tgl PO</th>                         
+            <th style="text-align: center; vertical-align: middle; display: none;">Tgl PO</th>
+            <th style="text-align: center; vertical-align: middle;">No Dokumen</th>                        
         </tr>
     </thead>
     
@@ -283,87 +284,87 @@
 //    echo $kondisi;
     if ($filter == 'tgl_bpb') {
         if(empty($nama_supp) and empty($status) and empty($start_date) and empty($end_date)){
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where tgl_bpb = '$date_now' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where tgl_bpb = '$date_now' group by no_bpb, create_date");
     }
     elseif ($nama_supp == 'ALL' and $status == 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new group by no_bpb, create_date");
     }
     elseif ($nama_supp == 'ALL' and $status == 'ALL' and !empty($start_date) and !empty($end_date)) {
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where tgl_bpb between '$start_date' and '$end_date' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where tgl_bpb between '$start_date' and '$end_date' group by no_bpb, create_date");
     }    
     elseif ($nama_supp != 'ALL' and $status == 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where supplier = '$nama_supp' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where supplier = '$nama_supp' group by no_bpb, create_date");
     }
     elseif ($nama_supp != 'ALL' and $status == 'ALL' and !empty($start_date) and !empty($end_date)) {
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where supplier = '$nama_supp' and tgl_bpb between '$start_date' and '$end_date' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where supplier = '$nama_supp' and tgl_bpb between '$start_date' and '$end_date' group by no_bpb, create_date");
     }    
     elseif ($nama_supp == 'ALL' and $status != 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where status = '$status' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where status = '$status' group by no_bpb, create_date");
     }
     elseif ($nama_supp == 'ALL' and $status != 'ALL' and !empty($start_date) and !empty($end_date)) {
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where status = '$status' and tgl_bpb between '$start_date' and '$end_date' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where status = '$status' and tgl_bpb between '$start_date' and '$end_date' group by no_bpb, create_date");
     }
     elseif ($nama_supp != 'ALL' and $status != 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where supplier = '$nama_supp' and status = '$status' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where supplier = '$nama_supp' and status = '$status' group by no_bpb, create_date");
     }        
     else{
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where supplier = '$nama_supp' and status = '$status' and tgl_bpb between '$start_date' and '$end_date' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where supplier = '$nama_supp' and status = '$status' and tgl_bpb between '$start_date' and '$end_date' group by no_bpb, create_date");
     } 
     }elseif ($filter == 'create_date') {
       if(empty($nama_supp) and empty($status) and empty($start_date) and empty($end_date)){
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where tgl_bpb = '$date_now' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where tgl_bpb = '$date_now' group by no_bpb, create_date");
     }
     elseif ($nama_supp == 'ALL' and $status == 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new group by no_bpb, create_date");
     }
     elseif ($nama_supp == 'ALL' and $status == 'ALL' and !empty($start_date) and !empty($end_date)) {
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where create_date between '$start_date' and '$end_date' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where create_date between '$start_date' and '$end_date' group by no_bpb, create_date");
     }    
     elseif ($nama_supp != 'ALL' and $status == 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where supplier = '$nama_supp' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where supplier = '$nama_supp' group by no_bpb, create_date");
     }
     elseif ($nama_supp != 'ALL' and $status == 'ALL' and !empty($start_date) and !empty($end_date)) {
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where supplier = '$nama_supp' and create_date between '$start_date' and '$end_date' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where supplier = '$nama_supp' and create_date between '$start_date' and '$end_date' group by no_bpb, create_date");
     }    
     elseif ($nama_supp == 'ALL' and $status != 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where status = '$status' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where status = '$status' group by no_bpb, create_date");
     }
     elseif ($nama_supp == 'ALL' and $status != 'ALL' and !empty($start_date) and !empty($end_date)) {
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where status = '$status' and create_date between '$start_date' and '$end_date' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where status = '$status' and create_date between '$start_date' and '$end_date' group by no_bpb, create_date");
     }
     elseif ($nama_supp != 'ALL' and $status != 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where supplier = '$nama_supp' and status = '$status' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where supplier = '$nama_supp' and status = '$status' group by no_bpb, create_date");
     }        
     else{
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where supplier = '$nama_supp' and status = '$status' and create_date between '$start_date' and '$end_date' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where supplier = '$nama_supp' and status = '$status' and create_date between '$start_date' and '$end_date' group by no_bpb, create_date");
     }
     }else{
         if(empty($nama_supp) and empty($status) and empty($start_date) and empty($end_date)){
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where tgl_bpb = '$date_now' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where tgl_bpb = '$date_now' group by no_bpb, create_date");
     }
     elseif ($nama_supp == 'ALL' and $status == 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new group by no_bpb, create_date");
     }
     elseif ($nama_supp == 'ALL' and $status == 'ALL' and !empty($start_date) and !empty($end_date)) {
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where confirm_date between '$start_date' and '$end_date' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where confirm_date between '$start_date' and '$end_date' group by no_bpb, create_date");
     }    
     elseif ($nama_supp != 'ALL' and $status == 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where supplier = '$nama_supp' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where supplier = '$nama_supp' group by no_bpb, create_date");
     }
     elseif ($nama_supp != 'ALL' and $status == 'ALL' and !empty($start_date) and !empty($end_date)) {
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where supplier = '$nama_supp' and confirm_date between '$start_date' and '$end_date' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where supplier = '$nama_supp' and confirm_date between '$start_date' and '$end_date' group by no_bpb, create_date");
     }    
     elseif ($nama_supp == 'ALL' and $status != 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where status = '$status' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where status = '$status' group by no_bpb, create_date");
     }
     elseif ($nama_supp == 'ALL' and $status != 'ALL' and !empty($start_date) and !empty($end_date)) {
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where status = '$status' and confirm_date between '$start_date' and '$end_date' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where status = '$status' and confirm_date between '$start_date' and '$end_date' group by no_bpb, create_date");
     }
     elseif ($nama_supp != 'ALL' and $status != 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where supplier = '$nama_supp' and status = '$status' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where supplier = '$nama_supp' and status = '$status' group by no_bpb, create_date");
     }        
     else{
-    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total from bpb_new where supplier = '$nama_supp' and status = '$status' and confirm_date between '$start_date' and '$end_date' group by no_bpb, create_date");
+    $sql = mysqli_query($conn2,"select no_bpb, pono, tgl_bpb, supplier, create_date, confirm_date, create_user, confirm1, confirm2, status, top, curr, tgl_po, SUM(qty * price) as total,upt_dok_inv,IF(upt_no_faktur = '',upt_no_faktur2,upt_no_faktur) upt_no_faktur from bpb_new where supplier = '$nama_supp' and status = '$status' and confirm_date between '$start_date' and '$end_date' group by no_bpb, create_date");
     }
     }                
 
@@ -388,7 +389,8 @@
             <td style="display: none;" value="'.$row['curr'].'">'.$row['curr'].'</td>
             <td style="display: none;" value="'.$row['total'].'">'.$row['total'].'</td>
             <td style="display: none;" value="'.$row['top'].'">'.$row['top'].'</td>
-            <td style="display: none;" value="'.$row['tgl_po'].'">'.date("d-M-Y",strtotime($row['tgl_po'])).'</td>';
+            <td style="display: none;" value="'.$row['tgl_po'].'">'.date("d-M-Y",strtotime($row['tgl_po'])).'</td>
+            <td value="'.$row['upt_dok_inv'].'">'.$row['upt_dok_inv'].'</td>';
 
 
             echo '<td style="display: none;" width="100px;">';

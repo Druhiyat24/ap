@@ -124,7 +124,7 @@
                 left JOIN po_header_draft on po_header_draft.id = po_header.id_draft
                 INNER JOIN mastersupplier on mastersupplier.Id_Supplier = bpb.id_supplier 
                 inner join masterpterms on masterpterms.id = po_header.id_terms 
-                where bpb.confirm='Y' and bpb.cancel='N' and bpb.bpbdate between '$start_date' and '$end_date' and po_header_draft.tipe_com is null || bpb.confirm='Y' and bpb.cancel='N' and bpb.bpbdate between '$start_date' and '$end_date' and po_header_draft.tipe_com = 'REGULAR' || bpb.confirm='Y' and bpb.cancel='N' and bpb.bpbdate between '$start_date' and '$end_date' and po_header_draft.tipe_com = 'BUYER' group by bpb.bpbno_int",$conn1);                
+                where bpb.confirm='Y' and bpb.cancel='N' and bpb.bpbdate between '$start_date' and '$end_date' and po_header_draft.tipe_com is null || bpb.confirm='Y' and bpb.cancel='N' and bpb.bpbdate between '$start_date' and '$end_date' and po_header_draft.tipe_com IN ('REGULAR','') || bpb.confirm='Y' and bpb.cancel='N' and bpb.bpbdate between '$start_date' and '$end_date' and po_header_draft.tipe_com = 'BUYER' group by bpb.bpbno_int",$conn1);                
             }else {
             $sql = mysql_query("select bpb.id ,bpb.bpbno_int, bpb.pono, bpb.bpbdate, mastersupplier.Supplier, po_header.jml_pterms, masterpterms.kode_pterms, bpb.curr, bpb.confirm_by, po_header.podate, po_header_draft.tipe_com
                 from bpb 
@@ -132,7 +132,7 @@
                 left JOIN po_header_draft on po_header_draft.id = po_header.id_draft
                 INNER JOIN mastersupplier on mastersupplier.Id_Supplier = bpb.id_supplier 
                 inner join masterpterms on masterpterms.id = po_header.id_terms 
-                where bpb.confirm='Y' and bpb.cancel='N' and Supplier='$nama_supp' and bpb.bpbdate between '$start_date' and '$end_date' and po_header_draft.tipe_com is null || bpb.confirm='Y' and bpb.cancel='N' and Supplier='$nama_supp' and bpb.bpbdate between '$start_date' and '$end_date' and po_header_draft.tipe_com = 'REGULAR' || bpb.confirm='Y' and bpb.cancel='N' and Supplier='$nama_supp' and bpb.bpbdate between '$start_date' and '$end_date' and po_header_draft.tipe_com = 'BUYER' group by bpb.bpbno_int",$conn1);
+                where bpb.confirm='Y' and bpb.cancel='N' and Supplier='$nama_supp' and bpb.bpbdate between '$start_date' and '$end_date' and po_header_draft.tipe_com is null || bpb.confirm='Y' and bpb.cancel='N' and Supplier='$nama_supp' and bpb.bpbdate between '$start_date' and '$end_date' and po_header_draft.tipe_com IN ('REGULAR','') || bpb.confirm='Y' and bpb.cancel='N' and Supplier='$nama_supp' and bpb.bpbdate between '$start_date' and '$end_date' and po_header_draft.tipe_com = 'BUYER' group by bpb.bpbno_int",$conn1);
             }
                             
             if (!empty($nama_supp && $start_date && $end_date)) {                                              

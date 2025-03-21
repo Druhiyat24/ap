@@ -2,15 +2,15 @@
 
     <!-- MAIN -->
     <div class="col p-4">
-        <h2 class="text-center">FORM TRANSFER REQUEST (CBD)</h2>
+        <h3 class="text-center">FORM TRANSFER REQUEST (CBD)</h3>
 <div class="box">
     <div class="box header">
 
 
         <form id="form-data" action="ftrcbd.php" method="post">        
         <div class="form-row">
-            <div class="col-md-12">
-            <label for="nama_supp"><b>Supplier</b></label>            
+            <div class="col-md-3">
+                <label for="nama_supp"><b>Supplier</b></label>            
               <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true">
                 <option value="ALL" selected="true">ALL</option>                                                
                 <?php
@@ -29,9 +29,9 @@
                     echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
                 }?>
                 </select>
-                </div>
-
-            <div class="col-md-5">
+                
+            </div>
+            <div class="col-md-3">
             <label for="status"><b>Status</b></label>            
               <select class="form-control selectpicker" name="status" id="status" data-dropup-auto="false" data-live-search="true">
                 <option value="ALL" <?php
@@ -88,9 +88,9 @@
                 >Cancel</option>                                                                                                             
                 </select>
                 </div>
-        <div class="form-row">
-            <div class="col-md-6"> 
-            <label for="start_date"><b>From</b></label>
+
+                <div class="col-md-2">
+              <label for="start_date"><b>From</b></label>
             <input type="text" class="form-control tanggal" id="start_date" name="start_date" 
             value="<?php
             $start_date ='';
@@ -103,11 +103,11 @@
             else{
                echo '';
             } ?>" 
-            placeholder="Start Date" autocomplete='off'>
+            placeholder="Start Date" autocomplete='off' style="height: 33px;font-size:13px;">   
             </div>
 
-            <div class="col-md-6 mb-1">
-            <label for="end_date"><b>To</b></label>        
+            <div class="col-md-2">
+             <label for="end_date"><b>To</b></label>        
             <input type="text" class="form-control tanggal" id="end_date" name="end_date" 
             value="<?php
             $end_date ='';
@@ -120,9 +120,8 @@
             else{
                echo date("d-m-Y");
             } ?>" 
-            placeholder="Tanggal Akhir">
+            placeholder="Tanggal Akhir" style="height: 33px;font-size:13px;"> 
             </div>
-        </div>
 
             <div class="input-group-append col">                                   
             <button type="submit" id="submit" value=" Search " style="margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
@@ -145,6 +144,7 @@
     background-color:rgb(250, 69, 1)"><i class="fa fa-repeat" aria-hidden="true"></i> Reset </button>
             </div>                                                            
     </div>
+    <br>
 </div>
 </form>        
 <?php
@@ -163,7 +163,7 @@
         <div class="row">       
             <div class="col-md-12">
 
-            
+  <div class="table-responsive">          
 <table id="datatable" class="table table-striped table-bordered" role="grid" cellspacing="0" width="100%">
     <thead>
         <tr class="thead-dark">
@@ -272,6 +272,7 @@
 }?>
 </tbody>                    
 </table>
+</div>
    
     </div>
     </div>

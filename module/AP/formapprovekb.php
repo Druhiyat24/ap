@@ -52,7 +52,7 @@
             <div class="col-md-12">
                 <div class="col-md-12">
                 <div class="container-1">
-                <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Search no list payment..">
+                <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Search no kontrabon..">
                 </div>
                 <div class="card-body table-responsive p-0" style="height: 400px;">
             <table id="mytable" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">

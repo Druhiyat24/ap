@@ -127,13 +127,15 @@
             <div class="col-md-12">
 
             
-<table id="datatable" class="table table-striped table-bordered" role="grid" cellspacing="0" width="100%">
+<table id="datatable" class="table table-striped table-bordered display nowrap" role="grid" cellspacing="0" width="100%">
     <thead>
         <tr class="thead-dark">
             <th style="text-align: center;vertical-align: middle;">No Journal</th>
             <th style="text-align: center;vertical-align: middle;">Date</th>
             <th style="text-align: center;vertical-align: middle;">Type</th>
             <th style="text-align: center;vertical-align: middle;">Coa</th>
+            <th style="text-align: center;vertical-align: middle;">Profit Center</th>
+            <th style="text-align: center;vertical-align: middle;">No Cost Center</th>
             <th style="text-align: center;vertical-align: middle;">Cost Center</th>
             <th style="text-align: center;vertical-align: middle;">Reff</th>
             <th style="text-align: center;vertical-align: middle;">Reff Date</th>
@@ -161,18 +163,18 @@
     $end_date = date("Y-m-d",strtotime($_POST['end_date']));               
     }
     if(empty($start_date) and empty($end_date)){
-     $sql = mysqli_query($conn2,"select * from (select id,no_journal, tgl_journal, type_journal, no_coa, nama_coa, CONCAT(no_coa,' ',nama_coa) coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date from tbl_list_journal where no_journal like '%GM/NAG%' and status = 'Post'
+     $sql = mysqli_query($conn2,"select * from (select * from (select id,no_journal, tgl_journal, type_journal, no_coa, nama_coa, CONCAT(no_coa,' ',nama_coa) coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date from tbl_list_journal where tgl_journal = '$date_now' and no_journal like '%GM/NAG%' and status = 'Post'
 union
-select id,no_journal, tgl_journal, type_journal, no_coa, nama_coa, CONCAT(no_coa,' ',nama_coa) coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date from tbl_list_journal where no_journal not like '%GM/NAG%' and no_journal not like '%KKK%'
+select id,no_journal, tgl_journal, type_journal, no_coa, nama_coa, CONCAT(no_coa,' ',nama_coa) coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date from tbl_list_journal where tgl_journal = '$date_now' and no_journal not like '%GM/NAG%' and no_journal not like '%KKK%'
 union
-select DISTINCT '' id,no_journal, tgl_journal, type_journal, no_coa, nama_coa, CONCAT(no_coa,' ',nama_coa) coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date from tbl_list_journal where no_journal like '%KKK%') a where tgl_journal = '$date_now'");
+select DISTINCT '' id,no_journal, tgl_journal, type_journal, no_coa, nama_coa, CONCAT(no_coa,' ',nama_coa) coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date from tbl_list_journal where tgl_journal = '$date_now' and no_journal like '%KKK%') a) a left join (select no_cc, profit_center from b_master_cc where status = 'Active') b on b.no_cc = a.no_costcenter");
     }
     else{
-    $sql = mysqli_query($conn2,"select * from (select id,no_journal, tgl_journal, type_journal, no_coa, nama_coa, CONCAT(no_coa,' ',nama_coa) coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date from tbl_list_journal where no_journal like '%GM/NAG%' and status = 'Post'
+    $sql = mysqli_query($conn2,"select * from (select * from (select id,no_journal, tgl_journal, type_journal, no_coa, nama_coa, CONCAT(no_coa,' ',nama_coa) coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date from tbl_list_journal where tgl_journal between '$start_date' and '$end_date' and no_journal like '%GM/NAG%' and status = 'Post'
 union
-select id,no_journal, tgl_journal, type_journal, no_coa, nama_coa, CONCAT(no_coa,' ',nama_coa) coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date from tbl_list_journal where no_journal not like '%GM/NAG%' and no_journal not like '%KKK%'
+select id,no_journal, tgl_journal, type_journal, no_coa, nama_coa, CONCAT(no_coa,' ',nama_coa) coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date from tbl_list_journal where tgl_journal between '$start_date' and '$end_date' and no_journal not like '%GM/NAG%' and no_journal not like '%KKK%'
 union
-select DISTINCT '' id,no_journal, tgl_journal, type_journal, no_coa, nama_coa, CONCAT(no_coa,' ',nama_coa) coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date from tbl_list_journal where no_journal like '%KKK%') a where tgl_journal between '$start_date' and '$end_date'");
+select DISTINCT '' id,no_journal, tgl_journal, type_journal, no_coa, nama_coa, CONCAT(no_coa,' ',nama_coa) coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date from tbl_list_journal where tgl_journal between '$start_date' and '$end_date' and no_journal like '%KKK%') a) a left join (select no_cc, profit_center from b_master_cc where status = 'Active') b on b.no_cc = a.no_costcenter");
 }
 
 
@@ -195,7 +197,7 @@ SET tbl_list_journal.create_date = tbl_log.tanggal_input,
 WHERE  tbl_list_journal.create_by = '' and tbl_log.activity = 'Create invoice Manual'");
 
 
-    $sqlinsert1 = mysqli_query($conn2," insert into tbl_list_journal (SELECT '' id, no_journal,tgl_journal, 'AP - Kontrabon' type_journal, '8.52.02' coa, 'LABA / (RUGI) SELISIH KURS BELUM TEREALISASI' nama_coa, '-' no_cc, '-' cc_name , '-' reff_doc, '' reff_date, '-' buyer, '-' no_ws, 'IDR' curr, '1' rate, IF(amt_balance <= 0,ABS(amt_balance),0) debit ,IF(amt_balance > 0,amt_balance,0) credit, IF(amt_balance <= 0,ABS(amt_balance),0) debit_idr ,IF(amt_balance > 0,amt_balance,0) credit_idr, status, CONCAT('SELISIH KURS KONTRABON ',nama_supp) keterangan,create_user,create_date, confirm_user, confirm_date, '' cancel_by, '' cancel_date FROM (select a.no_journal,a.tgl_journal,a.curr,sum(a.debit) debit,sum(a.credit) credit,IF(sum(a.debit) = sum(a.credit),'B','NB') balance,sum(ROUND(a.debit * a.rate,4)) debit_idr,sum(ROUND(a.credit * a.rate,4)) credit_idr,IF(sum(ROUND(a.debit * a.rate,4)) = sum(ROUND(a.credit * a.rate,4)),'B','NB') balance_idr,(sum(ROUND(a.debit * a.rate,4)) - sum(ROUND(a.credit * a.rate,4))) amt_balance,b.nama_supp,b.create_user,b.create_date,b.status,confirm_user,confirm_date from tbl_list_journal a inner join kontrabon_h b on b.no_kbon = a.no_journal where type_journal = 'AP - Kontrabon' group by no_journal) a where a.balance_idr = 'NB' and a.tgl_journal >= '2023-01-01' and curr = 'USD')");
+    $sqlinsert1 = mysqli_query($conn2," insert into tbl_list_journal (SELECT '' id, no_journal,tgl_journal, 'AP - Kontrabon' type_journal, '8.52.02' coa, 'LABA / (RUGI) SELISIH KURS BELUM TEREALISASI' nama_coa, 'DEP06SUB001' no_cc, 'FINANCE, ACCOUNTING & TAX' cc_name , '-' reff_doc, '' reff_date, '-' buyer, '-' no_ws, 'IDR' curr, '1' rate, IF(amt_balance <= 0,ABS(amt_balance),0) debit ,IF(amt_balance > 0,amt_balance,0) credit, IF(amt_balance <= 0,ABS(amt_balance),0) debit_idr ,IF(amt_balance > 0,amt_balance,0) credit_idr, status, CONCAT('SELISIH KURS KONTRABON ',nama_supp) keterangan,create_user,create_date, confirm_user, confirm_date, '' cancel_by, '' cancel_date,'','','' FROM (select a.no_journal,a.tgl_journal,a.curr,sum(a.debit) debit,sum(a.credit) credit,IF(sum(a.debit) = sum(a.credit),'B','NB') balance,sum(ROUND(a.debit * a.rate,4)) debit_idr,sum(ROUND(a.credit * a.rate,4)) credit_idr,IF(sum(ROUND(a.debit * a.rate,4)) = sum(ROUND(a.credit * a.rate,4)),'B','NB') balance_idr,(sum(ROUND(a.debit * a.rate,4)) - sum(ROUND(a.credit * a.rate,4))) amt_balance,b.nama_supp,b.create_user,b.create_date,b.status,confirm_user,confirm_date from tbl_list_journal a inner join kontrabon_h b on b.no_kbon = a.no_journal where type_journal = 'AP - Kontrabon' group by no_journal) a where a.balance_idr = 'NB' and a.tgl_journal >= '2024-01-01' and curr = 'USD')");
 
     while($row = mysqli_fetch_array($sql)){
 
@@ -212,20 +214,22 @@ WHERE  tbl_list_journal.create_by = '' and tbl_log.activity = 'Create invoice Ma
                     echo '';
                  }else{       
         echo '<tr style="font-size:12px;text-align:center;">
-            <td style="width: 150px;" value = "'.$row['no_journal'].'">'.$row['no_journal'].'</td>
-            <td style="width: 100px;" value = "'.$row['tgl_journal'].'">'.date("d-M-Y",strtotime($row['tgl_journal'])).'</td>
-            <td style="width: 150px;" value = "'.$row['type_journal'].'">'.$row['type_journal'].'</td>
-            <td style="width: 150px;" value = "'.$row['coa'].'">'.$row['coa'].'</td>
-            <td style="width: 150px;" value = "'.$row['nama_costcenter'].'">'.$row['nama_costcenter'].'</td>
-            <td style="width: 150px;" value = "'.$row['reff_doc'].'">'.$row['reff_doc'].'</td>
-            <td style="width: 100px;" value = "'.$Reffdate.'">'.$Reffdate.'</td>
-            <td style="width: 150px;" value = "'.$row['buyer'].'">'.$row['buyer'].'</td>
-            <td style="width: 150px;" value = "'.$row['no_ws'].'">'.$row['no_ws'].'</td>
-            <td style="width: 150px;" value = "'.$row['curr'].'">'.$row['curr'].'</td>
-            <td style="width:50px; text-align : center;" value="'.$row['debit'].'">'.number_format($row['debit'],2).'</td>
-            <td style="width:50px; text-align : center;" value="'.$row['credit'].'">'.number_format($row['credit'],2).'</td>
-            <td style="display: none;" value = "'.$row['status'].'">'.$row['status'].'</td>
-            <td style="width: 150px;" value = "'.$row['keterangan'].'">'.$row['keterangan'].'</td>';
+            <td style="width: 150px;text-align: left" value = "'.$row['no_journal'].'">'.$row['no_journal'].'</td>
+            <td style="width: 100px;text-align: left" value = "'.$row['tgl_journal'].'">'.date("d-M-Y",strtotime($row['tgl_journal'])).'</td>
+            <td style="width: 150px;text-align: left" value = "'.$row['type_journal'].'">'.$row['type_journal'].'</td>
+            <td style="width: 150px;text-align: left" value = "'.$row['coa'].'">'.$row['coa'].'</td>
+            <td style="width: 150px;text-align: left" value = "'.$row['profit_center'].'">'.$row['profit_center'].'</td>
+            <td style="width: 150px;text-align: left" value = "'.$row['no_cc'].'">'.$row['no_cc'].'</td>
+            <td style="width: 150px;text-align: left" value = "'.$row['nama_costcenter'].'">'.$row['nama_costcenter'].'</td>
+            <td style="width: 150px;text-align: left" value = "'.$row['reff_doc'].'">'.$row['reff_doc'].'</td>
+            <td style="width: 100px;text-align: left" value = "'.$Reffdate.'">'.$Reffdate.'</td>
+            <td style="width: 150px;text-align: left" value = "'.$row['buyer'].'">'.$row['buyer'].'</td>
+            <td style="width: 150px;text-align: left" value = "'.$row['no_ws'].'">'.$row['no_ws'].'</td>
+            <td style="width: 150px;text-align: left" value = "'.$row['curr'].'">'.$row['curr'].'</td>
+            <td style="width:50px; text-align : right;" value="'.$row['debit'].'">'.number_format($row['debit'],2).'</td>
+            <td style="width:50px; text-align : right;" value="'.$row['credit'].'">'.number_format($row['credit'],2).'</td>
+            <td style="display: none;text-align: left" value = "'.$row['status'].'">'.$row['status'].'</td>
+            <td style="width: 150px;text-align: left" value = "'.$row['keterangan'].'">'.$row['keterangan'].'</td>';
             echo '</tr>';
         }
 }?>
@@ -330,7 +334,13 @@ function SidebarCollapse () {
 </script>
 <script>
     $(document).ready(function() {
-    $('#datatable').dataTable();
+    $('#datatable').dataTable({
+    scrollX: true, // Aktifkan scroll horizontal
+    searching: true, // Aktifkan fitur pencarian
+    paging: true, // Aktifkan pagination
+    info: true, // Tampilkan informasi jumlah data
+    lengthChange: true // Aktifkan pengubahan jumlah data per halaman
+});
     
      $("[data-toggle=tooltip]").tooltip();
     

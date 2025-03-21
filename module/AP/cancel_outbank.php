@@ -23,7 +23,7 @@ $query5 = mysqli_query($conn2,$sql5);
 
 $sql6 = "update tbl_pv_h INNER JOIN b_bankout_det ON b_bankout_det.no_reff = tbl_pv_h.no_pv
 SET tbl_pv_h.outstanding = tbl_pv_h.total
-where b_bankout_det.no_bankout = '$no_bi'' ";
+where b_bankout_det.no_bankout = '$no_bi' ";
 $query6 = mysqli_query($conn2,$sql6);
 
 

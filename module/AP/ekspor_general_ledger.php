@@ -63,8 +63,19 @@
   
         $sql = mysqli_query($conn2,"SELECT '',q1.no_journal,q1.tgl_journal,q1.keterangan,q1.credit_idr,q1.debit_idr, (@runtot :=@runtot + q1.debit_idr - q1.credit_idr) AS saldo_akhir
 FROM
-   (select no_journal,tgl_journal,keterangan,ROUND(credit * rate,2) credit_idr,ROUND(debit * rate,2) debit_idr from tbl_list_journal where no_coa = '$coa_number' and tgl_journal BETWEEN '$start_date' and '$end_date' and status != 'Cancel' order by tgl_journal,id ASC) AS q1 JOIN
-     (SELECT @runtot:= $saldoawal) runtot");
+   (select no_journal,tgl_journal,keterangan,ROUND(credit * rate,2) credit_idr,ROUND(debit * rate,2) debit_idr from tbl_list_journal where no_coa = '$coa_number' and tgl_journal BETWEEN '$start_date' and '$end_date' and status != 'Cancel' and debit != 0 OR no_coa = '$coa_number' and tgl_journal BETWEEN '$start_date' and '$end_date' and status != 'Cancel' and credit != 0 order by tgl_journal,id ASC) AS q1 JOIN
+     (SELECT @runtot:= $saldoawal) runtot ORDER BY tgl_journal ASC");
+
+
+//         $sql = mysqli_query($conn2,"SELECT '',q1.no_journal,q1.tgl_journal,q1.keterangan,q1.credit_idr,q1.debit_idr, (@runtot :=@runtot + q1.debit_idr - q1.credit_idr) AS saldo_akhir
+// FROM
+//    (select no_journal,tgl_journal,keterangan,IF(no_journal like '%MEMO/NAG%' and keterangan like '%DISCOUNT%','0',ROUND(credit * rate,2)) credit_idr,IF(no_journal like '%MEMO/NAG%' and keterangan like '%DISCOUNT%',ROUND(credit * rate * -1,2),ROUND(debit * rate,2)) debit_idr from tbl_list_journal where no_coa = '$coa_number' and tgl_journal BETWEEN '$start_date' and '$end_date' and status != 'Cancel' and debit != 0 OR no_coa = '$coa_number' and tgl_journal BETWEEN '$start_date' and '$end_date' and status != 'Cancel' and credit != 0 order by tgl_journal,id ASC) AS q1 JOIN
+//      (SELECT @runtot:= $saldoawal) runtot ORDER BY tgl_journal ASC");
+
+//         $sql = mysqli_query($conn2,"SELECT '',q1.no_journal,q1.tgl_journal,q1.keterangan,q1.credit_idr,q1.debit_idr, (@runtot :=@runtot + q1.debit_idr - q1.credit_idr) AS saldo_akhir
+// FROM
+//    (select no_journal,tgl_journal,keterangan,ROUND(credit * rate,2) credit_idr,ROUND(debit * rate,2) debit_idr from tbl_list_journal where no_coa = '$coa_number' and tgl_journal BETWEEN '$start_date' and '$end_date' and status != 'Cancel' order by tgl_journal,id ASC) AS q1 JOIN
+//      (SELECT @runtot:= $saldoawal) runtot");
 
 
         echo ' <tr style="font-size:12px;text-align:center;">

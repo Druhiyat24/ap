@@ -2,7 +2,7 @@
 
     <!-- MAIN -->
     <div class="col p-4">
-        <h2 class="text-center">FORM TRANSFER REQUEST (CBD)</h2>
+        <h3 class="text-center">FORM TRANSFER REQUEST (CBD)</h3>
 <div class="box">
     <div class="box header">
 <form id="form-data" method="post">
@@ -23,7 +23,7 @@
             echo'<input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="noftrcbd" name="noftrcbd" value="'.$kodeftr.'">'
             ?>
             </div>
-            <div class="col-md-3 mb-3">            
+            <div class="col-md-2 mb-3">            
             <label for="tanggal"><b>FTR CBD Date <i style="color: red;">*</i></b></label>          
             <input type="text" style="font-size: 14px;" name="tanggal" id="tanggal" class="form-control tanggal" 
             value="<?php             
@@ -32,6 +32,18 @@
             }
             else{
                 echo date("d-m-Y");
+            } ?>">
+            </div>
+
+            <div class="col-md-2 mb-3">            
+            <label for="payment_date"><b>Payment Date<i style="color: red;">*</i></b></label>          
+            <input type="text" style="font-size: 13px;" name="payment_date" id="payment_date" class="form-control tanggal" 
+            value="<?php             
+            if(!empty($_POST['payment_date'])) {
+                echo $_POST['payment_date'];
+            }
+            else{
+                echo '-';
             } ?>">
             </div>
 
@@ -198,13 +210,14 @@
             $pono = isset($rows['pono']) ? $rows['pono'] : null;
 
 
-            $sql = mysqli_query($conn1,"select po_header.pono as no_po, po_header.podate as podate, mastersupplier.Supplier as supplier, SUM(po_item.qty * po_item.price) as sub, SUM((po_item.qty * po_item.price) * (po_header.tax / 100)) as tax, SUM((po_item.qty * po_item.price) + ((po_item.qty * po_item.price) * (po_header.tax / 100))) as total, po_item.curr as matauang, po_header.app as app, po_item.cancel as cancel, masterpterms.kode_pterms, po_header_draft.tipe_com
+            $sql = mysqli_query($conn1,"select po_header.pono as no_po, po_header.podate as podate, mastersupplier.Supplier as supplier, (SUM(po_item.qty * po_item.price) + coalesce(ad.total,0)) as sub, ((SUM(po_item.qty * po_item.price) + coalesce(ad.total,0)) * (po_header.tax / 100)) as tax, (SUM(po_item.qty * po_item.price) + coalesce(ad.total,0)) + ((SUM(po_item.qty * po_item.price) + coalesce(ad.total,0)) * (po_header.tax / 100)) as total, po_item.curr as matauang, po_header.app as app, po_item.cancel as cancel, masterpterms.kode_pterms, po_header_draft.tipe_com
 from po_header 
 inner join po_item on po_item.id_po = po_header.id
 left join po_header_draft on po_header_draft.id = po_header.id_draft
+left join (select id_po_draft, sum(IF(kategori = 'Plus',total,(total * -1))) total from po_add_biaya a INNER JOIN po_master_pilihan b on b.id = a.id_kategori GROUP BY id_po_draft) ad on ad.id_po_draft = po_header.id_draft
 inner join mastersupplier on mastersupplier.Id_Supplier = po_header.id_supplier
 inner join masterpterms on masterpterms.id = po_header.id_terms
-where po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and supplier = '$nama_supp' and masterpterms.kode_pterms = 'CBD' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com = 'REGULAR' || po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and supplier = '$nama_supp' and masterpterms.kode_pterms = 'CBD' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com IS NULL || po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and supplier = '$nama_supp' and masterpterms.kode_pterms = 'CBD' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com = 'BUYER' group by no_po");
+where po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and supplier = '$nama_supp' and masterpterms.kode_pterms = 'CBD' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com IN ('','REGULAR') || po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and supplier = '$nama_supp' and masterpterms.kode_pterms = 'CBD' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com IS NULL || po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and supplier = '$nama_supp' and masterpterms.kode_pterms = 'CBD' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com = 'BUYER' group by no_po");
 
 
 
@@ -243,7 +256,7 @@ where po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_d
             </table>                    
 <div class="box footer">   
         <form id="form-simpan">
-            <div class="form-row col">
+            <div class="form-row col mt-2">
                 <label for="subtotal" class="col-form-label" style="width: 100px;"><b>Subtotal</b></label>
             <div class="col-md-3 mb-3">                              
                 <input type="text" class="form-control-plaintext" name="subtotal" id="subtotal" value="" placeholder="0.00" style="font-size: 14px;text-align:right;" readonly>
@@ -453,6 +466,7 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
         $("input[type=checkbox]:checked").each(function () {
         var noftrcbd = document.getElementById('noftrcbd').value;        
         var tglftrcbd = document.getElementById('tanggal').value;
+        var tgl_bayar = document.getElementById('payment_date').value;
         var keterangan = document.getElementById('memo').value;        
         var nama_supp = $('select[name=nama_supp] option').filter(':selected').val();       
         var curr = $(this).closest('tr').find('td:eq(7)').attr('value');                               
@@ -469,11 +483,11 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
         sum_sub += sub;
         sum_tax += tax;       
         sum_total += total;
-        if(no_pi != ''){
+        if(no_pi != ''  && tgl_bayar != '-'){
         $.ajax({
             type:'POST',
             url:'insertftrcbd.php',
-            data: {'noftrcbd':noftrcbd, 'tglftrcbd':tglftrcbd, 'keterangan':keterangan, 'no_po':no_po, 'no_pi':no_pi, 'tgl_po':tgl_po, 'nama_supp':nama_supp, 'curr':curr, 'create_user':create_user, 'sum_sub':sum_sub, 'sum_tax':sum_tax, 'sum_total':sum_total},
+            data: {'noftrcbd':noftrcbd, 'tglftrcbd':tglftrcbd, 'tgl_bayar':tgl_bayar, 'keterangan':keterangan, 'no_po':no_po, 'no_pi':no_pi, 'tgl_po':tgl_po, 'nama_supp':nama_supp, 'curr':curr, 'create_user':create_user, 'sum_sub':sum_sub, 'sum_tax':sum_tax, 'sum_total':sum_total},
             cache: 'false',
             close: function(e){
                 e.preventDefault();
@@ -493,7 +507,10 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
         alert("PI number can't be empty");
     }
         });                
-        if(document.querySelectorAll("input[name='select[]']:checked").length == 0){
+        if(document.getElementById('payment_date').value == '-'){
+            alert("Please Input Payment Date");
+            document.getElementById('payment_date').focus();
+        }else if(document.querySelectorAll("input[name='select[]']:checked").length == 0){
             alert("Please check the PO number");
         }else{
             alert("Data saved successfully"); 

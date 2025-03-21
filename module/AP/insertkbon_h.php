@@ -92,15 +92,9 @@ if ($jml_potong == '') {
 
 $ttl_kbon = (($sub_h + $lr_kurs1 + $s_qty1 + $s_harga1 + $materai1 + $ekspedisi1 + $moq1) - $pot_beli1) + $tax_h - $jml_return;
 
-$sqlnkb = mysqli_query($conn2,"select max(no_kbon) from kontrabon_h");
- $rownkb = mysqli_fetch_array($sqlnkb);
- $kodeBarang = $rownkb['max(no_kbon)'];
- $urutan = (int) substr($kodeBarang, 15, 5);
- $urutan++;
- $bln = date("m");
- $thn = date("Y");
- $huruf = "SI/APR/$thn/$bln/";
- $kode = $huruf . sprintf("%05s", $urutan);
+$sqlno = mysqli_query($conn1,"select CONCAT('SI/APR/',DATE_FORMAT('$tgl_kbon_h', '%Y'),'/',DATE_FORMAT('$tgl_kbon_h', '%m'),'/',LPAD((COALESCE(max(SUBSTR(no_kbon,16)),0) + 1),5,0)) nomor from kontrabon_h WHERE no_kbon != 'SI/APR/2024/12/06591' and YEAR(tgl_kbon) = YEAR ('$tgl_kbon_h')");
+$rowno = mysqli_fetch_array($sqlno);
+$kode = isset($rowno['nomor']) ? $rowno['nomor'] : 0;
 
 $queryss = "INSERT INTO potongan (no_kbon, tgl_kbon, nama_supp, jml_return, lr_kurs, s_qty, s_harga, materai, pot_beli, ekspedisi, moq, jml_potong, status)
 VALUES 

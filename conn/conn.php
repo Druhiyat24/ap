@@ -1,20 +1,47 @@
 <?php
 include "parser-php-version.php";
 
-$servername = "10.10.5.2";
+$servername = "10.10.5.12";
 $user_name = "root";
 $password = "ERP@S19n4lB1t";
 $db = "signalbit_erp";
 
-$server = "10.10.5.2";
+$server = "10.10.5.12";
 $user = "root";
 $pass = "ERP@S19n4lB1t";
 $database = "signalbit_erp";
 
+// $servername = "10.10.5.2:3307";
+// $user_name = "root";
+// $password = "ERP@S19n4lB1t";
+// $db = "signalbit_erp";
+
+// $server = "10.10.5.2:3307";
+// $user = "root";
+// $pass = "ERP@S19n4lB1t";
+// $database = "signalbit_erp";
+
+$port = '3307';
+
+// $servername = "localhost";
+// $user_name = "root";
+// $password = "";
+// $db = "signalbit_erp";
+
+// $server = "localhost";
+// $user = "root";
+// $pass = "";
+// $database = "signalbit_erp";
+
 $server_hris = "10.10.5.111";
 $user_hris = "root";
-$pass_hris = "toor";
-$database_hris = "hris_new";
+$pass_hris = "95*76s^SAl8a";
+$database_hris = "hris_nag";
+
+// $server_hris = "10.10.5.111";
+// $user_hris = "root";
+// $pass_hris = "ERP@S19n4lB1t";
+// $database_hris = "hris_nag";
 
 $conn1 = mysql_connect($servername, $user_name, $password);
 if (!$conn1) {

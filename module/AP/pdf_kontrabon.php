@@ -9,11 +9,13 @@ $no_kbon=$_GET['nokontrabon'];
 
 <?php
 
-$sql= "select bpb.id, kontrabon.no_kbon, kontrabon.tgl_kbon, bpb.bpbno_int no_bpb, bpb.bpbdate tgl_bpb, bpb.pono, po_header.podate tgl_po, act_costing.kpno ws, kontrabon.nama_supp supplier, masteritem.itemdesc ,IF(bpb.qty_reject IS NULL,(bpb.qty), (bpb.qty - bpb.qty_reject)) qty, IF(bpb.qty_reject IS NULL,(bpb.qty), (bpb.qty - bpb.qty_reject)) as qty1, bpb.price, IF(bpb.qty_reject IS NULL,(bpb.qty), (bpb.qty - bpb.qty_reject)) * bpb.price as subtotal, IF(bpb.qty_reject IS NULL,(bpb.qty), (bpb.qty - bpb.qty_reject)) * bpb.price as subtotal1, kontrabon.tax, '0' as tax1, kontrabon.tgl_tempo, kontrabon.supp_inv, kontrabon.no_faktur, kontrabon.create_date, bpb.curr, bpb.unit uom, kontrabon.pph_value, kontrabon.dp_value from bpb inner join kontrabon on kontrabon.no_bpb = bpb.bpbno_int inner join po_header on po_header.pono = bpb.pono left JOIN jo on jo.id = bpb.id_jo left JOIN jo_det on jo_det.id_jo = jo.id left JOIN so on so.id = jo_det.id_so left JOIN act_costing on act_costing.id = so.id_cost left JOIN masteritem on masteritem.id_item = bpb.id_item where kontrabon.no_kbon = '$no_kbon'
-union
-	select bppb_new.id, kontrabon.no_kbon, kontrabon.tgl_kbon, bppb_new.no_bppb as no_bpb, bppb_new.tgl_bppb as tgl_bpb, bppb_new.no_po, bppb_new.tgl_po, '' as ws, bppb_new.supplier, bppb_new.itemdesc, (- bppb_new.qty) as qty, '0' as qty4, bppb_new.price, (- bppb_new.qty * bppb_new.price) as subtotal,'0' as subtotal4,'0' as tax, (- (bppb_new.qty * bppb_new.price) * (bppb_new.tax / 100)) as tax1, kontrabon.tgl_tempo, kontrabon.supp_inv, kontrabon.no_faktur, kontrabon.create_date, bppb_new.curr, bppb_new.uom, kontrabon.pph_value, kontrabon.dp_value from bppb_new inner join return_kb on return_kb.no_bpbrtn = bppb_new.no_bppb inner join kontrabon on kontrabon.no_kbon = return_kb.no_kbon where kontrabon.no_kbon = '$no_kbon' and bppb_new.status != 'Cancel' GROUP BY bppb_new.id order by no_bpb asc,id asc";
+// $sql= "select bpb.id, kontrabon.no_kbon, kontrabon.tgl_kbon, bpb.bpbno_int no_bpb, bpb.bpbdate tgl_bpb, bpb.pono, po_header.podate tgl_po, act_costing.kpno ws, kontrabon.nama_supp supplier, masteritem.itemdesc ,IF(bpb.qty_reject IS NULL,(bpb.qty), (bpb.qty - bpb.qty_reject)) qty, IF(bpb.qty_reject IS NULL,(bpb.qty), (bpb.qty - bpb.qty_reject)) as qty1, bpb.price, IF(bpb.qty_reject IS NULL,(bpb.qty), (bpb.qty - bpb.qty_reject)) * bpb.price as subtotal, IF(bpb.qty_reject IS NULL,(bpb.qty), (bpb.qty - bpb.qty_reject)) * bpb.price as subtotal1, kontrabon.tax, '0' as tax1, kontrabon.tgl_tempo, kontrabon.supp_inv, kontrabon.no_faktur, kontrabon.create_date, bpb.curr, bpb.unit uom, kontrabon.pph_value, kontrabon.dp_value from bpb inner join kontrabon on kontrabon.no_bpb = bpb.bpbno_int inner join po_header on po_header.pono = bpb.pono left JOIN jo on jo.id = bpb.id_jo left JOIN jo_det on jo_det.id_jo = jo.id left JOIN so on so.id = jo_det.id_so left JOIN act_costing on act_costing.id = so.id_cost left JOIN masteritem on masteritem.id_item = bpb.id_item where kontrabon.no_kbon = '$no_kbon'
+// union
+// 	select bppb_new.id, kontrabon.no_kbon, kontrabon.tgl_kbon, bppb_new.no_bppb as no_bpb, bppb_new.tgl_bppb as tgl_bpb, bppb_new.no_po, bppb_new.tgl_po, '' as ws, bppb_new.supplier, bppb_new.itemdesc, (- bppb_new.qty) as qty, '0' as qty4, bppb_new.price, (- bppb_new.qty * bppb_new.price) as subtotal,'0' as subtotal4,'0' as tax, (- (bppb_new.qty * bppb_new.price) * (bppb_new.tax / 100)) as tax1, kontrabon.tgl_tempo, kontrabon.supp_inv, kontrabon.no_faktur, kontrabon.create_date, bppb_new.curr, bppb_new.uom, kontrabon.pph_value, kontrabon.dp_value from bppb_new inner join return_kb on return_kb.no_bpbrtn = bppb_new.no_bppb inner join kontrabon on kontrabon.no_kbon = return_kb.no_kbon where kontrabon.no_kbon = '$no_kbon' and bppb_new.status != 'Cancel' GROUP BY bppb_new.id order by no_bpb asc,id asc";
 
-	//$sql= "select bpb_new.id, kontrabon.no_kbon, kontrabon.tgl_kbon, bpb_new.no_bpb, bpb_new.tgl_bpb, bpb_new.pono, bpb_new.tgl_po, bpb_new.ws, bpb_new.supplier, bpb_new.itemdesc, bpb_new.qty, bpb_new.qty as qty1, bpb_new.price, bpb_new.qty * bpb_new.price as subtotal, bpb_new.qty * bpb_new.price as subtotal1, (bpb_new.qty * bpb_new.price) * (bpb_new.tax / 100) as tax, '0' as tax1, kontrabon.tgl_tempo, kontrabon.supp_inv, kontrabon.no_faktur, kontrabon.create_date, bpb_new.curr, bpb_new.uom, kontrabon.pph_value, kontrabon.dp_value from bpb_new inner join kontrabon on kontrabon.no_bpb = bpb_new.no_bpb  where kontrabon.no_kbon = '$no_kbon' and bpb_new.status != 'Cancel'";
+	$sql= "select bpb_new.id, kontrabon.no_kbon, kontrabon.tgl_kbon, bpb_new.no_bpb, bpb_new.tgl_bpb, bpb_new.pono, bpb_new.tgl_po, bpb_new.ws, bpb_new.supplier, bpb_new.itemdesc, bpb_new.qty, bpb_new.price, bpb_new.qty * bpb_new.price as subtotal, (bpb_new.qty * bpb_new.price) * (bpb_new.tax / 100) as tax, kontrabon.tgl_tempo, kontrabon.supp_inv, kontrabon.no_faktur, kontrabon.create_date, bpb_new.curr, bpb_new.uom, kontrabon.pph_value, kontrabon.dp_value from bpb_new inner join kontrabon on kontrabon.no_bpb = bpb_new.no_bpb  where kontrabon.no_kbon = '$no_kbon' and bpb_new.status != 'Cancel'
+	union
+	select bppb_new.id, kontrabon.no_kbon, kontrabon.tgl_kbon, bppb_new.no_bppb as no_bpb, bppb_new.tgl_bppb as tgl_bpb, bppb_new.no_po, bppb_new.tgl_po, '' as ws, bppb_new.supplier, bppb_new.itemdesc, (- bppb_new.qty) as qty, bppb_new.price, (- bppb_new.qty * bppb_new.price) as subtotal, (- (bppb_new.qty * bppb_new.price) * (bppb_new.tax / 100)) as tax1, kontrabon.tgl_tempo, kontrabon.supp_inv, kontrabon.no_faktur, kontrabon.create_date, bppb_new.curr, bppb_new.uom, kontrabon.pph_value, kontrabon.dp_value from bppb_new inner join return_kb on return_kb.no_bpbrtn = bppb_new.no_bppb inner join kontrabon on kontrabon.no_kbon = return_kb.no_kbon where kontrabon.no_kbon = '$no_kbon' and bppb_new.status != 'Cancel' GROUP BY bppb_new.id order by no_bpb asc,id asc";
 
 
 // $sql= "select bpb.id, kontrabon.no_kbon, kontrabon.tgl_kbon, bpb.bpbno_int no_bpb, bpb.bpbdate tgl_bpb, bpb.pono, po_header.podate tgl_po, act_costing.kpno ws, kontrabon.nama_supp supplier, masteritem.itemdesc ,IF(bpb.qty_reject IS NULL,(bpb.qty), (bpb.qty - bpb.qty_reject)) qty, IF(bpb.qty_reject IS NULL,(bpb.qty), (bpb.qty - bpb.qty_reject)) as qty1, bpb.price, IF(bpb.qty_reject IS NULL,(bpb.qty), (bpb.qty - bpb.qty_reject)) * bpb.price as subtotal, IF(bpb.qty_reject IS NULL,(bpb.qty), (bpb.qty - bpb.qty_reject)) * bpb.price as subtotal1, (IF(bpb.qty_reject IS NULL,(bpb.qty), (bpb.qty - bpb.qty_reject)) * bpb.price) * (po_header.tax / 100) as tax, '0' as tax1, kontrabon.tgl_tempo, kontrabon.supp_inv, kontrabon.no_faktur, kontrabon.create_date, bpb.curr, bpb.unit uom, kontrabon.pph_value, kontrabon.dp_value from bpb inner join kontrabon on kontrabon.no_bpb = bpb.bpbno_int inner join po_header on po_header.pono = bpb.pono left JOIN jo on jo.id = bpb.id_jo left JOIN jo_det on jo_det.id_jo = jo.id left JOIN so on so.id = jo_det.id_so left JOIN act_costing on act_costing.id = so.id_cost left JOIN masteritem on masteritem.id_item = bpb.id_item where kontrabon.no_kbon = '$no_kbon' union select bppb_new.id, kontrabon.no_kbon, kontrabon.tgl_kbon, bppb_new.no_bppb as no_bpb, bppb_new.tgl_bppb as tgl_bpb, bppb_new.no_po, bppb_new.tgl_po, '' as ws, bppb_new.supplier, bppb_new.itemdesc, (- bppb_new.qty) as qty, '0' as qty4, bppb_new.price, (- bppb_new.qty * bppb_new.price) as subtotal,'0' as subtotal4,'0' as tax, (- (bppb_new.qty * bppb_new.price) * (bppb_new.tax / 100)) as tax1, kontrabon.tgl_tempo, kontrabon.supp_inv, kontrabon.no_faktur, kontrabon.create_date, bppb_new.curr, bppb_new.uom, kontrabon.pph_value, kontrabon.dp_value from bppb_new inner join return_kb on return_kb.no_bpbrtn = bppb_new.no_bppb inner join kontrabon on kontrabon.no_kbon = return_kb.no_kbon where kontrabon.no_kbon = '$no_kbon' and bppb_new.status != 'Cancel' GROUP BY bppb_new.id order by no_bpb asc,id asc";
@@ -353,12 +355,10 @@ while($data=mysqli_fetch_array($query)){
 	}
 	$item_desc = $data['itemdesc'];
 	$qty = $data['qty'];
-	$qty1 = $data['qty1'];
 	$uom = $data['uom'];
 	$curr = $data['curr'];
 	$price = $data['price'];
 	$subtotal = $data['subtotal'];
-	$subtotal1 = $data['subtotal1'];
 	$tgl_tempo = $data['tgl_tempo'];
 	$supp_inv = $data['supp_inv'];
 	$no_faktur = $data['no_faktur'];
@@ -368,12 +368,12 @@ while($data=mysqli_fetch_array($query)){
 	$dp = $data['dp_value'];
 	$jml_return = $rowl['jml_return'];
 	$jml_potong = $rowl['jml_potong'];
-	$h_ppn = $ppn - $ppn_return;
+	$h_ppn += $ppn;
 	$potong = $jml_potong;
 	$sum_qty += $qty;
 	$sum_sub += $subtotal;
 	$sum_price += $price;
-	$sum_total = $sum_sub + ($ppn -$ppn_return)  - $pph - $dp + $potong;
+	$sum_total = $sum_sub + $ppn  - $pph - $dp + $potong;
    echo '<tr>
       <td style="width:16%;text-align:center;">'.$no_po.'</td>
 	  <td style="width:9%;text-align:center;">'.$tgl_po.'</td>
@@ -444,7 +444,7 @@ while($data=mysqli_fetch_array($query)){
       $sqltax = mysqli_query($conn2,"select tax from kontrabon_h where no_kbon = '$no_kbon'");
       $rowstax = mysqli_fetch_array($sqltax);
       	$jml_tax = $rowstax['tax'];
-	  echo $curr." ".number_format($jml_tax, 2).""; ?>
+	  echo $curr." ".number_format($ppn, 2).""; ?>
 		</td>		
 	</tr>		
 
@@ -508,7 +508,7 @@ while($data=mysqli_fetch_array($query)){
       $sqltotal = mysqli_query($conn2,"select total from kontrabon_h where no_kbon = '$no_kbon'");
       $rowstotal = mysqli_fetch_array($sqltotal);
       	$jml_total = $rowstotal['total'];
-	  echo $curr." ".number_format($jml_total, 2).""; ?>
+	  echo $curr." ".number_format($sum_total, 2).""; ?>
 		</td>
 </tr>
 
@@ -586,7 +586,7 @@ while($data=mysqli_fetch_array($query)){
 		<tr>    
             <td style="font-size:12px;text-align:center;">AP Staff</td>
             <td style="font-size:12px;text-align:center">Supervisor</td>
-            <td style="font-size:12px;text-align:center">Finance Accounting Manager</td>
+            <td style="font-size:12px;text-align:center">Finance Manager</td>
         </tr> 				
 	
 		</table>
@@ -600,7 +600,7 @@ while($data=mysqli_fetch_array($query)){
 				<td>Kontra Bon Number : <?php echo $no_kbon ?></td>
 			</tr>
 			<tr>
-				<td>Total Kontra Bon : <?php echo $curr." ".number_format($jml_total, 2) ?></td>
+				<td>Total Kontra Bon : <?php echo $curr." ".number_format($sum_total, 2) ?></td>
 			</tr>
 		</table>
 	</div>
@@ -618,6 +618,7 @@ include("../../mpdf8/vendor/mpdf/mpdf/src/mpdf.php");
 $mpdf=new \mPDF\mPDF();
 
 $mpdf->WriteHTML($html);
+ob_clean();
 $mpdf->Output();
 exit;
 ?>

@@ -48,7 +48,8 @@
             <th style="text-align: center; vertical-align: middle;">No Kontrabon</th>
             <th style="text-align: center; vertical-align: middle;">Kontrabon Date</th>
             <th style="text-align: center; vertical-align: middle;">No List Payment</th>
-            <th style="text-align: center; vertical-align: middle;">List Payment Date</th>                         
+            <th style="text-align: center; vertical-align: middle;">List Payment Date</th>         
+            <th style="text-align: center; vertical-align: middle;">List Payment Approve</th>               
             <th style="text-align: center; vertical-align: middle;">No Payment</th>                                    
             <th style="text-align: center; vertical-align: middle;">Payment Date</th>
         </tr>
@@ -96,7 +97,7 @@
 //     }
 //     }
 
-        $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where tgl_pay between '$start_date' and '$end_date' group by no_bpb");
+        $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp from status a left join list_payment b on b.no_payment  = a.no_lp where tgl_pay between '$start_date' and '$end_date' group by a.no_bpb");
 
         $no = 1;
 
@@ -115,9 +116,11 @@
 
     if ($tgl_lp != '') {
         $tgl_lipa = date("d-M-Y",strtotime($row['tgl_lp']));
+        $approve_lp = date("d-M-Y",strtotime($row['tgl_approve_lp']));
         $lipa = $row['no_lp'];
     }else{
         $tgl_lipa = '-';
+        $approve_lp = '-';
         $lipa = '-';
     }
 
@@ -139,6 +142,7 @@
             <td style="" value="'.$tgl_kbon.'">'.$tgl_kbon.'</td>
             <td value="'.$lipa.'">'.$lipa.'</td>
             <td style="" value="'.$tgl_lipa.'">'.$tgl_lipa.'</td>
+            <td style="" value="'.$approve_lp.'">'.$approve_lp.'</td>
             <td value="'.$payment.'">'.$payment.'</td>
             <td style="" value="'.$tgl_payment.'">'.$tgl_payment.'</td>
              ';

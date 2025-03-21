@@ -4,6 +4,7 @@ ini_set('date.timezone', 'Asia/Jakarta');
 
 $noftrdp = $_POST['noftrdp'];
 $tglftrdp = date("Y-m-d",strtotime($_POST['tglftrdp']));
+$tgl_bayar = date("Y-m-d",strtotime($_POST['tgl_bayar']));
 $nama_supp = $_POST['nama_supp'];
 $no_pi = $_POST['no_pi'];
 $curr = $_POST['curr'];
@@ -34,9 +35,9 @@ $invoiced = 'Waiting';
 // echo $dp_value;
 // echo $balance;
 if ($no_po != '') {
-$query = "INSERT INTO ftr_dp (no_ftr_dp, tgl_ftr_dp, supp, no_po, tgl_po, no_pi, total, dp, dp_value, balance, curr, keterangan, status, is_invoiced, create_user, create_date)
+$query = "INSERT INTO ftr_dp (no_ftr_dp, tgl_ftr_dp, tgl_bayar, supp, no_po, tgl_po, no_pi, total, dp, dp_value, balance, curr, keterangan, status, is_invoiced, create_user, create_date)
 VALUES 
-	('$noftrdp', '$tglftrdp', '$nama_supp', '$no_po', '$tgl_po', '$no_pi', '$total', '$dp_code', '$dp_value', '$balance', '$curr', '$keterangan', '$status', '$invoiced', '$create_user', '$create_date')";
+	('$noftrdp', '$tglftrdp', '$tgl_bayar', '$nama_supp', '$no_po', '$tgl_po', '$no_pi', '$total', '$dp_code', '$dp_value', '$balance', '$curr', '$keterangan', '$status', '$invoiced', '$create_user', '$create_date')";
 	}	else{
 		echo '';
 	}

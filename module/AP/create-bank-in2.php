@@ -1,148 +1,170 @@
 <?php include '../header.php' ?>
 
-    <!-- MAIN -->
-    <div class="col p-4">
-        <h2 class="text-center">FORM INCOMING BANK</h2>
-<div class="box">
-    <div class="box header">
-<form id="form-data" method="post">
-        <div class="form-row">
-            <div class="col-md-3 mb-3">            
-            <label for="pajak" class="col-form-label" style="width: 150px;"><b>Doc Number</b></label>
-                <?php 
-                $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
-                if ( $ref != 'Bank Keluar') {
-            $sqlx = mysqli_query($conn2,"select max(id) as id FROM tbl_bankin_arcollection ");
-            $rowx = mysqli_fetch_array($sqlx);
-            $maxid = $rowx['id'];
+<style>
 
-            $sql = mysqli_query($conn2,"select max(doc_num) from tbl_bankin_arcollection where id = '$maxid'");
-            $row = mysqli_fetch_array($sql);
-            $kodepay = $row['max(doc_num)'];
-            $urutan = (int) substr($kodepay,20,5);
-            $urutan ++;
-            $bln = date("m");
-            $thn = date("y");
-            $huruf = "BM//NAG/$bln$thn";
-            $kodepay = $huruf;
+    /* Menjaga header tetap terlihat */
+    #mytablenone thead th {
+        position: sticky;
+        top: 0;
+        background-color: white;
+        z-index: 1;
+    }
 
-            echo'<input type="text" readonly style="font-size: 14px;text-transform:uppercase" class="form-control-plaintext" id="no_doc" name="no_doc" value="'.$kodepay.'">
-            <input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="no_urut" name="no_urut" value="'.sprintf("%05s", $urutan).'" hidden>
-            <input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="bulan" name="bulan" value="'.$bln.'" hidden>
-            <input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="tahun" name="tahun" value="'.$thn.'" hidden>';
-        }else{
-           $sqlx = mysqli_query($conn2,"select max(id) as id FROM tbl_bankin_arcollection ");
-            $rowx = mysqli_fetch_array($sqlx);
-            $maxid = $rowx['id'];
+    /* Styling untuk table-wrapper jika perlu */
+    .table-wrapper {
+        max-width: 100%;
+        overflow-x: auto;
+    }
 
-            $sql = mysqli_query($conn2,"select max(doc_num) from tbl_bankin_arcollection where id = '$maxid'");
-            $row = mysqli_fetch_array($sql);
-            $kodepay = $row['max(doc_num)'];
-            $urutan = (int) substr($kodepay,20,5);
-            $urutan ++;
-            $bln = date("m");
-            $thn = date("y");
-            $huruf = "BM//NAG/$bln$thn/";
-            $kodepay = $huruf . sprintf("%05s", $urutan); 
+    .col-form-label{
+        font-size: 13px;
+    }
 
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
-            }
+</style>
 
-            $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
-            $sqlb = mysqli_query($conn2,"select RIGHT(a.to_akun,4) as kode from tbl_pv_h a inner join b_bankout_det b on b.no_reff = a.no_pv inner join b_bankout_h c on c.no_bankout = b.no_bankout where c.no_bankout = '$no_bk' ");
-            $rowb = mysqli_fetch_array($sqlb);
-            $kode = isset($rowb['kode']) ? $rowb['kode']: null;
+<!-- MAIN -->
+<div class="col p-4">
+    <h2 class="text-center">FORM INCOMING BANK</h2>
+    <div class="box">
+        <div class="box header">
+            <form id="form-data" method="post">
+                <div class="form-row">
+                    <div class="col-md-3 mb-3">            
+                        <label for="pajak" class="col-form-label" style="width: 150px;"><b>Doc Number</b></label>
+                        <?php 
+                        $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
+                        if ( $ref != 'Bank Keluar') {
+                            $sqlx = mysqli_query($conn2,"select max(id) as id FROM tbl_bankin_arcollection ");
+                            $rowx = mysqli_fetch_array($sqlx);
+                            $maxid = $rowx['id'];
 
-            $sqlc = mysqli_query($conn2,"select UPPER(d.bank_name) as bank from tbl_pv_h a inner join b_bankout_det b on b.no_reff = a.no_pv inner join b_bankout_h c on c.no_bankout = b.no_bankout inner join b_masterbank d on d.bank_account = a.to_akun where c.no_bankout = '$no_bk' ");
-            $rowc = mysqli_fetch_array($sqlc);
-            $bank = isset($rowc['bank']) ? $rowc['bank']: null;
+                            $sql = mysqli_query($conn2,"select max(doc_num) from tbl_bankin_arcollection where id = '$maxid'");
+                            $row = mysqli_fetch_array($sql);
+                            $kodepay = $row['max(doc_num)'];
+                            $urutan = (int) substr($kodepay,20,5);
+                            $urutan ++;
+                            $bln = date("m");
+                            $thn = date("y");
+                            $huruf = "BM//NAG/$bln$thn";
+                            $kodepay = $huruf;
 
-             if(!empty($no_bk)) {
-            if($bank == 'BANK CENTRAL ASIA'){
-                echo'<input type="text" readonly style="font-size: 14px;text-transform:uppercase" class="form-control-plaintext" id="no_doc" name="no_doc" value="BM/BCA'.$kode.'/NAG/'.$bln.''.$thn.'/'.sprintf("%05s", $urutan).'">';
+                            echo'<input type="text" readonly style="font-size: 14px;text-transform:uppercase" class="form-control-plaintext" id="no_doc" name="no_doc" value="'.$kodepay.'">
+                            <input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="no_urut" name="no_urut" value="'.sprintf("%05s", $urutan).'" hidden>
+                            <input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="bulan" name="bulan" value="'.$bln.'" hidden>
+                            <input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="tahun" name="tahun" value="'.$thn.'" hidden>';
+                        }else{
+                           $sqlx = mysqli_query($conn2,"select max(id) as id FROM tbl_bankin_arcollection ");
+                           $rowx = mysqli_fetch_array($sqlx);
+                           $maxid = $rowx['id'];
 
-            }elseif($bank == 'BANK CIMB NIAGA'){
+                           $sql = mysqli_query($conn2,"select max(doc_num) from tbl_bankin_arcollection where id = '$maxid'");
+                           $row = mysqli_fetch_array($sql);
+                           $kodepay = $row['max(doc_num)'];
+                           $urutan = (int) substr($kodepay,20,5);
+                           $urutan ++;
+                           $bln = date("m");
+                           $thn = date("y");
+                           $huruf = "BM//NAG/$bln$thn/";
+                           $kodepay = $huruf . sprintf("%05s", $urutan); 
 
-                echo'<input type="text" readonly style="font-size: 14px;text-transform:uppercase" class="form-control-plaintext" id="no_doc" name="no_doc" value="BM/CMB'.$kode.'/NAG/'.$bln.''.$thn.'/'.sprintf("%05s", $urutan).'">';
-            }else{
-            echo'<input type="text" readonly style="font-size: 14px;text-transform:uppercase" class="form-control-plaintext" id="no_doc" name="no_doc" value="BM/BNI'.$kode.'/NAG/'.$bln.''.$thn.'/'.sprintf("%05s", $urutan).'">';
-            }
-        }else{
-            echo'<input type="text" readonly style="font-size: 14px;text-transform:uppercase" class="form-control-plaintext" id="no_doc" name="no_doc" value="'.$kodepay.'">';
-        }
+                           if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                            $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+                        }
 
-            echo '<input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="no_urut" name="no_urut" value="'.sprintf("%05s", $urutan).'" hidden>
-            <input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="bulan" name="bulan" value="'.$bln.'" hidden>
-            <input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="tahun" name="tahun" value="'.$thn.'" hidden>';
-        }
-            ?>
-        </div>
+                        $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+                        $sqlb = mysqli_query($conn2,"select RIGHT(a.to_akun,4) as kode from tbl_pv_h a inner join b_bankout_det b on b.no_reff = a.no_pv inner join b_bankout_h c on c.no_bankout = b.no_bankout where c.no_bankout = '$no_bk' ");
+                        $rowb = mysqli_fetch_array($sqlb);
+                        $kode = isset($rowb['kode']) ? $rowb['kode']: null;
 
-            <div class="col-md-3 mb-3">            
-            <label for="total" class="col-form-label" style="width: 150px;"><b>Date</b></label>
-                <input type="text" style="font-size: 15px;" name="tgl_active" id="tgl_active" class="form-control tanggal" 
-            value="<?php echo date("d-m-Y"); ?>" autocomplete='off'>
-            </div>
+                        $sqlc = mysqli_query($conn2,"select UPPER(d.bank_name) as bank from tbl_pv_h a inner join b_bankout_det b on b.no_reff = a.no_pv inner join b_bankout_h c on c.no_bankout = b.no_bankout inner join b_masterbank d on d.bank_account = a.to_akun where c.no_bankout = '$no_bk' ");
+                        $rowc = mysqli_fetch_array($sqlc);
+                        $bank = isset($rowc['bank']) ? $rowc['bank']: null;
 
-            <div class="col-md-3 mb-3">            
-            <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Reference</b></label>            
-              <select class="form-control selectpicker" name="ref_num" id="ref_num" data-dropup-auto="false" data-live-search="true" onchange="this.form.submit()">
-                <option value="" disabled selected="true">Select Reference</option>
-                                                                
-                <?php
-                $ref_num ='';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $ref_num = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
-                }                 
-                
-                   $sql = mysqli_query($conn1,"select ref_doc,ref_doc2 from tbl_ref where ket = 'bankin'");
-                while ($row = mysqli_fetch_array($sql)) {
-                    $data = $row['ref_doc'];
+                        if(!empty($no_bk)) {
+                            if($bank == 'BANK CENTRAL ASIA'){
+                                echo'<input type="text" readonly style="font-size: 14px;text-transform:uppercase" class="form-control-plaintext" id="no_doc" name="no_doc" value="BM/BCA'.$kode.'/NAG/'.$bln.''.$thn.'/'.sprintf("%05s", $urutan).'">';
+
+                            }elseif($bank == 'BANK CIMB NIAGA'){
+
+                                echo'<input type="text" readonly style="font-size: 14px;text-transform:uppercase" class="form-control-plaintext" id="no_doc" name="no_doc" value="BM/CMB'.$kode.'/NAG/'.$bln.''.$thn.'/'.sprintf("%05s", $urutan).'">';
+                            }else{
+                                echo'<input type="text" readonly style="font-size: 14px;text-transform:uppercase" class="form-control-plaintext" id="no_doc" name="no_doc" value="BM/BNI'.$kode.'/NAG/'.$bln.''.$thn.'/'.sprintf("%05s", $urutan).'">';
+                            }
+                        }else{
+                            echo'<input type="text" readonly style="font-size: 14px;text-transform:uppercase" class="form-control-plaintext" id="no_doc" name="no_doc" value="'.$kodepay.'">';
+                        }
+
+                        echo '<input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="no_urut" name="no_urut" value="'.sprintf("%05s", $urutan).'" hidden>
+                        <input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="bulan" name="bulan" value="'.$bln.'" hidden>
+                        <input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="tahun" name="tahun" value="'.$thn.'" hidden>';
+                    }
+                    ?>
+                </div>
+
+                <div class="col-md-3 mb-3">            
+                    <label for="total" class="col-form-label" style="width: 150px;"><b>Date</b></label>
+                    <input type="text" style="font-size: 15px;" name="tgl_active" id="tgl_active" class="form-control tanggal" 
+                    value="<?php echo date("d-m-Y"); ?>" autocomplete='off'>
+                </div>
+
+                <div class="col-md-3 mb-3">            
+                    <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Reference</b></label>            
+                    <select class="form-control selectpicker" name="ref_num" id="ref_num" data-dropup-auto="false" data-live-search="true" onchange="this.form.submit()">
+                        <option value="" disabled selected="true">Select Reference</option>
+
+                        <?php
+                        $ref_num ='';
+                        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                            $ref_num = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
+                        }                 
+
+                        $sql = mysqli_query($conn1,"select ref_doc,ref_doc2 from tbl_ref where ket = 'bankin'");
+                        while ($row = mysqli_fetch_array($sql)) {
+                            $data = $row['ref_doc'];
                     // $data2 = $row['ref_doc2'];
-                    if($row['ref_doc'] == $_POST['ref_num']){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
-                    }
-                    echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
-                }?>
-                </select>
-            </div> 
-            <div class="col-md-5">
-            <label for="nama_supp"><b>Source</b></label>            
-              <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true" onchange="this.form.submit()">                                                 
-                <?php
-                $nama_supp ='';
-                $ref_num = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
+                            if($row['ref_doc'] == $_POST['ref_num']){
+                                $isSelected = ' selected="selected"';
+                            }else{
+                                $isSelected = '';
+                            }
+                            echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
+                        }?>
+                    </select>
+                </div> 
+                <div class="col-md-5">
+                    <label for="nama_supp"><b>Source</b></label>            
+                    <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true" onchange="this.form.submit()">                                                 
+                        <?php
+                        $nama_supp ='';
+                        $ref_num = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
 
-                if ($ref_num == 'Bank Keluar') {
-                    $data = 'PT. Nirwana Alabare Garment';
-                    if(!empty($_POST['nama_supp'])){
-                        $isSelected = 'PT. Nirwana Alabare Garment';
-                    }else{
-                        $isSelected = '';
+                        if ($ref_num == 'Bank Keluar') {
+                            $data = 'PT. Nirwana Alabare Garment';
+                            if(!empty($_POST['nama_supp'])){
+                                $isSelected = 'PT. Nirwana Alabare Garment';
+                            }else{
+                                $isSelected = '';
 
-                    }
-                     echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';  
-                }else{
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
-                }                 
-                $sql = mysqli_query($conn1,"select distinct(Supplier) from mastersupplier where tipe_sup = 'C' order by Supplier ASC");
-                echo '<option value="Unrealize"  selected="true">Unrealize</option>';
-                while ($row = mysqli_fetch_array($sql)) {
-                    $data = $row['Supplier'];
-                    if($row['Supplier'] == $_POST['nama_supp']){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
+                            }
+                            echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';  
+                        }else{
+                            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
+                            }                 
+                            $sql = mysqli_query($conn1,"select distinct(Supplier) from mastersupplier where tipe_sup = 'C' order by Supplier ASC");
+                            echo '<option value="Unrealize"  selected="true">Unrealize</option>';
+                            while ($row = mysqli_fetch_array($sql)) {
+                                $data = $row['Supplier'];
+                                if($row['Supplier'] == $_POST['nama_supp']){
+                                    $isSelected = ' selected="selected"';
+                                }else{
+                                    $isSelected = '';
 
-                    }
-                    echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
-                }
-            }?>
-                </select>
+                                }
+                                echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
+                            }
+                        }?>
+                    </select>
 
                 </div>
 
@@ -151,37 +173,37 @@
                 $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
                 if ( $ref == 'Bank Keluar') {
                     echo '
-                </br>
-             <div class="col-md-3">
-                <label for="no_bk" class="col-form-label" style="width: 150px;" ><b>No Bank Out </b></label>  
-                <select class="form-control selectpicker" name="no_bk" id="no_bk" data-live-search="true" required onchange="this.form.submit()">
-                <option value="" disabled selected="true">Select no bank out</option> ';?> 
-                <?php 
-                        $sqlacc = mysqli_query($conn1,"select no_bankout from b_bankout_h where status = 'Approved' and stat_bi != 'Y' and nama_supp = 'PT. NIRWANA ALABARE GARMENT'");
+                    </br>
+                    <div class="col-md-3">
+                    <label for="no_bk" class="col-form-label" style="width: 150px;" ><b>No Bank Out </b></label>  
+                    <select class="form-control selectpicker" name="no_bk" id="no_bk" data-live-search="true" required onchange="this.form.submit()">
+                    <option value="" disabled selected="true">Select no bank out</option> ';?> 
+                    <?php 
+                    $sqlacc = mysqli_query($conn1,"select no_bankout from b_bankout_h where status = 'Approved' and stat_bi != 'Y' and nama_supp = 'PT. NIRWANA ALABARE GARMENT'");
 
                         // $sqlacc = mysqli_query($conn1,"select a.no_bankout from b_bankout_h a inner join b_bankout_none b on b.no_bankout = a.no_bankout inner join mastercoa_v2 c on c.no_coa = b.no_coa where a.status = 'Approved' and a.outstanding != '0' and nama_supp = 'PT. NIRWANA ALABARE GARMENT' and b.no_coa = '1.90.01'");
 
-                        while ($row = mysqli_fetch_array($sqlacc)) {
-                            $data = $row['no_bankout'];
-                            if($row['no_bankout'] == $_POST['no_bk']){
-                                $isSelected  = ' selected="selected"';
-                            }else{
-                                $isSelected = '';
-                            }
-                            echo '<option name="no_bk" value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
+                    while ($row = mysqli_fetch_array($sqlacc)) {
+                        $data = $row['no_bankout'];
+                        if($row['no_bankout'] == $_POST['no_bk']){
+                            $isSelected  = ' selected="selected"';
+                        }else{
+                            $isSelected = '';
                         }
-                        ?>
-                <?php echo'</select>
-                   
-            </div>
-            </br>';
-            }
-               else{
-                echo '';
-               }
-               
+                        echo '<option name="no_bk" value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
+                    }
+                    ?>
+                    <?php echo'</select>
+
+                    </div>
+                    </br>';
+                }
+                else{
+                    echo '';
+                }
+
                 
-            ?>
+                ?>
 
 
                 <?php 
@@ -202,213 +224,213 @@
 //     background-color: rgb(95, 158, 160);" type="button" name="mysupp" id="mysupp" data-target="#mymodal" data-toggle="modal" value="Select">  
 //     </div>';
 // }
-    ?>
+                ?>
 
 
-    <?php 
+                <?php 
                 $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
                 if ($ref == 'Bank Keluar') {
                     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
-            }
+                        $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+                    }
 
-            $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
-            $sql = mysqli_query($conn2,"select reff_doc from b_bankout_h  where no_bankout = '$no_bk' ");
-            $row = mysqli_fetch_array($sql);
-            $reffdoc = isset($row['reff_doc']) ? $row['reff_doc']: null;         
-    
+                    $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+                    $sql = mysqli_query($conn2,"select reff_doc from b_bankout_h  where no_bankout = '$no_bk' ");
+                    $row = mysqli_fetch_array($sql);
+                    $reffdoc = isset($row['reff_doc']) ? $row['reff_doc']: null;         
+
             // $top = 30;
 
-            if($reffdoc == 'Payment Voucher') {
-                
-                  echo '
-                        </div>
-                </br>
-                <div class="form-row">
-             <div class="col-md-3">
-                <label for="accountid" class="col-form-label" style="width: 150px;" ><b>Account </b></label>  
-                <input type="text" style="font-size: 12px;" class="form-control" id="accountid" name="accountid" readonly value="';?><?php             
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
-            }
+                    if($reffdoc == 'Payment Voucher') {
 
-            $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
-            $sql = mysqli_query($conn2,"select a.to_akun as akun from tbl_pv_h a inner join b_bankout_det b on b.no_reff = a.no_pv inner join b_bankout_h c on c.no_bankout = b.no_bankout where c.no_bankout = '$no_bk' ");
-            $row = mysqli_fetch_array($sql);
-            $akun = isset($row['akun']) ? $row['akun']: null;         
-    
+                      echo '
+                      </div>
+                      </br>
+                      <div class="form-row">
+                      <div class="col-md-3">
+                      <label for="accountid" class="col-form-label" style="width: 150px;" ><b>Account </b></label>  
+                      <input type="text" style="font-size: 12px;" class="form-control" id="accountid" name="accountid" readonly value="';?><?php             
+                      if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                        $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+                    }
+
+                    $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+                    $sql = mysqli_query($conn2,"select a.to_akun as akun from tbl_pv_h a inner join b_bankout_det b on b.no_reff = a.no_pv inner join b_bankout_h c on c.no_bankout = b.no_bankout where c.no_bankout = '$no_bk' ");
+                    $row = mysqli_fetch_array($sql);
+                    $akun = isset($row['akun']) ? $row['akun']: null;         
+
             // $top = 30;
 
-            if(!empty($no_bk)) {
-                
-                  echo $akun;      
-            }
-            else{
-                echo '';
-            } ?><?php echo '">
-            </div>
-            </br>
-           
-                <div class="col-md-2" >
+                    if(!empty($no_bk)) {
+
+                      echo $akun;      
+                  }
+                  else{
+                    echo '';
+                    } ?><?php echo '">
+                    </div>
+                    </br>
+
+                    <div class="col-md-2" >
                     <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Currency </b></label>         
                     <input type="text" style="font-size: 12px;" class="form-control" id="valuta" name="valuta" readonly value="';?><?php             
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
-            }
+                    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                        $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+                    }
 
-            $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
-            $sql = mysqli_query($conn2,"select d.curr from tbl_pv_h a inner join b_bankout_det b on b.no_reff = a.no_pv inner join b_bankout_h c on c.no_bankout = b.no_bankout inner join b_masterbank d on d.bank_account = a.to_akun where c.no_bankout = '$no_bk' ");
-            $row = mysqli_fetch_array($sql);
-            $curr = isset($row['curr']) ? $row['curr']: null;         
-    
+                    $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+                    $sql = mysqli_query($conn2,"select d.curr from tbl_pv_h a inner join b_bankout_det b on b.no_reff = a.no_pv inner join b_bankout_h c on c.no_bankout = b.no_bankout inner join b_masterbank d on d.bank_account = a.to_akun where c.no_bankout = '$no_bk' ");
+                    $row = mysqli_fetch_array($sql);
+                    $curr = isset($row['curr']) ? $row['curr']: null;         
+
             // $top = 30;
 
-            if(!empty($no_bk)) {
-                
-                  echo $curr;      
-            }
-            else{
-                echo '';
-            } ?><?php echo '">  
+                    if(!empty($no_bk)) {
+
+                      echo $curr;      
+                  }
+                  else{
+                    echo '';
+                    } ?><?php echo '">  
                     <input type="hidden" style="font-size: 12px;" class="form-control" id="kode" name="kode" readonly value="';?><?php             
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
-            }
+                    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                        $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+                    }
 
-            $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
-            $sql = mysqli_query($conn2,"select RIGHT(a.to_akun,4) as kode from tbl_pv_h a inner join b_bankout_det b on b.no_reff = a.no_pv inner join b_bankout_h c on c.no_bankout = b.no_bankout where c.no_bankout = '$no_bk' ");
-            $row = mysqli_fetch_array($sql);
-            $kode = isset($row['kode']) ? $row['kode']: null;         
-    
+                    $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+                    $sql = mysqli_query($conn2,"select RIGHT(a.to_akun,4) as kode from tbl_pv_h a inner join b_bankout_det b on b.no_reff = a.no_pv inner join b_bankout_h c on c.no_bankout = b.no_bankout where c.no_bankout = '$no_bk' ");
+                    $row = mysqli_fetch_array($sql);
+                    $kode = isset($row['kode']) ? $row['kode']: null;         
+
             // $top = 30;
 
-            if(!empty($no_bk)) {
-                
-                  echo $kode;      
-            }
-            else{
-                echo '';
-            } ?><?php echo '">        
-                </div>
-                </br>
-                <div class="col-md-3" >
+                    if(!empty($no_bk)) {
+
+                      echo $kode;      
+                  }
+                  else{
+                    echo '';
+                    } ?><?php echo '">        
+                    </div>
+                    </br>
+                    <div class="col-md-3" >
                     <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Bank </b></label>                  
                     <input type="text" style="font-size: 12px;" class="form-control" id="nama_bank" name="nama_bank" readonly value="';?><?php             
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
-            }
+                    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                        $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+                    }
 
-            $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
-            $sql = mysqli_query($conn2,"select d.bank_name as bank from tbl_pv_h a inner join b_bankout_det b on b.no_reff = a.no_pv inner join b_bankout_h c on c.no_bankout = b.no_bankout inner join b_masterbank d on d.bank_account = a.to_akun where c.no_bankout = '$no_bk' ");
-            $row = mysqli_fetch_array($sql);
-            $bank = isset($row['bank']) ? $row['bank']: null;         
-    
+                    $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+                    $sql = mysqli_query($conn2,"select d.bank_name as bank from tbl_pv_h a inner join b_bankout_det b on b.no_reff = a.no_pv inner join b_bankout_h c on c.no_bankout = b.no_bankout inner join b_masterbank d on d.bank_account = a.to_akun where c.no_bankout = '$no_bk' ");
+                    $row = mysqli_fetch_array($sql);
+                    $bank = isset($row['bank']) ? $row['bank']: null;         
+
             // $top = 30;
 
-            if(!empty($no_bk)) {
-                
-                  echo $bank;      
-            }
-            else{
-                echo '';
-            } ?><?php echo '">
-                </div>
-               
-                </br>';
-            }
-            else{
-                    echo '
-                        </div>
-                </br>
-                <div class="form-row">
-             <div class="col-md-3">
-                <label for="accountid" class="col-form-label" style="width: 150px;" ><b>Account </b></label>  
-                <select class="form-control selectpicker" name="accountid" id="accountid" data-live-search="true"'; echo"onchange='changeValueACC(this.value)'"; echo'required >
-                <option value="" disabled selected="true">Select Account</option> ';?> 
-                <?php 
-                        $sqlacc = mysqli_query($conn1,"select bank_name as bank,curr,bank_account as account,RIGHT(bank_account,4) as kode from b_masterbank where status = 'Active'");
-                        $jsArray = "var prdName = new Array();\n";
+                    if(!empty($no_bk)) {
 
-                        while ($row = mysqli_fetch_array($sqlacc)) {
-                            $data = $row['account'];
-                            if($row['account'] == $_POST['accountid']){
-                                $isSelected  = ' selected="selected"';
-                            }else{
-                                $isSelected = '';
-                            }
-                            echo '<option name="accountid" value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
-                            $jsArray .= "prdName['" . $row['account'] . "'] = {nama_bank:'" . addslashes($row['bank']) . "',kode:'" . addslashes($row['kode']) . "',valuta:'".addslashes($row['curr'])."'};\n";
+                      echo $bank;      
+                  }
+                  else{
+                    echo '';
+                    } ?><?php echo '">
+                    </div>
+
+                    </br>';
+                }
+                else{
+                    echo '
+                    </div>
+                    </br>
+                    <div class="form-row">
+                    <div class="col-md-3">
+                    <label for="accountid" class="col-form-label" style="width: 150px;" ><b>Account </b></label>  
+                    <select class="form-control selectpicker" name="accountid" id="accountid" data-live-search="true"'; echo"onchange='changeValueACC(this.value)'"; echo'required >
+                    <option value="" disabled selected="true">Select Account</option> ';?> 
+                    <?php 
+                    $sqlacc = mysqli_query($conn1,"select bank_name as bank,curr,bank_account as account,RIGHT(bank_account,4) as kode from b_masterbank where status = 'Active'");
+                    $jsArray = "var prdName = new Array();\n";
+
+                    while ($row = mysqli_fetch_array($sqlacc)) {
+                        $data = $row['account'];
+                        if($row['account'] == $_POST['accountid']){
+                            $isSelected  = ' selected="selected"';
+                        }else{
+                            $isSelected = '';
                         }
-                        ?>
-                <?php echo'</select>
-                   
-            </div>
-            </br>
-           
-                <div class="col-md-2" >
+                        echo '<option name="accountid" value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
+                        $jsArray .= "prdName['" . $row['account'] . "'] = {nama_bank:'" . addslashes($row['bank']) . "',kode:'" . addslashes($row['kode']) . "',valuta:'".addslashes($row['curr'])."'};\n";
+                    }
+                    ?>
+                    <?php echo'</select>
+
+                    </div>
+                    </br>
+
+                    <div class="col-md-2" >
                     <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Currency </b></label>         
                     <input type="text" style="font-size: 12px;" class="form-control" id="valuta" name="valuta" readonly >  
                     <input type="text" style="font-size: 12px;" class="form-control" id="kode" name="kode" readonly hidden >         
-                </div>
-                </br>
-                <div class="col-md-3" >
+                    </div>
+                    </br>
+                    <div class="col-md-3" >
                     <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Bank </b></label>                  
                     <input type="text" style="font-size: 12px;" class="form-control" id="nama_bank" name="nama_bank" readonly > 
+                    </div>
+
+                    </br>';
+                }
+            }elseif ($ref == 'None') {
+                echo '
                 </div>
-               
-                </br>';
-            }
-                }elseif ($ref == 'None') {
-                    echo '
-                        </div>
                 </br>
                 <div class="form-row">
-             <div class="col-md-3">
+                <div class="col-md-3">
                 <label for="accountid" class="col-form-label" style="width: 150px;" ><b>Account </b></label>  
                 <select class="form-control selectpicker" name="accountid" id="accountid" data-live-search="true"'; echo"onchange='changeValueACC3(this.value)'"; echo'required >
                 <option value="" disabled selected="true">Select Account</option> ';?> 
                 <?php 
-                        $sqlacc = mysqli_query($conn1,"select bank_name as bank,curr,bank_account as account,RIGHT(bank_account,4) as kode from b_masterbank where status = 'Active'");
-                        $jsArray = "var prdName = new Array();\n";
+                $sqlacc = mysqli_query($conn1,"select bank_name as bank,curr,bank_account as account,RIGHT(bank_account,4) as kode from b_masterbank where status = 'Active'");
+                $jsArray = "var prdName = new Array();\n";
 
-                        while ($row = mysqli_fetch_array($sqlacc)) {
-                            $data = $row['account'];
-                            if($row['account'] == $_POST['accountid']){
-                                $isSelected  = ' selected="selected"';
-                            }else{
-                                $isSelected = '';
-                            }
-                            echo '<option name="accountid" value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
-                            $jsArray .= "prdName['" . $row['account'] . "'] = {nama_bank:'" . addslashes($row['bank']) . "',kode:'" . addslashes($row['kode']) . "',valuta:'".addslashes($row['curr'])."'};\n";
-                        }
-                        ?>
+                while ($row = mysqli_fetch_array($sqlacc)) {
+                    $data = $row['account'];
+                    if($row['account'] == $_POST['accountid']){
+                        $isSelected  = ' selected="selected"';
+                    }else{
+                        $isSelected = '';
+                    }
+                    echo '<option name="accountid" value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
+                    $jsArray .= "prdName['" . $row['account'] . "'] = {nama_bank:'" . addslashes($row['bank']) . "',kode:'" . addslashes($row['kode']) . "',valuta:'".addslashes($row['curr'])."'};\n";
+                }
+                ?>
                 <?php echo'</select>
-                   
-            </div>
-            </br>
-           
+
+                </div>
+                </br>
+
                 <div class="col-md-2" >
-                    <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Currency </b></label>         
-                    <input type="text" style="font-size: 12px;" class="form-control" id="valuta" name="valuta" readonly >  
-                    <input type="text" style="font-size: 12px;" class="form-control" id="kode" name="kode" readonly hidden >         
+                <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Currency </b></label>         
+                <input type="text" style="font-size: 12px;" class="form-control" id="valuta" name="valuta" readonly >  
+                <input type="text" style="font-size: 12px;" class="form-control" id="kode" name="kode" readonly hidden >         
                 </div>
                 </br>
                 <div class="col-md-3" >
-                    <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Bank </b></label>                  
-                    <input type="text" style="font-size: 12px;" class="form-control" id="nama_bank" name="nama_bank" readonly > 
+                <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Bank </b></label>                  
+                <input type="text" style="font-size: 12px;" class="form-control" id="nama_bank" name="nama_bank" readonly > 
                 </div>
-               
+
                 </br>';
-                }else{
+            }else{
 
                 echo '';
-        }?>
+            }?>
 
-                <?php 
-                $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
-                if ($ref == 'None') {
-                    
-            echo '</div>
+            <?php 
+            $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
+            if ($ref == 'None') {
+
+                echo '</div>
                 </br>
                 <div class="form-row">
                 <div class="col-md-3" >
@@ -418,149 +440,149 @@
                 <input type="hidden" style="font-size: 14px;text-align: right;" class="form-control" id="nominalcre" name="nominalcre" placeholder="" readonly>
                 <input type="hidden" style="font-size: 14px;text-align: right;" class="form-control" id="nominaldeb" name="nominaldeb" placeholder="" readonly>
                 <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="nominal" name="nominal" placeholder="0.00" readonly>
-            </div>
-            </div>
+                </div>
+                </div>
 
-            <div class="col-md-2" >
+                <div class="col-md-2" >
                 <label for="nama_supp" class="col-form-label" ><b>Rate </b></label>
-            <div class="input-group" >
+                <div class="input-group" >
                 <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="rate" name="rate" placeholder="input rate here..." disabled >
                 <input type="hidden" style="font-size: 14px;text-align: right;" class="form-control" id="rate_h" name="rate_h" placeholder="0.00" readonly>
                 <input type="hidden" style="font-size: 14px;text-align: right;" class="form-control" id="rat" name="rat" 
                 value="';
 
-                    $sqlx = mysqli_query($conn2,"select max(id) as id FROM masterrate where v_codecurr = 'PAJAK'");
-                    $rowx = mysqli_fetch_array($sqlx);
-                    $maxid = $rowx['id'];
+                $sqlx = mysqli_query($conn2,"select max(id) as id FROM masterrate where v_codecurr = 'PAJAK'");
+                $rowx = mysqli_fetch_array($sqlx);
+                $maxid = $rowx['id'];
 
-                    $sqly = mysqli_query($conn2,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where id = '$maxid' and v_codecurr = 'PAJAK'");
-                    $rowy = mysqli_fetch_array($sqly);
-                    $rate = $rowy['rate'];    
+                $sqly = mysqli_query($conn2,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where id = '$maxid' and v_codecurr = 'PAJAK'");
+                $rowy = mysqli_fetch_array($sqly);
+                $rate = $rowy['rate'];    
             // $top = 30;
 
                 echo $rate;
-          
-        echo'">
+
+                echo'">
                 </div>
                 </div>
 
-            <div class="col-md-3" >
+                <div class="col-md-3" >
                 <label for="nama_supp" class="col-form-label" ><b>Equivalent IDR</b></label>
                 <div class="input-group" >
                 <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="nomrate" name="nomrate" placeholder="0.00" readonly>
-                 <input type="hidden" name="nomrate_h" id="nomrate_h" value="">
-            </div>
-            </div>
-            </div>
+                <input type="hidden" name="nomrate_h" id="nomrate_h" value="">
+                </div>
+                </div>
+                </div>
                 </br>
                 <div class="form-row">
-            <div class="col-md-8" >
-                    <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Descriptions </b></label>         
-                    <textarea style="font-size: 15px; text-align: left;" cols="40" rows="3" type="text" class="form-control " name="pesan" id="pesan" value="" placeholder="descriptions..." required></textarea>         
+                <div class="col-md-8" >
+                <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Descriptions </b></label>         
+                <textarea style="font-size: 15px; text-align: left;" cols="40" rows="3" type="text" class="form-control " name="pesan" id="pesan" value="" placeholder="descriptions..." required></textarea>         
                 </div>';
             }elseif ($ref == 'Bank Keluar') {
-                    
-            echo '</div>
+
+                echo '</div>
                 </br>
                 <div class="form-row">
                 <div class="col-md-3" >
                 <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Amount </b></label>
                 <div class="input-group" >
                 <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="nominal_h1" name="nominal_h1" placeholder=""
-                 value="';?> <?php             
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
-            } 
+                value="';?> <?php             
+                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                    $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+                } 
 
-            $sqlx = mysqli_query($conn2,"select max(id) as id FROM masterrate where v_codecurr = 'PAJAK'");
-            $rowx = mysqli_fetch_array($sqlx);
-            $maxid = $rowx['id'];
+                $sqlx = mysqli_query($conn2,"select max(id) as id FROM masterrate where v_codecurr = 'PAJAK'");
+                $rowx = mysqli_fetch_array($sqlx);
+                $maxid = $rowx['id'];
 
-            $sqly = mysqli_query($conn2,"select ROUND(rate,0) as rate , tanggal  FROM masterrate where id = '$maxid' and v_codecurr = 'PAJAK'");
-            $rowy = mysqli_fetch_array($sqly);
-            $rate = $rowy['rate']; 
+                $sqly = mysqli_query($conn2,"select ROUND(rate,0) as rate , tanggal  FROM masterrate where id = '$maxid' and v_codecurr = 'PAJAK'");
+                $rowy = mysqli_fetch_array($sqly);
+                $rate = $rowy['rate']; 
 
-            $sqlb = mysqli_query($conn2,"select d.curr as curr1 from tbl_pv_h a inner join b_bankout_det b on b.no_reff = a.no_pv inner join b_bankout_h c on c.no_bankout = b.no_bankout inner join b_masterbank d on d.bank_account = a.to_akun where c.no_bankout = '$no_bk' ");
-            $rowb = mysqli_fetch_array($sqlb);
-            $curr1 = isset($rowb['curr1']) ? $rowb['curr1']: null;
+                $sqlb = mysqli_query($conn2,"select d.curr as curr1 from tbl_pv_h a inner join b_bankout_det b on b.no_reff = a.no_pv inner join b_bankout_h c on c.no_bankout = b.no_bankout inner join b_masterbank d on d.bank_account = a.to_akun where c.no_bankout = '$no_bk' ");
+                $rowb = mysqli_fetch_array($sqlb);
+                $curr1 = isset($rowb['curr1']) ? $rowb['curr1']: null;
 
-            $sqlc = mysqli_query($conn2,"select d.curr as curr2 from tbl_pv_h a inner join b_bankout_det b on b.no_reff = a.no_pv inner join b_bankout_h c on c.no_bankout = b.no_bankout inner join b_masterbank d on d.bank_account = a.frm_akun where c.no_bankout = '$no_bk' ");
-            $rowc = mysqli_fetch_array($sqlc);
-            $curr2 = isset($rowc['curr2']) ? $rowc['curr2']: null;       
-    
-            $satu = 1;
+                $sqlc = mysqli_query($conn2,"select d.curr as curr2 from tbl_pv_h a inner join b_bankout_det b on b.no_reff = a.no_pv inner join b_bankout_h c on c.no_bankout = b.no_bankout inner join b_masterbank d on d.bank_account = a.frm_akun where c.no_bankout = '$no_bk' ");
+                $rowc = mysqli_fetch_array($sqlc);
+                $curr2 = isset($rowc['curr2']) ? $rowc['curr2']: null;       
 
-            if ($curr1 == $curr2 || $curr1 == "IDR" && $curr2 == "USD") {
+                $satu = 1;
+
+                if ($curr1 == $curr2 || $curr1 == "IDR" && $curr2 == "USD") {
                    $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
-            $sql = mysqli_query($conn2,"select round(sum(eqv_idr),0) as amount from b_bankout_h  where no_bankout = '$no_bk' ");
-            $row = mysqli_fetch_array($sql);
-            $amount = isset($row['amount']) ? $row['amount']: null;
-                }else{
+                   $sql = mysqli_query($conn2,"select round(sum(eqv_idr),0) as amount from b_bankout_h  where no_bankout = '$no_bk' ");
+                   $row = mysqli_fetch_array($sql);
+                   $amount = isset($row['amount']) ? $row['amount']: null;
+               }else{
                 $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
-            $sql = mysqli_query($conn2,"select round(sum(amount),0) as amount from b_bankout_h  where no_bankout = '$no_bk' ");
-            $row = mysqli_fetch_array($sql);
-            $amount2 = isset($row['amount']) ? $row['amount']: null;
-            $amount = round($amount2 / $rate,2);
+                $sql = mysqli_query($conn2,"select round(sum(amount),0) as amount from b_bankout_h  where no_bankout = '$no_bk' ");
+                $row = mysqli_fetch_array($sql);
+                $amount2 = isset($row['amount']) ? $row['amount']: null;
+                $amount = round($amount2 / $rate,2);
 
-                  }       
-    
+            }       
+
             // $top = 30;
 
             if(!empty($no_bk)) {
-                
-                  echo $amount;      
-            }
-            else{
-                echo '';
+
+              echo $amount;      
+          }
+          else{
+            echo '';
             } ?><?php echo '">
 
             <input type="hidden" style="font-size: 14px;text-align: right;" class="form-control" id="curr_bk" name="curr_bk" placeholder=""
-                 value="';?><?php             
+            value="';?><?php             
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+                $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
             }
 
             $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
             $sql = mysqli_query($conn2,"select curr from b_bankout_h  where no_bankout = '$no_bk' ");
             $row = mysqli_fetch_array($sql);
             $curr = isset($row['curr']) ? $row['curr']: null;         
-    
+
             // $top = 30;
 
             if(!empty($no_bk)) {
-                
-                  echo $curr;      
-            }
-            else{
-                echo '';
+
+              echo $curr;      
+          }
+          else{
+            echo '';
             } ?><?php echo '">
 
             <input type="hidden" style="font-size: 14px;text-align: right;" class="form-control" id="dataamount2" name="dataamount2" placeholder=""
-                 value="';?> <?php             
+            value="';?> <?php             
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+                $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
             }
 
             $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
             $sql = mysqli_query($conn2,"select round(sum(eqv_idr),0) as amount from b_bankout_h  where no_bankout = '$no_bk' ");
             $row = mysqli_fetch_array($sql);
             $amount = isset($row['amount']) ? $row['amount']: null;         
-    
+
             // $top = 30;
 
             if(!empty($no_bk)) {
-                
-                  echo $amount;      
-            }
-            else{
-                echo '';
+
+              echo $amount;      
+          }
+          else{
+            echo '';
             } ?><?php echo '">
-                <input type="hidden" style="font-size: 14px;text-align: right;" class="form-control" id="nominalcre" name="nominalcre" placeholder="" readonly>
-                <input type="hidden" style="font-size: 14px;text-align: right;" class="form-control" id="nominaldeb" name="nominaldeb" placeholder="" readonly>
-                <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="nominal" name="nominal" placeholder="0.00" readonly
-                value="';?> <?php             
+            <input type="hidden" style="font-size: 14px;text-align: right;" class="form-control" id="nominalcre" name="nominalcre" placeholder="" readonly>
+            <input type="hidden" style="font-size: 14px;text-align: right;" class="form-control" id="nominaldeb" name="nominaldeb" placeholder="" readonly>
+            <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="nominal" name="nominal" placeholder="0.00" readonly
+            value="';?> <?php             
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+                $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
             }
 
             $sqlx = mysqli_query($conn2,"select max(id) as id FROM masterrate where v_codecurr = 'PAJAK'");
@@ -578,161 +600,161 @@
             $sqlc = mysqli_query($conn2,"select d.curr as curr2 from tbl_pv_h a inner join b_bankout_det b on b.no_reff = a.no_pv inner join b_bankout_h c on c.no_bankout = b.no_bankout inner join b_masterbank d on d.bank_account = a.frm_akun where c.no_bankout = '$no_bk' ");
             $rowc = mysqli_fetch_array($sqlc);
             $curr2 = isset($rowc['curr2']) ? $rowc['curr2']: null;       
-    
+
             $satu = 1;
 
             if ($curr1 == $curr2 || $curr1 == "IDR" && $curr2 == "USD") {
-                   $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
-            $sql = mysqli_query($conn2,"select round(sum(eqv_idr),0) as amount from b_bankout_h  where no_bankout = '$no_bk' ");
-            $row = mysqli_fetch_array($sql);
-            $amount = isset($row['amount']) ? $row['amount']: null;
-                }else{
-                $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+               $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+               $sql = mysqli_query($conn2,"select round(sum(eqv_idr),0) as amount from b_bankout_h  where no_bankout = '$no_bk' ");
+               $row = mysqli_fetch_array($sql);
+               $amount = isset($row['amount']) ? $row['amount']: null;
+           }else{
+            $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
             $sql = mysqli_query($conn2,"select round(sum(amount),0) as amount from b_bankout_h  where no_bankout = '$no_bk' ");
             $row = mysqli_fetch_array($sql);
             $amount2 = isset($row['amount']) ? $row['amount']: null;
             $amount = $amount2 / $rate;
 
-                  }           
-    
+        }           
+
             // $top = 30;
 
-            if(!empty($no_bk)) {
-                
-                  echo number_format($amount,2);      
-            }
-            else{
-                echo '';
-            } ?><?php echo '">
-            </div>
-            </div>
+        if(!empty($no_bk)) {
 
-            <div class="col-md-2" >
-                <label for="nama_supp" class="col-form-label" ><b>Rate </b></label>
-            <div class="input-group" >
-                <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="rate" name="rate" value="';?><?php             
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
-            }
+          echo number_format($amount,2);      
+      }
+      else{
+        echo '';
+        } ?><?php echo '">
+        </div>
+        </div>
 
+        <div class="col-md-2" >
+        <label for="nama_supp" class="col-form-label" ><b>Rate </b></label>
+        <div class="input-group" >
+        <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="rate" name="rate" value="';?><?php             
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+        }
+
+        $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+
+        $sqlx = mysqli_query($conn2,"select max(id) as id FROM masterrate where v_codecurr = 'PAJAK'");
+        $rowx = mysqli_fetch_array($sqlx);
+        $maxid = $rowx['id'];
+
+        $sqly = mysqli_query($conn2,"select ROUND(rate,0) as rate , tanggal  FROM masterrate where id = '$maxid' and v_codecurr = 'PAJAK'");
+        $rowy = mysqli_fetch_array($sqly);
+        $rate = $rowy['rate']; 
+
+        $sqlb = mysqli_query($conn2,"select d.curr as curr1 from tbl_pv_h a inner join b_bankout_det b on b.no_reff = a.no_pv inner join b_bankout_h c on c.no_bankout = b.no_bankout inner join b_masterbank d on d.bank_account = a.to_akun where c.no_bankout = '$no_bk' ");
+        $rowb = mysqli_fetch_array($sqlb);
+        $curr1 = isset($rowb['curr1']) ? $rowb['curr1']: null;
+
+        $sqlc = mysqli_query($conn2,"select d.curr as curr2 from tbl_pv_h a inner join b_bankout_det b on b.no_reff = a.no_pv inner join b_bankout_h c on c.no_bankout = b.no_bankout inner join b_masterbank d on d.bank_account = a.frm_akun where c.no_bankout = '$no_bk' ");
+        $rowc = mysqli_fetch_array($sqlc);
+        $curr2 = isset($rowc['curr2']) ? $rowc['curr2']: null;       
+
+        $satu = 1;
+        $disabled = "disabled";
+
+        if(!empty($no_bk)) {
+            if ($curr1 == $curr2 || $curr1 == "IDR" && $curr2 == "USD") {
+                $disabled = "disabled";
+                echo $satu;
+            }else{
+                $disabled = "";
+                echo $rate;
+
+            }      
+        }
+        else{
+            echo '';
+            } ?><?php echo '" '.$disabled.'>
+            <input type="hidden" style="font-size: 14px;text-align: right;" class="form-control" id="rate_h" name="rate_h" placeholder="0.00" readonly>
+            <input type="hidden" style="font-size: 14px;text-align: right;" class="form-control" id="rat" name="rat" 
+            value="';
 
             $sqlx = mysqli_query($conn2,"select max(id) as id FROM masterrate where v_codecurr = 'PAJAK'");
             $rowx = mysqli_fetch_array($sqlx);
             $maxid = $rowx['id'];
 
-            $sqly = mysqli_query($conn2,"select ROUND(rate,0) as rate , tanggal  FROM masterrate where id = '$maxid' and v_codecurr = 'PAJAK'");
+            $sqly = mysqli_query($conn2,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where id = '$maxid' and v_codecurr = 'PAJAK'");
             $rowy = mysqli_fetch_array($sqly);
-            $rate = $rowy['rate']; 
-
-            $sqlb = mysqli_query($conn2,"select d.curr as curr1 from tbl_pv_h a inner join b_bankout_det b on b.no_reff = a.no_pv inner join b_bankout_h c on c.no_bankout = b.no_bankout inner join b_masterbank d on d.bank_account = a.to_akun where c.no_bankout = '$no_bk' ");
-            $rowb = mysqli_fetch_array($sqlb);
-            $curr1 = isset($rowb['curr1']) ? $rowb['curr1']: null;
-
-            $sqlc = mysqli_query($conn2,"select d.curr as curr2 from tbl_pv_h a inner join b_bankout_det b on b.no_reff = a.no_pv inner join b_bankout_h c on c.no_bankout = b.no_bankout inner join b_masterbank d on d.bank_account = a.frm_akun where c.no_bankout = '$no_bk' ");
-            $rowc = mysqli_fetch_array($sqlc);
-            $curr2 = isset($rowc['curr2']) ? $rowc['curr2']: null;       
-    
-            $satu = 1;
-            $disabled = "disabled";
-
-            if(!empty($no_bk)) {
-                if ($curr1 == $curr2 || $curr1 == "IDR" && $curr2 == "USD") {
-                    $disabled = "disabled";
-                    echo $satu;
-                }else{
-                    $disabled = "";
-                  echo $rate;
-
-                  }      
-            }
-            else{
-                echo '';
-            } ?><?php echo '" '.$disabled.'>
-                <input type="hidden" style="font-size: 14px;text-align: right;" class="form-control" id="rate_h" name="rate_h" placeholder="0.00" readonly>
-                <input type="hidden" style="font-size: 14px;text-align: right;" class="form-control" id="rat" name="rat" 
-                value="';
-
-                    $sqlx = mysqli_query($conn2,"select max(id) as id FROM masterrate where v_codecurr = 'PAJAK'");
-                    $rowx = mysqli_fetch_array($sqlx);
-                    $maxid = $rowx['id'];
-
-                    $sqly = mysqli_query($conn2,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where id = '$maxid' and v_codecurr = 'PAJAK'");
-                    $rowy = mysqli_fetch_array($sqly);
-                    $rate = $rowy['rate'];    
+            $rate = $rowy['rate'];    
             // $top = 30;
 
-                echo $rate;
-          
-        echo'">
-                </div>
-                </div>
+            echo $rate;
+
+            echo'">
+            </div>
+            </div>
 
             <div class="col-md-3" >
-                <label for="nama_supp" class="col-form-label" ><b>Equivalent IDR</b></label>
-                <div class="input-group" >
-                <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="nomrate" name="nomrate" value="';?><?php             
+            <label for="nama_supp" class="col-form-label" ><b>Equivalent IDR</b></label>
+            <div class="input-group" >
+            <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="nomrate" name="nomrate" value="';?><?php             
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+                $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
             }
 
             $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
             $sql = mysqli_query($conn2,"select round(sum(eqv_idr),0) as eqv_idr from b_bankout_h  where no_bankout = '$no_bk' ");
             $row = mysqli_fetch_array($sql);
             $eqv_idr = isset($row['eqv_idr']) ? $row['eqv_idr']: null;         
-    
+
             // $top = 30;
 
             if(!empty($no_bk)) {
-                
-                  echo number_format($eqv_idr,2);      
-            }
-            else{
-                echo '';
+
+              echo number_format($eqv_idr,2);      
+          }
+          else{
+            echo '';
             } ?><?php echo '" disabled>
-                 <input type="hidden" name="nomrate_h" id="nomrate_h" value="';?><?php             
+            <input type="hidden" name="nomrate_h" id="nomrate_h" value="';?><?php             
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+                $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
             }
 
             $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
             $sql = mysqli_query($conn2,"select round(sum(eqv_idr),0) as eqv_idr from b_bankout_h  where no_bankout = '$no_bk' ");
             $row = mysqli_fetch_array($sql);
             $eqv_idr = isset($row['eqv_idr']) ? $row['eqv_idr']: null;         
-    
+
             // $top = 30;
 
             if(!empty($no_bk)) {
-                
-                  echo $eqv_idr;      
-            }
-            else{
-                echo '';
+
+              echo $eqv_idr;      
+          }
+          else{
+            echo '';
             } ?><?php echo '">
             </div>
             </div>
             </div>
-                </br>
-                <div class="form-row">
+            </br>
+            <div class="form-row">
             <div class="col-md-8" >
-                    <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Descriptions </b></label>         
-                    <textarea style="font-size: 15px; text-align: left;" cols="40" rows="3" type="text" class="form-control " name="pesan" id="pesan" value="" placeholder="descriptions..." required></textarea>         
-                </div>';
-            }
-               else{
-                echo '';
-               }
-               
-                
-            ?>
+            <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Descriptions </b></label>         
+            <textarea style="font-size: 15px; text-align: left;" cols="40" rows="3" type="text" class="form-control " name="pesan" id="pesan" value="" placeholder="descriptions..." required></textarea>         
+            </div>';
+        }
+        else{
+            echo '';
+        }
+
+
+        ?>
 
 
 
-                                        
+
     </div>
 </br>
 
-    <div class="form-row">
+<div class="form-row">
 
 <!--            <div class="col-md-3 mb-3">            
             <label for="txt_pph"><b>PPh (%) </b></label>            
@@ -744,135 +766,137 @@
             //    echo '';
             //}
             ?>">
-            </div>-->                        
+        </div>-->                        
 
 
-    <div class="modal fade" id="mymodal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-        <div class="modal-dialog">
-        <div class="modal-content">
-        <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-        <h4 class="modal-title" id="Heading">Choose Document</h4>
-        </div>
-          <div class="modal-body">
-          <div class="form-group">
-            <form id="modal-form" method="post">
-                <div class="form-row">
-                 <div class="col-md-4">
-            <label for="nama_supp"><b>Customer</b></label>   
+        <div class="modal fade" id="mymodal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
+                        <h4 class="modal-title" id="Heading">Choose Document</h4>
+                    </div>
+                    <div class="modal-body">
+                      <div class="form-group">
+                        <form id="modal-form" method="post">
+                            <div class="form-row">
+                             <div class="col-md-4">
+                                <label for="nama_supp"><b>Customer</b></label>   
 
-             <?php 
-                $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
-                if ($ref == 'Bank Keluar') {
-                    echo '<input type="text" readonly style="font-size: 14px; width: 300px;" class="form-control" name="txt_supp" id="txt_supp" 
-            value="PT. Nirwana Alabare Garment">';
-                }else{
+                                <?php 
+                                $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
+                                if ($ref == 'Bank Keluar') {
+                                    echo '<input type="text" readonly style="font-size: 14px; width: 300px;" class="form-control" name="txt_supp" id="txt_supp" 
+                                    value="PT. Nirwana Alabare Garment">';
+                                }else{
 
-                    echo '<input type="text" readonly style="font-size: 14px; width: 300px;" class="form-control" name="txt_supp" id="txt_supp" 
-            value="';?> <?php 
-            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
-                echo $nama_supp; 
-            ?> <?php echo'">';
-                }
-                ?>         
+                                    echo '<input type="text" readonly style="font-size: 14px; width: 300px;" class="form-control" name="txt_supp" id="txt_supp" 
+                                    value="';?> <?php 
+                                    $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
+                                    echo $nama_supp; 
+                                    ?> <?php echo'">';
+                                }
+                                ?>         
               <!-- <input type="text" readonly style="font-size: 14px; width: 300px;" class="form-control" name="txt_supp" id="txt_supp" 
             value="<?php 
             $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
                 echo $nama_supp; 
             ?>"> -->
         </div>
-         <div class="col-md-4" style="padding-left: 150px;">
+        <div class="col-md-4" style="padding-left: 150px;">
 
             <label for="nama_supp"><b>Reference</b></label>            
-              <input type="text" readonly style="font-size: 14px; width: 300px;" class="form-control" name="txt_supp" id="txt_supp" 
+            <input type="text" readonly style="font-size: 14px; width: 300px;" class="form-control" name="txt_supp" id="txt_supp" 
             value="<?php 
             $ref_num = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
-                echo $ref_num; 
-            ?>">
-        </div>
+            echo $ref_num; 
+        ?>">
     </div>
+</div>
 
-                <label><b>Reference Date</b></label>
-                <div class="input-group-append">           
-                <input type="text" style="font-size: 14px;" class="form-control tanggal" id="start_date" name="start_date" 
-                value="<?php
-                $start_date ='';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                  $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-                }
-                if(!empty($_POST['start_date'])) {
-                    echo $_POST['start_date'];
-                }
-                else{
-                    echo date("d-m-Y");
-                } ?>" 
-                placeholder="Tanggal Awal">
+<label><b>Reference Date</b></label>
+<div class="input-group-append">           
+    <input type="text" style="font-size: 14px;" class="form-control tanggal" id="start_date" name="start_date" 
+    value="<?php
+    $start_date ='';
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+      $start_date = date("Y-m-d",strtotime($_POST['start_date']));
+  }
+  if(!empty($_POST['start_date'])) {
+    echo $_POST['start_date'];
+}
+else{
+    echo date("d-m-Y");
+} ?>" 
+placeholder="Tanggal Awal">
 
-                <label class="col-md-1" for="end_date"><b>-</b></label>
-                <input type="text" style="font-size: 14px;" class="form-control tanggal" id="end_date" name="end_date" 
-                value="<?php
-                $end_date ='';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                  $end_date = date("Y-m-d",strtotime($_POST['start_date']));
-                }
-                if(!empty($_POST['end_date'])) {
-                    echo $_POST['end_date'];
-                }
-                else{
-                    echo date("d-m-Y");
-                } ?>" 
-                placeholder="Tanggal Akhir">
-                </div>  
-                <div class="modal-footer">
-                    <button type="submit" id="send" name="send" class="btn btn-warning btn-lg" style="width: 100%;"><span class="fa fa-check"></span>
-                        Save
-                    </button>
-                </div>           
-            </form>
-        </div>
-      </div>
-
-
-        </div>
-    <!-- /.modal-content --> 
-  </div>
-      <!-- /.modal-dialog --> 
-    </div>
-    </div>                  
+<label class="col-md-1" for="end_date"><b>-</b></label>
+<input type="text" style="font-size: 14px;" class="form-control tanggal" id="end_date" name="end_date" 
+value="<?php
+$end_date ='';
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+  $end_date = date("Y-m-d",strtotime($_POST['start_date']));
+}
+if(!empty($_POST['end_date'])) {
+    echo $_POST['end_date'];
+}
+else{
+    echo date("d-m-Y");
+} ?>" 
+placeholder="Tanggal Akhir">
+</div>  
+<div class="modal-footer">
+    <button type="submit" id="send" name="send" class="btn btn-warning btn-lg" style="width: 100%;"><span class="fa fa-check"></span>
+        Save
+    </button>
+</div>           
 </form>
-    <div class="box body">
-        <div class="row">
-        
-            <div class="col-md-12">
+</div>
+</div>
 
-             <?php 
-                $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
-                if ($ref == 'AR Collection') {
-                    echo '';
-                }elseif($ref == 'None'){
 
-        echo '<table id="mytable" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
-                    <thead>
-                        <tr>
-                            <th style="width:10px;">-</th>
-                            <th style="width:100px;">Coa</th>
-                            <th style="width:100px;">Cost Center</th>                                                           
-                            <th style="width:100px;">Buyer</th>
-                            <th style="width:100px;">WS</th>
-                            <th style="width:50px;">Currency</th>
-                            <th style="width:100px;">Debit</th>                                                           
-                            <th style="width:100px;">Credit</th>
-                            <th style="width:100px;">Description</th>
-                            <th style="width:8px;">cek</th>
-                        </tr>
-                    </thead>
+</div>
+<!-- /.modal-content --> 
+</div>
+<!-- /.modal-dialog --> 
+</div>
+</div>                  
+</form>
+<div class="box body">
+    <div class="row">
+
+        <div class="col-md-12">
+
+         <?php 
+         $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
+         if ($ref == 'AR Collection') {
+            echo '';
+        }elseif($ref == 'None'){
+
+            echo '<div class="table-wrapper">
+            <table id="mytablenone" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
+            <thead>
+            <tr>
+            <th style="width:10px;">-</th>
+            <th style="width:100px;">Coa</th>
+            <th style="width:100px;">Profit Center</th> 
+            <th style="width:100px;">Cost Center</th>                                                           
+            <th style="width:100px;">Buyer</th>
+            <th style="width:100px;">WS</th>
+            <th style="width:50px;">Currency</th>
+            <th style="width:100px;">Debit</th>                                                           
+            <th style="width:100px;">Credit</th>
+            <th style="width:100px;">Description</th>
+            <th style="width:8px;">cek</th>
+            </tr>
+            </thead>
 
             <tbody id="tbody2">';
-                }else{
+        }else{
 
-        echo '<table id="mytable" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
-                    <thead>
-                        <tr>
+            echo '<table id="mytable" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
+            <thead>
+            <tr>
             <th class="text-center">-</th>
             <th class="text-center">COA</th>
             <th class="text-center">Reff Document</th>
@@ -880,159 +904,165 @@
             <th class="text-center">Description</th>
             <th class="text-center">Debit</th>
             <th class="text-center">Credit</th>
-                        </tr>
-                    </thead>
+            </tr>
+            </thead>
 
             <tbody> ';
-                }
-                ?>
-            <?php
-            $start_date ='';
-            $end_date ='';
-            $sub = '';
-            $tax = '';
-            $total = '';            
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        }
+        ?>
+        <?php
+        $start_date ='';
+        $end_date ='';
+        $sub = '';
+        $tax = '';
+        $total = '';            
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $start_date = date("Y-m-d",strtotime($_POST['start_date']));
             $end_date = date("Y-m-d",strtotime($_POST['end_date']));
             $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
             $ref_num = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
             $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
-            }
+        }
 
-            if ($ref_num == 'Bank Keluar') {
-                $sql = mysqli_query($conn2,"select a.no_bankout, GROUP_CONCAT(c.no_coa,' ',c.nama_coa) as coa,b.no_coa,a.bankout_date,a.nama_supp,a.curr, a.amount, a.outstanding, a.status, a.deskripsi, a.eqv_idr from b_bankout_h a inner join b_bankout_none b on b.no_bankout = a.no_bankout inner join mastercoa_v2 c on c.no_coa = b.no_coa where a.no_bankout = '$no_bk'
-                     union
-                    select a.no_bankout,GROUP_CONCAT(e.no_coa,' ',e.nama_coa) as coa,d.coa no_coa,a.bankout_date,a.nama_supp,a.curr, a.amount, a.outstanding, a.status, a.deskripsi, a.eqv_idr from b_bankout_h a inner join b_bankout_det b on b.no_bankout = a.no_bankout INNER JOIN tbl_pv_h c on c.no_pv = b.no_reff inner join tbl_pv d on d.no_pv = c.no_pv left join mastercoa_v2 e on e.no_coa = d.coa where a.no_bankout = '$no_bk'");
-            }else{
-                '';
-            }
-            
-            
-                if ($ref_num == 'AR Collection') {
-                    echo '';
-                }elseif($ref_num == 'None'){
+        if ($ref_num == 'Bank Keluar') {
+            $sql = mysqli_query($conn2,"select a.no_bankout, GROUP_CONCAT(c.no_coa,' ',c.nama_coa) as coa,b.no_coa,a.bankout_date,a.nama_supp,a.curr, a.amount, a.outstanding, a.status, a.deskripsi, a.eqv_idr from b_bankout_h a inner join b_bankout_none b on b.no_bankout = a.no_bankout inner join mastercoa_v2 c on c.no_coa = b.no_coa where a.no_bankout = '$no_bk'
+             union
+             select a.no_bankout,GROUP_CONCAT(e.no_coa,' ',e.nama_coa) as coa,d.coa no_coa,a.bankout_date,a.nama_supp,a.curr, a.amount, a.outstanding, a.status, a.deskripsi, a.eqv_idr from b_bankout_h a inner join b_bankout_det b on b.no_bankout = a.no_bankout INNER JOIN tbl_pv_h c on c.no_pv = b.no_reff inner join tbl_pv d on d.no_pv = c.no_pv left join mastercoa_v2 e on e.no_coa = d.coa where a.no_bankout = '$no_bk'");
+        }else{
+            '';
+        }
 
-                    
-                    echo '<tr style="display:none">
+
+        if ($ref_num == 'AR Collection') {
+            echo '';
+        }elseif($ref_num == 'None'){
+
+
+            echo '<tr style="display:none">
             <td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>
             <td style="width: 200px;">
-                <select class="form-control" name="nomor_coa" id="nomor_coa" style="width: 250px"> <option value="-" > - </option>';?> <?php $sql = mysqli_query($conn1," select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $cc) : echo'<option value="'.$cc["id_coa"].'"> '.$cc["coa"].' </option>'; endforeach; 
-                echo'</select>
+            <select class="form-control" name="nomor_coa" id="nomor_coa" style="width: 250px"> <option value="-" > - </option>';?> <?php $sql = mysqli_query($conn1," select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $cc) : echo'<option value="'.$cc["id_coa"].'"> '.$cc["coa"].' </option>'; endforeach; 
+            echo'</select>
             </td>';
             echo '
             <td style="width: 200px;">
-                <select class="form-control select2abs4" name="cost_ctr" id="cost_ctr" style="width: 250px"> <option value="-" > - </option>';?> <?php $sql = mysqli_query($conn1,"select no_cc as code_combine,cc_name as cost_name from b_master_cc where status = 'Active'"); foreach ($sql as $cc) : echo'<option value="'.$cc["code_combine"].'"> '.$cc["cost_name"].' </option>'; endforeach; 
-                echo'</select>
+            <select class="form-control select2abs4 prof_ctr" name="prof_ctr" id="prof_ctr" style="width: 250px"> <option value="-" > - </option>';?> <?php $sql3 = mysqli_query($conn1,"select id_pc,nama_pc from master_pc where status = 'Active'"); foreach ($sql3 as $fc) : echo'<option value="'.$fc["nama_pc"].'"> '.$fc["nama_pc"].' </option>'; endforeach; 
+            echo'</select>
+            </td>';
+            echo '
+            <td style="width: 200px;">
+            <select class="form-control select2abs4 cost_ctr" name="cost_ctr[]" id="cost_ctr" style="width: 250px"> <option value="-" > - </option>';
+            echo'</select>
             </td>';
             
             echo '<td>
-                <input type="text" class="form-control" name="keterangan[]" placeholder="" value="" autocomplete = "off">
-                </td>
-                <td>
-                <input type="text" class="form-control" name="keterangan[]" placeholder="" value="" autocomplete = "off">
-                </td>
-                <td>
-                <select class="form-control " name="currenc" id="currenc" data-live-search="true">
-                    <option value="IDR">IDR</option>  
-                    <option value="USD">USD</option>                       
+            <input type="text" class="form-control" name="keterangan[]" placeholder="" value="" autocomplete = "off">
+            </td>
+            <td>
+            <input type="text" class="form-control" name="keterangan[]" placeholder="" value="" autocomplete = "off">
+            </td>
+            <td>
+            <select class="form-control " name="currenc" id="currenc" data-live-search="true">
+            <option value="IDR">IDR</option>  
+            <option value="USD">USD</option>                       
 
-                </div>
-                </td>
-                <td>
-                <input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off">
-                </td>
-                <td>
-                <input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_cre(value)" autocomplete = "off">
-                </td>
-                <td>
-                <input type="text" class="form-control" name="keterangan[]" placeholder="" value="" autocomplete = "off">
-                </td>
-                <td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""/></td>
-       </tr>
+            </div>
+            </td>
+            <td>
+            <input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off">
+            </td>
+            <td>
+            <input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_cre(value)" autocomplete = "off">
+            </td>
+            <td>
+            <input type="text" class="form-control" name="keterangan[]" placeholder="" value="" autocomplete = "off">
+            </td>
+            <td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""/></td>
+            </tr>
 
-       ';
+            ';
 
-                }else{
-                    while($row = mysqli_fetch_array($sql)){
-                        $no_reff = $row['no_bankout'];
-                        if(!empty($no_reff)) {
-                        
+        }else{
+            while($row = mysqli_fetch_array($sql)){
+                $no_reff = $row['no_bankout'];
+                if(!empty($no_reff)) {
+
                     echo '<tr>
-                            <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>                      
-                            <td style="width:150px;">
-                            <input style="text-align: center;font-size: 14px" type="text" class="form-control" id="txt_amount" name="txt_amount" data="'.$row['no_coa'].'" value="'.$row['coa'].'" disabled>
-                            </td>
-                            <td style="width:100px;">
-                            <input style="text-align: center;font-size: 14px" type="text" class="form-control" id="txt_amount" name="txt_amount" value="'.$row['no_bankout'].'" disabled>
-                            </td>
-                            <td style="width:80px;">
-                            <input style="text-align: center;font-size: 14px" type="text" class="form-control" id="txt_amount" name="txt_amount" value="'.$row['bankout_date'].'" disabled>
-                            </td>
-                            <td style="width:100px;">
-                            <input style="text-align: center;font-size: 14px" type="text" class="form-control" id="txt_amount" name="txt_amount" value="'.$row['deskripsi'].'" disabled>
-                            </td>
-                            <td style="width:50px;">
-                            <input style="text-align: right;font-size: 14px" type="text" class="form-control" id="txt_amount" name="txt_amount" value="0" disabled>
-                            </td>
-                            <td style="width:50px;">
-                            <input style="text-align: right;font-size: 14px" type="text" class="form-control" id="dataamount" name="dataamount" data= "'.number_format($row['eqv_idr'],2).'" value="'.$row['eqv_idr'].'" disabled>
-                            </td>
-                 
-                        </tr>';
-                    }
-                        }
-                        if(!empty($no_reff)) {
+                    <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>                      
+                    <td style="width:150px;">
+                    <input style="text-align: center;font-size: 14px" type="text" class="form-control" id="txt_amount" name="txt_amount" data="'.$row['no_coa'].'" value="'.$row['coa'].'" disabled>
+                    </td>
+                    <td style="width:100px;">
+                    <input style="text-align: center;font-size: 14px" type="text" class="form-control" id="txt_amount" name="txt_amount" value="'.$row['no_bankout'].'" disabled>
+                    </td>
+                    <td style="width:80px;">
+                    <input style="text-align: center;font-size: 14px" type="text" class="form-control" id="txt_amount" name="txt_amount" value="'.$row['bankout_date'].'" disabled>
+                    </td>
+                    <td style="width:100px;">
+                    <input style="text-align: center;font-size: 14px" type="text" class="form-control" id="txt_amount" name="txt_amount" value="'.$row['deskripsi'].'" disabled>
+                    </td>
+                    <td style="width:50px;">
+                    <input style="text-align: right;font-size: 14px" type="text" class="form-control" id="txt_amount" name="txt_amount" value="0" disabled>
+                    </td>
+                    <td style="width:50px;">
+                    <input style="text-align: right;font-size: 14px" type="text" class="form-control" id="dataamount" name="dataamount" data= "'.number_format($row['eqv_idr'],2).'" value="'.$row['eqv_idr'].'" disabled>
+                    </td>
 
-                        echo '<tr>
-                            <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>                      
-                            <td style="width:150px;">
-                            <input style="text-align: center;font-size: 14px" type="text" class="form-control" id="txt_amount" name="txt_amount" data="8.52.01" value="8.52.01 LABA / (RUGI) SELISIH KURS" disabled>
-                            </td>
-                            <td style="width:100px;">
-                            <input style="text-align: center;font-size: 14px" type="text" class="form-control" id="txt_amount" name="txt_amount">
-                            </td>
-                            <td style="width:80px;">
-                            <input style="text-align: center;font-size: 14px" type="text" class="form-control tanggal" id="txt_amount" name="txt_amount">
-                            </td>
-                            <td style="width:100px;">
-                            <input style="text-align: center;font-size: 14px" type="text" class="form-control" id="txt_amount" name="txt_amount">
-                            </td>
-                            <td style="width:50px;">
-                            <input style="text-align: right;font-size: 14px" type="text" class="form-control" value="0" id="datadeb" name="datadeb" disabled>
-                            </td>
-                            <td style="width:50px;">
-                            <input style="text-align: right;font-size: 14px" type="text" class="form-control" value="0" id="datacre" name="datacre"  disabled>
-                            </td>
-                 
-                        </tr>';
-                        }
-                      }                  
-                    ?>
-            <?php 
-                $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
-                if ($ref == 'AR Collection') {
-                    echo '';
-                }elseif($ref == 'None'){
-                    echo '</tbody>
-                    <tfoot>
-          <tr>
+                    </tr>';
+                }
+            }
+            if(!empty($no_reff)) {
+
+                echo '<tr>
+                <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>                      
+                <td style="width:150px;">
+                <input style="text-align: center;font-size: 14px" type="text" class="form-control" id="txt_amount" name="txt_amount" data="8.52.01" value="8.52.01 LABA / (RUGI) SELISIH KURS" disabled>
+                </td>
+                <td style="width:100px;">
+                <input style="text-align: center;font-size: 14px" type="text" class="form-control" id="txt_amount" name="txt_amount">
+                </td>
+                <td style="width:80px;">
+                <input style="text-align: center;font-size: 14px" type="text" class="form-control tanggal" id="txt_amount" name="txt_amount">
+                </td>
+                <td style="width:100px;">
+                <input style="text-align: center;font-size: 14px" type="text" class="form-control" id="txt_amount" name="txt_amount">
+                </td>
+                <td style="width:50px;">
+                <input style="text-align: right;font-size: 14px" type="text" class="form-control" value="0" id="datadeb" name="datadeb" disabled>
+                </td>
+                <td style="width:50px;">
+                <input style="text-align: right;font-size: 14px" type="text" class="form-control" value="0" id="datacre" name="datacre"  disabled>
+                </td>
+
+                </tr>';
+            }
+        }                  
+        ?>
+        <?php 
+        $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
+        if ($ref == 'AR Collection') {
+            echo '';
+        }elseif($ref == 'None'){
+            echo '</tbody>
+            <tfoot>
+            <tr>
             <td colspan="10" align="center">
             <button type="button" class="btn btn-primary" onclick=addRow("tbody2");>Add Row</button>
             <button type="button" class="btn btn-warning" onclick=InsertRow("tbody2");>Interject Row</button>
             <button type="button" class="btn btn-danger" onclick=deleteRow("tbody2");>Delete Row</button>
             </td>
-          </tr>
-    </tfoot>
-                    
-    </table>';
-                }else{
+            </tr>
+            </tfoot>
 
-        echo '</tbody>
+            </table>
+            </div>';
+        }else{
+
+            echo '</tbody>
 
             </table>';
-            }
-            ?>
+        }
+        ?>
 <!--             <tfoot>
           <tr>
             <td colspan="9" align="center">
@@ -1041,70 +1071,70 @@
             <button type="button" class="btn btn-danger" onclick="deleteRow("tbody2")">Hapus Baris</button>
             </td>
           </tr>
-    </tfoot>   -->                   
-<div class="box footer">   
+      </tfoot>   -->                   
+      <div class="box footer">   
         <form id="form-simpan">
-            
-                <?php 
-                $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
-                if ($ref == 'None') {
-                    echo '
-                    <div class="col-md-4 mb-1">
-                     </br>
-                    <div class="input-group" >
-                    <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Total Debit </b></label>                  
-                    <input type="text" style="font-size: 14px;text-align: right" class="form-control" id="tot_debit" name="tot_debit" readonly >
-                    <input type="hidden" style="font-size: 14px;text-align: right" class="form-control" id="h_tot_debit" name="h_tot_debit" readonly > 
+
+            <?php 
+            $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
+            if ($ref == 'None') {
+                echo '
+                <div class="col-md-4 mb-1">
+                </br>
+                <div class="input-group" >
+                <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Total Debit </b></label>                  
+                <input type="text" style="font-size: 14px;text-align: right" class="form-control" id="tot_debit" name="tot_debit" readonly >
+                <input type="hidden" style="font-size: 14px;text-align: right" class="form-control" id="h_tot_debit" name="h_tot_debit" readonly > 
                 </div>
                 </br>
                 <div class="input-group" >
-                    <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Total Credit </b></label>                  
-                    <input type="text" style="font-size: 14px;text-align: right" class="form-control" id="tot_credit" name="tot_credit" readonly >
-                    <input type="hidden" style="font-size: 14px;text-align: right" class="form-control" id="h_tot_credit" name="h_tot_credit" readonly > 
+                <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Total Credit </b></label>                  
+                <input type="text" style="font-size: 14px;text-align: right" class="form-control" id="tot_credit" name="tot_credit" readonly >
+                <input type="hidden" style="font-size: 14px;text-align: right" class="form-control" id="h_tot_credit" name="h_tot_credit" readonly > 
                 </div>
                 </br>
-                    </div>';
-                }elseif ($ref == 'Bank Keluar') {
-                    echo '';
-                }else{
+                </div>';
+            }elseif ($ref == 'Bank Keluar') {
+                echo '';
+            }else{
 
-        echo '
-        <div class="col-md-5 mb-1">
+                echo '
+                <div class="col-md-5 mb-1">
                 </br>
-             <div class="input-group">
+                <div class="input-group">
                 <label for="accountid" class="col-form-label" style="width: 150px;" ><b>Account </b></label>  
                 <select class="form-control" name="accountid" id="accountid" data-live-search="true"'; echo"onchange='changeValueACC2(this.value)'"; echo'required >
                 <option value="" disabled selected="true">Select Account</option> ';?> 
                 <?php 
-                        $sqlacc = mysqli_query($conn1,"select bank_name as bank,curr, bank_account as account,RIGHT(bank_account,4) as kode from b_masterbank where status = 'Active'");
-                        $jsArray = "var prdName = new Array();\n";
+                $sqlacc = mysqli_query($conn1,"select bank_name as bank,curr, bank_account as account,RIGHT(bank_account,4) as kode from b_masterbank where status = 'Active'");
+                $jsArray = "var prdName = new Array();\n";
 
-                        while ($row = mysqli_fetch_array($sqlacc)) {
-                            $data = $row['account'];
-                            if($row['account'] == $_POST['accountid']){
-                                $isSelected  = ' selected="selected"';
-                            }else{
-                                $isSelected = '';
-                            }
-                            echo '<option name="accountid" value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
-                            $jsArray .= "prdName['" . $row['account'] . "'] = {nama_bank:'" . addslashes($row['bank']) . "',kode:'" . addslashes($row['kode']) . "',valuta:'".addslashes($row['curr'])."'};\n";
-                        }
-                        ?>
+                while ($row = mysqli_fetch_array($sqlacc)) {
+                    $data = $row['account'];
+                    if($row['account'] == $_POST['accountid']){
+                        $isSelected  = ' selected="selected"';
+                    }else{
+                        $isSelected = '';
+                    }
+                    echo '<option name="accountid" value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
+                    $jsArray .= "prdName['" . $row['account'] . "'] = {nama_bank:'" . addslashes($row['bank']) . "',kode:'" . addslashes($row['kode']) . "',valuta:'".addslashes($row['curr'])."'};\n";
+                }
+                ?>
                 <?php echo'</select>
-                   
-            </div>
-            </br>
-           
-                <div class="input-group" >
-                    <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Bank </b></label>                  
-                    <input type="text" style="font-size: 12px;" class="form-control" id="nama_bank" name="nama_bank" readonly > 
+
                 </div>
                 </br>
-               
+
                 <div class="input-group" >
-                    <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Currency </b></label>         
-                    <input type="text" style="font-size: 12px;" class="form-control" id="valuta" name="valuta" readonly >  
-                    <input type="text" style="font-size: 12px;" class="form-control" id="kode" name="kode" readonly hidden >         
+                <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Bank </b></label>                  
+                <input type="text" style="font-size: 12px;" class="form-control" id="nama_bank" name="nama_bank" readonly > 
+                </div>
+                </br>
+
+                <div class="input-group" >
+                <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Currency </b></label>         
+                <input type="text" style="font-size: 12px;" class="form-control" id="valuta" name="valuta" readonly >  
+                <input type="text" style="font-size: 12px;" class="form-control" id="kode" name="kode" readonly hidden >         
                 </div>
                 </br>';}?>
                 <?php 
@@ -1113,206 +1143,213 @@
                     echo '';
                 }else{
 
-        echo '<div class="input-group">
-            <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>COA</b></label>            
-              <select class="form-control selectpicker" name="coa" id="coa" data-dropup-auto="false" data-live-search="true">
-                <option value="" disabled selected="true">Select COA</option>';
-            }?>
+                    echo '<div class="input-group">
+                    <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>COA</b></label>            
+                    <select class="form-control selectpicker" name="coa" id="coa" data-dropup-auto="false" data-live-search="true">
+                    <option value="" disabled selected="true">Select COA</option>';
+                }?>
 
                 <?php
                 $akun ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $bank = isset($_POST['bank']) ? $_POST['bank']: null;
-                $coa = isset($_POST['coa']) ? $_POST['coa']: null;
-                $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
+                    $bank = isset($_POST['bank']) ? $_POST['bank']: null;
+                    $coa = isset($_POST['coa']) ? $_POST['coa']: null;
+                    $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
                 } 
                 if ($ref == 'None' || $ref == 'Bank Keluar') {
                     echo '';
                 }
                 elseif ($ref == 'AR Collection') {
                     $sql = mysqli_query($conn1," select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2 where nama_coa like '%PIUTANG USAHA%' and no_coa = '1.90.02'
-");
-                while ($row = mysqli_fetch_array($sql)) {
-                    $data = $row['coa'];
-                    $id_coa = $row['id_coa'];
-                    if($row['coa'] == $_POST['coa']){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
+                        ");
+                    while ($row = mysqli_fetch_array($sql)) {
+                        $data = $row['coa'];
+                        $id_coa = $row['id_coa'];
+                        if($row['coa'] == $_POST['coa']){
+                            $isSelected = ' selected="selected"';
+                        }else{
+                            $isSelected = '';
+                        }
+                        echo '<option value="'.$id_coa.'"'.$isSelected.'">'. $data .'</option>';    
                     }
-                    echo '<option value="'.$id_coa.'"'.$isSelected.'">'. $data .'</option>';    
-                }
                 } else{               
-                $sql = mysqli_query($conn1," select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2");
-                while ($row = mysqli_fetch_array($sql)) {
-                    $data = $row['coa'];
-                    $id_coa = $row['id_coa'];
-                    if($row['coa'] == $_POST['coa']){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
+                    $sql = mysqli_query($conn1," select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2");
+                    while ($row = mysqli_fetch_array($sql)) {
+                        $data = $row['coa'];
+                        $id_coa = $row['id_coa'];
+                        if($row['coa'] == $_POST['coa']){
+                            $isSelected = ' selected="selected"';
+                        }else{
+                            $isSelected = '';
+                        }
+                        echo '<option value="'.$id_coa.'"'.$isSelected.'">'. $data .'</option>';    
                     }
-                    echo '<option value="'.$id_coa.'"'.$isSelected.'">'. $data .'</option>';    
-                }
-            }?>
+                }?>
                 <?php 
                 $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
                 if ($ref == 'None' || $ref == 'Bank Keluar') {
                     echo '';
                 }else{
 
-        echo '</select>
-                </div>
-            </br>';
-        }?>
+                    echo '</select>
+                    </div>
+                    </br>';
+                }?>
 
-            <?php 
+                <?php 
                 $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
                 if ($ref == 'None' || $ref == 'Bank Keluar') {
                     echo '';
                 }else{
 
-        echo '<div class="input-group">
-            <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Cost Center</b></label>            
-              <select class="form-control selectpicker" name="cost" id="cost" data-dropup-auto="false" data-live-search="true">
-                <option value="" disabled selected="true">Select Cost Center</option>';
+                    echo '<div class="input-group">
+                    <label for="profit_center" class="col-form-label" style="width: 150px;"><b>Profit Center</b></label>            
+                    <select class="form-control selectpicker" name="profit_center" id="profit_center" data-dropup-auto="false" data-live-search="true" onChange="UbahCostArc(this.value)">
+                    <option value="" disabled selected="true">Select Cost Center</option>';
                 }?>                                                
                 <?php
                 $akun ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $bank = isset($_POST['bank']) ? $_POST['bank']: null;
-                $cost = isset($_POST['cost']) ? $_POST['cost']: null;
-                $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
+                    $bank = isset($_POST['bank']) ? $_POST['bank']: null;
+                    $cost = isset($_POST['cost']) ? $_POST['cost']: null;
+                    $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
                 } 
                 if ($ref == 'None' || $ref == 'Bank Keluar') {
                     echo '';
                 }
                 else{                 
-                $sql = mysqli_query($conn1,"    select no_cc as code_combine,cc_name as cost_name from b_master_cc where status = 'Active'");
-                while ($row = mysqli_fetch_array($sql)) {
-                    $data = $row['cost_name'];
-                    $code_combine = $row['code_combine'];
-                    if($row['cost_name'] == $_POST['cost']){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
+                    $sql = mysqli_query($conn1,"select id_pc,nama_pc from master_pc where status = 'Active'");
+                    while ($row = mysqli_fetch_array($sql)) {
+                        $data = $row['nama_pc'];
+                        $code_combine = $row['nama_pc'];
+                        if($row['nama_pc'] == $_POST['profit_center']){
+                            $isSelected = ' selected="selected"';
+                        }else{
+                            $isSelected = '';
+                        }
+                        echo '<option value="'.$code_combine.'"'.$isSelected.'">'. $data .'</option>';    
                     }
-                    echo '<option value="'.$code_combine.'"'.$isSelected.'">'. $data .'</option>';    
-                }
-            }?>
+                }?>
                 <?php 
                 $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
                 if ($ref == 'None' || $ref == 'Bank Keluar') {
                     echo '';
                 }else{
 
-        echo '</select>
-                </div>
-            </br>';
-        }?>
+                    echo '</select>
+                    </div>
+                    </br>
+                    <div class="input-group">
+                    <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Cost Center</b></label>            
+                    <select class="form-control selectpicker" name="cost" id="cost" data-dropup-auto="false" data-live-search="true">
+                    <option value="" disabled selected="true">Select Cost Center</option>
+                    </select>
+                    </div>
+                    </br>';
+                }?>
                 <?php
                 $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
                 if ($ref == 'None' || $ref == 'Bank Keluar') {
-                    
-                echo '';
-            }
-               else{ 
-            echo '<div class="input-group" >
-                <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Amount </b></label>';}
-                $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
-                if ($ref == 'None' || $ref == 'Bank Keluar') {
-                    
-                echo '';
-            }
-               else{
-                echo '
 
-               <input type="number" min="0" style="font-size: 14px;text-align: right;" class="form-control" id="nominal_h" name="nominal_h" placeholder="input nominal..." >';
-               }
-               
-                $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
-                if ($ref == 'None' || $ref == 'Bank Keluar') {
                     echo '';
-                }else{
-                    echo '<input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="nominal" name="nominal" placeholder="0.00" readonly>
-            </div>
-            </br>
-            <div class="input-group" >
-                <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Rate </b></label>
-                <input type="number" min="0" style="font-size: 14px;text-align: right;" class="form-control" id="rate1" name="rate1" placeholder="input rate here..." >
-                <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="rate_h1" name="rate_h1" placeholder="0.00" readonly="">
-                <input type="hidden" style="font-size: 14px;text-align: right;" class="form-control" id="rat" name="rat" 
-                value="';
+                }
+                else{ 
+                    echo '<div class="input-group" >
+                    <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Amount </b></label>';}
+                    $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
+                    if ($ref == 'None' || $ref == 'Bank Keluar') {
 
-                    $sqlx = mysqli_query($conn2,"select max(id) as id FROM masterrate where v_codecurr = 'PAJAK'");
-                    $rowx = mysqli_fetch_array($sqlx);
-                    $maxid = $rowx['id'];
+                        echo '';
+                    }
+                    else{
+                        echo '
 
-                    $sqly = mysqli_query($conn2,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where id = '$maxid' and v_codecurr = 'PAJAK'");
-                    $rowy = mysqli_fetch_array($sqly);
-                    $rate = $rowy['rate'];    
+                        <input type="number" min="0" style="font-size: 14px;text-align: right;" class="form-control" id="nominal_h" name="nominal_h" placeholder="input nominal..." >';
+                    }
+
+                    $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
+                    if ($ref == 'None' || $ref == 'Bank Keluar') {
+                        echo '';
+                    }else{
+                        echo '<input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="nominal" name="nominal" placeholder="0.00" readonly>
+                        </div>
+                        </br>
+                        <div class="input-group" >
+                        <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Rate </b></label>
+                        <input type="number" min="0" style="font-size: 14px;text-align: right;" class="form-control" id="rate1" name="rate1" placeholder="input rate here..." >
+                        <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="rate_h1" name="rate_h1" placeholder="0.00" readonly="">
+                        <input type="hidden" style="font-size: 14px;text-align: right;" class="form-control" id="rat" name="rat" 
+                        value="';
+
+                        $sqlx = mysqli_query($conn2,"select max(id) as id FROM masterrate where v_codecurr = 'PAJAK'");
+                        $rowx = mysqli_fetch_array($sqlx);
+                        $maxid = $rowx['id'];
+
+                        $sqly = mysqli_query($conn2,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where id = '$maxid' and v_codecurr = 'PAJAK'");
+                        $rowy = mysqli_fetch_array($sqly);
+                        $rate = $rowy['rate'];    
             // $top = 30;
 
-                echo $rate;
-          
-        echo'">
-            </div>
-            </br>
-            <div class="input-group" >
-                <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Equivalent IDR</b></label>
-                <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="nomrate" name="nomrate" placeholder="0.00" readonly>
-                 <input type="hidden" name="nomrate_h" id="nomrate_h" value="">
-            </div>
-            </br>
+                        echo $rate;
 
-            <div class="input-group" >
-                    <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Descriptions </b></label>         
-                    <textarea style="font-size: 15px; text-align: left;" cols="30" rows="5" type="text" class="form-control " name="pesan" id="pesan" value="" placeholder="descriptions..." required></textarea>         
+                        echo'">
+                        </div>
+                        </br>
+                        <div class="input-group" >
+                        <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Equivalent IDR</b></label>
+                        <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="nomrate" name="nomrate" placeholder="0.00" readonly>
+                        <input type="hidden" name="nomrate_h" id="nomrate_h" value="">
+                        </div>
+                        </br>
+
+                        <div class="input-group" >
+                        <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Descriptions </b></label>         
+                        <textarea style="font-size: 15px; text-align: left;" cols="30" rows="5" type="text" class="form-control " name="pesan" id="pesan" value="" placeholder="descriptions..." required></textarea>         
+                        </div>
+                        </br>
+
+                        </div>';}
+                        ?>
+
+                        <div class="form-row col">
+                            <div class="col-md-3 mb-3">                              
+                                <button type="button" style="border-radius: 6px" class="btn-outline-primary btn-sm" name="simpan" id="simpan"><span class="fa fa-floppy-o"></span> Save</button>                
+                                <button type="button" style="border-radius: 6px" class="btn-outline-danger btn-sm" name="batal" id="batal" onclick="location.href='bank-in22.php'"><span class="fa fa-angle-double-left"></span> Back</button>           
+                            </div>
+                        </div>                                    
+                    </form>
                 </div>
-                </br>
 
-            </div>';}
-            ?>
-            
-           <div class="form-row col">
-            <div class="col-md-3 mb-3">                              
-            <button type="button" style="border-radius: 6px" class="btn-outline-primary btn-sm" name="simpan" id="simpan"><span class="fa fa-floppy-o"></span> Save</button>                
-            <button type="button" style="border-radius: 6px" class="btn-outline-danger btn-sm" name="batal" id="batal" onclick="location.href='bank-in22.php'"><span class="fa fa-angle-double-left"></span> Back</button>           
-            </div>
-            </div>                                    
-        </form>
-        </div>
+                <div class="modal fade" id="mymodalkbon" data-target="#mymodalkbon" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
+                                <h4 class="modal-title" id="txt_kbon"></h4>
+                            </div>
+                            <div class="container">
+                                <div class="row">
+                                  <div id="txt_tgl_kbon" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+                                  <div id="txt_nama_supp" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+                                  <div id="txt_tgl_tempo" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>         
+                                  <div id="txt_curr" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+                                  <div id="txt_create_user" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+                                  <div id="txt_status" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+                                  <div id="txt_no_faktur" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+                                  <div id="txt_supp_inv" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+                                  <div id="txt_tgl_inv" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>                                           
+                                  <div id="details" class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;"></div>          
+                              </div>
+                          </div>
+                      </div>
+                      <!-- /.modal-content --> 
+                  </div>
+                  <!-- /.modal-dialog --> 
+              </div>         
 
-<div class="modal fade" id="mymodalkbon" data-target="#mymodalkbon" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-        <div class="modal-dialog">
-        <div class="modal-content">
-        <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-        <h4 class="modal-title" id="txt_kbon"></h4>
-        </div>
-        <div class="container">
-        <div class="row">
-          <div id="txt_tgl_kbon" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-          <div id="txt_nama_supp" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-          <div id="txt_tgl_tempo" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>         
-          <div id="txt_curr" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-          <div id="txt_create_user" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-          <div id="txt_status" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-          <div id="txt_no_faktur" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-          <div id="txt_supp_inv" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-          <div id="txt_tgl_inv" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>                                           
-          <div id="details" class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;"></div>          
-        </div>
-        </div>
-        </div>
-    <!-- /.modal-content --> 
+          </div><!-- body-row END -->
+      </div>
   </div>
-      <!-- /.modal-dialog --> 
-    </div>         
-                                
-</div><!-- body-row END -->
-</div>
-</div>
 
   <!-- Bootstrap core JavaScript -->
   <script src="../vendor/jquery/jquery.min.js"></script>
@@ -1322,9 +1359,9 @@
   <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
   
 
-<script>
+  <script>
   // Hide submenus
-$('#body-row .collapse').collapse('hide'); 
+  $('#body-row .collapse').collapse('hide'); 
 
 // Collapse/Expand icon
 $('#collapse-icon').addClass('fa-angle-double-left'); 
@@ -1355,11 +1392,29 @@ function SidebarCollapse () {
 
 <script>
     $(document).ready(function() {
-    $('#mytable').dataTable();
-    
+        $('#mytable').dataTable();
+
+        $("[data-toggle=tooltip]").tooltip();
+
+    } );
+</script>
+
+<script>
+    $(document).ready(function() {
+     $('#mytablenone').DataTable({
+            paging: false,          // Menambahkan paging
+            searching: false,       // Menambahkan pencarian
+            scrollCollapse: true,  // Mengatasi jika data tidak cukup
+            fixedHeader: true,     // Menjaga header tetap terlihat
+            language: {
+            info: "", // Menghilangkan teks "Showing 1 to 1 of 1 entries"
+            infoEmpty: "", // Untuk keadaan ketika tidak ada data
+            infoFiltered: "" // Untuk keadaan filter
+        }    // Menjaga header tetap terlihat
+    });
      $("[data-toggle=tooltip]").tooltip();
-    
-} );
+
+ } );
 </script>
 
 
@@ -1370,11 +1425,11 @@ function SidebarCollapse () {
       //Initialize Select2 Elements
       $('.select2bs4').select2({
         theme: 'bootstrap4'
-      })
-    });
-  </script>
-  <script type="text/javascript">
-      function modal_input_amt(){ 
+    })
+  });
+</script>
+<script type="text/javascript">
+  function modal_input_amt(){ 
     var deb = parseFloat(document.getElementById('nomrate_h').value,10) || 0;   
     var table = document.getElementById("tbody2");
     var tota = 0;
@@ -1382,60 +1437,60 @@ function SidebarCollapse () {
     var tot_deb = 0;
     var totall = 0;
     var rate = parseFloat(document.getElementById('rate').value,10) || 1;
-            for (var i = 1; i < (table.rows.length); i++) {
+    for (var i = 1; i < (table.rows.length); i++) {
 
-    var curr = document.getElementById("tbody2").rows[i].cells[5].children[0].children[0].value;
-    var price = document.getElementById("tbody2").rows[i].cells[6].children[0].value;
-    var price2 = document.getElementById("tbody2").rows[i].cells[7].children[0];
-    if (price == '') {
-        harga = 0;
-        price2.readOnly = false;
-    }else{
-        if (curr == 'USD') {
-            harga = price * rate;
+        var curr = document.getElementById("tbody2").rows[i].cells[6].children[0].children[0].value;
+        var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
+        var price2 = document.getElementById("tbody2").rows[i].cells[8].children[0];
+        if (price == '') {
+            harga = 0;
+            price2.readOnly = false;
         }else{
-            harga = price;
+            if (curr == 'USD') {
+                harga = price * rate;
+            }else{
+                harga = price;
+            }
+            price2.readOnly = true;
         }
-        price2.readOnly = true;
+        tota += parseFloat(harga);
+        tot_deb  = tota + deb;
+
+
+
+
+        document.getElementsByName("nominaldeb")[0].value = tota.toFixed(2);
+        document.getElementsByName("tot_debit")[0].value = formatMoney(tot_deb.toFixed(2));
+        document.getElementsByName("h_tot_debit")[0].value = tota.toFixed(2);
     }
-    tota += parseFloat(harga);
-    tot_deb  = tota + deb;
-
-
-
-
-    document.getElementsByName("nominaldeb")[0].value = tota.toFixed(2);
-    document.getElementsByName("tot_debit")[0].value = formatMoney(tot_deb.toFixed(2));
-    document.getElementsByName("h_tot_debit")[0].value = tota.toFixed(2);
 }
-}
-  </script>
+</script>
 
-  <script type="text/javascript">
-      function modal_input_cre(){ 
-      
+<script type="text/javascript">
+  function modal_input_cre(){ 
+
     var table = document.getElementById("tbody2");
     var tota = 0;
     var harga = 0;
     var totall = 0;
     var rate = parseFloat(document.getElementById('rate').value,10) || 1;
-            for (var i = 1; i < (table.rows.length); i++) {
+    for (var i = 1; i < (table.rows.length); i++) {
 
-    var curr = document.getElementById("tbody2").rows[i].cells[5].children[0].children[0].value;
-    var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
-    var price2 = document.getElementById("tbody2").rows[i].cells[6].children[0];
-    if (price == '') {
-        harga = 0;
-        price2.readOnly = false;
-    }else{
-        if (curr == 'USD') {
-            harga = price * rate;
+        var curr = document.getElementById("tbody2").rows[i].cells[6].children[0].children[0].value;
+        var price = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
+        var price2 = document.getElementById("tbody2").rows[i].cells[7].children[0];
+        if (price == '') {
+            harga = 0;
+            price2.readOnly = false;
         }else{
-            harga = price;
+            if (curr == 'USD') {
+                harga = price * rate;
+            }else{
+                harga = price;
+            }
+            price2.readOnly = true;
         }
-        price2.readOnly = true;
-    }
-    tota += parseFloat(harga);
+        tota += parseFloat(harga);
 
     // alert(rate);
 
@@ -1446,7 +1501,7 @@ function SidebarCollapse () {
     document.getElementsByName("h_tot_credit")[0].value = tota.toFixed(2);
 }
 }
-  </script>
+</script>
 <!-- 
 <script >
     $('#add').click( function() {      
@@ -1461,112 +1516,275 @@ function SidebarCollapse () {
 </script> -->
 
 <script type="text/javascript">
-    
-   // JavaScript Document
-function addRow(tableID) {
-    var tableID = "tbody2";
- var table = document.getElementById(tableID);
- var rowCount = table.rows.length;
- var row = table.insertRow(rowCount);
 
-$(function() {
-    $('.selectpicker').selectpicker();
-});
-$(document).ready(function () {
-    $('.tanggal').datepicker({
-        format: "dd-mm-yyyy",
-        autoclose:true
+    function UbahCostArc(val) {
+    var profit = val; // Ambil nilai parameter
+    // alert(profit); // Debug: pastikan nilai 'profit' diterima
+
+    // Pastikan selektor dropdown sesuai dengan nama elemen
+    const costCtrDropdown = $('select[name="cost"]');
+
+    // Hapus opsi yang ada terlebih dahulu, kecuali opsi default
+    costCtrDropdown.find('option').not(':first').remove();
+
+    // Lakukan permintaan AJAX
+    $.ajax({
+        url: 'getCostCenter.php', // URL endpoint server Anda
+        type: 'POST',
+        data: { prof_ctr: profit }, // Kirim data prof_ctr ke server
+        dataType: 'json',
+        success: function (response) {
+            // Periksa apakah respons valid
+            if (response && response.length > 0) {
+                $.each(response, function (index, costCtr) {
+                    console.log(costCtr); // Debug: tampilkan data yang diterima
+                    // Tambahkan opsi baru ke dropdown
+                    costCtrDropdown.append(`<option value="${costCtr.value}">${costCtr.text}</option>`);
+                });
+
+                // Re-inisialisasi selectpicker setelah menambah opsi
+                costCtrDropdown.selectpicker('refresh');
+            } else {
+                console.error('Tidak ada data yang diterima dari server.');
+                alert('Tidak ada data cost center yang tersedia.');
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('AJAX Error:', status, error);
+            alert('Gagal mengambil data cost center.');
+        }
     });
+}
+
+
+    $(document).on('change', '.prof_ctr', function () {
+    const selectedProfCtr = $(this).val();  // Ambil nilai prof_ctr yang dipilih
+    const costCtrDropdown = $(this).closest('tr').find('.cost_ctr');  // Temukan dropdown cost_ctr dalam baris yang sama
+
+    // Kosongkan dropdown cost_ctr sebelum diisi
+    costCtrDropdown.selectpicker('destroy');  // Hancurkan selectpicker lama
+    costCtrDropdown.empty();  // Kosongkan semua opsi yang ada
+    costCtrDropdown.append('<option value="-"> - </option>');  // Tambahkan opsi default
+    costCtrDropdown.selectpicker();  // Inisialisasi ulang selectpicker
+
+    if (selectedProfCtr && selectedProfCtr !== '-') {
+        // Lakukan AJAX ke server untuk mengambil data cost_ctr
+        $.ajax({
+            url: 'getCostCenter.php',  // Ganti dengan URL endpoint server Anda
+            type: 'POST',
+            data: { prof_ctr: selectedProfCtr },  // Kirim data prof_ctr ke server
+            dataType: 'json',
+            success: function (response) {
+                // Periksa apakah respons valid
+                if (response && response.length > 0) {
+                    $.each(response, function (index, costCtr) {
+                        console.log(costCtr);  // Debug data yang diterima
+                        costCtrDropdown.append(`<option value="${costCtr.value}">${costCtr.text}</option>`);
+                    });
+
+                    // Re-inisialisasi selectpicker setelah menambah opsi
+                    costCtrDropdown.selectpicker('refresh');
+                } else {
+                    console.error('Tidak ada data yang diterima dari server.');
+                    // alert('Tidak ada data cost center yang tersedia.');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('AJAX Error:', status, error);
+                alert('Gagal mengambil data cost center.');
+            }
+        });
+    } else {
+        // Jika tidak ada pilihan valid, tambahkan opsi default dan refresh selectpicker
+        // costCtrDropdown.append('<option value="-"> - </option>');
+        costCtrDropdown.selectpicker('refresh');
+    }
 });
-$(function() {
+
+   // JavaScript Document
+   function addRow(tableID) {
+    var tableID = "tbody2";
+    var table = document.getElementById(tableID);
+    var rowCount = table.rows.length;
+    var row = table.insertRow(rowCount);
+
+    $(function() {
+        $('.selectpicker').selectpicker();
+    });
+    $(document).ready(function () {
+        $('.tanggal').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose:true
+        });
+    });
+    $(function() {
       //Initialize Select2 Elements
       var selectcoba = rowCount;
       $('.rowCount').select2({
          theme: 'bootstrap4'
-      })
+     })
       //Initialize Select2 Elements
       $('.select2add').select2({
         theme: 'bootstrap4'
-      })
-    });
- $coa = '';
- var element1 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td style="width: 50px"><select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="220px" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td ><select class="form-control selectpicker" name="cost_ctr" id="cost_ctr" data-live-search="true" data-width="200px" data-size="5"> <option value="-" > - </option><?php $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name as cost_name from b_master_cc where status = 'Active'"); foreach ($sql2 as $cc) : ?> <option value="<?= $cc["code_combine"]; ?>"><?= $cc["cost_name"]; ?> </option><?php endforeach; ?></select></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><select class="form-control selectpicker" name="currenc" id="currenc" data-live-search="true"><option value="IDR">IDR</option><option value="USD">USD</option></select></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_cre(value)" autocomplete = "off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
+    })
+  });
+    $coa = '';
+    var element1 = `
+    <tr>
+    <td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>
+    <td style="width: 50px">
+    <select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="220px" data-size="5">
+    <option value="-">-</option>
+    <?php $sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa, ' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?>
+    <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?></option>
+<?php endforeach; ?>
+</select>
+</td>
+<td>
+<select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="200px" data-size="5">
+<option value="-"> - </option>
+<?php
+$sql3 = mysqli_query($conn1, "select id_pc,nama_pc from master_pc where status = 'Active'");
+foreach ($sql3 as $fc) : ?>
+    <option value="<?= $fc['nama_pc']; ?>"><?= $fc['nama_pc']; ?></option>
+<?php endforeach; ?>
+</select>
+</td>
+<td>
+<select class="form-control selectpicker cost_ctr" name="cost_ctr[]" id="cost_ctr" data-live-search="true" data-width="200px" data-size="5">
+<option value="-"> - </option>
+</select>
+</td>
+<td><input style="font-size: 12px;width: 150px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td>
+<td><input style="font-size: 12px;width: 150px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td>
+<td>
+<select class="form-control selectpicker" name="currenc" id="currenc" data-live-search="true">
+<option value="IDR">IDR</option>
+<option value="USD">USD</option>
+</select>
+</td>
+<td><input style="text-align: right;width: 150px;" type="number" min="1" class="form-control" id="txt_amount" name="txt_amount" oninput="modal_input_amt(value)" autocomplete="off"></td>
+<td><input style="text-align: right;width: 150px;" type="number" min="1" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_cre(value)" autocomplete="off"></td>
+<td><input style="font-size: 12px;width: 150px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td>
+<td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td>
+</tr>
+`;
 
 
- row.innerHTML = element1;    
-    }
-    
+
+row.innerHTML = element1;    
+}
+
 function deleteRow(tableID)
 {
     try
-         {
+    {
         var table = document.getElementById(tableID);
         var rowCount = table.rows.length;
-            for(var i=0; i<rowCount; i++)
+        for(var i=0; i<rowCount; i++)
+        {
+            var row = table.rows[i];
+            var chkbox = row.cells[10].childNodes[0];
+            if (null != chkbox && true == chkbox.checked)
+            {
+                if (rowCount <= 1)
                 {
-                var row = table.rows[i];
-                var chkbox = row.cells[9].childNodes[0];
-                if (null != chkbox && true == chkbox.checked)
-                    {
-                    if (rowCount <= 1)
-                        {
-                        alert("Tidak dapat menghapus semua baris.");
-                        break;
-                        }
-                    table.deleteRow(i);
-                    rowCount--;
-                    i--;
-                    }
+                    alert("Tidak dapat menghapus semua baris.");
+                    break;
                 }
-            } catch(e)
+                table.deleteRow(i);
+                rowCount--;
+                i--;
+            }
+        }
+    } catch(e)
     {
-    alert(e);
+        alert(e);
     }
- }
- 
+}
+
 function InsertRow(tableID)
 {
     try{
         var table = document.getElementById(tableID);
         var rowCount = table.rows.length;
-            for(var i=0; i<rowCount; i++)
-                {
-                var row = table.rows[i];
-                var chkbox = row.cells[9].childNodes[0];
-                if (null != chkbox && true == chkbox.checked)
-                    {
-$(function() {
-    $('.selectpicker').selectpicker();
+        for(var i=0; i<rowCount; i++)
+        {
+            var row = table.rows[i];
+            var chkbox = row.cells[10].childNodes[0];
+            if (null != chkbox && true == chkbox.checked)
+            {
+                $(function() {
+                    $('.selectpicker').selectpicker();
 
-});
+                });
 
-$(document).ready(function () {
-    $('.tanggal').datepicker({
-        format: "dd-mm-yyyy",
-        autoclose:true
-    });
-});
-        var element2 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td style="width: 50px"><select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="220px" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td ><select class="form-control selectpicker" name="cost_ctr" id="cost_ctr" data-live-search="true" data-width="200px" data-size="5"> <option value="-" > - </option><?php $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name as cost_name from b_master_cc where status = 'Active'"); foreach ($sql2 as $cc) : ?> <option value="<?= $cc["code_combine"]; ?>"><?= $cc["cost_name"]; ?> </option><?php endforeach; ?></select></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><select class="form-control selectpicker" name="currenc" id="currenc" data-live-search="true"><option value="IDR">IDR</option><option value="USD">USD</option></select></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_cre(value)" autocomplete = "off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
-        var newRow = table.insertRow(i+1);
-        newRow.innerHTML = element2;
-                    
-                    }
-                    
-                }
-            } catch(e)
-    {
-    alert(e);
+                $(document).ready(function () {
+                    $('.tanggal').datepicker({
+                        format: "dd-mm-yyyy",
+                        autoclose:true
+                    });
+                });
+                var element2 = `
+                <tr>
+                <td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>
+                <td style="width: 50px">
+                <select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="220px" data-size="5">
+                <option value="-">-</option>
+                <?php $sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa, ' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?>
+                <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?></option>
+            <?php endforeach; ?>
+            </select>
+            </td>
+            <td>
+            <select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="200px" data-size="5">
+            <option value="-"> - </option>
+            <?php
+            $sql3 = mysqli_query($conn1, "select id_pc,nama_pc from master_pc where status = 'Active'");
+            foreach ($sql3 as $fc) : ?>
+                <option value="<?= $fc['nama_pc']; ?>"><?= $fc['nama_pc']; ?></option>
+            <?php endforeach; ?>
+            </select>
+            </td>
+            <td>
+            <select class="form-control selectpicker cost_ctr" name="cost_ctr[]" id="cost_ctr" data-live-search="true" data-width="200px" data-size="5">
+            <option value="-"> - </option>
+            </select>
+            </td>
+            <td><input style="font-size: 12px;width: 150px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td>
+            <td><input style="font-size: 12px;width: 150px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td>
+            <td>
+            <select class="form-control selectpicker" name="currenc" id="currenc" data-live-search="true">
+            <option value="IDR">IDR</option>
+            <option value="USD">USD</option>
+            </select>
+            </td>
+            <td><input style="text-align: right;width: 150px;" type="number" min="1" class="form-control" id="txt_amount" name="txt_amount" oninput="modal_input_amt(value)" autocomplete="off"></td>
+            <td><input style="text-align: right;width: 150px;" type="number" min="1" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_cre(value)" autocomplete="off"></td>
+            <td><input style="font-size: 12px;width: 150px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td>
+            <td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td>
+            </tr>
+            `;
+            var newRow = table.insertRow(i+1);
+            newRow.innerHTML = element2;
+
+        }
+
     }
- }
+} catch(e)
+{
+    alert(e);
+}
+}
 </script>
 
 <script type="text/javascript">
     $(document).ready(function () {
-    $('.tanggal').datepicker({
-        format: "dd-mm-yyyy",
-        autoclose:true
+        $('.tanggal').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose:true
+        });
     });
-});
 </script>
 
 
@@ -1594,24 +1812,24 @@ $(document).ready(function () {
 <script type="text/javascript">
     $("input[name=txt_credit").keyup(function(){
 
-    var sum_amount2 = 0;
-       
-    $("input[type=checkbox]:checked").each(function () {        
-    var amount2 = parseFloat($(this).closest('tr').find('td:eq(6) input').val(),10) || 0;
-    sum_amount2 += amount2;
-     
-    });
+        var sum_amount2 = 0;
 
-    $("#nominal_h2").val(sum_amount2);    
+        $("input[type=checkbox]:checked").each(function () {        
+            var amount2 = parseFloat($(this).closest('tr').find('td:eq(6) input').val(),10) || 0;
+            sum_amount2 += amount2;
+
+        });
+
+        $("#nominal_h2").val(sum_amount2);    
 
     });
 </script>
 
 
 <script>
-$(function() {
-    $('.selectpicker').selectpicker();
-});
+    $(function() {
+        $('.selectpicker').selectpicker();
+    });
 </script>
 
 <!--<script type="text/javascript"> 
@@ -1637,73 +1855,73 @@ $(function() {
 </script>-->
 
 <script type="text/javascript">
-function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
-  try {
-    decimalCount = Math.abs(decimalCount);
-    decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
+    function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
+      try {
+        decimalCount = Math.abs(decimalCount);
+        decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
 
-    const negativeSign = amount < 0 ? "-" : "";
+        const negativeSign = amount < 0 ? "-" : "";
 
-    let i = parseInt(amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)).toString();
-    let j = (i.length > 3) ? i.length % 3 : 0;
+        let i = parseInt(amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)).toString();
+        let j = (i.length > 3) ? i.length % 3 : 0;
 
-    return negativeSign + (j ? i.substr(0, j) + thousands : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : "");
-  } catch (e) {
-    console.log(e)
-  }
+        return negativeSign + (j ? i.substr(0, j) + thousands : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : "");
+    } catch (e) {
+        console.log(e)
+    }
 };
 </script>
 
 
 <script type="text/javascript">
     $("input[name=nominal_h1]").keyup(function(){
-    var ttl_jml = 0;
-     var ttl_jml2 = 0;
-     var ttl_jml3 = 0;
-     var ttl_jml4 = 0;
-    var rat = 0;
-    var rat2 = 0;
-    var valu = '';
-    $("input[type=text]").each(function () {         
-    var rate = parseFloat(document.getElementById('rate').value,10) || 1;
-    var ttl_h = parseFloat(document.getElementById('nominal_h1').value,10) || 0;
-    var ttl_h2 = parseFloat(document.getElementById('nomrate_h').value,10) || 0;
-    var reff_doc = $('select[name=ref_num] option').filter(':selected').val();
-    if (reff_doc == 'None') {
-        var credit = 0;
-        var debit = parseFloat(document.getElementById('h_tot_debit').value,10) || 0;
-    }else{
-    var credit = parseFloat(document.getElementById('dataamount2').value,10) || 0;
-    var debit = 0;
-}
-    var val = document.getElementById('valuta').value;
-    valu = val;
-    rat2 = ttl_jml;
-    ttl_jml = ttl_h * rate;    
-    rat = ttl_jml + debit;
+        var ttl_jml = 0;
+        var ttl_jml2 = 0;
+        var ttl_jml3 = 0;
+        var ttl_jml4 = 0;
+        var rat = 0;
+        var rat2 = 0;
+        var valu = '';
+        $("input[type=text]").each(function () {         
+            var rate = parseFloat(document.getElementById('rate').value,10) || 1;
+            var ttl_h = parseFloat(document.getElementById('nominal_h1').value,10) || 0;
+            var ttl_h2 = parseFloat(document.getElementById('nomrate_h').value,10) || 0;
+            var reff_doc = $('select[name=ref_num] option').filter(':selected').val();
+            if (reff_doc == 'None') {
+                var credit = 0;
+                var debit = parseFloat(document.getElementById('h_tot_debit').value,10) || 0;
+            }else{
+                var credit = parseFloat(document.getElementById('dataamount2').value,10) || 0;
+                var debit = 0;
+            }
+            var val = document.getElementById('valuta').value;
+            valu = val;
+            rat2 = ttl_jml;
+            ttl_jml = ttl_h * rate;    
+            rat = ttl_jml + debit;
 
-    ttl_jml2 = credit - ttl_jml;
+            ttl_jml2 = credit - ttl_jml;
 
-    if (ttl_jml2 >= 0) {
-        ttl_jml3 = ttl_jml2;
-        ttl_jml4 = 0;
-    }else{
-        ttl_jml3 = 0;
-        if (ttl_jml2 == 0) {
-            ttl_jml4 = ttl_jml2;
-        }else{
-            ttl_jml4 = ttl_jml2 * -1;
-        }
-    }
+            if (ttl_jml2 >= 0) {
+                ttl_jml3 = ttl_jml2;
+                ttl_jml4 = 0;
+            }else{
+                ttl_jml3 = 0;
+                if (ttl_jml2 == 0) {
+                    ttl_jml4 = ttl_jml2;
+                }else{
+                    ttl_jml4 = ttl_jml2 * -1;
+                }
+            }
 
-    });
-   $("#nomrate").val(formatMoney(ttl_jml));
-   $("#tot_debit").val(formatMoney(rat));
-   $("#nomrate_h").val(ttl_jml.toFixed(2));
-   $("#nominalh2").val(ttl_jml);
-   $("#datadeb").val(ttl_jml3);
-   $("#datacre").val(ttl_jml4);
-   $("#nominal").val(formatMoney(rat2));
+        });
+        $("#nomrate").val(formatMoney(ttl_jml));
+        $("#tot_debit").val(formatMoney(rat));
+        $("#nomrate_h").val(ttl_jml.toFixed(2));
+        $("#nominalh2").val(ttl_jml);
+        $("#datadeb").val(ttl_jml3);
+        $("#datacre").val(ttl_jml4);
+        $("#nominal").val(formatMoney(rat2));
 
 
     });
@@ -1711,28 +1929,28 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
 
 <script type="text/javascript">
     $("input[name=rate1]").keyup(function(){
-    var ttl_jml = 0;
-    var rat = 0;
-    var valu = '';
-    $("input[type=text]").each(function () {         
-    var rate = parseFloat(document.getElementById('rate1').value,10) || 1;
-    var ttl_h = parseFloat(document.getElementById('nominal_h').value,10) || 0;
-    var val = document.getElementById('valuta').value;
-    valu = val;
-    rat = rate;
-    if (valu == 'IDR') {
-    ttl_jml = ttl_h / rate;  
-    }else{
-    ttl_jml = ttl_h * rate;    
-    }
-    });
-   $("#nomrate").val(formatMoney(ttl_jml));
-   $("#nomrate_h").val(ttl_jml.toFixed(2));
-   $("#rate_h1").val(formatMoney(rat));
+        var ttl_jml = 0;
+        var rat = 0;
+        var valu = '';
+        $("input[type=text]").each(function () {         
+            var rate = parseFloat(document.getElementById('rate1').value,10) || 1;
+            var ttl_h = parseFloat(document.getElementById('nominal_h').value,10) || 0;
+            var val = document.getElementById('valuta').value;
+            valu = val;
+            rat = rate;
+            if (valu == 'IDR') {
+                ttl_jml = ttl_h / rate;  
+            }else{
+                ttl_jml = ttl_h * rate;    
+            }
+        });
+        $("#nomrate").val(formatMoney(ttl_jml));
+        $("#nomrate_h").val(ttl_jml.toFixed(2));
+        $("#rate_h1").val(formatMoney(rat));
 
     });
 </script>
-    
+
 
 
 
@@ -1742,47 +1960,47 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
     var ttl_jml = '';
     var valu = '';
     $("input[type=text]").each(function () {         
-    var urut = document.getElementById('no_urut').value;
-    var bulan = document.getElementById('bulan').value;
-    var nbank = document.getElementById('nama_bank').value;
-    var kode = document.getElementById('kode').value;
-    var tahun = document.getElementById('tahun').value;
+        var urut = document.getElementById('no_urut').value;
+        var bulan = document.getElementById('bulan').value;
+        var nbank = document.getElementById('nama_bank').value;
+        var kode = document.getElementById('kode').value;
+        var tahun = document.getElementById('tahun').value;
 
-    if(nbank == 'Bank Central Asia'){
+        if(nbank == 'Bank Central Asia'){
 
-    valu = 'BM'+'/'+'BCA'+kode+'/'+'NAG'+'/'+bulan+tahun;
-}else if(nbank == 'Bank CIMB Niaga'){
+            valu = 'BM'+'/'+'BCA'+kode+'/'+'NAG'+'/'+bulan+tahun;
+        }else if(nbank == 'Bank CIMB Niaga'){
 
-    valu = 'BM'+'/'+'CMB'+kode+'/'+'NAG'+'/'+bulan+tahun;
-}else if(nbank == 'MANDIRI 130-0002077777'){
+            valu = 'BM'+'/'+'CMB'+kode+'/'+'NAG'+'/'+bulan+tahun;
+        }else if(nbank == 'MANDIRI 130-0002077777'){
 
-    valu = 'BM'+'/'+'MDR'+kode+'/'+'NAG'+'/'+bulan+tahun;
-}else{
-    valu = 'BM'+'/'+'BNI'+kode+'/'+'NAG'+'/'+bulan+tahun;
-}
-
-    
-    });
-   $("#no_doc").val(valu);
+            valu = 'BM'+'/'+'MDR'+kode+'/'+'NAG'+'/'+bulan+tahun;
+        }else{
+            valu = 'BM'+'/'+'BNI'+kode+'/'+'NAG'+'/'+bulan+tahun;
+        }
 
 
     });
+    $("#no_doc").val(valu);
+
+
+});
 </script>
 
 <script type="text/javascript"> 
-<?php echo $jsArray; ?>
-var nom = 0;
-var nom2 = 0;
-function changeValueACC(id){
-    var select_rate = document.getElementById('rate');  
-    var nominal = parseFloat(document.getElementById('nominal_h1').value,10) || 0;  
-    document.getElementById('nama_bank').value = prdName[id].nama_bank;
-    document.getElementById('valuta').value = prdName[id].valuta;
-    document.getElementById('kode').value = prdName[id].kode;
-    var valuta_bk = document.getElementById('curr_bk').value;
-    var kmk_rate = parseFloat(document.getElementById('rat').value,10) || 0;
-    nom = nominal;
-    nom2 = nominal * kmk_rate;
+    <?php echo $jsArray; ?>
+    var nom = 0;
+    var nom2 = 0;
+    function changeValueACC(id){
+        var select_rate = document.getElementById('rate');  
+        var nominal = parseFloat(document.getElementById('nominal_h1').value,10) || 0;  
+        document.getElementById('nama_bank').value = prdName[id].nama_bank;
+        document.getElementById('valuta').value = prdName[id].valuta;
+        document.getElementById('kode').value = prdName[id].kode;
+        var valuta_bk = document.getElementById('curr_bk').value;
+        var kmk_rate = parseFloat(document.getElementById('rat').value,10) || 0;
+        nom = nominal;
+        nom2 = nominal * kmk_rate;
         if (prdName[id].valuta == 'IDR') {
             if (nominal != '') {
                 select_rate.disabled = true;
@@ -1804,21 +2022,21 @@ function changeValueACC(id){
             $("#nomrate").val(formatMoney(nom2));
             $("#nomrate_h").val(nom2.toFixed(2));
         }
-};
+    };
 </script>
 
 <script type="text/javascript"> 
-<?php echo $jsArray; ?>
-var nom = 0;
-function changeValueACC3(id){
-    var select_rate = document.getElementById('rate');  
-    var nominal = parseFloat(document.getElementById('nominal_h1').value,10) || 0;  
-    document.getElementById('nama_bank').value = prdName[id].nama_bank;
-    document.getElementById('valuta').value = prdName[id].valuta;
-    document.getElementById('kode').value = prdName[id].kode;
-    var kmk_rate = parseFloat(document.getElementById('rat').value,10) || 0;
-    nom = nominal;
-    if (prdName[id].valuta == 'IDR') {
+    <?php echo $jsArray; ?>
+    var nom = 0;
+    function changeValueACC3(id){
+        var select_rate = document.getElementById('rate');  
+        var nominal = parseFloat(document.getElementById('nominal_h1').value,10) || 0;  
+        document.getElementById('nama_bank').value = prdName[id].nama_bank;
+        document.getElementById('valuta').value = prdName[id].valuta;
+        document.getElementById('kode').value = prdName[id].kode;
+        var kmk_rate = parseFloat(document.getElementById('rat').value,10) || 0;
+        nom = nominal;
+        if (prdName[id].valuta == 'IDR') {
             if (nominal != '') {
                 select_rate.disabled = true;
                 document.getElementById('rate').value = '1';
@@ -1835,127 +2053,127 @@ function changeValueACC3(id){
             select_rate.disabled = false;
             $("#rate").val(kmk_rate);
         }
-};
+    };
 </script>
 
 <script type="text/javascript"> 
-<?php echo $jsArray; ?>
-var nom = 0;
-function changeValueACC2(id){
-    var select_rate = document.getElementById('rate1'); 
-    var nominal = parseFloat(document.getElementById('nominal_h').value,10) || 0;  
-    document.getElementById('nama_bank').value = prdName[id].nama_bank;
-    document.getElementById('valuta').value = prdName[id].valuta;
-    document.getElementById('kode').value = prdName[id].kode;
-    var kmk_rate = parseFloat(document.getElementById('rat').value,10) || 0;
-    nom = nominal;
-    if (prdName[id].valuta == 'IDR') {
-        if (nominal != '') {
-            select_rate.disabled = true;
-            document.getElementById('rate1').value = '1';
-            document.getElementById('rate_h1').value = '1';
-            $("#nomrate").val(formatMoney(nom));
-            $("#nomrate_h").val(nom.toFixed(2));
+    <?php echo $jsArray; ?>
+    var nom = 0;
+    function changeValueACC2(id){
+        var select_rate = document.getElementById('rate1'); 
+        var nominal = parseFloat(document.getElementById('nominal_h').value,10) || 0;  
+        document.getElementById('nama_bank').value = prdName[id].nama_bank;
+        document.getElementById('valuta').value = prdName[id].valuta;
+        document.getElementById('kode').value = prdName[id].kode;
+        var kmk_rate = parseFloat(document.getElementById('rat').value,10) || 0;
+        nom = nominal;
+        if (prdName[id].valuta == 'IDR') {
+            if (nominal != '') {
+                select_rate.disabled = true;
+                document.getElementById('rate1').value = '1';
+                document.getElementById('rate_h1').value = '1';
+                $("#nomrate").val(formatMoney(nom));
+                $("#nomrate_h").val(nom.toFixed(2));
+            }else{
+                select_rate.disabled = true;
+                document.getElementById('rate1').value = '1';
+                document.getElementById('rate_h1').value = '1';
+            }
         }else{
-            select_rate.disabled = true;
-            document.getElementById('rate1').value = '1';
-            document.getElementById('rate_h1').value = '1';
-        }
-    }else{
             select_rate.disabled = false;
             $("#rate1").val(kmk_rate);
         }
-};
+    };
 </script>
 
 <script type="text/javascript">
     var refer = $('select[name=ref_num] option').filter(':selected').val();
     if (refer == 'None') {
-    $("input[name=rate]").keyup(function(){
-    var ttl_jml = 0;
-    var rat = 0;
-    var valu = '';
-    $("input[type=text]").each(function () {         
-    var rate = parseFloat(document.getElementById('rate').value,10) || 1;
-    var ttl_h = parseFloat(document.getElementById('nominal_h1').value,10) || 0;
-    var val = document.getElementById('valuta').value;
-    valu = val;
-    rat = rate;
-    if (valu == 'IDR') {
-    ttl_jml = ttl_h / rate;  
+        $("input[name=rate]").keyup(function(){
+            var ttl_jml = 0;
+            var rat = 0;
+            var valu = '';
+            $("input[type=text]").each(function () {         
+                var rate = parseFloat(document.getElementById('rate').value,10) || 1;
+                var ttl_h = parseFloat(document.getElementById('nominal_h1').value,10) || 0;
+                var val = document.getElementById('valuta').value;
+                valu = val;
+                rat = rate;
+                if (valu == 'IDR') {
+                    ttl_jml = ttl_h / rate;  
+                }else{
+                    ttl_jml = ttl_h * rate;    
+                }
+            });
+            $("#nomrate").val(formatMoney(ttl_jml));
+            $("#nomrate_h").val(ttl_jml.toFixed(2));
+            $("#rate_h").val(formatMoney(rat));
+
+        });
     }else{
-    ttl_jml = ttl_h * rate;    
-    }
-    });
-   $("#nomrate").val(formatMoney(ttl_jml));
-   $("#nomrate_h").val(ttl_jml.toFixed(2));
-   $("#rate_h").val(formatMoney(rat));
+       $("input[name=rate]").keyup(function(){
+        var ttl_jml = 0;
+        var rat = 0;
+        var valu = '';
+        var ttl_jml2 = 0;
+        var ttl_jml3 = 0;
+        var ttl_jml4 = 0;
+        $("input[type=text]").each(function () {         
+            var rate = parseFloat(document.getElementById('rate').value,10) || 1;
+            var ttl_h = parseFloat(document.getElementById('nominal_h1').value,10) || 0;
+            var val = document.getElementById('valuta').value;
+            var credit = parseFloat(document.getElementById('dataamount2').value,10) || 0;
+            valu = val;
+            rat = rate;
 
-    });
-}else{
-   $("input[name=rate]").keyup(function(){
-    var ttl_jml = 0;
-    var rat = 0;
-    var valu = '';
-    var ttl_jml2 = 0;
-     var ttl_jml3 = 0;
-     var ttl_jml4 = 0;
-    $("input[type=text]").each(function () {         
-    var rate = parseFloat(document.getElementById('rate').value,10) || 1;
-    var ttl_h = parseFloat(document.getElementById('nominal_h1').value,10) || 0;
-    var val = document.getElementById('valuta').value;
-    var credit = parseFloat(document.getElementById('dataamount2').value,10) || 0;
-    valu = val;
-    rat = rate;
+            ttl_jml = ttl_h * rate; 
 
-    ttl_jml = ttl_h * rate; 
+            ttl_jml2 = credit - ttl_jml;
 
-    ttl_jml2 = credit - ttl_jml;
+            if (ttl_jml2 >= 0) {
+                ttl_jml3 = ttl_jml2;
+                ttl_jml4 = 0;
+            }else{
+                ttl_jml3 = 0;
+                if (ttl_jml2 == 0) {
+                    ttl_jml4 = ttl_jml2;
+                }else{
+                    ttl_jml4 = ttl_jml2 * -1;
+                }
+            }   
 
-    if (ttl_jml2 >= 0) {
-        ttl_jml3 = ttl_jml2;
-        ttl_jml4 = 0;
-    }else{
-        ttl_jml3 = 0;
-        if (ttl_jml2 == 0) {
-            ttl_jml4 = ttl_jml2;
-        }else{
-            ttl_jml4 = ttl_jml2 * -1;
-        }
-    }   
-    
-    });
-   $("#nomrate").val(formatMoney(ttl_jml));
-   $("#nomrate_h").val(ttl_jml.toFixed(2));
-   $("#rate_h").val(formatMoney(rat));
-   $("#datadeb").val(ttl_jml3);
-   $("#datacre").val(ttl_jml4);
+        });
+        $("#nomrate").val(formatMoney(ttl_jml));
+        $("#nomrate_h").val(ttl_jml.toFixed(2));
+        $("#rate_h").val(formatMoney(rat));
+        $("#datadeb").val(ttl_jml3);
+        $("#datacre").val(ttl_jml4);
 
     }); 
 
-}
+   }
 </script>
 
 <script type="text/javascript">
     $("input[name=nominal_h]").keyup(function(){
-    var ttl_jml = 0;
-    var rat = 0;
-    var valu = '';
-    $("input[type=text]").each(function () {         
-    var rate = parseFloat(document.getElementById('rate1').value,10) || 1;
-    var ttl_h = parseFloat(document.getElementById('nominal_h').value,10) || 0;
-    var val = document.getElementById('valuta').value;
-    valu = val;
-    rat = ttl_h;
-    if (valu == 'IDR') {
-    ttl_jml = ttl_h / rate;  
-    }else{
-    ttl_jml = ttl_h * rate;    
-    }
-    });
-   $("#nomrate").val(formatMoney(ttl_jml));
-   $("#nomrate_h").val(ttl_jml.toFixed(2));
-   $("#nominal").val(formatMoney(rat));
+        var ttl_jml = 0;
+        var rat = 0;
+        var valu = '';
+        $("input[type=text]").each(function () {         
+            var rate = parseFloat(document.getElementById('rate1').value,10) || 1;
+            var ttl_h = parseFloat(document.getElementById('nominal_h').value,10) || 0;
+            var val = document.getElementById('valuta').value;
+            valu = val;
+            rat = ttl_h;
+            if (valu == 'IDR') {
+                ttl_jml = ttl_h / rate;  
+            }else{
+                ttl_jml = ttl_h * rate;    
+            }
+        });
+        $("#nomrate").val(formatMoney(ttl_jml));
+        $("#nomrate_h").val(ttl_jml.toFixed(2));
+        $("#nominal").val(formatMoney(rat));
 
     });
 </script>
@@ -1976,11 +2194,11 @@ function addListener(elm,index){
   elm.addEventListener('keypress', function(e){  // add listener to each field 
      var key = !isNaN(e.charCode) ? e.charCode : e.keyCode;
      str = String.fromCharCode(key); 
-    if (str.localeCompare('-') === 0){
+     if (str.localeCompare('-') === 0){
        event.preventDefault();
-    }
-    
-  });
+   }
+
+});
   
 }
 </script>
@@ -1990,17 +2208,17 @@ function addListener(elm,index){
     $("#form-simpan").on("click", "#simpan", function(){
         var refer = $('select[name=ref_num] option').filter(':selected').val();
         if (refer == 'None') {
-        var doc_number = document.getElementById('no_doc').value;        
-        var doc_date = document.getElementById('tgl_active').value;
-        var referen = $('select[name=ref_num] option').filter(':selected').val();    
-        var nama_supp = $('select[name=nama_supp] option').filter(':selected').val();       
-        var akun = document.getElementById('accountid').value;        
-        var bank = document.getElementById('nama_bank').value;
-        var curr = document.getElementById('valuta').value;
-        if (curr == 'USD') {
-          var nominal2 = document.getElementById('nomrate_h').value;  
-        }else{
-        var nominal2 = document.getElementById('nominal_h1').value;
+            var doc_number = document.getElementById('no_doc').value;        
+            var doc_date = document.getElementById('tgl_active').value;
+            var referen = $('select[name=ref_num] option').filter(':selected').val();    
+            var nama_supp = $('select[name=nama_supp] option').filter(':selected').val();       
+            var akun = document.getElementById('accountid').value;        
+            var bank = document.getElementById('nama_bank').value;
+            var curr = document.getElementById('valuta').value;
+            if (curr == 'USD') {
+              var nominal2 = document.getElementById('nomrate_h').value;  
+          }else{
+            var nominal2 = document.getElementById('nominal_h1').value;
         } 
         var coa = "-";        
         var cost = "-";
@@ -2013,83 +2231,85 @@ function addListener(elm,index){
         var create_user = '<?php echo $user; ?>';
         var balance = nominalcre - nominaldeb;
         var no_bk = '';
+        var prof_ctr = '';
 
         if(akun != '' && nominal != '' && nominal != '0' && nominal2 == balance){
-        $.ajax({
-            type:'POST',
-            url:'insert_bankin_arc.php',
-            data: {'doc_number':doc_number, 'doc_date':doc_date, 'referen':referen, 'nama_supp':nama_supp, 'akun':akun, 'bank':bank, 'curr':curr, 'coa':coa, 'cost':cost, 'nominal':nominal, 'rate':rate, 'eqv_idr':eqv_idr, 'pesan':pesan, 'create_user':create_user, 'no_bk':no_bk},
-            cache: 'false',
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){
-                $("input[type=checkbox]:checked").each(function () {
-        var doc_number = document.getElementById('no_doc').value;        
-        var referen = $('select[name=ref_num] option').filter(':selected').val();    
-        var nomor_coa = $(this).closest('tr').find('td:eq(1)').find('select[name=nomor_coa] option').filter(':selected').val();     
-        var cost_ctr = $(this).closest('tr').find('td:eq(2)').find('select[name=cost_ctr] option').filter(':selected').val();                   
-        var buyer = $(this).closest('tr').find('td:eq(3) input').val();
-        var no_ws = $(this).closest('tr').find('td:eq(4) input').val();
-        var curre = $(this).closest('tr').find('td:eq(5)').find('select[name=currenc] option').filter(':selected').val();                   
-        var debit = $(this).closest('tr').find('td:eq(6) input').val();
-        var credit = $(this).closest('tr').find('td:eq(7) input').val();    
-        var keterangan = $(this).closest('tr').find('td:eq(8) input').val();
-        var nominal = document.getElementById('nominal_h1').value;
-        var nominaldeb = document.getElementById('nominaldeb').value;
-        var nominalcre = document.getElementById('nominalcre').value;
-        var balance = nominalcre - nominaldeb;
+            $.ajax({
+                type:'POST',
+                url:'insert_bankin_arc.php',
+                data: {'doc_number':doc_number, 'doc_date':doc_date, 'referen':referen, 'nama_supp':nama_supp, 'akun':akun, 'bank':bank, 'curr':curr, 'coa':coa, 'cost':cost, 'nominal':nominal, 'rate':rate, 'eqv_idr':eqv_idr, 'pesan':pesan, 'create_user':create_user, 'no_bk':no_bk, 'prof_ctr':prof_ctr},
+                cache: 'false',
+                close: function(e){
+                    e.preventDefault();
+                },
+                success: function(response){
+                    $("input[type=checkbox]:checked").each(function () {
+                        var doc_number = document.getElementById('no_doc').value;        
+                        var referen = $('select[name=ref_num] option').filter(':selected').val();    
+                        var nomor_coa = $(this).closest('tr').find('td:eq(1)').find('select[name=nomor_coa] option').filter(':selected').val();     
+                        var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val();
+                        var cost_ctr = $(this).closest('tr').find('td:eq(3)').find('select[id=cost_ctr] option').filter(':selected').val();               
+                        var buyer = $(this).closest('tr').find('td:eq(4) input').val();
+                        var no_ws = $(this).closest('tr').find('td:eq(5) input').val();
+                        var curre = $(this).closest('tr').find('td:eq(6)').find('select[name=currenc] option').filter(':selected').val();                   
+                        var debit = $(this).closest('tr').find('td:eq(7) input').val();
+                        var credit = $(this).closest('tr').find('td:eq(8) input').val();    
+                        var keterangan = $(this).closest('tr').find('td:eq(9) input').val();
+                        var nominal = document.getElementById('nominal_h1').value;
+                        var nominaldeb = document.getElementById('nominaldeb').value;
+                        var nominalcre = document.getElementById('nominalcre').value;
+                        var balance = nominalcre - nominaldeb;
 
-        if(debit != '' && nominal == balance || credit != '' && nominal == balance){   
-        $.ajax({
-            type:'POST',
-            url:'insert_bankin.php',
-            data: {'doc_number':doc_number, 'referen':referen, 'nomor_coa':nomor_coa, 'cost_ctr':cost_ctr, 'buyer':buyer, 'no_ws':no_ws, 'curre':curre, 'debit':debit, 'credit':credit, 'keterangan':keterangan},
-            cache: 'false',
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){
-                console.log(response);
+                        if(debit != '' && nominal == balance || credit != '' && nominal == balance){   
+                            $.ajax({
+                                type:'POST',
+                                url:'insert_bankin.php',
+                                data: {'doc_number':doc_number, 'referen':referen, 'nomor_coa':nomor_coa, 'cost_ctr':cost_ctr, 'buyer':buyer, 'no_ws':no_ws, 'curre':curre, 'debit':debit, 'credit':credit, 'keterangan':keterangan, 'prof_ctr':prof_ctr},
+                                cache: 'false',
+                                close: function(e){
+                                    e.preventDefault();
+                                },
+                                success: function(response){
+                                    console.log(response);
                   // alert(response);
-                
-                window.location = 'bank-in22.php';
-                },
-            error: function (xhr, ajaxOptions, thrownError) {
+
+                  window.location = 'bank-in22.php';
+              },
+              error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
                 alert(xhr);
             }
         });
-    }
-    
-        });
-                console.log(response);
-                 alert(response);
-                window.location = 'bank-in22.php';
+                        }
+
+                    });
+                    console.log(response);
+                    alert(response);
+                    window.location = 'bank-in22.php';
                 },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                alert(xhr);
-            }
-        });
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(xhr);
+                    alert(xhr);
+                }
+            });
         } 
 
-         if(document.getElementById('accountid').value == ''){
-        document.getElementById('accountid').focus();
-        alert("please enter account");
+        if(document.getElementById('accountid').value == ''){
+            document.getElementById('accountid').focus();
+            alert("please enter account");
         }else if(document.getElementById('nominal_h1').value == ''){
-        document.getElementById('nominal_h1').focus();
-        alert("Please Enter Amount");
+            document.getElementById('nominal_h1').focus();
+            alert("Please Enter Amount");
         }else if(document.getElementById('nominal_h1').value == '0'){
-        document.getElementById('nominal_h1').focus();
-        alert("Amount Can't be Zero");
+            document.getElementById('nominal_h1').focus();
+            alert("Amount Can't be Zero");
         }else if((document.getElementById('nominal_h1').value * document.getElementById('rate').value).toFixed(2) != (document.getElementById('nominalcre').value - document.getElementById('nominaldeb').value)){
-        alert("calculation does not match");
+            alert("calculation does not match");
         }else{
             alert("Successful Saved");
         }                
- 
-        }else if(refer == 'AR Collection'){
+
+    }else if(refer == 'AR Collection'){
         var doc_number = document.getElementById('no_doc').value;        
         var doc_date = document.getElementById('tgl_active').value;
         var referen = $('select[name=ref_num] option').filter(':selected').val();    
@@ -2105,43 +2325,44 @@ function addListener(elm,index){
         var pesan = document.getElementById('pesan').value;
         var create_user = '<?php echo $user; ?>';
         var no_bk = '';
+        var prof_ctr = $('select[name=profit_center] option').filter(':selected').val();
 
         if(akun != '' && coa != '' && nominal != '' && nominal != '0'){
-        $.ajax({
-            type:'POST',
-            url:'insert_bankin_arc.php',
-            data: {'doc_number':doc_number, 'doc_date':doc_date, 'referen':referen, 'nama_supp':nama_supp, 'akun':akun, 'bank':bank, 'curr':curr, 'coa':coa, 'cost':cost, 'nominal':nominal, 'rate':rate, 'eqv_idr':eqv_idr, 'pesan':pesan, 'create_user':create_user, 'no_bk':no_bk},
-            cache: 'false',
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){
-                console.log(response);
-                 alert(response);
-                window.location = 'bank-in22.php';
+            $.ajax({
+                type:'POST',
+                url:'insert_bankin_arc.php',
+                data: {'doc_number':doc_number, 'doc_date':doc_date, 'referen':referen, 'nama_supp':nama_supp, 'akun':akun, 'bank':bank, 'curr':curr, 'coa':coa, 'cost':cost, 'nominal':nominal, 'rate':rate, 'eqv_idr':eqv_idr, 'pesan':pesan, 'create_user':create_user, 'no_bk':no_bk, 'prof_ctr':prof_ctr},
+                cache: 'false',
+                close: function(e){
+                    e.preventDefault();
                 },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                alert(xhr);
-            }
-        });
-    }
+                success: function(response){
+                    console.log(response);
+                    alert(response);
+                    window.location = 'bank-in22.php';
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(xhr);
+                    alert(xhr);
+                }
+            });
+        }
         if(document.getElementById('accountid').value == ''){
-        document.getElementById('accountid').focus();
-        alert("please enter account");
+            document.getElementById('accountid').focus();
+            alert("please enter account");
         }else if(document.getElementById('coa').value == ''){
-        document.getElementById('coa').focus();
-        alert("please enter coa");
+            document.getElementById('coa').focus();
+            alert("please enter coa");
         }else if(document.getElementById('nominal_h').value == ''){
-        document.getElementById('nominal_h').focus();
-        alert("please enter Amount");
+            document.getElementById('nominal_h').focus();
+            alert("please enter Amount");
         }else if(document.getElementById('nominal_h').value == '0'){
-        document.getElementById('nominal_h').focus();
-        alert("Amount Can't be Zero");
+            document.getElementById('nominal_h').focus();
+            alert("Amount Can't be Zero");
         }else{
             alert("Successful Saved");
         }
-        }else {
+    }else {
         var doc_number = document.getElementById('no_doc').value;        
         var doc_date = document.getElementById('tgl_active').value;
         var referen = $('select[name=ref_num] option').filter(':selected').val();    
@@ -2157,81 +2378,82 @@ function addListener(elm,index){
         var eqv_idr = document.getElementById('nomrate_h').value;
         var pesan = document.getElementById('pesan').value;
         var create_user = '<?php echo $user; ?>';
+        var prof_ctr = '';
 
         if(akun != '' && nominal != ''){
-        $.ajax({
-            type:'POST',
-            url:'insert_bankin_arc.php',
-            data: {'doc_number':doc_number, 'doc_date':doc_date, 'referen':referen, 'nama_supp':nama_supp, 'akun':akun, 'bank':bank, 'curr':curr, 'coa':coa, 'cost':cost, 'nominal':nominal, 'rate':rate, 'eqv_idr':eqv_idr, 'pesan':pesan, 'create_user':create_user, 'no_bk':no_bk},
-            cache: 'false',
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){
-                 $("input[type=checkbox]:checked").each(function () {
-        var no_bankin = document.getElementById('no_doc').value;                        
-        var id_coa = $(this).closest('tr').find('td:eq(1) input').attr('data');
-        var no_reff = $(this).closest('tr').find('td:eq(2) input').val();                  
-        var reff_date = $(this).closest('tr').find('td:eq(3) input').val();
-        var deskripsi = $(this).closest('tr').find('td:eq(4) input').val();    
-        var t_debit = $(this).closest('tr').find('td:eq(5) input').val();
-        var t_credit = $(this).closest('tr').find('td:eq(6) input').val();        
-        var akun = document.getElementById('accountid').value;        
-        var nominal = document.getElementById('nominal_h1').value;
-
-        if(akun != '' && nominal != ''){   
-        $.ajax({
-            type:'POST',
-            url:'insert_bankin_none.php',
-            data: {'no_bankin':no_bankin, 'id_coa':id_coa, 'no_reff':no_reff, 'reff_date':reff_date, 'deskripsi':deskripsi, 't_debit':t_debit, 't_credit':t_credit},
-            cache: 'false',
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){
-                console.log(response);
-                  // alert(response);
-                
-                window.location = 'bank-in22.php';
+            $.ajax({
+                type:'POST',
+                url:'insert_bankin_arc.php',
+                data: {'doc_number':doc_number, 'doc_date':doc_date, 'referen':referen, 'nama_supp':nama_supp, 'akun':akun, 'bank':bank, 'curr':curr, 'coa':coa, 'cost':cost, 'nominal':nominal, 'rate':rate, 'eqv_idr':eqv_idr, 'pesan':pesan, 'create_user':create_user, 'no_bk':no_bk, 'prof_ctr':prof_ctr},
+                cache: 'false',
+                close: function(e){
+                    e.preventDefault();
                 },
-            error: function (xhr, ajaxOptions, thrownError) {
+                success: function(response){
+                 $("input[type=checkbox]:checked").each(function () {
+                    var no_bankin = document.getElementById('no_doc').value;                        
+                    var id_coa = $(this).closest('tr').find('td:eq(1) input').attr('data');
+                    var no_reff = $(this).closest('tr').find('td:eq(2) input').val();                  
+                    var reff_date = $(this).closest('tr').find('td:eq(3) input').val();
+                    var deskripsi = $(this).closest('tr').find('td:eq(4) input').val();    
+                    var t_debit = $(this).closest('tr').find('td:eq(5) input').val();
+                    var t_credit = $(this).closest('tr').find('td:eq(6) input').val();        
+                    var akun = document.getElementById('accountid').value;        
+                    var nominal = document.getElementById('nominal_h1').value;
+
+                    if(akun != '' && nominal != ''){   
+                        $.ajax({
+                            type:'POST',
+                            url:'insert_bankin_none.php',
+                            data: {'no_bankin':no_bankin, 'id_coa':id_coa, 'no_reff':no_reff, 'reff_date':reff_date, 'deskripsi':deskripsi, 't_debit':t_debit, 't_credit':t_credit},
+                            cache: 'false',
+                            close: function(e){
+                                e.preventDefault();
+                            },
+                            success: function(response){
+                                console.log(response);
+                  // alert(response);
+
+                  window.location = 'bank-in22.php';
+              },
+              error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
                 alert(xhr);
             }
         });
-    }
-    
-        });
-                console.log(response);
+                    }
+
+                });
+                 console.log(response);
                  alert(response);
-                window.location = 'bank-in22.php';
-                },
-            error: function (xhr, ajaxOptions, thrownError) {
+                 window.location = 'bank-in22.php';
+             },
+             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
                 alert(xhr);
             }
         });
         } 
 
-         if(document.getElementById('accountid').value == ''){
-        document.getElementById('accountid').focus();
-        alert("please enter account");
+        if(document.getElementById('accountid').value == ''){
+            document.getElementById('accountid').focus();
+            alert("please enter account");
         }else if(document.getElementById('nominal_h1').value == ''){
-        alert("Please Input Amount");
+            alert("Please Input Amount");
         }else{
             alert("Successful Saved");
         }                
- 
-        }
-                         
-    });
+
+    }
+
+});
 </script>
 
 <script type="text/javascript">
-$("#select_all").click(function() {
-  var c = this.checked;
-  $(':checkbox').prop('checked', c);
-});  
+    $("#select_all").click(function() {
+      var c = this.checked;
+      $(':checkbox').prop('checked', c);
+  });  
 </script>
 
 <!-- <script type="text/javascript">     
@@ -2303,8 +2525,8 @@ $(document).ready(function (){
 });
 </script>-->
 <!--<script src="//netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>-->
-  
+    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>-->
+
 </body>
 
 </html>

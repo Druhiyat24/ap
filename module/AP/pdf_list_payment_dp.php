@@ -490,7 +490,7 @@ while($datas=mysqli_fetch_array($querys)){
         <tr>    
             <td style="font-size:12px;text-align:center;">AP Staff</td>
             <td style="font-size:12px;text-align:center;">Supervisor</td>
-            <td style="font-size:12px;text-align:center">Finance Accounting Manager</td>
+            <td style="font-size:12px;text-align:center">Finance Manager</td>
             <td style="font-size:12px;text-align:center">Director</td>
         </tr>  				
 	

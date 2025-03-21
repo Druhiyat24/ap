@@ -61,11 +61,17 @@ $create_date = date("Y-m-d H:i:s");
 // $balance = $rowy['balance'];
 // $balance2 = $balance + $total;
 
-$query_jnrl = "INSERT INTO tbl_list_journal (select '',a.no_mj, a.mj_date, b.nama_cmj, a.no_coa,c.nama_coa, a.no_costcenter, d.cc_name, a.no_reff, a.reff_date, a.buyer, a.no_ws, a.curr, a.rate, a.debit, a.credit, a.debit_idr, a.credit_idr, a.status, a.keterangan, a.create_by, a.create_date, a.post_by, a.post_date, a.update_by, a.update_date from tbl_memorial_journal_temp a left join master_category_mj b on b.id_cmj = a.id_cmj left join mastercoa_v2 c on c.no_coa = a.no_coa left join b_master_cc d on d.no_cc = a.no_costcenter)";
+$query_jnrl = "INSERT INTO tbl_list_journal (select '',a.no_mj, a.mj_date, b.nama_cmj, a.no_coa,c.nama_coa, a.no_costcenter, d.cc_name, a.no_reff, a.reff_date, a.buyer, a.no_ws, a.curr, a.rate, a.debit, a.credit, a.debit_idr, a.credit_idr, a.status, a.keterangan, a.create_by, a.create_date, a.post_by, a.post_date, a.update_by, a.update_date,'','','' from tbl_memorial_journal_temp a left join master_category_mj b on b.id_cmj = a.id_cmj left join mastercoa_v2 c on c.no_coa = a.no_coa left join b_master_cc d on d.no_cc = a.no_costcenter where a.create_by = '$create_user')";
 $execute_jnrl = mysqli_query($conn2,$query_jnrl);
 
-$query = "INSERT INTO tbl_memorial_journal (select '', no_mj, mj_date, id_cmj, no_coa, no_costcenter, no_reff, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, keterangan, status, create_by, create_date, post_by, post_date, update_by, update_date from tbl_memorial_journal_temp)";
+$query = "INSERT INTO tbl_memorial_journal (select '', no_mj, mj_date, id_cmj, no_coa, no_costcenter, no_reff, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, keterangan, status, create_by, create_date, post_by, post_date, update_by, update_date,'' from tbl_memorial_journal_temp where create_by = '$create_user')";
 $execute = mysqli_query($conn2,$query);
+
+$query_jnrl_sb = "INSERT INTO sb_list_journal (select '',a.no_mj, a.mj_date, b.nama_cmj, a.no_coa,c.nama_coa, a.no_costcenter, d.cc_name, a.no_reff, a.reff_date, a.buyer, a.no_ws, a.curr, a.rate, a.debit, a.credit, a.debit_idr, a.credit_idr, a.status, a.keterangan, a.create_by, a.create_date, a.post_by, a.post_date, a.update_by, a.update_date, '' from sb_memorial_journal_temp a left join master_category_mj b on b.id_cmj = a.id_cmj left join mastercoa_v2 c on c.no_coa = a.no_coa left join b_master_cc d on d.no_cc = a.no_costcenter where a.create_by = '$create_user')";
+$execute_jnrl_sb = mysqli_query($conn2,$query_jnrl_sb);
+
+$query_sb = "INSERT INTO sb_memorial_journal (select '', no_mj, mj_date, id_cmj, no_coa, no_costcenter, no_reff, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, keterangan, status, create_by, create_date, post_by, post_date, update_by, update_date, 'Upload SB2', '' from sb_memorial_journal_temp where create_by = '$create_user')";
+$execute_sb = mysqli_query($conn2,$query_sb);
 
 
 
@@ -73,8 +79,11 @@ if(!$execute){
    die('Error: ' . mysqli_error());	
 }else{
 	// echo 'Data Saved Successfully With No '; echo $no_mj;
-   $sql = "DELETE from tbl_memorial_journal_temp";
+   $sql = "DELETE from tbl_memorial_journal_temp where create_by = '$create_user'";
    $update = mysqli_query($conn2,$sql);
+
+   $sql2 = "DELETE from sb_memorial_journal_temp where create_by = '$create_user'";
+   $update2 = mysqli_query($conn2,$sql2);
 }
 
 mysqli_close($conn2);

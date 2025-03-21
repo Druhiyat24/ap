@@ -6,10 +6,9 @@ $create_user = $_POST['create_user'];
 $unik_code = $_POST['unik_code'];
 $create_date = date("Y-m-d H:i:s");
 
- $sqlnkb = mysqli_query($conn2,"select max(no_dok) from bpb_faktur_inv where jenis = 'INV'");
+ $sqlnkb = mysqli_query($conn2,"select max(SUBSTR(no_dok,14,5)) no_dok from bpb_faktur_inv where jenis = 'INV'");
  $rownkb = mysqli_fetch_array($sqlnkb);
- $kodeBarang = $rownkb['max(no_dok)'];
- $urutan = (int) substr($kodeBarang, 14, 5);
+ $urutan = $rownkb['no_dok'];
  $urutan++;
  $bln = date("m");
  $thn = date("y");

@@ -150,7 +150,8 @@
             <th style="text-align: center;vertical-align: middle;">Account</th>
             <th style="text-align: center;vertical-align: middle;">Amount</th>
             <th style="display: none;">Amount</th>                            
-            <th style="text-align: center;vertical-align: middle;">Action</th>                            
+            <th style="text-align: center;vertical-align: middle;">Action</th> 
+            <th style="display: none;">Amount</th>                                  
         </tr>
     </thead>
    
@@ -197,7 +198,9 @@
             }else{
                 echo '<td style="width:50px;text-align : center" ><a href="pdf_petty_cashout.php?no_pco='.$row['no_pco'].'" target="_blank"><button style="border-radius: 6px" type="button" class="btn-xs btn-success"><i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Pdf</i></button></a></td>';
             }
-            echo '</tr>';
+            echo '
+            <td style="display: none;" value = "'.$row['status'].'">'.$row['status'].'</td>
+            </tr>';
 }?>
 </tbody>                    
 </table>
@@ -224,7 +227,8 @@
           <div id="txt_top" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>         
 <!--           <div id="txt_curr" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
           <div id="txt_confirm" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div> -->
-          <div id="txt_tgl_po" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>                     
+          <div id="txt_tgl_po" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+          <div id="txt_status" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>                     
           <div id="details" class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;"></div>          
         </div>
         </div>
@@ -356,6 +360,7 @@ $(function() {
     var refdoc = $(this).closest('tr').find('td:eq(2)').attr('value');
     var akun = $(this).closest('tr').find('td:eq(4)').attr('value');
     var desk = $(this).closest('tr').find('td:eq(6)').text();
+    var status = $(this).closest('tr').find('td:eq(8)').text();
 
     $.ajax({
     type : 'post',
@@ -372,8 +377,8 @@ $(function() {
     $('#txt_supp').html('Refference : ' + refdoc + '');
     $('#txt_top').html('Kas Account : ' + akun + '');
     // $('#txt_curr').html('Currency : ' + curr + '');        
-    // $('#txt_confirm').html('Status : ' + status + '');
     $('#txt_tgl_po').html('Description : ' + desk + '');                    
+    $('#txt_status').html('Status : ' + status + '');
 });
 
 </script>

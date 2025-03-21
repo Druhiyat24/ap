@@ -10,10 +10,9 @@
             <div class="col-md-3 mb-3">            
             <label for="noftrcbd"><b>No Dokumen</b></label>
             <?php
-            $sql = mysqli_query($conn2,"select max(no_dok) from bpb_faktur_inv where jenis = 'FAK'");
+            $sql = mysqli_query($conn2,"select max(SUBSTR(no_dok,14,5)) no_dok from bpb_faktur_inv where jenis = 'FAK'");
             $row = mysqli_fetch_array($sql);
-            $kodeftr = $row['max(no_dok)'];
-            $urutan = (int) substr($kodeftr, 14, 5);
+            $urutan = $row['no_dok'];
             $urutan++;
             $bln = date("m");
             $thn = date("y");

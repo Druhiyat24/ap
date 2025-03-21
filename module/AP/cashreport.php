@@ -14,7 +14,7 @@
                 <select class="form-control selectpicker" name="accountid" id="accountid" data-live-search="true" onchange='changeValueACC(this.value)' required >
                 <option value="" disabled selected="true">Select Account</option>  
                 <?php 
-                        $sqlacc = mysqli_query($conn1,"select no_coa as account, 'IDR' as curr,concat(no_coa,' ', nama_coa) as coa, SUBSTR(nama_coa,11,1) as kode from mastercoa_v2 where nama_coa like '%kas%'");
+                        $sqlacc = mysqli_query($conn1,"select no_coa as account, 'IDR' as curr,concat(no_coa,' ', nama_coa) as coa, SUBSTR(nama_coa,11,1) as kode from mastercoa_v2 where no_coa like '%1.01.0%'");
                         $jsArray = "var prdName = new Array();\n";
 
                         while ($row = mysqli_fetch_array($sqlacc)) {

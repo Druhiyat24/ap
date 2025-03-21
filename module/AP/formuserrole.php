@@ -80,7 +80,7 @@
 
             <table id="mytable" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
                     <thead>
-                        <tr>
+                        <tr class="thead-dark">
                             <th style="width:8%;">-</th>
                             <th style="width:30%;">User Name</th>
                             <th style="width:30%;">Full Name</th>                            
@@ -108,11 +108,18 @@
             </table> 
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-4">
+            <div class="d-flex justify-content-between mr-2 mb-1">
+                    <div class="ml-auto">
+                        <span class="input-group-text"><i class="fa fa-search"></i></span>
+                    </div>
+                    <input type="text"  id="myInput" name="myInput" required autocomplete="off" placeholder="Search Data..." onkeyup="myFunction()">
+                </div>
+            <div class="tableFix table-responsive" style="height: 300px;">
 
-            <table id="mytable" class="table table-striped table-bordered" cellspacing="0" width="50%" style="font-size: 12px;text-align:center;">
+            <table id="mytable2" class="table table-striped table-bordered" cellspacing="0" width="50%" style="font-size: 12px;text-align:center;">
                     <thead>
-                        <tr>
+                        <tr class="thead-dark">
                             <th ><input type="checkbox" id="select_all"></th>
                             <th >Menu</th>                                                                           
                             <!--<th style="width:50px;">Delete</th>-->
@@ -132,8 +139,9 @@
                     ?>
             </tbody>                    
             </table> 
+        </div>
             </div> 
-<div class="box footer col-md-9">   
+<div class=" col-md-8">   
         <form id="form-simpan">
             </br>                  
             <div class="form-row col">
@@ -309,6 +317,29 @@ $(function() {
 
 </script>
 
+<script>
+function myFunction() {
+  // Declare variables
+  var input, filter, table, tr, td, i, txtValue;
+  input = document.getElementById("myInput");
+  filter = input.value.toUpperCase();
+  table = document.getElementById("mytable2");
+  tr = table.getElementsByTagName("tr");
+
+  // Loop through all table rows, and hide those who don't match the search query
+  for (i = 0; i < tr.length; i++) {
+    td = tr[i].getElementsByTagName("td")[1];
+    if (td) {
+      txtValue = td.textContent || td.innerText;
+      if (txtValue.toUpperCase().indexOf(filter) > -1) {
+        tr[i].style.display = "";
+      } else {
+        tr[i].style.display = "none";
+      }
+    }
+  }
+}
+</script>
 
 
 <script type="text/javascript">

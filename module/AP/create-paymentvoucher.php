@@ -9,6 +9,7 @@
     <div style="padding-left: 10px;padding-top: 5px;">
             <button style="-ms-transform: skew(10deg);-webkit-transform: skew(10deg);transform: skew(15deg);" id="btnpv" type="button" class="btn-primary btn-xs"><span></span> Payment Voucher</button>
             <button style="-ms-transform: skew(10deg);-webkit-transform: skew(10deg);transform: skew(15deg);" id="btnpve" type="button" class="btn-secondary btn-xs"><span></span>Payment Voucher EXIM</button>
+            <button style="-ms-transform: skew(10deg);-webkit-transform: skew(10deg);transform: skew(15deg);" id="btnpvftr" type="button" class="btn-secondary btn-xs"><span></span>Payment Voucher FTR</button>
         </div>
         <div class="form-row">
             <div class="col-md-3 mb-3">            
@@ -60,7 +61,7 @@
                 $sql = mysqli_query($conn1,"select distinct(Supplier) from mastersupplier where tipe_sup = 'S' order by Supplier ASC");
                 while ($row = mysqli_fetch_array($sql)) {
                     $data = $row['Supplier'];
-                    if($row['Supplier'] == $_POST['nama_supp']){
+                    if($row['Supplier'] == $nama_supp){
                         $isSelected = ' selected="selected"';
                     }else{
                         $isSelected = '';
@@ -157,7 +158,7 @@
                 $sql = mysqli_query($conn1,"select distinct(Supplier) from mastersupplier where tipe_sup = 'C' order by Supplier ASC");
                 while ($row = mysqli_fetch_array($sql)) {
                     $data = $row['Supplier'];
-                    if($row['Supplier'] == $_POST['ct_buyer']){
+                    if($row['Supplier'] == $ct_buyer){
                         $isSelected = ' selected="selected"';
                     }else{
                         $isSelected = '';
@@ -185,14 +186,14 @@
                 <select class="form-control selectpicker" name="carabayar" id="carabayar" data-live-search="true" onchange="this.form.submit()">
                     <option value="" disabled selected="true">Choose pay method</option>  
                     <?php
-                $nama_supp ='';
+                $carabayar ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $nama_supp = isset($_POST['forpay']) ? $_POST['forpay']: null;
+                $carabayar = isset($_POST['carabayar']) ? $_POST['carabayar']: null;
                 }                 
                 $sql = mysqli_query($conn1,"select pay_method from tbl_paymethod ");
                 while ($row = mysqli_fetch_array($sql)) {
                     $data = $row['pay_method'];
-                    if($row['pay_method'] == $_POST['carabayar']){
+                    if($row['pay_method'] == $carabayar){
                         $isSelected = ' selected="selected"';
                     }else{
                         $isSelected = '';
@@ -208,14 +209,14 @@
                 <select class="form-control selectpicker" name="curre" id="curre" data-live-search="true">
                     <option value="" disabled selected="true">Curr</option>  
                     <?php
-                $nama_supp ='';
+                $curre ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $nama_supp = isset($_POST['curre']) ? $_POST['curre']: null;
+                $curre = isset($_POST['curre']) ? $_POST['curre']: null;
                 }                 
-                $sql = mysqli_query($conn1,"select DISTINCT curr from b_masterbank ");
+                $sql = mysqli_query($conn1,"select DISTINCT curr from b_masterbank union select 'EUR' curr ");
                 while ($row = mysqli_fetch_array($sql)) {
                     $data = $row['curr'];
-                    if($row['curr'] == $_POST['curre']){
+                    if($row['curr'] == $curre){
                         $isSelected = ' selected="selected"';
                     }else{
                         $isSelected = '';
@@ -234,14 +235,14 @@
               <select class="form-control selectpicker" name="forpay" id="forpay" data-dropup-auto="false" data-live-search="true" onchange="this.form.submit()">
                 <option value="-" disabled selected="true">Select For Payment</option>                                                 
                 <?php
-                $nama_supp ='';
+                $forpay ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $nama_supp = isset($_POST['forpay']) ? $_POST['forpay']: null;
+                $forpay = isset($_POST['forpay']) ? $_POST['forpay']: null;
                 }                 
                 $sql = mysqli_query($conn1,"select ref_doc from master_forpay where ket = '1'");
                 while ($row = mysqli_fetch_array($sql)) {
                     $data = $row['ref_doc'];
-                    if($row['ref_doc'] == $_POST['forpay']){
+                    if($row['ref_doc'] == $forpay){
                         $isSelected = ' selected="selected"';
                     }else{
                         $isSelected = '';
@@ -279,7 +280,7 @@
                 while ($row = mysqli_fetch_array($sql)) {
                     $data = $row['bank'];
                     $indata = $row['akun'];
-                    if($row['akun'] == $_POST['frcc']){
+                    if($row['akun'] == $frcc){
                         $isSelected = ' selected="selected"';
                     }else{
                         $isSelected = '';
@@ -323,7 +324,7 @@
                 while ($row = mysqli_fetch_array($sql)) {
                     $data = $row['bank'];
                     $indata = $row['akun'];
-                    if($row['akun'] == $_POST['frcc']){
+                    if($row['akun'] == $frcc){
                         $isSelected = ' selected="selected"';
                     }else{
                         $isSelected = '';
@@ -347,7 +348,7 @@
                 while ($row = mysqli_fetch_array($sql)) {
                     $data = $row['bank'];
                     $indata = $row['akun'];
-                    if($row['bank'] == $_POST['tocc']){
+                    if($row['bank'] == $tocc){
                         $isSelected = ' selected="selected"';
                     }else{
                         $isSelected = '';
@@ -398,7 +399,7 @@
                 while ($row = mysqli_fetch_array($sql)) {
                     $data = $row['bank'];
                     $indata = $row['akun'];
-                    if($row['bank'] == $_POST['tocc']){
+                    if($row['bank'] == $tocc){
                         $isSelected = ' selected="selected"';
                     }else{
                         $isSelected = '';
@@ -507,7 +508,7 @@
                 while ($row = mysqli_fetch_array($sql)) {
                     $data = $row['bank'];
                     $indata = $row['akun'];
-                    if($row['akun'] == $_POST['frcc']){
+                    if($row['akun'] == $frcc){
                         $isSelected = ' selected="selected"';
                     }else{
                         $isSelected = '';
@@ -667,7 +668,7 @@
                 $sql = mysqli_query($conn1,"select name from tbl_akun");
                 while ($row = mysqli_fetch_array($sql)) {
                     $data = $row['name'];
-                    if($row['name'] == $_POST['dari_akun']){
+                    if($row['name'] == $dari_akun){
                         $isSelected = ' selected="selected"';
                     }else{
                         $isSelected = '';
@@ -691,7 +692,7 @@
                 $sql = mysqli_query($conn1,"select name from tbl_akun");
                 while ($row = mysqli_fetch_array($sql)) {
                     $data = $row['name'];
-                    if($row['name'] == $_POST['ke_akun']){
+                    if($row['name'] == $ke_akun){
                         $isSelected = ' selected="selected"';
                     }else{
                         $isSelected = '';
@@ -2116,6 +2117,12 @@ $("#select_all").click(function() {
 <script type="text/javascript">
     document.getElementById('btnpve').onclick = function () {
     location.href = "create-paymentvoucher-exim.php";
+};
+</script>
+
+<script type="text/javascript">
+    document.getElementById('btnpvftr').onclick = function () {
+    location.href = "create-paymentvoucher-ftr.php";
 };
 </script>
 

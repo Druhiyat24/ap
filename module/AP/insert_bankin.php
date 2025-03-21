@@ -12,6 +12,7 @@ $curre = $_POST['curre'];
 $debit = $_POST['debit'];
 $credit = $_POST['credit'];
 $keterangan = $_POST['keterangan'];
+$prof_ctr = $_POST['prof_ctr'];
 
 
 
@@ -80,15 +81,15 @@ $t_credit = $credit * $rates;
 if ($debit == '' and $credit == '') {
 	
 }else{
-$query = "INSERT INTO tbl_bankin (no_doc,id_coa,id_cost_center,buyer,no_ws,curr,t_debit,t_credit,keterangan) 
+$query = "INSERT INTO tbl_bankin (no_doc,id_coa,id_cost_center,buyer,no_ws,curr,t_debit,t_credit,keterangan, profit_center) 
 VALUES 
-	('$kode', '$nomor_coa', '$cost_ctr', '$buyer', '$no_ws', '$curre', '$debit', '$credit', '$keterangan')";
+	('$kode', '$nomor_coa', '$cost_ctr', '$buyer', '$no_ws', '$curre', '$debit', '$credit', '$keterangan', '$prof_ctr')";
 
 $execute = mysqli_query($conn2,$query);
 
-$queryss3 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
+$queryss3 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
 VALUES 
-   ('$kode', '$date', '$referen', '$nomor_coa', '$nama_coa', '$cost_ctr', '$nama_cc', '-', '', '$buyer', '$no_ws', '$curre', '$rates', '$debit', '$credit', '$t_debit', '$t_credit', 'Draft', '$keterangan', '$create_by', '$create_date', '', '', '', '')";
+   ('$kode', '$date', '$referen', '$nomor_coa', '$nama_coa', '$cost_ctr', '$nama_cc', '-', '', '$buyer', '$no_ws', '$curre', '$rates', '$debit', '$credit', '$t_debit', '$t_credit', 'Draft', '$keterangan', '$create_by', '$create_date', '', '', '', '', '$prof_ctr')";
 
 $executess3 = mysqli_query($conn2,$queryss3);
 

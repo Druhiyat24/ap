@@ -42,6 +42,9 @@
             <input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="maxid" name="maxid" value="'.$maxid.'" hidden>';
             ?>
             </div>
+            &nbsp;<input type="checkbox" class="checkbox_sb1" id="to_sb1" name="to_sb1" value="1" style="margin-top: -15px;">
+                <label for="to_sb1" style="margin-top: 8px;"><b>Include</b></label><br>
+                <input type="hidden" id="fil_sb1" name="fil_sb1" value="N">
             </div>          
             <!-- <div class="form-row col">
                 <label for="total" class="col-form-label" style="width: 150px;">Balance</b></label>
@@ -192,6 +195,16 @@ function SidebarCollapse () {
 $(function() {
     $('.selectpicker').selectpicker();
 });
+</script>
+
+<script type="text/javascript">
+    $("#form-simpan").on("click", "#to_sb1", function(){
+    $("#fil_sb1").val('N');   
+        $("input[type=checkbox]:checked").each(function () {
+    var kata = '*Jurnal akan terbentuk di SB I';
+    $("#fil_sb1").val('Y');
+    });
+    });
 </script>
 
 <!--<script type="text/javascript"> 
@@ -360,7 +373,8 @@ function addListener(elm,index){
         var bank = document.getElementById('nama_bank').value;        
         var curr = document.getElementById('valuta').value;
         var pesan = document.getElementById('pesan').value;
-        var maxid = document.getElementById('maxid').value;        
+        var maxid = document.getElementById('maxid').value;  
+        var cek_sb1 = document.getElementById('fil_sb1').value;      
         var create_user = '<?php echo $user ?>';
 
  
@@ -368,7 +382,7 @@ function addListener(elm,index){
         $.ajax({
             type:'POST',
             url:'insertmasterbank.php',
-            data: {'tgl_active':tgl_active, 'no_doc':no_doc, 'sob':sob,'account':account, 'bank':bank, 'curr':curr,'pesan':pesan, 'create_user':create_user, 'maxid':maxid},
+            data: {'tgl_active':tgl_active, 'no_doc':no_doc, 'sob':sob,'account':account, 'bank':bank, 'curr':curr,'pesan':pesan, 'create_user':create_user, 'maxid':maxid, 'cek_sb1':cek_sb1},
             cache: 'false',
             close: function(e){
                 e.preventDefault();

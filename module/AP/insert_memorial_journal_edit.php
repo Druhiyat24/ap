@@ -20,9 +20,10 @@ $credit =$_POST['credit'];
 $debit_idr = $debit * $rate;
 $credit_idr = $credit * $rate;
 $keterangan = $_POST['keterangan'];
-$status = "Draft";
+$status = "Post";
 $create_user = $_POST['create_user'];
 $create_date = date("Y-m-d H:i:s");
+$prof_ctr = $_POST['prof_ctr'];
 
 
 
@@ -80,16 +81,16 @@ $nama_cc = $rowcc['cc_name'];
 // $balance = $rowy['balance'];
 // $balance2 = $balance + $total;
 
-$query = "INSERT INTO tbl_memorial_journal (no_mj, mj_date, id_cmj, no_coa, no_costcenter, no_reff, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, keterangan, status, create_by, create_date) 
+$query = "INSERT INTO tbl_memorial_journal (no_mj, mj_date, id_cmj, no_coa, no_costcenter, no_reff, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, keterangan, status, create_by, create_date, profit_center) 
 VALUES 
-	('$no_mj', '$mj_date', '$id_cmj', '$no_coa', '$no_costcenter', '$no_reff', '$reff_date', '$buyer', '$no_ws', '$curr', '$rate', '$debit', '$credit', '$debit_idr', '$credit_idr', '$keterangan', '$status', '$create_user', '$create_date')";
+	('$no_mj', '$mj_date', '$id_cmj', '$no_coa', '$no_costcenter', '$no_reff', '$reff_date', '$buyer', '$no_ws', '$curr', '$rate', '$debit', '$credit', '$debit_idr', '$credit_idr', '$keterangan', '$status', '$create_user', '$create_date', '$prof_ctr')";
 
 $execute = mysqli_query($conn2,$query);
 
 
-$queryss = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
+$queryss = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
 VALUES 
-   ('$no_mj', '$mj_date', '$nama_cmj', '$no_coa', '$nama_coa', '$no_costcenter', '$nama_cc', '$no_reff', '$reff_date', '$buyer', '$no_ws', '$curr', '$rate', '$debit', '$credit', '$debit_idr', '$credit_idr', '$status', '$keterangan', '$create_user', '$create_date', '', '', '', '')";
+   ('$no_mj', '$mj_date', '$nama_cmj', '$no_coa', '$nama_coa', '$no_costcenter', '$nama_cc', '$no_reff', '$reff_date', '$buyer', '$no_ws', '$curr', '$rate', '$debit', '$credit', '$debit_idr', '$credit_idr', '$status', '$keterangan', '$create_user', '$create_date', '', '', '', '', '$prof_ctr')";
 
 $executess = mysqli_query($conn2,$queryss);
 

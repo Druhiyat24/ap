@@ -6,7 +6,7 @@ $noftrdp=$_GET['noftrdp'];
 ?>
 
 <?php
-$sql= "select no_ftr_dp, tgl_ftr_dp, no_po, no_pi, tgl_po, supp, total, SUM(total) as sum_total, SUM(dp_value) as sum_dp, SUM(balance) as sum_balance, dp, dp_value, balance, curr, create_user, status from ftr_dp where no_ftr_dp = '$noftrdp' and status !='Cancel' group by no_po,no_ftr_dp";
+$sql= "select no_ftr_dp, tgl_ftr_dp, tgl_bayar, no_po, no_pi, tgl_po, supp, total, SUM(total) as sum_total, SUM(dp_value) as sum_dp, SUM(balance) as sum_balance, dp, dp_value, balance, curr, create_user, status from ftr_dp where no_ftr_dp = '$noftrdp' and status !='Cancel' group by no_po,no_ftr_dp";
 
 $rs=mysqli_fetch_array(mysql_query($conn2,$sql));
 ob_start();
@@ -201,7 +201,8 @@ table {
 	<thead>
     <tr>
       <th style="text-align:left;width: 20%;padding-top: -5px;">DATE CREATED  :</th>
-      <th style="text-align:left;padding-top: -5px;">FTR DP DATE  :</th>                               
+      <th style="text-align:left;width: 20%;padding-top: -5px;">FTR DP DATE  :</th>  
+      <th style="text-align:left;width: 20%;padding-top: -5px;">PAYMENT DATE  :</th>                               
     </tr>
 
 	<tbody>
@@ -220,6 +221,18 @@ table {
       $rows3 = mysqli_fetch_array($sql3);
       	$tglftrcbd = $rows3['tgl_ftr_dp'];
 		echo date("d M Y", strtotime($tglftrcbd));
+		?>		
+	</td>		
+	<td style="text-align:left;padding-left: 15px;padding-top: -15px;padding-bottom: -10px;">
+      <?php
+      $sql3 = mysqli_query($conn2,"select tgl_bayar from ftr_dp where no_ftr_dp = '$noftrdp'");
+      $rows3 = mysqli_fetch_array($sql3);
+      	$tgl_bayar = $rows3['tgl_bayar'];
+      	if ($tgl_bayar == '1970-01-01' OR $tgl_bayar == '0000-00-00' OR $tgl_bayar == '' OR $tgl_bayar == null) {
+      		echo '-';
+      	}else{
+			echo date("d M Y", strtotime($tgl_bayar));
+      	}
 		?>		
 	</td>									      
 	</tr>
@@ -307,10 +320,10 @@ while($datas=mysqli_fetch_array($querys)){
 </table> 
 <br>
 
-<table width="100%" border="0" style="font-size:12px">
+<table width="100%" border="0" style="font-size:13px">
 
 	<tr>
-		<td width="70%">
+		<td width="60%">
 			
 		</td>
 			
@@ -343,7 +356,7 @@ while($datas=mysqli_fetch_array($querys)){
 	</tr>	
 -->
 	<tr>
-		<td width="70%">
+		<td width="60%">
 			
 		</td>
 			
@@ -370,7 +383,7 @@ while($datas=mysqli_fetch_array($querys)){
 	</tr> -->	
 
 	<tr>
-		<td width="70%">
+		<td width="60%">
 			
 		</td>
 			
@@ -458,6 +471,7 @@ include("../../mpdf8/vendor/mpdf/mpdf/src/mpdf.php");
 $mpdf=new \mPDF\mPDF();
 
 $mpdf->WriteHTML($html);
+ob_clean();
 $mpdf->Output();
 exit;
 ?>

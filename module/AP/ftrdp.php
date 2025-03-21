@@ -2,12 +2,12 @@
 
     <!-- MAIN -->
     <div class="col p-4">
-        <h2 class="text-center">FORM TRANSFER REQUEST (DP)</h2>
+        <h3 class="text-center">FORM TRANSFER REQUEST (DP)</h3>
 <div class="box">
     <div class="box header">
     <form id="form-data" action="ftrdp.php" method="post">
         <div class="form-row">
-            <div class="col-md-12">
+            <div class="col-md-3">
                 <label for="nama_supp"><b>Supplier</b></label>            
               <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true">
                 <option value="ALL" selected="true">ALL</option>                                                
@@ -29,7 +29,7 @@
                 </select>
                 
             </div>
-            <div class="col-md-5">
+            <div class="col-md-3">
             <label for="status"><b>Status</b></label>            
               <select class="form-control selectpicker" name="status" id="status" data-dropup-auto="false" data-live-search="true">
                 <option value="ALL" <?php
@@ -86,9 +86,9 @@
                 >Cancel</option>                                                                                                             
                 </select>
                 </div>
-                <div class="form-row">
-            <div class="col-md-6"> 
-            <label for="start_date"><b>From</b></label>
+
+                <div class="col-md-2">         
+              <label for="start_date"><b>From</b></label>
             <input type="text" class="form-control tanggal" id="start_date" name="start_date" 
             value="<?php
             $start_date ='';
@@ -101,11 +101,11 @@
             else{
                echo '';
             } ?>" 
-            placeholder="Start Date" autocomplete='off'>
+            placeholder="Start Date" autocomplete='off' style="height: 33px;font-size:13px;">   
             </div>
 
-            <div class="col-md-6 mb-1">
-            <label for="end_date"><b>To</b></label>        
+            <div class="col-md-2">
+             <label for="end_date"><b>To</b></label>        
             <input type="text" class="form-control tanggal" id="end_date" name="end_date" 
             value="<?php
             $end_date ='';
@@ -118,9 +118,8 @@
             else{
                echo date("d-m-Y");
             } ?>" 
-            placeholder="Tanggal Akhir">
+            placeholder="Tanggal Akhir" style="height: 33px;font-size:13px;"> 
             </div>
-        </div>
 
             <div class="input-group-append col">                                   
             <button type="submit" id="submit" value=" Search " style="margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
@@ -143,6 +142,7 @@
     background-color:rgb(250, 69, 1)"><i class="fa fa-repeat" aria-hidden="true"></i> Reset </button>
             </div>                                                            
     </div>
+    <br>
             
         </div>
     </form> 
@@ -163,8 +163,8 @@
         <div class="row">       
             <div class="col-md-12">
 
-            
-<table id="datatable" class="table table-striped table-bordered" role="grid" cellspacing="0" width="100%">
+<div class="table-responsive">
+<table id="datatable" class="table table-striped table-bordered text-nowrap" role="grid" cellspacing="0" width="100%">
     <thead>
         <tr class="thead-dark">
             <th style="text-align: center;vertical-align: middle;">No FTR DP</th>
@@ -177,7 +177,7 @@
             <th style="text-align: center;vertical-align: middle;">Currency</th>
             <th style="text-align: center;vertical-align: middle;">Create By</th>
             <th style="text-align: center;vertical-align: middle;">Status</th>
-            <th style="text-align: center;vertical-align: middle;display: none;">Keterangan</th>                                    
+            <th style="text-align: center;vertical-align: middle;display: none;">Keterangan</th>       
             <th style="text-align: center;vertical-align: middle; width: 150px">Action</th>                                         
         </tr>
     </thead>
@@ -270,6 +270,8 @@
 }?>
 </tbody>                    
 </table>
+</div>
+
    
     </div>
     </div>
@@ -281,9 +283,9 @@
 <div class="modal fade" id="mymodalftrdp" data-target="#mymodalftrdp" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
         <div class="modal-dialog">
         <div class="modal-content">
-        <div class="modal-header">
+        <div class="modal-header bg-dark text-white">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-        <h4 class="modal-title" id="txt_dp"></h4>
+        <h5 class="modal-title" id="txt_dp"></h5>
         </div>
         <div class="container">
         <div class="row">

@@ -253,15 +253,16 @@
             $fin = $rs['finance'];
             $app = $rs['ap_apprv_lp'];
 
-            echo '<td width="100px;">';
+            echo '<td width="150px;">';
             if($status == 'Deactive' and $group != 'STAFF' and $fin == '1'){
                 echo '<a id="active" href=""><button style="border-radius: 6px" type="button" class="btn-xs btn-info"><i onclick="alert_approve();"> Active</i></button></a>';
             }elseif($status == 'Deactive' and $fin == '1'){
                 echo '-';
             }elseif($status == 'Active' and $group != 'STAFF' and $fin == '1'){
-                echo '<a id="deactive" href=""><button style="border-radius: 6px" type="button" class="btn-xs btn-danger"><i onclick="alert_cancel();"> Deactive</i></button></a>';                
+                echo '<a id="deactive" href=""><button style="border-radius: 6px" type="button" class="btn-xs btn-danger"><i onclick="alert_cancel();"> Deactive</i></button></a>
+                <a href="edit-master-bank.php?doc_number='.base64_encode($row['doc_number']).' "><button style="border-radius: 6px" type="button" class="btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Edit</i></button></a>';                
             }elseif($status == 'Active' and $fin == '1') {
-                echo '-';                
+                echo '<a href="edit-master-bank.php?doc_number='.base64_encode($row['doc_number']).' "><button style="border-radius: 6px" type="button" class="btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Edit</i></button></a>';                
             } else {
                 echo '';                
             }                                     

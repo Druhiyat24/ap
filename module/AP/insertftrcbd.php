@@ -4,6 +4,7 @@ ini_set('date.timezone', 'Asia/Jakarta');
 
 $noftrcbd = $_POST['noftrcbd'];
 $tglftrcbd = date("Y-m-d",strtotime($_POST['tglftrcbd']));
+$tgl_bayar = date("Y-m-d",strtotime($_POST['tgl_bayar']));
 $nama_supp = $_POST['nama_supp'];
 $no_pi = $_POST['no_pi'];
 $curr = $_POST['curr'];
@@ -33,9 +34,9 @@ $tambah = '0';
 // echo $sum_tax;
 // echo $sum_total;
 	
-$query = "INSERT INTO ftr_cbd (no_ftr_cbd, tgl_ftr_cbd, supp, no_po, tgl_po, no_pi, subtotal, tax, total, curr, keterangan, status, create_user, create_date, is_invoiced,biaya_tambahan) 
+$query = "INSERT INTO ftr_cbd (no_ftr_cbd, tgl_ftr_cbd, tgl_bayar, supp, no_po, tgl_po, no_pi, subtotal, tax, total, curr, keterangan, status, create_user, create_date, is_invoiced,biaya_tambahan) 
 VALUES 
-	('$noftrcbd', '$tglftrcbd', '$nama_supp', '$no_po', '$tgl_po', '$no_pi', '$sum_sub', '$sum_tax', '$sum_total', '$curr', '$keterangan', '$status', '$create_user', '$create_date', '$invoiced', '$tambah')";
+	('$noftrcbd', '$tglftrcbd', '$tgl_bayar', '$nama_supp', '$no_po', '$tgl_po', '$no_pi', '$sum_sub', '$sum_tax', '$sum_total', '$curr', '$keterangan', '$status', '$create_user', '$create_date', '$invoiced', '$tambah')";
 $execute = mysqli_query($conn2,$query);
 
 if(!$execute){	

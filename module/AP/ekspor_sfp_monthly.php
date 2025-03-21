@@ -164,75 +164,75 @@
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 = '111' group by a.id_ctg4");
 
@@ -404,75 +404,75 @@ order by no_coa asc) a where a.id_ctg4 = '111' group by a.id_ctg4");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 = '113' group by a.id_ctg4");
 
@@ -644,75 +644,75 @@ order by no_coa asc) a where a.id_ctg4 = '113' group by a.id_ctg4");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 = '114' group by a.id_ctg4");
 
@@ -884,75 +884,75 @@ order by no_coa asc) a where a.id_ctg4 = '114' group by a.id_ctg4");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 = '115' group by a.id_ctg4");
 
@@ -1124,75 +1124,75 @@ order by no_coa asc) a where a.id_ctg4 = '115' group by a.id_ctg4");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 = '116' group by a.id_ctg4");
 
@@ -1364,75 +1364,75 @@ order by no_coa asc) a where a.id_ctg4 = '116' group by a.id_ctg4");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 = '117' group by a.id_ctg4");
 
@@ -1604,75 +1604,75 @@ order by no_coa asc) a where a.id_ctg4 = '117' group by a.id_ctg4");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 = '118' group by a.id_ctg4");
 
@@ -1855,75 +1855,75 @@ order by no_coa asc) a where a.id_ctg4 = '118' group by a.id_ctg4");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 IN ('111','113','114','115','116','117','118') group by a.id_ctg4 ) a");
 
@@ -2119,75 +2119,75 @@ order by no_coa asc) a where a.id_ctg4 IN ('111','113','114','115','116','117','
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 = '112' group by a.id_ctg4");
 
@@ -2370,75 +2370,75 @@ order by no_coa asc) a where a.id_ctg4 = '112' group by a.id_ctg4");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 = '121' group by a.id_ctg4");
 
@@ -2610,75 +2610,75 @@ order by no_coa asc) a where a.id_ctg4 = '121' group by a.id_ctg4");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 = '122' group by a.id_ctg4");
 
@@ -2861,75 +2861,75 @@ order by no_coa asc) a where a.id_ctg4 = '122' group by a.id_ctg4");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 = '129' group by a.id_ctg4");
 
@@ -3112,75 +3112,75 @@ order by no_coa asc) a where a.id_ctg4 = '129' group by a.id_ctg4");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 IN ('112','121','122','129') group by a.id_ctg4 ) a");
 
@@ -3363,75 +3363,75 @@ order by no_coa asc) a where a.id_ctg4 IN ('112','121','122','129') group by a.i
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 IN ('111','113','114','115','116','117','118','112','121','122','129') group by a.id_ctg4 ) a");
 
@@ -3652,75 +3652,75 @@ order by no_coa asc) a where a.id_ctg4 IN ('111','113','114','115','116','117','
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 = '212' group by a.id_ctg4");
 
@@ -3892,75 +3892,75 @@ order by no_coa asc) a where a.id_ctg4 = '212' group by a.id_ctg4");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 = '211' group by a.id_ctg4");
 
@@ -4132,75 +4132,75 @@ order by no_coa asc) a where a.id_ctg4 = '211' group by a.id_ctg4");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 = '215' group by a.id_ctg4");
 
@@ -4372,75 +4372,75 @@ order by no_coa asc) a where a.id_ctg4 = '215' group by a.id_ctg4");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 = '214' group by a.id_ctg4");
 
@@ -4623,75 +4623,75 @@ order by no_coa asc) a where a.id_ctg4 = '214' group by a.id_ctg4");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 = '219' group by a.id_ctg4");
 
@@ -4863,75 +4863,75 @@ order by no_coa asc) a where a.id_ctg4 = '219' group by a.id_ctg4");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 = '213' group by a.id_ctg4");
 
@@ -5114,75 +5114,75 @@ order by no_coa asc) a where a.id_ctg4 = '213' group by a.id_ctg4");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 IN ('212','211','215','214','219','213') group by a.id_ctg4 ) a");
 
@@ -5378,75 +5378,75 @@ order by no_coa asc) a where a.id_ctg4 IN ('212','211','215','214','219','213') 
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 = '221' group by a.id_ctg4");
 
@@ -5640,75 +5640,75 @@ order by no_coa asc) a where a.id_ctg4 = '221' group by a.id_ctg4");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 IN ('221') group by a.id_ctg4 ) a");
 
@@ -5904,75 +5904,75 @@ order by no_coa asc) a where a.id_ctg4 IN ('221') group by a.id_ctg4 ) a");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 = '311' group by a.id_ctg4");
 
@@ -6144,75 +6144,75 @@ order by no_coa asc) a where a.id_ctg4 = '311' group by a.id_ctg4");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 = '312' group by a.id_ctg4");
 
@@ -6384,75 +6384,75 @@ order by no_coa asc) a where a.id_ctg4 = '312' group by a.id_ctg4");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 = '318' group by a.id_ctg4");
 
@@ -6635,75 +6635,75 @@ order by no_coa asc) a where a.id_ctg4 = '318' group by a.id_ctg4");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa  where no_coa >= '3.40.01'
 order by no_coa asc) a");
 
@@ -6886,75 +6886,75 @@ order by no_coa asc) a");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 IN ('311','312','318') group by a.id_ctg4 ) a
 UNION
@@ -6962,75 +6962,75 @@ select ind_categori4,id_ctg4,sum(saldo_awal) saldo_awal,sum(saldo_jan) saldo_jan
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa  where no_coa >= '3.40.01'
 order by no_coa asc) a) a");
 
@@ -7213,75 +7213,75 @@ order by no_coa asc) a) a");
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 IN ('212','211','215','214','219','213','221') group by a.id_ctg4 ) a
 UNION
@@ -7289,75 +7289,75 @@ select ind_categori4,id_ctg4,sum(saldo_awal) saldo_awal,sum(saldo_jan) saldo_jan
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa 
 order by no_coa asc) a where a.id_ctg4 IN ('311','312','318') group by a.id_ctg4 ) a
 UNION
@@ -7365,75 +7365,75 @@ select ind_categori4,id_ctg4,sum(saldo_awal) saldo_awal,sum(saldo_jan) saldo_jan
 (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,id_ctg4 from mastercoa_v2 order by no_coa asc) coa
 left join
 (select nocoa coa_no, saldo saldo_awal,(saldo + coalesce((debit_idr - credit_idr),0)) saldo_jan from 
-(select no_coa nocoa,jan_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jan_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '01' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jan on jan.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_feb from 
-(select no_coa nocoa,feb_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,feb_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '02' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) feb on feb.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_mar from 
-(select no_coa nocoa,mar_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,mar_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '03' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) mar on mar.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_apr from 
-(select no_coa nocoa,apr_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,apr_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '04' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) apr on apr.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_may from 
-(select no_coa nocoa,may_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,may_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '05' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) may on may.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jun from 
-(select no_coa nocoa,jun_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jun_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '06' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jun on jun.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_jul from 
-(select no_coa nocoa,jul_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,jul_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '07' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) jul on jul.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_aug from 
-(select no_coa nocoa,aug_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,aug_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '08' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) aug on aug.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_sep from 
-(select no_coa nocoa,sep_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,sep_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '09' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) sep on sep.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_oct from 
-(select no_coa nocoa,oct_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,oct_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '10' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) oct on oct.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_nov from 
-(select no_coa nocoa,nov_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,nov_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '11' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) nov on nov.coa_no = coa.no_coa left join
 
 (select nocoa coa_no, (saldo + coalesce((debit_idr - credit_idr),0)) saldo_dec from 
-(select no_coa nocoa,dec_2023 as saldo from saldo_awal_tb order by no_coa asc) saldo
+(select no_coa nocoa,dec_$tahun_akhir as saldo from saldo_awal_tb order by no_coa asc) saldo
 left join
-(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '2023') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '2023') group by no_coa) 
+(select no_coa coa_no,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr  from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') and (select tgl_akhir from tbl_tgl_tb where bulan = '12' and tahun = '$tahun_akhir') group by no_coa) 
 jnl on jnl.coa_no = saldo.nocoa order by nocoa asc) des on des.coa_no = coa.no_coa  where no_coa >= '3.40.01'
 order by no_coa asc) a) a");
 

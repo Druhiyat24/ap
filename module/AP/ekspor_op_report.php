@@ -79,7 +79,17 @@ select reff_doc,tgl_journal,sum((debit * rate) - (credit * rate)) total, '0','0'
         $no_journal = isset($rowmm['no_journal']) ? $rowmm['no_journal'] : null;
         if ($no_journal != null) {
         $no++;
-        $beg_balance = $row2['beg_balance'];
+        // $beg_balance = $row2['beg_balance'];
+        $sql_mj_b = mysqli_query($conn2,"select reff_doc,tgl_journal,sum((debit * rate) - (credit * rate)) total, '0','0',((debit * rate) - (credit * rate)) total2, '0' from tbl_list_journal where no_coa = '2.18.02' and no_journal like '%GM/%' and tgl_journal < '$start_date' and reff_doc = '$nm_memo'");
+        $row_mj_b = mysqli_fetch_array($sql_mj_b);
+        $val_mj_b = isset($row_mj_b['total']) ? $row_mj_b['total'] : 0;
+        // echo $val_mj_b;
+
+        if ($val_mj_b > 0) {
+             $beg_balance = $row2['beg_balance'] - $val_mj_b;
+        }else{
+             $beg_balance = $row2['beg_balance'];
+        }
         $addition = $row2['addition'];
         $deduction = $row2['deduction'];
         $deduction2 = $row2['deduction2'];
@@ -105,6 +115,9 @@ select reff_doc,tgl_journal,sum((debit * rate) - (credit * rate)) total, '0','0'
         $ttl_ded +=$deduction;
         $ttl_for +=$forex;
         $ttl_end +=$end_balance;
+        if ($beg_balance == 0 && $addition == 0) {
+            // code...
+        }else{
         echo ' <tr style="font-size:12px;text-align:center;">
             <td style="text-align : left;" value = "'.$no.'">'.$no.'</td>
             <td style="text-align : left;" value = "'.$row2['nm_memo'].'">'.$row2['nm_memo'].'</td>
@@ -120,6 +133,7 @@ select reff_doc,tgl_journal,sum((debit * rate) - (credit * rate)) total, '0','0'
             </tr>
             ';
         }
+    }
          
         ?>
         <?php 

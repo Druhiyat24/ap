@@ -13,6 +13,8 @@ $curr = $_POST['curr'];
 $debit = $_POST['debit'];
 $credit = $_POST['credit'];
 $deskripsi = $_POST['deskripsi'];
+$oth_doc = $_POST['oth_doc'];
+$prof_ctr = $_POST['prof_ctr'];
 
 
 // echo "< -- >";
@@ -50,18 +52,23 @@ $sqlcc = mysqli_query($conn1,"select cc_name from b_master_cc where no_cc = '$no
 $rowcc = mysqli_fetch_array($sqlcc);
 $nama_cc = $rowcc['cc_name'];
 
+$sqlpco = mysqli_query($conn1,"select no_pco, tgl_pco from c_petty_cashout_h where no_pco = '$oth_doc' GROUP BY no_pco");
+$rowpco = mysqli_fetch_array($sqlpco);
+$txtno_pco = $rowpco['no_pco'];
+$txttgl_pco = $rowpco['tgl_pco'];
+
 if ($debit == '' and $credit == '') {
 	
 }else{
-$query = "INSERT INTO c_petty_cashout_none (no_pco,tgl_pco,reff_doc,no_coa,no_costcntr,buyer,no_ws,curr,debit,credit,deskripsi) 
+$query = "INSERT INTO c_petty_cashout_none (no_pco,tgl_pco,reff_doc,no_coa, profit_center, no_costcntr,buyer,no_ws,curr,debit,credit,deskripsi) 
 VALUES 
-	('$kode', '$tgl_pco', '$reff_doc', '$no_coa', '$no_costcntr', '$buyer', '$no_ws', '$curr', '$debit', '$credit', '$deskripsi')";
+	('$kode', '$tgl_pco', '$reff_doc', '$no_coa', '$prof_ctr', '$no_costcntr', '$buyer', '$no_ws', '$curr', '$debit', '$credit', '$deskripsi')";
 
 $execute = mysqli_query($conn2,$query);
 
-$queryss = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
+$queryss = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
 VALUES 
-   ('$kode', '$tgl_pco', '$type_co', '$no_coa', '$nama_coa', '$no_costcntr', '$nama_cc', '-', '', '$buyer', '$no_ws', '$curr', '1', '$debit', '$credit', '$debit', '$credit', 'Draft', '$deskripsi', '$create_by', '$create_date', '', '', '', '')";
+   ('$kode', '$tgl_pco', '$type_co', '$no_coa', '$nama_coa', '$no_costcntr', '$nama_cc', '$txtno_pco', '$txttgl_pco', '$buyer', '$no_ws', '$curr', '1', '$debit', '$credit', '$debit', '$credit', 'Draft', '$deskripsi', '$create_by', '$create_date', '', '', '', '', '$prof_ctr')";
 
 $executess = mysqli_query($conn2,$queryss);
 

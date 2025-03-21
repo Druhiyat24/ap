@@ -15,23 +15,9 @@ $deskripsi = $_POST['deskripsi'];
 $status = "Draft";
 $create_by = $_POST['create_by'];
 $create_date = date("Y-m-d H:i:s");
+$oth_doc = $_POST['oth_doc'];
 
 
-// echo "< -- >";
-// echo $no_kbon;
-// echo "< -- >";
-// echo $tgl_kbon;
-// echo "< -- >";
-// echo $valuta_ftr;
-// echo "< -- >";
-// echo $ttl_bayar;
-// echo "< -- >";
-// echo $cara_bayar;
-// echo "< -- >";
-// echo $account;
-// echo "< -- >";
-// echo $bank;
-// echo "< -- >";
 
 
 $sqlnkb = mysqli_query($conn2,"select max(no_pco) from c_petty_cashout_h where coa_akun = '$akun' and YEAR(tgl_pco) = YEAR('$tgl_pco') AND MONTH(tgl_pco) = MONTH('$tgl_pco')");
@@ -57,9 +43,9 @@ $sqlcoa = mysqli_query($conn1,"select nama_coa from mastercoa_v2 where no_coa = 
 $rowcoa = mysqli_fetch_array($sqlcoa);
 $nama_coa = $rowcoa['nama_coa'];
 
-$query = "INSERT INTO c_petty_cashout_h (no_pco,tgl_pco,reff,nama_supp,coa_akun,curr,amount,deskripsi,status, create_by,create_date) 
+$query = "INSERT INTO c_petty_cashout_h (no_pco,tgl_pco,reff,nama_supp,coa_akun,curr,amount,deskripsi,status, create_by,create_date, reff_doc) 
 VALUES 
-    ('$kode', '$tgl_pco', '$reff', '$nama_supp', '$akun', '$curr', '$amount','$deskripsi', '$status', '$create_by', '$create_date')";
+    ('$kode', '$tgl_pco', '$reff', '$nama_supp', '$akun', '$curr', '$amount','$deskripsi', '$status', '$create_by', '$create_date', '$oth_doc')";
 
     $queryss = "INSERT INTO c_report_pettycash (transaksi_date,no_doc,deskripsi,akun,categori,cf_categori,curr,debit,credit, balance,status) 
 VALUES 
@@ -78,13 +64,9 @@ $executess2 = mysqli_query($conn2,$queryss2);
 if(!$execute){  
    die('Error: ' . mysqli_error()); 
 }else{
-echo 'Data Saved Successfully With No Petty Cash In '; echo $kode;
-// if ($no_bk == '') {
-    
-// }else{
-// $sql2 = "update b_bankout_h set stat_bi='Y' where no_bankout = '$no_bk'";
-// $query2 = mysqli_query($conn2,$sql2);
-// }
+   $sql_upt = "update c_petty_cashout_h set settlement='Y' where no_pco = '$oth_doc'";
+   $query_upt = mysqli_query($conn2,$sql_upt);
+   echo 'Data Saved Successfully With No Petty Cash In '; echo $kode;
     
 }
 

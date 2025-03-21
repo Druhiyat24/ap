@@ -48,6 +48,8 @@
             <th style="text-align: center;vertical-align: middle;">Modul Asal</th>
             <th style="text-align: center;vertical-align: middle;">No Coa</th>
             <th style="text-align: center;vertical-align: middle;">Coa Name</th>
+            <th style="text-align: center;vertical-align: middle;">Profit Center</th>
+            <th style="text-align: center;vertical-align: middle;">No Cost Center</th>
             <th style="text-align: center;vertical-align: middle;">Cost Center</th>
             <th style="text-align: center;vertical-align: middle;">Reff</th>
             <th style="text-align: center;vertical-align: middle;">Reff Date</th>
@@ -117,7 +119,7 @@ left JOIN
 
 (select id,ind_name as idndircredit, eng_name as engdircredit from tbl_master_cashflow) dircredit on dircredit.id = b.id_direct_credit left join
 
-(select id,ind_name as idnindir, eng_name as engindir from tbl_master_cashflow) indir on indir.id = b.id_indirect
+(select id,ind_name as idnindir, eng_name as engindir from tbl_master_cashflow) indir on indir.id = b.id_indirect left join (select no_cc, profit_center from b_master_cc where status = 'Active') cc on cc.no_cc = a.no_costcenter
 ");
 
         $no = 1;
@@ -168,6 +170,8 @@ left JOIN
             <td  value = "'.$row['asal'].'">'.$row['asal'].'</td>
             <td  value = "'.$row['no_coa'].'">'.$row['no_coa'].'</td>
             <td  value = "'.$row['nama_coa'].'">'.$row['nama_coa'].'</td>
+            <td  value = "'.$row['profit_center'].'">'.$row['profit_center'].'</td>
+            <td  value = "'.$row['no_cc'].'">'.$row['no_cc'].'</td>
             <td  value = "'.$row['nama_costcenter'].'">'.$row['nama_costcenter'].'</td>
             <td  value = "'.$row['reff_doc'].'">'.$row['reff_doc'].'</td>
             <td  value = "'.$Reffdate.'">'.$Reffdate.'</td>

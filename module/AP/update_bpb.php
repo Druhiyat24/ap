@@ -2,10 +2,14 @@
 
     <!-- MAIN -->
     <div class="col p-4">
-        <h2 class="text-center">LIST UPDATE BPB</h2>
+        <h3 class="text-center">LIST UPDATE BPB</h3>
 <div class="box">
     <div class="box header">
-<form id="form-data" action="update_bpb.php" method="post">        
+<form id="form-data" action="update_bpb.php" method="post">    
+<div style="padding-left: 10px;padding-top: 5px;">
+            <button style="-ms-transform: skew(6deg);-webkit-transform: skew(6deg);transform: skew(10deg);" id="btnbpb" type="button" class="btn-primary active btn-xs"><span></span>List Update BPB</button>
+            <button style="-ms-transform: skew(6deg);-webkit-transform: skew(6deg);transform: skew(10deg);" id="btnfaktur" type="button" class="btn-secondary btn-xs"><span></span>List Data Faktur</button>
+        </div>    
         <div class="form-row">
             <div class="col-md-6">
             <label for="nama_supp"><b>Supplier</b></label>            
@@ -44,7 +48,7 @@
             else{
                echo date("d-m-Y");
             } ?>" 
-            placeholder="Start Date" autocomplete='off' >
+            placeholder="Start Date" autocomplete='off' style="height: 33px;">
             </div>
 
             <div class="col-md-6 mb-1">
@@ -61,7 +65,7 @@
             else{
                echo date("d-m-Y");
             } ?>" 
-            placeholder="Tanggal Akhir" >
+            placeholder="Tanggal Akhir" style="height: 33px;">
             </div>
         </div>
 
@@ -86,6 +90,7 @@
     background-color:rgb(250, 69, 1)"><i class="fa fa-repeat" aria-hidden="true"></i> Reset </button>           
             </div>                                                            
     </div>
+    <br>
 </div>
 </form>
 </form>
@@ -124,12 +129,26 @@
     echo '';
         }
 ?>
+
+
+<?php
+        $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Update Faktur Scan'");
+        $rs = mysqli_fetch_array($querys);
+        $id = isset($rs['id']) ? $rs['id'] : 0;
+
+        if($id == '75'){
+    echo '<button id="btnscan_faktur" type="button" class="btn-success btn-xs"><span class="fa fa-qrcode"></span> Update</button>';
+        }else{
+    echo '';
+        }
+?>
+ 
     <div class="box body">
         <div class="row">       
             <div class="col-md-12">
 
-            
-<table id="datatable" class="table table-striped table-bordered" role="grid" cellspacing="0" width="100%">
+    <div class="table-responsive">        
+<table id="datatable" class="table table-striped table-bordered text-nowrap" role="grid" cellspacing="0" width="100%">
     <thead>
         <tr class="thead-dark">
             <th style="text-align: center; vertical-align: middle;">No Dokumen</th>
@@ -167,10 +186,10 @@ where bpb_faktur_inv.jenis = 'FAK' and bpb_faktur_inv.status != 'CANCEL'");
 
 
     if($nama_supp == 'ALL'){
-    $sql = mysqli_query($conn2,"SELECT no_dok, tgl_dok, no_inv, tgl_inv, no_faktur, tgl_faktur, no_bpb, tgl_bpb, nama_supp, status, created_by, created_date, jenis FROM bpb_faktur_inv WHERE tgl_dok BETWEEN '$start_date' and '$end_date' group by no_dok");
+    $sql = mysqli_query($conn2,"SELECT no_dok, tgl_dok, no_inv, tgl_inv, no_faktur, tgl_faktur, no_bpb, tgl_bpb, nama_supp, status, created_by, created_date, jenis FROM bpb_faktur_inv WHERE tgl_dok BETWEEN '$start_date' and '$end_date' group by no_dok order by SUBSTR(no_dok,14,5) asc");
     }      
     else{
-    $sql = mysqli_query($conn2,"SELECT no_dok, tgl_dok, no_inv, tgl_inv, no_faktur, tgl_faktur, no_bpb, tgl_bpb, nama_supp, status, created_by, created_date, jenis FROM bpb_faktur_inv WHERE tgl_dok BETWEEN '$start_date' and '$end_date' and nama_supp = '$nama_supp' group by no_dok");
+    $sql = mysqli_query($conn2,"SELECT no_dok, tgl_dok, no_inv, tgl_inv, no_faktur, tgl_faktur, no_bpb, tgl_bpb, nama_supp, status, created_by, created_date, jenis FROM bpb_faktur_inv WHERE tgl_dok BETWEEN '$start_date' and '$end_date' and nama_supp = '$nama_supp' group by no_dok order by SUBSTR(no_dok,14,5) asc");
     }                 
 
     while($row = mysqli_fetch_array($sql)){
@@ -207,7 +226,7 @@ where bpb_faktur_inv.jenis = 'FAK' and bpb_faktur_inv.status != 'CANCEL'");
 
             $querys3 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Cancel Faktur & Invoice'");
                 $rs3 = mysqli_fetch_array($querys3);
-                $id_cancel = isset($rs3['id']) ? $rs['id'] : 0;
+                $id_cancel = isset($rs3['id']) ? $rs3['id'] : 0;
             if($row['status'] == 'POST' && $id_cancel == '60'){
                 echo '<a id="delete" href=""><button style="border-radius: 6px" type="button" class="btn-xs btn-danger"><i class="fa fa-trash" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;" onclick="alert_cancel();"> Cancel</i></button></a>';
             }else{
@@ -219,15 +238,16 @@ where bpb_faktur_inv.jenis = 'FAK' and bpb_faktur_inv.status != 'CANCEL'");
 }?>
 </tbody>                    
 </table>
+</div>
 
 <!-- <a href="edit_faktur_invoice.php?no_dok='.base64_encode($row['no_dok']).' "><button style="border-radius: 6px" type="button" class="btn-xs btn-danger"><i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Edit</i></button></a> -->
 
 <div class="modal fade" id="mymodal" data-target="#mymodal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
         <div class="modal-dialog">
         <div class="modal-content">
-        <div class="modal-header">
+        <div class="modal-header bg-dark text-white">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-        <h4 class="modal-title" id="txt_no_dok"></h4>
+        <h5 class="modal-title" id="txt_no_dok"></h5>
         </div>
         <div class="container">
         <div class="row">
@@ -296,6 +316,18 @@ function SidebarCollapse () {
      $("[data-toggle=tooltip]").tooltip();
     
 } );
+</script>
+
+<script type="text/javascript">
+    document.getElementById('btnbpb').onclick = function () {
+    location.href = "update_bpb.php";
+};
+</script>
+
+<script type="text/javascript">
+    document.getElementById('btnfaktur').onclick = function () {
+    location.href = "list_data_faktur.php";
+};
 </script>
 
 <script type="text/javascript">
@@ -393,6 +425,12 @@ function alert_cancel() {
 <script type="text/javascript">
     document.getElementById('btnupdate_inv').onclick = function () {
     location.href = "form_update_inv.php";
+};
+</script>
+
+<script type="text/javascript">
+    document.getElementById('btnscan_faktur').onclick = function () {
+    location.href = "form_scan_faktur.php";
 };
 </script>
 

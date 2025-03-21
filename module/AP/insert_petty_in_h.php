@@ -83,6 +83,8 @@ if(!$execute){
 }else{
 echo 'Data Saved Successfully With No Petty Cash In '; echo $kode;
 if ($reff != 'Cash Out') {
+   $sql_upt = "update c_petty_cashout_h set settlement='Y' where no_pco = '$oth_doc'";
+   $query_upt = mysqli_query($conn2,$sql_upt);
    
 }else{
 $sql2 = "update c_cash_out set stat_pci='Y' where no_co = '$reff_doc'";

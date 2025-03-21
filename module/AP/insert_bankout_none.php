@@ -14,6 +14,7 @@ $debit = $_POST['debit'];
 $credit = $_POST['credit'];
 $deskripsi = $_POST['deskripsi'];
 $rate = $_POST['rate'];
+$prof_ctr = $_POST['prof_ctr'];
 
 
 // echo "< -- >";
@@ -79,15 +80,15 @@ $t_credit = $credit * $rates;
 if ($debit == '' and $credit == '') {
 	
 }else{
-$query = "INSERT INTO b_bankout_none (no_bankout,tgl_bankout,reff_doc,no_coa,no_costcntr,buyer,no_ws,curr,debit,credit,deskripsi) 
+$query = "INSERT INTO b_bankout_none (no_bankout,tgl_bankout,reff_doc,no_coa,no_costcntr,buyer,no_ws,curr,debit,credit,deskripsi, profit_center) 
 VALUES 
-	('$kode', '$tgl_bankout', '$reff_doc', '$no_coa', '$no_costcntr', '$buyer', '$no_ws', '$curr', '$debit', '$credit', '$deskripsi')";
+	('$kode', '$tgl_bankout', '$reff_doc', '$no_coa', '$no_costcntr', '$buyer', '$no_ws', '$curr', '$debit', '$credit', '$deskripsi', '$prof_ctr')";
 
 $execute = mysqli_query($conn2,$query);
 
-$queryss3 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
+$queryss3 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
 VALUES 
-   ('$kode', '$date', '$reff_doc', '$no_coa', '$nama_coa', '$no_costcntr', '$nama_cc', '-', '', '$buyer', '$no_ws', '$curr', '$rates', '$debit', '$credit', '$t_debit', '$t_credit', 'Draft', '$deskripsi', '$create_by', '$create_date', '', '', '', '')";
+   ('$kode', '$date', '$reff_doc', '$no_coa', '$nama_coa', '$no_costcntr', '$nama_cc', '-', '', '$buyer', '$no_ws', '$curr', '$rates', '$debit', '$credit', '$t_debit', '$t_credit', 'Draft', '$deskripsi', '$create_by', '$create_date', '', '', '', '', '$prof_ctr')";
 
 $executess3 = mysqli_query($conn2,$queryss3);
 }

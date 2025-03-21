@@ -10,22 +10,16 @@
             <div class="col-md-3 mb-3">            
             <label for="nopayment"><b>No List Payment DP</b></label>
             <?php
-            $sql = mysqli_query($conn2,"select max(no_payment) from list_payment_dp");
+            $sql = mysqli_query($conn2,"select CONCAT('LP/DP/NAG/',DATE_FORMAT(CURRENT_DATE(), '%m%y'),'/',LPAD((COALESCE(max(SUBSTR(no_payment,16)),0) + 1),5,0)) nomor from list_payment_dp WHERE YEAR(tgl_payment) = YEAR (CURRENT_DATE())");
             $row = mysqli_fetch_array($sql);
-            $kodepay = $row['max(no_payment)'];
-            $urutan = (int) substr($kodepay, 15, 5);
-            $urutan++;
-            $bln = date("m");
-            $thn = date("y");
-            $huruf = "LP/DP/NAG/$bln$thn/";
-            $kodepay = $huruf . sprintf("%05s", $urutan);
+            $kodepay = $row['nomor'];
 
             echo'<input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="nopayment" name="nopayment" value="'.$kodepay.'">'
             ?>
             </div>
             <div class="col-md-3 mb-3">            
             <label for="tanggal"><b>List Payment Date <i style="color: red;">*</i></b></label>          
-            <input type="text" style="font-size: 14px;" name="tanggal" id="tanggal" class="form-control tanggal" 
+            <input type="text" style="font-size: 14px;" name="tanggal" id="tanggal" class="form-control tanggal" onchange="ubahtanggal(this.value)" 
             value="<?php             
             if(!empty($_POST['tanggal'])) {
                 echo $_POST['tanggal'];
@@ -355,6 +349,25 @@ function SidebarCollapse () {
 $(function() {
     $('.selectpicker').selectpicker();
 });
+</script>
+
+<script type="text/javascript"> 
+    var tgl = 0;
+    var tgl2 = '';
+    function ubahtanggal(value){  
+        var tanggal = document.getElementById('tanggal').value; 
+        var coba = new Date();
+        // alert(tanggal);
+        $.ajax({
+            type: 'POST', 
+            url: 'getnomor_lpdp.php', 
+            data: {'tanggal':tanggal},
+            success: function(response) { 
+                // alert(response);
+                $('#nopayment').val(response); 
+            }
+        });
+    };
 </script>
 
 <!--<script type="text/javascript"> 

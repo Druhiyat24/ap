@@ -184,7 +184,8 @@
             <th style="text-align: center; vertical-align: middle;">No Kontrabon</th>
             <th style="text-align: center; vertical-align: middle;">Kontrabon Date</th>
             <th style="text-align: center; vertical-align: middle;">No List Payment</th>
-            <th style="text-align: center; vertical-align: middle;">List Payment Date</th>                         
+            <th style="text-align: center; vertical-align: middle;">List Payment Date</th>
+            <th style="text-align: center; vertical-align: middle;">List Payment Approve</th>                         
             <th style="text-align: center; vertical-align: middle;">No Payment</th>                                    
             <th style="text-align: center; vertical-align: middle;">Payment Date</th>                      
         </tr>
@@ -234,70 +235,70 @@
 //    echo $kondisi;
     if ($filter == 'tgl_bpb') {
         if(empty($nama_supp) and empty($start_date) and empty($end_date)){
-    $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where tgl_bpb = '$date_now' group by no_bpb");
+    $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp from status a left join list_payment b on b.no_payment  = a.no_lp where a.tgl_bpb = '$date_now' group by a.no_bpb");
     }
     elseif ($nama_supp == 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-    $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status group by no_bpb");
+    $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp from status a left join list_payment b on b.no_payment  = a.no_lp group by a.no_bpb");
     }
     elseif ($nama_supp == 'ALL' and !empty($start_date) and !empty($end_date)) {
-    $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where tgl_bpb between '$start_date' and '$end_date' group by no_bpb");
+    $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp from status a left join list_payment b on b.no_payment  = a.no_lp where a.tgl_bpb between '$start_date' and '$end_date' group by a.no_bpb");
     }    
     elseif ($nama_supp != 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-    $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where supp = '$nama_supp' group by no_bpb");
+    $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp from status a left join list_payment b on b.no_payment  = a.no_lp where supp = '$nama_supp' group by a.no_bpb");
     }
     else{
-    $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where supp = '$nama_supp' and tgl_bpb between '$start_date' and '$end_date' group by no_bpb");
+    $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp from status a left join list_payment b on b.no_payment  = a.no_lp where supp = '$nama_supp' and a.tgl_bpb between '$start_date' and '$end_date' group by a.no_bpb");
     }
 
     }elseif ($filter == 'tgl_kbon') {
         if(empty($nama_supp) and empty($start_date) and empty($end_date)){
-    $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where tgl_kbon = '$date_now' group by no_bpb");
+    $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp from status a left join list_payment b on b.no_payment  = a.no_lp where a.tgl_kbon = '$date_now' group by a.no_bpb");
     }
     elseif ($nama_supp == 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-    $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status group by no_bpb");
+    $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp from status a left join list_payment b on b.no_payment  = a.no_lp group by a.no_bpb");
     }
     elseif ($nama_supp == 'ALL' and !empty($start_date) and !empty($end_date)) {
-    $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where tgl_kbon between '$start_date' and '$end_date' group by no_bpb");
+    $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp from status a left join list_payment b on b.no_payment  = a.no_lp where a.tgl_kbon between '$start_date' and '$end_date' group by a.no_bpb");
     }    
     elseif ($nama_supp != 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-    $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where supp = '$nama_supp' group by no_bpb");
+    $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp from status a left join list_payment b on b.no_payment  = a.no_lp where supp = '$nama_supp' group by a.no_bpb");
     }
     else{
-    $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where supp = '$nama_supp' and tgl_kbon between '$start_date' and '$end_date' group by no_bpb");
+    $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp from status a left join list_payment b on b.no_payment  = a.no_lp where supp = '$nama_supp' and a.tgl_kbon between '$start_date' and '$end_date' group by a.no_bpb");
     }
 
 }elseif ($filter == 'tgl_lp') {
         if(empty($nama_supp) and empty($start_date) and empty($end_date)){
-    $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where tgl_lp = '$date_now' group by no_bpb");
+    $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp from status a left join list_payment b on b.no_payment  = a.no_lp where tgl_lp = '$date_now' group by a.no_bpb");
     }
     elseif ($nama_supp == 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-    $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status group by no_bpb");
+    $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp from status a left join list_payment b on b.no_payment  = a.no_lp group by a.no_bpb");
     }
     elseif ($nama_supp == 'ALL' and !empty($start_date) and !empty($end_date)) {
-    $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where tgl_lp between '$start_date' and '$end_date' group by no_bpb");
+    $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp from status a left join list_payment b on b.no_payment  = a.no_lp where tgl_lp between '$start_date' and '$end_date' group by a.no_bpb");
     }    
     elseif ($nama_supp != 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-    $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where supp = '$nama_supp' group by no_bpb");
+    $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp from status a left join list_payment b on b.no_payment  = a.no_lp where supp = '$nama_supp' group by a.no_bpb");
     }
     else{
-    $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where supp = '$nama_supp' and tgl_lp between '$start_date' and '$end_date' group by no_bpb");
+    $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp from status a left join list_payment b on b.no_payment  = a.no_lp where supp = '$nama_supp' and tgl_lp between '$start_date' and '$end_date' group by a.no_bpb");
     }
 
     }else{
         if(empty($nama_supp) and empty($start_date) and empty($end_date)){
-    $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where tgl_pay = '$date_now' group by no_bpb");
+    $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp from status a left join list_payment b on b.no_payment  = a.no_lp where tgl_pay = '$date_now' group by a.no_bpb");
     }
     elseif ($nama_supp == 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-    $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status group by no_bpb");
+    $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp from status a left join list_payment b on b.no_payment  = a.no_lp group by a.no_bpb");
     }
     elseif ($nama_supp == 'ALL' and !empty($start_date) and !empty($end_date)) {
-    $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where tgl_pay between '$start_date' and '$end_date' group by no_bpb");
+    $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp from status a left join list_payment b on b.no_payment  = a.no_lp where tgl_pay between '$start_date' and '$end_date' group by a.no_bpb");
     }    
     elseif ($nama_supp != 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-    $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where supp = '$nama_supp' group by no_bpb");
+    $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp from status a left join list_payment b on b.no_payment  = a.no_lp where supp = '$nama_supp' group by a.no_bpb");
     }
     else{
-    $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where supp = '$nama_supp' and tgl_pay between '$start_date' and '$end_date' group by no_bpb");
+    $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp from status a left join list_payment b on b.no_payment  = a.no_lp where supp = '$nama_supp' and tgl_pay between '$start_date' and '$end_date' group by a.no_bpb");
     }
     }   
 
@@ -306,6 +307,7 @@
     $tgl_kb = isset($row['tgl_kbon']) ? $row['tgl_kbon'] :null;
     $tgl_lp = isset($row['tgl_lp']) ? $row['tgl_lp'] :null;
     $tgl_pay = isset($row['tgl_pay']) ? $row['tgl_pay'] :null;
+    $tgl_approve_lp = isset($row['tgl_approve_lp']) ? $row['tgl_approve_lp'] :null;
 
     if ($tgl_kb != '') {
         $tgl_kbon = date("d-M-Y",strtotime($row['tgl_kbon']));
@@ -317,9 +319,11 @@
 
     if ($tgl_lp != '') {
         $tgl_lipa = date("d-M-Y",strtotime($row['tgl_lp']));
+        $approve_lp = date("d-M-Y",strtotime($row['tgl_approve_lp']));
         $lipa = $row['no_lp'];
     }else{
         $tgl_lipa = '-';
+        $approve_lp = '-';
         $lipa = '-';
     }
 
@@ -340,6 +344,7 @@
             <td style="" value="'.$tgl_kbon.'">'.$tgl_kbon.'</td>
             <td value="'.$lipa.'">'.$lipa.'</td>
             <td style="" value="'.$tgl_lipa.'">'.$tgl_lipa.'</td>
+            <td style="" value="'.$approve_lp.'">'.$approve_lp.'</td>
             <td value="'.$payment.'">'.$payment.'</td>
             <td style="" value="'.$tgl_payment.'">'.$tgl_payment.'</td>';
 

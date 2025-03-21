@@ -10,10 +10,10 @@
             <div class="col-md-3 mb-3">            
             <label for="nopayment"><b>No payment</b></label>
             <?php
-            $sql = mysqli_query($conn2,"select max(payment_ftr_id) from payment_ftr");
+            $sql = mysqli_query($conn2,"select max(substr(payment_ftr_id,17,5)) no_pay from payment_ftr");
             $row = mysqli_fetch_array($sql);
-            $kodepay = $row['max(payment_ftr_id)'];
-            $urutan = (int) substr($kodepay,17,5);
+            $kodepay = $row['no_pay'];
+            $urutan = (int) $kodepay;
             $urutan ++;
             $bln = date("m");
             $thn = date("y");
