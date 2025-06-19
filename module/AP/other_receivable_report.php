@@ -251,7 +251,7 @@ if ($coa_number == '1.34.05') {
             }
 
             if ($coa_number == '1.34.05') {
-                $sql = mysqli_query($conn2,"SELECT pono, bpbno_int, bpbdate, supplier, buyer,no_req, tgl_req, no_dn, tgl_dn, curr, round(COALESCE(saldo_awal,0) - COALESCE(ded_alk_bfr,0) - COALESCE(tot_gm_before,0),2) saldo_awal, coalesce(tambah,0) tambah, COALESCE(ded_alk,0) ded_alk, COALESCE(tot_gm,0) ded_gm, COALESCE(ded_fgl,0) ded_fgl, round(COALESCE(saldo_awal,0) - COALESCE(ded_alk_bfr,0)  - COALESCE(tot_gm_before,0) - COALESCE(tot_gm,0) + COALESCE(tambah,0) - (COALESCE(ded_alk,0) + COALESCE(ded_fgl,0)),2) saldo_akhir from (select a.pono, a.bpbno_int, a.bpbdate, b.supplier, buyer, curr, round(if(a.curr = 'IDR', sum(qty * price), (sum(qty * price) * rate)),2) saldo_awal, 0 tambah from bpb a 
+                $sql = mysqli_query($conn2,"SELECT pono, bpbno_int, bpbdate, supplier, buyer,no_req, tgl_req, no_dn, tgl_dn, curr, round(COALESCE(saldo_awal,0) - COALESCE(ded_alk_bfr,0) - COALESCE(tot_gm_before,0),2) saldo_awal, coalesce(tambah,0) tambah, COALESCE(ded_alk,0) ded_alk, COALESCE(tot_gm,0) ded_gm, COALESCE(ded_fgl,0) ded_fgl, round(COALESCE(saldo_awal,0) - COALESCE(ded_alk_bfr,0)  - COALESCE(tot_gm_before,0) - COALESCE(tot_gm,0) + COALESCE(tambah,0) - (COALESCE(ded_alk,0) + COALESCE(ded_fgl,0)),2) saldo_akhir from (select a.pono, a.bpbno_int, a.bpbdate, b.supplier, buyer, curr, round(if(a.curr = 'IDR', (sum(qty * price) + (sum(qty * price) * (ph.ppn/ 100))), ((sum(qty * price) + (sum(qty * price) * (ph.ppn/ 100))) * rate)),2) saldo_awal, 0 tambah from bpb a 
                     inner join mastersupplier b on b.id_supplier = a.id_supplier 
                     left join (select id_jo,kpno,styleno, b.supplier buyer from act_costing ac inner join so on ac.id=so.id_cost 
                         inner join jo_det jod on so.id=jod.id_so inner join mastersupplier b on b.id_supplier = ac.id_buyer  group by id_jo) c on c. id_jo = a.id_jo 
@@ -259,7 +259,7 @@ if ($coa_number == '1.34.05') {
                     left join po_header ph on a.pono = ph.pono
                     left join po_header_draft phd on phd.id = ph.id_draft where phd.tipe_com = 'Buyer' and a.bpbdate > '2024-10-01' and a.bpbdate < '$start_date' and a.cancel != 'Y' and a.confirm = 'Y' GROUP BY a.bpbno_int
                     UNION
-                    select a.pono, a.bpbno_int, a.bpbdate, b.supplier, buyer, curr, 0 saldo_awal, round(if(a.curr = 'IDR', sum(qty * price), (sum(qty * price) * rate)),2) tambah from bpb a 
+                    select a.pono, a.bpbno_int, a.bpbdate, b.supplier, buyer, curr, 0 saldo_awal, round(if(a.curr = 'IDR', (sum(qty * price) + (sum(qty * price) * (ph.ppn/ 100))), ((sum(qty * price) + (sum(qty * price) * (ph.ppn/ 100))) * rate)),2) tambah from bpb a 
                     inner join mastersupplier b on b.id_supplier = a.id_supplier 
                     left join (select id_jo,kpno,styleno, b.supplier buyer from act_costing ac inner join so on ac.id=so.id_cost 
                         inner join jo_det jod on so.id=jod.id_so inner join mastersupplier b on b.id_supplier = ac.id_buyer  group by id_jo) c on c. id_jo = a.id_jo 

@@ -1,5 +1,5 @@
 <?php
-    include '../../conn/conn.php';
+    include '../../conn/conn_sch.php';
     ini_set('date.timezone', 'Asia/Jakarta');
     $insert_date = date("Y-m-d H:i:s");
     $value = '';
@@ -78,6 +78,8 @@
     // $sqllp = mysqli_query($conn1,"select list_payment_id,ttl_bayar, 'P' as kode, '0' as pph from payment_ftr where list_payment_id = '$no_payment' and tgl_pelunasan between '$start_date' and '$end_date' GROUP BY list_payment_id
     //     union select a.no_reff, sum(a.for_balance) as total, 'OB' as kode, a.pph from b_bankout_det a INNER JOIN b_bankout_h b on a.no_bankout = b.no_bankout where a.no_reff = '$no_payment' and b.bankout_date between '$start_date' and '$end_date' GROUP BY a.no_reff");
     $sqllp = mysqli_query($conn1,"select list_payment_id,ttl_bayar, 'P' as kode, '0' as pph from payment_ftr where list_payment_id = '$no_payment' and DATE_FORMAT(create_date, '%Y-%m-%d') between '$start_date' and '$end_date' and status != 'Cancel' GROUP BY list_payment_id
+        UNION
+select no_lp,total_bayar, kode, '0' as pph from ap_payment where no_lp = '$no_payment' and tgl_payment between '$start_date' and '$end_date' GROUP BY no_lp
         union select a.no_reff, sum(a.for_balance) as total, 'OB' as kode, a.pph from b_bankout_det a INNER JOIN b_bankout_h b on a.no_bankout = b.no_bankout where a.no_reff = '$no_payment' and b.bankout_date between '$start_date' and '$end_date' GROUP BY a.no_reff
         union select a.no_reff,a.total, 'CO' as kode,a.pph from c_petty_cashout_det a inner join c_petty_cashout_h b on b.no_pco = a.no_pco where b.status != 'Cancel' and a.no_reff = '$no_payment' and a.tgl_pco between '$start_date' and '$end_date' GROUP BY a.no_reff");
 
@@ -90,7 +92,9 @@
 
 
     // $sqllp2 = mysqli_query($conn1,"select list_payment_id,ttl_bayar, 'P' as kode, '0' as pph from payment_ftr where list_payment_id = '$no_payment' and tgl_pelunasan < '$start_date' GROUP BY list_payment_id  union select a.no_reff, sum(a.for_balance) as total, 'OB' as kode, a.pph from b_bankout_det a INNER JOIN b_bankout_h b on a.no_bankout = b.no_bankout where a.no_reff = '$no_payment' and b.bankout_date  < '$start_date' GROUP BY a.no_reff");
-     $sqllp2 = mysqli_query($conn1,"select list_payment_id,ttl_bayar, 'P' as kode, '0' as pph from payment_ftr where list_payment_id = '$no_payment' and DATE_FORMAT(create_date, '%Y-%m-%d') < '$start_date' and status != 'Cancel' GROUP BY list_payment_id  union select a.no_reff, sum(a.for_balance) as total, 'OB' as kode, a.pph from b_bankout_det a INNER JOIN b_bankout_h b on a.no_bankout = b.no_bankout where a.no_reff = '$no_payment' and b.bankout_date < '$start_date' GROUP BY a.no_reff
+     $sqllp2 = mysqli_query($conn1,"select list_payment_id,ttl_bayar, 'P' as kode, '0' as pph from payment_ftr where list_payment_id = '$no_payment' and DATE_FORMAT(create_date, '%Y-%m-%d') < '$start_date' and status != 'Cancel' GROUP BY list_payment_id 
+     UNION
+select no_lp,total_bayar, kode, '0' as pph from ap_payment where no_lp = '$no_payment' and tgl_payment < '$start_date' GROUP BY no_lp union select a.no_reff, sum(a.for_balance) as total, 'OB' as kode, a.pph from b_bankout_det a INNER JOIN b_bankout_h b on a.no_bankout = b.no_bankout where a.no_reff = '$no_payment' and b.bankout_date < '$start_date' GROUP BY a.no_reff
          union select a.no_reff,a.total, 'CO' as kode,a.pph from c_petty_cashout_det a inner join c_petty_cashout_h b on b.no_pco = a.no_pco where b.status != 'Cancel' and a.no_reff = '$no_payment' and a.tgl_pco < '$start_date' GROUP BY a.no_reff");
 
     $rowlp2 = mysqli_fetch_array($sqllp2);
@@ -103,7 +107,7 @@
         $kurang_h = $rowlp['ttl_bayar'];
 
         if ($no_lp2 != null) {
-         $kurang = $kurang_h;
+         $kurang = $kurang_h + $pph_h;
         }else{
 
         $kurang = $kurang_h + $pph_h;
@@ -112,7 +116,11 @@
         
     }elseif($no_lp != null && $kode == "P"){
         // $kurang = $rowlp['ttl_bayar'];
-        $kurang = $row['total'];
+        if ($no_payment == 'LP/NAG/0424/03795') {
+            $kurang = $rowlp['ttl_bayar'];
+        }else{    
+            $kurang = $row['total'];
+        }
     }elseif($no_lp != null && $kode == "CO"){
         // $kurang = $rowlp['ttl_bayar'];
         $kurang = $row['total'];
@@ -148,6 +156,8 @@
 
     if ($currin3 == 'IDR') {
         $rate = 1;
+    }elseif ($currin3 == 'CNY') {
+        $rate = 2234.01;
     }else{
         $rate = $jml_rate;
     }

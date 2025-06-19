@@ -1612,20 +1612,20 @@ function addListener(elm,index){
 
     // 🔴 Cek apakah ada prof_ctr yang kosong sebelum proses copy_data_mj.php
     var valid = true;
-    $("input[type=checkbox]:checked").each(function () {
-        var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val();
-        if (!prof_ctr) {
-            alert("Ada baris dengan Profit Center kosong! Mohon lengkapi sebelum menyimpan.");
-            valid = false;
-            return false; // Hentikan iterasi jika ada yang kosong
-        }
-    });
+    // $("input[type=checkbox]:checked").each(function () {
+    //     var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val();
+    //     if (!prof_ctr) {
+    //         alert("Ada baris dengan Profit Center kosong! Mohon lengkapi sebelum menyimpan.");
+    //         valid = false;
+    //         return false; // Hentikan iterasi jika ada yang kosong
+    //     }
+    // });
 
     if (!valid) {
         return; // Hentikan semua proses jika validasi gagal
     }
 
-    if (nama_type != '' && credit == debit && credit >= 1 && debit >= 1) {
+    if (nama_type != '' && credit == debit && credit > 0 && debit > 0) {
         $.ajax({
             type: 'POST',
             url: 'copy_data_mj.php',

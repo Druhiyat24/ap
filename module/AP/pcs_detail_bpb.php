@@ -115,8 +115,8 @@ union
 
 union(select a.nama_supp, a.no_bpb, a.tgl_bpb,c.jml_pterms as top, DATE_ADD(b.bpbdate, INTERVAL c.jml_pterms DAY) as due_date, a.curr, a.total from saldo_bpb_ap a left join bpb b on b.bpbno_int = a.no_bpb INNER JOIN po_header c on c.pono = b.pono group by a.no_bpb)
 
-union (select nama_supp, no_bpb, tgl_bpb, top, duedate, curr, total from tbl_tamb_bpb)
-union (select nama_supp, no_bpb, tgl_bpb, top, duedate, curr, total from tbl_tamb_bpb2 where tgl_bpb between '$start_date' and '$end_date')) as b order by b.Supplier asc");
+union (select nama_supp, no_bpb, tgl_bpb, top, duedate, curr, total from tbl_tamb_bpb where tgl_bpb <= '$end_date')
+union (select nama_supp, no_bpb, tgl_bpb, top, duedate, curr, total from tbl_tamb_bpb2 where tgl_bpb <= '$end_date')) as b order by b.Supplier asc");
         
         $no = 1;
         $sa_akhir_ = 0;
@@ -174,6 +174,8 @@ select reff_doc,reff_date,reff_date from tbl_list_journal where reff_doc = '$no_
 }else{
     if ($no_bpb == 'GEN/RO/0722/00606' || $no_bpb == 'GEN/RO/0722/00623') {
      $jml_tax = 0;  
+    }elseif($no_bpb == 'GK/RO/0525/00590'){
+        $jml_tax = 10;
     }else{
     $sqltax = mysqli_query($conn1,"select a.bppbno_int, IF(po_header.tax is null,0,po_header.tax) as tax from bppb a inner join mastersupplier c on c.Id_Supplier = a.id_supplier INNER JOIN masteritem on masteritem.id_item = a.id_item right join bpb on bpb.bpbno = a.bpbno_ro left JOIN po_header on po_header.pono = bpb.pono where a.bppbno_int = '$no_bpb' GROUP BY a.bppbno_int");
     $rowtax = mysqli_fetch_array($sqltax);

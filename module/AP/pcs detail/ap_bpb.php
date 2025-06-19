@@ -107,8 +107,8 @@ union
 
 union(select a.nama_supp, a.no_bpb, a.tgl_bpb,c.jml_pterms as top, DATE_ADD(b.bpbdate, INTERVAL c.jml_pterms DAY) as due_date, a.curr, a.total from saldo_bpb_ap a left join bpb b on b.bpbno_int = a.no_bpb INNER JOIN po_header c on c.pono = b.pono group by a.no_bpb)
 
-union (select nama_supp, no_bpb, tgl_bpb, top, duedate, curr, total from tbl_tamb_bpb)
-union (select nama_supp, no_bpb, tgl_bpb, top, duedate, curr, total from tbl_tamb_bpb2 where tgl_bpb between '$start_date' and '$end_date')) as b order by b.Supplier asc");
+union (select nama_supp, no_bpb, tgl_bpb, top, duedate, curr, total from tbl_tamb_bpb where tgl_bpb <= '$end_date')
+union (select nama_supp, no_bpb, tgl_bpb, top, duedate, curr, total from tbl_tamb_bpb2 where tgl_bpb <= '$end_date' )) as b order by b.Supplier asc");
     }
     else {
         $sql = mysqli_query($conn1,"select * from(((select b.Supplier,a.bpbno_int,bpbdate,c.jml_pterms as top, DATE_ADD(a.bpbdate, INTERVAL c.jml_pterms DAY) as due_date,a.curr,round(sum((((IF(a.qty_reject IS NULL,(a.qty), (a.qty - a.qty_reject))) * a.price) + (((IF(a.qty_reject IS NULL,(a.qty), (a.qty - a.qty_reject))) * a.price) * (c.tax /100)))),2) as total from bpb a INNER JOIN po_header c on c.pono = a.pono INNER JOIN mastersupplier b on b.Id_Supplier = a.id_supplier left JOIN po_header_draft d on d.id = c.id_draft where a.r_ap is null and a.confirm = 'y' and c.app = 'A' and a.price != '0' and cancel = 'N' and d.tipe_com is null and bpbdate between '2022-04-14' and '$start_date' || a.r_ap is null and a.confirm = 'y' and c.app = 'A' and a.price != '0' and cancel = 'N' and d.tipe_com IN ('REGULAR','') and bpbdate between '2022-04-14' and '$start_date' || a.r_ap is null and a.confirm = 'y' and c.app = 'A' and a.price != '0' and cancel = 'N' and d.tipe_com = 'BUYER' and bpbdate between '2022-04-14' and '$start_date' group by a.bpbno_int order by bpbdate asc)union (
@@ -195,6 +195,8 @@ select reff_doc,reff_date,reff_date from tbl_list_journal where reff_doc = '$no_
 }else{
     if ($no_bpb == 'GEN/RO/0722/00606' || $no_bpb == 'GEN/RO/0722/00623') {
      $jml_tax = 0;  
+    }elseif($no_bpb == 'GK/RO/0525/00590'){
+        $jml_tax = 10;
     }else{
     $sqltax = mysqli_query($conn1,"select a.bppbno_int, IF(po_header.tax is null,0,po_header.tax) as tax from bppb a inner join mastersupplier c on c.Id_Supplier = a.id_supplier INNER JOIN masteritem on masteritem.id_item = a.id_item right join bpb on bpb.bpbno = a.bpbno_ro left JOIN po_header on po_header.pono = bpb.pono where a.bppbno_int = '$no_bpb' GROUP BY a.bppbno_int");
     $rowtax = mysqli_fetch_array($sqltax);
@@ -343,7 +345,7 @@ select reff_doc,reff_date,reff_date from tbl_list_journal where reff_doc = '$no_
         $ttl_pro_due5 += $pro_due5;
         $ttl_tot_produe += $tot_produe;
 
-        $sqlcoa = mysqli_query($conn1,"select * from (select a.no_journal,a.no_coa,a.nama_coa,b.item_type1,b.item_type2,b.relasi from (select no_journal,no_coa,nama_coa from tbl_list_journal where credit != '' and type_journal = 'AP - BPB' and no_coa != '1.52.07' and no_journal = '$no_bpb' union select no_journal,no_coa,nama_coa from tbl_list_journal where debit != '' and type_journal = 'AP - BPB RETURN' and no_coa != '1.52.07' and no_journal = '$no_bpb' OR no_journal = 'GK/RO/0724/00319' and no_coa = '2.10.01') a left join mastercoa_v2 b on b.no_coa = a.no_coa) a where item_type1 is not null");
+        $sqlcoa = mysqli_query($conn1,"select * from (select a.no_journal,a.no_coa,a.nama_coa,b.item_type1,b.item_type2,b.relasi from (select no_journal,no_coa,nama_coa from tbl_list_journal where credit != '' and type_journal = 'AP - BPB' and no_coa != '1.52.07' and no_journal = '$no_bpb' union select no_journal,no_coa,nama_coa from tbl_list_journal where debit != '' and type_journal = 'AP - BPB RETURN' and no_coa != '1.52.07' and no_journal = '$no_bpb') a left join mastercoa_v2 b on b.no_coa = a.no_coa) a where item_type1 is not null");
         $rowcoa = mysqli_fetch_array($sqlcoa);
         $no_coa = isset($rowcoa['no_coa']) ? $rowcoa['no_coa'] : null;
         $nama_coa = isset($rowcoa['nama_coa']) ? $rowcoa['nama_coa'] : null;

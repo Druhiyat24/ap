@@ -65,11 +65,11 @@
                             <th style="width:5px;"><input type="checkbox" id="select_all"></th>                        
                             <th style="width:100px;">No Payment Voucher</th>
                             <th style="width:70px;">PV Date</th>
+                            <th style="width:150px;">Supplier</th>
                             <th style="width:70px;">Due Date</th>
                             <th style="width:50px;">Curreny</th>                                                                                
                             <th style="width:80px;">Amount</th>
                             <th style="width:80px;">Outstanding</th>
-                            <th style="display: none;">-</th>
                             <th style="display: none;">-</th>
                             <th style="display: none;">-</th>
                             <th style="display: none;">-</th>
@@ -114,11 +114,11 @@
                             <td style="width:5px;"><input type="checkbox" id="select" name="select[]" value="" <?php if(in_array("1",$_POST[select])) echo "checked=checked";?></td>                        
                             <td style="width:50px; text-align : center" value="'.$row['no_pv'].'">'.$row['no_pv'].'</td>
                             <td style="width:100px; text-align : center" value="'.date("d-M-Y",strtotime($row['pv_date'])).'">'.date("d-M-Y",strtotime($row['pv_date'])).'</td> 
+                            <td style="text-align : left" value="'.$row['pay_to'].'">'.$row['pay_to'].'</td>
                             <td style="width:100px; text-align : center" value="'.$due_date.'">'.$due_date.'</td>                                                                                             
                             <td style="width:50px; text-align : center" value="'.$row['curr'].'">'.$row['curr'].'</td>
                             <td style="width:50px; text-align : right" value="'.$row['total'].'">'.number_format($row['total'],2).'</td>
                             <td style="width:50px; text-align : right" value="'.$row['outstanding'].'">'.number_format($row['outstanding'],2).'</td> 
-                            <td style="display: none; text-align : center" value="'.$row['pay_to'].'">'.$row['pay_to'].'</td>
                             <td style="display: none; text-align : center" value="'.date("d-M-Y",strtotime($row['pay_date'])).'">'.date("d-M-Y",strtotime($row['pay_date'])).'</td>
                             <td style="display: none; text-align : center" value="'.$row['pay_meth'].'">'.$row['pay_meth'].'</td>
                             <td style="display: none; text-align : center" value="'.$row['frm_akun'].'">'.$row['frm_akun'].'</td>
@@ -268,7 +268,7 @@ $(function() {
     $('#mymodal').modal('show');
     var no_pv = $(this).closest('tr').find('td:eq(1)').attr('value');
     var tgl_pv = $(this).closest('tr').find('td:eq(2)').text();
-    var pay_to = $(this).closest('tr').find('td:eq(7)').attr('value');
+    var pay_to = $(this).closest('tr').find('td:eq(3)').attr('value');
     var pay_date = $(this).closest('tr').find('td:eq(8)').attr('value');
     var pay_meth = $(this).closest('tr').find('td:eq(9)').attr('value');
     var f_akun = $(this).closest('tr').find('td:eq(10)').attr('value');

@@ -1,5 +1,27 @@
 <?php include '../header.php' ?>
 
+<style >
+    .modal {
+  text-align: center;
+  padding: 0!important;
+}
+
+.modal:before {
+  content: '';
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
+  margin-right: -4px;
+}
+
+.modal-dialog {
+  display: inline-table;
+  width: 700px;
+  text-align: left;
+  vertical-align: middle;
+}
+</style>
+
     <!-- MAIN -->    
     <div class="col p-4">
         <h2 class="text-center">LIST PAYMENT VOUCHER</h2>
@@ -348,8 +370,16 @@
                                 <a href="edit-paymentvoucher.php?no_pv='.base64_encode($row['no_pv']).' "><button style="border-radius: 6px" type="button" class="btn-xs btn-danger"><i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Edit</i></button></a>
                             </td>';
                             }elseif ($pay_meth != 'CHEQUE/GIRO' && $status != 'Draft') {
-                                echo '<a href="pdf_payvoucher.php?no_pv='.$row['no_pv'].'" target="_blank"><button style="border-radius: 6px" type="button" class="btn-xs btn-success"><i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Pdf</i></button></a> 
-                            </td>';
+                                echo '<a href="pdf_payvoucher.php?no_pv='.$row['no_pv'].'" target="_blank"><button style="border-radius: 6px" type="button" class="btn-xs btn-success"><i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Pdf</i></button></a> ';
+                                $querys_pv = mysqli_query($conn1,"select maintain_pv from userpassword where username = '$user'");
+                                $rs_pv = mysqli_fetch_array($querys_pv);
+                                $maintain_pv = isset($rs_pv['maintain_pv']) ? $rs_pv['maintain_pv'] : 0;
+                                if ($maintain_pv == '1') {
+                                   echo '<button style="border-radius: 6px" type="button" id="btn_maintainpv" name="btn_maintainpv"  class="btn-xs btn-warning"><i class="fa fa-refresh" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Draft</i></button>';
+                                }else{
+
+                                }
+                            echo '</td>';
                             }else{
                             echo '<a href="pdf_payvoucher.php?no_pv='.$row['no_pv'].'" target="_blank"><button style="border-radius: 6px" type="button" class="btn-xs btn-success"><i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Pdf</i></button></a> 
                             <a href="edit-paymentvoucher.php?no_pv='.base64_encode($row['no_pv']).' "><button style="border-radius: 6px" type="button" class="btn-xs btn-danger"><i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Edit</i></button></a>';
@@ -428,7 +458,52 @@
     </div>
   </div>
  </div>
-</div>                                      
+</div>     
+
+
+
+<div class="form-row">
+    <div class="modal fade" id="mymodal3" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
+        <h4 class="modal-title" id="Heading">Reverse Payment Voucher</h4>
+        </div>
+          <div class="modal-body">
+          <div class="form-group">
+            <form id="modal-form3" method="post">
+                <div class="form-row">
+                <div class="col-md-6 mb-3"> 
+                <label for="txt_pv3"><b>No Payment Voucher</b></label> 
+                <input type="text" readonly style="font-size: 14px;font-weight: bold;" class="form-control" name="txt_pv3" id="txt_pv3" 
+            value="">
+        </div>
+    </div>
+                <div class="form-row">
+                 <div class="col-md-12 mb-3"> 
+                <label for="txt_reverse"><b>Description Reverse</b></label> 
+                <input type="text" style="font-size: 14px;font-weight: bold;" class="form-control" name="txt_reverse" id="txt_reverse" 
+            >
+        </div>
+            </br>
+                    <div class="col-md-9">
+                    </div>
+                <div class="col-md-3">
+                <div class="modal-footer">
+                    <button type="submit" id="send3" name="send3" class="btn btn-success btn-lg" style="width: 100%;"><span class="fa fa-check"></span>
+                        Save
+                    </button>
+                    </div>
+                    </div>
+                </div>           
+            </form>
+        </div>
+      </div>
+    </div>
+  </div>
+ </div>
+</div>                                   
 
 <div class="modal fade" id="mymodal" data-target="#mymodal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
         <div class="modal-dialog">
@@ -657,6 +732,18 @@ $(function() {
 
 </script>
 
+<script type="text/javascript">     
+    $("#formdata").on("click", "#btn_maintainpv", function(){            
+    $('#mymodal3').modal('show');
+    var no_pv = $(this).closest('tr').find('td:eq(0)').attr('value');
+    
+        //make your ajax call populate items or what even you need supp_update
+    $('#txt_pv3').val(no_pv);
+                       
+});
+
+</script>
+
 <script type="text/javascript">
     $("#modal-form2").on("click", "#send2", function(){ 
         var no_pv = document.getElementById('txt_pv').value; 
@@ -686,6 +773,46 @@ $(function() {
             }
         });             
                 return false; 
+ 
+    });
+
+
+</script>
+
+
+<script type="text/javascript">
+    $("#modal-form3").on("click", "#send3", function(){ 
+        var no_pv = document.getElementById('txt_pv3').value; 
+        var txt_reverse = document.getElementById('txt_reverse').value; 
+        var update_user = '<?php echo $user; ?>';   
+         
+        if (txt_reverse != ''){
+        $.ajax({
+            type:'POST',
+            url:'reverse_pv.php',
+            data: {'no_pv':no_pv, 'txt_reverse':txt_reverse, 'update_user':update_user},
+            cache: 'false',
+            close: function(e){
+                e.preventDefault();
+            },
+            success: function(response){
+                console.log(response);
+                // $('#modal-form2').modal('toggle');
+                // $('#modal-form2').modal('hide');
+                 // alert("Data saved successfully");
+                window.location.reload(false);
+                },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr);
+                alert(xhr);
+            }
+        });   
+        }          
+        if(document.getElementById('txt_reverse').value == '' || document.getElementById('txt_reverse').value == null){
+            alert("Please input descriptions");
+            return false; 
+        }else{
+        }
  
     });
 

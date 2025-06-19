@@ -1,5 +1,7 @@
 <?php
 session_start();
+error_reporting(E_ALL & ~E_NOTICE);
+ini_set('display_errors', 0);
 include '../../conn/conn.php'; 
 $user = isset($_SESSION['username']) ? $_SESSION['username'] : '';
 if ($user == '') {
@@ -49,13 +51,29 @@ if ($user == '') {
   height: 32px;
   position: relative;
   background: white;
-  font-size: 12pt;
+  font-size: 10pt;
   float: right;
   color: #63717f;
   padding-left: 15px;
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   border-radius: 5px;
+}
+
+a{
+    font-size: 14px;
+}
+
+table{
+    font-size: 12px;
+}
+
+h2.text-center{
+    font-size: 22px;
+}
+
+h3.text-center{
+    font-size: 22px;
 }
 
 
@@ -70,6 +88,7 @@ input::-webkit-inner-spin-button {
   position: relative;
   overflow: auto;
   height: 100px;
+  font-size: 12px;
 }
 
 .tableFix table{
@@ -1465,6 +1484,63 @@ input::-webkit-inner-spin-button {
 </ul>
 </li>
 <!-- END Menu Accounting -->
+
+<!-- navbar Cost Accounting -->
+<li class="nav-item dropdown active">
+    <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fa fa-industry mr-1"> Cost Accounting<span class="caret"></span></a>
+    <ul class="dropdown-menu bg-dark text-white" role="menu">
+      <?php
+
+      $queryss = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%Cost Accounting%' and menurole.status = 'Menu' group by username");
+      while($rss = mysqli_fetch_array($queryss)){
+        $menu = isset($rss['ket']) ? $rss['ket'] :0;
+        $id = isset($rss['id']) ? $rss['id'] :0;
+
+    }           
+
+   if(strpos($id, '85') !== false){
+        echo '           
+      <li class="dropdown-submenu ">
+        <a class="dropdown-item bg-dark text-white" href="#">
+        <span s class="fa fa-tasks fa-fw "></span>
+        <span class="menu-collapsed">Fabric</span>
+        </a>
+        <ul class="dropdown-menu bg-dark text-white" role="menu">
+
+        <a href="../AP/ca_fabric_trx_in.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-cart-arrow-down fa-fw "></span>
+        <span class="menu-collapsed">Trx In</span>
+        </a>
+        <a href="../AP/ca_fabric_trx_out.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-paper-plane fa-fw "></span>
+        <span class="menu-collapsed">Trx Out</span>
+        </a>
+        <a href="../AP/ca_fabric_summary.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-calculator fa-fw "></span>
+        <span class="menu-collapsed">Summary</span>
+        </a>
+        <a href="../AP/ca_fabric_summary_sc.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-calculator fa-fw "></span>
+        <span class="menu-collapsed">Summary Subcont</span>
+        </a>
+        <a href="../AP/update_bpb_fabric.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-pencil-square fa-fw "></span>
+        <span class="menu-collapsed">Update Trx In</span>
+        </a>
+        <a href="../AP/adjust-subcont.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-pencil-square fa-fw "></span>
+        <span class="menu-collapsed">Update Subcontractor</span>
+        </a>
+
+        </ul>
+        </li>';
+    }
+
+ ?>
+</ul>
+</li>
+<!-- END Menu Cost Accounting -->
+
 
 <!-- navbar Exim -->
 <li class="nav-item dropdown active">

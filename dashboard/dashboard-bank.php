@@ -170,7 +170,11 @@
                                         (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '008-998-1982' and transaksi_date between CURRENT_DATE() and CURRENT_DATE() and status != 'Cancel') AS q1 JOIN
                                         (SELECT @runtot:= $saldoswal2,@runnum:=0) runtot) a ORDER BY a.nomor desc limit 1");
                                     $rows6 = mysqli_fetch_array($sql6);
-                                    $saldoakhir = isset($rows6['saldo_akhir']) ? $rows6['saldo_akhir'] : $saldoswal2;
+                                    if ((isset($rows6['saldo_akhir']) ? $rows6['saldo_akhir'] : $saldoswal2) > 0) {
+                                        $saldoakhir = 0;
+                                    }else{
+                                        $saldoakhir = isset($rows6['saldo_akhir']) ? $rows6['saldo_akhir'] : $saldoswal2;
+                                    }
                                     $dateakhir = isset($rows6['date']) ? $rows6['date'] : null;
 
                                     $sqlrates3 = mysqli_query($conn1,"select id,rate FROM masterrate where v_codecurr = 'PAJAK' and tanggal = '$dateakhir'");
@@ -503,9 +507,9 @@
                         $('#modaldetcib').modal('show');
                     },
                     error:  function (xhr, ajaxOptions, thrownError) {
-                     console.log(xhr);
-                 }
-             });         
+                       console.log(xhr);
+                   }
+               });         
 
             }
         }
@@ -691,9 +695,9 @@ chart.render();
                         $('#modaldetcib').modal('show');
                     },
                     error:  function (xhr, ajaxOptions, thrownError) {
-                     console.log(xhr);
-                 }
-             });         
+                       console.log(xhr);
+                   }
+               });         
 
             }
         }
@@ -880,9 +884,9 @@ chart.render();
                         $('#modaldetcoh').modal('show');
                     },
                     error:  function (xhr, ajaxOptions, thrownError) {
-                     console.log(xhr);
-                 }
-             });         
+                       console.log(xhr);
+                   }
+               });         
 
             }
         }
@@ -1545,7 +1549,8 @@ chart.render();
       series: [{
           name: 'Bank Loan',
           data: [<?php 
-              $bulan = date("M"); 
+              $bulan = date("M");
+              $tahun = date("Y");  
               $sql_fil = mysqli_query($conn2,"select GROUP_CONCAT(filter) filter from (
                 select CONCAT('round(abs(sum(saldo1 /1000000)),2) saldo1') filter
                 UNION
@@ -1573,9 +1578,9 @@ chart.render();
               $row_filb = mysqli_fetch_array($sql_filb);
               $filterb = isset($row_filb['filter']) ? $row_filb['filter'] :0;
 
-              $sql1 = mysqli_query($conn2,"select CONCAT(saldo1,',',saldo2,',',saldo3) data from (select $filter from (select $filtera from b_trial_balance_2024 where no_coa IN ('2.20.01')
+              $sql1 = mysqli_query($conn2,"select CONCAT(saldo1,',',saldo2,',',saldo3) data from (select $filter from (select $filtera from b_trial_balance_$tahun where no_coa IN ('2.20.01')
                 UNION
-                select $filterb from b_trial_balance_2024 where no_coa IN ('1.10.01')) a) a");
+                select $filterb from b_trial_balance_$tahun where no_coa IN ('1.10.01')) a) a");
               $row1 = mysqli_fetch_array($sql1);
               $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
               echo $data_bar1;
@@ -1776,14 +1781,20 @@ chart.render();
         $fac_limit = isset($row1['fac_limit']) ? $row1['fac_limit'] :0;
         $limit_convert = isset($row1['limit_convert']) ? $row1['limit_convert'] :0;
 
-        $chart_blu = (abs($saldoakhir * $rates3) / $limit_convert) * 100;
+        if ($saldoakhir > 0) {
+            $saldoakhirnya = 0;
+        }else{
+            $saldoakhirnya = $saldoakhir;
+        }
+
+        $chart_blu = (abs($saldoakhirnya * $rates3) / $limit_convert) * 100;
 
         ?>
 
         setInterval(function () {
           axisDataItem.animate({
             key: "value",
-            to: <?= $chart_blu ?>,
+            to: '<?= $chart_blu ?>',
             duration: 500,
             easing: am5.ease.out(am5.ease.cubic)
         });
@@ -1846,11 +1857,12 @@ chart.render();
       series: [{
           name: 'Bank Loan',
           data: [<?php 
-              $bulan = date("M"); 
+              $bulan = date("M");
+              $tahun = date("Y");  
               $sql_fil = mysqli_query($conn2,"select GROUP_CONCAT(filter) filter from (
                 select CONCAT('round(abs(sum(saldo1 /1000000)),2) saldo1') filter
                 UNION
-                select CONCAT('round(abs(sum(0 /1000000)),2) saldo2')
+                select CONCAT('round(abs(sum(saldo2 /1000000)),2) saldo2')
                 UNION
                 select CONCAT('round(abs(sum(saldo3 /1000000)),2) saldo3')) a");
               $row_fil = mysqli_fetch_array($sql_fil);
@@ -1874,10 +1886,9 @@ chart.render();
               $row_filb = mysqli_fetch_array($sql_filb);
               $filterb = isset($row_filb['filter']) ? $row_filb['filter'] :0;
 
-              $sql1 = mysqli_query($conn2,"select CONCAT(saldo1,',',saldo2,',',saldo3) data from (select $filter from (select $filtera from b_trial_balance_2024 where no_coa IN ('2.20.02')
+              $sql1 = mysqli_query($conn2,"select CONCAT(saldo1,',',saldo2,',',saldo3) data from (select $filter from (select $filtera from b_trial_balance_$tahun where no_coa IN ('2.20.02')
                 UNION
-                select $filterb from b_trial_balance_2024 where no_coa IN ('1.10.02')) a) a");
-
+                select $filterb from b_trial_balance_$tahun where no_coa IN ('1.10.02')) a) a");
               $row1 = mysqli_fetch_array($sql1);
               $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
               echo $data_bar1;
@@ -2160,6 +2171,7 @@ chart.render();
           name: 'Bank Loan',
           data: [<?php 
               $bulan = date("M"); 
+              $tahun = date("Y"); 
               $sql_fil = mysqli_query($conn2,"select GROUP_CONCAT(filter) filter from (
                 select CONCAT('round(abs(sum(saldo1 /1000000)),2) saldo1') filter
                 UNION
@@ -2187,9 +2199,9 @@ chart.render();
               $row_filb = mysqli_fetch_array($sql_filb);
               $filterb = isset($row_filb['filter']) ? $row_filb['filter'] :0;
 
-              $sql1 = mysqli_query($conn2,"select CONCAT(saldo1,',',saldo2,',',saldo3) data from (select $filter from (select $filtera from b_trial_balance_2024 where no_coa IN ('2.20.01','2.20.02')
+              $sql1 = mysqli_query($conn2,"select CONCAT(saldo1,',',saldo2,',',saldo3) data from (select $filter from (select $filtera from b_trial_balance_$tahun where no_coa IN ('2.20.01','2.20.02')
                 UNION
-                select $filterb from b_trial_balance_2024 where no_coa IN ('1.10.01','1.10.02')) a) a");
+                select $filterb from b_trial_balance_$tahun where no_coa IN ('1.10.01','1.10.02')) a) a");
               $row1 = mysqli_fetch_array($sql1);
               $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
               echo $data_bar1;

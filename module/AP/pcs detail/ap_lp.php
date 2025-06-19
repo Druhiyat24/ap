@@ -195,7 +195,7 @@ select no_lp,total_bayar, kode, '0' as pph from ap_payment where no_lp = '$no_pa
         
     }elseif($no_lp != null && $kode == "P"){
         // $kurang = $rowlp['ttl_bayar'];
-        if ($no_payment == 'LP/NAG/0424/03795') {
+        if ($no_payment == 'LP/NAG/0424/03795' || $no_payment == 'LP/NAG/0622/00458') {
             $kurang = $rowlp['ttl_bayar'];
         }else{    
             $kurang = $row['total'];

@@ -4,27 +4,27 @@
 </head>
 <body>
     <style type="text/css">
-    body{
-        font-family: sans-serif;
-    }
-    table{
-        margin: 15px auto;
-        border-style: none;
-    }
-    table th,
-    table td{
-        padding: 3px 8px;
- 
-    }
-    a{
-        background: blue;
-        color: #fff;
-        padding: 8px 10px;
-        text-decoration: none;
-        border-radius: 2px;
-    }
+        body{
+            font-family: sans-serif;
+        }
+        table{
+            margin: 15px auto;
+            border-style: none;
+        }
+        table th,
+        table td{
+            padding: 3px 8px;
+
+        }
+        a{
+            background: blue;
+            color: #fff;
+            padding: 8px 10px;
+            text-decoration: none;
+            border-radius: 2px;
+        }
     </style>
- 
+
     <?php
     include '../../conn/conn.php';
     header("Content-type: application/vnd-ms-excel");
@@ -52,8 +52,8 @@
     <center>
         <h4>TRIAL BALANCE YEAR TO DATE <br/> PERIODE <?php echo $start_date; ?> - <?php echo $end_date; ?></h4>
     </center> -->
-  <!--   STATUS: <?php echo $status; ?> -->
- 
+    <!--   STATUS: <?php echo $status; ?> -->
+
     <table style="width:70%;font-size:15px;" >
         <tr>
             <th style="text-align: left;vertical-align: middle;width: 27%;"><b>PT NIRWANA ALABARE GARMENT</b></th>
@@ -89,25 +89,38 @@
             <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i>Cash Flow from Operating Activities</i></b></th>
         </tr>
         <?php
-        $sql = mysqli_query($conn2,"select a.id, a.nama_pilihan sub_kategori, a.nama_pilihan_eng sub_kategori_eng, total from (select * from tb_master_pilihan where status = 'Y') a inner join (SELECT 
-            id,
-            ind_name,
-            COALESCE((
-            (CASE WHEN '$tahun_awal-01' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN saldo_jan ELSE 0 END) +
-            (CASE WHEN '$tahun_awal-02' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN saldo_feb ELSE 0 END) +
-            (CASE WHEN '$tahun_awal-03' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN saldo_mar ELSE 0 END) +
-            (CASE WHEN '$tahun_awal-04' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN saldo_apr ELSE 0 END) +
-            (CASE WHEN '$tahun_awal-05' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN saldo_may ELSE 0 END) +
-            (CASE WHEN '$tahun_awal-06' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN saldo_jun ELSE 0 END) +
-            (CASE WHEN '$tahun_awal-07' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN saldo_jul ELSE 0 END) +
-            (CASE WHEN '$tahun_awal-08' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN saldo_aug ELSE 0 END) +
-            (CASE WHEN '$tahun_awal-09' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN saldo_sep ELSE 0 END) +
-            (CASE WHEN '$tahun_awal-10' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN saldo_oct ELSE 0 END) +
-            (CASE WHEN '$tahun_awal-11' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN saldo_nov ELSE 0 END) +
-            (CASE WHEN '$tahun_awal-12' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN saldo_dec ELSE 0 END)
-            ),0) AS total
-            FROM tb_monthly_$tahun_awal
-            GROUP BY id) b on b.ind_name = a.nama_pilihan where type_pilihan = 'Arus Kas dari Aktivitas Operasi' order by a.id asc");
+        $sql = mysqli_query($conn2,"select 
+          a.id, 
+          a.nama_pilihan AS sub_kategori, 
+          a.nama_pilihan_eng AS sub_kategori_eng, 
+          total
+          FROM 
+          (SELECT * FROM tb_master_pilihan WHERE status = 'Y') a
+          INNER JOIN (
+          SELECT 
+          id,
+          ind_name,
+          COALESCE(
+          (CASE WHEN '$tahun_awal-01' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN COALESCE(saldo_jan, 0) ELSE 0 END) +
+          (CASE WHEN '$tahun_awal-02' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN COALESCE(saldo_feb, 0) ELSE 0 END) +
+          (CASE WHEN '$tahun_awal-03' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN COALESCE(saldo_mar, 0) ELSE 0 END) +
+          (CASE WHEN '$tahun_awal-04' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN COALESCE(saldo_apr, 0) ELSE 0 END) +
+          (CASE WHEN '$tahun_awal-05' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN COALESCE(saldo_may, 0) ELSE 0 END) +
+          (CASE WHEN '$tahun_awal-06' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN COALESCE(saldo_jun, 0) ELSE 0 END) +
+          (CASE WHEN '$tahun_awal-07' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN COALESCE(saldo_jul, 0) ELSE 0 END) +
+          (CASE WHEN '$tahun_awal-08' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN COALESCE(saldo_aug, 0) ELSE 0 END) +
+          (CASE WHEN '$tahun_awal-09' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN COALESCE(saldo_sep, 0) ELSE 0 END) +
+          (CASE WHEN '$tahun_awal-10' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN COALESCE(saldo_oct, 0) ELSE 0 END) +
+          (CASE WHEN '$tahun_awal-11' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN COALESCE(saldo_nov, 0) ELSE 0 END) +
+          (CASE WHEN '$tahun_awal-12' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN COALESCE(saldo_dec, 0) ELSE 0 END),
+          0) AS total
+          FROM tb_monthly_$tahun_awal
+          GROUP BY id, ind_name
+          ) b 
+          ON b.ind_name = a.nama_pilihan
+          WHERE a.type_pilihan = 'Arus Kas dari Aktivitas Operasi'
+          ORDER BY a.id ASC;
+          ");
 
         $sql2 = mysqli_query($conn2,"select a.id, a.nama_pilihan sub_kategori, a.nama_pilihan_eng sub_kategori_eng, total from (select * from tb_master_pilihan where status = 'Y') a inner join (SELECT 
             id,
@@ -127,7 +140,7 @@
             (CASE WHEN '$tahun_awal-12' BETWEEN LEFT('$tgl_awal', 7) AND LEFT('$tgl_akhir', 7) THEN saldo_dec ELSE 0 END)
             ),0) AS total
             FROM tb_monthly_$tahun_awal
-            GROUP BY id) b on b.ind_name = a.nama_pilihan where type_pilihan = 'Arus Kas dari Aktivitas Investasi' order by a.id asc");
+            GROUP BY id) b on b.ind_name = a.nama_pilihan where type_pilihan = 'Arus Kas dari Aktivitas Investasi'  group by sub_kategori order by a.id asc");
 
         if($tgl_akhir < $tgl_awal){
             $message = "Mohon Masukan Tanggal Filter Yang Benar";
@@ -163,12 +176,23 @@
                 <td style="text-align: left;vertical-align: middle;width: 27%;">'.$row['sub_kategori'].'</td>
                 <td style="text-align: right;vertical-align: middle;width: 16%;">'.$aktivitas_operasi.'</td>
                 <td style="text-align: right;vertical-align: middle;width: 27%;">'.$row['sub_kategori_eng'].'</td>
-                </tr>';
+                </tr>
+                ';
             }
-            echo '<tr style="line-height: 40px;">
+            echo '<tr>
+            <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+            <th style="text-align: right;vertical-align: middle;width: 16%;"></th>
+            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
+            </tr>
+            <tr style="line-height: 40px;">
             <th style="text-align: left;vertical-align: middle;width: 27%;">Arus kas yang digunakan untuk aktivitas operasi</th>
             <th style="text-align: right;vertical-align: middle;width: 16%;border-top:3px solid #000000;">'.$total_aktivitas_operasi_.'</th>
             <th style="text-align: right;vertical-align: middle;width: 27%;">Cash flow used from operating activities</th> 
+            </tr>
+            <tr>
+            <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+            <th style="text-align: right;vertical-align: middle;width: 16%;"></th>
+            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
             </tr>
             <tr>
             <th style="text-align: left;vertical-align: middle;width: 27%;">Arus Kas dari Aktivitas Investasi</th>
@@ -201,10 +225,20 @@
                 </tr>';
             }
 
-            echo '<tr style="line-height: 40px;">
+            echo '<tr>
+            <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+            <th style="text-align: right;vertical-align: middle;width: 16%;"></th>
+            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
+            </tr>
+            <tr style="line-height: 40px;">
             <th style="text-align: left;vertical-align: middle;width: 27%;">Arus kas yang digunakan untuk aktivitas investasi</th>
             <th style="text-align: right;vertical-align: middle;width: 16%;border-top:3px solid #000000;">'.$total_aktivitas_investasi_.'</th>
             <th style="text-align: right;vertical-align: middle;width: 27%;">Cash flow used from investing activities</th> 
+            </tr>
+            <tr>
+            <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+            <th style="text-align: right;vertical-align: middle;width: 16%;"></th>
+            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
             </tr>
             <tr>
             <th style="text-align: left;vertical-align: middle;width: 27%;">Arus Kas dari Aktivitas Pendanaan</th>
@@ -320,7 +354,7 @@
             <?php
             $total_aktivitas_pendanaan_ = 0;
             $total_aktivitas_pendanaan = $totalcf_17 + $totalcf_18;
-            if ($total_aktivitas_pendanaan_ > 0) {
+            if ($total_aktivitas_pendanaan > 0) {
                 $total_aktivitas_pendanaan_ = number_format($total_aktivitas_pendanaan,2);
             }else{
                 $total_aktivitas_pendanaan_ = '('.number_format(abs($total_aktivitas_pendanaan),2).')';
@@ -333,15 +367,30 @@
                 $bersih_kas_setarakas_ = '('.number_format(abs($bersih_kas_setarakas),2).')';
             }
 
-            echo '<tr style="line-height: 40px;">
+            echo '<tr>
+            <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+            <th style="text-align: right;vertical-align: middle;width: 16%;"></th>
+            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
+            </tr>
+            <tr style="line-height: 40px;">
             <th style="text-align: left;vertical-align: middle;width: 27%;">Arus kas yang digunakan untuk aktivitas pendanaan</th>
             <th style="text-align: right;vertical-align: middle;width: 16%;border-top:3px solid #000000;">'.$total_aktivitas_pendanaan_.'</th>
             <th style="text-align: right;vertical-align: middle;width: 27%;">Cash flow used from financing activities</th> 
+            </tr>
+            <tr>
+            <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+            <th style="text-align: right;vertical-align: middle;width: 16%;"></th>
+            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
             </tr>
             <tr style="line-height: 40px;">
             <th style="text-align: left;vertical-align: middle;width: 27%;">Kenaikan / (Penurunan) bersih kas dan setara kas</th>
             <th style="text-align: right;vertical-align: middle;width: 16%;">'.$bersih_kas_setarakas_.'</th>
             <th style="text-align: right;vertical-align: middle;width: 27%;">Cash Flow from Financing Activities</th>
+            </tr>
+            <tr>
+            <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+            <th style="text-align: right;vertical-align: middle;width: 16%;"></th>
+            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
             </tr>';
             ?>
             <tr>
@@ -368,6 +417,11 @@
                     ?>
                 </th>
                 <th style="text-align: right;vertical-align: middle;width: 27%;"><i>Cash and cash equivalent at the beginning of period</i></th>
+            </tr>
+            <tr>
+            <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+            <th style="text-align: right;vertical-align: middle;width: 16%;"></th>
+            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
             </tr>
             <tr>
                 <th style="text-align: left;vertical-align: middle;width: 27%;">Kas dan setara kas pada akhir periode</th>

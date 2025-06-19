@@ -49,6 +49,8 @@
             <th style="text-align: center;vertical-align: middle;">Amount</th>
             <th style="text-align: center;vertical-align: middle;">Outstanding</th>
             <th style="text-align: center;vertical-align: middle;">Status</th>
+            <th style="text-align: center;vertical-align: middle;">Created By</th>
+            <th style="text-align: center;vertical-align: middle;">Created Date</th>
             <th style="text-align: center;vertical-align: middle;">Approve By</th>
             <th style="text-align: center;vertical-align: middle;">Approve Date</th>
             <!-- <th style="text-align: center;vertical-align: middle;">curr</th>
@@ -69,7 +71,7 @@
         // menampilkan data pegawai
   
 
-        $sql = mysqli_query($conn2,"select doc_num, customer, date, ref_data, akun, bank, curr, amount, outstanding, status,deskripsi,approve_by,approve_date from tbl_bankin_arcollection $where group by doc_num order by id asc");
+        $sql = mysqli_query($conn2,"select doc_num, customer, date, ref_data, akun, bank, curr, amount, outstanding, status,deskripsi,create_by,create_date,approve_by,approve_date from tbl_bankin_arcollection $where group by doc_num order by id asc");
 
         $no = 1;
 
@@ -93,6 +95,8 @@
             <td style=" text-align : right" value="'.$row['amount'].'">'.number_format($row['amount'],2).'</td>
             <td style=" text-align : right" value="'.$row['outstanding'].'">'.number_format($row['outstanding'],2).'</td>
             <td style=" text-align : left" value="'.$row['status'].'">'.$row['status'].'</td>
+            <td style=" text-align : left" value="'.$row['create_by'].'">'.$row['create_by'].'</td>
+            <td style=" text-align : left" value="'.$row['create_date'].'">'.$row['create_date'].'</td>
             <td style=" text-align : left" value="'.$app_by.'">'.$app_by.'</td>
             <td style=" text-align : left" value="'.$app_date.'">'.$app_date.'</td>
              ';

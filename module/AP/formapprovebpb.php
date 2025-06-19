@@ -81,9 +81,9 @@
             }
 
             if(empty($nama_supp) or $nama_supp == 'ALL'){
-            $sql = mysqli_query($conn2,"select id, no_bpb, tgl_bpb, create_date, pono, supplier, top, curr, confirm1, tgl_po, SUM((qty * price) + ((qty * price) * (tax /100))) as total from bpb_new where confirm2 = '' and status != 'Cancel' group by no_bpb");                
+            $sql = mysqli_query($conn2,"select id, no_bpb, tgl_bpb, create_date, pono, supplier, top, curr, confirm1, tgl_po, SUM((qty * price) + ((qty * price) * (tax /100))) as total from bpb_new where confirm2 = '' and profit_center is null and status != 'Cancel' group by no_bpb");                
             }else {
-            $sql = mysqli_query($conn2,"select id, no_bpb, tgl_bpb, create_date, pono, supplier, top, curr, confirm1, tgl_po, SUM((qty * price) + ((qty * price) * (tax /100))) as total from bpb_new where supplier = '$nama_supp' and confirm2 = '' and status != 'Cancel' group by no_bpb");
+            $sql = mysqli_query($conn2,"select id, no_bpb, tgl_bpb, create_date, pono, supplier, top, curr, confirm1, tgl_po, SUM((qty * price) + ((qty * price) * (tax /100))) as total from bpb_new where supplier = '$nama_supp' and confirm2 = '' and profit_center is null and status != 'Cancel' group by no_bpb");
             }
                                                                          
             while($row = mysqli_fetch_array($sql)){                                          

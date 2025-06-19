@@ -167,25 +167,32 @@
     // $rowap12 = mysqli_fetch_array($sqlap12);
     // $no_bpbap12 = isset($rowap12['no_kbon']) ? $rowap12['no_kbon'] : null;
 
-    $sqllp = mysqli_query($conn1,"select no_kbon,tgl_kbon from list_payment where no_kbon = '$no_kbon' and DATE_FORMAT(create_date, '%Y-%m-%d') between '$start_date' and '$end_date' GROUP BY no_kbon");
+    $sqllp = mysqli_query($conn1,"select no_kbon,tgl_kbon, '0' total_gm from list_payment where no_kbon = '$no_kbon' and  DATE_FORMAT(create_date, '%Y-%m-%d') between '$start_date' and '$end_date' and status != 'Cancel' GROUP BY no_kbon
+        UNION
+        select reff_doc,reff_date, sum(debit) total_gm from tbl_list_journal where reff_doc = '$no_kbon' and tgl_journal >= '2025-05-01' and tgl_journal between '$start_date' and '$end_date' and no_journal like '%GM/NAG%' and debit != 0 and type_journal = 'ACCOUNT PAYABLE' GROUP BY reff_doc");
     $rowlp = mysqli_fetch_array($sqllp);
     $no_lp = isset($rowlp['no_kbon']) ? $rowlp['no_kbon'] : null;
+    $total_gm = isset($rowlp['total_gm']) ? $rowlp['total_gm'] : 0;
 
 
-    $sqllp2 = mysqli_query($conn1,"select no_kbon,tgl_kbon from list_payment where no_kbon = '$no_kbon' and DATE_FORMAT(create_date, '%Y-%m-%d') < '$start_date' GROUP BY no_kbon");
+    $sqllp2 = mysqli_query($conn1,"select no_kbon,tgl_kbon, '0' total_gm from list_payment where no_kbon = '$no_kbon' and  DATE_FORMAT(create_date, '%Y-%m-%d') < '$start_date' and status != 'Cancel' GROUP BY no_kbon
+        UNION
+        select reff_doc,reff_date, sum(debit) total_gm from tbl_list_journal where reff_doc = '$no_kbon' and no_journal like '%GM/NAG%' and debit != 0 and tgl_journal >= '2025-05-01' and tgl_journal < '$start_date' and type_journal = 'ACCOUNT PAYABLE' GROUP BY reff_doc");
     $rowlp2 = mysqli_fetch_array($sqllp2);
     $no_lp2 = isset($rowlp2['no_kbon']) ? $rowlp2['no_kbon'] : null;
+    $total_gm2 = isset($rowlp2['total_gm']) ? $rowlp2['total_gm'] : null;
+
 
 // if($tot_total != 0){
 
     if($no_lp != null){
-        $kurang = $row['bayar'];
+        $kurang = $row['bayar'] + $total_gm;
     }else{
         $kurang = 0;
     }
 
     if($no_lp2 != null){
-        $bayar = $row['bayar'];
+        $bayar = $row['bayar'] + $total_gm2;
     }else{
         $bayar = 0;
     }

@@ -20,6 +20,12 @@
         font-size: 13px;
     }
 
+    input[type="checkbox"]:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+
 </style>
 
 <!-- MAIN -->
@@ -80,10 +86,10 @@
                 <div class="col-md-3 mb-3">            
                     <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Reference</b></label>            
                     <select class="form-control selectpicker" name="ref_num" id="ref_num" data-dropup-auto="false" data-live-search="true" onchange="this.form.submit()">
-                       <option value="" disabled selected="true">Select Reference</option>
-                       <?php
-                       $ref_num ='';
-                       if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                     <option value="" disabled selected="true">Select Reference</option>
+                     <?php
+                     $ref_num ='';
+                     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         $ref_num = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
                     }                 
 
@@ -129,55 +135,55 @@
 
                 </div>
                 <div class="col-md-2 mb-3">  
-                   <input type="hidden" readonly style="font-size: 14px; width: 300px;" class="form-control" name="txt_supp" id="txt_supp" 
-                   value="<?php 
-                   $ref_num = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
-                   echo $ref_num; 
-               ?>">    
-               <label><b>Reff Date</b></label>
-               <input type="text" style="font-size: 14px;" class="form-control tanggal" id="start_date" name="start_date" 
-               value="<?php
-               $start_date ='';
-               if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                  $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-              }
-              if(!empty($_POST['start_date'])) {
-                echo $_POST['start_date'];
-            }
-            else{
-                echo date("d-m-Y");
-            } ?>" 
-            placeholder="Tanggal Awal">
-        </div>
-        <div class="col-md-2 mb-3">      
-
-            <label class="col-md-1" for="end_date"><b>-</b></label>
-            <input type="text" style="font-size: 14px;" class="form-control tanggal" id="end_date" name="end_date" 
-            value="<?php
-            $end_date ='';
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-              $end_date = date("Y-m-d",strtotime($_POST['start_date']));
+                 <input type="hidden" readonly style="font-size: 14px; width: 300px;" class="form-control" name="txt_supp" id="txt_supp" 
+                 value="<?php 
+                 $ref_num = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
+                 echo $ref_num; 
+             ?>">    
+             <label><b>Reff Date</b></label>
+             <input type="text" style="font-size: 14px;" class="form-control tanggal" id="start_date" name="start_date" 
+             value="<?php
+             $start_date ='';
+             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+              $start_date = date("Y-m-d",strtotime($_POST['start_date']));
           }
-          if(!empty($_POST['end_date'])) {
-            echo $_POST['end_date'];
+          if(!empty($_POST['start_date'])) {
+            echo $_POST['start_date'];
         }
         else{
             echo date("d-m-Y");
         } ?>" 
-        placeholder="Tanggal Akhir">
-    </div>  
-    <div style="padding-top: 30px; padding-left: 10px;">
-        <button style="border: 0;
-        line-height: 1;
-        padding: 10px 10px;
-        font-size: 1rem;
-        text-align: center;
-        color: #fff;
-        text-shadow: 1px 1px 1px #000;
-        border-radius: 6px;
-        background-color: rgb(95, 158, 160);" type="submit" id="send" name="send" class="btn btn-primary btn-lg" style="width: 100%;"><span class="fa fa-search"></span>
+        placeholder="Tanggal Awal">
+    </div>
+    <div class="col-md-2 mb-3">      
 
-    </div> 
+        <label class="col-md-1" for="end_date"><b>-</b></label>
+        <input type="text" style="font-size: 14px;" class="form-control tanggal" id="end_date" name="end_date" 
+        value="<?php
+        $end_date ='';
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+          $end_date = date("Y-m-d",strtotime($_POST['start_date']));
+      }
+      if(!empty($_POST['end_date'])) {
+        echo $_POST['end_date'];
+    }
+    else{
+        echo date("d-m-Y");
+    } ?>" 
+    placeholder="Tanggal Akhir">
+</div>  
+<div style="padding-top: 30px; padding-left: 10px;">
+    <button style="border: 0;
+    line-height: 1;
+    padding: 10px 10px;
+    font-size: 1rem;
+    text-align: center;
+    color: #fff;
+    text-shadow: 1px 1px 1px #000;
+    border-radius: 6px;
+    background-color: rgb(95, 158, 160);" type="submit" id="send" name="send" class="btn btn-primary btn-lg" style="width: 100%;"><span class="fa fa-search"></span>
+
+</div> 
 </div>           
 </form>
 <div class="form-row">
@@ -231,11 +237,11 @@
     <div class="col-md-3">
         <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Amount </b></label>
         <div class="input-group" >
-         <input type="number" min="0" style="font-size: 14px;text-align: right;" class="form-control" id="nominal_h" name="nominal_h" placeholder="input nominal..." >
-         <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="nominal" name="nominal" placeholder="0.00" readonly>
-     </div>
- </div>
- <div class="col-md-3">
+           <input type="number" min="0" style="font-size: 14px;text-align: right;" class="form-control" id="nominal_h" name="nominal_h" placeholder="input nominal..." >
+           <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="nominal" name="nominal" placeholder="0.00" readonly>
+       </div>
+   </div>
+   <div class="col-md-3">
     <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Rate </b></label>
     <div class="input-group" >
         <input type="number" min="0" style="font-size: 14px;text-align: right;" class="form-control" id="rate" name="rate" placeholder="input rate here..." >
@@ -297,7 +303,7 @@
                       <div class="form-group">
                         <form id="modal-form" method="post">
                             <div class="form-row">
-                               <div class="col-md-4">
+                             <div class="col-md-4">
                                 <label for="nama_supp"><b>Supplier</b></label>            
                                 <input type="text" readonly style="font-size: 14px; width: 300px;" class="form-control" name="txt_supp" id="txt_supp" 
                                 value="<?php 
@@ -413,6 +419,7 @@
                 <th style="display: none">PPH</th>
                 <th style="display: none">Total</th>
                 <th style="display: none">Total</th>
+                <th style="width:100px;">Amount</th>
                 </tr>
                 </thead>
 
@@ -455,7 +462,7 @@
                     union
                     select no_kbon,valuta,supplier,no_pay,tgl_pay,due_date,valuta,total,pph,'SAL' as kode from saldo_awal where status = 'Closed' and no_pay not like '%LP/NAG%' and supplier = '$nama_supp' and tgl_pay BETWEEN '$start_date' and '$end_date' group by no_pay");
             }elseif ($ref_num == 'Payment Voucher') {
-                $sql = mysqli_query($conn2,"select a.nama_supp,a.no_pv,a.pv_date,max(b.due_date) as due_date,a.curr,a.subtotal, a.ppn, a.pph ,a.total,a.status, a.frm_akun, if(a.frm_akun = '-','-',c.bank_name) as bank_name, c.b_code from tbl_pv_h a inner join tbl_pv b on b.no_pv = a.no_pv left join b_masterbank c on c.bank_account = a.frm_akun where a.nama_supp = '$nama_supp' and a.pv_date BETWEEN '$start_date' and '$end_date' and a.status = 'Approved' and a.outstanding != '0' group by a.no_pv");
+                $sql = mysqli_query($conn2,"select a.nama_supp, a.no_pv, a.pv_date,a.due_date, a.curr, (a.subtotal - COALESCE(b.dpp_pv,0)) subtotal, (a.ppn - COALESCE(b.ppn_pv,0)) ppn, (a.pph - COALESCE(b.pph_pv,0)) pph ,(a.total - COALESCE(b.total_pv,0)) total, a.status, a.frm_akun, a.bank_name, a.b_code from (select a.nama_supp,a.no_pv,a.pv_date,max(b.due_date) as due_date,a.curr,a.subtotal, a.ppn, a.pph ,a.total,a.status, a.frm_akun, if(a.frm_akun = '-','-',c.bank_name) as bank_name, c.b_code from tbl_pv_h a inner join tbl_pv b on b.no_pv = a.no_pv left join b_masterbank c on c.bank_account = a.frm_akun where a.nama_supp = '$nama_supp' and a.pv_date BETWEEN '$start_date' and '$end_date' and a.status = 'Approved' and a.outstanding != '0' group by a.no_pv) a left join (select no_reff, sum(dpp) dpp_pv, sum(ppn) ppn_pv, sum(pph) pph_pv, sum(total) total_pv from b_bankout_det a inner join b_bankout_h b on b.no_bankout = a.no_bankout where b.status != 'Cancel' and no_reff like '%PV%' GROUP BY no_reff) b on a.no_pv = b.no_reff");
             }else{
                 '';
             }
@@ -472,13 +479,7 @@
                     $rates = isset($rowz['rate']) ? $rowz['rate'] : 0;
 
                     if ($rates == '0') {
-                        $sqlx = mysqli_query($conn1,"select max(id) as id FROM masterrate where v_codecurr = 'PAJAK'");
-                        $rowx = mysqli_fetch_array($sqlx);
-                        $maxid = $rowx['id'];
-
-                        $sqly = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where id = '$maxid' and v_codecurr = 'PAJAK'");
-                        $rowy = mysqli_fetch_array($sqly);
-                        $rate = $rowy['rate'];
+                        $rate = 1;
                     }else{
                         $rate = $rowz['rate'];
                     }
@@ -504,7 +505,9 @@
                     <td style="display: none;" value-akun="'.$row['frm_akun'].'">'.$row['frm_akun'].'</td>
                     <td style="display: none;" value-bank="'.$row['bank_name'].'">'.$row['bank_name'].'</td>
                     <td style="display: none;" value-code="'.$row['b_code'].'">'.$row['b_code'].'</td>
-
+                    <td style="width:100px;">
+                    <input style="text-align: right;" type="text" min="1" style="font-size: 12px;" class="form-control" id="txt_amount_pv" name="txt_amount_pv" value="" disabled>
+                    </td>
                     </tr>';
                 } 
             }elseif ($ref_num == 'Payment'){
@@ -647,7 +650,7 @@
             }elseif($ref_num == 'Payment'){
                 echo '</tbody>                    
                 </table>';
-            }else{
+            }elseif($ref_num == 'None'){
                 echo '</tbody>
                 <tfoot>
                 <tr>
@@ -661,10 +664,12 @@
 
                 </table>
                 </div>';
+            }else{
+                
             }                
             ?>
-
-
+<!-- 
+</div> -->
             <div class="box footer">   
                 <form id="form-simpan">
                     <?php
@@ -884,7 +889,7 @@ function SidebarCollapse () {
 </script>
 <script>
     $(document).ready(function() {
-     $('#mytablenone').DataTable({
+       $('#mytablenone').DataTable({
             paging: false,          // Menambahkan paging
             searching: false,       // Menambahkan pencarian
             scrollCollapse: true,  // Mengatasi jika data tidak cukup
@@ -895,9 +900,9 @@ function SidebarCollapse () {
             infoFiltered: "" // Untuk keadaan filter
         }    // Menjaga header tetap terlihat
     });
-     $("[data-toggle=tooltip]").tooltip();
+       $("[data-toggle=tooltip]").tooltip();
 
- } );
+   } );
 </script>
 
 <script type="text/javascript">
@@ -937,8 +942,8 @@ function SidebarCollapse () {
             price2.readOnly = true;
         }
         if (curr == 'USD') {
-         tota += parseFloat(harga * rate); 
-     }else{
+           tota += parseFloat(harga * rate); 
+       }else{
         tota += parseFloat(harga);
     }
     tot_deb  = tota + deb;
@@ -973,8 +978,8 @@ function SidebarCollapse () {
             price2.readOnly = true;
         }
         if (curr == 'USD') {
-         tota += parseFloat(harga * rate); 
-     }else{
+           tota += parseFloat(harga * rate); 
+       }else{
         tota += parseFloat(harga);
     }
 
@@ -1096,8 +1101,8 @@ function SidebarCollapse () {
       //Initialize Select2 Elements
       var selectcoba = rowCount;
       $('.rowCount').select2({
-       theme: 'bootstrap4'
-   })
+         theme: 'bootstrap4'
+     })
       //Initialize Select2 Elements
       $('.select2add').select2({
         theme: 'bootstrap4'
@@ -1503,9 +1508,9 @@ function hitungulang(){
 }
 
 async function hapus(){
- await deleteRow();
- console.log("hasil");
- hitungulang();
+   await deleteRow();
+   console.log("hasil");
+   hitungulang();
 }
 
 
@@ -1561,9 +1566,9 @@ function hitungulang2(){
 }
 
 async function hapus2(){
- await deleteRow2();
- console.log("hasil");
- hitungulang2();
+   await deleteRow2();
+   console.log("hasil");
+   hitungulang2();
 }
 </script>
 
@@ -1761,7 +1766,7 @@ async function hapus2(){
     var refer = $('select[name=ref_num] option').filter(':selected').val();
     if (refer == 'Payment Voucher') {
         $("input[type=checkbox]").change(function(){
-
+            var selected_code = null;
             var sum_total = 0;
             var sum_total2 = 0;  
             var total2 = 0;
@@ -1777,6 +1782,29 @@ async function hapus2(){
             var valu = ''; 
             var rates = 0;  
     // $("input[type=checkbox]").prop('disabled', false);  
+    $(this).closest('tr').find('td:eq(13) input').prop('disabled', true);
+    $(this).closest('tr').find('td:eq(13) input').val("");
+
+    // Cari code yang pertama kali di-check
+    $("input[type=checkbox]:checked").each(function () {
+        var kode = $(this).closest('tr').find('td:eq(12)').attr('value-code') || '';
+
+        if (!selected_code) {
+            selected_code = kode;
+        }
+    });
+
+    // Disable semua checkbox yang tidak sama codenya
+    $("input[type=checkbox]").each(function () {
+        var kode = $(this).closest('tr').find('td:eq(12)').attr('value-code') || '';
+
+        if (selected_code && kode !== selected_code) {
+            $(this).prop('disabled', true);
+        } else {
+            $(this).prop('disabled', false);
+        }
+    }); 
+
     $("#rate").prop('disabled', false);           
     $("input[type=checkbox]:checked").each(function () { 
         var ttl_debit = parseFloat(document.getElementById('jml_debit').value,10) || 0;
@@ -1799,43 +1827,52 @@ async function hapus2(){
         var accountid = document.getElementById('accountid').value;
         var no_doc = document.getElementById('no_doc').value;
 
+        var select_amount = $(this).closest('tr').find('td:eq(13) input');
+        select_amount.prop('disabled', false);  
+        select_amount.val(parseFloat($(this).closest('tr').find('td:eq(7)').attr('data-total'),10));
+        var amount = parseFloat($(this).closest('tr').find('td:eq(13) input').val(),10) || 0;    
 
-        sum_total += total;
-        total2 += total_idr;
-        ttl_sum = sum_total + ttl_debit;
-        ttl_sum2 = total2 + ttl_debit;
-        total3 += total_idr;
-        if (no_doc != 'BK//NAG/'+bulan+tahun) {
-            d_curr = valuta;
-            d_bank = nama_bank;
-            d_akun = accountid;
-            d_code = kode;
-            valu = no_doc;
-        }else{
-            d_curr += curr2;
-            d_akun += akun;
-            d_bank += bank;
-            d_code += kode; 
+            // sum_total += total;
+            // total2 += amount;
 
-            if(d_bank == 'BANK CENTRAL ASIA'){
-
-                valu = 'BK'+'/'+d_code+'/'+'NAG'+'/'+bulan+tahun;
-            }else if(d_bank == 'BANK CIMB NIAGA'){
-
-                valu = 'BK'+'/'+d_code+'/'+'NAG'+'/'+bulan+tahun;
+            if (no_doc != 'BK//NAG/'+bulan+tahun) {
+                d_curr = valuta;
+                d_bank = nama_bank;
+                d_akun = accountid;
+                d_code = kode;
+                valu = no_doc;
             }else{
-                valu = 'BK'+'/'+d_code+'/'+'NAG'+'/'+bulan+tahun;
-            }
-        }
+                d_curr += curr2;
+                d_akun += akun;
+                d_bank += bank;
+                d_code += kode; 
 
-        if (d_curr == 'USD') {
-            rates = select_rate;
-        }else{
-            rates = 1;
-            $("#rate").prop('disabled', true);
-        }     
-        sum_total2 = ttl_sum2;
-    });
+                if(d_bank == 'BANK CENTRAL ASIA'){
+
+                    valu = 'BK'+'/'+d_code+'/'+'NAG'+'/'+bulan+tahun;
+                }else if(d_bank == 'BANK CIMB NIAGA'){
+
+                    valu = 'BK'+'/'+d_code+'/'+'NAG'+'/'+bulan+tahun;
+                }else{
+                    valu = 'BK'+'/'+d_code+'/'+'NAG'+'/'+bulan+tahun;
+                }
+            }
+
+            if (d_curr == 'USD') {
+                rates = select_rate;
+            }else{
+                rates = 1;
+                $("#rate").prop('disabled', true);
+            }  
+
+            sum_total += amount;
+            total2 += amount * rates;
+            ttl_sum = sum_total + ttl_debit;
+            ttl_sum2 = total2 + ttl_debit;
+            total3 += amount * rates;
+
+            sum_total2 = ttl_sum2;
+        });
 
     $("#total_cek").val(formatMoney(sum_total));
     $("#total_cek_idr").val(formatMoney(total2));
@@ -1856,57 +1893,102 @@ async function hapus2(){
     $("#nominalcre").val(formatMoney(sum_total2)); 
     $("#no_doc").val(valu);             
 });   
-    }else{
-      $("input[type=checkbox]").change(function(){
+}else{
+  $("input[type=checkbox]").change(function(){
 
-        var sum_total = 0;
-        var sum_total2 = 0;  
-        var total2 = 0;
-        var ttl_sum = 0;
-        var ttl_sum2 = 0;                
-        $(this).closest('tr').find('td:eq(11) input').prop('disabled', true);
-        $(this).closest('tr').find('td:eq(11) input').val(""); 
+    var sum_total = 0;
+    var sum_total2 = 0;  
+    var total2 = 0;
+    var ttl_sum = 0;
+    var ttl_sum2 = 0;                
+    $(this).closest('tr').find('td:eq(11) input').prop('disabled', true);
+    $(this).closest('tr').find('td:eq(11) input').val(""); 
+    var ttl_debit = parseFloat(document.getElementById('jml_debit').value,10) || 0;
+    var total_idr = parseFloat($(this).closest('tr').find('td:eq(8)').attr('data-total-idr'),10) || 0;
+    var amount = parseFloat($(this).closest('tr').find('td:eq(11) input').val(),10) || 0;    
+    var select_amount = $(this).closest('tr').find('td:eq(11) input');
+    total2 += amount;
+    ttl_sum2 = total2 + ttl_debit;
+
+    sum_total2 = ttl_sum2;
+
+
+    $("#total_cek").val(formatMoney(sum_total2));
+    $("#total_cek_idr").val(formatMoney(sum_total2));
+    $("#total_cek_idr_h").val(sum_total2);
+    $("#total_cek_h").val(sum_total2);
+    $("#nominaldeb_h").val(sum_total2.toFixed(2));  
+    $("#nominaldeb").val(formatMoney(sum_total2));             
+    $("input[type=checkbox]:checked").each(function () { 
         var ttl_debit = parseFloat(document.getElementById('jml_debit').value,10) || 0;
+        var curr = document.getElementById('valuta').value;
+        var total = parseFloat($(this).closest('tr').find('td:eq(7)').attr('data-total'),10) || 0;
         var total_idr = parseFloat($(this).closest('tr').find('td:eq(8)').attr('data-total-idr'),10) || 0;
         var amount = parseFloat($(this).closest('tr').find('td:eq(11) input').val(),10) || 0;    
         var select_amount = $(this).closest('tr').find('td:eq(11) input');
+        select_amount.prop('disabled', false);  
+
+        sum_total += total;
         total2 += amount;
+        ttl_sum = sum_total + ttl_debit;
         ttl_sum2 = total2 + ttl_debit;
 
         sum_total2 = ttl_sum2;
 
+    });
+    $("#total_cek").val(formatMoney(sum_total2));
+    $("#total_cek_idr").val(formatMoney(total2));
+    $("#total_cek_idr_h").val(total2);
+    $("#total_cek_h").val(sum_total2);
+    $("#nominaldeb_h").val(sum_total2.toFixed(2));  
+    $("#nominaldeb").val(formatMoney(sum_total2));                 
+});     
+}     
+</script>
 
-        $("#total_cek").val(formatMoney(sum_total2));
-        $("#total_cek_idr").val(formatMoney(sum_total2));
-        $("#total_cek_idr_h").val(sum_total2);
-        $("#total_cek_h").val(sum_total2);
-        $("#nominaldeb_h").val(sum_total2.toFixed(2));  
-        $("#nominaldeb").val(formatMoney(sum_total2));             
-        $("input[type=checkbox]:checked").each(function () { 
+<script type="text/javascript">
+    $("input[name=txt_amount_pv]").keyup(function(){
+        var sum_total = 0;
+        var sum_total2 = 0;  
+        var total2 = 0;
+        var total3 = 0;
+        var ttl_sum = 0;
+        var ttl_sum2 = 0;    
+        $("input[type=checkbox]:checked").each(function () {   
             var ttl_debit = parseFloat(document.getElementById('jml_debit').value,10) || 0;
-            var curr = document.getElementById('valuta').value;
+            var select_rate = parseFloat(document.getElementById('rat').value,10) || 0;
             var total = parseFloat($(this).closest('tr').find('td:eq(7)').attr('data-total'),10) || 0;
             var total_idr = parseFloat($(this).closest('tr').find('td:eq(8)').attr('data-total-idr'),10) || 0;
-            var amount = parseFloat($(this).closest('tr').find('td:eq(11) input').val(),10) || 0;    
-            var select_amount = $(this).closest('tr').find('td:eq(11) input');
-            select_amount.prop('disabled', false);  
+            var amount = parseFloat($(this).closest('tr').find('td:eq(13) input').val(),10) || 0;  
+            var curr2 = $(this).closest('tr').find('td:eq(9)').attr('value-curr') || '';
+            // alert(curr2 == 'USD');
+            if (curr2 == 'USD') {
+                rates = select_rate;
+            }else{
+                rates = 1;
+            } 
 
-            sum_total += total;
-            total2 += amount;
+            sum_total += amount;
+            total2 += amount * rates;
             ttl_sum = sum_total + ttl_debit;
             ttl_sum2 = total2 + ttl_debit;
-
+            total3 += amount * rates;    
             sum_total2 = ttl_sum2;
-
         });
-        $("#total_cek").val(formatMoney(sum_total2));
+
+        $("#total_cek").val(formatMoney(sum_total));
         $("#total_cek_idr").val(formatMoney(total2));
         $("#total_cek_idr_h").val(total2);
-        $("#total_cek_h").val(sum_total2);
+        $("#total_cek_h").val(sum_total);
         $("#nominaldeb_h").val(sum_total2.toFixed(2));  
-        $("#nominaldeb").val(formatMoney(sum_total2));                 
-    });     
-  }     
+        $("#nominaldeb").val(formatMoney(sum_total2));  
+        // $("#nominal").val(formatMoney(sum_total));  
+        // $("#nominal_h").val(sum_total);
+        // $("#nomrate_h").val(total2);  
+        // $("#nomrate").val(formatMoney(total2)); 
+        // $("#nominalcre_h").val(sum_total2.toFixed(2));  
+        // $("#nominalcre").val(formatMoney(sum_total2));  
+    });
 </script>
 
 <script type="text/javascript">
@@ -1995,7 +2077,7 @@ async function hapus2(){
 </script>
 
 <script type="text/javascript">
- $('#accountid').change(function(){
+   $('#accountid').change(function(){
     var ttl_jml = '';
     var valu = '';
     $("input[type=text]").each(function () {         
@@ -2077,14 +2159,14 @@ async function hapus2(){
             if (refer != 'None') {
                 var ttl_credit = parseFloat(document.getElementById('jml_credit').value,10) || 0; 
             }else{
-               var ttl_credit = parseFloat(document.getElementById('nom_credit').value,10) || 0;    
-           }       
-           var rate = parseFloat(document.getElementById('rate').value,10) || 1;
-           var ttl_h = parseFloat(document.getElementById('nominal_h').value,10) || 0;
-           var val = document.getElementById('valuta').value;
-           valu = val;
-           rat = rate;
-           if (valu == 'IDR') {
+             var ttl_credit = parseFloat(document.getElementById('nom_credit').value,10) || 0;    
+         }       
+         var rate = parseFloat(document.getElementById('rate').value,10) || 1;
+         var ttl_h = parseFloat(document.getElementById('nominal_h').value,10) || 0;
+         var val = document.getElementById('valuta').value;
+         valu = val;
+         rat = rate;
+         if (valu == 'IDR') {
             ttl_jml = ttl_h / rate;  
         }else{
             ttl_jml = ttl_h * rate;    
@@ -2115,15 +2197,15 @@ async function hapus2(){
             if (refer != 'None') {
                 var ttl_credit = parseFloat(document.getElementById('jml_credit').value,10) || 0; 
             }else{
-               var ttl_credit = parseFloat(document.getElementById('nom_credit').value,10) || 0;    
-           }
-           var curr = $(this).closest('tr').find('td:eq(5)').find('select[name=currenc] option').filter(':selected').val();        
-           var rate = parseFloat(document.getElementById('rate').value,10) || 1;
-           var ttl_h = parseFloat(document.getElementById('nominal_h').value,10) || 0;
-           var val = document.getElementById('valuta').value;
-           valu = val;
-           rat = ttl_h;
-           if (valu == 'IDR') {
+             var ttl_credit = parseFloat(document.getElementById('nom_credit').value,10) || 0;    
+         }
+         var curr = $(this).closest('tr').find('td:eq(5)').find('select[name=currenc] option').filter(':selected').val();        
+         var rate = parseFloat(document.getElementById('rate').value,10) || 1;
+         var ttl_h = parseFloat(document.getElementById('nominal_h').value,10) || 0;
+         var val = document.getElementById('valuta').value;
+         valu = val;
+         rat = ttl_h;
+         if (valu == 'IDR') {
             ttl_jml = ttl_h / rate;  
         }else{
             ttl_jml = ttl_h * rate;    
@@ -2158,11 +2240,11 @@ function addListener(elm,index){
   elm.setAttribute('min', 1);  // set the min attribute on each field
   
   elm.addEventListener('keypress', function(e){  // add listener to each field 
-   var key = !isNaN(e.charCode) ? e.charCode : e.keyCode;
-   str = String.fromCharCode(key); 
-   if (str.localeCompare('-') === 0){
-     event.preventDefault();
- }
+     var key = !isNaN(e.charCode) ? e.charCode : e.keyCode;
+     str = String.fromCharCode(key); 
+     if (str.localeCompare('-') === 0){
+       event.preventDefault();
+   }
 
 });
   
@@ -2317,6 +2399,7 @@ if($('select[name=nama_supp] option').filter(':selected').val() == '' || $('sele
                     var pph = parseFloat($(this).closest('tr').find('td:eq(6)').attr('value-pph'),10); 
                     var total = parseFloat($(this).closest('tr').find('td:eq(7)').attr('data-total'),10); 
                     var total_idr = parseFloat($(this).closest('tr').find('td:eq(8)').attr('data-total-idr'),10); 
+                    var amount_input_pv = parseFloat($(this).closest('tr').find('input[name="txt_amount_pv"]').val()) || 0;
                     var curr = $(this).closest('tr').find('td:eq(9)').attr('value-curr');
                     var kodelp = $(this).closest('tr').find('td:eq(10)').attr('value-kode');
                     var rates = $(this).closest('tr').find('td:eq(12)').attr('data-rates') || 0;
@@ -2334,7 +2417,7 @@ if($('select[name=nama_supp] option').filter(':selected').val() == '' || $('sele
                         $.ajax({
                             type:'POST',
                             url:'insert_bankout_det.php',
-                            data: {'no_bankout':no_bankout, 'no_coa':no_coa, 'no_coc':no_coc, 'reff_doc':reff_doc, 'reff_date':reff_date, 'deskripsi':deskripsi, 'debit':debit, 'credit':credit, 'no_pay':no_pay, 'pay_date':pay_date, 'due_date':due_date, 'dpp':dpp, 'ppn':ppn, 'pph':pph, 'total':total, 'total_idr':total_idr, 'curr':curr, 'kodelp':kodelp, 'rates':rates, 'amount_input':amount_input, 'curr_h':curr_h, 'rate_h':rate_h,'bankout_date':bankout_date,'pesan':pesan, 'prof_ctr':prof_ctr},
+                            data: {'no_bankout':no_bankout, 'no_coa':no_coa, 'no_coc':no_coc, 'reff_doc':reff_doc, 'reff_date':reff_date, 'deskripsi':deskripsi, 'debit':debit, 'credit':credit, 'no_pay':no_pay, 'pay_date':pay_date, 'due_date':due_date, 'dpp':dpp, 'ppn':ppn, 'pph':pph, 'total':total, 'total_idr':total_idr, 'curr':curr, 'kodelp':kodelp, 'rates':rates, 'amount_input':amount_input, 'amount_input_pv':amount_input_pv, 'curr_h':curr_h, 'rate_h':rate_h,'bankout_date':bankout_date,'pesan':pesan, 'prof_ctr':prof_ctr},
                             cache: 'false',
                             close: function(e){
                                 e.preventDefault();

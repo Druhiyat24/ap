@@ -63,13 +63,14 @@
                             <th style="width:200px;">Supplier</th>
                             <th style="width:100px;display: none;">Curr</th>                                                       
                             <th style="width:150px;">Total List Payment</th>
-                            <th style="width:50px;">No Payment</th>
-                            <th style="width:100px;">Payment Date</th>
-                            <th style="width:100px;">Pay Method</th>
+                            <th style="width:50px;display: none;">No Payment</th>
+                            <th style="width:100px;display: none;">Payment Date</th>
+                            <th style="width:100px;display: none;">Pay Method</th>
                             <th style="width:100px;display: none;">Currency</th>
-                            <th style="width:100px;">Nominal</th>
+                            <th style="width:100px;display: none;">Nominal</th>
                             <th style="width:100px;display: none;">Currency</th>
-                            <th style="width:100px;display: none;">Currency</th>                                                                                                                 
+                            <th style="width:100px;display: none;">Currency</th>  
+                            <th style="width:100px;">Due Date</th>                                                                                                               
                         </tr>
                     </thead>
 
@@ -83,9 +84,9 @@
             }
 
             if(empty($nama_supp) or $nama_supp == 'ALL'){
-            $sql = mysqli_query($conn2,"select a.no_payment, a.tgl_payment, a.nama_supp, a.curr, sum(a.amount) as amount, a.status, b.payment_ftr_id, b.tgl_pelunasan, b.cara_bayar, b.account, b.bank, b.valuta_bayar, b.nominal, b.nominal_fgn, b.ttl_bayar from list_payment_cbd a left join payment_ftrcbd b on b.list_payment_id = a.no_payment where a.`status` = 'Approved' group by a.no_payment");                
+            $sql = mysqli_query($conn2,"select a.no_payment, a.tgl_payment, a.nama_supp, a.curr, sum(a.amount) as amount, a.status, b.payment_ftr_id, b.tgl_pelunasan, b.cara_bayar, b.account, b.bank, b.valuta_bayar, b.nominal, b.nominal_fgn, b.ttl_bayar, tgl_tempo from list_payment_cbd a left join payment_ftrcbd b on b.list_payment_id = a.no_payment where a.`status` = 'Approved' group by a.no_payment");                
             }else {
-            $sql = mysqli_query($conn2,"select a.no_payment, a.tgl_payment, a.nama_supp, a.curr, sum(a.amount) as amount, a.status, b.payment_ftr_id, b.tgl_pelunasan, b.cara_bayar, b.account, b.bank, b.valuta_bayar, b.nominal, b.nominal_fgn, b.ttl_bayar from list_payment_cbd a left join payment_ftrcbd b on b.list_payment_id = a.no_payment where a.`status` = 'Approved' and a.nama_supp = '$nama_supp' group by a.no_payment");
+            $sql = mysqli_query($conn2,"select a.no_payment, a.tgl_payment, a.nama_supp, a.curr, sum(a.amount) as amount, a.status, b.payment_ftr_id, b.tgl_pelunasan, b.cara_bayar, b.account, b.bank, b.valuta_bayar, b.nominal, b.nominal_fgn, b.ttl_bayar, tgl_tempo from list_payment_cbd a left join payment_ftrcbd b on b.list_payment_id = a.no_payment where a.`status` = 'Approved' and a.nama_supp = '$nama_supp' group by a.no_payment");
             }
                                                                          
             while($row = mysqli_fetch_array($sql)){ 
@@ -120,12 +121,13 @@
                             <td style="" value="'.$row['nama_supp'].'">'.$row['nama_supp'].'</td>                                                                  
                             <td style="display:none;" value="'.$row['curr'].'">'.$row['curr'].'</td>
                             <td style="" value="'.$row['amount'].'">'.$row['curr'].' '.number_format($row['amount'],2).'</td>                                      
-                            <td style="" value="'.$no_lunas.'">'.$no_lunas.'</td>
-                            <td style=";" value="'.$tgl_lunas.'">'.$tgl_lunas.'</td>
-                            <td style=";" value="'.$method.'">'.$method.'</td>
+                            <td style="display:none;" value="'.$no_lunas.'">'.$no_lunas.'</td>
+                            <td style=";display:none;" value="'.$tgl_lunas.'">'.$tgl_lunas.'</td>
+                            <td style=";display:none;" value="'.$method.'">'.$method.'</td>
                             <td style="display: none;" value="'.$row['valuta_bayar'].'">'.$row['valuta_bayar'].'</td>                            
-                            <td style=";" value="'.$nom.'">'.$row['valuta_bayar'].' '.$nom1.'</td>
+                            <td style=";display:none;" value="'.$nom.'">'.$row['valuta_bayar'].' '.$nom1.'</td>
                             <td style="display:none;" value="'.$row['curr'].'">'.$row['curr'].'</td>
+                            <td style="" value="'.$row['tgl_tempo'].'">'.date("d-M-Y",strtotime($row['tgl_tempo'])).'</td>
                         </tr>';                
                    
                     } ?>

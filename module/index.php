@@ -1,5 +1,7 @@
 <?php
 session_start();
+error_reporting(E_ALL & ~E_NOTICE);
+ini_set('display_errors', 1);
 include '../conn/conn.php';
 $user = isset($_SESSION['username']) ? $_SESSION['username'] : '';
 if ($user == '') {
@@ -273,12 +275,12 @@ input::-webkit-inner-spin-button {
           $pur = $rs['purchasing'];
           $app_po = $rs['approve_po'];
 
-          $queryss = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%BPB%' and useraccess.menu != 'Transfer BPB' and useraccess.menu != 'Accept BPB Whs-Acc' and useraccess.menu not like '%create%' group by username");
+          $queryss = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%BPB%' and useraccess.menu != 'Transfer BPB' and useraccess.menu != 'Accept BPB Whs-Acc' and useraccess.menu not like '%create%' and profit_center != 'NAK' group by username");
           while($rss = mysqli_fetch_array($queryss)){
             $menu = isset($rss['ket']) ? $rss['ket'] :0;
             $id = isset($rss['id']) ? $rss['id'] :0;
 
-            $sql = mysqli_query($conn2,"select count(distinct(no_bpb)) as no_bpb from bpb_new where status = 'GMF'");
+            $sql = mysqli_query($conn2,"select count(distinct(no_bpb)) as no_bpb from bpb_new where status = 'GMF' and profit_center is null");
             $row = mysqli_fetch_array($sql);
             $count = $row['no_bpb'];
             if($count != '0'){
@@ -311,155 +313,155 @@ input::-webkit-inner-spin-button {
             <li class="dropdown-submenu ">
             <a class="dropdown-item bg-dark text-white" href="#">
             <span class="fa fa-envelope-o fa-fw "></span>
-            <span class="menu-collapsed">BPB</span>
+            <span class="menu-collapsed">BPB Garment</span>
             </a>
             <ul class="dropdown-menu bg-dark text-white" role="menu">';
             if($id == '1'){ 
-               echo'<a href="AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa fa-thumbs-up fa-fw "></span>
-               <span class="menu-collapsed">Approve BPB</span>
-               '.$notif.'
-               </a>';
-           }elseif($id == '2'){ 
-               echo'<a href="AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa-share fa-fw "></span>
-               <span class="menu-collapsed">Verifikasi BPB</span>
-               </a>';
-           }elseif($id == '19'){ 
-               echo'<a href="AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
-               <span class="menu-collapsed">Approve BPB Return</span>
-               '.$notif1.'
-               </a>';
-           }elseif($id == '20'){ 
-               echo'<a href="AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
-               <span class="fa fa-share fa-fw "></span>
-               <span class="menu-collapsed">Verifikasi BPB Return</span>
-               </a>';
-           }elseif($id == '1,2'){ 
-               echo'<a href="AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa fa-thumbs-up fa-fw "></span>
-               <span class="menu-collapsed">Approve BPB</span>
-               '.$notif.'
-               </a>
-               <a href="AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa-share fa-fw "></span>
-               <span class="menu-collapsed">Verifikasi BPB</span>
-               </a>';
-           }elseif($id == '1,19'){ 
-               echo'<a href="AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa fa-thumbs-up fa-fw "></span>
-               <span class="menu-collapsed">Approve BPB</span>
-               '.$notif.'
-               </a>
-               <a href="AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
-               <span class="menu-collapsed">Approve BPB Return</span>
-               '.$notif1.'
-               </a>';
-           }elseif($id == '1,20'){ 
-               echo'<a href="AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa fa-thumbs-up fa-fw "></span>
-               <span class="menu-collapsed">Approve BPB</span>
-               '.$notif.'
-               </a>
-               <a href="AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa-share fa-fw "></span>
-               <span class="menu-collapsed">Verifikasi BPB Return</span>
-               </a>';
-           }elseif($id == '2,19'){ 
-               echo'<a href="AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa-share fa-fw "></span>
-               <span class="menu-collapsed">Verifikasi BPB</span>
-               </a>
-               <a href="AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
-               <span class="menu-collapsed">Approve BPB Return</span>
-               '.$notif1.'
-               </a>';
-           }elseif($id == '2,20'){ 
-               echo'<a href="AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa-share fa-fw "></span>
-               <span class="menu-collapsed">Verifikasi BPB</span>
-               </a>
-               <a href="AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa-share fa-fw "></span>
-               <span class="menu-collapsed">Verifikasi BPB Return</span>
-               </a>';
-           }elseif($id == '19,20'){ 
-               echo'<a href="AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
-               <span class="menu-collapsed">Approve BPB Return</span>
-               '.$notif1.'
-               </a>
-               <a href="AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa-share fa-fw "></span>
-               <span class="menu-collapsed">Verifikasi BPB Return</span>
-               </a>';
-           }elseif($id == '1,2,19'){ 
-               echo'<a href="AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa fa-thumbs-up fa-fw "></span>
-               <span class="menu-collapsed">Approve BPB</span>
-               '.$notif.'
-               </a>
-               <a href="AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa-share fa-fw "></span>
-               <span class="menu-collapsed">Verifikasi BPB</span>
-               </a>
-               <a href="AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
-               <span class="menu-collapsed">Approve BPB Return</span>
-               '.$notif1.'
-               </a>';
-           }elseif($id == '1,2,20'){ 
-               echo'<a href="AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa fa-thumbs-up fa-fw "></span>
-               <span class="menu-collapsed">Approve BPB</span>
-               '.$notif.'
-               </a>
-               <a href="AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa-share fa-fw "></span>
-               <span class="menu-collapsed">Verifikasi BPB</span>
-               </a>
-               <a href="AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa-share fa-fw "></span>
-               <span class="menu-collapsed">Verifikasi BPB Return</span>
-               </a>';
-           }elseif($id == '2,19,20'){ 
-               echo'<a href="AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa-share fa-fw "></span>
-               <span class="menu-collapsed">Verifikasi BPB</span>
-               </a>
-               <a href="AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
-               <span class="menu-collapsed">Approve BPB Return</span>
-               '.$notif1.'
-               </a>
-               <a href="AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa-share fa-fw "></span>
-               <span class="menu-collapsed">Verifikasi BPB Return</span>
-               </a>';
-           }elseif($id == '1,2,19,20'){ 
-               echo'<a href="AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa fa-thumbs-up fa-fw "></span>
-               <span class="menu-collapsed">Approve BPB</span>
-               '.$notif.'
-               </a>
-               <a href="AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa-share fa-fw "></span>
-               <span class="menu-collapsed">Verifikasi BPB</span>
-               </a>
-               <a href="AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa fa-thumbs-up fa-fw "></span>
-               <span class="menu-collapsed">Approve BPB Return</span>
-               '.$notif1.'
-               </a>
-               <a href="AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
-               <span  class="fa fa-share fa-fw "></span>
-               <span class="menu-collapsed">Verifikasi BPB Return</span>
-               </a>
-               ';
-           }else{
+             echo'<a href="AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa fa-thumbs-up fa-fw "></span>
+             <span class="menu-collapsed">Approve BPB</span>
+             '.$notif.'
+             </a>';
+         }elseif($id == '2'){ 
+             echo'<a href="AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa-share fa-fw "></span>
+             <span class="menu-collapsed">Verifikasi BPB</span>
+             </a>';
+         }elseif($id == '19'){ 
+             echo'<a href="AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
+             <span class="menu-collapsed">Approve BPB Return</span>
+             '.$notif1.'
+             </a>';
+         }elseif($id == '20'){ 
+             echo'<a href="AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
+             <span class="fa fa-share fa-fw "></span>
+             <span class="menu-collapsed">Verifikasi BPB Return</span>
+             </a>';
+         }elseif($id == '1,2'){ 
+             echo'<a href="AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa fa-thumbs-up fa-fw "></span>
+             <span class="menu-collapsed">Approve BPB</span>
+             '.$notif.'
+             </a>
+             <a href="AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa-share fa-fw "></span>
+             <span class="menu-collapsed">Verifikasi BPB</span>
+             </a>';
+         }elseif($id == '1,19'){ 
+             echo'<a href="AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa fa-thumbs-up fa-fw "></span>
+             <span class="menu-collapsed">Approve BPB</span>
+             '.$notif.'
+             </a>
+             <a href="AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
+             <span class="menu-collapsed">Approve BPB Return</span>
+             '.$notif1.'
+             </a>';
+         }elseif($id == '1,20'){ 
+             echo'<a href="AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa fa-thumbs-up fa-fw "></span>
+             <span class="menu-collapsed">Approve BPB</span>
+             '.$notif.'
+             </a>
+             <a href="AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa-share fa-fw "></span>
+             <span class="menu-collapsed">Verifikasi BPB Return</span>
+             </a>';
+         }elseif($id == '2,19'){ 
+             echo'<a href="AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa-share fa-fw "></span>
+             <span class="menu-collapsed">Verifikasi BPB</span>
+             </a>
+             <a href="AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
+             <span class="menu-collapsed">Approve BPB Return</span>
+             '.$notif1.'
+             </a>';
+         }elseif($id == '2,20'){ 
+             echo'<a href="AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa-share fa-fw "></span>
+             <span class="menu-collapsed">Verifikasi BPB</span>
+             </a>
+             <a href="AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa-share fa-fw "></span>
+             <span class="menu-collapsed">Verifikasi BPB Return</span>
+             </a>';
+         }elseif($id == '19,20'){ 
+             echo'<a href="AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
+             <span class="menu-collapsed">Approve BPB Return</span>
+             '.$notif1.'
+             </a>
+             <a href="AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa-share fa-fw "></span>
+             <span class="menu-collapsed">Verifikasi BPB Return</span>
+             </a>';
+         }elseif($id == '1,2,19'){ 
+             echo'<a href="AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa fa-thumbs-up fa-fw "></span>
+             <span class="menu-collapsed">Approve BPB</span>
+             '.$notif.'
+             </a>
+             <a href="AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa-share fa-fw "></span>
+             <span class="menu-collapsed">Verifikasi BPB</span>
+             </a>
+             <a href="AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
+             <span class="menu-collapsed">Approve BPB Return</span>
+             '.$notif1.'
+             </a>';
+         }elseif($id == '1,2,20'){ 
+             echo'<a href="AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa fa-thumbs-up fa-fw "></span>
+             <span class="menu-collapsed">Approve BPB</span>
+             '.$notif.'
+             </a>
+             <a href="AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa-share fa-fw "></span>
+             <span class="menu-collapsed">Verifikasi BPB</span>
+             </a>
+             <a href="AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa-share fa-fw "></span>
+             <span class="menu-collapsed">Verifikasi BPB Return</span>
+             </a>';
+         }elseif($id == '2,19,20'){ 
+             echo'<a href="AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa-share fa-fw "></span>
+             <span class="menu-collapsed">Verifikasi BPB</span>
+             </a>
+             <a href="AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
+             <span class="menu-collapsed">Approve BPB Return</span>
+             '.$notif1.'
+             </a>
+             <a href="AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa-share fa-fw "></span>
+             <span class="menu-collapsed">Verifikasi BPB Return</span>
+             </a>';
+         }elseif($id == '1,2,19,20'){ 
+             echo'<a href="AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa fa-thumbs-up fa-fw "></span>
+             <span class="menu-collapsed">Approve BPB</span>
+             '.$notif.'
+             </a>
+             <a href="AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa-share fa-fw "></span>
+             <span class="menu-collapsed">Verifikasi BPB</span>
+             </a>
+             <a href="AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa fa-thumbs-up fa-fw "></span>
+             <span class="menu-collapsed">Approve BPB Return</span>
+             '.$notif1.'
+             </a>
+             <a href="AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa-share fa-fw "></span>
+             <span class="menu-collapsed">Verifikasi BPB Return</span>
+             </a>
+             ';
+         }else{
             echo '';
         }
         if($menu2 == 'Y'){
@@ -474,6 +476,71 @@ input::-webkit-inner-spin-button {
         }else{
         }
 
+        echo'</ul>
+        </li>';
+    }
+    ?>
+
+
+    <!-- BPB Knitting -->
+
+    <?php
+    $querys = mysqli_query($conn1,"select Groupp, purchasing, approve_po from userpassword where username = '$user'");
+    $rs = mysqli_fetch_array($querys);
+    $group = $rs['Groupp'];
+    $pur = $rs['purchasing'];
+    $app_po = $rs['approve_po'];
+    $menu_nak = '';
+    $queryss_nak = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%BPB%' and useraccess.menu != 'Transfer BPB' and useraccess.menu != 'Accept BPB Whs-Acc' and useraccess.menu not like '%create%' and profit_center = 'NAK' group by username");
+    while($rss_nak = mysqli_fetch_array($queryss_nak)){
+        $menu_nak = isset($rss_nak['ket']) ? $rss_nak['ket'] :0;
+        $id_nak = isset($rss_nak['id']) ? $rss_nak['id'] :0;
+
+        $sql_nak = mysqli_query($conn2,"select count(distinct(no_bpb)) as no_bpb from bpb_new where status = 'GMF' and profit_center = 'NAK'");
+        $row_nak = mysqli_fetch_array($sql_nak);
+        $count_nak = $row_nak['no_bpb'];
+        if($count_nak != '0'){
+            $notif_nak = '<span class="badge" style="background-color: red;">'.$count_nak.'</span>';
+        }else{
+            $notif_nak = '';
+        } 
+
+
+    } 
+         
+
+    if($menu_nak == 'Y'){  
+        echo '
+        <li class="dropdown-submenu ">
+        <a class="dropdown-item bg-dark text-white" href="#">
+        <span class="fa fa-envelope-o fa-fw "></span>
+        <span class="menu-collapsed">BPB Knitting</span>
+        </a>
+        <ul class="dropdown-menu bg-dark text-white" role="menu">';
+        if($id_nak == '87'){ 
+            echo'<a href="AP/verifikasibpb_knitting.php" class="dropdown-item bg-dark text-white">
+            <span  class="fa fa-share fa-fw "></span>
+            <span class="menu-collapsed">Verifikasi BPB</span>
+            </a>';
+        }elseif($id_nak == '86'){
+            echo'<a href="AP/formapprovebpb_knitting.php" class="dropdown-item bg-dark text-white">
+            <span  class="fa fa fa-thumbs-up fa-fw "></span>
+            <span class="menu-collapsed">Approve BPB</span>
+            '.$notif.'
+            </a>';
+        }elseif($id_nak == '86,87'){ 
+           echo'<a href="AP/verifikasibpb_knitting.php" class="dropdown-item bg-dark text-white">
+           <span  class="fa fa-share fa-fw "></span>
+           <span class="menu-collapsed">Verifikasi BPB</span>
+           </a>';
+           echo'<a href="AP/formapprovebpb_knitting.php" class="dropdown-item bg-dark text-white">
+           <span  class="fa fa fa-thumbs-up fa-fw "></span>
+           <span class="menu-collapsed">Approve BPB</span>
+           '.$notif_nak.'
+           </a>';
+       }else{
+        echo '';
+    }
         echo'</ul>
         </li>';
     }
@@ -1407,29 +1474,29 @@ if($id == '16'){
     if($menu == 'Y'){               
         echo '';
         if(strpos($id, '50') !== false){ 
-           echo'<a href="AP/memorial-journal.php" class="dropdown-item bg-dark text-white">
-           <span class="fa fa-bars fa-fw"></span>
-           <span class="menu-collapsed">Memorial Journal</span>
-           </a>';
-       }if(strpos($id, '51') !== false){ 
-           echo'<a href="AP/list-journal.php" class="dropdown-item bg-dark text-white">
-           <span class="fa fa-list-alt fa-fw"></span>
-           <span class="menu-collapsed">List Journal</span>
-           </a>';
-       }if(strpos($id, '52') !== false){ 
-           echo'<a href="AP/general-ledger.php" class="dropdown-item bg-dark text-white">
-           <span class="fa fa-print fa-list"></span>
-           <span class="menu-collapsed">General Ledger</span>
-           </a>';
-       }
+         echo'<a href="AP/memorial-journal.php" class="dropdown-item bg-dark text-white">
+         <span class="fa fa-bars fa-fw"></span>
+         <span class="menu-collapsed">Memorial Journal</span>
+         </a>';
+     }if(strpos($id, '51') !== false){ 
+         echo'<a href="AP/list-journal.php" class="dropdown-item bg-dark text-white">
+         <span class="fa fa-list-alt fa-fw"></span>
+         <span class="menu-collapsed">List Journal</span>
+         </a>';
+     }if(strpos($id, '52') !== false){ 
+         echo'<a href="AP/general-ledger.php" class="dropdown-item bg-dark text-white">
+         <span class="fa fa-print fa-list"></span>
+         <span class="menu-collapsed">General Ledger</span>
+         </a>';
+     }
 
-       echo '<li class="dropdown-submenu ">
-       <a class="dropdown-item bg-dark text-white" href="#">
-       <span class="fa fa-list-ul fa-fw"></span>
-       <span class="menu-collapsed">Sub Ledger</span>
-       </a>
-       <ul class="dropdown-menu bg-dark text-white" role="menu">';
-       if(strpos($id, '64') !== false){
+     echo '<li class="dropdown-submenu ">
+     <a class="dropdown-item bg-dark text-white" href="#">
+     <span class="fa fa-list-ul fa-fw"></span>
+     <span class="menu-collapsed">Sub Ledger</span>
+     </a>
+     <ul class="dropdown-menu bg-dark text-white" role="menu">';
+     if(strpos($id, '64') !== false){
         echo'<a href="AP/other_receivable_report.php" class="dropdown-item bg-dark text-white">
         <span class="fa fa-fax fa-fw"></span>
         <span class="menu-collapsed">Other Receivable</span>
@@ -1450,23 +1517,23 @@ if($id == '16'){
     echo'</ul>
     </li>';
     if(strpos($id, '53') !== false){ 
-       echo'<li class="dropdown-submenu ">
-       <a class="dropdown-item bg-dark text-white" href="#">
-       <span class="fa fa-balance-scale fa-fw"></span>
-       <span class="menu-collapsed">Financial Statement</span>
-       </a>
-       <ul class="dropdown-menu bg-dark text-white" role="menu">
-       <a href="AP/financial-statement-ytd.php" class="dropdown-item bg-dark text-white">
-       <span class="fa fa-calendar fa-fw mr-3"></span>
-       <span class="menu-collapsed">Year To Date</span>
-       </a>
-       <a href="AP/trial-balance-monthly.php" class="dropdown-item bg-dark text-white">
-       <span class="fa fa-calendar-o fa-fw mr-3"></span>
-       <span class="menu-collapsed">Monthly</span>
-       </a>
-       </ul>
-       </li>';
-   }
+     echo'<li class="dropdown-submenu ">
+     <a class="dropdown-item bg-dark text-white" href="#">
+     <span class="fa fa-balance-scale fa-fw"></span>
+     <span class="menu-collapsed">Financial Statement</span>
+     </a>
+     <ul class="dropdown-menu bg-dark text-white" role="menu">
+     <a href="AP/financial-statement-ytd.php" class="dropdown-item bg-dark text-white">
+     <span class="fa fa-calendar fa-fw mr-3"></span>
+     <span class="menu-collapsed">Year To Date</span>
+     </a>
+     <a href="AP/trial-balance-monthly.php" class="dropdown-item bg-dark text-white">
+     <span class="fa fa-calendar-o fa-fw mr-3"></span>
+     <span class="menu-collapsed">Monthly</span>
+     </a>
+     </ul>
+     </li>';
+ }
 
 }
 
@@ -1547,11 +1614,11 @@ if($id == '16'){
     if($menu == 'Y'){               
         echo '';
         if(strpos($id, '83') !== false){ 
-           echo'<a href="AP/exim-calculatin-cost-report.php" class="dropdown-item bg-dark text-white">
-           <span class="fa fa-bars fa-fw"></span>
-           <span class="menu-collapsed">Calculation Cost Report</span>
-           </a>';
-       }
+         echo'<a href="AP/exim-calculatin-cost-report.php" class="dropdown-item bg-dark text-white">
+         <span class="fa fa-bars fa-fw"></span>
+         <span class="menu-collapsed">Calculation Cost Report</span>
+         </a>';
+     }
      // if(strpos($id, '84') !== false){ 
      //     echo'<a href="#" class="dropdown-item bg-dark text-white">
      //     <span class="fa fa-list-alt fa-fw"></span>
@@ -1560,9 +1627,9 @@ if($id == '16'){
      // }
 
 
-   }
+ }
 
-   ?>
+ ?>
 </ul>
 </li>
 <!-- END Menu Exim -->
@@ -1634,45 +1701,45 @@ if($id == '16'){
     <div class="col p-3">
         <div class="col-md-2 pl-0 ">
           <select style="background-color: gray;" class="form-control selectpicker" name="pilih_dashboard" id="pilih_dashboard" onchange="ubahdashboard(this.value)" required>
-           <option value="-" disabled selected="true">Select Dashboard</option> 
-           <?php
-           $pilih_dashboard ='';
-           if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $pilih_dashboard = isset($_POST['pilih_dashboard']) ? $_POST['pilih_dashboard']: null;
-        }                 
-        $sql = mysql_query("select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and menurole.status = 'DSB'",$conn1);
-        while ($row = mysql_fetch_array($sql)) {
-            $data = isset($row['menu']) ? $row['menu'] : '-';
-            $id = isset($row['id']) ? $row['id'] : '-';
-            if($row['id'] == $_POST['pilih_dashboard']){
-                $isSelected = ' selected="selected"';
-            }else{
-                $isSelected = '';
-            }
-            echo '<option value="'.$id.'"'.$isSelected.'">'. $data .'</option>';    
-        }?>
-    </select>
-</div>
-<div class="box " style="background-color: #F0F8FF;">
-
-    <div id="isi_dashboard">
-        <?php 
-        $id_dsb = '';
-        $querys = mysqli_query($conn1,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id, id_dsb from useraccess inner join menurole on menurole.menu = useraccess.menu left join menurole_dsb dsb on dsb.username = useraccess.username where useraccess.username = '$user' and menurole.status = 'DSB'");
-
-        $rs = mysqli_fetch_array($querys);
-        $id_dsb = isset($rs['id_dsb']) ? $rs['id_dsb'] : '';
-
-        if ($id_dsb == '81') {
-            include '../dashboard/dashboard-bank.php';    
-        }elseif ($id_dsb == '80') {
-            include '../dashboard/dashboard-ap.php';  
-        }else{   
-            include '../dashboard/welcome-page.php';  
-        }
-        ?>
+             <option value="-" disabled selected="true">Select Dashboard</option> 
+             <?php
+             $pilih_dashboard ='';
+             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                $pilih_dashboard = isset($_POST['pilih_dashboard']) ? $_POST['pilih_dashboard']: null;
+            }                 
+            $sql = mysql_query("select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and menurole.status = 'DSB'",$conn1);
+            while ($row = mysql_fetch_array($sql)) {
+                $data = isset($row['menu']) ? $row['menu'] : '-';
+                $id = isset($row['id']) ? $row['id'] : '-';
+                if($row['id'] == $_POST['pilih_dashboard']){
+                    $isSelected = ' selected="selected"';
+                }else{
+                    $isSelected = '';
+                }
+                echo '<option value="'.$id.'"'.$isSelected.'">'. $data .'</option>';    
+            }?>
+        </select>
     </div>
-</div>
+    <div class="box " style="background-color: #F0F8FF;">
+
+        <div id="isi_dashboard">
+            <?php 
+            $id_dsb = '';
+            $querys = mysqli_query($conn1,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id, id_dsb from useraccess inner join menurole on menurole.menu = useraccess.menu left join menurole_dsb dsb on dsb.username = useraccess.username where useraccess.username = '$user' and menurole.status = 'DSB'");
+
+            $rs = mysqli_fetch_array($querys);
+            $id_dsb = isset($rs['id_dsb']) ? $rs['id_dsb'] : '';
+
+            if ($id_dsb == '81') {
+                include '../dashboard/dashboard-bank.php';    
+            }elseif ($id_dsb == '80') {
+                include '../dashboard/dashboard-ap.php';  
+            }else{   
+                include '../dashboard/welcome-page.php';  
+            }
+            ?>
+        </div>
+    </div>
 </div>
 <!-- Main Col END -->
 
@@ -1696,33 +1763,33 @@ if($id == '16'){
     <script type="text/javascript" src="https://cdn.fusioncharts.com/fusioncharts/latest/themes/fusioncharts.theme.fusion.js"></script> -->
     <script>
   // Hide submenus
-      $('#body-row .collapse').collapse('hide'); 
+  $('#body-row .collapse').collapse('hide'); 
 
 // Collapse/Expand icon
-      $('#collapse-icon').addClass('fa-angle-double-left'); 
+$('#collapse-icon').addClass('fa-angle-double-left'); 
 
 // Collapse click
-      $('[data-toggle=sidebar-colapse]').click(function() {
-        SidebarCollapse();
-    });
+$('[data-toggle=sidebar-colapse]').click(function() {
+    SidebarCollapse();
+});
 
-      function SidebarCollapse () {
-        $('.menu-collapsed').toggleClass('d-none');
-        $('.sidebar-submenu').toggleClass('d-none');
-        $('.submenu-icon').toggleClass('d-none');
-        $('#sidebar-container').toggleClass('sidebar-expanded sidebar-collapsed');
+function SidebarCollapse () {
+    $('.menu-collapsed').toggleClass('d-none');
+    $('.sidebar-submenu').toggleClass('d-none');
+    $('.submenu-icon').toggleClass('d-none');
+    $('#sidebar-container').toggleClass('sidebar-expanded sidebar-collapsed');
 
     // Treating d-flex/d-none on separators with title
-        var SeparatorTitle = $('.sidebar-separator-title');
-        if ( SeparatorTitle.hasClass('d-flex') ) {
-            SeparatorTitle.removeClass('d-flex');
-        } else {
-            SeparatorTitle.addClass('d-flex');
-        }
+    var SeparatorTitle = $('.sidebar-separator-title');
+    if ( SeparatorTitle.hasClass('d-flex') ) {
+        SeparatorTitle.removeClass('d-flex');
+    } else {
+        SeparatorTitle.addClass('d-flex');
+    }
 
     // Collapse/Expand icon
-        $('#collapse-icon').toggleClass('fa-angle-double-left fa-angle-double-right');
-    }
+    $('#collapse-icon').toggleClass('fa-angle-double-left fa-angle-double-right');
+}
 </script>
 
 <script>
@@ -1731,12 +1798,12 @@ if($id == '16'){
     });
 
       //Initialize Select2 Elements
-    $('.select2').select2({
+      $('.select2').select2({
         theme: 'bootstrap4',
     });
 
       //Initialize Select2 Elements
-    $('.select2bs4').select2({
+      $('.select2bs4').select2({
         theme: 'bootstrap4',
         width: '100%',
         containerCssClass: 'form-control-sm'
@@ -1762,28 +1829,27 @@ if($id == '16'){
 
 <!--<script src="//netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
     <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>-->
+    <script>
+        var options = {
+          series: [{
+              name: 'Total Cash',
+              data: [<?php 
+                  $bulan = date("M"); 
+                  $tahun = date("Y");
+                  $sql1 = mysqli_query($conn2,"select CONCAT(saldo_jan,',',saldo_feb,',',saldo_mar,',',saldo_apr,',',saldo_may,',',saldo_jun,',',saldo_jul,',',saldo_aug,',',saldo_sep,',',saldo_oct,',',saldo_nov,',',saldo_dec) data from (select no_coa,nama_coa,round(sum(saldo_jan /1000000),2) saldo_jan,round(sum(saldo_feb /1000000),2) saldo_feb,round(sum(saldo_mar /1000000),2) saldo_mar,round(sum(saldo_apr /1000000),2) saldo_apr,round(sum(saldo_may /1000000),2) saldo_may,round(sum(saldo_jun /1000000),2) saldo_jun,round(sum(saldo_jul /1000000),2) saldo_jul,round(sum(saldo_aug /1000000),2) saldo_aug,round(sum(saldo_sep /1000000),2) saldo_sep,round(sum(saldo_oct /1000000),2) saldo_oct,round(sum(saldo_nov /1000000),2) saldo_nov,round(sum(saldo_dec /1000000),2) saldo_dec from (select no_coa,nama_coa,if(saldo_jan > 0,saldo_jan,0) saldo_jan,if(saldo_feb > 0,saldo_feb,0) saldo_feb,if(saldo_mar > 0,saldo_mar,0) saldo_mar,if(saldo_apr > 0,saldo_apr,0) saldo_apr,if(saldo_may > 0,saldo_may,0) saldo_may,if(saldo_jun > 0,saldo_jun,0) saldo_jun,if(saldo_jul > 0,saldo_jul,0) saldo_jul,if(saldo_aug > 0,saldo_aug,0) saldo_aug,if(saldo_sep > 0,saldo_sep,0) saldo_sep,if(saldo_oct > 0,saldo_oct,0) saldo_oct,if(saldo_nov > 0,saldo_nov,0) saldo_nov,if(saldo_dec > 0,saldo_dec,0) saldo_dec from b_trial_balance_$tahun where no_coa IN ('1.10.01','1.10.02','1.10.11','1.10.21','1.10.31','1.10.81','1.10.82','1.10.83','1.10.84')
+                    UNION 
+                    select no_coa,nama_coa,saldo_jan, saldo_feb, saldo_mar, saldo_apr, saldo_may, saldo_jun, saldo_jul, saldo_aug, saldo_sep, saldo_oct, saldo_nov, saldo_dec from b_trial_balance_$tahun where no_coa IN ('1.01.01','1.01.02','1.01.03')) a)a");
+                  $row1 = mysqli_fetch_array($sql1);
+                  $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
+                  echo $data_bar1;
 
-<script>
-    var options = {
-      series: [{
-          name: 'Total Cash',
-          data: [<?php 
-              $bulan = date("M"); 
-
-              $sql1 = mysqli_query($conn2,"select CONCAT(saldo_jan,',',saldo_feb,',',saldo_mar,',',saldo_apr,',',saldo_may,',',saldo_jun,',',saldo_jul,',',saldo_aug,',',saldo_sep,',',saldo_oct,',',saldo_nov,',',saldo_dec) data from (select no_coa,nama_coa,round(sum(saldo_jan /1000000),2) saldo_jan,round(sum(saldo_feb /1000000),2) saldo_feb,round(sum(saldo_mar /1000000),2) saldo_mar,round(sum(saldo_apr /1000000),2) saldo_apr,round(sum(saldo_may /1000000),2) saldo_may,round(sum(saldo_jun /1000000),2) saldo_jun,round(sum(saldo_jul /1000000),2) saldo_jul,round(sum(saldo_aug /1000000),2) saldo_aug,round(sum(saldo_sep /1000000),2) saldo_sep,round(sum(saldo_oct /1000000),2) saldo_oct,round(sum(saldo_nov /1000000),2) saldo_nov,round(sum(saldo_dec /1000000),2) saldo_dec from (select no_coa,nama_coa,if(saldo_jan > 0,saldo_jan,0) saldo_jan,if(saldo_feb > 0,saldo_feb,0) saldo_feb,if(saldo_mar > 0,saldo_mar,0) saldo_mar,if(saldo_apr > 0,saldo_apr,0) saldo_apr,if(saldo_may > 0,saldo_may,0) saldo_may,if(saldo_jun > 0,saldo_jun,0) saldo_jun,if(saldo_jul > 0,saldo_jul,0) saldo_jul,if(saldo_aug > 0,saldo_aug,0) saldo_aug,if(saldo_sep > 0,saldo_sep,0) saldo_sep,if(saldo_oct > 0,saldo_oct,0) saldo_oct,if(saldo_nov > 0,saldo_nov,0) saldo_nov,if(saldo_dec > 0,saldo_dec,0) saldo_dec from b_trial_balance_2025 where no_coa IN ('1.10.01','1.10.02','1.10.11','1.10.21','1.10.31','1.10.81','1.10.82','1.10.83','1.10.84')
-                UNION 
-                select no_coa,nama_coa,saldo_jan, saldo_feb, saldo_mar, saldo_apr, saldo_may, saldo_jun, saldo_jul, saldo_aug, saldo_sep, saldo_oct, saldo_nov, saldo_dec from b_trial_balance_2025 where no_coa IN ('1.01.01','1.01.02','1.01.03')) a)a");
-              $row1 = mysqli_fetch_array($sql1);
-              $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
-              echo $data_bar1;
-
-              ?>]
-          }],
-          chart: {
-              height: 350,
-              type: 'bar',
-              events: {
-                click: function(event, chartContext, config, val) {
+                  ?>]
+              }],
+              chart: {
+                  height: 350,
+                  type: 'bar',
+                  events: {
+                    click: function(event, chartContext, config, val) {
               // The last parameter config contains additional information like `seriesIndex` and `dataPointIndex` for cartesian charts
               // alert(config.dataPointIndex);
               if (config.dataPointIndex >= 0) {
@@ -1834,24 +1900,24 @@ if($id == '16'){
                     url : '../dashboard/detail_cash_and_bank.php',
                     data : {'filter': filter},
                     success : function(data){
-                    $('#detail_cib').html(data);
-                    $('#jdl_cib').html(title);
-                    $('#modaldetcib').modal('show');
-                },
-            error:  function (xhr, ajaxOptions, thrownError) {
-               console.log(xhr);
-            }
-            });         
+                        $('#detail_cib').html(data);
+                        $('#jdl_cib').html(title);
+                        $('#modaldetcib').modal('show');
+                    },
+                    error:  function (xhr, ajaxOptions, thrownError) {
+                       console.log(xhr);
+                   }
+               });         
 
             }
         }
     },
-              colors: ['#008B8B'],
-          },
-          plotOptions: {
-              bar: {
-                borderRadius: 5,
-                dataLabels: {
+    colors: ['#008B8B'],
+},
+plotOptions: {
+  bar: {
+    borderRadius: 5,
+    dataLabels: {
               position: 'top', // top, center, bottom
           },
       }
@@ -1959,8 +2025,8 @@ chart.render();
           name: 'Cash in Banks',
           data: [<?php 
               $bulan = date("M"); 
-
-              $sql1 = mysqli_query($conn2,"select CONCAT(saldo_jan,',',saldo_feb,',',saldo_mar,',',saldo_apr,',',saldo_may,',',saldo_jun,',',saldo_jul,',',saldo_aug,',',saldo_sep,',',saldo_oct,',',saldo_nov,',',saldo_dec) data from (select no_coa,nama_coa,round(sum(saldo_jan /1000000),2) saldo_jan,round(sum(saldo_feb /1000000),2) saldo_feb,round(sum(saldo_mar /1000000),2) saldo_mar,round(sum(saldo_apr /1000000),2) saldo_apr,round(sum(saldo_may /1000000),2) saldo_may,round(sum(saldo_jun /1000000),2) saldo_jun,round(sum(saldo_jul /1000000),2) saldo_jul,round(sum(saldo_aug /1000000),2) saldo_aug,round(sum(saldo_sep /1000000),2) saldo_sep,round(sum(saldo_oct /1000000),2) saldo_oct,round(sum(saldo_nov /1000000),2) saldo_nov,round(sum(saldo_dec /1000000),2) saldo_dec from (select no_coa,nama_coa,if(saldo_jan > 0,saldo_jan,0) saldo_jan,if(saldo_feb > 0,saldo_feb,0) saldo_feb,if(saldo_mar > 0,saldo_mar,0) saldo_mar,if(saldo_apr > 0,saldo_apr,0) saldo_apr,if(saldo_may > 0,saldo_may,0) saldo_may,if(saldo_jun > 0,saldo_jun,0) saldo_jun,if(saldo_jul > 0,saldo_jul,0) saldo_jul,if(saldo_aug > 0,saldo_aug,0) saldo_aug,if(saldo_sep > 0,saldo_sep,0) saldo_sep,if(saldo_oct > 0,saldo_oct,0) saldo_oct,if(saldo_nov > 0,saldo_nov,0) saldo_nov,if(saldo_dec > 0,saldo_dec,0) saldo_dec from b_trial_balance_2025 where no_coa IN ('1.10.01','1.10.02','1.10.11','1.10.21','1.10.31','1.10.81','1.10.82','1.10.83','1.10.84')) a)a");
+              $tahun = date("Y");
+              $sql1 = mysqli_query($conn2,"select CONCAT(saldo_jan,',',saldo_feb,',',saldo_mar,',',saldo_apr,',',saldo_may,',',saldo_jun,',',saldo_jul,',',saldo_aug,',',saldo_sep,',',saldo_oct,',',saldo_nov,',',saldo_dec) data from (select no_coa,nama_coa,round(sum(saldo_jan /1000000),2) saldo_jan,round(sum(saldo_feb /1000000),2) saldo_feb,round(sum(saldo_mar /1000000),2) saldo_mar,round(sum(saldo_apr /1000000),2) saldo_apr,round(sum(saldo_may /1000000),2) saldo_may,round(sum(saldo_jun /1000000),2) saldo_jun,round(sum(saldo_jul /1000000),2) saldo_jul,round(sum(saldo_aug /1000000),2) saldo_aug,round(sum(saldo_sep /1000000),2) saldo_sep,round(sum(saldo_oct /1000000),2) saldo_oct,round(sum(saldo_nov /1000000),2) saldo_nov,round(sum(saldo_dec /1000000),2) saldo_dec from (select no_coa,nama_coa,if(saldo_jan > 0,saldo_jan,0) saldo_jan,if(saldo_feb > 0,saldo_feb,0) saldo_feb,if(saldo_mar > 0,saldo_mar,0) saldo_mar,if(saldo_apr > 0,saldo_apr,0) saldo_apr,if(saldo_may > 0,saldo_may,0) saldo_may,if(saldo_jun > 0,saldo_jun,0) saldo_jun,if(saldo_jul > 0,saldo_jul,0) saldo_jul,if(saldo_aug > 0,saldo_aug,0) saldo_aug,if(saldo_sep > 0,saldo_sep,0) saldo_sep,if(saldo_oct > 0,saldo_oct,0) saldo_oct,if(saldo_nov > 0,saldo_nov,0) saldo_nov,if(saldo_dec > 0,saldo_dec,0) saldo_dec from b_trial_balance_$tahun where no_coa IN ('1.10.01','1.10.02','1.10.11','1.10.21','1.10.31','1.10.81','1.10.82','1.10.83','1.10.84')) a)a");
               $row1 = mysqli_fetch_array($sql1);
               $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
               echo $data_bar1;
@@ -2022,24 +2088,24 @@ chart.render();
                     url : '../dashboard/detail_cash_in_bank.php',
                     data : {'filter': filter},
                     success : function(data){
-                    $('#detail_cib').html(data);
-                    $('#jdl_cib').html(title);
-                    $('#modaldetcib').modal('show');
-                },
-            error:  function (xhr, ajaxOptions, thrownError) {
-               console.log(xhr);
-            }
-            });         
+                        $('#detail_cib').html(data);
+                        $('#jdl_cib').html(title);
+                        $('#modaldetcib').modal('show');
+                    },
+                    error:  function (xhr, ajaxOptions, thrownError) {
+                       console.log(xhr);
+                   }
+               });         
 
             }
         }
     },
-              colors: ['#008B8B'],
-          },
-          plotOptions: {
-              bar: {
-                borderRadius: 5,
-                dataLabels: {
+    colors: ['#008B8B'],
+},
+plotOptions: {
+  bar: {
+    borderRadius: 5,
+    dataLabels: {
               position: 'top', // top, center, bottom
           },
       }
@@ -2147,8 +2213,9 @@ chart.render();
           name: 'Cash On Hand',
           data: [<?php 
               $bulan = date("M"); 
+              $tahun = date("Y");
 
-              $sql1 = mysqli_query($conn2,"select CONCAT(saldo_jan,',',saldo_feb,',',saldo_mar,',',saldo_apr,',',saldo_may,',',saldo_jun,',',saldo_jul,',',saldo_aug,',',saldo_sep,',',saldo_oct,',',saldo_nov,',',saldo_dec) data from (select no_coa,nama_coa,round(sum(saldo_jan /1000000),2) saldo_jan,round(sum(saldo_feb /1000000),2) saldo_feb,round(sum(saldo_mar /1000000),2) saldo_mar,round(sum(saldo_apr /1000000),2) saldo_apr,round(sum(saldo_may /1000000),2) saldo_may,round(sum(saldo_jun /1000000),2) saldo_jun,round(sum(saldo_jul /1000000),2) saldo_jul,round(sum(saldo_aug /1000000),2) saldo_aug,round(sum(saldo_sep /1000000),2) saldo_sep,round(sum(saldo_oct /1000000),2) saldo_oct,round(sum(saldo_nov /1000000),2) saldo_nov,round(sum(saldo_dec /1000000),2) saldo_dec from b_trial_balance_2025 where no_coa IN ('1.01.01','1.01.02','1.01.03')) a");
+              $sql1 = mysqli_query($conn2,"select CONCAT(saldo_jan,',',saldo_feb,',',saldo_mar,',',saldo_apr,',',saldo_may,',',saldo_jun,',',saldo_jul,',',saldo_aug,',',saldo_sep,',',saldo_oct,',',saldo_nov,',',saldo_dec) data from (select no_coa,nama_coa,round(sum(saldo_jan /1000000),2) saldo_jan,round(sum(saldo_feb /1000000),2) saldo_feb,round(sum(saldo_mar /1000000),2) saldo_mar,round(sum(saldo_apr /1000000),2) saldo_apr,round(sum(saldo_may /1000000),2) saldo_may,round(sum(saldo_jun /1000000),2) saldo_jun,round(sum(saldo_jul /1000000),2) saldo_jul,round(sum(saldo_aug /1000000),2) saldo_aug,round(sum(saldo_sep /1000000),2) saldo_sep,round(sum(saldo_oct /1000000),2) saldo_oct,round(sum(saldo_nov /1000000),2) saldo_nov,round(sum(saldo_dec /1000000),2) saldo_dec from b_trial_balance_$tahun where no_coa IN ('1.01.01','1.01.02','1.01.03')) a");
               $row1 = mysqli_fetch_array($sql1);
               $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
               echo $data_bar1;
@@ -2210,14 +2277,14 @@ chart.render();
                     url : '../dashboard/detail_cash_on_hand.php',
                     data : {'filter': filter},
                     success : function(data){
-                    $('#detail_coh').html(data);
-                    $('#jdl_coh').html(title);
-                    $('#modaldetcoh').modal('show');
-                },
-            error:  function (xhr, ajaxOptions, thrownError) {
-               console.log(xhr);
-            }
-            });         
+                        $('#detail_coh').html(data);
+                        $('#jdl_coh').html(title);
+                        $('#modaldetcoh').modal('show');
+                    },
+                    error:  function (xhr, ajaxOptions, thrownError) {
+                       console.log(xhr);
+                   }
+               });         
 
             }
         }
@@ -2334,11 +2401,12 @@ chart.render();
       series: [{
           name: 'Bank Loan',
           data: [<?php 
-              $bulan = date("M"); 
+              $bulan = date("M");
+              $tahun = date("Y"); 
 
-              $sql1 = mysqli_query($conn2,"select CONCAT(saldo_jan,',',saldo_feb,',',saldo_mar,',',saldo_apr,',',saldo_may,',',saldo_jun,',',saldo_jul,',',saldo_aug,',',saldo_sep,',',saldo_oct,',',saldo_nov,',',saldo_dec) data from (select round(abs(sum(saldo_jan /1000000)),2) saldo_jan, round(abs(sum(saldo_feb /1000000)),2) saldo_feb, round(abs(sum(saldo_mar /1000000)),2) saldo_mar, round(abs(sum(saldo_apr /1000000)),2) saldo_apr, round(abs(sum(saldo_may /1000000)),2) saldo_may, round(abs(sum(saldo_jun /1000000)),2) saldo_jun, round(abs(sum(saldo_jul /1000000)),2) saldo_jul, round(abs(sum(saldo_aug /1000000)),2) saldo_aug, round(abs(sum(saldo_sep /1000000)),2) saldo_sep, round(abs(sum(saldo_oct /1000000)),2) saldo_oct, round(abs(sum(saldo_nov /1000000)),2) saldo_nov, round(abs(sum(saldo_dec /1000000)),2) saldo_dec  from (select  saldo_jan, saldo_feb, saldo_mar, saldo_apr, saldo_may, saldo_jun, saldo_jul, saldo_aug, saldo_sep, saldo_oct, saldo_nov, saldo_dec from b_trial_balance_2025 where no_coa IN ('2.20.01','2.20.02')
+              $sql1 = mysqli_query($conn2,"select CONCAT(saldo_jan,',',saldo_feb,',',saldo_mar,',',saldo_apr,',',saldo_may,',',saldo_jun,',',saldo_jul,',',saldo_aug,',',saldo_sep,',',saldo_oct,',',saldo_nov,',',saldo_dec) data from (select round(abs(sum(saldo_jan /1000000)),2) saldo_jan, round(abs(sum(saldo_feb /1000000)),2) saldo_feb, round(abs(sum(saldo_mar /1000000)),2) saldo_mar, round(abs(sum(saldo_apr /1000000)),2) saldo_apr, round(abs(sum(saldo_may /1000000)),2) saldo_may, round(abs(sum(saldo_jun /1000000)),2) saldo_jun, round(abs(sum(saldo_jul /1000000)),2) saldo_jul, round(abs(sum(saldo_aug /1000000)),2) saldo_aug, round(abs(sum(saldo_sep /1000000)),2) saldo_sep, round(abs(sum(saldo_oct /1000000)),2) saldo_oct, round(abs(sum(saldo_nov /1000000)),2) saldo_nov, round(abs(sum(saldo_dec /1000000)),2) saldo_dec  from (select  saldo_jan, saldo_feb, saldo_mar, saldo_apr, saldo_may, saldo_jun, saldo_jul, saldo_aug, saldo_sep, saldo_oct, saldo_nov, saldo_dec from b_trial_balance_$tahun where no_coa IN ('2.20.01','2.20.02')
                 UNION
-                select if (saldo_jan < 0, saldo_jan, 0) saldo_jan, if (saldo_feb < 0, saldo_feb, 0) saldo_feb, if (saldo_mar < 0, saldo_mar, 0) saldo_mar, if (saldo_apr < 0, saldo_apr, 0) saldo_apr, if (saldo_may < 0, saldo_may, 0) saldo_may, if (saldo_jun < 0, saldo_jun, 0) saldo_jun, if (saldo_jul < 0, saldo_jul, 0) saldo_jul, if (saldo_aug < 0, saldo_aug, 0) saldo_aug, if (saldo_sep < 0, saldo_sep, 0) saldo_sep, if (saldo_oct < 0, saldo_oct, 0) saldo_oct, if (saldo_nov < 0, saldo_nov, 0) saldo_nov, if (saldo_dec < 0, saldo_dec, 0) saldo_dec  from b_trial_balance_2025 where no_coa IN ('1.10.01','1.10.02')) a) a");
+                select if (saldo_jan < 0, saldo_jan, 0) saldo_jan, if (saldo_feb < 0, saldo_feb, 0) saldo_feb, if (saldo_mar < 0, saldo_mar, 0) saldo_mar, if (saldo_apr < 0, saldo_apr, 0) saldo_apr, if (saldo_may < 0, saldo_may, 0) saldo_may, if (saldo_jun < 0, saldo_jun, 0) saldo_jun, if (saldo_jul < 0, saldo_jul, 0) saldo_jul, if (saldo_aug < 0, saldo_aug, 0) saldo_aug, if (saldo_sep < 0, saldo_sep, 0) saldo_sep, if (saldo_oct < 0, saldo_oct, 0) saldo_oct, if (saldo_nov < 0, saldo_nov, 0) saldo_nov, if (saldo_dec < 0, saldo_dec, 0) saldo_dec  from b_trial_balance_$tahun where no_coa IN ('1.10.01','1.10.02')) a) a");
               $row1 = mysqli_fetch_array($sql1);
               $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
               echo $data_bar1;
@@ -2461,10 +2529,11 @@ chart.render();
           name: 'Bank Loan',
           data: [<?php 
               $bulan = date("M"); 
+              $tahun = date("Y");
 
-              $sql1 = mysqli_query($conn2,"select CONCAT(saldo_jan,',',saldo_feb,',',saldo_mar,',',saldo_apr,',',saldo_may,',',saldo_jun,',',saldo_jul,',',saldo_aug,',',saldo_sep,',',saldo_oct,',',saldo_nov,',',saldo_dec) data from (select round(abs(sum(saldo_jan /1000000)),2) saldo_jan, round(abs(sum(saldo_feb /1000000)),2) saldo_feb, round(abs(sum(saldo_mar /1000000)),2) saldo_mar, round(abs(sum(saldo_apr /1000000)),2) saldo_apr, round(abs(sum(saldo_may /1000000)),2) saldo_may, round(abs(sum(saldo_jun /1000000)),2) saldo_jun, round(abs(sum(saldo_jul /1000000)),2) saldo_jul, round(abs(sum(saldo_aug /1000000)),2) saldo_aug, round(abs(sum(saldo_sep /1000000)),2) saldo_sep, round(abs(sum(saldo_oct /1000000)),2) saldo_oct, round(abs(sum(saldo_nov /1000000)),2) saldo_nov, round(abs(sum(saldo_dec /1000000)),2) saldo_dec  from (select  saldo_jan, saldo_feb, saldo_mar, saldo_apr, saldo_may, saldo_jun, saldo_jul, saldo_aug, saldo_sep, saldo_oct, saldo_nov, saldo_dec from b_trial_balance_2025 where no_coa IN ('2.20.02')
+              $sql1 = mysqli_query($conn2,"select CONCAT(saldo_jan,',',saldo_feb,',',saldo_mar,',',saldo_apr,',',saldo_may,',',saldo_jun,',',saldo_jul,',',saldo_aug,',',saldo_sep,',',saldo_oct,',',saldo_nov,',',saldo_dec) data from (select round(abs(sum(saldo_jan /1000000)),2) saldo_jan, round(abs(sum(saldo_feb /1000000)),2) saldo_feb, round(abs(sum(saldo_mar /1000000)),2) saldo_mar, round(abs(sum(saldo_apr /1000000)),2) saldo_apr, round(abs(sum(saldo_may /1000000)),2) saldo_may, round(abs(sum(saldo_jun /1000000)),2) saldo_jun, round(abs(sum(saldo_jul /1000000)),2) saldo_jul, round(abs(sum(saldo_aug /1000000)),2) saldo_aug, round(abs(sum(saldo_sep /1000000)),2) saldo_sep, round(abs(sum(saldo_oct /1000000)),2) saldo_oct, round(abs(sum(saldo_nov /1000000)),2) saldo_nov, round(abs(sum(saldo_dec /1000000)),2) saldo_dec  from (select  saldo_jan, saldo_feb, saldo_mar, saldo_apr, saldo_may, saldo_jun, saldo_jul, saldo_aug, saldo_sep, saldo_oct, saldo_nov, saldo_dec from b_trial_balance_$tahun where no_coa IN ('2.20.02')
                 UNION
-                select if (saldo_jan < 0, saldo_jan, 0) saldo_jan, if (saldo_feb < 0, saldo_feb, 0) saldo_feb, if (saldo_mar < 0, saldo_mar, 0) saldo_mar, if (saldo_apr < 0, saldo_apr, 0) saldo_apr, if (saldo_may < 0, saldo_may, 0) saldo_may, if (saldo_jun < 0, saldo_jun, 0) saldo_jun, if (saldo_jul < 0, saldo_jul, 0) saldo_jul, if (saldo_aug < 0, saldo_aug, 0) saldo_aug, if (saldo_sep < 0, saldo_sep, 0) saldo_sep, if (saldo_oct < 0, saldo_oct, 0) saldo_oct, if (saldo_nov < 0, saldo_nov, 0) saldo_nov, if (saldo_dec < 0, saldo_dec, 0) saldo_dec  from b_trial_balance_2025 where no_coa IN ('1.10.02')) a) a");
+                select if (saldo_jan < 0, saldo_jan, 0) saldo_jan, if (saldo_feb < 0, saldo_feb, 0) saldo_feb, if (saldo_mar < 0, saldo_mar, 0) saldo_mar, if (saldo_apr < 0, saldo_apr, 0) saldo_apr, if (saldo_may < 0, saldo_may, 0) saldo_may, if (saldo_jun < 0, saldo_jun, 0) saldo_jun, if (saldo_jul < 0, saldo_jul, 0) saldo_jul, if (saldo_aug < 0, saldo_aug, 0) saldo_aug, if (saldo_sep < 0, saldo_sep, 0) saldo_sep, if (saldo_oct < 0, saldo_oct, 0) saldo_oct, if (saldo_nov < 0, saldo_nov, 0) saldo_nov, if (saldo_dec < 0, saldo_dec, 0) saldo_dec  from b_trial_balance_$tahun where no_coa IN ('1.10.02')) a) a");
               $row1 = mysqli_fetch_array($sql1);
               $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
               echo $data_bar1;
@@ -2587,10 +2656,11 @@ chart.render();
           name: 'Bank Loan',
           data: [<?php 
               $bulan = date("M"); 
+              $tahun = date("Y");
 
-              $sql1 = mysqli_query($conn2,"select CONCAT(saldo_jan,',',saldo_feb,',',saldo_mar,',',saldo_apr,',',saldo_may,',',saldo_jun,',',saldo_jul,',',saldo_aug,',',saldo_sep,',',saldo_oct,',',saldo_nov,',',saldo_dec) data from (select round(abs(sum(saldo_jan /1000000)),2) saldo_jan, round(abs(sum(saldo_feb /1000000)),2) saldo_feb, round(abs(sum(saldo_mar /1000000)),2) saldo_mar, round(abs(sum(saldo_apr /1000000)),2) saldo_apr, round(abs(sum(saldo_may /1000000)),2) saldo_may, round(abs(sum(saldo_jun /1000000)),2) saldo_jun, round(abs(sum(saldo_jul /1000000)),2) saldo_jul, round(abs(sum(saldo_aug /1000000)),2) saldo_aug, round(abs(sum(saldo_sep /1000000)),2) saldo_sep, round(abs(sum(saldo_oct /1000000)),2) saldo_oct, round(abs(sum(saldo_nov /1000000)),2) saldo_nov, round(abs(sum(saldo_dec /1000000)),2) saldo_dec  from (select  saldo_jan, saldo_feb, saldo_mar, saldo_apr, saldo_may, saldo_jun, saldo_jul, saldo_aug, saldo_sep, saldo_oct, saldo_nov, saldo_dec from b_trial_balance_2025 where no_coa IN ('2.20.01')
+              $sql1 = mysqli_query($conn2,"select CONCAT(saldo_jan,',',saldo_feb,',',saldo_mar,',',saldo_apr,',',saldo_may,',',saldo_jun,',',saldo_jul,',',saldo_aug,',',saldo_sep,',',saldo_oct,',',saldo_nov,',',saldo_dec) data from (select round(abs(sum(saldo_jan /1000000)),2) saldo_jan, round(abs(sum(saldo_feb /1000000)),2) saldo_feb, round(abs(sum(saldo_mar /1000000)),2) saldo_mar, round(abs(sum(saldo_apr /1000000)),2) saldo_apr, round(abs(sum(saldo_may /1000000)),2) saldo_may, round(abs(sum(saldo_jun /1000000)),2) saldo_jun, round(abs(sum(saldo_jul /1000000)),2) saldo_jul, round(abs(sum(saldo_aug /1000000)),2) saldo_aug, round(abs(sum(saldo_sep /1000000)),2) saldo_sep, round(abs(sum(saldo_oct /1000000)),2) saldo_oct, round(abs(sum(saldo_nov /1000000)),2) saldo_nov, round(abs(sum(saldo_dec /1000000)),2) saldo_dec  from (select  saldo_jan, saldo_feb, saldo_mar, saldo_apr, saldo_may, saldo_jun, saldo_jul, saldo_aug, saldo_sep, saldo_oct, saldo_nov, saldo_dec from b_trial_balance_$tahun where no_coa IN ('2.20.01')
                 UNION
-                select if (saldo_jan < 0, saldo_jan, 0) saldo_jan, if (saldo_feb < 0, saldo_feb, 0) saldo_feb, if (saldo_mar < 0, saldo_mar, 0) saldo_mar, if (saldo_apr < 0, saldo_apr, 0) saldo_apr, if (saldo_may < 0, saldo_may, 0) saldo_may, if (saldo_jun < 0, saldo_jun, 0) saldo_jun, if (saldo_jul < 0, saldo_jul, 0) saldo_jul, if (saldo_aug < 0, saldo_aug, 0) saldo_aug, if (saldo_sep < 0, saldo_sep, 0) saldo_sep, if (saldo_oct < 0, saldo_oct, 0) saldo_oct, if (saldo_nov < 0, saldo_nov, 0) saldo_nov, if (saldo_dec < 0, saldo_dec, 0) saldo_dec  from b_trial_balance_2025 where no_coa IN ('1.10.01')) a) a");
+                select if (saldo_jan < 0, saldo_jan, 0) saldo_jan, if (saldo_feb < 0, saldo_feb, 0) saldo_feb, if (saldo_mar < 0, saldo_mar, 0) saldo_mar, if (saldo_apr < 0, saldo_apr, 0) saldo_apr, if (saldo_may < 0, saldo_may, 0) saldo_may, if (saldo_jun < 0, saldo_jun, 0) saldo_jun, if (saldo_jul < 0, saldo_jul, 0) saldo_jul, if (saldo_aug < 0, saldo_aug, 0) saldo_aug, if (saldo_sep < 0, saldo_sep, 0) saldo_sep, if (saldo_oct < 0, saldo_oct, 0) saldo_oct, if (saldo_nov < 0, saldo_nov, 0) saldo_nov, if (saldo_dec < 0, saldo_dec, 0) saldo_dec  from b_trial_balance_$tahun where no_coa IN ('1.10.01')) a) a");
               $row1 = mysqli_fetch_array($sql1);
               $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
               echo $data_bar1;
@@ -2796,17 +2866,18 @@ bullet.get("sprite").on("rotation", function () {
 
 <?php 
 $bulan = date("M"); 
-$sql_bli = mysqli_query($conn2,"select no_coa,nama_coa,round(- sum(total),0) total from(select no_coa,nama_coa,saldo_$bulan total from b_trial_balance_2025 where no_coa IN ('2.20.01')
-    UNION
-    select no_coa,nama_coa,if(saldo_$bulan < 0,saldo_$bulan,0) total from b_trial_balance_2025 where no_coa IN ('1.10.01')) a");
-$row_bli = mysqli_fetch_array($sql_bli);
-$total_bli = isset($row_bli['total']) ? $row_bli['total'] :0;
+$tahun = date("Y");
+        // $sql_bli = mysqli_query($conn2,"select no_coa,nama_coa,round(- sum(total),0) total from(select no_coa,nama_coa,saldo_$bulan total from b_trial_balance_2025 where no_coa IN ('2.20.01')
+        //     UNION
+        //     select no_coa,nama_coa,if(saldo_$bulan < 0,saldo_$bulan,0) total from b_trial_balance_2025 where no_coa IN ('1.10.01')) a");
+        // $row_bli = mysqli_fetch_array($sql_bli);
+        // $total_bli = isset($row_bli['total']) ? $row_bli['total'] :0;
 
 $sql1 = mysqli_query($conn2,"select SUM(fac_limit) fac_limit from b_masterbank where curr = 'IDR'");
 $row1 = mysqli_fetch_array($sql1);
 $limit_idr = isset($row1['fac_limit']) ? $row1['fac_limit'] :0;
 
-$chart_bli = ($total_bli / $limit_idr) * 100;
+$chart_bli = (abs($total_bli) / $limit_idr) * 100;
 
 ?>
 
@@ -2876,7 +2947,8 @@ chart.appear(1000, 100);
       series: [{
           name: 'Bank Loan',
           data: [<?php 
-              $bulan = date("M"); 
+              $bulan = date("M");
+              $tahun = date("Y");  
               $sql_fil = mysqli_query($conn2,"select GROUP_CONCAT(filter) filter from (
                 select CONCAT('round(abs(sum(saldo1 /1000000)),2) saldo1') filter
                 UNION
@@ -2904,9 +2976,9 @@ chart.appear(1000, 100);
               $row_filb = mysqli_fetch_array($sql_filb);
               $filterb = isset($row_filb['filter']) ? $row_filb['filter'] :0;
 
-              $sql1 = mysqli_query($conn2,"select CONCAT(saldo1,',',saldo2,',',saldo3) data from (select $filter from (select $filtera from b_trial_balance_2024 where no_coa IN ('2.20.01')
+              $sql1 = mysqli_query($conn2,"select CONCAT(saldo1,',',saldo2,',',saldo3) data from (select $filter from (select $filtera from b_trial_balance_$tahun where no_coa IN ('2.20.01')
                 UNION
-                select $filterb from b_trial_balance_2024 where no_coa IN ('1.10.01')) a) a");
+                select $filterb from b_trial_balance_$tahun where no_coa IN ('1.10.01')) a) a");
               $row1 = mysqli_fetch_array($sql1);
               $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
               echo $data_bar1;
@@ -3095,26 +3167,32 @@ bullet.get("sprite").on("rotation", function () {
 
 <?php 
 $bulan = date("M"); 
-$sql_blu = mysqli_query($conn2,"select total,(total * rate) total_convert from (select no_coa,nama_coa,round(sum(total),0) total from (select no_coa,nama_coa,saldo_$bulan total from b_trial_balance_2025 where no_coa IN ('2.20.02')
-    UNION
-    select no_coa,nama_coa,if(saldo_$bulan < 0,saldo_$bulan,0) total from b_trial_balance_2025 where no_coa IN ('1.10.02')) a) a join (select COALESCE(rate,1) rate from masterrate where tanggal = CURRENT_DATE() and v_codecurr = 'PAJAK') b");
-$row_blu = mysqli_fetch_array($sql_blu);
-$total_blu = isset($row_blu['total']) ? $row_blu['total'] :0;
-$total_convert_blu = isset($row_blu['total_convert']) ? $row_blu['total_convert'] :0;
+        // $sql_blu = mysqli_query($conn2,"select total,(total * rate) total_convert from (select no_coa,nama_coa,round(sum(total),0) total from (select no_coa,nama_coa,saldo_$bulan total from b_trial_balance_2025 where no_coa IN ('2.20.02')
+        //     UNION
+        //     select no_coa,nama_coa,if(saldo_$bulan < 0,saldo_$bulan,0) total from b_trial_balance_2025 where no_coa IN ('1.10.02')) a) a join (select COALESCE(rate,1) rate from masterrate where tanggal = CURRENT_DATE() and v_codecurr = 'PAJAK') b");
+        // $row_blu = mysqli_fetch_array($sql_blu);
+        // $total_blu = isset($row_blu['total']) ? $row_blu['total'] :0;
+        // $total_convert_blu = isset($row_blu['total_convert']) ? $row_blu['total_convert'] :0;
 
 $sql1 = mysqli_query($conn2,"select fac_limit,(fac_limit * rate) limit_convert from (select SUM(fac_limit) fac_limit from b_masterbank where curr = 'usd') a join (select COALESCE(rate,1) rate from masterrate where tanggal = CURRENT_DATE() and v_codecurr = 'PAJAK') b ");
 $row1 = mysqli_fetch_array($sql1);
 $fac_limit = isset($row1['fac_limit']) ? $row1['fac_limit'] :0;
 $limit_convert = isset($row1['limit_convert']) ? $row1['limit_convert'] :0;
 
-$chart_blu = ($total_blu / $limit_convert) * 100;
+if ($saldoakhir > 0) {
+    $saldoakhirnya = 0;
+}else{
+    $saldoakhirnya = $saldoakhir;
+}
+
+$chart_blu = (abs($saldoakhirnya * $rates3) / $limit_convert) * 100;
 
 ?>
 
 setInterval(function () {
   axisDataItem.animate({
     key: "value",
-    to: <?= $chart_blu ?>,
+    to: '<?= $chart_blu ?>',
     duration: 500,
     easing: am5.ease.out(am5.ease.cubic)
 });
@@ -3171,13 +3249,14 @@ chart.appear(1000, 100);
 
 }); // end am5.ready()
 </script>
-
+<!-- select CONCAT('round(abs(sum(saldo2 /1000000)),2) saldo2') -->
 <script>
     var options = {
       series: [{
           name: 'Bank Loan',
           data: [<?php 
-              $bulan = date("M"); 
+              $bulan = date("M");
+              $tahun = date("Y");  
               $sql_fil = mysqli_query($conn2,"select GROUP_CONCAT(filter) filter from (
                 select CONCAT('round(abs(sum(saldo1 /1000000)),2) saldo1') filter
                 UNION
@@ -3205,9 +3284,9 @@ chart.appear(1000, 100);
               $row_filb = mysqli_fetch_array($sql_filb);
               $filterb = isset($row_filb['filter']) ? $row_filb['filter'] :0;
 
-              $sql1 = mysqli_query($conn2,"select CONCAT(saldo1,',',saldo2,',',saldo3) data from (select $filter from (select $filtera from b_trial_balance_2024 where no_coa IN ('2.20.02')
+              $sql1 = mysqli_query($conn2,"select CONCAT(saldo1,',',saldo2,',',saldo3) data from (select $filter from (select $filtera from b_trial_balance_$tahun where no_coa IN ('2.20.02')
                 UNION
-                select $filterb from b_trial_balance_2024 where no_coa IN ('1.10.02')) a) a");
+                select $filterb from b_trial_balance_$tahun where no_coa IN ('1.10.02')) a) a");
               $row1 = mysqli_fetch_array($sql1);
               $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
               echo $data_bar1;
@@ -3408,17 +3487,17 @@ $row1 = mysqli_fetch_array($sql1);
 $fac_limit = isset($row1['fac_limit']) ? $row1['fac_limit'] :0;
 $limit_convert = isset($row1['limit_convert']) ? $row1['limit_convert'] :0;
 
-$sql_bli = mysqli_query($conn2,"select no_coa,nama_coa,round(- sum(total),0) total from(select no_coa,nama_coa,saldo_$bulan total from b_trial_balance_2025 where no_coa IN ('2.20.01')
-    UNION
-    select no_coa,nama_coa,if(saldo_$bulan < 0,saldo_$bulan,0) total from b_trial_balance_2025 where no_coa IN ('1.10.01')) a");
-$row_bli = mysqli_fetch_array($sql_bli);
-$total_bli = isset($row_bli['total']) ? $row_bli['total'] :0;
+        // $sql_bli = mysqli_query($conn2,"select no_coa,nama_coa,round(- sum(total),0) total from(select no_coa,nama_coa,saldo_$bulan total from b_trial_balance_2025 where no_coa IN ('2.20.01')
+        //     UNION
+        //     select no_coa,nama_coa,if(saldo_$bulan < 0,saldo_$bulan,0) total from b_trial_balance_2025 where no_coa IN ('1.10.01')) a");
+        // $row_bli = mysqli_fetch_array($sql_bli);
+        // $total_bli = isset($row_bli['total']) ? $row_bli['total'] :0;
 
 $sql1 = mysqli_query($conn2,"select SUM(fac_limit) fac_limit from b_masterbank where curr = 'IDR'");
 $row1 = mysqli_fetch_array($sql1);
 $limit_idr = isset($row1['fac_limit']) ? $row1['fac_limit'] :0;
 
-$chart_bl = ($total_bli + $total_blu) / ($limit_idr + $limit_convert) * 100;
+$chart_bl = (abs($total_bli) + abs($saldoakhir * $rates3)) / ($limit_idr + $limit_convert) * 100;
 
 ?>
 
@@ -3490,6 +3569,7 @@ chart.appear(1000, 100);
           name: 'Bank Loan',
           data: [<?php 
               $bulan = date("M"); 
+              $tahun = date("Y"); 
               $sql_fil = mysqli_query($conn2,"select GROUP_CONCAT(filter) filter from (
                 select CONCAT('round(abs(sum(saldo1 /1000000)),2) saldo1') filter
                 UNION
@@ -3517,9 +3597,9 @@ chart.appear(1000, 100);
               $row_filb = mysqli_fetch_array($sql_filb);
               $filterb = isset($row_filb['filter']) ? $row_filb['filter'] :0;
 
-              $sql1 = mysqli_query($conn2,"select CONCAT(saldo1,',',saldo2,',',saldo3) data from (select $filter from (select $filtera from b_trial_balance_2024 where no_coa IN ('2.20.01','2.20.02')
+              $sql1 = mysqli_query($conn2,"select CONCAT(saldo1,',',saldo2,',',saldo3) data from (select $filter from (select $filtera from b_trial_balance_$tahun where no_coa IN ('2.20.01','2.20.02')
                 UNION
-                select $filterb from b_trial_balance_2024 where no_coa IN ('1.10.01','1.10.02')) a) a");
+                select $filterb from b_trial_balance_$tahun where no_coa IN ('1.10.01','1.10.02')) a) a");
               $row1 = mysqli_fetch_array($sql1);
               $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
               echo $data_bar1;
@@ -3618,8 +3698,7 @@ var chart = new ApexCharts(document.querySelector("#chartdiv6"), options);
 chart.render();
 </script>
 
-
-<!-- SCRIPT JS DSB AP -->
+<!-- AP -->
 
 
 <script type="text/javascript">
@@ -3628,17 +3707,17 @@ chart.render();
             name: 'Value',
             data: [<?php 
                 $sql = mysqli_query($conn2,"select GROUP_CONCAT(total) total from (select nama_supp,round(sum(total),2) total from (select nama_supp,sum(dpp) total from dsb_ap_purchase GROUP BY nama_supp 
-                UNION 
-                select nama_supp,-sum(dpp) total from dsb_ap_retur GROUP BY nama_supp) a GROUP BY nama_supp order by total desc limit 10) a");
+                    UNION 
+                    select nama_supp,-sum(dpp) total from dsb_ap_retur GROUP BY nama_supp) a GROUP BY nama_supp order by total desc limit 10) a");
                 $row = mysqli_fetch_array($sql);
                 $total = $row['total'];
                 echo $total;
-            ?>]
-        }],
-        chart: {
-            height: 330,
-            type: 'bar',
-            toolbar: {
+                ?>]
+            }],
+            chart: {
+                height: 330,
+                type: 'bar',
+                toolbar: {
                 show: false // Menyembunyikan toolbar default
             },
             animations: {
@@ -3686,7 +3765,7 @@ chart.render();
                 }
             }
         },
-         dataLabels: {
+        dataLabels: {
             enabled: true,
             formatter: function (val) {
                 return "IDR " + val.toLocaleString('en-US');
@@ -3702,127 +3781,127 @@ chart.render();
         xaxis: {
             categories: [<?php 
                 $sql = mysqli_query($conn2,'select GROUP_CONCAT(concat("""",nama_supp,"""")) nama_supp from (select nama_supp,round(sum(total),2) total from (select nama_supp,sum(dpp) total from dsb_ap_purchase GROUP BY nama_supp 
-                UNION 
-                select nama_supp,-sum(dpp) total from dsb_ap_retur GROUP BY nama_supp) a GROUP BY nama_supp order by total desc limit 10) a');
+                    UNION 
+                    select nama_supp,-sum(dpp) total from dsb_ap_retur GROUP BY nama_supp) a GROUP BY nama_supp order by total desc limit 10) a');
                 $row = mysqli_fetch_array($sql);
                 $nama_supp = $row['nama_supp'];
                 echo $nama_supp;
-            ?>],
-            position: 'bottom',
-            axisBorder: {
-                show: false
+                ?>],
+                position: 'bottom',
+                axisBorder: {
+                    show: false
+                },
+                axisTicks: {
+                    show: false
+                },
+                crosshairs: {
+                    fill: {
+                        type: 'gradient',
+                        gradient: {
+                            colorFrom: '#D8E3F0',
+                            colorTo: '#BED1E6',
+                            stops: [0, 100],
+                            opacityFrom: 0.4,
+                            opacityTo: 0.5,
+                        }
+                    }
+                },
+                tooltip: {
+                    enabled: true,
+                    style: {
+                        fontSize: '10px',
+                        fontWeight: 'bold'
+                    },
+                },
+                labels: {
+                    style: {
+                        fontSize: '10px',
+                        colors: ['#9e9e9e']
+                    },
+                },
             },
-            axisTicks: {
-                show: false
-            },
-            crosshairs: {
-                fill: {
-                    type: 'gradient',
-                    gradient: {
-                        colorFrom: '#D8E3F0',
-                        colorTo: '#BED1E6',
-                        stops: [0, 100],
-                        opacityFrom: 0.4,
-                        opacityTo: 0.5,
+            yaxis: {
+                axisBorder: {
+                    show: false
+                },
+                axisTicks: {
+                    show: false,
+                },
+                labels: {
+                    show: false,
+                    formatter: function (val) {
+                        return "IDR " + val.toLocaleString('en-US');
                     }
                 }
             },
-            tooltip: {
-                enabled: true,
+            title: {
+                text: '',
+                floating: true,
+                offsetY: 320,
+                align: 'center',
+                position: 'top',
                 style: {
-                    fontSize: '10px',
-                    fontWeight: 'bold'
-                },
-            },
-            labels: {
-                style: {
-                    fontSize: '10px',
-                    colors: ['#9e9e9e']
-                },
-            },
-        },
-        yaxis: {
-            axisBorder: {
-                show: false
-            },
-            axisTicks: {
-                show: false,
-            },
-            labels: {
-                show: false,
-                formatter: function (val) {
-                    return "IDR " + val.toLocaleString('en-US');
+                    color: '#444',
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Arial, sans-serif'
                 }
             }
-        },
-        title: {
-            text: '',
-            floating: true,
-            offsetY: 320,
-            align: 'center',
-            position: 'top',
-            style: {
-                color: '#444',
-                fontSize: '18px',
-                fontWeight: 'bold',
-                fontFamily: 'Arial, sans-serif'
-            }
-        }
-    };
+        };
 
-    var chart = new ApexCharts(document.querySelector("#chart_supptop10"), options);
-    chart.render();
-</script>
+        var chart = new ApexCharts(document.querySelector("#chart_supptop10"), options);
+        chart.render();
+    </script>
 
 
-<script type="text/javascript">
-    var options = {
+    <script type="text/javascript">
+        var options = {
           series: [{
-          name: 'NET PURCHASE',
-          data: [<?php 
+              name: 'NET PURCHASE',
+              data: [<?php 
                 $sql = mysqli_query($conn2,"select GROUP_CONCAT(round((COALESCE(ttl_purchase,0) - COALESCE(ttl_retur,0))/1000000,2)) net_purchase from (select bulan,bulan_text,nama_bulan,nama_bulan_singkat,tahun from dim_date where tahun = YEAR(CURRENT_DATE) GROUP BY bulan ORDER BY bulan_text) a LEFT JOIN
-(select sum(dpp)ttl_purchase,bln1 from (select dpp,MONTH(tgl_bpb) bln1 from dsb_ap_purchase ) a GROUP BY bln1) b on b.bln1 = a.bulan LEFT JOIN
-(select sum(dpp)ttl_retur,bln2 from (select dpp,MONTH(tgl_bpb) bln2 from dsb_ap_retur ) a GROUP BY bln2) c on c.bln2 = a.bulan");
-            $row = mysqli_fetch_array($sql);
-            $total = $row['net_purchase'];
-            echo $total;
-            
-            ?>]
-        }, {
-          name: 'PAYMENT',
-          data: [<?php 
+                    (select sum(dpp)ttl_purchase,bln1 from (select dpp,MONTH(tgl_bpb) bln1 from dsb_ap_purchase ) a GROUP BY bln1) b on b.bln1 = a.bulan LEFT JOIN
+                    (select sum(dpp)ttl_retur,bln2 from (select dpp,MONTH(tgl_bpb) bln2 from dsb_ap_retur ) a GROUP BY bln2) c on c.bln2 = a.bulan");
+                $row = mysqli_fetch_array($sql);
+                $total = $row['net_purchase'];
+                echo $total;
+
+                ?>]
+            }, {
+              name: 'PAYMENT',
+              data: [<?php 
                 $sql = mysqli_query($conn2,"select GROUP_CONCAT(round((COALESCE(ttl_bpb,0) + COALESCE(ttl_kbon,0) + COALESCE(ttl_lp,0))/1000000,2)) payment from (select bulan,bulan_text,nama_bulan,nama_bulan_singkat,tahun from dim_date where tahun = YEAR(CURRENT_DATE) GROUP BY bulan ORDER BY bulan_text) a LEFT JOIN
-(select bln1,sum(end_balance_idr) ttl_bpb from (select MONTH(tgl_bpb) bln1,end_balance_idr from dsb_ap_bpb where end_balance_idr != 0 and tgl_bpb >= '2024-01-01') a GROUP BY bln1) b on b.bln1 = a.bulan LEFT JOIN
-(select bln2,sum(end_balance_idr) ttl_kbon from (select MONTH(tgl_kbon) bln2,end_balance_idr from dsb_ap_kbon where end_balance_idr != 0 and tgl_kbon >= '2024-01-01') a GROUP BY bln2) c on c.bln2 = a.bulan LEFT JOIN
-(select bln3,sum(end_balance_idr) ttl_lp from (select MONTH(tgl_payment) bln3,end_balance_idr from dsb_ap_lp where end_balance_idr != 0 and tgl_payment >= '2024-01-01') a GROUP BY bln3) d on d.bln3 = a.bulan");
-            $row = mysqli_fetch_array($sql);
-            $total = $row['payment'];
-            echo $total;
-            
-            ?>]
-        }],
-          chart: {
-          type: 'bar',
-          height: 350
-        },
-        plotOptions: {
-          bar: {
-            horizontal: false,
-            columnWidth: '55%',
-            endingShape: 'rounded'
+                    (select bln1,sum(end_balance_idr) ttl_bpb from (select MONTH(tgl_bpb) bln1,end_balance_idr from dsb_ap_bpb where end_balance_idr != 0 and tgl_bpb >= '2024-01-01') a GROUP BY bln1) b on b.bln1 = a.bulan LEFT JOIN
+                    (select bln2,sum(end_balance_idr) ttl_kbon from (select MONTH(tgl_kbon) bln2,end_balance_idr from dsb_ap_kbon where end_balance_idr != 0 and tgl_kbon >= '2024-01-01') a GROUP BY bln2) c on c.bln2 = a.bulan LEFT JOIN
+                    (select bln3,sum(end_balance_idr) ttl_lp from (select MONTH(tgl_payment) bln3,end_balance_idr from dsb_ap_lp where end_balance_idr != 0 and tgl_payment >= '2024-01-01') a GROUP BY bln3) d on d.bln3 = a.bulan");
+                $row = mysqli_fetch_array($sql);
+                $total = $row['payment'];
+                echo $total;
+
+                ?>]
+            }],
+            chart: {
+              type: 'bar',
+              height: 350
           },
+          plotOptions: {
+              bar: {
+                horizontal: false,
+                columnWidth: '55%',
+                endingShape: 'rounded'
+            },
         },
         dataLabels: {
           enabled: false
-        },
-        stroke: {
+      },
+      stroke: {
           show: true,
           width: 2,
           colors: ['transparent']
-        },
-        xaxis: {
+      },
+      xaxis: {
           categories: [<?php 
-                $sql = mysqli_query($conn2,'select GROUP_CONCAT(concat("""",label,"""")) label from (select concat(nama_bulan_singkat," ",tahun) label from dim_date where tahun = YEAR(CURRENT_DATE) GROUP BY bulan ORDER BY bulan_text) a');
+            $sql = mysqli_query($conn2,'select GROUP_CONCAT(concat("""",label,"""")) label from (select concat(nama_bulan_singkat," ",tahun) label from dim_date where tahun = YEAR(CURRENT_DATE) GROUP BY bulan ORDER BY bulan_text) a');
             $row = mysqli_fetch_array($sql);
             $label = $row['label'];
             echo $label;
@@ -3832,22 +3911,22 @@ chart.render();
         yaxis: {
           title: {
             text: 'MIO'
-          }
-        },
-        fill: {
-          opacity: 1
-        },
-        tooltip: {
-          y: {
-            formatter: function (val) {
-              return "IDR " + val + " MIO"
-            }
-          }
         }
-        };
+    },
+    fill: {
+      opacity: 1
+  },
+  tooltip: {
+      y: {
+        formatter: function (val) {
+          return "IDR " + val + " MIO"
+      }
+  }
+}
+};
 
-        var chart = new ApexCharts(document.querySelector("#chart"), options);
-        chart.render();
+var chart = new ApexCharts(document.querySelector("#chart"), options);
+chart.render();
 </script>
 
 </body>

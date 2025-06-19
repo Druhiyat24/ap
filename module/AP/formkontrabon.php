@@ -567,7 +567,7 @@
 
             // $querys = mysqli_query($conn2,"select curr,no_bppb, tgl_bppb, no_ro, no_bpb, sum((qty * price) + ((qty * price) * (tax /100))) as total,round(sum((qty * price) + ((qty * price) * (tax /100))),2) as total2 from bppb_new where supplier = '$nama_supp' and status != 'Cancel' GROUP BY no_bppb");
 
-                    $querys = mysqli_query($conn2,"select * from (select curr,no_bppb, tgl_bppb, no_ro, no_bpb, sum((qty * price) + ((qty * price) * (tax /100))) as total,round(sum((qty * price) + ((qty * price) * (tax /100))),2) as total2 from bppb_new where supplier = '$nama_supp' and status != 'Cancel' and no_kbon is null GROUP BY no_bppb) a where total2 > 0 order by no_bppb asc");
+                    $querys = mysqli_query($conn2,"select * from (select curr,no_bppb, tgl_bppb, no_ro, no_bpb, sum((qty * price) + ((qty * price) * (tax /100))) as total,round(sum((qty * price) + ((qty * price) * (tax /100))),2) as total2 from bppb_new where supplier = '$nama_supp' and status != 'Cancel' and no_kbon is null and status = 'GMF-PCH' GROUP BY no_bppb) a where total2 > 0 order by no_bppb asc");
 
 
                     while($row1 = mysqli_fetch_array($querys)){
@@ -1215,7 +1215,7 @@ $("input[id=select]").change(function(){
     //     cbddp1= cbd1;
     // }
 
-    cbddp1 += cbd;  
+    cbddp1 = cbd;  
 
     if(tax1 == ''){
       ppn1= tax;  
@@ -1732,11 +1732,13 @@ error: function (xhr, ajaxOptions, thrownError) {
         var curr = document.getElementById('matauang').value;
         var confirm = $(this).closest('tr').find('td:eq(9)').attr('value');
         var confirm2 = $(this).closest('tr').find('td:eq(10)').attr('value');
-        var tgl_po = $(this).closest('tr').find('td:eq(12)').text();    
+        var tgl_po = $(this).closest('tr').find('td:eq(12)').text();  
+
+        var targetUrl = no_po.includes("NAK") ? 'ajaxbpb_knitting.php' : 'ajaxbpb.php';  
 
         $.ajax({
             type : 'post',
-            url : 'ajaxbpb.php',
+            url : targetUrl,
             data : {'no_bpb': no_bpb},
             success : function(data){
     $('#details').html(data); //menampilkan data ke dalam modal

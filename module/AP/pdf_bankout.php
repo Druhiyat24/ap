@@ -9,8 +9,14 @@ $no_bankout=$_GET['no_bankout'];
 $sql= "select no_bankout,bankout_date,nama_supp,akun,reff_doc,bank,deskripsi,curr,create_by,approve_by FROM b_bankout_h where no_bankout = '$no_bankout'";
 $rs=mysqli_fetch_array(mysqli_query($conn2,$sql));
 
-$sqlys = "select no_coa,nama_coa,nama_costcenter,b.profit_center,reff_doc,reff_date,curr,debit,credit, keterangan from tbl_list_journal a left join b_master_cc b on b.no_cc = a.no_costcenter where debit > 0 and no_journal = '$no_bankout' || credit > 0 and no_journal = '$no_bankout'";
+if ($no_bankout == 'BK/BCA1979/NAG/0525/00339') {
+    $sqlys = "select no_coa,nama_coa,nama_costcenter,b.profit_center,reff_doc,reff_date, 'IDR' curr,debit_idr debit,credit_idr credit, keterangan from tbl_list_journal a left join b_master_cc b on b.no_cc = a.no_costcenter where no_journal = '$no_bankout' AND ( debit > 0 OR credit > 0) and no_coa = '1.10.01'
+    UNION
+    select no_coa,nama_coa,nama_costcenter,b.profit_center,reff_doc,reff_date,curr, debit, credit, keterangan from tbl_list_journal a left join b_master_cc b on b.no_cc = a.no_costcenter where no_journal = '$no_bankout' AND ( debit > 0 OR credit > 0) and no_coa != '1.10.01'";
+}else{
 
+    $sqlys = "select no_coa,nama_coa,nama_costcenter,b.profit_center,reff_doc,reff_date,curr,debit,credit, keterangan from tbl_list_journal a left join b_master_cc b on b.no_cc = a.no_costcenter where debit > 0 and no_journal = '$no_bankout' || credit > 0 and no_journal = '$no_bankout'";
+}
 
 ob_start();
 ?>
@@ -26,47 +32,47 @@ ob_start();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-<style>
+  <style>
 
 
 
-@page *{
+    @page *{
 
-    margin-top: 1.54cm;
+        margin-top: 1.54cm;
 
-    margin-bottom: 1.54cm;
+        margin-bottom: 1.54cm;
 
-    margin-left: 1.54cm;
+        margin-left: 1.54cm;
 
-    margin-right: 1.54cm;
+        margin-right: 1.54cm;
 
-}
+    }
 
 
 
- 	table{margin: auto;}
+    table{margin: auto;}
 
- 	td,th{text-align: left}
+    td,th{text-align: left}
 
- 	h1{text-align: center}
+    h1{text-align: center}
 
- 	th{text-align:center;}
+    th{text-align:center;}
 
-	
 
-.footer{
 
-	width:100%;
+    .footer{
 
-	height:30px;
+       width:100%;
 
-	margin-top:50px;
+       height:30px;
 
-	text-align:right;
+       margin-top:50px;
 
-	
+       text-align:right;
 
-}
+
+
+   }
 
 /*
 
@@ -76,61 +82,61 @@ CSS HEADER
 
 
 
-.header{
+   .header{
 
-	width:100%;
+       width:100%;
 
-	height:20px;
+       height:20px;
 
-	padding-top:0;
+       padding-top:0;
 
-	margin-bottom:10px;
+       margin-bottom:10px;
 
-}
+   }
 
-.title{
+   .title{
 
-	font-size:30px;
+       font-size:30px;
 
-	font-weight:bold;
+       font-weight:bold;
 
-	text-align:center;
+       text-align:center;
 
-	margin-top:-90px;
+       margin-top:-90px;
 
-}
-
-
-
-.horizontal{
-
-	height:0;
-
-	width:100%;
-
-	border:1px solid #000000;
-
-}
-
-.position_top {
-
-	vertical-align: top;
-
-	
-
-}
+   }
 
 
 
-table {
+   .horizontal{
 
-  border-collapse: collapse;
+       height:0;
 
-  width: 100%;
+       width:100%;
 
-}
+       border:1px solid #000000;
 
-.td1{
+   }
+
+   .position_top {
+
+       vertical-align: top;
+
+
+
+   }
+
+
+
+   table {
+
+      border-collapse: collapse;
+
+      width: 100%;
+
+  }
+
+  .td1{
     border:1px solid black;
     border-top: none;
     border-bottom: none;
@@ -156,57 +162,57 @@ table {
 
 </style>
 
-	
-  <title>Bank Out</title>
+
+<title>Bank Out</title>
 </head>
 <body style=" padding-left:-5%; padding-right:-5%;">
-        <table width="100%" border="1">
-            <tr>
-                <td rowspan ="3" style="border-right: none;">
-                    <img src="../../images/img-01.png" style="heigh:65px; width:75px;">
-                </td>
-                <td rowspan ="3" style="text-align: center;border-left: none; width: 51%;font-weight: bold;">
-                    BANK OUT
-                </td>
-                <td style="border-right: none;font-size: 12px;width: 12%;border-bottom: none;">
-                    Document No
-                </td>
-                <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-bottom: none;">
-                    :
-                </td>
-                <td style="border-left: none;font-size: 12px;border-bottom: none;">
-                    <?php echo $no_bankout?>
-                </td>
-            </tr>
-            <tr>
-                <td style="border-right: none;font-size: 12px;width: 12%;border-bottom: none;border-top: none;">
-                    Date
-                </td>
-                <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-bottom: none;border-top: none;">
-                    :
-                </td>
-                <td style="border-left: none;font-size: 12px;border-bottom: none;border-top: none;">
-                    <?php 
-                    echo date("d F Y",strtotime($rs['bankout_date']));
-                    ?>
-                </td>
-            </tr>
-            <tr>
-                <td style="border-right: none;font-size: 12px;width: 12%;border-top: none;">
-                    Division
-                </td>
-                <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;">
-                    :
-                </td>
-                <td style="border-left: none;font-size: 12px;border-top: none;">
-                    PT Nirwana Alabare Garment
-                </td>
-            </tr>
-        </table>
-        <table width="100%" border="1">
+    <table width="100%" border="1">
+        <tr>
+            <td rowspan ="3" style="border-right: none;">
+                <img src="../../images/img-01.png" style="heigh:65px; width:75px;">
+            </td>
+            <td rowspan ="3" style="text-align: center;border-left: none; width: 51%;font-weight: bold;">
+                BANK OUT
+            </td>
+            <td style="border-right: none;font-size: 12px;width: 12%;border-bottom: none;">
+                Document No
+            </td>
+            <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-bottom: none;">
+                :
+            </td>
+            <td style="border-left: none;font-size: 12px;border-bottom: none;">
+                <?php echo $no_bankout?>
+            </td>
+        </tr>
+        <tr>
+            <td style="border-right: none;font-size: 12px;width: 12%;border-bottom: none;border-top: none;">
+                Date
+            </td>
+            <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-bottom: none;border-top: none;">
+                :
+            </td>
+            <td style="border-left: none;font-size: 12px;border-bottom: none;border-top: none;">
+                <?php 
+                echo date("d F Y",strtotime($rs['bankout_date']));
+                ?>
+            </td>
+        </tr>
+        <tr>
+            <td style="border-right: none;font-size: 12px;width: 12%;border-top: none;">
+                Division
+            </td>
+            <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;">
+                :
+            </td>
+            <td style="border-left: none;font-size: 12px;border-top: none;">
+                PT Nirwana Alabare Garment
+            </td>
+        </tr>
+    </table>
+    <table width="100%" border="1">
         <?php
-            for ($x = 0; $x <= 5; $x++) {
-        ?>
+        for ($x = 0; $x <= 5; $x++) {
+            ?>
             <tr>
                 <td style="border-right: none;font-size: 12px;width: 10%;border-top: none;border-bottom: none;"></td>
                 <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;"></td>
@@ -217,70 +223,70 @@ table {
                 <td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;"></td>
                 <td style="width: 2%;border-left: none; border-top: none;border-bottom: none;"></td>
             </tr>
-        <?php
-            }
+            <?php
+        }
         ?> 
-        	<tr>
-                <td style="border-right: none;font-size: 12px;width: 10%;border-top: none;border-bottom: none;">
-                    Supplier
-                </td>
-                <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
-                    :
-                </td>
-                <td style="border-left: none;font-size: 12px;width: 45%;border-top: none;border-right: none;border-bottom: none;">
-                    <?php 
-                    echo $rs['nama_supp'];
-                    ?>
-                </td>
-                <td style="width: 3%; border: none;">
-                    
-                </td>
-                <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;">
-                    Account
-                </td>
-                <td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;">
-                    :
-                </td>
-                <td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;">
-                    <?php 
-                    echo $rs['akun'];
-                    ?>
-                </td>
-                <td style="width: 2%;border-left: none; border-top: none;border-bottom: none;">
-                    
-                </td>
-            </tr>
+        <tr>
+            <td style="border-right: none;font-size: 12px;width: 10%;border-top: none;border-bottom: none;">
+                Supplier
+            </td>
+            <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
+                :
+            </td>
+            <td style="border-left: none;font-size: 12px;width: 45%;border-top: none;border-right: none;border-bottom: none;">
+                <?php 
+                echo $rs['nama_supp'];
+                ?>
+            </td>
+            <td style="width: 3%; border: none;">
 
-            <tr>
-                <td style="border-right: none;font-size: 12px;width: 10%;border-top: none;border-bottom: none;">
-                    Currency
-                </td>
-                <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
-                    :
-                </td>
-                <td style="border-left: none;font-size: 12px;width: 45%;border-top: none;border-right: none;border-bottom: none;">
-                    <?php 
-                    echo $rs['curr'];
-                    ?>
-                </td>
-                <td style="width: 3%; border: none;">
-                    
-                </td>
-                <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;">
-                    Bank
-                </td>
-                <td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;">
-                    :
-                </td>
-                <td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;">
-                    <?php 
-                    echo $rs['bank'];
-                    ?>
-                </td>
-                <td style="width: 2%;border-left: none; border-top: none;border-bottom: none;">
-                    
-                </td>
-            </tr>
+            </td>
+            <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;">
+                Account
+            </td>
+            <td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;">
+                :
+            </td>
+            <td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;">
+                <?php 
+                echo $rs['akun'];
+                ?>
+            </td>
+            <td style="width: 2%;border-left: none; border-top: none;border-bottom: none;">
+
+            </td>
+        </tr>
+
+        <tr>
+            <td style="border-right: none;font-size: 12px;width: 10%;border-top: none;border-bottom: none;">
+                Currency
+            </td>
+            <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
+                :
+            </td>
+            <td style="border-left: none;font-size: 12px;width: 45%;border-top: none;border-right: none;border-bottom: none;">
+                <?php 
+                echo $rs['curr'];
+                ?>
+            </td>
+            <td style="width: 3%; border: none;">
+
+            </td>
+            <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;">
+                Bank
+            </td>
+            <td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;">
+                :
+            </td>
+            <td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;">
+                <?php 
+                echo $rs['bank'];
+                ?>
+            </td>
+            <td style="width: 2%;border-left: none; border-top: none;border-bottom: none;">
+
+            </td>
+        </tr>
 
            <!--  <tr>
                 <td style="border-right: none;font-size: 12px;width: 10%;border-top: none;border-bottom: none;">
@@ -313,111 +319,111 @@ table {
                 </td>
             </tr> -->
 
-        <?php
+            <?php
             for ($x = 0; $x <= 5; $x++) {
-        ?>
-            <tr>
-                <td style="border-right: none;font-size: 12px;width: 10%;border-top: none;border-bottom: none;"></td>
-                <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;"></td>
-                <td style="border-left: none;font-size: 12px;width: 45%;border-top: none;border-right: none;border-bottom: none;"></td>
-                <td style="width: 3%; border: none;"></td>
-                <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;"></td>
-                <td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;"></td>
-                <td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;"></td>
-                <td style="width: 2%;border-left: none; border-top: none;border-bottom: none;"></td>
-            </tr>
-        <?php
+                ?>
+                <tr>
+                    <td style="border-right: none;font-size: 12px;width: 10%;border-top: none;border-bottom: none;"></td>
+                    <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;"></td>
+                    <td style="border-left: none;font-size: 12px;width: 45%;border-top: none;border-right: none;border-bottom: none;"></td>
+                    <td style="width: 3%; border: none;"></td>
+                    <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;"></td>
+                    <td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;"></td>
+                    <td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;"></td>
+                    <td style="width: 2%;border-left: none; border-top: none;border-bottom: none;"></td>
+                </tr>
+                <?php
             }
-        ?> 
+            ?> 
             
         </table>
         <table border="1" cellspacing="0" style="width:100%;font-size:10px;">
-  <tr style="line-height: 10px;">
-      <th style="width: 7%;text-align:center;">Coa No</th>
-      <th style="width: 11%;text-align:center;">Coa Name</th>
-      <th style="width: 10%;text-align:center;">Cost Center</th>
-      <th style="width: 11%;text-align:center;">Profit Center</th>
-      <th style="width: 10%;text-align:center;">Reff Doc</th>
-      <th style="width: 10%;text-align:center;">Reff Date</th>
-      <th style="width: 7%;text-align:center;">Curr</th>
-      <th style="width: 11%;text-align:center;">Debit</th>
-      <th style="width: 11%;text-align:center;">Credit</th>
-      <th style="width: 12%;text-align:center;">Description</th>
-      <th style="display: none;"></th>  
-    </tr>
-<tbody >
-<?php
-$query = mysqli_query($conn2,$sqlys)or die(mysqli_error());
+          <tr style="line-height: 10px;">
+              <th style="width: 7%;text-align:center;">Coa No</th>
+              <th style="width: 11%;text-align:center;">Coa Name</th>
+              <th style="width: 10%;text-align:center;">Cost Center</th>
+              <th style="width: 11%;text-align:center;">Profit Center</th>
+              <th style="width: 10%;text-align:center;">Reff Doc</th>
+              <th style="width: 10%;text-align:center;">Reff Date</th>
+              <th style="width: 7%;text-align:center;">Curr</th>
+              <th style="width: 11%;text-align:center;">Debit</th>
+              <th style="width: 11%;text-align:center;">Credit</th>
+              <th style="width: 12%;text-align:center;">Description</th>
+              <th style="display: none;"></th>  
+          </tr>
+          <tbody >
+            <?php
+            $query = mysqli_query($conn2,$sqlys)or die(mysqli_error());
 
-while($data=mysqli_fetch_array($query)){
-            $reffdate = $data['reff_date'];
-            
-            if ($reffdate == '' || $reffdate == '1970-01-01' || $reffdate == '0000-00-00') { 
-             $reff_date = '-';
-            }else{
+            while($data=mysqli_fetch_array($query)){
+                $reffdate = $data['reff_date'];
+
+                if ($reffdate == '' || $reffdate == '1970-01-01' || $reffdate == '0000-00-00') { 
+                   $reff_date = '-';
+               }else{
                 $reff_date = date("d-M-Y",strtotime($data['reff_date'])); 
             } 
-   echo '<tr>
-        <td style="text-align: center" value="'.$data['no_coa'].'">'.$data['no_coa'].'</td>
-        <td style="text-align: left" value="'.$data['nama_coa'].'">'.$data['nama_coa'].'</td>
-        <td style="text-align: left" value="'.$data['nama_costcenter'].'">'.$data['nama_costcenter'].'</td>
-        <td style="text-align: left" value="'.$data['profit_center'].'">'.$data['profit_center'].'</td>
-        <td style="text-align: left" value="'.$data['reff_doc'].'">'.$data['reff_doc'].'</td> 
-        <td style="text-align: left" value="'.$reff_date.'">'.$reff_date.'</td>                                                                      
-        <td style="text-align: left" value="'.$data['curr'].'">'.$data['curr'].'</td> 
-        <td style="text-align: right" value="'.$data['debit'].'">'.number_format($data['debit'],2).'</td>
-        <td style="text-align: right" value="'.$data['credit'].'">'.number_format($data['credit'],2).'</td>                            
-        <td style="text-align: left" value="'.$data['keterangan'].'">'.$data['keterangan'].'</td>
-        <td style="display: none;"></td>  
-    </tr>'; 
-};  
-?>
+            echo '<tr>
+            <td style="text-align: center" value="'.$data['no_coa'].'">'.$data['no_coa'].'</td>
+            <td style="text-align: left" value="'.$data['nama_coa'].'">'.$data['nama_coa'].'</td>
+            <td style="text-align: left" value="'.$data['nama_costcenter'].'">'.$data['nama_costcenter'].'</td>
+            <td style="text-align: left" value="'.$data['profit_center'].'">'.$data['profit_center'].'</td>
+            <td style="text-align: left" value="'.$data['reff_doc'].'">'.$data['reff_doc'].'</td> 
+            <td style="text-align: left" value="'.$reff_date.'">'.$reff_date.'</td>                                                                      
+            <td style="text-align: left" value="'.$data['curr'].'">'.$data['curr'].'</td> 
+            <td style="text-align: right" value="'.$data['debit'].'">'.number_format($data['debit'],2).'</td>
+            <td style="text-align: right" value="'.$data['credit'].'">'.number_format($data['credit'],2).'</td>                            
+            <td style="text-align: left" value="'.$data['keterangan'].'">'.$data['keterangan'].'</td>
+            <td style="display: none;"></td>  
+            </tr>'; 
+        };  
+        ?>
 
-  </tbody>
+    </tbody>
 </table>
 <table width="100%" border="1">
-        <?php
-            for ($x = 0; $x <= 7; $x++) {
+    <?php
+    for ($x = 0; $x <= 7; $x++) {
         ?>
-            <tr>
-                <td style="border-right: none;font-size: 12px;width: 10%;border-top: none;border-bottom: none;"></td>
-                <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;"></td>
-                <td style="border-left: none;font-size: 12px;width: 45%;border-top: none;border-right: none;border-bottom: none;"></td>
-                <td style="width: 3%; border: none;"></td>
-                <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;"></td>
-                <td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;"></td>
-                <td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;"></td>
-                <td style="width: 10%;border-left: none; border-top: none;border-bottom: none;"></td>
-            </tr>
-        <?php
-            }
-        ?> 
         <tr>
-                <td style="border-right: none;font-size: 12px;width: 12%;border-top: none;border-bottom: none;"></td>
-                <td style="width: 1%; border-left: none;width: 13%;border-right: none;font-size: 12px;border-top: none;border-bottom: none;"></td>
-                <td style="border-left: none;font-size: 12px;width: 12%;border-top: none;border-right: none;border-bottom: none;"></td>
-                <td style="width: 13%; border: none;font-size: 15px"><u><b>Created By</b></u></td>
-                <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;"></td>
-                <td style="width: 1%; border-left: none;width: 6%;border-right: none;font-size: 12px; border-top: none;border-bottom: none;"></td>
-                <td style="border-left: none;font-size: 15px;width: 22%; border-top: none;border-right: none;border-bottom: none;"><u><b>Checked By</b></u></td>
-                <td style="width: 2%;border-left: none;width: 10%; border-top: none;border-bottom: none;"></td>
-            </tr>
-         <?php
-            for ($x = 0; $x <= 20; $x++) {
-        ?>
-            <tr>
-                <td style="border-right: none;font-size: 12px;width: 10%;border-top: none;border-bottom: none;"></td>
-                <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;"></td>
-                <td style="border-left: none;font-size: 12px;width: 45%;border-top: none;border-right: none;border-bottom: none;"></td>
-                <td style="width: 3%; border: none;"></td>
-                <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;"></td>
-                <td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;"></td>
-                <td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;"></td>
-                <td style="width: 2%;border-left: none; border-top: none;border-bottom: none;"></td>
-            </tr>
+            <td style="border-right: none;font-size: 12px;width: 10%;border-top: none;border-bottom: none;"></td>
+            <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;"></td>
+            <td style="border-left: none;font-size: 12px;width: 45%;border-top: none;border-right: none;border-bottom: none;"></td>
+            <td style="width: 3%; border: none;"></td>
+            <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;"></td>
+            <td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;"></td>
+            <td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;"></td>
+            <td style="width: 10%;border-left: none; border-top: none;border-bottom: none;"></td>
+        </tr>
         <?php
-            }
-        ?> 
+    }
+    ?> 
+    <tr>
+        <td style="border-right: none;font-size: 12px;width: 12%;border-top: none;border-bottom: none;"></td>
+        <td style="width: 1%; border-left: none;width: 13%;border-right: none;font-size: 12px;border-top: none;border-bottom: none;"></td>
+        <td style="border-left: none;font-size: 12px;width: 12%;border-top: none;border-right: none;border-bottom: none;"></td>
+        <td style="width: 13%; border: none;font-size: 15px"><u><b>Created By</b></u></td>
+        <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;"></td>
+        <td style="width: 1%; border-left: none;width: 6%;border-right: none;font-size: 12px; border-top: none;border-bottom: none;"></td>
+        <td style="border-left: none;font-size: 15px;width: 22%; border-top: none;border-right: none;border-bottom: none;"><u><b>Checked By</b></u></td>
+        <td style="width: 2%;border-left: none;width: 10%; border-top: none;border-bottom: none;"></td>
+    </tr>
+    <?php
+    for ($x = 0; $x <= 20; $x++) {
+        ?>
+        <tr>
+            <td style="border-right: none;font-size: 12px;width: 10%;border-top: none;border-bottom: none;"></td>
+            <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;"></td>
+            <td style="border-left: none;font-size: 12px;width: 45%;border-top: none;border-right: none;border-bottom: none;"></td>
+            <td style="width: 3%; border: none;"></td>
+            <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;"></td>
+            <td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;"></td>
+            <td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;"></td>
+            <td style="width: 2%;border-left: none; border-top: none;border-bottom: none;"></td>
+        </tr>
+        <?php
+    }
+    ?> 
 <!--         <tr>
                 <td style="border-right: none;font-size: 12px;width: 12%;border-top: none;border-bottom: none;"></td>
                 <td style="width: 1%; border-left: none;width: 13%;border-right: none;font-size: 12px;border-top: none;border-bottom: none;"></td>
@@ -443,21 +449,21 @@ while($data=mysqli_fetch_array($query)){
             </tr>
             <?php
             for ($x = 0; $x <= 15; $x++) {
-        ?>
-            <tr>
-                <td style="border-right: none;font-size: 12px;width: 10%;border-top: none;border-bottom: none;"></td>
-                <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;"></td>
-                <td style="border-left: none;font-size: 12px;width: 45%;border-top: none;border-right: none;border-bottom: none;"></td>
-                <td style="width: 3%; border: none;"></td>
-                <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;"></td>
-                <td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;"></td>
-                <td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;"></td>
-                <td style="width: 2%;border-left: none; border-top: none;border-bottom: none;"></td>
-            </tr>
-        <?php
+                ?>
+                <tr>
+                    <td style="border-right: none;font-size: 12px;width: 10%;border-top: none;border-bottom: none;"></td>
+                    <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;"></td>
+                    <td style="border-left: none;font-size: 12px;width: 45%;border-top: none;border-right: none;border-bottom: none;"></td>
+                    <td style="width: 3%; border: none;"></td>
+                    <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;"></td>
+                    <td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;"></td>
+                    <td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;"></td>
+                    <td style="width: 2%;border-left: none; border-top: none;border-bottom: none;"></td>
+                </tr>
+                <?php
             }
-        ?> 
-        <tr>
+            ?> 
+            <tr>
                 <td style="border-right: none;font-size: 12px;width: 12%;border-top: none;"></td>
                 <td style="width: 1%; border-left: none;width: 13%;border-right: none;font-size: 12px;border-top: none;"></td>
                 <td style="border-left: none;font-size: 12px;width: 12%;border-top: none;border-right: none;"></td>
@@ -467,22 +473,22 @@ while($data=mysqli_fetch_array($query)){
                 <td style="border-left: none;font-size: 12px;width: 12%;border-top: none;border-right: none;"></td>
                 <td style="width: 2%;border-left: none;width: 10%; border-top: none;"></td>
             </tr>
-        
+
         </table>
 
-</body>
+    </body>
 
 
-</html>  
+    </html>  
 
-<?php
-$html = ob_get_clean();
-require_once __DIR__ . '/../../mpdf8/vendor/autoload.php';
-include("../../mpdf8/vendor/mpdf/mpdf/src/mpdf.php");
+    <?php
+    $html = ob_get_clean();
+    require_once __DIR__ . '/../../mpdf8/vendor/autoload.php';
+    include("../../mpdf8/vendor/mpdf/mpdf/src/mpdf.php");
 
-$mpdf=new \mPDF\mPDF();
+    $mpdf=new \mPDF\mPDF();
 
-$mpdf->WriteHTML($html);
-$mpdf->Output();
-exit;
+    $mpdf->WriteHTML($html);
+    $mpdf->Output();
+    exit;
 ?>

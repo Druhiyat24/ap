@@ -157,6 +157,8 @@ VALUES
 	('$kode', '$no_ro', '$no_bppb', '$ttl_ro', '$status')";
 $executeess = mysqli_query($conn2,$queryess);
 
+$squery_bppb = mysqli_query($conn2,"update bppb_new set no_kbon = '$kode' where no_bppb = '$no_bppb';");
+
 if ($curr != 'IDR') {
 $sqlx = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where tanggal = '$tgl_bpb' and v_codecurr = 'PAJAK'");
 $rowx = mysqli_fetch_array($sqlx);

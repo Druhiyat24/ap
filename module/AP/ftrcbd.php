@@ -256,9 +256,9 @@
                 <a id="delete" href=""><i class="fa fa-trash" style="padding-right: 10px; padding-left: 5px;" hidden></i></a>
                 <a style="margin-right: 5=px" href="pdf_ftrcbd.php?noftrcbd='.$row['no_ftr_cbd'].'" target="_blank"><button style="border-radius: 6px" type="button" class="btn-xs btn-success"><i class="fa fa-file-pdf-o fa-lg" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Pdf</i></button></a>';
             }elseif($status == 'draft' and $group != 'STAFF' and $pur == '1'){
-                echo '<a id="approve" href=""><button style="border-radius: 6px" type="button" class="btn-xs btn-info"><i style="color: white" class="fa fa-paper-plane fa-lg" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Approve</i></button</a>                
+                echo '<div style="display: flex; gap: 5px; font-size: 11px;"><a id="approve" href=""><button style="border-radius: 6px" type="button" class="btn-xs btn-info"><i style="color: white" class="fa fa-paper-plane fa-lg" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 11px;"> Approve</i></button</a>                
                 <a  style="margin-right: 5px" id="delete" href=""><button style="border-radius: 6px"  type="button" class="btn-xs btn-danger"><i style="color: white" class="fa fa-trash fa-lg" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Cancel</i></button</a>
-                <a href="pdf_ftrcbd.php?noftrcbd='.$row['no_ftr_cbd'].'" target="_blank"><i class="fa fa-print" style="padding-right: 10px; padding-left: 5px;" hidden></i></a>';                
+                <a href="pdf_ftrcbd.php?noftrcbd='.$row['no_ftr_cbd'].'" target="_blank"><i class="fa fa-print" style="padding-right: 10px; padding-left: 5px;" hidden></i></a></div>';                
             }elseif($status == 'draft' and $group == 'STAFF' and $pur == '1') {
                 echo ' <a style="margin-right: 5=px" href="pdf_ftrcbd.php?noftrcbd='.$row['no_ftr_cbd'].'" target="_blank"><button style="border-radius: 6px" type="button" class="btn-xs btn-success"><i class="fa fa-file-pdf-o fa-lg" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Pdf</i></button></a>';
             }elseif($status == 'Cancel' and $group != 'STAFF' and $pur == '1' ) {

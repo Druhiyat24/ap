@@ -43,6 +43,18 @@ $database_hris = "hris_nag";
 // $pass_hris = "ERP@S19n4lB1t";
 // $database_hris = "hris_nag";
 
+$host_pg = "10.10.5.62";
+$port_pg = "5432";
+$dbname_pg = "alabare_knitting";
+$user_pg = "postgres";
+$password_pg = "@P05t6r3_N@6";
+
+$conn4 = pg_connect("host=$host_pg port=$port_pg dbname=$dbname_pg user=$user_pg password=$password_pg");
+
+if (!$conn4) {
+    die("Could not connect: " . pg_last_error());
+}
+
 $conn1 = mysql_connect($servername, $user_name, $password);
 if (!$conn1) {
     die('Could not connect: ' . mysql_error());

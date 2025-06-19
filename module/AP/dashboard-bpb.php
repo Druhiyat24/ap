@@ -1,5 +1,5 @@
 <?php
-    include '../../conn/conn.php';
+    include '../../conn/conn_sch.php';
     ini_set('date.timezone', 'Asia/Jakarta');
     $insert_date = date("Y-m-d H:i:s");
     $value = '';
@@ -23,11 +23,11 @@
     $jml_rate = isset($row_rate['rate']) ? $row_rate['rate'] : 1;
 
    
-     $sql = mysqli_query($conn1,"select * from(((select b.Supplier,a.bpbno_int,bpbdate,c.jml_pterms as top, DATE_ADD(a.bpbdate, INTERVAL c.jml_pterms DAY) as due_date,a.curr,round(sum((((IF(a.qty_reject IS NULL,(a.qty), (a.qty - a.qty_reject))) * a.price) + (((IF(a.qty_reject IS NULL,(a.qty), (a.qty - a.qty_reject))) * a.price) * (c.tax /100)))),2) as total from bpb a INNER JOIN po_header c on c.pono = a.pono INNER JOIN mastersupplier b on b.Id_Supplier = a.id_supplier left JOIN po_header_draft d on d.id = c.id_draft where a.r_ap is null and a.confirm = 'y' and c.app = 'A' and a.price != '0' and cancel = 'N' and d.tipe_com is null and bpbdate between '2022-04-14' and '$start_date' and b.tipe_sup != 'D' || a.r_ap is null and a.confirm = 'y' and c.app = 'A' and a.price != '0' and cancel = 'N' and d.tipe_com = 'REGULAR' and bpbdate between '2022-04-14' and '$start_date' and b.tipe_sup != 'D' || a.r_ap is null and a.confirm = 'y' and c.app = 'A' and a.price != '0' and cancel = 'N' and d.tipe_com = 'BUYER' and bpbdate between '2022-04-14' and '$start_date' and b.tipe_sup != 'D' group by a.bpbno_int order by bpbdate asc)union (
+     $sql = mysqli_query($conn1,"select * from(((select b.Supplier,a.bpbno_int,bpbdate,c.jml_pterms as top, DATE_ADD(a.bpbdate, INTERVAL c.jml_pterms DAY) as due_date,a.curr,round(sum((((IF(a.qty_reject IS NULL,(a.qty), (a.qty - a.qty_reject))) * a.price) + (((IF(a.qty_reject IS NULL,(a.qty), (a.qty - a.qty_reject))) * a.price) * (c.tax /100)))),2) as total from bpb a INNER JOIN po_header c on c.pono = a.pono INNER JOIN mastersupplier b on b.Id_Supplier = a.id_supplier left JOIN po_header_draft d on d.id = c.id_draft where a.r_ap is null and a.confirm = 'y' and c.app = 'A' and a.price != '0' and cancel = 'N' and d.tipe_com is null and bpbdate between '2022-04-14' and '$start_date' and b.tipe_sup != 'D' || a.r_ap is null and a.confirm = 'y' and c.app = 'A' and a.price != '0' and cancel = 'N' and d.tipe_com IN ('REGULAR','') and bpbdate between '2022-04-14' and '$start_date' and b.tipe_sup != 'D' || a.r_ap is null and a.confirm = 'y' and c.app = 'A' and a.price != '0' and cancel = 'N' and d.tipe_com = 'BUYER' and bpbdate between '2022-04-14' and '$start_date' and b.tipe_sup != 'D' group by a.bpbno_int order by bpbdate asc)union (
         select c.Supplier,a.bppbno_int,a.bppbdate, '0' as top, '0000-00-00' as due_date,a.curr,ROUND(- SUM((a.qty * a.price)),2) as total from bppb a inner join mastersupplier c on c.Id_Supplier = a.id_supplier  where a.cancel != 'Y' and a.bpbno_ro != '' and a.confirm = 'Y' and a.bppbdate between '2022-04-14' and '$start_date' and c.tipe_sup != 'D' group by bppbno_int))
 union
 
-(select b.Supplier,a.bpbno_int,bpbdate,c.jml_pterms as top, DATE_ADD(a.bpbdate, INTERVAL c.jml_pterms DAY) as due_date,a.curr,round(sum((((IF(a.qty_reject IS NULL,(a.qty), (a.qty - a.qty_reject))) * a.price) + (((IF(a.qty_reject IS NULL,(a.qty), (a.qty - a.qty_reject))) * a.price) * (c.tax /100)))),2) as total from bpb a INNER JOIN po_header c on c.pono = a.pono INNER JOIN mastersupplier b on b.Id_Supplier = a.id_supplier left JOIN po_header_draft d on d.id = c.id_draft where a.r_ap is null and a.confirm = 'y' and c.app = 'A' and a.price != '0' and cancel = 'N' and d.tipe_com is null and bpbdate between '$start_date' and '$end_date' and b.tipe_sup != 'D' || a.r_ap is null and a.confirm = 'y' and c.app = 'A' and a.price != '0' and cancel = 'N' and d.tipe_com  = 'REGULAR' and bpbdate between '$start_date' and '$end_date' and b.tipe_sup != 'D' || a.r_ap is null and a.confirm = 'y' and c.app = 'A' and a.price != '0' and cancel = 'N' and d.tipe_com = 'BUYER' and bpbdate between '$start_date' and '$end_date' and b.tipe_sup != 'D' group by a.bpbno_int order by bpbdate asc) union (select c.Supplier,a.bppbno_int,a.bppbdate, '0' as top, '0000-00-00' as due_date,a.curr,ROUND(- SUM((a.qty * a.price)),2) as total from bppb a inner join mastersupplier c on c.Id_Supplier = a.id_supplier  where a.cancel != 'Y' and a.bpbno_ro != '' and a.confirm = 'Y' and a.bppbdate between '$start_date' and '$end_date' and c.tipe_sup != 'D' group by bppbno_int)
+(select b.Supplier,a.bpbno_int,bpbdate,c.jml_pterms as top, DATE_ADD(a.bpbdate, INTERVAL c.jml_pterms DAY) as due_date,a.curr,round(sum((((IF(a.qty_reject IS NULL,(a.qty), (a.qty - a.qty_reject))) * a.price) + (((IF(a.qty_reject IS NULL,(a.qty), (a.qty - a.qty_reject))) * a.price) * (c.tax /100)))),2) as total from bpb a INNER JOIN po_header c on c.pono = a.pono INNER JOIN mastersupplier b on b.Id_Supplier = a.id_supplier left JOIN po_header_draft d on d.id = c.id_draft where a.r_ap is null and a.confirm = 'y' and c.app = 'A' and a.price != '0' and cancel = 'N' and d.tipe_com is null and bpbdate between '$start_date' and '$end_date' and b.tipe_sup != 'D' || a.r_ap is null and a.confirm = 'y' and c.app = 'A' and a.price != '0' and cancel = 'N' and d.tipe_com IN ('REGULAR','') and bpbdate between '$start_date' and '$end_date' and b.tipe_sup != 'D' || a.r_ap is null and a.confirm = 'y' and c.app = 'A' and a.price != '0' and cancel = 'N' and d.tipe_com = 'BUYER' and bpbdate between '$start_date' and '$end_date' and b.tipe_sup != 'D' group by a.bpbno_int order by bpbdate asc) union (select c.Supplier,a.bppbno_int,a.bppbdate, '0' as top, '0000-00-00' as due_date,a.curr,ROUND(- SUM((a.qty * a.price)),2) as total from bppb a inner join mastersupplier c on c.Id_Supplier = a.id_supplier  where a.cancel != 'Y' and a.bpbno_ro != '' and a.confirm = 'Y' and a.bppbdate between '$start_date' and '$end_date' and c.tipe_sup != 'D' group by bppbno_int)
 
 union(select a.nama_supp, a.no_bpb, a.tgl_bpb,c.jml_pterms as top, DATE_ADD(b.bpbdate, INTERVAL c.jml_pterms DAY) as due_date, a.curr, a.total from saldo_bpb_ap a left join bpb b on b.bpbno_int = a.no_bpb INNER JOIN po_header c on c.pono = b.pono group by a.no_bpb)
 
@@ -87,14 +87,18 @@ union (select nama_supp, no_bpb, tgl_bpb, top, duedate, curr, total from tbl_tam
 }
     $sqllp = mysqli_query($conn1,"select a.no_bpb,a.tgl_bpb from kontrabon a inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.no_bpb = '$no_bpb' and DATE_FORMAT(d.create_date, '%Y-%m-%d') between '$start_date' and '$end_date' and a.status != 'Cancel' GROUP BY a.no_bpb
         union
-select no_doc, tgl_doc from tbl_tamb_ap where no_doc = '$no_bpb' and tgl_pay between '$start_date' and '$end_date' GROUP BY no_doc");
+select no_doc, tgl_doc from tbl_tamb_ap where no_doc = '$no_bpb' and tgl_pay between '$start_date' and '$end_date' GROUP BY no_doc
+UNION
+select reff_doc,reff_date from tbl_list_journal where reff_doc = '$no_bpb' and no_journal like '%GM/NAG%' and type_journal = 'ACCOUNT PAYABLE' and debit != 0 and tgl_journal >= '2024-09-01' and tgl_journal between '$start_date' and '$end_date' GROUP BY reff_doc");
     $rowlp = mysqli_fetch_array($sqllp);
     $no_lp = isset($rowlp['no_bpb']) ? $rowlp['no_bpb'] : null;
 
 
     $sqllp2 = mysqli_query($conn1,"select a.no_bpb,a.tgl_bpb,d.tgl_kbon2 from kontrabon a inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.no_bpb = '$no_bpb' and DATE_FORMAT(d.create_date, '%Y-%m-%d') < '$start_date' and a.status != 'Cancel' GROUP BY a.no_bpb
         union
-select no_doc, tgl_doc, tgl_doc tgl_doc2 from tbl_tamb_ap where no_doc = '$no_bpb' and tgl_pay < '$start_date' GROUP BY no_doc");
+select no_doc, tgl_doc, tgl_doc tgl_doc2 from tbl_tamb_ap where no_doc = '$no_bpb' and tgl_pay < '$start_date' GROUP BY no_doc
+UNION
+select reff_doc,reff_date,reff_date from tbl_list_journal where reff_doc = '$no_bpb' and no_journal like '%GM/NAG%' and type_journal = 'ACCOUNT PAYABLE' and debit != 0 and tgl_journal >= '2024-09-01' and tgl_journal < '$start_date' GROUP BY reff_doc");
     $rowlp2 = mysqli_fetch_array($sqllp2);
     $no_lp2 = isset($rowlp2['no_bpb']) ? $rowlp2['no_bpb'] : null;
     $tgl = isset($rowlp2['tgl_kbon2']) ? $rowlp2['tgl_kbon2'] : null;
@@ -109,13 +113,17 @@ select no_doc, tgl_doc, tgl_doc tgl_doc2 from tbl_tamb_ap where no_doc = '$no_bp
 
     $sqllp = mysqli_query($conn1,"select a.no_bppb,a.tgl_bppb from bppb_new a inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.no_bppb = '$no_bpb' and DATE_FORMAT(d.create_date, '%Y-%m-%d') between '$start_date' and '$end_date' and a.status != 'Cancel' GROUP BY a.no_bppb
         union
-select no_doc, tgl_doc from tbl_tamb_ap where no_doc = '$no_bpb' and tgl_pay between '$start_date' and '$end_date' GROUP BY no_doc");
+select no_doc, tgl_doc from tbl_tamb_ap where no_doc = '$no_bpb' and tgl_pay between '$start_date' and '$end_date' GROUP BY no_doc
+UNION
+select reff_doc,reff_date from tbl_list_journal where reff_doc = '$no_bpb' and tgl_journal >= '2024-09-01' and tgl_journal between '$start_date' and '$end_date' and no_journal like '%GM/NAG%' and debit != 0 and type_journal = 'ACCOUNT PAYABLE' GROUP BY reff_doc");
     $rowlp = mysqli_fetch_array($sqllp);
     $no_lp = isset($rowlp['no_bppb']) ? $rowlp['no_bppb'] : null;
 
     $sqllp2 = mysqli_query($conn1,"select a.no_bppb,a.tgl_bppb,d.tgl_kbon2 from bppb_new a inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.no_bppb = '$no_bpb' and DATE_FORMAT(d.create_date, '%Y-%m-%d') < '$start_date' and a.status != 'Cancel' GROUP BY a.no_bppb
         union
-select no_doc, tgl_doc, tgl_doc tgl_doc2 from tbl_tamb_ap where no_doc = '$no_bpb' and tgl_pay < '$start_date' GROUP BY no_doc");
+select no_doc, tgl_doc, tgl_doc tgl_doc2 from tbl_tamb_ap where no_doc = '$no_bpb' and tgl_pay < '$start_date' GROUP BY no_doc
+UNION
+select reff_doc,reff_date,reff_date from tbl_list_journal where reff_doc = '$no_bpb' and no_journal like '%GM/NAG%' and debit != 0 and tgl_journal >= '2024-09-01' and tgl_journal < '$start_date' and type_journal = 'ACCOUNT PAYABLE' GROUP BY reff_doc");
     $rowlp2 = mysqli_fetch_array($sqllp2);
     $no_lp2 = isset($rowlp2['no_bppb']) ? $rowlp2['no_bppb'] : null;
     $tgl = isset($rowlp2['tgl_kbon2']) ? $rowlp2['tgl_kbon2'] : null;
@@ -159,6 +167,8 @@ select no_doc, tgl_doc, tgl_doc tgl_doc2 from tbl_tamb_ap where no_doc = '$no_bp
 
     if ($currin == 'IDR') {
         $rate = 1;
+    }elseif ($currin == 'CNY') {
+        $rate = 2234.01;
     }else{
         $rate = $jml_rate;
     }
@@ -243,7 +253,7 @@ select no_doc, tgl_doc, tgl_doc tgl_doc2 from tbl_tamb_ap where no_doc = '$no_bp
         $ttl_pro_due5 += $pro_due5;
         $ttl_tot_produe += $tot_produe;
 
-        $sqlcoa = mysqli_query($conn1,"select * from (select a.no_journal,a.no_coa,a.nama_coa,b.item_type1,b.item_type2,b.relasi from (select no_journal,no_coa,nama_coa from tbl_list_journal where credit != '' and type_journal = 'AP - BPB' and no_coa != '1.52.07' and no_journal = '$no_bpb' union select no_journal,no_coa,nama_coa from tbl_list_journal where debit != '' and type_journal = 'AP - BPB RETURN' and no_coa != '1.52.07' and no_journal = '$no_bpb') a left join mastercoa_v2 b on b.no_coa = a.no_coa) a");
+        $sqlcoa = mysqli_query($conn1,"select * from (select a.no_journal,a.no_coa,a.nama_coa,b.item_type1,b.item_type2,b.relasi from (select no_journal,no_coa,nama_coa from tbl_list_journal where credit != '' and type_journal = 'AP - BPB' and no_coa != '1.52.07' and no_journal = '$no_bpb' union select no_journal,no_coa,nama_coa from tbl_list_journal where debit != '' and type_journal = 'AP - BPB RETURN' and no_coa != '1.52.07' and no_journal = '$no_bpb') a left join mastercoa_v2 b on b.no_coa = a.no_coa) a where item_type1 is not null");
         $rowcoa = mysqli_fetch_array($sqlcoa);
         $no_coa = isset($rowcoa['no_coa']) ? $rowcoa['no_coa'] : null;
         $nama_coa = isset($rowcoa['nama_coa']) ? $rowcoa['nama_coa'] : null;

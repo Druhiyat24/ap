@@ -35,11 +35,10 @@
                           $txt_periode =  date("Y-m-d");
                       }
 
-                      $sql = mysqli_query($conn2,"select max(no_mj) from tbl_memorial_journal where MONTH(mj_date) = MONTH('$txt_periode') and YEAR(mj_date) = YEAR('$txt_periode')");
+                      $sql = mysqli_query($conn2,"select LPAD(COALESCE(MAX(CAST(RIGHT(no_mj, 5) AS UNSIGNED)), 0) + 1,5,'0') no_mj from tbl_memorial_journal where MONTH(mj_date) = MONTH('$txt_periode') and YEAR(mj_date) = YEAR('$txt_periode')");
                       $row = mysqli_fetch_array($sql);
-                      $kodepay = $row['max(no_mj)'];
-                      $urutan = (int) substr($kodepay, 13, 5);
-                      $urutan++;
+                      // $kodepay = $row['max(no_mj)'];
+                      $urutan = $row['no_mj'];
                       $bln =  date("m",strtotime($txt_periode));
                       $thn =  date("y",strtotime($txt_periode));
                       $huruf = "GM/NAG/$bln$thn/";
@@ -1580,7 +1579,7 @@ function addListener(elm,index){
 
 <script type="text/javascript">
     $("#form-simpan").on("click", "#simpan", function(){
-        $("input[type=checkbox]:checked").each(function () {
+        $("input[type=checkbox][id='select']:checked").each(function () {
             var fil_cmj = $('select[name=filter_cmj] option').filter(':selected').val();
             var cek_sb1 = document.getElementById('fil_sb1').value;
             var no_mj_sb1= document.getElementById('no_doc_sb1').value;   
@@ -1628,20 +1627,20 @@ function addListener(elm,index){
                 var t_debit = document.getElementById('txt_debit_h').value;
 
                 var valid = true;
-                $("input[type=checkbox]:checked").each(function () {
+                $("input[type=checkbox][id='select']:checked").each(function () {
                     // var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[name=nomor_coa] option').filter(':selected').val();
-                    var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val();
+                    // var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val();
 
         //             if (!no_coa) {
         //                 alert("Ada baris dengan Nomor COA kosong! Mohon lengkapi sebelum menyimpan.");
         //                 valid = false;
         //     return false; // Hentikan iterasi jika ada yang kosong
         // }
-        if (!prof_ctr) {
-            alert("Ada baris dengan Profit Center kosong! Mohon lengkapi sebelum menyimpan.");
-            valid = false;
-            return false; // Hentikan iterasi jika ada yang kosong
-        }
+        // if (!prof_ctr) {
+        //     alert("Ada baris dengan Profit Center kosong! Mohon lengkapi sebelum menyimpan.");
+        //     valid = false;
+        //     return false; // Hentikan iterasi jika ada yang kosong
+        // }
     });
 
                 if (!valid) {
@@ -1682,20 +1681,20 @@ if($('select[name=nama_type] option').filter(':selected').val() == '' ){
 }else{  
 
     var valid = true;
-    $("input[type=checkbox]:checked").each(function () {
+    $("input[type=checkbox][id='select']:checked").each(function () {
         // var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[name=nomor_coa] option').filter(':selected').val();
-        var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val();
+        // var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val();
 
         // if (!no_coa) {
         //     alert("Ada baris dengan Nomor COA kosong! Mohon lengkapi sebelum menyimpan.");
         //     valid = false;
         //     return false; // Hentikan iterasi jika ada yang kosong
         // }
-        if (!prof_ctr) {
-            alert("Ada baris dengan Profit Center kosong! Mohon lengkapi sebelum menyimpan.");
-            valid = false;
-            return false; // Hentikan iterasi jika ada yang kosong
-        }
+        // if (!prof_ctr) {
+        //     alert("Ada baris dengan Profit Center kosong! Mohon lengkapi sebelum menyimpan.");
+        //     valid = false;
+        //     return false; // Hentikan iterasi jika ada yang kosong
+        // }
     });
 
     if (valid) {

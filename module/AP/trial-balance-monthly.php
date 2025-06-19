@@ -46,7 +46,7 @@
                echo $_POST['start_date'];
             }
             else{
-               echo date("M Y",strtotime('2024-01-01'));
+               echo date("M Y",strtotime('2025-01-01'));
             } ?>" 
             placeholder="Tanggal Awal">
             </div>

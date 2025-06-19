@@ -48,8 +48,12 @@
             <th style="text-align: center;vertical-align: middle;">Curreny</th>
             <th style="text-align: center;vertical-align: middle;">Amount</th>
             <th style="text-align: center;vertical-align: middle;">Status</th>
+             <th style="text-align: center;vertical-align: middle;">Created By</th>
+            <th style="text-align: center;vertical-align: middle;">Created Date</th>
             <th style="text-align: center;vertical-align: middle;">Approve By</th>
             <th style="text-align: center;vertical-align: middle;">Approve Date</th>
+            <th style="text-align: center;vertical-align: middle;">Upload Doc By</th>
+            <th style="text-align: center;vertical-align: middle;">Upload Doc Date</th>
             <!-- <th style="text-align: center;vertical-align: middle;">curr</th>
             <th style="text-align: center;vertical-align: middle;">Debit</th>
             <th style="text-align: center;vertical-align: middle;">Credit</th>
@@ -68,12 +72,13 @@
         // menampilkan data pegawai
   
 
-        $sql = mysqli_query($conn2,"select no_bankout,bankout_date,nama_supp,curr, amount, outstanding,IF(reff_doc = 'Payment','List Payment',reff_doc) as reff_doc, akun, bank,status,IF(deskripsi = '','-',deskripsi) as deskripsi,approve_by,approve_date from b_bankout_h $where");
+        $sql = mysqli_query($conn2,"select no_bankout,bankout_date,nama_supp,curr, amount, outstanding,IF(reff_doc = 'Payment','List Payment',reff_doc) as reff_doc, akun, bank,status,IF(deskripsi = '','-',deskripsi) as deskripsi,create_by,create_date,approve_by,approve_date, user_upload, tgl_upload from b_bankout_h a left join (select no_bankout nobank, created_by user_upload, MAX(created_date) tgl_upload from b_bankout_dok where status is null GROUP BY no_bankout) b on b.nobank = a.no_bankout $where");
 
         $no = 1;
 
         while($row = mysqli_fetch_array($sql)){
             $approve_date = isset($row['approve_date']) ? $row['approve_date'] : null;
+            $tglupload = isset($row['tgl_upload']) ? $row['tgl_upload'] : null;
 
             if ($approve_date == null) {
                 $app_date = '-'; 
@@ -81,6 +86,14 @@
             }else{
                 $app_date = date("d-M-Y",strtotime($approve_date));
                 $app_by = $row['approve_by']; 
+            }
+
+            if ($tglupload == null) {
+                $tgl_upload = '-'; 
+                $user_upload = '-'; 
+            }else{
+                $tgl_upload = date("d-M-Y H:i:s",strtotime($tglupload));
+                $user_upload = $row['user_upload']; 
             }
 
         echo '<tr style="font-size:12px;text-align:center;">
@@ -91,8 +104,12 @@
             <td style=" text-align : left" value="'.$row['curr'].'">'.$row['curr'].'</td>
             <td style=" text-align : right" value="'.$row['amount'].'">'.number_format($row['amount'],2).'</td>
             <td style=" text-align : left" value="'.$row['status'].'">'.$row['status'].'</td>
+            <td style=" text-align : left" value="'.$row['create_by'].'">'.$row['create_by'].'</td>
+            <td style=" text-align : left" value="'.$row['create_date'].'">'.$row['create_date'].'</td>
             <td style=" text-align : left" value="'.$app_by.'">'.$app_by.'</td>
             <td style=" text-align : left" value="'.$app_date.'">'.$app_date.'</td>
+            <td style=" text-align : left" value="'.$user_upload.'">'.$user_upload.'</td>
+            <td style=" text-align : left" value="'.$tgl_upload.'">'.$tgl_upload.'</td>
              ';
          
         ?>
