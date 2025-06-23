@@ -1,5 +1,17 @@
 <?php include '../header.php' ?>
 
+<style type="text/css">
+    .modal-content {
+  overflow-x: hidden;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+}
+</style>
+
 <!-- MAIN -->
 <div class="col p-4">
     <h3 class="text-center">LIST MAINTAIN BPB</h3>
@@ -273,7 +285,7 @@ END as status from (select a.no_transfer,COALESCE(s_post,0) s_post,COALESCE(s_ca
         <div class="modal-content">
             <div class="modal-header bg-dark text-white">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                <h5 class="modal-title" id="txt_dp">APPROVE MAINTAIN BPB</h5>
+                <h5 class="modal-title" id="txt_dp">DETAIL MAINTAIN BPB</h5>
             </div>
             <div class="container">
                 <div class="row">
