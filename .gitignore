@@ -1,0 +1,5 @@
+# Abaikan semua isi folder conn/
+conn/*
+
+# Kecualikan file .gitkeep agar folder tetap ada di Git
+!conn/.gitkeep
