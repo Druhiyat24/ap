@@ -517,6 +517,11 @@ input::-webkit-inner-spin-button {
         <span class="fa fa-share fa-fw "></span>
         <span class="menu-collapsed">BPB Transferred</span>
         </a>';
+
+        echo '<a href="../AP/bpb_received.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-share fa-fw "></span>
+        <span class="menu-collapsed">Maintain BPB</span>
+        </a>';
     }
     if($id == '66'){    
         echo '<a href="../AP/invoice_received.php" class="dropdown-item bg-dark text-white">
