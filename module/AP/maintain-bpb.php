@@ -1,8 +1,20 @@
 <?php include '../header.php' ?>
 
+<style type="text/css">
+    .modal-content {
+  overflow-x: hidden;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+}
+</style>
+
 <!-- MAIN -->
 <div class="col p-4">
-    <h3 class="text-center">LIST MAINTAIN BPB</h3>
+    <h3 class="text-center">LIST REVERSE BPB</h3>
     <div class="box">
         <div class="box header">
             <form id="form-data" action="maintain-bpb.php" method="post">
@@ -175,7 +187,7 @@ END as status from (select a.no_transfer,COALESCE(s_post,0) s_post,COALESCE(s_ca
                             <td style="text-align:left;" value = "'.$row['keterangan'].'">'.$row['keterangan'].'</td> 
                             <td style="text-align:left;" value = "'.$row['create_user'].'">'.$row['create_user'].'</td>';
                             if ($status == 'POST') {
-                                echo '<td><a id="showapp" ><button style="border-radius: 6px" type="button" class="btn-xs btn-info"><i class="fa fa-thumbs-up"aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Approve</i></button></a></td> ';
+                                echo '<td><a id="showapp" ><button style="border-radius: 6px" type="button" class="btn-xs btn-info"><i class="fas fa-exclamation"aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Action</i></button></a></td> ';
                             }elseif($status == 'APPROVED'){
                                 echo '<td><a id="showdet" ><button style="border-radius: 6px" type="button" class="btn-xs btn-primary"><i class="fas fa-eye"aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Show</i></button></a></td> ';
                             }else{
@@ -221,7 +233,7 @@ END as status from (select a.no_transfer,COALESCE(s_post,0) s_post,COALESCE(s_ca
         <div class="modal-content">
             <div class="modal-header bg-dark text-white">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                <h5 class="modal-title" id="txt_dp">APPROVE MAINTAIN BPB</h5>
+                <h5 class="modal-title" id="txt_dp">APPROVE REVERSE BPB</h5>
             </div>
             <div class="container">
                 <div class="row">
@@ -258,7 +270,8 @@ END as status from (select a.no_transfer,COALESCE(s_post,0) s_post,COALESCE(s_ca
     </div>
     <div class="modal-footer">
         <form id="form-simpan">
-            <button style="border-radius: 5px" type="button" class="btn-outline-primary btn-sm" name="approve" id="approve"><span class="fa fa-thumbs-up"></span> Accept</button>
+            <button style="border-radius: 5px" type="button" class="btn-outline-primary btn-sm" name="approve" id="approve"><span class="fa fa-thumbs-up"></span> Approve</button>
+            <button style="border-radius: 5px" type="button" class="btn-outline-danger btn-sm" name="cancel" id="cancel"><span class="fa fa-trash"></span> Cancel</button>
         </form>
     </div>
 </div>       
@@ -273,7 +286,7 @@ END as status from (select a.no_transfer,COALESCE(s_post,0) s_post,COALESCE(s_ca
         <div class="modal-content">
             <div class="modal-header bg-dark text-white">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                <h5 class="modal-title" id="txt_dp">APPROVE MAINTAIN BPB</h5>
+                <h5 class="modal-title" id="txt_dp">DETAIL MAINTAIN BPB</h5>
             </div>
             <div class="container">
                 <div class="row">
@@ -355,6 +368,7 @@ function SidebarCollapse () {
 <script>
     $(document).ready(function() {
         $('#datatable').dataTable();
+        // $('#mytable2').dataTable();
 
         $("[data-toggle=tooltip]").tooltip();
 
@@ -462,6 +476,37 @@ function SidebarCollapse () {
         });
         
         alert("Data Berhasil Di Approve");
+
+    });
+</script>
+
+
+<script type="text/javascript">
+    $("#form-simpan").on("click", "#cancel", function(){
+        $("input[name='select[]']:checked").each(function () {                
+            var no_dok = $(this).closest('tr').find('td:eq(1)').attr('value');
+            var no_bpb = $(this).closest('tr').find('td:eq(4)').attr('value');
+            var approve_user = '<?php echo $user ?>';
+
+            $.ajax({
+                type:'POST',
+                url:'cancel-maintain-bpb.php',
+                data: {'no_dok':no_dok, 'no_bpb':no_bpb, 'approve_user':approve_user},
+                close: function(e){
+                    e.preventDefault();
+                },
+                success: function(response){                
+                    console.log(response);
+                    window.location = 'maintain-bpb.php';
+
+                },
+                error:  function (xhr, ajaxOptions, thrownError) {
+                   alert(xhr);
+               }
+           });
+        });
+        
+        alert("Data Berhasil Di Cancel");
 
     });
 </script>
