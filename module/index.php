@@ -584,7 +584,7 @@ $rs = mysqli_fetch_array($querys);
 $menu = isset($rs['menu']) ? $rs['menu'] :0;
 $id = isset($rs['id']) ? $rs['id'] :0;
 
-$querys2 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, GROUP_CONCAT(menurole.id) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu IN ('Transfer BPB','Maintain BPB') GROUP BY username");
+$querys2 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, GROUP_CONCAT(menurole.id) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu IN ('Transfer BPB') GROUP BY username");
 $rs2 = mysqli_fetch_array($querys2);
 $menu2 = isset($rs2['menu']) ? $rs2['menu'] :0;
 $id2 = isset($rs2['id']) ? $rs2['id'] :0;
@@ -600,13 +600,6 @@ if(strpos($id2, '77') !== false){
     echo '<a href="AP/bpb_received.php" class="dropdown-item bg-dark text-white">
     <span class="fa fa-share fa-fw "></span>
     <span class="menu-collapsed">BPB Transferred</span>
-    </a>';
-}
-
-if(strpos($id2, '89') !== false){    
-    echo '<a href="AP/maintain-bpb.php" class="dropdown-item bg-dark text-white">
-    <span class="fa fa-share fa-fw "></span>
-    <span class="menu-collapsed">Maintain BPB</span>
     </a>';
 }
 
@@ -999,23 +992,35 @@ $rs = mysqli_fetch_array($querys);
 $menu = isset($rs['menu']) ? $rs['menu'] :0;
 $id = isset($rs['id']) ? $rs['id'] :0;
 
+$querymtn = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Maintain BPB'");
+$rsl2 = mysqli_fetch_array($querymtn);
+$menu2 = isset($rsl2['menu']) ? $rsl2['menu'] :0;
+$mtn = isset($rsl2['id']) ? $rsl2['id'] :0;
+
+
+echo '
+<li class="dropdown-submenu ">
+<a class="dropdown-item bg-dark text-white" href="#">
+<span class="fa fa-refresh fa-fw"></span>
+<span class="menu-collapsed">Reverse</span>
+</a>
+<ul class="dropdown-menu bg-dark text-white" role="menu">';
+
 if($id == '34'){
     echo '
-    <li class="dropdown-submenu ">
-    <a class="dropdown-item bg-dark text-white" href="#">
-    <span class="fa fa-refresh fa-fw"></span>
-    <span class="menu-collapsed">Reverse</span>
-    </a>
-    <ul class="dropdown-menu bg-dark text-white" role="menu">
     <a href="AP/formreversebpb.php" class="dropdown-item bg-dark text-white">
-    <span class="fa fa-minus-square-o fa-fw"></span>
-    <span class="menu-collapsed">BPB</span>
-    </a>
-    </ul>
-    </li>';
-}else{
-    echo '';
+    <span class="fa fa-share fa-fw"></span>
+    <span class="menu-collapsed">Verifikasi BPB</span>                
+    </a>';
 }
+if(strpos($mtn, '89') !== false){    
+    echo '<a href="AP/maintain-bpb.php" class="dropdown-item bg-dark text-white">
+    <span class="fa fa-share fa-fw "></span>
+    <span class="menu-collapsed">BPB</span>
+    </a>';
+}
+echo '</ul>
+</li>';
 ?>
 
 <?php
