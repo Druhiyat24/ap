@@ -3,6 +3,7 @@ include '../../conn/conn.php';
 ini_set('date.timezone', 'Asia/Jakarta');
 
 $no_co = $_POST['no_co'];
+$prof_ctr = $_POST['prof_ctr'];
 $tgl_co =  date("Y-m-d",strtotime($_POST['tgl_co']));
 $type_co = $_POST['type_co'];
 $dokumen = $_POST['dokumen'];
@@ -48,15 +49,15 @@ $nama_cc = $rowcc['cc_name'];
 
 
 if($amount != ''){
-$query = "INSERT INTO c_cash_in (no_ci, tgl_ci, type_ci, dokumen, no_coa, no_costcenter, buyer, ws, submit_by, curr, amount, deskrip, status,deskrip_global, create_date, create_by) 
+$query = "INSERT INTO c_cash_in (no_ci, tgl_ci, type_ci, dokumen, no_coa, no_costcenter, buyer, ws, submit_by, curr, amount, deskrip, status,deskrip_global, create_date, create_by, profit_center) 
 VALUES 
-	('$kode', '$tgl_co', '$type_co', '$dokumen', '$no_coa','$no_costcenter', '$buyer', '$ws', '$req_by', '$curr','$amount', '$deskrip', '$status', '$pesan', '$create_date', '$create_user')";
+	('$kode', '$tgl_co', '$type_co', '$dokumen', '$no_coa','$no_costcenter', '$buyer', '$ws', '$req_by', '$curr','$amount', '$deskrip', '$status', '$pesan', '$create_date', '$create_user', '$prof_ctr')";
 
 $execute = mysqli_query($conn2,$query);
 
-$queryss = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
+$queryss = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
 VALUES 
-   ('$kode', '$tgl_co', '$type_co', '$no_coa', '$nama_coa', '$no_costcenter', '$nama_cc', '$dokumen', '', '$buyer', '$ws', '$curr', '1', '0', '$amount', '0', '$amount', '$status', '$pesan', '$create_user', '$create_date', '', '', '', '')";
+   ('$kode', '$tgl_co', '$type_co', '$no_coa', '$nama_coa', '$no_costcenter', '$nama_cc', '$dokumen', '', '$buyer', '$ws', '$curr', '1', '0', '$amount', '0', '$amount', '$status', '$pesan', '$create_user', '$create_date', '', '', '', '', '$prof_ctr')";
 
 $executess = mysqli_query($conn2,$queryss);
 }else{

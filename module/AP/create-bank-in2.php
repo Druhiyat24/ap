@@ -19,6 +19,22 @@
     .col-form-label{
         font-size: 13px;
     }
+/*
+    body {
+      background-color: #f8f9fa;
+    }
+    .card {
+      border-radius: 10px;
+    }
+    .form-label {
+      font-weight: 600;
+    }
+    .form-control, .form-control-plaintext, .selectpicker {
+      font-size: 14px;
+    }
+    .selectpicker {
+      width: 100% !important;
+    }*/
 
 </style>
 
@@ -53,21 +69,21 @@
                             <input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="bulan" name="bulan" value="'.$bln.'" hidden>
                             <input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="tahun" name="tahun" value="'.$thn.'" hidden>';
                         }else{
-                           $sqlx = mysqli_query($conn2,"select max(id) as id FROM tbl_bankin_arcollection ");
-                           $rowx = mysqli_fetch_array($sqlx);
-                           $maxid = $rowx['id'];
+                         $sqlx = mysqli_query($conn2,"select max(id) as id FROM tbl_bankin_arcollection ");
+                         $rowx = mysqli_fetch_array($sqlx);
+                         $maxid = $rowx['id'];
 
-                           $sql = mysqli_query($conn2,"select max(doc_num) from tbl_bankin_arcollection where id = '$maxid'");
-                           $row = mysqli_fetch_array($sql);
-                           $kodepay = $row['max(doc_num)'];
-                           $urutan = (int) substr($kodepay,20,5);
-                           $urutan ++;
-                           $bln = date("m");
-                           $thn = date("y");
-                           $huruf = "BM//NAG/$bln$thn/";
-                           $kodepay = $huruf . sprintf("%05s", $urutan); 
+                         $sql = mysqli_query($conn2,"select max(doc_num) from tbl_bankin_arcollection where id = '$maxid'");
+                         $row = mysqli_fetch_array($sql);
+                         $kodepay = $row['max(doc_num)'];
+                         $urutan = (int) substr($kodepay,20,5);
+                         $urutan ++;
+                         $bln = date("m");
+                         $thn = date("y");
+                         $huruf = "BM//NAG/$bln$thn/";
+                         $kodepay = $huruf . sprintf("%05s", $urutan); 
 
-                           if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
                         }
 
@@ -513,11 +529,11 @@
                 $satu = 1;
 
                 if ($curr1 == $curr2 || $curr1 == "IDR" && $curr2 == "USD") {
-                   $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
-                   $sql = mysqli_query($conn2,"select round(sum(eqv_idr),0) as amount from b_bankout_h  where no_bankout = '$no_bk' ");
-                   $row = mysqli_fetch_array($sql);
-                   $amount = isset($row['amount']) ? $row['amount']: null;
-               }else{
+                 $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+                 $sql = mysqli_query($conn2,"select round(sum(eqv_idr),0) as amount from b_bankout_h  where no_bankout = '$no_bk' ");
+                 $row = mysqli_fetch_array($sql);
+                 $amount = isset($row['amount']) ? $row['amount']: null;
+             }else{
                 $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
                 $sql = mysqli_query($conn2,"select round(sum(amount),0) as amount from b_bankout_h  where no_bankout = '$no_bk' ");
                 $row = mysqli_fetch_array($sql);
@@ -604,11 +620,11 @@
             $satu = 1;
 
             if ($curr1 == $curr2 || $curr1 == "IDR" && $curr2 == "USD") {
-               $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
-               $sql = mysqli_query($conn2,"select round(sum(eqv_idr),0) as amount from b_bankout_h  where no_bankout = '$no_bk' ");
-               $row = mysqli_fetch_array($sql);
-               $amount = isset($row['amount']) ? $row['amount']: null;
-           }else{
+             $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
+             $sql = mysqli_query($conn2,"select round(sum(eqv_idr),0) as amount from b_bankout_h  where no_bankout = '$no_bk' ");
+             $row = mysqli_fetch_array($sql);
+             $amount = isset($row['amount']) ? $row['amount']: null;
+         }else{
             $no_bk = isset($_POST['no_bk']) ? $_POST['no_bk']: null;
             $sql = mysqli_query($conn2,"select round(sum(amount),0) as amount from b_bankout_h  where no_bankout = '$no_bk' ");
             $row = mysqli_fetch_array($sql);
@@ -780,7 +796,7 @@
                       <div class="form-group">
                         <form id="modal-form" method="post">
                             <div class="form-row">
-                             <div class="col-md-4">
+                               <div class="col-md-4">
                                 <label for="nama_supp"><b>Customer</b></label>   
 
                                 <?php 
@@ -801,49 +817,49 @@
             value="<?php 
             $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
                 echo $nama_supp; 
-            ?>"> -->
+                ?>"> -->
+            </div>
+            <div class="col-md-4" style="padding-left: 150px;">
+
+                <label for="nama_supp"><b>Reference</b></label>            
+                <input type="text" readonly style="font-size: 14px; width: 300px;" class="form-control" name="txt_supp" id="txt_supp" 
+                value="<?php 
+                $ref_num = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
+                echo $ref_num; 
+                ?>">
+            </div>
         </div>
-        <div class="col-md-4" style="padding-left: 150px;">
 
-            <label for="nama_supp"><b>Reference</b></label>            
-            <input type="text" readonly style="font-size: 14px; width: 300px;" class="form-control" name="txt_supp" id="txt_supp" 
-            value="<?php 
-            $ref_num = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
-            echo $ref_num; 
-        ?>">
-    </div>
-</div>
+        <label><b>Reference Date</b></label>
+        <div class="input-group-append">           
+            <input type="text" style="font-size: 14px;" class="form-control tanggal" id="start_date" name="start_date" 
+            value="<?php
+            $start_date ='';
+            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+              $start_date = date("Y-m-d",strtotime($_POST['start_date']));
+          }
+          if(!empty($_POST['start_date'])) {
+            echo $_POST['start_date'];
+        }
+        else{
+            echo date("d-m-Y");
+        } ?>" 
+        placeholder="Tanggal Awal">
 
-<label><b>Reference Date</b></label>
-<div class="input-group-append">           
-    <input type="text" style="font-size: 14px;" class="form-control tanggal" id="start_date" name="start_date" 
-    value="<?php
-    $start_date ='';
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-      $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-  }
-  if(!empty($_POST['start_date'])) {
-    echo $_POST['start_date'];
-}
-else{
-    echo date("d-m-Y");
-} ?>" 
-placeholder="Tanggal Awal">
-
-<label class="col-md-1" for="end_date"><b>-</b></label>
-<input type="text" style="font-size: 14px;" class="form-control tanggal" id="end_date" name="end_date" 
-value="<?php
-$end_date ='';
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-  $end_date = date("Y-m-d",strtotime($_POST['start_date']));
-}
-if(!empty($_POST['end_date'])) {
-    echo $_POST['end_date'];
-}
-else{
-    echo date("d-m-Y");
-} ?>" 
-placeholder="Tanggal Akhir">
+        <label class="col-md-1" for="end_date"><b>-</b></label>
+        <input type="text" style="font-size: 14px;" class="form-control tanggal" id="end_date" name="end_date" 
+        value="<?php
+        $end_date ='';
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+          $end_date = date("Y-m-d",strtotime($_POST['start_date']));
+      }
+      if(!empty($_POST['end_date'])) {
+        echo $_POST['end_date'];
+    }
+    else{
+        echo date("d-m-Y");
+    } ?>" 
+    placeholder="Tanggal Akhir">
 </div>  
 <div class="modal-footer">
     <button type="submit" id="send" name="send" class="btn btn-warning btn-lg" style="width: 100%;"><span class="fa fa-check"></span>
@@ -867,9 +883,9 @@ placeholder="Tanggal Akhir">
 
         <div class="col-md-12">
 
-         <?php 
-         $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
-         if ($ref == 'AR Collection') {
+           <?php 
+           $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
+           if ($ref == 'AR Collection') {
             echo '';
         }elseif($ref == 'None'){
 
@@ -898,6 +914,7 @@ placeholder="Tanggal Akhir">
             <thead>
             <tr>
             <th class="text-center">-</th>
+            <th class="text-center">Profit Center</th>
             <th class="text-center">COA</th>
             <th class="text-center">Reff Document</th>
             <th class="text-center">Reff Date</th>
@@ -925,9 +942,9 @@ placeholder="Tanggal Akhir">
         }
 
         if ($ref_num == 'Bank Keluar') {
-            $sql = mysqli_query($conn2,"select a.no_bankout, GROUP_CONCAT(c.no_coa,' ',c.nama_coa) as coa,b.no_coa,a.bankout_date,a.nama_supp,a.curr, a.amount, a.outstanding, a.status, a.deskripsi, a.eqv_idr from b_bankout_h a inner join b_bankout_none b on b.no_bankout = a.no_bankout inner join mastercoa_v2 c on c.no_coa = b.no_coa where a.no_bankout = '$no_bk'
-             union
-             select a.no_bankout,GROUP_CONCAT(e.no_coa,' ',e.nama_coa) as coa,d.coa no_coa,a.bankout_date,a.nama_supp,a.curr, a.amount, a.outstanding, a.status, a.deskripsi, a.eqv_idr from b_bankout_h a inner join b_bankout_det b on b.no_bankout = a.no_bankout INNER JOIN tbl_pv_h c on c.no_pv = b.no_reff inner join tbl_pv d on d.no_pv = c.no_pv left join mastercoa_v2 e on e.no_coa = d.coa where a.no_bankout = '$no_bk'");
+            $sql = mysqli_query($conn2,"select a.no_bankout, GROUP_CONCAT(c.no_coa,' ',c.nama_coa) as coa,b.no_coa,a.bankout_date,a.nama_supp,a.curr, a.amount, a.outstanding, a.status, a.deskripsi, a.eqv_idr, kode_pc, CONCAT(id_pc,' - ',nama_pc) nama_pc from b_bankout_h a inner join b_bankout_none b on b.no_bankout = a.no_bankout inner join mastercoa_v2 c on c.no_coa = b.no_coa LEFT JOIN master_pc mp on mp.kode_pc = b.profit_center where a.no_bankout = '$no_bk'
+               union
+               select a.no_bankout,GROUP_CONCAT(e.no_coa,' ',e.nama_coa) as coa,d.coa no_coa,a.bankout_date,a.nama_supp,a.curr, a.amount, a.outstanding, a.status, a.deskripsi, a.eqv_idr, '' kode_pc, '' nama_pc from b_bankout_h a inner join b_bankout_det b on b.no_bankout = a.no_bankout INNER JOIN tbl_pv_h c on c.no_pv = b.no_reff inner join tbl_pv d on d.no_pv = c.no_pv left join mastercoa_v2 e on e.no_coa = d.coa where a.no_bankout = '$no_bk'");
         }else{
             '';
         }
@@ -946,7 +963,7 @@ placeholder="Tanggal Akhir">
             </td>';
             echo '
             <td style="width: 200px;">
-            <select class="form-control select2abs4 prof_ctr" name="prof_ctr" id="prof_ctr" style="width: 250px"> <option value="-" > - </option>';?> <?php $sql3 = mysqli_query($conn1,"select id_pc,nama_pc from master_pc where status = 'Active'"); foreach ($sql3 as $fc) : echo'<option value="'.$fc["nama_pc"].'"> '.$fc["nama_pc"].' </option>'; endforeach; 
+            <select class="form-control select2abs4 prof_ctr" name="prof_ctr" id="prof_ctr" style="width: 250px"> <option value="-" > - </option>';?> <?php $sql3 = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'"); foreach ($sql3 as $fc) : echo'<option value="'.$fc["kode_pc"].'"> '.$fc["tampil"].' </option>'; endforeach; 
             echo'</select>
             </td>';
             echo '
@@ -990,6 +1007,9 @@ placeholder="Tanggal Akhir">
                     echo '<tr>
                     <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>                      
                     <td style="width:150px;">
+                    <input style="text-align: center;font-size: 14px" type="text" class="form-control" id="txt_amount" name="txt_amount" data="'.$row['kode_pc'].'" value="'.$row['nama_pc'].'" disabled>
+                    </td>
+                    <td style="width:150px;">
                     <input style="text-align: center;font-size: 14px" type="text" class="form-control" id="txt_amount" name="txt_amount" data="'.$row['no_coa'].'" value="'.$row['coa'].'" disabled>
                     </td>
                     <td style="width:100px;">
@@ -1015,6 +1035,9 @@ placeholder="Tanggal Akhir">
 
                 echo '<tr>
                 <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>                      
+                <td style="width:150px;">
+                <input style="text-align: center;font-size: 14px" type="text" class="form-control" id="txt_amount" name="txt_amount"  value="" disabled>
+                </td>
                 <td style="width:150px;">
                 <input style="text-align: center;font-size: 14px" type="text" class="form-control" id="txt_amount" name="txt_amount" data="8.52.01" value="8.52.01 LABA / (RUGI) SELISIH KURS" disabled>
                 </td>
@@ -1218,11 +1241,11 @@ placeholder="Tanggal Akhir">
                     echo '';
                 }
                 else{                 
-                    $sql = mysqli_query($conn1,"select id_pc,nama_pc from master_pc where status = 'Active'");
+                    $sql = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
                     while ($row = mysqli_fetch_array($sql)) {
-                        $data = $row['nama_pc'];
-                        $code_combine = $row['nama_pc'];
-                        if($row['nama_pc'] == $_POST['profit_center']){
+                        $data = $row['tampil'];
+                        $code_combine = $row['kode_pc'];
+                        if($row['kode_pc'] == $_POST['profit_center']){
                             $isSelected = ' selected="selected"';
                         }else{
                             $isSelected = '';
@@ -1401,7 +1424,7 @@ function SidebarCollapse () {
 
 <script>
     $(document).ready(function() {
-     $('#mytablenone').DataTable({
+       $('#mytablenone').DataTable({
             paging: false,          // Menambahkan paging
             searching: false,       // Menambahkan pencarian
             scrollCollapse: true,  // Mengatasi jika data tidak cukup
@@ -1412,9 +1435,9 @@ function SidebarCollapse () {
             infoFiltered: "" // Untuk keadaan filter
         }    // Menjaga header tetap terlihat
     });
-     $("[data-toggle=tooltip]").tooltip();
+       $("[data-toggle=tooltip]").tooltip();
 
- } );
+   } );
 </script>
 
 
@@ -1557,7 +1580,7 @@ function SidebarCollapse () {
 }
 
 
-    $(document).on('change', '.prof_ctr', function () {
+$(document).on('change', '.prof_ctr', function () {
     const selectedProfCtr = $(this).val();  // Ambil nilai prof_ctr yang dipilih
     const costCtrDropdown = $(this).closest('tr').find('.cost_ctr');  // Temukan dropdown cost_ctr dalam baris yang sama
 
@@ -1621,8 +1644,8 @@ function SidebarCollapse () {
       //Initialize Select2 Elements
       var selectcoba = rowCount;
       $('.rowCount').select2({
-         theme: 'bootstrap4'
-     })
+       theme: 'bootstrap4'
+   })
       //Initialize Select2 Elements
       $('.select2add').select2({
         theme: 'bootstrap4'
@@ -1644,9 +1667,9 @@ function SidebarCollapse () {
 <select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="200px" data-size="5">
 <option value="-"> - </option>
 <?php
-$sql3 = mysqli_query($conn1, "select id_pc,nama_pc from master_pc where status = 'Active'");
+$sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
 foreach ($sql3 as $fc) : ?>
-    <option value="<?= $fc['nama_pc']; ?>"><?= $fc['nama_pc']; ?></option>
+    <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option>
 <?php endforeach; ?>
 </select>
 </td>
@@ -1740,9 +1763,9 @@ function InsertRow(tableID)
             <select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="200px" data-size="5">
             <option value="-"> - </option>
             <?php
-            $sql3 = mysqli_query($conn1, "select id_pc,nama_pc from master_pc where status = 'Active'");
+            $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
             foreach ($sql3 as $fc) : ?>
-                <option value="<?= $fc['nama_pc']; ?>"><?= $fc['nama_pc']; ?></option>
+                <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option>
             <?php endforeach; ?>
             </select>
             </td>
@@ -1956,7 +1979,7 @@ function InsertRow(tableID)
 
 
 <script type="text/javascript">
-   $('#accountid').change(function(){
+ $('#accountid').change(function(){
     var ttl_jml = '';
     var valu = '';
     $("input[type=text]").each(function () {         
@@ -2111,7 +2134,7 @@ function InsertRow(tableID)
 
         });
     }else{
-       $("input[name=rate]").keyup(function(){
+     $("input[name=rate]").keyup(function(){
         var ttl_jml = 0;
         var rat = 0;
         var valu = '';
@@ -2151,7 +2174,7 @@ function InsertRow(tableID)
 
     }); 
 
-   }
+ }
 </script>
 
 <script type="text/javascript">
@@ -2192,11 +2215,11 @@ function addListener(elm,index){
   elm.setAttribute('min', 1);  // set the min attribute on each field
   
   elm.addEventListener('keypress', function(e){  // add listener to each field 
-     var key = !isNaN(e.charCode) ? e.charCode : e.keyCode;
-     str = String.fromCharCode(key); 
-     if (str.localeCompare('-') === 0){
-       event.preventDefault();
-   }
+   var key = !isNaN(e.charCode) ? e.charCode : e.keyCode;
+   str = String.fromCharCode(key); 
+   if (str.localeCompare('-') === 0){
+     event.preventDefault();
+ }
 
 });
   
@@ -2390,14 +2413,15 @@ function addListener(elm,index){
                     e.preventDefault();
                 },
                 success: function(response){
-                 $("input[type=checkbox]:checked").each(function () {
+                   $("input[type=checkbox]:checked").each(function () {
                     var no_bankin = document.getElementById('no_doc').value;                        
-                    var id_coa = $(this).closest('tr').find('td:eq(1) input').attr('data');
-                    var no_reff = $(this).closest('tr').find('td:eq(2) input').val();                  
-                    var reff_date = $(this).closest('tr').find('td:eq(3) input').val();
-                    var deskripsi = $(this).closest('tr').find('td:eq(4) input').val();    
-                    var t_debit = $(this).closest('tr').find('td:eq(5) input').val();
-                    var t_credit = $(this).closest('tr').find('td:eq(6) input').val();        
+                    var prof_ctr = $(this).closest('tr').find('td:eq(1) input').attr('data');
+                    var id_coa = $(this).closest('tr').find('td:eq(2) input').attr('data');
+                    var no_reff = $(this).closest('tr').find('td:eq(3) input').val();                  
+                    var reff_date = $(this).closest('tr').find('td:eq(4) input').val();
+                    var deskripsi = $(this).closest('tr').find('td:eq(5) input').val();    
+                    var t_debit = $(this).closest('tr').find('td:eq(6) input').val();
+                    var t_credit = $(this).closest('tr').find('td:eq(7) input').val();        
                     var akun = document.getElementById('accountid').value;        
                     var nominal = document.getElementById('nominal_h1').value;
 
@@ -2405,7 +2429,7 @@ function addListener(elm,index){
                         $.ajax({
                             type:'POST',
                             url:'insert_bankin_none.php',
-                            data: {'no_bankin':no_bankin, 'id_coa':id_coa, 'no_reff':no_reff, 'reff_date':reff_date, 'deskripsi':deskripsi, 't_debit':t_debit, 't_credit':t_credit},
+                            data: {'no_bankin':no_bankin, 'prof_ctr':prof_ctr, 'id_coa':id_coa, 'no_reff':no_reff, 'reff_date':reff_date, 'deskripsi':deskripsi, 't_debit':t_debit, 't_credit':t_credit},
                             cache: 'false',
                             close: function(e){
                                 e.preventDefault();
@@ -2424,11 +2448,11 @@ function addListener(elm,index){
                     }
 
                 });
-                 console.log(response);
-                 alert(response);
-                 window.location = 'bank-in22.php';
-             },
-             error: function (xhr, ajaxOptions, thrownError) {
+                   console.log(response);
+                   alert(response);
+                   window.location = 'bank-in22.php';
+               },
+               error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
                 alert(xhr);
             }

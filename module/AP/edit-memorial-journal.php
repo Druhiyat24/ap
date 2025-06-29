@@ -422,7 +422,7 @@
 </tr> -->
 <?php
 $no_mj = base64_decode($_GET['no_mj']);
-$sqlpv = mysql_query("select a.no_coa,concat(c.no_coa,' ', c.nama_coa) as coa ,a.no_costcenter, d.cc_name, a.no_reff, a.reff_date,a.buyer,a.no_ws,a.curr,a.rate,a.debit,a.credit,a.keterangan, a.profit_center from tbl_memorial_journal a left join master_category_mj b on b.id_cmj = a.id_cmj left join mastercoa_v2 c on c.no_coa = a.no_coa left join b_master_cc d on d.no_cc = a.no_costcenter where a.no_mj = '$no_mj'",$conn1);
+$sqlpv = mysql_query("select a.no_coa,concat(c.no_coa,' ', c.nama_coa) as coa ,a.no_costcenter, d.cc_name, a.no_reff, a.reff_date,a.buyer,a.no_ws,a.curr,a.rate,a.debit,a.credit,a.keterangan, a.profit_center, kode_pc, CONCAT(mp.id_pc,' - ',nama_pc) nama_pc from tbl_memorial_journal a left join master_category_mj b on b.id_cmj = a.id_cmj left join mastercoa_v2 c on c.no_coa = a.no_coa left join b_master_cc d on d.no_cc = a.no_costcenter LEFT JOIN master_pc mp on mp.kode_pc = a.profit_center where a.no_mj = '$no_mj'",$conn1);
 
 while($row = mysql_fetch_array($sqlpv)){
     $coa = $row['no_coa'];
@@ -449,7 +449,7 @@ while($row = mysql_fetch_array($sqlpv)){
     </select>
     </td>
     <td >
-    <select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="200px" data-size="5"><option value="'.$row['profit_center'].'" >'.$row['profit_center'].'</option>'; $sql2 = mysqli_query($conn1,"select id_pc,nama_pc from master_pc where status = 'Active' and nama_pc != '$profit_center'"); foreach ($sql2 as $pc) : echo'<option value="'. $pc["nama_pc"].'">'.$pc["nama_pc"].'</option>'; endforeach; ?>
+    <select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="200px" data-size="5"><option value="'.$row['profit_center'].'" >'.$row['nama_pc'].'</option>'; $sql2 = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active' and kode_pc != '$profit_center'"); foreach ($sql2 as $pc) : echo'<option value="'. $pc["kode_pc"].'">'.$pc["tampil"].'</option>'; endforeach; ?>
     <?php
     echo '</select>
     </td>
@@ -904,9 +904,9 @@ function SidebarCollapse () {
 <td>
 <select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="200px" data-size="5">
 <?php
-$sql3 = mysqli_query($conn1, "select id_pc,nama_pc from master_pc where status = 'Active'");
+$sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
 foreach ($sql3 as $fc) : ?>
-    <option value="<?= $fc['nama_pc']; ?>"><?= $fc['nama_pc']; ?></option>
+    <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option>
 <?php endforeach; ?>
 </select>
 </td>
@@ -1055,9 +1055,9 @@ function InsertRow(tableID)
             <td>
             <select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="200px" data-size="5">
             <?php
-            $sql3 = mysqli_query($conn1, "select id_pc,nama_pc from master_pc where status = 'Active'");
+            $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
             foreach ($sql3 as $fc) : ?>
-                <option value="<?= $fc['nama_pc']; ?>"><?= $fc['nama_pc']; ?></option>
+                <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option>
             <?php endforeach; ?>
             </select>
             </td>

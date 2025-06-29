@@ -3,6 +3,7 @@ include '../../conn/conn.php';
 ini_set('date.timezone', 'Asia/Jakarta');
 
 $no_bankin = $_POST['no_bankin'];
+$prof_ctr =  $_POST['prof_ctr'];
 $id_coa =  $_POST['id_coa'];
 $no_reff = $_POST['no_reff'];
 $reff_date =  date("Y-m-d",strtotime($_POST['reff_date']));
@@ -72,15 +73,15 @@ $credit = $t_credit * $rates;
 if ($t_debit == '' and $t_credit == '') {
 	
 }else{
-$query = "INSERT INTO b_bankin_none (no_bankin,id_coa,no_reff,reff_date,deskripsi,t_debit,t_credit) 
+$query = "INSERT INTO b_bankin_none (no_bankin,id_coa,no_reff,reff_date,deskripsi,t_debit,t_credit,profit_center) 
 VALUES 
-	('$kode', '$id_coa', '$no_reff', '$reff_date', '$deskripsi', '$t_debit', '$t_credit')";
+	('$kode', '$id_coa', '$no_reff', '$reff_date', '$deskripsi', '$t_debit', '$t_credit', '$prof_ctr')";
 
 $execute = mysqli_query($conn2,$query);
 
-$queryss3 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
+$queryss3 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date,profit_center) 
 VALUES 
-   ('$kode', '$date', 'Bank Keluar', '$id_coa', '$nama_coa', '-', '-', '$no_reff', '$reff_date', '-', '-', '$curr', '$rates', '$t_debit', '$t_credit', '$debit', '$credit', 'Draft', '$deskripsi', '$create_by', '$create_date', '', '', '', '')";
+   ('$kode', '$date', 'Bank Keluar', '$id_coa', '$nama_coa', '-', '-', '$no_reff', '$reff_date', '-', '-', '$curr', '$rates', '$t_debit', '$t_credit', '$debit', '$credit', 'Draft', '$deskripsi', '$create_by', '$create_date', '', '', '', '', '$prof_ctr')";
 
 $executess3 = mysqli_query($conn2,$queryss3);
 

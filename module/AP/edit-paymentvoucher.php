@@ -696,6 +696,7 @@
         <tr>
             <th class="text-center" style="width: 2%">-</th>
             <th class="text-center" style="width: 12%">COA</th>
+            <th class="text-center" style="width: 10%">Profit Center</th>
             <th class="text-center" style="width: 10%">Cost Center</th>
             <th class="text-center" style="width: 9%">Reff Doc</th>
             <th class="text-center" style="width: 9%">Reff Date</th>
@@ -717,7 +718,11 @@
                 </select>
             </td>
             <td >
-                <select class="form-control" name="nomor_cc" id="nomor_cc" > <option value="-" > - </option> <?php $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name as cost_name from b_master_cc where status = 'Active'"); foreach ($sql2 as $ncc) : echo'<option value="'.$ncc["code_combine"].'"> '.$ncc["cost_name"].' </option>'; endforeach; ?>
+                <select class="form-control" name="prof_ctr" id="prof_ctr" > <option value="-" > - </option> <?php $sql = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'"); foreach ($sql as $cc) : echo'<option value="'.$cc["kode_pc"].'"> '.$cc["tampil"].' </option>'; endforeach; ?>
+                </select>
+            </td>
+            <td >
+                <select class="form-control" name="nomor_cc" id="nomor_cc" > <option value="-" > - </option> <?php $sql2 = mysqli_query($conn1,"select no_cc as code_combine,concat(no_cc,' - ',cc_name) as cost_name from b_master_cc where status = 'Active'"); foreach ($sql2 as $ncc) : echo'<option value="'.$ncc["code_combine"].'"> '.$ncc["cost_name"].' </option>'; endforeach; ?>
                 </select>
             </td>
             <td>
@@ -753,7 +758,7 @@
         </tr>
         <?php
     $no_pv = base64_decode($_GET['no_pv']);
-    $sqlpv = mysql_query("select * from (select a.id,a.id_pph,a.coa,concat(b.no_coa,' ', b.nama_coa) as nama_coa,a.no_cc,d.cc_name,a.reff_doc,a.reff_date,a.deskripsi,a.amount,a.ded_add,a.due_date,a.pph, IF(a.pph = '0','Non PPH',CONCAT(kriteria,' (',percentage,'%)')) as kriteria  from tbl_pv a left join mastercoa_v2 b on b.no_coa = a.coa left join mtax c on c.idtax = a.id_pph left join b_master_cc d on d.no_cc = a.no_cc where a.no_pv = '$no_pv' and IF(a.pph = '0',a.no_pv = '$no_pv', category_tax = 'PPH') group by a.id) a left join
+    $sqlpv = mysql_query("select * from (select a.id,a.id_pph,a.coa,concat(b.no_coa,' ', b.nama_coa) as nama_coa,a.no_cc,CONCAT(a.no_cc,' - ',d.cc_name) cc_name,a.reff_doc,a.reff_date,a.deskripsi,a.amount,a.ded_add,a.due_date,a.pph, IF(a.pph = '0','Non PPH',CONCAT(kriteria,' (',percentage,'%)')) as kriteria, kode_pc, CONCAT(mp.id_pc,' - ',nama_pc) nama_pc  from tbl_pv a left join mastercoa_v2 b on b.no_coa = a.coa left join mtax c on c.idtax = a.id_pph left join b_master_cc d on d.no_cc = a.no_cc LEFT JOIN master_pc mp on mp.kode_pc = a.profit_center where a.no_pv = '$no_pv' and IF(a.pph = '0',a.no_pv = '$no_pv', category_tax = 'PPH') group by a.id) a left join
 (select a.id,a.id_ppn,a.ppn, IF(a.ppn = '0','Non PPN',CONCAT(kriteria,' (',percentage,'%)')) as kriteria2  from tbl_pv a left join mtax c on c.idtax = a.id_ppn where a.no_pv = '$no_pv' and IF(a.ppn = '0',a.no_pv = '$no_pv', category_tax = 'PPN') group by a.id) b on b.id = a.id",$conn1);
 
      while($row = mysql_fetch_array($sqlpv)){
@@ -761,6 +766,7 @@
                     $id_ppn = $row['id_ppn'];
                     $coa = $row['coa'];
                     $no_cc = $row['no_cc'];
+                    $kode_pc = $row['kode_pc'];
                     $reff_date = $row['reff_date'];
                     $amount = $row['amount'];
                     $ded_add = $row['ded_add'];
@@ -785,7 +791,13 @@
                 </select>
             </td>
             <td >
-                <select class="form-control" name="nomor_cc" id="nomor_cc" > <option value="'.$row['no_cc'].'" >'.$row['cc_name'].'</option><option value="-" > - </option>';  $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name as cost_name from b_master_cc where status = 'Active' and no_cc != '$no_cc'"); foreach ($sql2 as $ccs) : echo'<option value="'.$ccs["code_combine"].'"> '.$ccs["cost_name"].' </option>'; endforeach; ?>
+                <select class="form-control" name="prof_ctr" id="prof_ctr" > <option value="'.$row['kode_pc'].'" >'.$row['nama_pc'].'</option>';  $sql2 = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active' and kode_pc != '$kode_pc'"); foreach ($sql2 as $ccs) : echo'<option value="'.$ccs["kode_pc"].'"> '.$ccs["tampil"].' </option>'; endforeach; echo'<option value="-" > - </option>' ?>
+                <?php
+                echo '
+                </select>
+            </td>
+            <td >
+                <select class="form-control" name="nomor_cc" id="nomor_cc" > <option value="'.$row['no_cc'].'" >'.$row['cc_name'].'</option><option value="-" > - </option>';  $sql2 = mysqli_query($conn1,"select no_cc as code_combine,concat(no_cc,' - ',cc_name) as cost_name from b_master_cc where status = 'Active' and no_cc != '$no_cc'"); foreach ($sql2 as $ccs) : echo'<option value="'.$ccs["code_combine"].'"> '.$ccs["cost_name"].' </option>'; endforeach; ?>
                 <?php
                 echo '
                 </select>
@@ -1244,6 +1256,8 @@ $(function() {
   </script> -->
 
 <script type="text/javascript">
+
+
     
    // JavaScript Document
 function addRow(tableID) {
@@ -1332,7 +1346,7 @@ function deleteRow(tableID)
             for(var i=0; i<rowCount; i++)
                 {
                 var row = table.rows[i];
-                var chkbox = row.cells[11].childNodes[0];
+                var chkbox = row.cells[12].childNodes[0];
                 if (null != chkbox && true == chkbox.checked)
                     {
                     if (rowCount <= 1)
@@ -1362,10 +1376,10 @@ function deleteRow(tableID)
     var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0;
             for (var i = 1; i < (table.rows.length); i++) {
 
-    var price = document.getElementById("tbody2").rows[i].cells[6].children[0].value;
-    var price2 = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
-    var pph = document.getElementById("tbody2").rows[i].cells[9].children[0].value || 0;
-    var ppn = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+    var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
+    var price2 = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
+    var pph = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+    var ppn = document.getElementById("tbody2").rows[i].cells[11].children[0].value || 0;
 
     if(price == ''){
         tot_price = - price2;
@@ -1429,7 +1443,7 @@ function deleteRow(tableID)
             for(var i=0; i<rowCount; i++)
                 {
                 var row = table.rows[i];
-                var chkbox = row.cells[10].childNodes[0];
+                var chkbox = row.cells[11].childNodes[0];
                 if (null != chkbox && true == chkbox.checked)
                     {
                     var newRow = table.insertRow(i+1);
@@ -1524,10 +1538,10 @@ function input_pph(){
     var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0;
             for (var i = 1; i < (table.rows.length); i++) {
 
-    var price = document.getElementById("tbody2").rows[i].cells[6].children[0].value;
-    var price2 = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
-    var pph = document.getElementById("tbody2").rows[i].cells[9].children[0].value || 0;
-    var ppn = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+    var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
+    var price2 = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
+    var pph = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+    var ppn = document.getElementById("tbody2").rows[i].cells[11].children[0].value || 0;
 
     if(price == ''){
         tot_price = - price2;
@@ -1569,10 +1583,10 @@ function input_ppn(){
     var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0;
             for (var i = 1; i < (table.rows.length); i++) {
 
-    var price = document.getElementById("tbody2").rows[i].cells[6].children[0].value;
-    var price2 = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
-    var ppn = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
-    var pph = document.getElementById("tbody2").rows[i].cells[9].children[0].value || 0;
+    var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
+    var price2 = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
+    var pph = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+    var ppn = document.getElementById("tbody2").rows[i].cells[11].children[0].value || 0;
 
     if(price == ''){
         tot_price = - price2;
@@ -1649,10 +1663,10 @@ function getdate() {
     var totall = 0;
             for (var i = 1; i < (table.rows.length); i++) {
 
-    var price = document.getElementById("tbody2").rows[i].cells[6].children[0].value;
-    var price2 = document.getElementById("tbody2").rows[i].cells[7].children[0];
-    var pph = document.getElementById("tbody2").rows[i].cells[9].children[0].value || 0;
-    var ppn = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+   var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
+    var price2 = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
+    var pph = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+    var ppn = document.getElementById("tbody2").rows[i].cells[11].children[0].value || 0;
 
     if (price == '') {
         harga = 0;
@@ -1698,9 +1712,9 @@ function modal_input_dedadd(){
     var total_pph = 0;
             for (var i = 1; i < (table.rows.length); i++) {
 
-    var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
-    var price_amt = document.getElementById("tbody2").rows[i].cells[6].children[0];
-    var pph = document.getElementById("tbody2").rows[i].cells[9].children[0].value;
+    var price = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
+    var price_amt = document.getElementById("tbody2").rows[i].cells[7].children[0];
+    var pph = document.getElementById("tbody2").rows[i].cells[10].children[0].value;
 
     if (price == '') {
         harga = 0;
@@ -2140,17 +2154,18 @@ function addListener(elm,index){
         $("input[type=checkbox]:checked").each(function () {
         var doc_number = document.getElementById('no_doc').value;        
         var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[name=nomor_coa] option').filter(':selected').val(); 
-        var no_cc = $(this).closest('tr').find('td:eq(2)').find('select[name=nomor_cc] option').filter(':selected').val();      
-        var no_ref = $(this).closest('tr').find('td:eq(3) input').val();                               
-        var ref_date = $(this).closest('tr').find('td:eq(4) input').val();
-        var deskripsi = $(this).closest('tr').find('td:eq(5) input').val();                               
-        var amount = $(this).closest('tr').find('td:eq(6) input').val() || 0;
-        var due_date = $(this).closest('tr').find('td:eq(8) input').val();
-        var ded_add = $(this).closest('tr').find('td:eq(7) input').val() || 0;
-        var pph = $(this).closest('tr').find('td:eq(9)').find('select[name=pphh] option').filter(':selected').val() || 0;
-        var idtax = $(this).closest('tr').find('td:eq(9)').find('select[name=pphh] option').filter(':selected').attr('data-idtax');
-        var ppn = $(this).closest('tr').find('td:eq(10)').find('select[name=ppnn] option').filter(':selected').val() || 0;
-        var id_ppn = $(this).closest('tr').find('td:eq(10)').find('select[name=ppnn] option').filter(':selected').attr('data-idtax');
+        var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val(); 
+        var no_cc = $(this).closest('tr').find('td:eq(3)').find('select[name=nomor_cc] option').filter(':selected').val();      
+        var no_ref = $(this).closest('tr').find('td:eq(4) input').val();                               
+        var ref_date = $(this).closest('tr').find('td:eq(5) input').val();
+        var deskripsi = $(this).closest('tr').find('td:eq(6) input').val();                               
+        var amount = $(this).closest('tr').find('td:eq(7) input').val() || 0;
+        var due_date = $(this).closest('tr').find('td:eq(9) input').val();
+        var ded_add = $(this).closest('tr').find('td:eq(8) input').val() || 0;
+        var pph = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').val() || 0;
+        var idtax = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').attr('data-idtax');
+        var ppn = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').val() || 0;
+        var id_ppn = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').attr('data-idtax');
         var total_h = document.getElementById('total_h').value || 0;
         var curr = document.getElementById('curre').value; 
         var for_pay = $('select[name=forpay] option').filter(':selected').val();
@@ -2167,7 +2182,7 @@ function addListener(elm,index){
         $.ajax({
             type:'POST',
             url:'insertpv.php',
-            data: {'doc_number':doc_number, 'no_coa':no_coa, 'no_cc':no_cc, 'no_ref':no_ref, 'ref_date':ref_date, 'deskripsi':deskripsi, 'amount':amount, 'due_date':due_date, 'ded_add':ded_add, 'pph':pph, 'idtax':idtax, 'ppn':ppn, 'id_ppn':id_ppn},
+            data: {'doc_number':doc_number, 'prof_ctr':prof_ctr, 'no_coa':no_coa, 'no_cc':no_cc, 'no_ref':no_ref, 'ref_date':ref_date, 'deskripsi':deskripsi, 'amount':amount, 'due_date':due_date, 'ded_add':ded_add, 'pph':pph, 'idtax':idtax, 'ppn':ppn, 'id_ppn':id_ppn},
             cache: 'false',
             close: function(e){
                 e.preventDefault();

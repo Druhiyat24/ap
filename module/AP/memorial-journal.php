@@ -305,7 +305,7 @@
             $fin = $rs['finance'];
             $app = $rs['ap_apprv_lp'];
 
-            echo '<td style="width: 160px;">';
+            echo '<td style="width: 200px;">';
             if($status == 'Draft' and $fin == '1'){
                 echo '<a id="approve" href=""><button style="border-radius: 6px" type="button" class="btn-xs btn-info"><i class="fa fa-paper-plane"aria-hidden="true" style="padding-right: 10px; padding-left: 5px;" onclick="alert_approve();"> Post</i></button></a>
                 <a href="edit-memorial-journal.php?no_mj='.base64_encode($row['no_mj']).' "><button style="border-radius: 6px" type="button" class="btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Edit</i></button></a>                

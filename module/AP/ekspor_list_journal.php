@@ -94,7 +94,7 @@
                                                 when no_journal like '%KKK/%' then 'Petty Cash'
                                                 when no_journal like '%KKM/%' then 'Petty Cash'
                                                 when no_journal like '%GM/%' then 'GM'
-                        end asal from tbl_list_journal where tgl_journal between '$start_date' and '$end_date' and no_journal not like '%KKK%' 
+                        end asal, profit_center from tbl_list_journal where tgl_journal between '$start_date' and '$end_date' and no_journal not like '%KKK%' 
 union
 select DISTINCT '' id,no_journal, tgl_journal, type_journal, no_coa, nama_coa, CONCAT(no_coa,' ',nama_coa) coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, Round(debit,2) debit, Round(credit,2) credit, ROUND(debit * rate,2) debit_idr, ROUND(credit * rate,2) credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date,case when no_journal like '%/ALK/%' then 'AR'
                         when no_journal like '%L/NAG%' then 'AR'
@@ -112,14 +112,14 @@ select DISTINCT '' id,no_journal, tgl_journal, type_journal, no_coa, nama_coa, C
                                                 when no_journal like '%KKK/%' then 'Petty Cash'
                                                 when no_journal like '%KKM/%' then 'Petty Cash'
                                                 when no_journal like '%GM/%' then 'GM'
-                        end asal from tbl_list_journal where tgl_journal between '$start_date' and '$end_date' and no_journal like '%KKK%') a left JOIN
+                        end asal, profit_center from tbl_list_journal where tgl_journal between '$start_date' and '$end_date' and no_journal like '%KKK%') a left JOIN
 (select no_coa coa, id_direct_debit, id_direct_credit, id_indirect from mastercoa_v2) b on b.coa = a.no_coa
 left JOIN
 (select id,ind_name as idndirdebit, eng_name as engdirdebit from tbl_master_cashflow) dirdebit on dirdebit.id = b.id_direct_debit left join
 
 (select id,ind_name as idndircredit, eng_name as engdircredit from tbl_master_cashflow) dircredit on dircredit.id = b.id_direct_credit left join
 
-(select id,ind_name as idnindir, eng_name as engindir from tbl_master_cashflow) indir on indir.id = b.id_indirect left join (select no_cc, profit_center from b_master_cc where status = 'Active') cc on cc.no_cc = a.no_costcenter
+(select id,ind_name as idnindir, eng_name as engindir from tbl_master_cashflow) indir on indir.id = b.id_indirect left join (select no_cc, profit_center from b_master_cc where status = 'Active') cc on cc.no_cc = a.no_costcenter left join (select kode_pc, CONCAT(id_pc,' - ',nama_pc) nama_pc from master_pc where status = 'Active') mp on mp.kode_pc = a.profit_center
 ");
 
         $no = 1;
@@ -170,7 +170,7 @@ left JOIN
             <td  value = "'.$row['asal'].'">'.$row['asal'].'</td>
             <td  value = "'.$row['no_coa'].'">'.$row['no_coa'].'</td>
             <td  value = "'.$row['nama_coa'].'">'.$row['nama_coa'].'</td>
-            <td  value = "'.$row['profit_center'].'">'.$row['profit_center'].'</td>
+            <td  value = "'.$row['profit_center'].'">'.$row['nama_pc'].'</td>
             <td  value = "'.$row['no_cc'].'">'.$row['no_cc'].'</td>
             <td  value = "'.$row['nama_costcenter'].'">'.$row['nama_costcenter'].'</td>
             <td  value = "'.$row['reff_doc'].'">'.$row['reff_doc'].'</td>

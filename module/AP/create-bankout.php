@@ -607,7 +607,7 @@
                 </td>';
                 echo '
                 <td style="width: 200px;">
-                <select class="form-control select2abs4 prof_ctr" name="prof_ctr" id="prof_ctr" style="width: 250px"> <option value="-" > - </option>';?> <?php $sql3 = mysqli_query($conn1,"select id_pc,nama_pc from master_pc where status = 'Active'"); foreach ($sql3 as $fc) : echo'<option value="'.$fc["nama_pc"].'"> '.$fc["nama_pc"].' </option>'; endforeach; 
+                <select class="form-control select2abs4 prof_ctr" name="prof_ctr" id="prof_ctr" style="width: 250px"> <option value="-" > - </option>';?> <?php $sql3 = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'"); foreach ($sql3 as $fc) : echo'<option value="'.$fc["kode_pc"].'"> '.$fc["tampil"].' </option>'; endforeach; 
                 echo'</select>
                 </td>';
                 echo '
@@ -740,7 +740,7 @@
                                 </select>
                             </td>
                             <td style="width: 200px;">
-                                <select class="form-control" name="nomor_profit" id="nomor_profit" style="width: 250px"> <option value="-" > - </option> <?php $sqlcoc = mysqli_query($conn1,"select id_pc,nama_pc from master_pc where status = 'Active'"); foreach ($sqlcoc as $coc) : echo'<option value="'.$coc["nama_pc"].'"> '.$coc["nama_pc"].' </option>'; endforeach; ?>
+                                <select class="form-control" name="nomor_profit" id="nomor_profit" style="width: 250px"> <option value="-" > - </option> <?php $sqlcoc = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'"); foreach ($sqlcoc as $coc) : echo'<option value="'.$coc["kode_pc"].'"> '.$coc["tampil"].' </option>'; endforeach; ?>
                             </select>
                         </td>
                         <td style="width: 200px;">
@@ -818,7 +818,7 @@
             </div>
             <div class="container">
                 <div class="row">
-                  <div id="txt_tgl_kbon" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+                  <!-- <div id="txt_tgl_kbon" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
                   <div id="txt_nama_supp" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
                   <div id="txt_tgl_tempo" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>         
                   <div id="txt_curr" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
@@ -826,7 +826,7 @@
                   <div id="txt_status" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
                   <div id="txt_no_faktur" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
                   <div id="txt_supp_inv" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                  <div id="txt_tgl_inv" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>                                           
+                  <div id="txt_tgl_inv" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>   -->                                         
                   <div id="details" class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;"></div>          
               </div>
           </div>
@@ -1126,9 +1126,9 @@ function SidebarCollapse () {
     <select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="200px" data-size="5">
     <option value="-"> - </option>
     <?php
-    $sql3 = mysqli_query($conn1, "select id_pc,nama_pc from master_pc where status = 'Active'");
+    $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
     foreach ($sql3 as $fc) : ?>
-        <option value="<?= $fc['nama_pc']; ?>"><?= $fc['nama_pc']; ?></option>
+        <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option>
     <?php endforeach; ?>
     </select>
     </td>
@@ -1198,9 +1198,9 @@ function addRow2(tableID) {
     <select class="form-control selectpicker nomor_profit" name="nomor_profit" id="nomor_profit" data-live-search="true" data-width="200px" data-size="5">
     <option value="-"> - </option>
     <?php
-    $sql3 = mysqli_query($conn1, "select id_pc,nama_pc from master_pc where status = 'Active'");
+    $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
     foreach ($sql3 as $fc) : ?>
-        <option value="<?= $fc['nama_pc']; ?>"><?= $fc['nama_pc']; ?></option>
+        <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option>
     <?php endforeach; ?>
     </select>
     </td>
@@ -1331,9 +1331,9 @@ function InsertRow(tableID)
                 <select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="200px" data-size="5">
                 <option value="-"> - </option>
                 <?php
-                $sql3 = mysqli_query($conn1, "select id_pc,nama_pc from master_pc where status = 'Active'");
+                $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
                 foreach ($sql3 as $fc) : ?>
-                    <option value="<?= $fc['nama_pc']; ?>"><?= $fc['nama_pc']; ?></option>
+                    <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option>
                 <?php endforeach; ?>
                 </select>
                 </td>
@@ -1410,9 +1410,9 @@ function InsertRow2(tableID)
                 <select class="form-control selectpicker nomor_profit" name="nomor_profit" id="nomor_profit" data-live-search="true" data-width="200px" data-size="5">
                 <option value="-"> - </option>
                 <?php
-                $sql3 = mysqli_query($conn1, "select id_pc,nama_pc from master_pc where status = 'Active'");
+                $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
                 foreach ($sql3 as $fc) : ?>
-                    <option value="<?= $fc['nama_pc']; ?>"><?= $fc['nama_pc']; ?></option>
+                    <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option>
                 <?php endforeach; ?>
                 </select>
                 </td>
@@ -2479,7 +2479,7 @@ if($('select[name=nama_supp] option').filter(':selected').val() == '' || $('sele
 <script type="text/javascript">     
     $('table tbody tr').on('click', 'td:eq(1)', function(){                
         $('#mymodalkbon').modal('show');
-        var no_kbon = $(this).closest('tr').find('td:eq(1)').attr('value');
+        var no_kbon = $(this).closest('tr').find('td:eq(1)').attr('value-nopay');
         var tgl_kbon = $(this).closest('tr').find('td:eq(2)').text();
         var supp = $(this).closest('tr').find('td:eq(9)').attr('value');
         var tgl_tempo = $(this).closest('tr').find('td:eq(7)').text();
@@ -2492,8 +2492,8 @@ if($('select[name=nama_supp] option').filter(':selected').val() == '' || $('sele
 
         $.ajax({
             type : 'post',
-            url : 'ajaxkbon.php',
-            data : {'no_kbon': no_kbon},
+            url : 'ajax_pv.php',
+            data : {'no_pv': no_kbon},
             success : function(data){
     $('#details').html(data); //menampilkan data ke dalam modal
 }

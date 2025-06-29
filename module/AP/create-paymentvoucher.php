@@ -822,6 +822,7 @@
                     <thead>
         <tr><th class="text-center" style="width: 2%">-</th>
             <th class="text-center" style="width: 12%">COA</th>
+            <th class="text-center" style="width: 10%">Profit Center</th>
             <th class="text-center" style="width: 10%">Cost Center</th>
             <th class="text-center" style="width: 9%">Reff Doc</th>
             <th class="text-center" style="width: 9%">Reff Date</th>
@@ -843,8 +844,11 @@
                 </select>
             </td>
             <td >
-                <select class="form-control" name="nomor_cc" id="nomor_cc" > <option value="-" > - </option> <?php $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name, CONCAT(no_cc,' ',cc_name) as cost_name from b_master_cc where status = 'Active'"); foreach ($sql2 as $ncc) : echo'<option value="'.$ncc["code_combine"].'"> '.$ncc["cost_name"].' </option>'; endforeach; ?>
+                <select class="form-control" name="prof_ctr" id="prof_ctr" > <option value="-" > - </option> <?php $sql = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'"); foreach ($sql as $cc) : echo'<option value="'.$cc["kode_pc"].'"> '.$cc["tampil"].' </option>'; endforeach; ?>
                 </select>
+            </td>
+            <td >
+                <select class="form-control select2abs4 nomor_cc" name="nomor_cc[]" id="nomor_cc" style="width: 250px"> <option value="-" > - </option>';
             </td>
             <td>
                 <input type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete='off'>
@@ -1151,6 +1155,50 @@ $(function() {
   </script> -->
 
 <script type="text/javascript">
+
+    $(document).on('change', '.prof_ctr', function () {
+    const selectedProfCtr = $(this).val();  // Ambil nilai prof_ctr yang dipilih
+    const costCtrDropdown = $(this).closest('tr').find('.nomor_cc');  // Temukan dropdown cost_ctr dalam baris yang sama
+
+    // Kosongkan dropdown cost_ctr sebelum diisi
+    costCtrDropdown.selectpicker('destroy');  // Hancurkan selectpicker lama
+    costCtrDropdown.empty();  // Kosongkan semua opsi yang ada
+    costCtrDropdown.append('<option value="-"> - </option>');  // Tambahkan opsi default
+    costCtrDropdown.selectpicker();  // Inisialisasi ulang selectpicker
+
+    if (selectedProfCtr && selectedProfCtr !== '-') {
+        // Lakukan AJAX ke server untuk mengambil data cost_ctr
+        $.ajax({
+            url: 'getCostCenter.php',  // Ganti dengan URL endpoint server Anda
+            type: 'POST',
+            data: { prof_ctr: selectedProfCtr },  // Kirim data prof_ctr ke server
+            dataType: 'json',
+            success: function (response) {
+                // Periksa apakah respons valid
+                if (response && response.length > 0) {
+                    $.each(response, function (index, costCtr) {
+                        console.log(costCtr);  // Debug data yang diterima
+                        costCtrDropdown.append(`<option value="${costCtr.value}">${costCtr.text}</option>`);
+                    });
+
+                    // Re-inisialisasi selectpicker setelah menambah opsi
+                    costCtrDropdown.selectpicker('refresh');
+                } else {
+                    console.error('Tidak ada data yang diterima dari server.');
+                    // alert('Tidak ada data cost center yang tersedia.');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('AJAX Error:', status, error);
+                alert('Gagal mengambil data cost center.');
+            }
+        });
+    } else {
+        // Jika tidak ada pilihan valid, tambahkan opsi default dan refresh selectpicker
+        // costCtrDropdown.append('<option value="-"> - </option>');
+        costCtrDropdown.selectpicker('refresh');
+    }
+});
     
    // JavaScript Document
 function addRow(tableID) {
@@ -1227,7 +1275,7 @@ $(function() {
       })
     });
  $coa = '';
- var element1 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td style="width: 50px"><select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="150px" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td ><select class="form-control selectpicker" name="nomor_cc" id="nomor_cc" data-live-search="true" data-width="130px" data-size="5"> <option value="-" > - </option><?php $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name, CONCAT(no_cc,' ',cc_name) as cost_name from b_master_cc where status = 'Active'"); foreach ($sql2 as $cc) : ?> <option value="<?= $cc["code_combine"]; ?>"><?= $cc["cost_name"]; ?> </option><?php endforeach; ?></select></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input type="text" style="font-size: 12px;" name="tgl_active" id="tgl_active" class="form-control tanggal" value="" autocomplete="off" placeholder="dd-mm-yyyy"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_dedadd(value)" autocomplete = "off"></td><td><input type="text" style="font-size: 12px;" name="tgl_tempo" id="tgl_tempo" class="form-control tanggal" autocomplete="off" placeholder="dd-mm-yyyy" value="<?= date("d-m-Y"); ?>"></td><td style="width: 50px"><select class="form-control select2add" name="pphh"  data-live-search="true" onchange="input_pph()" data-width="120px" data-size="5"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPH' GROUP BY idtax"); foreach ($sql as $pph) : ?> <option data-idtax="<?= $pph["idtax"]; ?>" value="<?= $pph["percentage"]; ?>"><?= $pph["kriteria2"]; ?> </option><?php endforeach; ?></select></td></td><td style="width: 50px"><select class="form-control select2add" name="ppnn"  data-live-search="true" onchange="input_ppn()" data-width="120px" data-size="5"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPN' GROUP BY idtax"); foreach ($sql as $ppn) : ?> <option data-idtax="<?= $ppn["idtax"]; ?>" value="<?= $ppn["percentage"]; ?>"><?= $ppn["kriteria2"]; ?> </option><?php endforeach; ?></select></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
+ var element1 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td style="width: 50px"><select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="150px" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="200px" data-size="5"><option value="-"> - </option><?php $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'"); foreach ($sql3 as $fc) : ?> <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option> <?php endforeach; ?> </select> </td> <td> <select class="form-control selectpicker nomor_cc" name="nomor_cc[]" id="nomor_cc" data-live-search="true" data-width="200px" data-size="5"> <option value="-"> - </option> </select> </td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input type="text" style="font-size: 12px;" name="tgl_active" id="tgl_active" class="form-control tanggal" value="" autocomplete="off" placeholder="dd-mm-yyyy"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_dedadd(value)" autocomplete = "off"></td><td><input type="text" style="font-size: 12px;" name="tgl_tempo" id="tgl_tempo" class="form-control tanggal" autocomplete="off" placeholder="dd-mm-yyyy" value="<?= date("d-m-Y"); ?>"></td><td style="width: 50px"><select class="form-control select2add" name="pphh"  data-live-search="true" onchange="input_pph()" data-width="120px" data-size="5"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPH' GROUP BY idtax"); foreach ($sql as $pph) : ?> <option data-idtax="<?= $pph["idtax"]; ?>" value="<?= $pph["percentage"]; ?>"><?= $pph["kriteria2"]; ?> </option><?php endforeach; ?></select></td></td><td style="width: 50px"><select class="form-control select2add" name="ppnn"  data-live-search="true" onchange="input_ppn()" data-width="120px" data-size="5"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPN' GROUP BY idtax"); foreach ($sql as $ppn) : ?> <option data-idtax="<?= $ppn["idtax"]; ?>" value="<?= $ppn["percentage"]; ?>"><?= $ppn["kriteria2"]; ?> </option><?php endforeach; ?></select></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
 
 
  row.innerHTML = element1;             
@@ -1243,7 +1291,7 @@ function deleteRow(tableID)
             for(var i=0; i<rowCount; i++)
                 {
                 var row = table.rows[i];
-                var chkbox = row.cells[11].childNodes[0];
+                var chkbox = row.cells[12].childNodes[0];
                 if (null != chkbox && true == chkbox.checked)
                     {
                     if (rowCount <= 1)
@@ -1273,10 +1321,10 @@ function deleteRow(tableID)
     var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0;
             for (var i = 1; i < (table.rows.length); i++) {
 
-    var price = document.getElementById("tbody2").rows[i].cells[6].children[0].value;
-    var price2 = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
-    var pph = document.getElementById("tbody2").rows[i].cells[9].children[0].value || 0;
-    var ppn = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+    var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
+    var price2 = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
+    var pph = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+    var ppn = document.getElementById("tbody2").rows[i].cells[11].children[0].value || 0;
 
     if(price == ''){
         tot_price = - price2;
@@ -1339,7 +1387,7 @@ function deleteRow(tableID)
             for(var i=0; i<rowCount; i++)
                 {
                 var row = table.rows[i];
-                var chkbox = row.cells[10].childNodes[0];
+                var chkbox = row.cells[11].childNodes[0];
                 if (null != chkbox && true == chkbox.checked)
                     {
                     var newRow = table.insertRow(i+1);
@@ -1396,10 +1444,10 @@ function deleteRow(tableID)
     var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0;
             for (var i = 1; i < (table.rows.length); i++) {
 
-    var price = document.getElementById("tbody2").rows[i].cells[6].children[0].value;
-    var price2 = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
-    var pph = document.getElementById("tbody2").rows[i].cells[9].children[0].value || 0;
-    var ppn = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+    var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
+    var price2 = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
+    var pph = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+    var ppn = document.getElementById("tbody2").rows[i].cells[11].children[0].value || 0;
 
     if(price == ''){
         tot_price = - price2;
@@ -1441,10 +1489,10 @@ function input_ppn(){
     $('#pilih_ppn').prop('disabled', false);
             for (var i = 1; i < (table.rows.length); i++) {
 
-    var price = document.getElementById("tbody2").rows[i].cells[6].children[0].value;
-    var price2 = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
-    var ppn = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
-    var pph = document.getElementById("tbody2").rows[i].cells[9].children[0].value || 0;
+    var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
+    var price2 = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
+    var pph = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+    var ppn = document.getElementById("tbody2").rows[i].cells[11].children[0].value || 0;
 
     if(price == ''){
         tot_price = - price2;
@@ -1524,10 +1572,10 @@ function getdate() {
     var totall = 0;
             for (var i = 1; i < (table.rows.length); i++) {
 
-    var price = document.getElementById("tbody2").rows[i].cells[6].children[0].value;
-    var price2 = document.getElementById("tbody2").rows[i].cells[7].children[0];
-    var pph = document.getElementById("tbody2").rows[i].cells[9].children[0].value || 0;
-    var ppn = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+    var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
+    var price2 = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
+    var pph = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+    var ppn = document.getElementById("tbody2").rows[i].cells[11].children[0].value || 0;
 
     if (price == '') {
         harga = 0;
@@ -1573,9 +1621,9 @@ function modal_input_dedadd(){
     var total_pph = 0;
             for (var i = 1; i < (table.rows.length); i++) {
 
-    var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
-    var price_amt = document.getElementById("tbody2").rows[i].cells[6].children[0];
-    var pph = document.getElementById("tbody2").rows[i].cells[9].children[0].value;
+    var price = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
+    var price_amt = document.getElementById("tbody2").rows[i].cells[7].children[0];
+    var pph = document.getElementById("tbody2").rows[i].cells[10].children[0].value;
 
     if (price == '') {
         harga = 0;
@@ -1982,18 +2030,19 @@ function addListener(elm,index){
 
         $("input[type=checkbox]:checked").each(function () {
         var doc_number = document.getElementById('no_doc').value;        
-        var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[name=nomor_coa] option').filter(':selected').val(); 
-        var no_cc = $(this).closest('tr').find('td:eq(2)').find('select[name=nomor_cc] option').filter(':selected').val();      
-        var no_ref = $(this).closest('tr').find('td:eq(3) input').val();                               
-        var ref_date = $(this).closest('tr').find('td:eq(4) input').val();
-        var deskripsi = $(this).closest('tr').find('td:eq(5) input').val();                               
-        var amount = $(this).closest('tr').find('td:eq(6) input').val() || 0;
-        var due_date = $(this).closest('tr').find('td:eq(8) input').val();
-        var ded_add = $(this).closest('tr').find('td:eq(7) input').val() || 0;
-        var pph = $(this).closest('tr').find('td:eq(9)').find('select[name=pphh] option').filter(':selected').val() || 0;
-        var idtax = $(this).closest('tr').find('td:eq(9)').find('select[name=pphh] option').filter(':selected').attr('data-idtax');
-        var ppn = $(this).closest('tr').find('td:eq(10)').find('select[name=ppnn] option').filter(':selected').val() || document.getElementById('pilih_ppn').value;
-        var id_ppn = $(this).closest('tr').find('td:eq(10)').find('select[name=ppnn] option').filter(':selected').attr('data-idtax') || document.getElementById('idtax').value;
+        var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val(); 
+        var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[id=nomor_coa] option').filter(':selected').val(); 
+        var no_cc = $(this).closest('tr').find('td:eq(3)').find('select[id=nomor_cc] option').filter(':selected').val();      
+        var no_ref = $(this).closest('tr').find('td:eq(4) input').val();                               
+        var ref_date = $(this).closest('tr').find('td:eq(5) input').val();
+        var deskripsi = $(this).closest('tr').find('td:eq(6) input').val();                               
+        var amount = $(this).closest('tr').find('td:eq(7) input').val() || 0;
+        var due_date = $(this).closest('tr').find('td:eq(9) input').val();
+        var ded_add = $(this).closest('tr').find('td:eq(8) input').val() || 0;
+        var pph = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').val() || 0;
+        var idtax = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').attr('data-idtax');
+        var ppn = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').val() || document.getElementById('pilih_ppn').value;
+        var id_ppn = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').attr('data-idtax') || document.getElementById('idtax').value;
         var total_h = document.getElementById('total_h').value || 0;
         var curr = document.getElementById('curre').value; 
         var for_pay = $('select[name=forpay] option').filter(':selected').val();
@@ -2010,7 +2059,7 @@ function addListener(elm,index){
         $.ajax({
             type:'POST',
             url:'insertpv.php',
-            data: {'doc_number':doc_number, 'no_coa':no_coa, 'no_cc':no_cc, 'no_ref':no_ref, 'ref_date':ref_date, 'deskripsi':deskripsi, 'amount':amount, 'due_date':due_date, 'ded_add':ded_add, 'pph':pph, 'idtax':idtax, 'ppn':ppn, 'id_ppn':id_ppn},
+            data: {'doc_number':doc_number, 'prof_ctr':prof_ctr, 'no_coa':no_coa, 'no_cc':no_cc, 'no_ref':no_ref, 'ref_date':ref_date, 'deskripsi':deskripsi, 'amount':amount, 'due_date':due_date, 'ded_add':ded_add, 'pph':pph, 'idtax':idtax, 'ppn':ppn, 'id_ppn':id_ppn},
             cache: 'false',
             close: function(e){
                 e.preventDefault();

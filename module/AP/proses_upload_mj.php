@@ -12,7 +12,7 @@ $periode=$_GET['periode'];
 
             // koneksi LIVE
 $koneksi = mysqli_connect("10.10.5.12","root","ERP@S19n4lB1t","signalbit_erp");
-            //$koneksi = mysqli_connect("10.10.5.2:3307","root","ERP@S19n4lB1t","signalbit_erp");
+// $koneksi = mysqli_connect("localhost","root","","signalbit");
 
             // // koneksi LOCAL
             // $koneksi = mysqli_connect("localhost","root","","signalbit_erp");
@@ -74,14 +74,15 @@ for ($i=2; $i<=$jumlah_baris; $i++){
 
     $id_cmj = $data->val($i, 3);
     $no_coa = $data->val($i, 4);
-    $no_costcenter = $data->val($i, 5);
-    $no_reff =  $data->val($i, 6);
-    $reff_date = date("Y-m-d",strtotime($data->val($i, 7)));
-    $buyer = $data->val($i, 8);
-    $no_ws = $data->val($i, 9);
-    $curr = $data->val($i, 10);
-    $debit = $data->val($i, 11);
-    $credit =$data->val($i, 12);
+    $profit_center = $data->val($i, 5);
+    $no_costcenter = $data->val($i, 6);
+    $no_reff =  $data->val($i, 7);
+    $reff_date = date("Y-m-d",strtotime($data->val($i, 8)));
+    $buyer = $data->val($i, 9);
+    $no_ws = $data->val($i, 10);
+    $curr = $data->val($i, 11);
+    $debit = $data->val($i, 12);
+    $credit =$data->val($i, 13);
     if ($curr == 'IDR') {
         $rate = 1;
         $debit_idr = $debit;
@@ -91,41 +92,45 @@ for ($i=2; $i<=$jumlah_baris; $i++){
         $debit_idr = $debit * $rate;
         $credit_idr = $credit * $rate;
     }
-    $keterangan = $data->val($i, 13);
+    $keterangan = $data->val($i, 14);
     $status = "Post";
-    $fil_data = $data->val($i, 14);
+    $fil_data = $data->val($i, 15);
     $create_user = $user;
     $create_date = date("Y-m-d H:i:s");
+
+    $sql_pc = mysqli_query($conn2,"select kode_pc from master_pc where id_pc = '$profit_center' GROUP BY id_pc");
+    $row_pc = mysqli_fetch_array($sql_pc);
+    $kode_pc = $row_pc['kode_pc'];
 
     if($no_mj != "" && $mj_date != "" && $id_cmj != "" && $debit != "" || $no_mj != "" && $mj_date != "" && $id_cmj != "" && $credit != "")
     {
                     // input data ke database (table barang)
-        mysqli_query($koneksi,"INSERT into tbl_memorial_journal_temp values('','$kode_mj','$mj_date','$id_cmj', '$no_coa','$no_costcenter','$no_reff','$reff_date', '$buyer','$no_ws','$curr','$rate', '$debit','$credit','$debit_idr','$credit_idr', '$keterangan','$status','$create_user', '$create_date','','','','')");
+        mysqli_query($koneksi,"INSERT into tbl_memorial_journal_temp values('','$kode_mj','$mj_date','$id_cmj', '$no_coa','$no_costcenter','$no_reff','$reff_date', '$buyer','$no_ws','$curr','$rate', '$debit','$credit','$debit_idr','$credit_idr', '$keterangan','$status','$create_user', '$create_date','','','','','$kode_pc')");
 
         if ($fil_data == 'YES') {
-           mysqli_query($koneksi,"INSERT into sb_memorial_journal_temp values('','$kode_mj_sb','$mj_date','$id_cmj', '$no_coa','$no_costcenter','$no_reff','$reff_date', '$buyer','$no_ws','$curr','$rate', '$debit','$credit','$debit_idr','$credit_idr', '$keterangan','$status','$create_user', '$create_date','','','','')");
+         mysqli_query($koneksi,"INSERT into sb_memorial_journal_temp values('','$kode_mj_sb','$mj_date','$id_cmj', '$no_coa','$no_costcenter','$no_reff','$reff_date', '$buyer','$no_ws','$curr','$rate', '$debit','$credit','$debit_idr','$credit_idr', '$keterangan','$status','$create_user', '$create_date','','','','','$kode_pc')");
 
-           $sqlx = mysqli_query($conn2,"select no_mj FROM status_memorial_journal where no_mj = '$kode_mj'");
-           $rowx = mysqli_fetch_array($sqlx);
-           $no_mj_cek = isset($rowx['no_mj']) ? $rowx['no_mj'] : '-';
+         $sqlx = mysqli_query($conn2,"select no_mj FROM status_memorial_journal where no_mj = '$kode_mj'");
+         $rowx = mysqli_fetch_array($sqlx);
+         $no_mj_cek = isset($rowx['no_mj']) ? $rowx['no_mj'] : '-';
 
-           if ($no_mj_cek == '-') {
+         if ($no_mj_cek == '-') {
 
-               $query_sb = "INSERT INTO status_memorial_journal (no_mj, mj_date, no_mj_sb, status, create_by, create_date) 
-               VALUES 
-               ('$kode_mj', '$mj_date', '$kode_mj_sb', 'Post', '$create_user', '$create_date')";
+             $query_sb = "INSERT INTO status_memorial_journal (no_mj, mj_date, no_mj_sb, status, create_by, create_date) 
+             VALUES 
+             ('$kode_mj', '$mj_date', '$kode_mj_sb', 'Post', '$create_user', '$create_date')";
 
-               $execute_sb = mysqli_query($koneksi,$query_sb);
-           }
-           }
-       }
-   }
+             $execute_sb = mysqli_query($koneksi,$query_sb);
+         }
+     }
+ }
+}
 
             // mysqli_query($koneksi,"INSERT into  tbl_log_upload values('','$create_user','$periode')");
 
             // hapus kembali file .xls yang di upload tadi
-   unlink($_FILES['fileexcel']['name']);
+unlink($_FILES['fileexcel']['name']);
 
             // alihkan halaman ke index.php
-   header("location:upload-memorial-journal.php");
+header("location:upload-memorial-journal.php");
 ?>
