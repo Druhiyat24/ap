@@ -65,7 +65,7 @@
                 <label>Action</label>
             </br>
             <button style="padding-left: 100px;" class="btn btn-sm btn-info" type="submit">Submit</button>
-            <a target="_blank" href="format-excel/format_upload.xls"><button type="button" class="btn btn-warning "><i class="fa fa-file-excel-o" aria-hidden="true"> Format Upload</i></button></a>
+            <a target="_blank" href="format-excel/format_upload.xls?ver=<?= time(); ?>"><button type="button" class="btn btn-warning "><i class="fa fa-file-excel-o" aria-hidden="true"> Format Upload</i></button></a>
         </div>
 
     </div>
@@ -172,6 +172,7 @@
                                 <th class="text-center" style="width: 11%">Date</th>
                                 <th class="text-center" style="width: 10%">Type</th>
                                 <th class="text-center" style="width: 11%">COA</th>
+                                <th class="text-center" style="width: 11%">Profit Center</th>
                                 <th class="text-center" style="width: 11%">Cost Center</th>
                                 <th class="text-center" style="width: 10%">Reff</th>
                                 <th class="text-center" style="width: 9%">Reff Date</th>
@@ -191,7 +192,7 @@
                             $tax = '';
                             $total = '';            
 
-                            $sql = mysqli_query($conn2,"select a.no_mj,a.mj_date,a.id_cmj,b.nama_cmj,concat(c.no_coa,' ', c.nama_coa) as coa , d.cc_name,a.no_coa,a.no_costcenter, a.no_reff, a.reff_date,a.buyer,a.no_ws,a.curr,a.rate,a.debit,a.credit,a.credit_idr,a.debit_idr,a.keterangan,a.status from tbl_memorial_journal_temp a left join master_category_mj b on b.id_cmj = a.id_cmj left join mastercoa_v2 c on c.no_coa = a.no_coa left join b_master_cc d on d.no_cc = a.no_costcenter where a.create_by = '$user'");
+                            $sql = mysqli_query($conn2,"select a.no_mj,a.mj_date,a.id_cmj,b.nama_cmj,concat(c.no_coa,' ', c.nama_coa) as coa , d.cc_name,a.no_coa,a.no_costcenter, a.no_reff, a.reff_date,a.buyer,a.no_ws,a.curr,a.rate,a.debit,a.credit,a.credit_idr,a.debit_idr,a.keterangan,a.status, kode_pc, CONCAT(mp.id_pc,' - ',nama_pc) nama_pc from tbl_memorial_journal_temp a left join master_category_mj b on b.id_cmj = a.id_cmj left join mastercoa_v2 c on c.no_coa = a.no_coa left join b_master_cc d on d.no_cc = a.no_costcenter LEFT JOIN master_pc mp on mp.kode_pc = a.profit_center where a.create_by = '$user'");
 
 
                             while($row = mysqli_fetch_array($sql)){                    
@@ -200,7 +201,8 @@
                                 <td style="width:50px;" value="'.$row['no_mj'].'">'.$row['no_mj'].'</td>
                                 <td style="width:100px;" value="'.$row['mj_date'].'">'.date("d-M-Y",strtotime($row['mj_date'])).'</td>
                                 <td style ="style="width:100px;" data-out="'.$row['id_cmj'].'">'.$row['nama_cmj'].'</td>                                                     
-                                <td style="width:50px;" value="'.$row['no_coa'].'">'.$row['coa'].'</td>                            
+                                <td style="width:50px;" value="'.$row['no_coa'].'">'.$row['coa'].'</td>
+                                <td style="width:50px;" value="'.$row['kode_pc'].'">'.$row['nama_pc'].'</td>                            
                                 <td value="'.$row['no_costcenter'].'">'.$row['cc_name'].'</td>
                                 <td value="'.$row['no_reff'].'">'.$row['no_reff'].'</td>
                                 <td value="'.$row['reff_date'].'">'.date("d-M-Y",strtotime($row['reff_date'])).'</td>                                                        

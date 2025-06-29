@@ -3,6 +3,7 @@ include '../../conn/conn.php';
 ini_set('date.timezone', 'Asia/Jakarta');
 
 $doc_number = $_POST['doc_number'];
+$prof_ctr = $_POST['prof_ctr'];
 $no_coa = $_POST['no_coa'];
 $no_cc = $_POST['no_cc'];
 $no_ref = $_POST['no_ref'];
@@ -42,9 +43,9 @@ echo $deskripsi;
 if ($amount == '0' && $ded_add == '0') {
 	
 }else{
-$query = "INSERT INTO tbl_pv (no_pv,coa,no_cc,reff_doc,reff_date,deskripsi,amount,due_date,ded_add,pph,id_pph,ppn,id_ppn) 
+$query = "INSERT INTO tbl_pv (no_pv,coa,no_cc,reff_doc,reff_date,deskripsi,amount,due_date,ded_add,pph,id_pph,ppn,id_ppn,profit_center) 
 VALUES 
-	('$doc_number', '$no_coa', '$no_cc', '$no_ref', '$ref_date', '$deskripsi', '$amount', '$due_date', '$ded_add', '$pph','$idtax', '$ppn','$id_ppn')";
+	('$doc_number', '$no_coa', '$no_cc', '$no_ref', '$ref_date', '$deskripsi', '$amount', '$due_date', '$ded_add', '$pph','$idtax', '$ppn','$id_ppn','$prof_ctr')";
 
 $execute = mysqli_query($conn2,$query);
 

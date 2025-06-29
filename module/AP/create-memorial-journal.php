@@ -896,9 +896,9 @@ function SidebarCollapse () {
 <select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="200px" data-size="5">
 <option value="-"> - </option>
 <?php
-$sql3 = mysqli_query($conn1, "select id_pc,nama_pc from master_pc where status = 'Active'");
+$sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
 foreach ($sql3 as $fc) : ?>
-    <option value="<?= $fc['nama_pc']; ?>"><?= $fc['nama_pc']; ?></option>
+    <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option>
 <?php endforeach; ?>
 </select>
 </td>
@@ -1048,9 +1048,9 @@ function InsertRow(tableID)
             <select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="200px" data-size="5">
             <option value="-"> - </option>
             <?php
-            $sql3 = mysqli_query($conn1, "select id_pc,nama_pc from master_pc where status = 'Active'");
+            $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
             foreach ($sql3 as $fc) : ?>
-                <option value="<?= $fc['nama_pc']; ?>"><?= $fc['nama_pc']; ?></option>
+                <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option>
             <?php endforeach; ?>
             </select>
             </td>

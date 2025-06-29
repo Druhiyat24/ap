@@ -5,7 +5,7 @@
         <h2 class="text-center">APPROVE OUTGOING BANK </h2>
 <div class="box">
     <div class="box header">
-<form id="form-data" action="approve-pv.php" method="post">
+<form id="form-data" action="approve-outbank" method="post">
         <div class="form-row">
             <!-- <div class="col-md-6">
             <label for="nama_supp"><b>Supplier</b></label>            
