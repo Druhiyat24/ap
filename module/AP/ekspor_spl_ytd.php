@@ -4,27 +4,27 @@
 </head>
 <body>
     <style type="text/css">
-    body{
-        font-family: sans-serif;
-    }
-    table{
-        margin: 15px auto;
-        border-style: none;
-    }
-    table th,
-    table td{
-        padding: 3px 8px;
- 
-    }
-    a{
-        background: blue;
-        color: #fff;
-        padding: 8px 10px;
-        text-decoration: none;
-        border-radius: 2px;
-    }
+        body{
+            font-family: sans-serif;
+        }
+        table{
+            margin: 15px auto;
+            border-style: none;
+        }
+        table th,
+        table td{
+            padding: 3px 8px;
+
+        }
+        a{
+            background: blue;
+            color: #fff;
+            padding: 8px 10px;
+            text-decoration: none;
+            border-radius: 2px;
+        }
     </style>
- 
+
     <?php
     include '../../conn/conn.php';
     header("Content-type: application/vnd-ms-excel");
@@ -52,8 +52,8 @@
     <center>
         <h4>TRIAL BALANCE YEAR TO DATE <br/> PERIODE <?php echo $start_date; ?> - <?php echo $end_date; ?></h4>
     </center> -->
-  <!--   STATUS: <?php echo $status; ?> -->
- 
+    <!--   STATUS: <?php echo $status; ?> -->
+
     <table style="width:75%;font-size:14px;" >
         <tr>
             <th style="text-align: left;vertical-align: middle;width: 27%;"><b>PT NIRWANA ALABARE GARMENT</b></th>
@@ -93,1664 +93,479 @@
             <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
             <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i>GROSS SALES</i></b></th>
         </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Penjualan Pakaian Jadi Ekspor</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql1 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('411','412','418','413','414','419')) a");
 
-                $row1 = mysqli_fetch_array($sql1);
-                $total1 = isset($row1['total']) ? $row1['total'] : 0;
+        <?php 
+        $bulan_awal = date("m",strtotime($_GET['start_date']));
+        $bulan_akhir = date("m",strtotime($_GET['end_date']));  
+        $tahun_awal = date("Y",strtotime($_GET['start_date']));
+        $tahun_akhir = date("Y",strtotime($_GET['end_date'])); 
+        $kata_filter = $_GET['kata_filter'];
 
-                $sql2 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('421','422','429')) a");
+        $sql_nets = mysqli_query($conn2,"select id,sub_kategori,- sum(total) total,sub_kategori_eng from (select id,ref,sub_kategori,sub_kategori_eng from fs_kategori_laporan where status = 'Y' and kategori in ('PENJUALAN KOTOR','RETURN PENJUALAN','POTONGAN PENJUALAN')) a left JOIN
+         (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
+         (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
+         left join
+         (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
+         on coa.no_coa = saldo.nocoa
+         left join
+         (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
+         jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a GROUP BY a.id_ctg4) b on b.ind_categori4 = a.sub_kategori order by id asc");
 
-                $row2 = mysqli_fetch_array($sql2);
-                $total2 = isset($row2['total']) ? $row2['total'] : 0;
+        $row_nets = mysqli_fetch_array($sql_nets);
+        $penjualan_bersih = isset($row_nets['total']) ? $row_nets['total'] : 0;
 
-                $sql3 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('431','432','438','433','434','439')) a");
+        $sql = mysqli_query($conn2,"select id,sub_kategori,- (total) total,sub_kategori_eng from (select id,ref,sub_kategori,sub_kategori_eng from fs_kategori_laporan where status = 'Y' and kategori in ('PENJUALAN KOTOR')) a left JOIN
+         (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
+         (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
+         left join
+         (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
+         on coa.no_coa = saldo.nocoa
+         left join
+         (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
+         jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a GROUP BY a.id_ctg4) b on b.ind_categori4 = a.sub_kategori order by id asc");
 
-                $row3 = mysqli_fetch_array($sql3);
-                $total3 = isset($row3['total']) ? $row3['total'] : 0;
+        $sql2 = mysqli_query($conn2,"select id,sub_kategori,- (total) total,sub_kategori_eng from (select id,ref,sub_kategori,sub_kategori_eng from fs_kategori_laporan where status = 'Y' and kategori in ('RETURN PENJUALAN')) a left JOIN
+         (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
+         (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
+         left join
+         (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
+         on coa.no_coa = saldo.nocoa
+         left join
+         (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
+         jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a GROUP BY a.id_ctg4) b on b.ind_categori4 = a.sub_kategori order by id asc");
 
-                $jum_total1 = $total1 + $total2 - ($total3 * -1);
+        $sql3 = mysqli_query($conn2,"select id,sub_kategori,- (total) total,sub_kategori_eng from (select id,ref,sub_kategori,sub_kategori_eng from fs_kategori_laporan where status = 'Y' and kategori in ('POTONGAN PENJUALAN')) a left JOIN
+         (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
+         (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
+         left join
+         (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
+         on coa.no_coa = saldo.nocoa
+         left join
+         (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
+         jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a GROUP BY a.id_ctg4) b on b.ind_categori4 = a.sub_kategori order by id asc");
 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '411'");
+        $sql4 = mysqli_query($conn2,"select id,sub_kategori,- (total) total,sub_kategori_eng from (select id,ref,sub_kategori,sub_kategori_eng from fs_kategori_laporan where status = 'Y' and kategori in ('BEBAN POKOK PENJUALAN')) a left JOIN
+         (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
+         (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
+         left join
+         (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
+         on coa.no_coa = saldo.nocoa
+         left join
+         (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
+         jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a GROUP BY a.id_ctg4) b on b.ind_categori4 = a.sub_kategori order by id asc");
 
-                $row = mysqli_fetch_array($sql);
-                $total411 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(abs($total411),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot411 = $total411/$jum_total1 * 100;
-            echo number_format($percen_tot411,2);  echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Garment Export Sales</i></td>
+        $sql5 = mysqli_query($conn2,"select id,sub_kategori,- (total) total,sub_kategori_eng from (select id,ref,sub_kategori,sub_kategori_eng from fs_kategori_laporan where status = 'Y' and kategori in ('BEBAN LAINNYA')) a left JOIN
+         (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
+         (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
+         left join
+         (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
+         on coa.no_coa = saldo.nocoa
+         left join
+         (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
+         jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a GROUP BY a.id_ctg4) b on b.ind_categori4 = a.sub_kategori order by id asc");
+
+        $sql6 = mysqli_query($conn2,"select id,sub_kategori,- (total) total,sub_kategori_eng from (select id,ref,sub_kategori,sub_kategori_eng from fs_kategori_laporan where status = 'Y' and kategori in ('BEBAN BUNGA')) a 
+            left join (select id_ctg2,id_ctg4,ind_name ind4 from master_coa_ctg4 where id_ctg2 = '8') c on c.ind4 = a.sub_kategori left JOIN
+            (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
+            (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
+            left join
+            (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
+            on coa.no_coa = saldo.nocoa
+            left join
+            (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
+            jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where id_ctg2 = '8' GROUP BY a.id_ctg4) b on b.id_ctg4 = c.id_ctg4 order by id asc");
+
+        $sql7 = mysqli_query($conn2,"select id,sub_kategori,- (total) total,sub_kategori_eng from (select id,ref,sub_kategori,sub_kategori_eng from fs_kategori_laporan where status = 'Y' and kategori in ('BEBAN PAJAK')) a left JOIN
+         (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
+         (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
+         left join
+         (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
+         on coa.no_coa = saldo.nocoa
+         left join
+         (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
+         jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a GROUP BY a.id_ctg4) b on b.ind_categori4 = a.sub_kategori order by id asc"); 
+
+        $no = 01;
+        $total_penjualan_kotor = 0;
+        while($row = mysqli_fetch_array($sql)){
+            $penjualan_kotor = isset($row['total']) ? $row['total'] : 0;
+            $per_penjualan_kotor = number_format(($penjualan_kotor / $penjualan_bersih * 100),2);
+            if ($penjualan_kotor > 0) {
+                $penjualan_kotor = number_format($penjualan_kotor,2);
+            }else{
+                $penjualan_kotor = '('.number_format(abs($penjualan_kotor),2).')';
+            }
+
+            $total_penjualan_kotor += isset($row['total']) ? $row['total'] : 0;
+            if ($total_penjualan_kotor > 0) {
+                $total_penjualan_kotor_ = number_format($total_penjualan_kotor,2);
+            }else{
+                $total_penjualan_kotor_ = '('.number_format(abs($total_penjualan_kotor),2).')';
+            }
+
+            echo '<tr>
+            <td style="text-align: left;vertical-align: middle;width: 27%;">'.$row['sub_kategori'].'</td>
+            <td style="text-align: right;vertical-align: middle;width: 16%;">'.$penjualan_kotor.'</td>
+            <td style="text-align: right;vertical-align: middle;width: 7%;">'.$per_penjualan_kotor.'%</td>
+            <td style="text-align: right;vertical-align: middle;width: 27%;">'.$row['sub_kategori_eng'].'</td>
+            </tr>';
+        }
+        echo '<tr>
+        <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+        <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
+        </tr>
+        <tr style="line-height: 40px;">
+        <th style="text-align: left;vertical-align: middle;width: 27%;">TOTAL PENJUALAN KOTOR</th>
+        <th style="text-align: right;vertical-align: middle;width: 16%;border-top:3px solid #000000;">'.$total_penjualan_kotor_.'</th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;border-top:3px solid #000000;">'.number_format(($total_penjualan_kotor / $penjualan_bersih * 100),2).'%</th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;">GROSS SALES TOTAL</th> 
         </tr>
         <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Penjualan Pakaian Jadi Lokal</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '412'");
-
-                $row = mysqli_fetch_array($sql);
-                $total412 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(abs($total412),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot412 = $total412/$jum_total1 * 100;
-            echo number_format($percen_tot412,2);  echo ' %';  
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Garment Local Sales</i></td>
+        <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+        <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
         </tr>
         <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Penjualan Lainnya</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '418'");
+        <th style="text-align: left;vertical-align: middle;width: 27%;">RETURN PENJUALAN</th>
+        <td style="text-align: right;vertical-align: middle;width: 16%;"></td>
+        <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;">SALES RETURN</th>
+        </tr>
+        ';
 
-                $row = mysqli_fetch_array($sql);
-                $total418 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(abs($total418),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot418 = $total418/$jum_total1 * 100;
-            echo number_format(abs($percen_tot418),2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Other Sales</i></td>
+        $total_retur_penjualan = 0;
+        $total_retur_penjualan_ = 0;
+        while($row2 = mysqli_fetch_array($sql2)){
+            $retur_penjualan = isset($row2['total']) ? $row2['total'] : 0;
+            $per_retur_penjualan = number_format(($retur_penjualan / $penjualan_bersih * 100),2);
+            if ($retur_penjualan > 0) {
+                $retur_penjualan = number_format($retur_penjualan,2);
+            }else{
+                $retur_penjualan = '('.number_format(abs($retur_penjualan),2).')';
+            }
+
+            $total_retur_penjualan += isset($row2['total']) ? $row2['total'] : 0;
+            if ($total_retur_penjualan > 0) {
+                $total_retur_penjualan_ = number_format($total_retur_penjualan,2);
+            }else{
+                $total_retur_penjualan_ = '('.number_format(abs($total_retur_penjualan),2).')';
+            }
+
+            echo '<tr>
+            <td style="text-align: left;vertical-align: middle;width: 27%;">'.$row2['sub_kategori'].'</td>
+            <td style="text-align: right;vertical-align: middle;width: 16%;">'.$retur_penjualan.'</td>
+            <td style="text-align: right;vertical-align: middle;width: 7%;">'.$per_retur_penjualan.'%</td>
+            <td style="text-align: right;vertical-align: middle;width: 27%;">'.$row2['sub_kategori_eng'].'</td>
+            </tr>';
+        }
+
+        echo '<tr>
+        <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+        <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
+        </tr>
+        <tr style="line-height: 40px;">
+        <th style="text-align: left;vertical-align: middle;width: 27%;">TOTAL RETURN PENJUALAN</th>
+        <th style="text-align: right;vertical-align: middle;width: 16%;border-top:3px solid #000000;">'.$total_retur_penjualan_.'</th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;border-top:3px solid #000000;">'.number_format(($total_retur_penjualan / $penjualan_bersih * 100),2).'%</th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;">SALES RETURN TOTAL</th> 
         </tr>
         <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Penjualan Jasa Jahit Pakaian Jadi Ekspor</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '413'");
-
-                $row = mysqli_fetch_array($sql);
-                $total413 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(abs($total413),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot413 = $total413/$jum_total1 * 100;
-            echo number_format($percen_tot413,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Export CMT Service Revenue</i></td>
+        <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+        <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
         </tr>
         <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Penjualan Jasa Jahit Pakaian Jadi Lokal</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '414'");
+        <th style="text-align: left;vertical-align: middle;width: 27%;">POTONGAN PENJUALAN</th>
+        <td style="text-align: right;vertical-align: middle;width: 16%;"></td>
+        <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;">SALES DISCOUNT</th>
+        </tr>';
 
-                $row = mysqli_fetch_array($sql);
-                $total414 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(abs($total414),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot414 = $total414/$jum_total1 * 100;
-            echo number_format($percen_tot414,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Local CMT Service Revenue</i></td>
+        $total_potongan_penjualan = 0;
+        $total_potongan_penjualan_ = 0;
+        while($row3 = mysqli_fetch_array($sql3)){
+            $potongan_penjualan = isset($row3['total']) ? $row3['total'] : 0;
+            $per_potongan_penjualan = number_format(($potongan_penjualan / $penjualan_bersih * 100),2);
+            if ($potongan_penjualan > 0) {
+                $potongan_penjualan = number_format($potongan_penjualan,2);
+            }else{
+                $potongan_penjualan = '('.number_format(abs($potongan_penjualan),2).')';
+            }
+
+            $total_potongan_penjualan += isset($row3['total']) ? $row3['total'] : 0;
+            if ($total_potongan_penjualan > 0) {
+                $total_potongan_penjualan_ = number_format($total_potongan_penjualan,2);
+            }else{
+                $total_potongan_penjualan_ = '('.number_format(abs($total_potongan_penjualan),2).')';
+            }
+
+            echo '<tr>
+            <td style="text-align: left;vertical-align: middle;width: 27%;">'.$row3['sub_kategori'].'</td>
+            <td style="text-align: right;vertical-align: middle;width: 16%;">'.$potongan_penjualan.'</td>
+            <td style="text-align: right;vertical-align: middle;width: 7%;">'.$per_potongan_penjualan.'%</td>
+            <td style="text-align: right;vertical-align: middle;width: 27%;">'.$row3['sub_kategori_eng'].'</td>
+            </tr>';
+        }
+
+        if ($penjualan_bersih > 0) {
+            $penjualan_bersih_ = number_format($penjualan_bersih,2);
+        }else{
+            $penjualan_bersih_ = '('.number_format(abs($penjualan_bersih),2).')';
+        }
+
+        echo '<tr>
+        <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+        <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
+        </tr>
+        <tr style="line-height: 40px;">
+        <th style="text-align: left;vertical-align: middle;width: 27%;">TOTAL POTONGAN PENJUALAN</th>
+        <th style="text-align: right;vertical-align: middle;width: 16%;border-top:3px solid #000000;">'.$total_potongan_penjualan_.'</th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;border-top:3px solid #000000;">'.number_format(($total_potongan_penjualan / $penjualan_bersih * 100),2).'%</th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;">SALES DISCOUNT TOTAL</th> 
         </tr>
         <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Penjualan Jasa Lainnya</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;border-bottom: 1px solid black;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '419'");
-
-                $row = mysqli_fetch_array($sql);
-                $total419 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(abs($total419),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;border-bottom: 1px solid black;">
-                <?php 
-            $percen_tot419 = $total419/$jum_total1 * 100;
-            echo number_format($percen_tot419,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Other Service Revenue</i></td>
+        <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+        <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
+        </tr>
+        <tr style="line-height: 40px;">
+        <th style="text-align: left;vertical-align: middle;width: 27%;">PENJUALAN BERSIH</th>
+        <th style="text-align: right;vertical-align: middle;width: 16%;border-top:3px solid #000000;"">'.$penjualan_bersih_.'</th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;border-top:3px solid #000000;"">100%</th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;">NET SALES</th>
         </tr>
         <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
+        <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+        <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
+        </tr>
+        <tr style="line-height: 40px;">
+        <th style="text-align: left;vertical-align: middle;width: 27%;">BEBAN POKOK PENJUALAN</th>
+        <th style="text-align: right;vertical-align: middle;width: 16%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;">COST OF GOODS SOLD</th>
+        </tr>';
+
+        $total_beban_pokok_penjualan = 0;
+        $total_beban_pokok_penjualan_ = 0;
+        while($row4 = mysqli_fetch_array($sql4)){
+            $beban_pokok_penjualan = isset($row4['total']) ? $row4['total'] : 0;
+            $per_beban_pokok_penjualan = number_format(($beban_pokok_penjualan / $penjualan_bersih * 100),2);
+            if ($beban_pokok_penjualan > 0) {
+                $beban_pokok_penjualan = number_format($beban_pokok_penjualan,2);
+            }else{
+                $beban_pokok_penjualan = '('.number_format(abs($beban_pokok_penjualan),2).')';
+            }
+
+            $total_beban_pokok_penjualan += isset($row4['total']) ? $row4['total'] : 0;
+            if ($total_beban_pokok_penjualan > 0) {
+                $total_beban_pokok_penjualan_ = number_format($total_beban_pokok_penjualan,2);
+            }else{
+                $total_beban_pokok_penjualan_ = '('.number_format(abs($total_beban_pokok_penjualan),2).')';
+            }
+
+            echo '<tr>
+            <td style="text-align: left;vertical-align: middle;width: 27%;">'.$row4['sub_kategori'].'</td>
+            <td style="text-align: right;vertical-align: middle;width: 16%;">'.$beban_pokok_penjualan.'</td>
+            <td style="text-align: right;vertical-align: middle;width: 7%;">'.$per_beban_pokok_penjualan.'%</td>
+            <td style="text-align: right;vertical-align: middle;width: 27%;">'.$row4['sub_kategori_eng'].'</td>
+            </tr>';
+        }
+
+        $laba_rugi_kotor = $penjualan_bersih + $total_beban_pokok_penjualan;
+        if ($laba_rugi_kotor > 0) {
+            $laba_rugi_kotor_ = number_format($laba_rugi_kotor,2);
+        }else{
+            $laba_rugi_kotor_ = '('.number_format(abs($laba_rugi_kotor),2).')';
+        }
+
+        echo '<tr>
+        <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+        <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
+        </tr>
+        <tr style="line-height: 40px;">
+        <th style="text-align: left;vertical-align: middle;width: 27%;">HARGA POKOK PENJUALAN</th>
+        <th style="text-align: right;vertical-align: middle;width: 16%;border-top:3px solid #000000;">'.$total_beban_pokok_penjualan_.'</th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;border-top:3px solid #000000;">'.number_format(($total_beban_pokok_penjualan / $penjualan_bersih * 100),2).'%</th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;">COST OF GOODS SOLD</th> 
         </tr>
         <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b>TOTAL PENJUALAN KOTOR</b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('411','412','418','413','414','419')) a");
-
-                $row = mysqli_fetch_array($sql);
-                $totalgr1 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(abs($totalgr1),2);
-                echo $total_;
-                ?>
-            </th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_totgr1 = $totalgr1/$jum_total1 * 100;
-            echo number_format($percen_totgr1,2); echo ' %'; 
-            ?>
-            </th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i>GROSS SALES TOTAL</i></b></th>
+        <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+        <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
         </tr>
-        
-        <!-- penjualan-kotor - end -->
+        <tr style="line-height: 40px;">
+        <th style="text-align: left;vertical-align: middle;width: 27%;">LABA RUGI KOTOR</th>
+        <th style="text-align: right;vertical-align: middle;width: 16%;border-top:3px solid #000000;"">'.$laba_rugi_kotor_.'</th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;border-top:3px solid #000000;"">'.number_format((( $penjualan_bersih + $total_beban_pokok_penjualan) / $penjualan_bersih * 100),2).'%</th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;">GROSS PROFIT / (LOSS)</th>
+        </tr>';
 
-        <!-- return-penjualan - start -->
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b>RETURN PENJUALAN</b></th>
-            <th style="text-align: right;vertical-align: middle;width: 14%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i>SALES RETUN</i></b></th>
+        $total_beban_lainnya = 0;
+        $total_beban_lainnya_ = 0;
+        while($row5 = mysqli_fetch_array($sql5)){
+            $beban_lainnya = isset($row5['total']) ? $row5['total'] : 0;
+            $per_beban_lainnya = number_format(($beban_lainnya / $penjualan_bersih * 100),2);
+            if ($beban_lainnya > 0) {
+                $beban_lainnya = number_format($beban_lainnya,2);
+            }else{
+                $beban_lainnya = '('.number_format(abs($beban_lainnya),2).')';
+            }
+
+            $total_beban_lainnya += isset($row5['total']) ? $row5['total'] : 0;
+            if ($total_beban_lainnya > 0) {
+                $total_beban_lainnya_ = number_format($total_beban_lainnya,2);
+            }else{
+                $total_beban_lainnya_ = '('.number_format(abs($total_beban_lainnya),2).')';
+            }
+
+            echo '<tr>
+            <td style="text-align: left;vertical-align: middle;width: 27%;">'.$row5['sub_kategori'].'</td>
+            <td style="text-align: right;vertical-align: middle;width: 16%;">'.$beban_lainnya.'</td>
+            <td style="text-align: right;vertical-align: middle;width: 7%;">'.$per_beban_lainnya.'%</td>
+            <td style="text-align: right;vertical-align: middle;width: 27%;">'.$row5['sub_kategori_eng'].'</td>
+            </tr>';
+        }
+
+        $laba_rugi_sbl_bunga = $total_beban_lainnya + $laba_rugi_kotor;
+        if ($laba_rugi_sbl_bunga > 0) {
+            $laba_rugi_sbl_bunga_ = number_format($laba_rugi_sbl_bunga,2);
+        }else{
+            $laba_rugi_sbl_bunga_ = '('.number_format(abs($laba_rugi_sbl_bunga),2).')';
+        }
+
+        echo '<tr>
+        <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+        <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
         </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Retur Penjualan Pakaian Jadi Ekspor</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '421'");
-
-                $row = mysqli_fetch_array($sql);
-                $total421 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format($total421,2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot421 = $total421/$jum_total1 * 100;
-            echo number_format($percen_tot421,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Garment Export Sales Return</i></td>
+        <tr style="line-height: 40px;">
+        <th style="text-align: left;vertical-align: middle;width: 27%;">LABA / (RUGI) SEBELUM BUNGA DAN PAJAK</th>
+        <th style="text-align: right;vertical-align: middle;width: 16%;border-top:3px solid #000000;">'.$laba_rugi_sbl_bunga_.'</th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;border-top:3px solid #000000;">'.number_format(($laba_rugi_sbl_bunga / $penjualan_bersih * 100),2).'%</th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;">PROFIT / (LOSS) BEFORE INTEREST AND TAX</th> 
         </tr>
         <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Retur Penjualan Pakaian Jadi Lokal</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '422'");
+        <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+        <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
+        </tr>';
 
-                $row = mysqli_fetch_array($sql);
-                $total422 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(($total422 * -1),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot422 = $total422/$jum_total1 * 100;
-            echo number_format($percen_tot422,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Garment Local Sales Return</i></td>
+        $total_beban_bunga = 0;
+        $total_beban_bunga_ = 0;
+        while($row6 = mysqli_fetch_array($sql6)){
+            $beban_bunga = isset($row6['total']) ? $row6['total'] : 0;
+            $per_beban_bunga = number_format(($beban_bunga / $penjualan_bersih * 100),2);
+            if ($beban_bunga > 0) {
+                $beban_bunga = number_format($beban_bunga,2);
+            }else{
+                $beban_bunga = '('.number_format(abs($beban_bunga),2).')';
+            }
+
+            $total_beban_bunga += isset($row6['total']) ? $row6['total'] : 0;
+            if ($total_beban_bunga > 0) {
+                $total_beban_bunga_ = number_format($total_beban_bunga,2);
+            }else{
+                $total_beban_bunga_ = '('.number_format(abs($total_beban_bunga),2).')';
+            }
+
+            echo '<tr>
+            <td style="text-align: left;vertical-align: middle;width: 27%;">'.$row6['sub_kategori'].'</td>
+            <td style="text-align: right;vertical-align: middle;width: 16%;">'.$beban_bunga.'</td>
+            <td style="text-align: right;vertical-align: middle;width: 7%;">'.$per_beban_bunga.'%</td>
+            <td style="text-align: right;vertical-align: middle;width: 27%;">'.$row6['sub_kategori_eng'].'</td>
+            </tr>';
+        }
+
+        $laba_rugi_sbl_pajak = $laba_rugi_sbl_bunga + $total_beban_bunga;
+        if ($laba_rugi_sbl_pajak > 0) {
+            $laba_rugi_sbl_pajak_ = number_format($laba_rugi_sbl_pajak,2);
+        }else{
+            $laba_rugi_sbl_pajak_ = '('.number_format(abs($laba_rugi_sbl_pajak),2).')';
+        }
+
+        echo '<tr>
+        <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+        <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
+        </tr>
+        <tr style="line-height: 40px;">
+        <th style="text-align: left;vertical-align: middle;width: 27%;">LABA / (RUGI) SEBELUM PAJAK</th>
+        <th style="text-align: right;vertical-align: middle;width: 16%;border-top:3px solid #000000;">'.$laba_rugi_sbl_pajak_.'</th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;border-top:3px solid #000000;">'.number_format(($laba_rugi_sbl_pajak / $penjualan_bersih * 100),2).'%</th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;">PROFIT / (LOSS) BEFORE TAX</th> 
         </tr>
         <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Retur Penjualan Lainnya</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;border-bottom: 1px solid black;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '429'");
+        <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+        <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
+        </tr>';
 
-                $row = mysqli_fetch_array($sql);
-                $total429 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format($total429,2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;border-bottom: 1px solid black;">
-                <?php 
-            $percen_tot429 = $total429/$jum_total1 * 100;
-            echo number_format($percen_tot429,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Other Sales Return</i></td>
+        $total_beban_pajak = 0;
+        $total_beban_pajak_ = 0;
+        while($row7 = mysqli_fetch_array($sql7)){
+            $beban_pajak = isset($row7['total']) ? $row7['total'] : 0;
+            $per_beban_pajak = number_format(($beban_pajak / $penjualan_bersih * 100),2);
+            if ($beban_pajak > 0) {
+                $beban_pajak = number_format($beban_pajak,2);
+            }else{
+                $beban_pajak = '('.number_format(abs($beban_pajak),2).')';
+            }
+
+            $total_beban_pajak += isset($row7['total']) ? $row7['total'] : 0;
+            if ($total_beban_pajak > 0) {
+                $total_beban_pajak_ = number_format($total_beban_pajak,2);
+            }else{
+                $total_beban_pajak_ = '('.number_format(abs($total_beban_pajak),2).')';
+            }
+
+            echo '<tr>
+            <td style="text-align: left;vertical-align: middle;width: 27%;">'.$row7['sub_kategori'].'</td>
+            <td style="text-align: right;vertical-align: middle;width: 16%;">'.$beban_pajak.'</td>
+            <td style="text-align: right;vertical-align: middle;width: 7%;">'.$per_beban_pajak.'%</td>
+            <td style="text-align: right;vertical-align: middle;width: 27%;">'.$row7['sub_kategori_eng'].'</td>
+            </tr>';
+        }
+
+        $laba_rugi_bersih = $laba_rugi_sbl_pajak + $total_beban_pajak;
+        if ($laba_rugi_bersih > 0) {
+            $laba_rugi_bersih_ = number_format($laba_rugi_bersih,2);
+        }else{
+            $laba_rugi_bersih_ = '('.number_format(abs($laba_rugi_bersih),2).')';
+        }
+
+        echo '<tr>
+        <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
+        <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
         </tr>
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
-        </tr>
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b>TOTAL RETURN PENJUALAN</b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('421','422','429')) a");
+        <tr style="line-height: 40px;">
+        <th style="text-align: left;vertical-align: middle;width: 27%;">LABA / (RUGI) BERSIH</th>
+        <th style="text-align: right;vertical-align: middle;width: 16%;border-top:3px solid #000000;">'.$laba_rugi_bersih_.'</th>
+        <th style="text-align: right;vertical-align: middle;width: 7%;border-top:3px solid #000000;">'.number_format(($laba_rugi_bersih / $penjualan_bersih * 100),2).'%</th>
+        <th style="text-align: right;vertical-align: middle;width: 27%;">NET INCOME / (LOSS)</th> 
+        </tr>';
+
+        ?>
 
-                $row = mysqli_fetch_array($sql);
-                $totalgr2 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(($totalgr2 * -1),2);
-                echo $total_;
-                ?>
-            </th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_totgr2 = $totalgr2/$jum_total1 * 100;
-            echo number_format($percen_totgr2,2); echo ' %'; 
-            ?>
-            </th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i>SALES RETURN TOTAL</i></b></th>
-        </tr>
-        
-        <!-- return-penjualan - end -->
-
-        <!-- potongan-penjualan - start -->
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b>POTONGAN PENJUALAN</b></th>
-            <th style="text-align: right;vertical-align: middle;width: 14%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i>SALES DISCOUNT</i></b></th>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Potongan Penjualan Pakaian Jadi Ekspor</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '431'");
-
-                $row = mysqli_fetch_array($sql);
-                $total431 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format($total431 * -1,2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot431 = $total431/$jum_total1 * 100;
-            echo number_format($percen_tot431,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Garment Export Sales Discount</i></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Potongan Penjualan Pakaian Jadi Lokal</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '432'");
-
-                $row = mysqli_fetch_array($sql);
-                $total432 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format($total432 * -1,2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot432 = $total432/$jum_total1 * 100;
-            echo number_format($percen_tot432 * -1,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Garment Local Sales Discount</i></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Potongan Penjualan Lainnya</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '438'");
-
-                $row = mysqli_fetch_array($sql);
-                $total438 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format($total438,2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot438 = $total438/$jum_total1 * 100;
-            echo number_format($percen_tot438,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Other Sales Discount</i></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Potongan Penjualan Jasa Jahit Pakaian Jadi Ekspor</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '433'");
-
-                $row = mysqli_fetch_array($sql);
-                $total433 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format($total433,2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot433 = $total433/$jum_total1 * 100;
-            echo number_format($percen_tot433,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Export Cmt Service Revenue Discount</i></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Potongan Penjualan Jasa Jahit Pakaian Jadi Lokal</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '434'");
-
-                $row = mysqli_fetch_array($sql);
-                $total434 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format($total434 * -1,2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot434 = $total434/$jum_total1 * 100;
-            echo number_format($percen_tot434,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Local Cmt Service Revenue Discount</i></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Potongan Penjualan Jasa Lainnya</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;border-bottom: 1px solid black;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '439'");
-
-                $row = mysqli_fetch_array($sql);
-                $total439 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format($total439,2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;border-bottom: 1px solid black;">
-                <?php 
-            $percen_tot439 = $total439/$jum_total1 * 100;
-            echo number_format($percen_tot439,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Other Cmt Service Revenue Discount</i></td>
-        </tr>
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
-        </tr>
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b>TOTAL POTONGAN PENJUALAN</b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('431','432','438','433','434','439')) a");
-
-                $row = mysqli_fetch_array($sql);
-                $totalgr3 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format($totalgr3 * -1,2);
-                echo $total_;
-                ?>
-            </th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_totgr3 = $totalgr3/$jum_total1 * 100;
-            echo number_format($percen_totgr3 ,2); echo ' %'; 
-            ?>
-            </th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i>SALES DISCOUNT TOTAL</i></b></th>
-        </tr>
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;border-bottom: 1px solid black;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;border-bottom: 1px solid black;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
-        </tr>
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b>PENJUALAN BERSIH</b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;">
-                <?php 
-                $sql1 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('411','412','418','413','414','419')) a");
-
-                $row1 = mysqli_fetch_array($sql1);
-                $total1 = isset($row1['total']) ? $row1['total'] : 0;
-
-                $sql2 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('421','422','429')) a");
-
-                $row2 = mysqli_fetch_array($sql2);
-                $total2 = isset($row2['total']) ? $row2['total'] : 0;
-
-                $sql3 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('431','432','438','433','434','439')) a");
-
-                $row3 = mysqli_fetch_array($sql3);
-                $total3 = isset($row3['total']) ? $row3['total'] : 0;
-
-                $jum_total = $total1 + $total2 - ($total3 * -1);
-
-                $total_ = number_format(abs($jum_total),2);
-                echo $total_;
-                ?>
-            </th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;"><?php 
-            $percen_tot = $jum_total/$jum_total * 100;
-            echo number_format($percen_tot,2); echo ' %'; 
-            ?></th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i>NET SALES</i></b></th>
-        </tr>
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
-        </tr>
-        
-        <!-- potongan-penjualan - end -->
-
-        <!-- beban-pokok-penjualan - start -->
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b>BEBAN POKOK PENJUALAN</b></th>
-            <th style="text-align: right;vertical-align: middle;width: 14%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i>COST OF GOODS SOLD</i></b></th>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Harga Pokok Penjualan Pakaian Jadi Ekspor</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql1 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('411','412','418','413','414','419')) a");
-
-                $row1 = mysqli_fetch_array($sql1);
-                $total1 = isset($row1['total']) ? $row1['total'] : 0;
-
-                $sql2 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('421','422','429')) a");
-
-                $row2 = mysqli_fetch_array($sql2);
-                $total2 = isset($row2['total']) ? $row2['total'] : 0;
-
-                $sql3 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('431','432','438','433','434','439')) a");
-
-                $row3 = mysqli_fetch_array($sql3);
-                $total3 = isset($row3['total']) ? $row3['total'] : 0;
-
-                $jum_total2 = $total1 + $total2 - ($total3 * -1);
-
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '511'");
-
-                $row = mysqli_fetch_array($sql);
-                $total511 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(($total511 * -1),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot511 = $total511/$jum_total2 * 100;
-            echo number_format($percen_tot511,2);  echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>cost of good sold for export sales</i></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Harga Pokok Penjualan Pakaian Jadi Lokal</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '512'");
-
-                $row = mysqli_fetch_array($sql);
-                $total512 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(($total512 * -1),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot512 = $total512/$jum_total2 * 100;
-            echo number_format($percen_tot512,2);  echo ' %';  
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Cost of good sold for local sales</i></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Harga Pokok Penjualan Lainnya</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '518'");
-
-                $row = mysqli_fetch_array($sql);
-                $total518 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(($total518 * -1),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot518 = $total518/$jum_total2 * 100;
-            echo number_format($percen_tot518,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Cost of good sold for other sales</i></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Harga Pokok Penjualan Jasa Jahit Pakaian Jadi Ekspor</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '513'");
-
-                $row = mysqli_fetch_array($sql);
-                $total513 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(($total513 * -1),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot513 = $total513/$jum_total2 * 100;
-            echo number_format($percen_tot513,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Cost of revenue for export CMT service</i></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Harga Pokok Penjualan Jasa Jahit Pakaian Jadi Lokal</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '514'");
-
-                $row = mysqli_fetch_array($sql);
-                $total514 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(($total514 * -1),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot514 = $total514/$jum_total2 * 100;
-            echo number_format($percen_tot514,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Cost of revenue for local cmt service</i></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Harga Pokok Penjualan Jasa Jahit Lainnya</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '519'");
-
-                $row = mysqli_fetch_array($sql);
-                $total519 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(($total519 * -1),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot519 = $total519/$jum_total2 * 100;
-            echo number_format($percen_tot519,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Cost of revenue for other service</i></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Beban Penyesuaian Persediaan</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;border-bottom: 1px solid black;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '591'");
-
-                $row = mysqli_fetch_array($sql);
-                $total591 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(($total591 * -1),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;border-bottom: 1px solid black;">
-                <?php 
-            $percen_tot591 = $total591/$jum_total2 * 100;
-            echo number_format($percen_tot591,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Inventory adjustment expense</i></td>
-        </tr>
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
-        </tr>
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b>HARGA POKOK PENJUALAN</b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('511','512','518','513','514','519','591')) a");
-
-                $row = mysqli_fetch_array($sql);
-                $totalgr4 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(($totalgr4 * -1),2);
-                echo $total_;
-                ?>
-            </th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_totgr4 = $totalgr4/$jum_total2 * 100;
-            echo number_format($percen_totgr4,2); echo ' %'; 
-            ?>
-            </th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i>COST OF GOODS SOLD</i></b></th>
-        </tr>
-
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;border-bottom: 1px solid black;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;border-bottom: 1px solid black;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
-        </tr>
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b>LABA / (RUGI) KOTOR</b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;">
-                <?php 
-                $sql1 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('411','412','418','413','414','419')) a");
-
-                $row1 = mysqli_fetch_array($sql1);
-                $total1 = isset($row1['total']) ? $row1['total'] : 0;
-
-                $sql2 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('421','422','429')) a");
-
-                $row2 = mysqli_fetch_array($sql2);
-                $total2 = isset($row2['total']) ? $row2['total'] : 0;
-
-                $sql3 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('431','432','438','433','434','439')) a");
-
-                $row3 = mysqli_fetch_array($sql3);
-                $total3 = isset($row3['total']) ? $row3['total'] : 0;
-                $sql4 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('511','512','518','513','514','519','591')) a");
-
-                $row4 = mysqli_fetch_array($sql4);
-                $total4 = isset($row4['total']) ? $row4['total'] : 0;
-
-                $jum_total2 = $total1 + $total2 - ($total3 * -1);
-                $jum_total3 = $total1 + $total2 - ($total3 * -1) + $total4;
-
-                $total_ = number_format(abs($jum_total3),2);
-                echo $total_;
-                ?>
-            </th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;"><?php 
-            $percen_tot2 = $jum_total3/$jum_total2 * 100;
-            echo number_format($percen_tot2,2); echo ' %'; 
-            ?></th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i>GROSS PROFIT / (LOSS)</i></b></th>
-        </tr>
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
-        </tr>
-        
-        <!-- beban-pokok-penjualan - end -->
-
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Beban penjualan</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '611'");
-
-                $row = mysqli_fetch_array($sql);
-                $total611 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(($total611 * -1),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot611 = $total611/$jum_total2 * 100;
-            echo number_format($percen_tot611,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Selling expenses</i></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Beban administrasi dan umum</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;border-bottom: 1px solid black;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '711'");
-
-                $row = mysqli_fetch_array($sql);
-                $total711 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(($total711 * -1),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;border-bottom: 1px solid black;">
-                <?php 
-            $percen_tot711 = $total711/$jum_total2 * 100;
-            echo number_format($percen_tot711,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>General and administrative expenses</i></td>
-        </tr>
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
-        </tr>
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b>LABA / (RUGI) SEBELUM BUNGA DAN PAJAK</b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('611','711')) a");
-
-                $row = mysqli_fetch_array($sql);
-                $totalgr5 = isset($row['total']) ? $row['total'] : 0;
-
-                $sql1 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('411','412','418','413','414','419')) a");
-
-                $row1 = mysqli_fetch_array($sql1);
-                $total1 = isset($row1['total']) ? $row1['total'] : 0;
-
-                $sql2 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('421','422','429')) a");
-
-                $row2 = mysqli_fetch_array($sql2);
-                $total2 = isset($row2['total']) ? $row2['total'] : 0;
-
-                $sql3 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('431','432','438','433','434','439')) a");
-
-                $row3 = mysqli_fetch_array($sql3);
-                $total3 = isset($row3['total']) ? $row3['total'] : 0;
-                $sql4 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('511','512','518','513','514','519','591')) a");
-
-                $row4 = mysqli_fetch_array($sql4);
-                $total4 = isset($row4['total']) ? $row4['total'] : 0;
-
-                $jum_total4 = $total1 + $total2 - ($total3 * -1);
-                $jum_total5 = $total1 + $total2 - ($total3 * -1) + $total4 + $totalgr5;
-                $total_ = number_format(($jum_total5 * -1),2);
-                echo $total_;
-                ?>
-            </th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_totgr5 = $jum_total5/$jum_total2 * 100;
-            echo number_format($percen_totgr5,2); echo ' %'; 
-            ?>
-            </th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i>PROFIT / (LOSS) BEFORE INTEREST AND TAX</i></b></th>
-        </tr>
-
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
-        </tr>
-
-
-        <!-- laba/rugi - sebelum pajak -->
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Beban bunga</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '821'");
-
-                $row = mysqli_fetch_array($sql);
-                $total821 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(($total821 * -1),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot821 = $total821/$jum_total2 * 100;
-            echo number_format($percen_tot821,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Interest expense</i></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Pendapatan bunga</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '814'");
-
-                $row = mysqli_fetch_array($sql);
-                $total1000 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(abs($total1000),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot1000 = $total1000/$jum_total2 * 100;
-            echo number_format($percen_tot1000,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Interest income</i></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Laba / (Rugi) Selisih Kurs</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select ind_categori4,sum(total) as total,eng_categori4 from(select nocoa,id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select nocoa,id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select nocoa,id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.nocoa) a where a.nocoa IN ('8.52.01','8.52.02')) a ");
-
-                $row = mysqli_fetch_array($sql);
-                $total_laba = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(($total_laba * -1),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot_laba = $total_laba/$jum_total2 * 100;
-            echo number_format($percen_tot_laba,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Forex exchange gain / loss</i></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Laba / (Rugi) Penjualan Aset Tetap</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '2000'");
-
-                $row = mysqli_fetch_array($sql);
-                $total2000 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(($total2000 * -1),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot2000 = $total2000/$jum_total2 * 100;
-            echo number_format($percen_tot2000,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Gain / loss of FA sold</i></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Laba / (Rugi) Disposisi Aset Tetap</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '3000'");
-
-                $row = mysqli_fetch_array($sql);
-                $total3000 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(($total3000 * -1),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot3000 = $total3000/$jum_total2 * 100;
-            echo number_format($percen_tot3000,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Gain / loss of FA disposal</i></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Pendapatan lain-lain</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '813'");
-
-                $row = mysqli_fetch_array($sql);
-                $total811 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(abs($total811),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot811 = $total811/$jum_total2 * 100;
-            echo number_format($percen_tot811,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Other income</i></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Beban lain-lain</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select ind_categori4,sum(total) as total,eng_categori4 from(select nocoa,id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select nocoa,id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select nocoa,id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.nocoa) a where a.nocoa IN ('8.53.01','8.54.01')) a");
-
-                $row = mysqli_fetch_array($sql);
-                $total_blain = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(($total_blain * -1),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot_blain = $total_blain/$jum_total2 * 100;
-            echo number_format($percen_tot_blain,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Other expense</i></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Pendapatan sewa</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '815'");
-
-                $row = mysqli_fetch_array($sql);
-                $total815 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(abs($total815),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot815 = $total815/$jum_total2 * 100;
-            echo number_format($percen_tot815,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Rent income</i></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Beban administrasi bank</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;border-bottom: 1px solid black;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '822'");
-
-                $row = mysqli_fetch_array($sql);
-                $total822 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format(($total822 * -1),2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;border-bottom: 1px solid black;">
-                <?php 
-            $percen_tot822 = $total822/$jum_total2 * 100;
-            echo number_format($percen_tot822,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Bank adm expense</i></td>
-        </tr>
-
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
-        </tr>
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b>LABA / (RUGI) SEBELUM PAJAK</b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('611','711')) a");
-
-                $row = mysqli_fetch_array($sql);
-                $totalgr5 = isset($row['total']) ? $row['total'] : 0;
-
-                $sql1 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('411','412','418','413','414','419')) a");
-
-                $row1 = mysqli_fetch_array($sql1);
-                $total1 = isset($row1['total']) ? $row1['total'] : 0;
-
-                $sql2 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('421','422','429')) a");
-
-                $row2 = mysqli_fetch_array($sql2);
-                $total2 = isset($row2['total']) ? $row2['total'] : 0;
-
-                $sql3 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('431','432','438','433','434','439')) a");
-
-                $row3 = mysqli_fetch_array($sql3);
-                $total3 = isset($row3['total']) ? $row3['total'] : 0;
-                $sql4 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('511','512','518','513','514','519','591')) a");
-
-                $row4 = mysqli_fetch_array($sql4);
-                $total4 = isset($row4['total']) ? $row4['total'] : 0;
-
-                $sql5 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('821','813','814','815','822')) a");
-
-                $row5 = mysqli_fetch_array($sql5);
-                $total5 = isset($row5['total']) ? $row5['total'] : 0;
-
-                $sql6 = mysqli_query($conn2,"select ind_categori4,sum(total) as total,eng_categori4 from(select nocoa,id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select nocoa,id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select nocoa,id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.nocoa) a where a.nocoa IN ('8.52.01','8.52.02','8.53.01','8.54.01')) a");
-
-                $row6 = mysqli_fetch_array($sql6);
-                $total6 = isset($row6['total']) ? $row6['total'] : 0;
-
-                $jum_total6 = $total1 + $total2 - ($total3 * -1);
-                $jum_total7 = $total1 + $total2 - ($total3 * -1) + $total4 + $totalgr5 + $total5 + $total6;
-                $total_ = number_format(($jum_total7 * -1),2);
-                echo $total_;
-                ?>
-            </th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_totgr6 = $jum_total7/$jum_total2 * 100;
-            echo number_format($percen_totgr6,2); echo ' %'; 
-            ?>
-            </th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i>PROFIT / (LOSS) BEFORE TAX</i></b></th>
-        </tr>
-
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
-        </tr>
-
-        <!-- -->
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Pajak Penghasilan Badan Kini</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '911'");
-
-                $row = mysqli_fetch_array($sql);
-                $total911 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format($total911,2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_tot911 = $total911/$jum_total2 * 100;
-            echo number_format($percen_tot911,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Current corporate income tax</i></td>
-        </tr>
-        <tr>
-            <td style="text-align: left;vertical-align: middle;width: 27%;">Pajak Penghasilan Badan Tangguhan</td>
-            <td style="text-align: right;vertical-align: middle;width: 14%;border-bottom: 1px solid black;">
-                <?php 
-                $sql = mysqli_query($conn2,"select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 = '921'");
-
-                $row = mysqli_fetch_array($sql);
-                $total921 = isset($row['total']) ? $row['total'] : 0;
-                $total_ = number_format($total921,2);
-                echo $total_;
-                ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 7%;border-bottom: 1px solid black;">
-                <?php 
-            $percen_tot921 = $total921/$jum_total2 * 100;
-            echo number_format($percen_tot921,2); echo ' %'; 
-            ?>
-            </td>
-            <td style="text-align: right;vertical-align: middle;width: 27%;"><i>Deffered corporate income tax</i></td>
-        </tr>
-
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b></b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i></i></b></th>
-        </tr>
-        <tr>
-            <th style="text-align: left;vertical-align: middle;width: 27%;"><b>LABA / (RUGI) BERSIH</b></th>
-            <th style="text-align: right;vertical-align: middle;width: 13%;">
-                <?php 
-                $sql = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('611','711')) a");
-
-                $row = mysqli_fetch_array($sql);
-                $totalgr5 = isset($row['total']) ? $row['total'] : 0;
-
-                $sql1 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('411','412','418','413','414','419')) a");
-
-                $row1 = mysqli_fetch_array($sql1);
-                $total1 = isset($row1['total']) ? $row1['total'] : 0;
-
-                $sql2 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('421','422','429')) a");
-
-                $row2 = mysqli_fetch_array($sql2);
-                $total2 = isset($row2['total']) ? $row2['total'] : 0;
-
-                $sql3 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('431','432','438','433','434','439')) a");
-
-                $row3 = mysqli_fetch_array($sql3);
-                $total3 = isset($row3['total']) ? $row3['total'] : 0;
-                $sql4 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('511','512','518','513','514','519','591')) a");
-
-                $row4 = mysqli_fetch_array($sql4);
-                $total4 = isset($row4['total']) ? $row4['total'] : 0;
-
-                $sql5 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('821','813','814','815','822')) a");
-
-                $row5 = mysqli_fetch_array($sql5);
-                $total5 = isset($row5['total']) ? $row5['total'] : 0;
-
-                $sql6 = mysqli_query($conn2,"select ind_categori4,sum(total) as total,eng_categori4 from(select nocoa,id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select nocoa,id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select nocoa,id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.nocoa) a where a.nocoa IN ('8.52.01','8.52.02','8.53.01','8.54.01')) a");
-
-                $row6 = mysqli_fetch_array($sql6);
-                $total6 = isset($row6['total']) ? $row6['total'] : 0;
-
-                $sql7 = mysqli_query($conn2,"select sum(total) as total from (select id_ctg2,id_ctg4,ind_categori4,((saldo + debit) - credit) total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
-                    (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-                    left join
-                    (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4,eng_categori4,id_ctg4,id_ctg2 from mastercoa_v2 order by no_coa asc) coa
-                    on coa.no_coa = saldo.nocoa
-                    left join
-                    (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-                    jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a group by a.id_ctg4) a where a.id_ctg4 IN ('911','921')) a");
-
-                $row7 = mysqli_fetch_array($sql7);
-                $total7 = isset($row7['total']) ? $row7['total'] : 0;
-
-                $jum_total8 = $total1 + $total2 - ($total3 * -1);
-                $jum_total9 = $total1 + $total2 - ($total3 * -1) + $total4 + $totalgr5 + $total5 + $total6 + $total7;
-                $total_ = number_format(($jum_total9 * -1),2);
-                echo $total_;
-                ?>
-            </th>
-            <th style="text-align: right;vertical-align: middle;width: 7%;">
-                <?php 
-            $percen_totgr7 = $jum_total9/$jum_total2 * 100;
-            echo number_format($percen_totgr7,2); echo ' %'; 
-            ?>
-            </th>
-            <th style="text-align: right;vertical-align: middle;width: 27%;"><b><i>NET INCOME / (LOSS)</i></b></th>
-        </tr>
-        
     </table>
 
 </body>
