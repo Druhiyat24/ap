@@ -705,8 +705,8 @@ function SidebarCollapse () {
     <script type="text/javascript">
         $(function () {
             $("#formdata2").on("click", "#btnshow", function(){ 
-                var namafile = $(this).closest('tr').find('td:eq(8)').attr('value'); 
-                var labelfile = $(this).closest('tr').find('td:eq(9)').attr('value'); 
+                var namafile = $(this).closest('tr').find('td:eq(9)').attr('value'); 
+                var labelfile = $(this).closest('tr').find('td:eq(10)').attr('value'); 
                 var fileName = '<embed src="file_pdf/'+ namafile + '" type="application/pdf" toolbar="0" frameborder="0" width="100%" height="400px">';
          // var fileName = '<embed src="file_pdf/'+ namafile + '#toolbar=0&navpanes=0&scrollbar=0" type="application/pdf" toolbar="0" frameborder="0" width="100%" height="400px">';
          var label = '<label for="labelfile"><b>'+ labelfile + '</b></label>';
