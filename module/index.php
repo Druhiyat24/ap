@@ -1561,7 +1561,7 @@ if($id == '16'){
 
 if(strpos($id2, '88') !== false){ 
         // code...
- echo'<a href="../AP/closing-periode.php" class="dropdown-item bg-dark text-white">
+ echo'<a href="AP/closing-periode.php" class="dropdown-item bg-dark text-white">
  <span class="fas fa-lock fa-fw"></span>
  <span class="menu-collapsed">Closing Periode</span>
  </a>';
