@@ -618,7 +618,7 @@ $end_date = date("Y-m-d",strtotime($enddate));
     <div class="modal fade" id="mymodal3" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
+                <div class="modal-header bg-dark text-white">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
                     <h4 class="modal-title" id="Heading">Document Bank Out</h4>
                 </div>

@@ -39,7 +39,7 @@
     $d_dpp = 0;
     $d_jenis_trans = '';
 
-    $sqldel = "delete from dsb_ap_purchase;";
+    $sqldel = "delete from dsb_ap_purchase where status is null;";
     $querydel = mysqli_query($conn1,$sqldel);
 
     $sqldel2 = "ALTER TABLE dsb_ap_purchase AUTO_INCREMENT = 1";

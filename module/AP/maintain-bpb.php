@@ -229,8 +229,8 @@ END as status from (select a.no_transfer,COALESCE(s_post,0) s_post,COALESCE(s_ca
 
 
 <div class="modal fade" id="modal-approve" data-target="#modal-approve" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content ">
             <div class="modal-header bg-dark text-white">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
                 <h5 class="modal-title" id="txt_dp">APPROVE REVERSE BPB</h5>

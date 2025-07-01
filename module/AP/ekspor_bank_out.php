@@ -35,7 +35,7 @@
     $end_date = date("d F Y",strtotime($_GET['end_date'])); ?>
 
    <!--  <center> -->
-        <h4>DATA BANK IN <br/> PERIODE <?php echo $start_date; ?> - <?php echo $end_date; ?></h4>
+        <h4>DATA BANK OUT <br/> PERIODE <?php echo $start_date; ?> - <?php echo $end_date; ?></h4>
     <!-- </center> -->
   <!--   STATUS: <?php echo $status; ?> -->
  
