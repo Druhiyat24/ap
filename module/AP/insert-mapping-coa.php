@@ -11,8 +11,8 @@ $ditagihkan = $_POST['ditagihkan'];
 $id_item = $_POST['id_item'];
 $no_coa = $_POST['no_coa'];
 $no_cc = $_POST['no_cc'];
-$no_coa_cre = "1.01.03";
-$nama_coa_cre = "1.01.03";
+$no_coa_cre = "2.18.02";
+$nama_coa_cre = "UTANG LAIN-LAIN - FORWARDER";
 $keterangan = '=SUB KATEGORI" "(VENDOR)", "(BUYER)", "JENIS TRANSAKSI", "INVOICE VENDOR"';
 
 $sqlx = mysqli_query($conn1,"select no_coa,nama_coa from mastercoa_v2 where no_coa = '$no_coa'");
