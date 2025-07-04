@@ -41,23 +41,24 @@ $end_date = date("Y-m-d",strtotime($enddate));
                     <div class="col-md-3">
                         <label for="nama_supp"><b>Supplier</b></label>            
                         <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true">
-                            <option value="ALL" selected="true">ALL</option>                                                
                             <?php
-                            $nama_supp ='';
+                            $nama_supp = 'ALL';
                             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
-                            }                 
-                            $sql = mysqli_query($conn1,"select distinct(Supplier) from mastersupplier where tipe_sup = 'S' order by Supplier ASC");
+                                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : 'ALL';
+                            }
+
+                            $isSelected = ($nama_supp == 'ALL') ? ' selected="selected"' : '';
+                            echo '<option value="ALL"' . $isSelected . '>ALL</option>';
+
+                            $sql = mysqli_query($conn1, "SELECT DISTINCT(Supplier) FROM mastersupplier WHERE tipe_sup = 'S' ORDER BY Supplier ASC");
                             while ($row = mysqli_fetch_array($sql)) {
                                 $data = $row['Supplier'];
-                                if($row['Supplier'] == $_POST['nama_supp']){
-                                    $isSelected = ' selected="selected"';
-                                }else{
-                                    $isSelected = '';
-                                }
-                                echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
-                            }?>
+                                $isSelected = ($data == $nama_supp) ? ' selected="selected"' : '';
+                                echo '<option value="' . $data . '"' . $isSelected . '>' . $data . '</option>';
+                            }
+                            ?>
                         </select>
+
 
                     </div>
                     <div class="col-md-2">
@@ -88,66 +89,66 @@ $end_date = date("Y-m-d",strtotime($enddate));
                       value="<?php
                       $start_date ='';
                       if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                       $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-                   }
-                   if(!empty($_POST['start_date'])) {
-                       echo $_POST['start_date'];
-                   }
-                   else{
-                       echo date("d-m-Y");
-                   } ?>" 
-                   placeholder="Start Date" autocomplete='off' style="height: 32px;font-size:13px;">   
-               </div>
+                         $start_date = date("Y-m-d",strtotime($_POST['start_date']));
+                     }
+                     if(!empty($_POST['start_date'])) {
+                         echo $_POST['start_date'];
+                     }
+                     else{
+                         echo date("d-m-Y");
+                     } ?>" 
+                     placeholder="Start Date" autocomplete='off' style="height: 32px;font-size:13px;">   
+                 </div>
 
-               <div class="col-md-2">
-                 <label for="end_date"><b>To</b></label>        
-                 <input type="text" class="form-control tanggal" id="end_date" name="end_date" 
-                 value="<?php
-                 $end_date ='';
-                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                   $end_date = date("Y-m-d",strtotime($_POST['end_date']));
-               }
-               if(!empty($_POST['end_date'])) {
-                   echo $_POST['end_date'];
-               }
-               else{
-                   echo date("d-m-Y");
-               } ?>" 
-               placeholder="Tanggal Akhir" style="height: 32px;font-size:13px;"> 
-           </div>
+                 <div class="col-md-2">
+                   <label for="end_date"><b>To</b></label>        
+                   <input type="text" class="form-control tanggal" id="end_date" name="end_date" 
+                   value="<?php
+                   $end_date ='';
+                   if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                     $end_date = date("Y-m-d",strtotime($_POST['end_date']));
+                 }
+                 if(!empty($_POST['end_date'])) {
+                     echo $_POST['end_date'];
+                 }
+                 else{
+                     echo date("d-m-Y");
+                 } ?>" 
+                 placeholder="Tanggal Akhir" style="height: 32px;font-size:13px;"> 
+             </div>
 
-           <div class="input-group-append col">                                   
-            <button type="submit" id="submit" value=" Search " style="margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
-            line-height: 1;
-            padding: -2px 8px;
-            font-size: 1rem;
-            text-align: center;
-            color: #fff;
-            text-shadow: 1px 1px 1px #000;
-            border-radius: 6px;
-            background-color: rgb(46, 139, 87);"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
-            <button type="button" id="reset" value=" Reset " style="margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
-            line-height: 1;
-            padding: -2px 8px;
-            font-size: 1rem;
-            text-align: center;
-            color: #fff;
-            text-shadow: 1px 1px 1px #000;
-            border-radius: 6px;
-            background-color:rgb(250, 69, 1)"><i class="fa fa-repeat" aria-hidden="true"></i> Reset </button>
+             <div class="input-group-append col">                                   
+                <button type="submit" id="submit" value=" Search " style="margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
+                line-height: 1;
+                padding: -2px 8px;
+                font-size: 1rem;
+                text-align: center;
+                color: #fff;
+                text-shadow: 1px 1px 1px #000;
+                border-radius: 6px;
+                background-color: rgb(46, 139, 87);"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
+                <button type="button" id="reset" value=" Reset " style="margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
+                line-height: 1;
+                padding: -2px 8px;
+                font-size: 1rem;
+                text-align: center;
+                color: #fff;
+                text-shadow: 1px 1px 1px #000;
+                border-radius: 6px;
+                background-color:rgb(250, 69, 1)"><i class="fa fa-repeat" aria-hidden="true"></i> Reset </button>
 
-            <?php
-            $start_date = isset($_POST['start_date']) ? $_POST['start_date'] : null;
-            $end_date = isset($_POST['end_date']) ? $_POST['end_date'] : null;
-            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
+                <?php
+                $start_date = isset($_POST['start_date']) ? $_POST['start_date'] : null;
+                $end_date = isset($_POST['end_date']) ? $_POST['end_date'] : null;
+                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
 
-            echo '<a target="_blank" href="ekspor_reqdn.php?nama_supp='.$nama_supp.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success" style= "margin-top: 30px;margin-bottom:5px"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
-            ?>
-        </div>                                                            
+                echo '<a target="_blank" href="ekspor_reqdn.php?nama_supp='.$nama_supp.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success" style= "margin-top: 30px;margin-bottom:5px"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
+                ?>
+            </div>                                                            
+        </div>
+        <br>
+
     </div>
-    <br>
-
-</div>
 </form> 
 
 <?php
@@ -201,15 +202,15 @@ if($id1 == '79'){
                             }
 
                             if ($nama_supp == 'ALL' and $status == 'ALL') {            
-                             $where = "where tgl_req between '$start_date' and '$end_date'";
-                         }
-                         elseif ($nama_supp != 'ALL' and $status == 'ALL') {
-                             $where = "where nama_supp = '$nama_supp' and tgl_req between '$start_date' and '$end_date'";
-                         }
-                         elseif ($nama_supp == 'ALL' and $status != 'ALL') {
-                             $where = "where a.status = '$status' and tgl_req between '$start_date' and '$end_date'";
-                         }
-                         else{
+                               $where = "where tgl_req between '$start_date' and '$end_date'";
+                           }
+                           elseif ($nama_supp != 'ALL' and $status == 'ALL') {
+                               $where = "where nama_supp = '$nama_supp' and tgl_req between '$start_date' and '$end_date'";
+                           }
+                           elseif ($nama_supp == 'ALL' and $status != 'ALL') {
+                               $where = "where a.status = '$status' and tgl_req between '$start_date' and '$end_date'";
+                           }
+                           else{
                             $where = "where nama_supp = '$nama_supp' and a.status = '$status' and tgl_req between '$start_date' and '$end_date'";
                         }
 
@@ -230,8 +231,8 @@ if($id1 == '79'){
                                 <td style="" value = "'.$row['create_user'].'">'.$row['create_user'].'</td>';
                                 echo '<td>';
                                 if ($status == 'Cancel') {
-                                   echo '-';
-                               }elseif($status == 'Post'){
+                                 echo '-';
+                             }elseif($status == 'Post'){
                                 if ($file_name == '-') {
                                     echo '<button style="border-radius: 6px" type="button" class="btn-xs btn-warning" id="btnupdate" name="btnupdate"><i class="fa fa-cloud-upload" aria-hidden="true" style="padding-right: 5px; padding-left: 5px;"></i></button>
                                     <a href="pdf_req_dn.php?no_req='.$row['no_req'].'" target="_blank"><button style="border-radius: 6px" type="button" class="btn-xs btn-success"><i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Pdf</i></button></a>
@@ -302,7 +303,7 @@ if($id1 == '79'){
             </div> -->
         </div>
         <div class="form-row">
-         <div class="col-md-12 mb-3"> 
+           <div class="col-md-12 mb-3"> 
             <label for="nama_supp"><b>Upload File</b></label> 
             <Input Type="File" class="form-control" id="txtfile" Name="txtfile" Accept="Application/Pdf">
         </div>
@@ -468,9 +469,9 @@ if($id1 == '79'){
                 window.location.reload();                               
             },
             error:  function (xhr, ajaxOptions, thrownError) {
-               alert(xhr);
-           }
-       });
+             alert(xhr);
+         }
+     });
     });
 </script>
 
@@ -492,10 +493,10 @@ if($id1 == '79'){
                 window.location.reload();                                                            
             },
             error:  function (xhr, exc, ajaxOptions, thrownError) {
-               alert(xhr.status);
-               alert(exc);               
-           }
-       });
+             alert(xhr.status);
+             alert(exc);               
+         }
+     });
     });
 </script>
 
@@ -517,10 +518,10 @@ if($id1 == '79'){
                 window.location.reload();                                                            
             },
             error:  function (xhr, exc, ajaxOptions, thrownError) {
-               alert(xhr.status);
-               alert(exc);               
-           }
-       });
+             alert(xhr.status);
+             alert(exc);               
+         }
+     });
     });
 </script>
 
