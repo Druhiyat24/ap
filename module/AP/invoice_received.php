@@ -10,22 +10,22 @@
                     <div class="col-md-4 mb-2">
                         <label for="nama_supp"><b>Supplier</b></label>            
                         <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true">
-                            <option value="ALL" selected="true">ALL</option>                                                
                             <?php
-                            $nama_supp ='';
+                            $nama_supp = 'ALL';
                             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
-                            }                 
-                            $sql = mysqli_query($conn1,"select distinct(Supplier) from mastersupplier where tipe_sup = 'S' order by Supplier ASC");
+                                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : 'ALL';
+                            }
+
+                            $isSelected = ($nama_supp == 'ALL') ? ' selected="selected"' : '';
+                            echo '<option value="ALL"' . $isSelected . '>ALL</option>';
+
+                            $sql = mysqli_query($conn1, "SELECT DISTINCT(Supplier) FROM mastersupplier WHERE tipe_sup = 'S' ORDER BY Supplier ASC");
                             while ($row = mysqli_fetch_array($sql)) {
                                 $data = $row['Supplier'];
-                                if($row['Supplier'] == $_POST['nama_supp']){
-                                    $isSelected = ' selected="selected"';
-                                }else{
-                                    $isSelected = '';
-                                }
-                                echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
-                            }?>
+                                $isSelected = ($data == $nama_supp) ? ' selected="selected"' : '';
+                                echo '<option value="' . $data . '"' . $isSelected . '>' . $data . '</option>';
+                            }
+                            ?>
                         </select>
 
                     </div>
