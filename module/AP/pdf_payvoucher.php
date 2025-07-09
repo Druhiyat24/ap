@@ -13,7 +13,7 @@ $adjust = $rs['adjust'];
 
 $twot = $amount + $adjust;
 
-$sqlys = " select a.no_pv,concat(b.no_coa,' - ',b.nama_coa) as nama_coa,if(d.cc_name is null,'-',d.cc_name) cc_name, if(a.reff_doc = '','-',a.reff_doc) as reff_doc,a.reff_date,if(a.deskripsi = '','-',a.deskripsi) as deskripsi,a.amount,a.ded_add,a.due_date, (a.amount * (a.pph/100)) as pph from tbl_pv a left join mastercoa_v2 b on b.no_coa = a.coa left join b_master_cc d on d.no_cc = a.no_cc where no_pv = '$no_pv' and amount != '0' OR no_pv = '$no_pv' and ded_add != '0' order by a.reff_doc asc";
+$sqlys = " select a.no_pv,concat(b.no_coa,' - ',b.nama_coa) as nama_coa,if(d.cc_name is null,'-',d.cc_name) cc_name, if(a.reff_doc = '','-',a.reff_doc) as reff_doc,a.reff_date,if(a.deskripsi = '','-',a.deskripsi) as deskripsi,a.amount,a.ded_add,a.due_date, (a.amount * (a.pph/100)) as pph, coalesce(pc.nama_pc,'-') profit_center from tbl_pv a left join mastercoa_v2 b on b.no_coa = a.coa left join b_master_cc d on d.no_cc = a.no_cc left join master_pc pc on pc.kode_pc = a.profit_center where no_pv = '$no_pv' and amount != '0' OR no_pv = '$no_pv' and ded_add != '0' order by a.reff_doc asc";
 
 $sqlas = "select curr from tbl_pv_h where no_pv = '$no_pv'";
 
@@ -800,6 +800,7 @@ $curr1 = $data1['curr'];
   <tr>
 
       <th style="width: 15%;border: 1px solid black;text-align:center;">COA</th>
+      <th style="width: 10%;border: 1px solid black;text-align:center;">Profit Center</th>
       <th style="width: 11%;border: 1px solid black;text-align:center;">Cost Center</th>
       <th style="width: 12%;border: 1px solid black;text-align:center;">Reff Doc</th>
       <th style="width: 8%;border: 1px solid black;text-align:center;">Reff Date</th>
@@ -834,6 +835,7 @@ $curr1 = $data1['curr'];
 } 
 echo '<tr>
 <td style="text-align: center" value="'.$data['nama_coa'].'">'.$data['nama_coa'].'</td>
+<td style="text-align: center" value="'.$data['profit_center'].'">'.$data['profit_center'].'</td>
 <td style="text-align: center" value="'.$data['cc_name'].'">'.$data['cc_name'].'</td>
 <td style="text-align: center" value="'.$data['reff_doc'].'">'.$data['reff_doc'].'</td> 
 <td style="text-align: center" value="'.$reff_date.'">'.$reff_date.'</td>                                                                      
@@ -846,7 +848,7 @@ echo '<tr>
 };	
 ?>
 <tr>
-  <td colspan="6" style="width:70%;border: 1px solid black;text-align:center;font-size:10px"><b>Total</b></td>
+  <td colspan="7" style="width:70%;border: 1px solid black;text-align:center;font-size:10px"><b>Total</b></td>
   <td style="width:10%;text-align:right;"><?php echo number_format($sum_amount,2) ?></td> 
   <td style="width:10%;text-align:right;"><?php echo '- '.number_format($sum_ded,2) ?></td>
   <td style="width:10%;text-align:right;"><?php echo '- '.number_format($sum_pph, 2) ?></td>
