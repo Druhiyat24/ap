@@ -5,9 +5,13 @@ ini_set('date.timezone', 'Asia/Jakarta');
 $supp = $_POST['supp'];
 $start_date = date("Y-m-d",strtotime($_POST['start_date']));
 $end_date = date("Y-m-d",strtotime($_POST['end_date']));
+$user = $_POST['user'];
 
 // echo "< -- >";
 // echo $no_kbon;
+
+$query_del = "Delete from tbl_pv_ftr_temp where user='$user'";
+$execute_del = mysqli_query($conn2,$query_del);
 
 
  $sql = mysqli_query($conn1,"select * from (select no_payment,tgl_payment,no_po,nama_supp, SUM(total_kbon) total from  list_payment_cbd where status != 'Cancel' GROUP BY no_payment

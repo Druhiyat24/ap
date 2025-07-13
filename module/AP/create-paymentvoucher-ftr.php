@@ -96,14 +96,14 @@
 
         echo $rate;
 
-    ?>">
+        ?>">
 
 
 
 
 
 
-</div>
+    </div>
 </br>
 
 <div class="form-row">
@@ -703,16 +703,17 @@
             <table id="mytable" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
                 <thead>
                     <tr><th class="text-center" style="width: 2%">-</th>
-                        <th class="text-center" style="width: 12%">COA</th>
-                        <th class="text-center" style="width: 10%">Cost Center</th>
+                        <th class="text-center" style="width: 10%">COA</th>
+                        <th class="text-center" style="width: 8%">Profit Center</th>
+                        <th class="text-center" style="width: 8%">Cost Center</th>
                         <th class="text-center" style="width: 9%">Reff Doc</th>
                         <th class="text-center" style="width: 9%">Reff Date</th>
-                        <th class="text-center" style="width: 11%">Description</th>
+                        <th class="text-center" style="width: 10%">Description</th>
                         <th class="text-center" style="width: 9%">Amount</th>
                         <th class="text-center" style="width: 9%">Deduction</th>
                         <th class="text-center" style="width: 9%">Due date</th>
-                        <th class="text-center" style="width: 10%">PPH</th>
-                        <th class="text-center" style="width: 10%">PPN</th>
+                        <th class="text-center" style="width: 8%">PPH</th>
+                        <th class="text-center" style="width: 8%">PPN</th>
                         <th class="text-center" style="width: 2%"> Action </th>
                     </tr>
                 </thead>
@@ -743,7 +744,13 @@
                         </select>
                         </td>
                         <td >
-                        <select style="font-size: 12px;" class="form-control selectpicker" name="nomor_cc" id="nomor_cc" data-width="150px" data-live-search="true" data-size="5"> <option value="-" > - </option>';  $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name, CONCAT(no_cc,' ',cc_name) as cost_name from b_master_cc where status = 'Active' and no_cc != '$cc_memo'"); foreach ($sql2 as $ccs) : echo'<option value="'.$ccs["code_combine"].'"> '.$ccs["cost_name"].' </option>'; endforeach; ?>
+                        <select style="font-size: 12px;" class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-width="150px" data-live-search="true" data-size="5"> <option value="-" > - </option>';  $sql3 = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'"); foreach ($sql3 as $lpc) : echo'<option value="'.$lpc["kode_pc"].'"> '.$lpc["tampil"].' </option>'; endforeach; ?>
+                        <?php
+                        echo '
+                        </select>
+                        </td>
+                        <td >
+                        <select style="font-size: 12px;" class="form-control selectpicker nomor_cc" name="nomor_cc" id="nomor_cc" data-width="150px" data-live-search="true" data-size="5"> <option value="-" > - </option>';  $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name, CONCAT(no_cc,' ',cc_name) as cost_name from b_master_cc where status = 'Active' and no_cc != '$cc_memo'"); foreach ($sql2 as $ccs) : echo'<option value="'.$ccs["code_combine"].'"> '.$ccs["cost_name"].' </option>'; endforeach; ?>
                         <?php
                         echo '
                         </select>
@@ -1141,6 +1148,50 @@ for ($x = 1; $x <= 50; $x++) {
 
 <script type="text/javascript">
 
+ $(document).on('change', '.prof_ctr', function () {
+    const selectedProfCtr = $(this).val();  // Ambil nilai prof_ctr yang dipilih
+    const costCtrDropdown = $(this).closest('tr').find('.nomor_cc');  // Temukan dropdown cost_ctr dalam baris yang sama
+
+    // Kosongkan dropdown cost_ctr sebelum diisi
+    costCtrDropdown.selectpicker('destroy');  // Hancurkan selectpicker lama
+    costCtrDropdown.empty();  // Kosongkan semua opsi yang ada
+    costCtrDropdown.append('<option value="-"> - </option>');  // Tambahkan opsi default
+    costCtrDropdown.selectpicker();  // Inisialisasi ulang selectpicker
+
+    if (selectedProfCtr && selectedProfCtr !== '-') {
+        // Lakukan AJAX ke server untuk mengambil data cost_ctr
+        $.ajax({
+            url: 'getCostCenter.php',  // Ganti dengan URL endpoint server Anda
+            type: 'POST',
+            data: { prof_ctr: selectedProfCtr },  // Kirim data prof_ctr ke server
+            dataType: 'json',
+            success: function (response) {
+                // Periksa apakah respons valid
+                if (response && response.length > 0) {
+                    $.each(response, function (index, costCtr) {
+                        console.log(costCtr);  // Debug data yang diterima
+                        costCtrDropdown.append(`<option value="${costCtr.value}">${costCtr.text}</option>`);
+                    });
+
+                    // Re-inisialisasi selectpicker setelah menambah opsi
+                    costCtrDropdown.selectpicker('refresh');
+                } else {
+                    console.error('Tidak ada data yang diterima dari server.');
+                    // alert('Tidak ada data cost center yang tersedia.');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('AJAX Error:', status, error);
+                alert('Gagal mengambil data cost center.');
+            }
+        });
+    } else {
+        // Jika tidak ada pilihan valid, tambahkan opsi default dan refresh selectpicker
+        // costCtrDropdown.append('<option value="-"> - </option>');
+        costCtrDropdown.selectpicker('refresh');
+    }
+});
+
    // JavaScript Document
    function addRow(tableID) {
     var tableID = "tbody2";
@@ -1159,7 +1210,7 @@ for ($x = 1; $x <= 50; $x++) {
     });
 
     $coa = '';
-    var element1 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td style="width: 50px"><select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="150px" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td ><select class="form-control selectpicker" name="nomor_cc" id="nomor_cc" data-live-search="true" data-width="130px" data-size="5"> <option value="-" > - </option><?php $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name, CONCAT(no_cc,' ',cc_name) as cost_name from b_master_cc where status = 'Active'"); foreach ($sql2 as $cc) : ?> <option value="<?= $cc["code_combine"]; ?>"><?= $cc["cost_name"]; ?> </option><?php endforeach; ?></select></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input type="text" style="font-size: 12px;" name="tgl_active" id="tgl_active" class="form-control tanggal" value="" autocomplete="off" placeholder="dd-mm-yyyy"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_dedadd(value)" autocomplete = "off"></td><td><input type="text" style="font-size: 12px;" name="tgl_tempo" id="tgl_tempo" class="form-control tanggal" autocomplete="off" placeholder="dd-mm-yyyy" value="<?= date("d-m-Y"); ?>"></td><td style="width: 50px"><select class="form-control select2add" name="pphh"  data-live-search="true" onchange="input_pph()" data-width="120px" data-size="5"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPH' GROUP BY idtax"); foreach ($sql as $pph) : ?> <option data-idtax="<?= $pph["idtax"]; ?>" value="<?= $pph["percentage"]; ?>"><?= $pph["kriteria2"]; ?> </option><?php endforeach; ?></select></td></td><td style="width: 50px"><select class="form-control select2add" name="ppnn"  data-live-search="true" onchange="input_ppn()" data-width="120px" data-size="5"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPN' GROUP BY idtax"); foreach ($sql as $ppn) : ?> <option data-idtax="<?= $ppn["idtax"]; ?>" value="<?= $ppn["percentage"]; ?>"><?= $ppn["kriteria2"]; ?> </option><?php endforeach; ?></select></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
+    var element1 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td style="width: 50px"><select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="150px" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="150px" data-size="5"><option value="-"> - </option><?php $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'"); foreach ($sql3 as $fc) : ?> <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option> <?php endforeach; ?> </select> </td><td ><select class="form-control selectpicker nomor_cc" name="nomor_cc" id="nomor_cc" data-live-search="true" data-width="130px" data-size="5"> <option value="-" > - </option><?php $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name, CONCAT(no_cc,' ',cc_name) as cost_name from b_master_cc where status = 'Active'"); foreach ($sql2 as $cc) : ?> <option value="<?= $cc["code_combine"]; ?>"><?= $cc["cost_name"]; ?> </option><?php endforeach; ?></select></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input type="text" style="font-size: 12px;" name="tgl_active" id="tgl_active" class="form-control tanggal" value="" autocomplete="off" placeholder="dd-mm-yyyy"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_dedadd(value)" autocomplete = "off"></td><td><input type="text" style="font-size: 12px;" name="tgl_tempo" id="tgl_tempo" class="form-control tanggal" autocomplete="off" placeholder="dd-mm-yyyy" value="<?= date("d-m-Y"); ?>"></td><td style="width: 50px"><select class="form-control select2add" name="pphh"  data-live-search="true" onchange="input_pph()" data-width="120px" data-size="5"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPH' GROUP BY idtax"); foreach ($sql as $pph) : ?> <option data-idtax="<?= $pph["idtax"]; ?>" value="<?= $pph["percentage"]; ?>"><?= $pph["kriteria2"]; ?> </option><?php endforeach; ?></select></td></td><td style="width: 50px"><select class="form-control select2add" name="ppnn"  data-live-search="true" onchange="input_ppn()" data-width="120px" data-size="5"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPN' GROUP BY idtax"); foreach ($sql as $ppn) : ?> <option data-idtax="<?= $ppn["idtax"]; ?>" value="<?= $ppn["percentage"]; ?>"><?= $ppn["kriteria2"]; ?> </option><?php endforeach; ?></select></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
 
 
     row.innerHTML = element1;    
@@ -1174,7 +1225,7 @@ function deleteRow(tableID)
         for(var i=0; i<rowCount; i++)
         {
             var row = table.rows[i];
-            var chkbox = row.cells[15].childNodes[0];
+            var chkbox = row.cells[16].childNodes[0];
             if (null != chkbox && true == chkbox.checked)
             {
                 if (rowCount <= 1)
@@ -1204,10 +1255,10 @@ function deleteRow(tableID)
                 var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0;
                 for (var i = 0; i < (table.rows.length); i++) {
 
-                    var price = document.getElementById("tbody2").rows[i].cells[6].children[0].value;
-                    var price2 = document.getElementById("tbody2").rows[i].cells[7].children[0];
-                    var pph = document.getElementById("tbody2").rows[i].cells[9].children[0].value || 0;
-                    var ppn = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+                    var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
+                    var price2 = document.getElementById("tbody2").rows[i].cells[8].children[0];
+                    var pph = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+                    var ppn = document.getElementById("tbody2").rows[i].cells[11].children[0].value || 0;
 
                     if(price == ''){
                         tot_price = - price2;
@@ -1270,7 +1321,7 @@ function InsertRow(tableID)
         for(var i=0; i<rowCount; i++)
         {
             var row = table.rows[i];
-            var chkbox = row.cells[10].childNodes[0];
+            var chkbox = row.cells[11].childNodes[0];
             if (null != chkbox && true == chkbox.checked)
             {
                 var newRow = table.insertRow(i+1);
@@ -1285,7 +1336,7 @@ function InsertRow(tableID)
                             case "INPUT":
                             if(newCell.children[i2].type=='checkbox'){
                                 newCell.children[i2].value = "";
-                                newCell.children[i2].checked[15] = true;
+                                newCell.children[i2].checked[16] = true;
                             }else{
                                 newCell.children[i2].value = "";
                             }
@@ -1327,31 +1378,31 @@ function hitungRow(){
     var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0;
     for (var i = 0; i < (table.rows.length); i++) {
 
-        var price = document.getElementById("tbody2").rows[i].cells[6].children[0].value;
-        var price2 = document.getElementById("tbody2").rows[i].cells[7].children[0];
-        var pph = document.getElementById("tbody2").rows[i].cells[9].children[0].value || 0;
-        var ppn = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+     var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
+     var price2 = document.getElementById("tbody2").rows[i].cells[8].children[0];
+     var pph = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+     var ppn = document.getElementById("tbody2").rows[i].cells[11].children[0].value || 0;
 
-        if(price == ''){
-            tot_price = - price2;
-            tot_min += tot_price * (pph/100);
-            document.getElementsByName("pph_min")[0].value = (- tot_min).toFixed(2);
-        }else{
-            tot_price = price;
-            tot_plus += tot_price * (pph/100);
-            document.getElementsByName("pph_plus")[0].value = (- tot_plus).toFixed(2);
-        }
+     if(price == ''){
+        tot_price = - price2;
+        tot_min += tot_price * (pph/100);
+        document.getElementsByName("pph_min")[0].value = (- tot_min).toFixed(2);
+    }else{
+        tot_price = price;
+        tot_plus += tot_price * (pph/100);
+        document.getElementsByName("pph_plus")[0].value = (- tot_plus).toFixed(2);
+    }
 
-        tota += tot_price * (pph/100);
-        ppn_h += tot_price * (ppn/100);
-        var total_h = total_pv + ppn_h - tota + ded_ad;
+    tota += tot_price * (pph/100);
+    ppn_h += tot_price * (ppn/100);
+    var total_h = total_pv + ppn_h - tota + ded_ad;
 
-        document.getElementsByName("pph_h")[0].value = (- tota).toFixed(2);
-        document.getElementsByName("pph")[0].value = formatMoney(- tota.toFixed(2));
-        document.getElementsByName("ppn_h")[0].value = (ppn_h).toFixed(2);
-        document.getElementsByName("ppn")[0].value = formatMoney(ppn_h.toFixed(2));
-        document.getElementsByName("total_h")[0].value = (total_h).toFixed(2);
-        document.getElementsByName("total")[0].value = formatMoney(total_h.toFixed(2));
+    document.getElementsByName("pph_h")[0].value = (- tota).toFixed(2);
+    document.getElementsByName("pph")[0].value = formatMoney(- tota.toFixed(2));
+    document.getElementsByName("ppn_h")[0].value = (ppn_h).toFixed(2);
+    document.getElementsByName("ppn")[0].value = formatMoney(ppn_h.toFixed(2));
+    document.getElementsByName("total_h")[0].value = (total_h).toFixed(2);
+    document.getElementsByName("total")[0].value = formatMoney(total_h.toFixed(2));
     // alert(pph);
 }
 }
@@ -1373,10 +1424,10 @@ function input_ppn(){
     $('#pilih_ppn').prop('disabled', false);
     for (var i = 0; i < (table.rows.length); i++) {
 
-        var price = document.getElementById("tbody2").rows[i].cells[6].children[0].value;
-        var price2 = document.getElementById("tbody2").rows[i].cells[7].children[0];
-        var pph = document.getElementById("tbody2").rows[i].cells[9].children[0].value || 0;
-        var ppn = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+        var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
+     var price2 = document.getElementById("tbody2").rows[i].cells[8].children[0];
+     var pph = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+     var ppn = document.getElementById("tbody2").rows[i].cells[11].children[0].value || 0;
 
         if(price == ''){
             tot_price = - price2;
@@ -1456,10 +1507,10 @@ function getdate() {
     var totall = 0;
     for (var i = 0; i < (table.rows.length); i++) {
 
-        var price = document.getElementById("tbody2").rows[i].cells[6].children[0].value;
-        var price2 = document.getElementById("tbody2").rows[i].cells[7].children[0];
-        var pph = document.getElementById("tbody2").rows[i].cells[9].children[0].value || 0;
-        var ppn = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+        var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
+     var price2 = document.getElementById("tbody2").rows[i].cells[8].children[0];
+     var pph = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
+     var ppn = document.getElementById("tbody2").rows[i].cells[11].children[0].value || 0;
 
         if (price == '') {
             harga = 0;
@@ -1506,9 +1557,9 @@ function modal_input_dedadd(){
     var total_pph = 0;
     for (var i = 0; i < (table.rows.length); i++) {
 
-        var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
-        var price_amt = document.getElementById("tbody2").rows[i].cells[6].children[0];
-        var pph = document.getElementById("tbody2").rows[i].cells[9].children[0].value;
+        var price = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
+        var price_amt = document.getElementById("tbody2").rows[i].cells[7].children[0];
+        var pph = document.getElementById("tbody2").rows[i].cells[10].children[0].value;
 
         if (price == '') {
             harga = 0;
@@ -1794,13 +1845,14 @@ function addListener(elm,index){
     $("#modal-form2").on("click", "#send2", function(){
         var supp = $('select[name=nama_supp_memo] option').filter(':selected').val(); 
         var start_date = document.getElementById('start_date_memo').value;
-        var end_date = document.getElementById('end_date_memo').value;        
+        var end_date = document.getElementById('end_date_memo').value;  
+        var user = '<?php echo $user ?>';      
 
 
         $.ajax({
             type:'POST',
             url:'cari_ftr_pv.php',
-            data: {'supp':supp, 'start_date':start_date, 'end_date':end_date},
+            data: {'supp':supp, 'start_date':start_date, 'end_date':end_date, 'user':user},
             cache: 'false',
             close: function(e){
                 e.preventDefault();
@@ -1938,144 +1990,145 @@ function addListener(elm,index){
         </script> 
 
         <script type="text/javascript">
-    $("#form-simpan").on("click", "#simpan", function(){
-        var no_pv = document.getElementById('no_doc').value;  
-        var rat_pv = document.getElementById('rat_pv').value;        
-        var pv_date = document.getElementById('tgl_active').value;
-        var nama_supp = document.getElementById('nama_supp').value;       
-        var sup_doc = document.getElementById('sup_doc').value;        
-        var ctb = $('select[name=ct_buyer] option').filter(':selected').val();    
-        var pay_date = document.getElementById('tgl_pay').value;
-        var pay_mth = $('select[name=carabayar] option').filter(':selected').val(); 
-        var curr = document.getElementById('curre').value; 
-        var forpay = document.getElementById('forpay').value;
-        var frcc = $('select[name=frcc] option').filter(':selected').val();
-        var tocc = $('select[name=tocc] option').filter(':selected').val();
-        var no_cek = document.getElementById('no_cek').value;        
-        var cek_date = document.getElementById('cek_date').value;
-        var ke = document.getElementById('ke').value; 
-        var dari = document.getElementById('dari').value;        
-        var pesan = document.getElementById('pesan').value;
-        var subtotal = document.getElementById('nomrate_h').value || 0;
-        var adjust = document.getElementById('ded_ad').value;
-        var pph = document.getElementById('pph_h').value;
-        var ppn = document.getElementById('ppn_h').value;
-        var total = document.getElementById('total_h').value;
-        var pilih_ppn = document.getElementById('pilih_ppn').value;
-        var pilih_pph = document.getElementById('pilih_pph').value;
-        var create_user = '<?php echo $user; ?>';
+            $("#form-simpan").on("click", "#simpan", function(){
+                var no_pv = document.getElementById('no_doc').value;  
+                var rat_pv = document.getElementById('rat_pv').value;        
+                var pv_date = document.getElementById('tgl_active').value;
+                var nama_supp = document.getElementById('nama_supp').value;       
+                var sup_doc = document.getElementById('sup_doc').value;        
+                var ctb = $('select[name=ct_buyer] option').filter(':selected').val();    
+                var pay_date = document.getElementById('tgl_pay').value;
+                var pay_mth = $('select[name=carabayar] option').filter(':selected').val(); 
+                var curr = document.getElementById('curre').value; 
+                var forpay = document.getElementById('forpay').value;
+                var frcc = $('select[name=frcc] option').filter(':selected').val();
+                var tocc = $('select[name=tocc] option').filter(':selected').val();
+                var no_cek = document.getElementById('no_cek').value;        
+                var cek_date = document.getElementById('cek_date').value;
+                var ke = document.getElementById('ke').value; 
+                var dari = document.getElementById('dari').value;        
+                var pesan = document.getElementById('pesan').value;
+                var subtotal = document.getElementById('nomrate_h').value || 0;
+                var adjust = document.getElementById('ded_ad').value;
+                var pph = document.getElementById('pph_h').value;
+                var ppn = document.getElementById('ppn_h').value;
+                var total = document.getElementById('total_h').value;
+                var pilih_ppn = document.getElementById('pilih_ppn').value;
+                var pilih_pph = document.getElementById('pilih_pph').value;
+                var create_user = '<?php echo $user; ?>';
 
-        if (total >= '1' && curr !='' && pay_mth != '' && forpay != '' && ctb != '' && nama_supp != '' || total >= '1' && curr !='' && pay_mth != '' && forpay != '-' && ctb != '' && nama_supp != '') {
-        $.ajax({
-            type:'POST',
-            url:'insertpv_h.php',
-            data: {'rat_pv':rat_pv, 'no_pv':no_pv, 'pv_date':pv_date, 'nama_supp':nama_supp, 'sup_doc':sup_doc, 'ctb':ctb, 'pay_date':pay_date, 'pay_mth':pay_mth, 'curr':curr, 'forpay':forpay, 'frcc':frcc, 'tocc':tocc, 'no_cek':no_cek, 'cek_date':cek_date, 'ke':ke, 'dari':dari, 'pesan':pesan, 'subtotal':subtotal, 'adjust':adjust, 'pph':pph, 'ppn':ppn, 'total':total, 'pilih_ppn':pilih_ppn, 'pilih_pph':pilih_pph, 'create_user':create_user},
-            cache: 'false',
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){
-                console.log(response);
+                if (total >= '1' && curr !='' && pay_mth != '' && forpay != '' && ctb != '' && nama_supp != '' || total >= '1' && curr !='' && pay_mth != '' && forpay != '-' && ctb != '' && nama_supp != '') {
+                    $.ajax({
+                        type:'POST',
+                        url:'insertpv_h.php',
+                        data: {'rat_pv':rat_pv, 'no_pv':no_pv, 'pv_date':pv_date, 'nama_supp':nama_supp, 'sup_doc':sup_doc, 'ctb':ctb, 'pay_date':pay_date, 'pay_mth':pay_mth, 'curr':curr, 'forpay':forpay, 'frcc':frcc, 'tocc':tocc, 'no_cek':no_cek, 'cek_date':cek_date, 'ke':ke, 'dari':dari, 'pesan':pesan, 'subtotal':subtotal, 'adjust':adjust, 'pph':pph, 'ppn':ppn, 'total':total, 'pilih_ppn':pilih_ppn, 'pilih_pph':pilih_pph, 'create_user':create_user},
+                        cache: 'false',
+                        close: function(e){
+                            e.preventDefault();
+                        },
+                        success: function(response){
+                            console.log(response);
                 //  // alert(response);
                 window.location = 'payment-voucher.php';
-                },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                alert(xhr);
-            }
-        });
-        } 
-                        
-
-        $("input[type=checkbox]:checked").each(function () {
-        var doc_number = document.getElementById('no_doc').value;        
-        var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[name=nomor_coa] option').filter(':selected').val(); 
-        var no_cc = $(this).closest('tr').find('td:eq(2)').find('select[name=nomor_cc] option').filter(':selected').val();      
-        var no_ref = $(this).closest('tr').find('td:eq(3) input').val();                               
-        var ref_date = $(this).closest('tr').find('td:eq(4) input').val();
-        var deskripsi = $(this).closest('tr').find('td:eq(5) input').val();                               
-        var amount = $(this).closest('tr').find('td:eq(6) input').val() || 0;
-        var due_date = $(this).closest('tr').find('td:eq(8) input').val();
-        var ded_add = $(this).closest('tr').find('td:eq(7) input').val() || 0;
-        var pph = $(this).closest('tr').find('td:eq(9)').find('select[name=pphh] option').filter(':selected').val() || 0;
-        var idtax = $(this).closest('tr').find('td:eq(9)').find('select[name=pphh] option').filter(':selected').attr('data-idtax');
-        var ppn = $(this).closest('tr').find('td:eq(10)').find('select[name=ppnn] option').filter(':selected').val() || document.getElementById('pilih_ppn').value;
-        var id_ppn = $(this).closest('tr').find('td:eq(10)').find('select[name=ppnn] option').filter(':selected').attr('data-idtax') || document.getElementById('idtax').value;
-        var total_h = document.getElementById('total_h').value || 0;
-        var curr = document.getElementById('curre').value; 
-        var for_pay = $('select[name=forpay] option').filter(':selected').val();
-        if (for_pay == 'Lainnya') {
-         var forpay = document.getElementById('pay_for').value;
-        }else{
-         var forpay = $('select[name=forpay] option').filter(':selected').val();   
-        }
-        var pay_mth = $('select[name=carabayar] option').filter(':selected').val(); 
-        var nama_supp = $('select[name=nama_supp] option').filter(':selected').val();
-        var ctb = $('select[name=ct_buyer] option').filter(':selected').val();
-        var create_user = '<?php echo $user; ?>';
-
-        if (total_h >= '1' && curr !='' && pay_mth != '' && forpay != '' && ctb != '' && nama_supp != '' && no_coa != '' || total_h >= '1' && curr !='' && pay_mth != '' && forpay != '' && ctb != '' && nama_supp != '' && no_coa != '') { 
-        $.ajax({
-            type:'POST',
-            url:'insertpv.php',
-            data: {'doc_number':doc_number, 'no_coa':no_coa, 'no_cc':no_cc, 'no_ref':no_ref, 'ref_date':ref_date, 'deskripsi':deskripsi, 'amount':amount, 'due_date':due_date, 'ded_add':ded_add, 'pph':pph, 'idtax':idtax, 'ppn':ppn, 'id_ppn':id_ppn, 'create_user':create_user},
-            cache: 'false',
-            close: function(e){
-                e.preventDefault();
             },
-            success: function(response){
-                console.log(response);
-                  // alert(response);
-                
-                window.location = 'payment-voucher.php';
-                },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
                 alert(xhr);
             }
         });
-    }
-    
-        }); 
-       if(document.getElementById('nama_supp').value == '' || document.getElementById('nama_supp').value == '-'){
-        alert("Please select Supplier");
-        document.getElementById('nama_supp').focus();
-        }else if(document.getElementById('sup_doc').value == ''){
-        alert("Please Select Support Document");
-        document.getElementById('sup_doc').focus();
-        }else if(document.getElementById('ct_buyer').value == ''){
-        alert("Please select Charge to Buyer");
-        document.getElementById('ct_buyer').focus();
-        }else if($('select[name=carabayar] option').filter(':selected').val() == '' || $('select[name=carabayar] option').filter(':selected').val() == '-'){
-        alert("Please select payment method");
-        document.getElementById('carabayar').focus();
-        }else if(document.getElementById('curre').value == ''){
-            alert("Please select currency");
-        document.getElementById('curre').focus();
-        }else if(document.getElementById('forpay').value == '' || document.getElementById('forpay').value == '-'){
-        alert("Please select For payment");
-        document.getElementById('forpay').focus();
-        }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && $('select[name=frcc] option').filter(':selected').val() == ''){
-        alert("Please select From Account");
-        document.getElementById('frcc').focus();
-        }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && document.getElementById('forpay').value == 'Pemindah Bukuan Bank' && $('select[name=frcc] option').filter(':selected').val() == '-'){
-        alert("Please select From Account");
-        document.getElementById('frcc').focus();
-        }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && document.getElementById('forpay').value == 'Pemindah Bukuan Bank' && $('select[name=frcc] option').filter(':selected').val() != '-' && $('select[name=tocc] option').filter(':selected').val() == '-'){
-        alert("Please select To Account");
-        document.getElementById('tocc').focus();
-        }else if(document.getElementById('total_h').value == ''){
-        alert("Please Input Amount");
-        }else if(document.getElementById('total_h').value <= '0'){
-        alert("Amount can't be Minus");
-        }else if(document.getElementById('total_h').value == '0.00'){
-        alert("Total Amount can't be Zero");
-        }else{               
-       
-            alert("data saved successfully");
-        }
-    });
-</script>
+                } 
+
+
+                $("input[type=checkbox]:checked").each(function () {
+                    var doc_number = document.getElementById('no_doc').value;        
+                    var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[name=nomor_coa] option').filter(':selected').val(); 
+                    var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val(); 
+                    var no_cc = $(this).closest('tr').find('td:eq(3)').find('select[name=nomor_cc] option').filter(':selected').val();      
+                    var no_ref = $(this).closest('tr').find('td:eq(4) input').val();                               
+                    var ref_date = $(this).closest('tr').find('td:eq(5) input').val();
+                    var deskripsi = $(this).closest('tr').find('td:eq(6) input').val();                               
+                    var amount = $(this).closest('tr').find('td:eq(7) input').val() || 0;
+                    var due_date = $(this).closest('tr').find('td:eq(9) input').val();
+                    var ded_add = $(this).closest('tr').find('td:eq(8) input').val() || 0;
+                    var pph = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').val() || 0;
+                    var idtax = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').attr('data-idtax');
+                    var ppn = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').val() || document.getElementById('pilih_ppn').value;
+                    var id_ppn = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').attr('data-idtax') || document.getElementById('idtax').value;
+                    var total_h = document.getElementById('total_h').value || 0;
+                    var curr = document.getElementById('curre').value; 
+                    var for_pay = $('select[name=forpay] option').filter(':selected').val();
+                    if (for_pay == 'Lainnya') {
+                     var forpay = document.getElementById('pay_for').value;
+                 }else{
+                     var forpay = $('select[name=forpay] option').filter(':selected').val();   
+                 }
+                 var pay_mth = $('select[name=carabayar] option').filter(':selected').val(); 
+                 var nama_supp = $('select[name=nama_supp] option').filter(':selected').val();
+                 var ctb = $('select[name=ct_buyer] option').filter(':selected').val();
+                 var create_user = '<?php echo $user; ?>';
+
+                 if (total_h >= '1' && curr !='' && pay_mth != '' && forpay != '' && ctb != '' && nama_supp != '' && no_coa != '' || total_h >= '1' && curr !='' && pay_mth != '' && forpay != '' && ctb != '' && nama_supp != '' && no_coa != '') { 
+                    $.ajax({
+                        type:'POST',
+                        url:'insertpv.php',
+                        data: {'doc_number':doc_number, 'no_coa':no_coa, 'prof_ctr':prof_ctr, 'no_cc':no_cc, 'no_ref':no_ref, 'ref_date':ref_date, 'deskripsi':deskripsi, 'amount':amount, 'due_date':due_date, 'ded_add':ded_add, 'pph':pph, 'idtax':idtax, 'ppn':ppn, 'id_ppn':id_ppn, 'create_user':create_user},
+                        cache: 'false',
+                        close: function(e){
+                            e.preventDefault();
+                        },
+                        success: function(response){
+                            console.log(response);
+                  // alert(response);
+
+                  window.location = 'payment-voucher.php';
+              },
+              error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr);
+                alert(xhr);
+            }
+        });
+                }
+
+            }); 
+                if(document.getElementById('nama_supp').value == '' || document.getElementById('nama_supp').value == '-'){
+                    alert("Please select Supplier");
+                    document.getElementById('nama_supp').focus();
+                }else if(document.getElementById('sup_doc').value == ''){
+                    alert("Please Select Support Document");
+                    document.getElementById('sup_doc').focus();
+                }else if(document.getElementById('ct_buyer').value == ''){
+                    alert("Please select Charge to Buyer");
+                    document.getElementById('ct_buyer').focus();
+                }else if($('select[name=carabayar] option').filter(':selected').val() == '' || $('select[name=carabayar] option').filter(':selected').val() == '-'){
+                    alert("Please select payment method");
+                    document.getElementById('carabayar').focus();
+                }else if(document.getElementById('curre').value == ''){
+                    alert("Please select currency");
+                    document.getElementById('curre').focus();
+                }else if(document.getElementById('forpay').value == '' || document.getElementById('forpay').value == '-'){
+                    alert("Please select For payment");
+                    document.getElementById('forpay').focus();
+                }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && $('select[name=frcc] option').filter(':selected').val() == ''){
+                    alert("Please select From Account");
+                    document.getElementById('frcc').focus();
+                }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && document.getElementById('forpay').value == 'Pemindah Bukuan Bank' && $('select[name=frcc] option').filter(':selected').val() == '-'){
+                    alert("Please select From Account");
+                    document.getElementById('frcc').focus();
+                }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && document.getElementById('forpay').value == 'Pemindah Bukuan Bank' && $('select[name=frcc] option').filter(':selected').val() != '-' && $('select[name=tocc] option').filter(':selected').val() == '-'){
+                    alert("Please select To Account");
+                    document.getElementById('tocc').focus();
+                }else if(document.getElementById('total_h').value == ''){
+                    alert("Please Input Amount");
+                }else if(document.getElementById('total_h').value <= '0'){
+                    alert("Amount can't be Minus");
+                }else if(document.getElementById('total_h').value == '0.00'){
+                    alert("Total Amount can't be Zero");
+                }else{               
+
+                    alert("data saved successfully");
+                }
+            });
+        </script>
 
         <script type="text/javascript">
             $("#select_all").click(function() {

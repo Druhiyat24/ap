@@ -1567,6 +1567,21 @@ if(strpos($id2, '88') !== false){
  </a>';
 }
 
+echo '<li class="dropdown-submenu ">
+       <a class="dropdown-item bg-dark text-white" href="#">
+       <span class="fab fa-rev"></span>
+       <span class="menu-collapsed">Repost Journal</span>
+       </a>
+       <ul class="dropdown-menu bg-dark text-white" role="menu">';
+       if(strpos($id, '90') !== false){
+        echo'<a href="AP/repost-bank-out.php" class="dropdown-item bg-dark text-white">
+        <span class="fas fa-landmark"></span>
+        <span class="menu-collapsed">Bank Out</span>
+        </a>';
+    }
+    echo'</ul>
+    </li>';
+
 ?>
 </ul>
 </li>
