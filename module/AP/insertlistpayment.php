@@ -32,13 +32,13 @@ $no_coa = $_POST['no_coa'];
 $nama_coa = $_POST['nama_coa'];
 
 
-$sqlno = mysqli_query($conn1,"select CONCAT('LP/NAG/',DATE_FORMAT(CURRENT_DATE(), '%m%y'),'/',LPAD((COALESCE(max(SUBSTR(no_payment,13)),0) + 1),5,0)) nomor from list_payment WHERE YEAR(tgl_payment) = YEAR ('$tgl_payment')");
-$rowno = mysqli_fetch_array($sqlno);
-$kode = isset($rowno['nomor']) ? $rowno['nomor'] : 0;
+// $sqlno = mysqli_query($conn1,"select CONCAT('LP/NAG/',DATE_FORMAT(CURRENT_DATE(), '%m%y'),'/',LPAD((COALESCE(max(SUBSTR(no_payment,13)),0) + 1),5,0)) nomor from list_payment WHERE YEAR(tgl_payment) = YEAR ('$tgl_payment')");
+// $rowno = mysqli_fetch_array($sqlno);
+// $kode = isset($rowno['nomor']) ? $rowno['nomor'] : 0;
 	
 $query = "INSERT INTO list_payment (no_payment, tgl_payment, nama_supp, no_kbon, tgl_kbon, no_bpb, tgl_bpb, no_po, tgl_po, pph_value, total_kbon, outstanding, amount, curr, top, tgl_tempo, memo, status,status_int, create_user, create_date, post_date, update_date, duedate_onkb, no_coa, nama_coa) 
 VALUES 
-	('$kode', '$tgl_payment', '$nama_supp', '$no_kbon', '$tgl_kbon', '$no_bpb', '$tgl_bpb', '$no_po', '$tgl_po', '$pph_value', '$total_kbon', '$outstanding', '$amount', '$curr', '$top', '$duedate', '$keterangan', '$status', '$status_int', '$create_user', '$create_date', '$post_date', '$update_date', '$tgl_tempo', '$no_coa', '$nama_coa')";
+	('$no_payment', '$tgl_payment', '$nama_supp', '$no_kbon', '$tgl_kbon', '$no_bpb', '$tgl_bpb', '$no_po', '$tgl_po', '$pph_value', '$total_kbon', '$outstanding', '$amount', '$curr', '$top', '$duedate', '$keterangan', '$status', '$status_int', '$create_user', '$create_date', '$post_date', '$update_date', '$tgl_tempo', '$no_coa', '$nama_coa')";
 $execute = mysqli_query($conn2,$query);
 
 if(!$execute){	
