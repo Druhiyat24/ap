@@ -25,12 +25,17 @@ echo $biaya;
 echo "< -- >";
 echo $user;
 
+
+
 if ($no_memo != '') {
+	// $query_del = "Delete from tbl_pv_ftr_temp where user='$user'";
+	// $execute_del = mysqli_query($conn2,$query_del);
+
 	$query = "INSERT INTO tbl_pv_ftr_temp (no_memo,tgl_memo,jenis_transaksi,supplier,biaya,user) 
-VALUES 
+	VALUES 
 	('$no_memo', '$tgl_memo', '$jenis_transaksi','$supplier', '$biaya', '$user')";
 
-$execute = mysqli_query($conn2,$query);  
+	$execute = mysqli_query($conn2,$query);  
 
 }else{
 	$query = 'select max(id) from master_coa_ctg1';
@@ -39,7 +44,7 @@ $execute = mysqli_query($conn2,$query);
 
 
 if(!$execute){	
-   die('Error: ' . mysqli_error());	
+	die('Error: ' . mysqli_error());	
 }else{
 	
 }
