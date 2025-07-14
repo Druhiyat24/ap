@@ -31,65 +31,14 @@ $pph = '-';
 $no_coa = $_POST['no_coa'];
 $nama_coa = $_POST['nama_coa'];
 
-// $sql = "select balance from kontrabon_h where no_kbon = '$no_kbon'";
-// $exec = mysql_query($sql,$conn2);
-// while($row = mysql_fetch_array($exec)){
-// 	$balance = $row['balance'];
-// }
 
-// $sum_balance = $balance - $amount;
-
-// echo $no_payment;
-// echo "||";
-// echo $tgl_payment;
-// echo "||";
-// echo $nama_supp;
-// echo "||";
-// echo $no_kbon;
-// echo "||";
-// echo $tgl_kbon;
-// echo "||";
-// echo $no_bpb;
-// echo "||";
-// echo $tgl_bpb;
-// echo "||";
-// echo $no_po;
-// echo "||";
-// echo $tgl_po;
-// echo "||";
-// echo $pph_value;
-// echo "||";
-// echo $total_kbon;
-// echo "||";
-// echo $outstanding;
-// echo "||";
-// echo $amount;
-// echo "||";
-// echo $curr;
-// echo "||";
-// echo $top;
-// echo "||";
-// echo $tgl_tempo;
-// echo "||";
-// echo $keterangan;
-// echo "||";
-// echo $status;
-// echo "||";
-// echo $status_int;
-// echo "||";
-// echo $create_user;
-// echo "||";
-// echo $create_date;
-// echo "||";
-// echo $post_date;
-// echo "||";
-// echo $update_date;
-// echo "||";
-
+$sqlno = mysqli_query($conn1,"select CONCAT('LP/NAG/',DATE_FORMAT(CURRENT_DATE(), '%m%y'),'/',LPAD((COALESCE(max(SUBSTR(no_payment,13)),0) + 1),5,0)) nomor from list_payment WHERE YEAR(tgl_payment) = YEAR ('$tgl_payment')");
+$rowno = mysqli_fetch_array($sqlno);
+$kode = isset($rowno['nomor']) ? $rowno['nomor'] : 0;
 	
 $query = "INSERT INTO list_payment (no_payment, tgl_payment, nama_supp, no_kbon, tgl_kbon, no_bpb, tgl_bpb, no_po, tgl_po, pph_value, total_kbon, outstanding, amount, curr, top, tgl_tempo, memo, status,status_int, create_user, create_date, post_date, update_date, duedate_onkb, no_coa, nama_coa) 
 VALUES 
-	('$no_payment', '$tgl_payment', '$nama_supp', '$no_kbon', '$tgl_kbon', '$no_bpb', '$tgl_bpb', '$no_po', '$tgl_po', '$pph_value', '$total_kbon', '$outstanding', '$amount', '$curr', '$top', '$duedate', '$keterangan', '$status', '$status_int', '$create_user', '$create_date', '$post_date', '$update_date', '$tgl_tempo', '$no_coa', '$nama_coa')";
+	('$kode', '$tgl_payment', '$nama_supp', '$no_kbon', '$tgl_kbon', '$no_bpb', '$tgl_bpb', '$no_po', '$tgl_po', '$pph_value', '$total_kbon', '$outstanding', '$amount', '$curr', '$top', '$duedate', '$keterangan', '$status', '$status_int', '$create_user', '$create_date', '$post_date', '$update_date', '$tgl_tempo', '$no_coa', '$nama_coa')";
 $execute = mysqli_query($conn2,$query);
 
 if(!$execute){	
