@@ -1761,4 +1761,20 @@ echo '<li class="dropdown-submenu ">
 
 </nav>
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const selects = document.querySelectorAll('select[name="nama_supp"]');
+
+    selects.forEach(function(select) {
+        if (!select.value || select.value === '') {
+            const optAll = select.querySelector('option[value="ALL"]');
+            if (optAll) {
+                optAll.selected = true;
+            }
+        }
+    });
+});
+</script>
+
+
     <!-- sidebar-container END -->
