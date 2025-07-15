@@ -1127,6 +1127,8 @@ $("input[id=select]").change(function(){
     var pph11 = 0;
     var data = 0;
     var data1 = 0;
+    var processedPO = [];
+    var cbddp_total = 0;
     $(this).closest('tr').find('td:eq(6) input').prop('disabled', true);
     // $(this).closest('tr').find('td:eq(6) input').val(0);   
     $(this).closest('tr').find('td:eq(6)').find('select[name=combo_pph]').prop('disabled', true);         
@@ -1209,17 +1211,11 @@ $("input[id=select]").change(function(){
     nopo1= po1;
 }
 
-    // if(cbd1 == ''){
-    //   cbddp1 = cbd;  
-    // }else{
-    //     cbddp1= cbd1;
-    // }
+cbddp1 = cbd;  
 
-    cbddp1 = cbd;  
-
-    if(tax1 == ''){
-      ppn1= tax;  
-  }else{
+if(tax1 == ''){
+  ppn1= tax;  
+}else{
     ppn1= tax1;
 }
 
@@ -1241,6 +1237,11 @@ if(tglbpb2 > tanggal){
     dates = tanggal;
 }
 
+if (!processedPO.includes(po)) {
+        cbddp_total += cbd;
+        processedPO.push(po); // simpan PO ke array
+    }
+
 });
     $("#subtotal").val(formatMoney(sum_sub));
     $("#subtotal_h").val(sum_sub.toFixed(2)); 
@@ -1251,8 +1252,8 @@ if(tglbpb2 > tanggal){
     $("#po1").val(nopo); 
     $("#sisapotongan").val(formatMoney(sisa));
     $("#ttl_sub").val(sisa);
-    $("#ttl_dp").val(formatMoney(cbddp1));
-    $("#ttl_dp_h").val(cbddp1.toFixed(2));
+    $("#ttl_dp").val(formatMoney(cbddp_total));
+    $("#ttl_dp_h").val(cbddp_total.toFixed(2));
     $("#pajak").val(formatMoney(ppn));
     $("#pajak_h").val(ppn);
     $("#pph").val(formatMoney(pph11));
