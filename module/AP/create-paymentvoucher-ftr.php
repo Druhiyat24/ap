@@ -643,7 +643,7 @@
                                     <td hidden><input style="font-size: 12px" type="text" class="form-control" name="keterangan[]" placeholder="" value="" autocomplete="off" ></td>
                                     <td hidden><input style="font-size: 12px" type="text" class="form-control" name="keterangan[]" placeholder="" value="" autocomplete="off" ></td>
                                     <td style="width:150px;">
-                                    <input style="text-align: left;"  style="font-size: 12px;" class="form-control" id="data-total-ro" name="data-total-ro"  value="'.$row1['ref_doc'].'" disabled>
+                                    <input style="text-align: left;"  style="font-size: 12px;" class="form-control" id="data-support-manual" name="data-support-manual"  value="'.$row1['ref_doc'].'" disabled>
                                     </td>                                                                                                 
                                     </tr>';
                                 }
@@ -658,7 +658,7 @@
                                    <td hidden><input style="font-size: 12px" type="text" class="form-control" name="keterangan[]" placeholder="" value="" autocomplete="off" ></td>
                                    <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" <?php if(in_array("1",$_POST[select])) echo "checked=checked";? checked></td>                         
                                    <td style="width:150px;">
-                                   <input style="text-align: left;"  style="font-size: 12px;" class="form-control" id="data-total-ro" name="data-total-ro"  value="'.$ket2.'" >
+                                   <input style="text-align: left;"  style="font-size: 12px;" class="form-control" id="data-support-manual" name="data-support-manual"  value="'.$ket2.'" >
                                    </td>                                                                                                 
                                    </tr>'; 
                                } else{
@@ -670,7 +670,7 @@
                                 <td hidden><input style="font-size: 12px" type="text" class="form-control" name="keterangan[]" placeholder="" value="" autocomplete="off" ></td>
                                 <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" <?php if(in_array("1",$_POST[select])) echo "checked=checked";?></td>                         
                                 <td style="width:150px;">
-                                <input style="text-align: left;"  style="font-size: 12px;" class="form-control" id="data-total-ro" name="data-total-ro"  value="" >
+                                <input style="text-align: left;"  style="font-size: 12px;" class="form-control" id="data-support-manual" name="data-support-manual"  value="" >
                                 </td>                                                                                                 
                                 </tr>'; 
                             }  
@@ -1881,11 +1881,10 @@ function addListener(elm,index){
 
 <script type="text/javascript">
     $("#modal-form5").on("click", "#send5", function(){
-        $("input[type=checkbox]:checked").each(function () {
+        $("#doc_support input[type=checkbox]:checked").each(function () {
             var doc_number = document.getElementById('no_doc').value;
             var unik_code = document.getElementById('unik_code').value;        
             var data = $(this).closest('tr').find('td:eq(7) input').val();
-
 
             $.ajax({
                 type:'POST',
@@ -2039,7 +2038,7 @@ function addListener(elm,index){
                 } 
 
 
-                $("input[type=checkbox]:checked").each(function () {
+                $("#mytable input[type=checkbox]:checked").each(function () {
                     var doc_number = document.getElementById('no_doc').value;        
                     var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[name=nomor_coa] option').filter(':selected').val(); 
                     var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val(); 
