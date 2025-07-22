@@ -179,7 +179,7 @@ union (select nama_supp, no_bpb, tgl_bpb, top, duedate, curr, total from tbl_tam
         union
 select no_doc, tgl_doc from tbl_tamb_ap where no_doc = '$no_bpb' and tgl_pay between '$start_date' and '$end_date' GROUP BY no_doc
 UNION
-select reff_doc,reff_date from tbl_list_journal where reff_doc = '$no_bpb' and no_journal like '%GM/NAG%' and type_journal = 'ACCOUNT PAYABLE' and debit != 0 and tgl_journal >= '2024-09-01' and tgl_journal between '$start_date' and '$end_date' GROUP BY reff_doc");
+select reff_doc,reff_date from tbl_list_journal where reff_doc = '$no_bpb' and no_journal like '%GM/NAG%' and type_journal = 'ACCOUNT PAYABLE' and (debit != 0 OR credit != 0) and tgl_journal >= '2024-09-01' and tgl_journal between '$start_date' and '$end_date' GROUP BY reff_doc");
     $rowlp = mysqli_fetch_array($sqllp);
     $no_lp = isset($rowlp['no_bpb']) ? $rowlp['no_bpb'] : null;
 
@@ -188,7 +188,7 @@ select reff_doc,reff_date from tbl_list_journal where reff_doc = '$no_bpb' and n
         union
 select no_doc, tgl_doc, tgl_doc tgl_doc2 from tbl_tamb_ap where no_doc = '$no_bpb' and tgl_pay < '$start_date' GROUP BY no_doc
 UNION
-select reff_doc,reff_date,reff_date from tbl_list_journal where reff_doc = '$no_bpb' and no_journal like '%GM/NAG%' and type_journal = 'ACCOUNT PAYABLE' and debit != 0 and tgl_journal >= '2024-09-01' and tgl_journal < '$start_date' GROUP BY reff_doc");
+select reff_doc,reff_date,reff_date from tbl_list_journal where reff_doc = '$no_bpb' and no_journal like '%GM/NAG%' and type_journal = 'ACCOUNT PAYABLE' and (debit != 0 OR credit != 0) and tgl_journal >= '2024-09-01' and tgl_journal < '$start_date' GROUP BY reff_doc");
     $rowlp2 = mysqli_fetch_array($sqllp2);
     $no_lp2 = isset($rowlp2['no_bpb']) ? $rowlp2['no_bpb'] : null;
     $tgl = isset($rowlp2['tgl_kbon2']) ? $rowlp2['tgl_kbon2'] : null;
@@ -207,7 +207,7 @@ select reff_doc,reff_date,reff_date from tbl_list_journal where reff_doc = '$no_
         union
 select no_doc, tgl_doc from tbl_tamb_ap where no_doc = '$no_bpb' and tgl_pay between '$start_date' and '$end_date' GROUP BY no_doc
 UNION
-select reff_doc,reff_date from tbl_list_journal where reff_doc = '$no_bpb' and tgl_journal >= '2024-09-01' and tgl_journal between '$start_date' and '$end_date' and no_journal like '%GM/NAG%' and debit != 0 and type_journal = 'ACCOUNT PAYABLE' GROUP BY reff_doc");
+select reff_doc,reff_date from tbl_list_journal where reff_doc = '$no_bpb' and tgl_journal >= '2024-09-01' and tgl_journal between '$start_date' and '$end_date' and no_journal like '%GM/NAG%' and (debit != 0 OR credit != 0) and type_journal = 'ACCOUNT PAYABLE' GROUP BY reff_doc");
     $rowlp = mysqli_fetch_array($sqllp);
     $no_lp = isset($rowlp['no_bppb']) ? $rowlp['no_bppb'] : null;
 
@@ -215,7 +215,7 @@ select reff_doc,reff_date from tbl_list_journal where reff_doc = '$no_bpb' and t
         union
 select no_doc, tgl_doc, tgl_doc tgl_doc2 from tbl_tamb_ap where no_doc = '$no_bpb' and tgl_pay < '$start_date' GROUP BY no_doc
 UNION
-select reff_doc,reff_date,reff_date from tbl_list_journal where reff_doc = '$no_bpb' and no_journal like '%GM/NAG%' and debit != 0 and tgl_journal >= '2024-09-01' and tgl_journal < '$start_date' and type_journal = 'ACCOUNT PAYABLE' GROUP BY reff_doc");
+select reff_doc,reff_date,reff_date from tbl_list_journal where reff_doc = '$no_bpb' and no_journal like '%GM/NAG%' and (debit != 0 OR credit != 0) and tgl_journal >= '2024-09-01' and tgl_journal < '$start_date' and type_journal = 'ACCOUNT PAYABLE' GROUP BY reff_doc");
     $rowlp2 = mysqli_fetch_array($sqllp2);
     $no_lp2 = isset($rowlp2['no_bppb']) ? $rowlp2['no_bppb'] : null;
     $tgl = isset($rowlp2['tgl_kbon2']) ? $rowlp2['tgl_kbon2'] : null;
