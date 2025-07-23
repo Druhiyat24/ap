@@ -1754,7 +1754,7 @@ function getdate() {
     var totall = 0;
     for (var i = 1; i < (table.rows.length); i++) {
 
-       var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
+       var price = parseFloat(document.getElementById("tbody2").rows[i].cells[7].children[0].value);
        var price2 = document.getElementById("tbody2").rows[i].cells[8].children[0];
        var pph = parseFloat(document.getElementById("tbody2").rows[i].cells[10].querySelector('select').value) || 0;
        var ppn = parseFloat(document.getElementById("tbody2").rows[i].cells[11].querySelector('select').value) || 0;
@@ -1781,10 +1781,10 @@ function getdate() {
     document.getElementsByName("total_h")[0].value = totall.toFixed(2);
     document.getElementsByName("total_h2")[0].value = formatMoney(totall.toFixed(2));
     document.getElementsByName("total")[0].value = formatMoney(totall.toFixed(2));
-    // document.getElementsByName("pph_h")[0].value = (- total_pph).toFixed(2);
-    // document.getElementsByName("pph")[0].value = formatMoney(- total_pph.toFixed(2));
-    // document.getElementsByName("ppn_h")[0].value = (tota_ppn).toFixed(2);
-    // document.getElementsByName("ppn")[0].value = formatMoney(tota_ppn.toFixed(2));
+    document.getElementsByName("pph_h")[0].value = (- total_pph).toFixed(2);
+    document.getElementsByName("pph")[0].value = formatMoney(- total_pph.toFixed(2));
+    document.getElementsByName("ppn_h")[0].value = (tota_ppn).toFixed(2);
+    document.getElementsByName("ppn")[0].value = formatMoney(tota_ppn.toFixed(2));
     document.getElementsByName("pph_plus")[0].value = (- tota_pph).toFixed(2);
 }
 }
