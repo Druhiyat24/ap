@@ -35,6 +35,12 @@ $execute8 = pg_query($conn4, $sql8);
 $sql9 = "UPDATE bpb_celup SET status_bpb = 'draft', confirm_administrasi = '' WHERE no_bpb = '$no_bpb'";
 $execute9 = pg_query($conn4, $sql9);
 
+$sql10 = "delete from bpb_knitting where no_bpb = '$no_bpb'";
+$execute10 = mysqli_query($conn2,$sql10);
+
+$sql11 = "delete from tbl_tamb_bpb2 where no_bpb = '$no_bpb'";
+$execute11 = mysqli_query($conn2,$sql11);
+
 }else{
 	die('Error: ' . mysqli_error());		
 }
