@@ -26,6 +26,15 @@ $execute5 = mysqli_query($conn2,$sql5);
 $sql6 = "update whs_bppb_h set status = 'Pending', approved_by = '', approved_date = '' where no_bppb = '$no_bpb'";
 $execute6 = mysqli_query($conn2,$sql6);
 
+$sql7 = "UPDATE bpb SET status_bpb = 'draft', confirm_administrasi = '' WHERE no_bpb = '$no_bpb'";
+$execute7 = pg_query($conn4, $sql7);
+
+$sql8 = "UPDATE gp_penerimaan_greige_h SET status_bpb = 'draft', confirm_administrasi = '' WHERE no_bpb = '$no_bpb'";
+$execute8 = pg_query($conn4, $sql8);
+
+$sql9 = "UPDATE bpb_celup SET status_bpb = 'draft', confirm_administrasi = '' WHERE no_bpb = '$no_bpb'";
+$execute9 = pg_query($conn4, $sql9);
+
 }else{
 	die('Error: ' . mysqli_error());		
 }
