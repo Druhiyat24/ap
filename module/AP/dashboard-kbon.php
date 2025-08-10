@@ -1,5 +1,5 @@
 <?php
-    include '../../conn/conn.php';
+    include '../../conn/conn_sch.php';
     ini_set('date.timezone', 'Asia/Jakarta');
     $insert_date = date("Y-m-d H:i:s");
     $value = '';

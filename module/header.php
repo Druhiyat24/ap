@@ -206,10 +206,10 @@ input::-webkit-inner-spin-button {
       <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
-    <a class="navbar-brand" href="#">
+    <a class="" href="#">
         <img src="../img/NAG logo SIGN.png" alt="">
     </a>
-    <a class="navbar-brand text-white" style="font-size: 17px;"><b>PT.NIRWANA ALABARE GARMENT</b></a>
+    <a class=" text-white" style="font-size: 15px;"><b>PT.NIRWANA ALABARE GARMENT</b></a>
 
     <div class="collapse navbar-collapse" id="navbarNavDropdown">
         <ul class="navbar-nav mr-auto">
@@ -1749,13 +1749,13 @@ echo '<li class="dropdown-submenu ">
 
 <ul class="navbar-nav ml-auto">
  <li class="nav-item active">
-    <a class="nav-link" href="../function/logout.php" style="font-size:14px;"><span class="fa fa-power-off">Log-out</a>
+    <a class="nav-link" href="../function/logout.php" style="font-size:12px;"><span class="fa fa-power-off">Log-out</a>
     </li>
     <li class="nav-item active">
-        <a class="nav-link" href="../index.php" style="font-size:14px;"><span class="fa fa-home">Home</a>
+        <a class="nav-link" href="../index.php" style="font-size:12px;"><span class="fa fa-home">Home</a>
         </li>
         <li class="nav-item active">
-            <span class="navbar-text text-white" style="font-size:14px;"><span class="fa fa-user"> <?php echo $user ?> </span></span>
+            <span class="navbar-text text-white" style="font-size:12px;"><span class="fa fa-user"> <?php echo $user ?> </span></span>
         </li>
     </div>
 
