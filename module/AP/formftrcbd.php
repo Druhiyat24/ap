@@ -1,67 +1,67 @@
 <?php include '../header.php' ?>
 
-    <!-- MAIN -->
-    <div class="col p-4">
-        <h3 class="text-center">FORM TRANSFER REQUEST (CBD)</h3>
-<div class="box">
-    <div class="box header">
-<form id="form-data" method="post">
-        <div class="form-row">
-            <div class="col-md-3 mb-3">            
-            <label for="noftrcbd"><b>No FTR CBD</b></label>
-            <?php
-            $sql = mysqli_query($conn2,"select max(no_ftr_cbd) from ftr_cbd where id = (select max(id) from ftr_cbd)");
-            $row = mysqli_fetch_array($sql);
-            $kodeftr = $row['max(no_ftr_cbd)'];
-            $urutan = (int) substr($kodeftr, 15, 5);
-            $urutan++;
-            $bln = date("m");
-            $thn = date("y");
-            $huruf = "FTR/C/NAG/$bln$thn/";
-            $kodeftr = $huruf . sprintf("%05s", $urutan);
+<!-- MAIN -->
+<div class="col p-4">
+    <h3 class="text-center">FORM TRANSFER REQUEST (CBD)</h3>
+    <div class="box">
+        <div class="box header">
+            <form id="form-data" method="post">
+                <div class="form-row">
+                    <div class="col-md-3 mb-3">            
+                        <label for="noftrcbd"><b>No FTR CBD</b></label>
+                        <?php
+                        $sql = mysqli_query($conn2,"select max(no_ftr_cbd) from ftr_cbd where id = (select max(id) from ftr_cbd)");
+                        $row = mysqli_fetch_array($sql);
+                        $kodeftr = $row['max(no_ftr_cbd)'];
+                        $urutan = (int) substr($kodeftr, 15, 5);
+                        $urutan++;
+                        $bln = date("m");
+                        $thn = date("y");
+                        $huruf = "FTR/C/NAG/$bln$thn/";
+                        $kodeftr = $huruf . sprintf("%05s", $urutan);
 
-            echo'<input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="noftrcbd" name="noftrcbd" value="'.$kodeftr.'">'
-            ?>
-            </div>
-            <div class="col-md-2 mb-3">            
-            <label for="tanggal"><b>FTR CBD Date <i style="color: red;">*</i></b></label>          
-            <input type="text" style="font-size: 14px;" name="tanggal" id="tanggal" class="form-control tanggal" 
-            value="<?php             
-            if(!empty($_POST['tanggal'])) {
-                echo $_POST['tanggal'];
-            }
-            else{
-                echo date("d-m-Y");
-            } ?>">
-            </div>
+                        echo'<input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="noftrcbd" name="noftrcbd" value="'.$kodeftr.'">'
+                        ?>
+                    </div>
+                    <div class="col-md-2 mb-3">            
+                        <label for="tanggal"><b>FTR CBD Date <i style="color: red;">*</i></b></label>          
+                        <input type="text" style="font-size: 14px;" name="tanggal" id="tanggal" class="form-control tanggal" 
+                        value="<?php             
+                        if(!empty($_POST['tanggal'])) {
+                            echo $_POST['tanggal'];
+                        }
+                        else{
+                            echo date("d-m-Y");
+                        } ?>">
+                    </div>
 
-            <div class="col-md-2 mb-3">            
-            <label for="payment_date"><b>Payment Date<i style="color: red;">*</i></b></label>          
-            <input type="text" style="font-size: 13px;" name="payment_date" id="payment_date" class="form-control tanggal" 
-            value="<?php             
-            if(!empty($_POST['payment_date'])) {
-                echo $_POST['payment_date'];
-            }
-            else{
-                echo '-';
-            } ?>">
-            </div>
+                    <div class="col-md-2 mb-3">            
+                        <label for="payment_date"><b>Payment Date<i style="color: red;">*</i></b></label>          
+                        <input type="text" style="font-size: 13px;" name="payment_date" id="payment_date" class="form-control tanggal" 
+                        value="<?php             
+                        if(!empty($_POST['payment_date'])) {
+                            echo $_POST['payment_date'];
+                        }
+                        else{
+                            echo '-';
+                        } ?>">
+                    </div>
 
-            <div class="col-md-4 mb-3">            
-            <label for="memo"><b>Description</b></label>          
-            <input type="text" style="font-size: 14px;" class="form-control" name="memo" id="memo" 
-            value="<?php             
-            if(!empty($_POST['memo'])) {
-                echo $_POST['memo'];
-            }
-            else{
-                echo '';
-            } ?>">
-            </div>            
-                                        
-    </div>
+                    <div class="col-md-4 mb-3">            
+                        <label for="memo"><b>Description</b></label>          
+                        <input type="text" style="font-size: 14px;" class="form-control" name="memo" id="memo" 
+                        value="<?php             
+                        if(!empty($_POST['memo'])) {
+                            echo $_POST['memo'];
+                        }
+                        else{
+                            echo '';
+                        } ?>">
+                    </div>            
 
-    <div class="form-row">
+                </div>
+
+                <div class="form-row">
 
 <!--            <div class="col-md-3 mb-3">            
             <label for="txt_pph"><b>PPh (%) </b></label>            
@@ -73,169 +73,170 @@
             //    echo '';
             //}
             ?>">
-            </div>-->                        
+        </div>-->                        
 
-            <div class="col-md-9 mb-3">
+        <div class="col-md-9 mb-3">
             <label for="nama_supp"><b>Supplier</b></label>            
             <div class="input-group">
-            <input type="text" readonly style="font-size: 14px; width: 300px;" class="form-control" name="txt_supp" id="txt_supp" 
-            value="<?php 
-            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
+                <input type="text" readonly style="font-size: 14px; width: 300px;" class="form-control" name="txt_supp" id="txt_supp" 
+                value="<?php 
+                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
                 echo $nama_supp; 
-            ?>">
+                ?>">
 
-    <div class="modal fade" id="mymodal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-        <div class="modal-dialog">
-        <div class="modal-content">
-        <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-        <h4 class="modal-title" id="Heading">Choose Supplier</h4>
+                <div class="modal fade" id="mymodal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
+                                <h4 class="modal-title" id="Heading">Choose Supplier</h4>
+                            </div>
+                            <div class="modal-body">
+                              <div class="form-group">
+                                <form id="modal-form" method="post">
+                                    <label for="nama_supp"><b>Supplier</b></label>
+                                    <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true">
+                                        <option value="" disabled selected="true">select</option>                
+                                        <?php 
+                                        $sql = mysqli_query($conn1,"select distinct(Supplier) from mastersupplier where tipe_sup = 'S' order by Supplier ASC");
+                                        while ($row = mysqli_fetch_array($sql)) {
+                                            $data = $row['Supplier'];
+                                            if($row['Supplier'] == $_POST['nama_supp']){
+                                                $isSelected = ' selected="selected"';
+                                            }else{
+                                                $isSelected = '';
+                                            }
+                                            echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
+                                        }?>
+                                    </select>
+
+                                    <label><b>PO Date</b></label>
+                                    <div class="input-group-append">           
+                                        <input type="text" style="font-size: 14px;" class="form-control tanggal" id="start_date" name="start_date" 
+                                        value="<?php
+                                        $start_date ='';
+                                        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                                          $start_date = date("Y-m-d",strtotime($_POST['start_date']));
+                                      }
+                                      if(!empty($_POST['start_date'])) {
+                                        echo $_POST['start_date'];
+                                    }
+                                    else{
+                                        echo date("d-m-Y");
+                                    } ?>" 
+                                    placeholder="Tanggal Awal">
+
+                                    <label class="col-md-1" for="end_date"><b>-</b></label>
+                                    <input type="text" style="font-size: 14px;" class="form-control tanggal" id="end_date" name="end_date" 
+                                    value="<?php
+                                    $end_date ='';
+                                    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                                      $end_date = date("Y-m-d",strtotime($_POST['start_date']));
+                                  }
+                                  if(!empty($_POST['end_date'])) {
+                                    echo $_POST['end_date'];
+                                }
+                                else{
+                                    echo date("d-m-Y");
+                                } ?>" 
+                                placeholder="Tanggal Akhir">
+                            </div>  
+                            <div class="modal-footer">
+                                <button type="submit" id="send" name="send" class="btn btn-warning btn-lg" style="width: 100%;"><span class="fa fa-check"></span>
+                                    Save
+                                </button>
+                            </div>           
+                        </form>
+                    </div>
+                </div>
+
+
+            </div>
+            <!-- /.modal-content --> 
         </div>
-          <div class="modal-body">
-          <div class="form-group">
-            <form id="modal-form" method="post">
-            <label for="nama_supp"><b>Supplier</b></label>
-              <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true">
-                <option value="" disabled selected="true">select</option>                
-                <?php 
-                $sql = mysqli_query($conn1,"select distinct(Supplier) from mastersupplier where tipe_sup = 'S' order by Supplier ASC");
-                while ($row = mysqli_fetch_array($sql)) {
-                    $data = $row['Supplier'];
-                    if($row['Supplier'] == $_POST['nama_supp']){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
-                    }
-                    echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
-                }?>
-                </select>
-
-                <label><b>PO Date</b></label>
-                <div class="input-group-append">           
-                <input type="text" style="font-size: 14px;" class="form-control tanggal" id="start_date" name="start_date" 
-                value="<?php
-                $start_date ='';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                  $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-                }
-                if(!empty($_POST['start_date'])) {
-                    echo $_POST['start_date'];
-                }
-                else{
-                    echo date("d-m-Y");
-                } ?>" 
-                placeholder="Tanggal Awal">
-
-                <label class="col-md-1" for="end_date"><b>-</b></label>
-                <input type="text" style="font-size: 14px;" class="form-control tanggal" id="end_date" name="end_date" 
-                value="<?php
-                $end_date ='';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                  $end_date = date("Y-m-d",strtotime($_POST['start_date']));
-                }
-                if(!empty($_POST['end_date'])) {
-                    echo $_POST['end_date'];
-                }
-                else{
-                    echo date("d-m-Y");
-                } ?>" 
-                placeholder="Tanggal Akhir">
-                </div>  
-                <div class="modal-footer">
-                    <button type="submit" id="send" name="send" class="btn btn-warning btn-lg" style="width: 100%;"><span class="fa fa-check"></span>
-                        Save
-                    </button>
-                </div>           
-            </form>
-        </div>
-      </div>
-
-
-        </div>
-    <!-- /.modal-content --> 
-  </div>
-      <!-- /.modal-dialog --> 
+        <!-- /.modal-dialog --> 
     </div>
 
-            <div class="input-group-append col">
-            <input style="border: 0;
-    line-height: 1;
-    padding: 0 10px;
-    font-size: 1rem;
-    text-align: center;
-    color: #fff;
-    text-shadow: 1px 1px 1px #000;
-    border-radius: 6px;
-    background-color: rgb(95, 158, 160);" type="button" name="mysupp" id="mysupp" data-target="#mymodal" data-toggle="modal" value="Select">
-            <input type="hidden" name="bpbvalue" id="bpbvalue" value="">      
-        </div>
+    <div class="input-group-append col">
+        <input style="border: 0;
+        line-height: 1;
+        padding: 0 10px;
+        font-size: 1rem;
+        text-align: center;
+        color: #fff;
+        text-shadow: 1px 1px 1px #000;
+        border-radius: 6px;
+        background-color: rgb(95, 158, 160);" type="button" name="mysupp" id="mysupp" data-target="#mymodal" data-toggle="modal" value="Select">
+        <input type="hidden" name="bpbvalue" id="bpbvalue" value="">      
     </div>
+</div>
 </div>                   
-    </div>
+</div>
 </form>
-    <div class="box body">
-        <div class="row">
-        
-            <div class="col-md-12">
+<div class="box body">
+    <div class="row">
+
+        <div class="col-md-12">
 
             <table id="mytable" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
-                    <thead>
-                        <tr>
-                            <th style="width:10px;"></th>
-                            <th style="width:50px;">NO PO</th>
-                            <th style="width:100px;">NO PI</th>                            
-                            <th style="width:50px;">PO Date</th>                            
-                            <th style="width:100px;">SubTotal</th>
-                            <th style="width:100px;">Tax (PPn)</th>                            
-                            <th style="width:100px;">Total (PO)</th>
-                            <th style="width:100px;">Currency</th>                            
-                            <th style="width:100px;display: none;">Supplier</th>                                                         
-                            <!--<th style="width:50px;">Delete</th>-->
-                        </tr>
-                    </thead>
+                <thead>
+                    <tr>
+                        <th style="width:10px;"></th>
+                        <th style="width:50px;">NO PO</th>
+                        <th style="width:100px;">NO PI</th>                            
+                        <th style="width:50px;">PO Date</th>                            
+                        <th style="width:100px;">SubTotal</th>
+                        <th style="width:100px;">Tax (PPn)</th>                            
+                        <th style="width:100px;">Total (PO)</th>
+                        <th style="width:100px;">Currency</th>                            
+                        <th style="width:100px;display: none;">Supplier</th>   
+                        <th style="width:100px;">Amount</th>                                                       
+                        <!--<th style="width:50px;">Delete</th>-->
+                    </tr>
+                </thead>
 
-            <tbody>
-            <?php
-            $start_date ='';
-            $end_date ='';
-            $sub = '';
-            $tax = '';
-            $total = '';            
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-            $end_date = date("Y-m-d",strtotime($_POST['end_date']));
-            }
-            $querys = mysqli_query($conn1,"select distinct pono from po_header");
-            $rows = mysqli_fetch_array($querys);
-            $pono = isset($rows['pono']) ? $rows['pono'] : null;
-
-
-            $sql = mysqli_query($conn1,"select po_header.pono as no_po, po_header.podate as podate, mastersupplier.Supplier as supplier, (SUM(po_item.qty * po_item.price) + coalesce(ad.total,0)) as sub, ((SUM(po_item.qty * po_item.price) + coalesce(ad.total,0)) * (po_header.tax / 100)) as tax, (SUM(po_item.qty * po_item.price) + coalesce(ad.total,0)) + ((SUM(po_item.qty * po_item.price) + coalesce(ad.total,0)) * (po_header.tax / 100)) as total, po_item.curr as matauang, po_header.app as app, po_item.cancel as cancel, masterpterms.kode_pterms, po_header_draft.tipe_com
-from po_header 
-inner join po_item on po_item.id_po = po_header.id
-left join po_header_draft on po_header_draft.id = po_header.id_draft
-left join (select id_po_draft, sum(IF(kategori = 'Plus',total,(total * -1))) total from po_add_biaya a INNER JOIN po_master_pilihan b on b.id = a.id_kategori GROUP BY id_po_draft) ad on ad.id_po_draft = po_header.id_draft
-inner join mastersupplier on mastersupplier.Id_Supplier = po_header.id_supplier
-inner join masterpterms on masterpterms.id = po_header.id_terms
-where po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and supplier = '$nama_supp' and masterpterms.kode_pterms = 'CBD' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com IN ('','REGULAR') || po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and supplier = '$nama_supp' and masterpterms.kode_pterms = 'CBD' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com IS NULL || po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and supplier = '$nama_supp' and masterpterms.kode_pterms = 'CBD' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com = 'BUYER' group by no_po");
+                <tbody>
+                    <?php
+                    $start_date ='';
+                    $end_date ='';
+                    $sub = '';
+                    $tax = '';
+                    $total = '';            
+                    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                        $start_date = date("Y-m-d",strtotime($_POST['start_date']));
+                        $end_date = date("Y-m-d",strtotime($_POST['end_date']));
+                    }
+                    $querys = mysqli_query($conn1,"select distinct pono from po_header");
+                    $rows = mysqli_fetch_array($querys);
+                    $pono = isset($rows['pono']) ? $rows['pono'] : null;
 
 
+                    $sql = mysqli_query($conn1,"select a.no_po, podate, supplier, round(sub - COALESCE(subtotal,0),2) sub, round(a.tax - COALESCE(b.tax,0),2) tax, round(a.total - COALESCE(b.total,0),2) total, matauang, app, cancel, kode_pterms, tipe_com from (select po_header.pono as no_po, po_header.podate as podate, mastersupplier.Supplier as supplier, (SUM(po_item.qty * po_item.price) + coalesce(ad.total,0)) as sub, ((SUM(po_item.qty * po_item.price) + coalesce(ad.total,0)) * (po_header.tax / 100)) as tax, (SUM(po_item.qty * po_item.price) + coalesce(ad.total,0)) + ((SUM(po_item.qty * po_item.price) + coalesce(ad.total,0)) * (po_header.tax / 100)) as total, po_item.curr as matauang, po_header.app as app, po_item.cancel as cancel, masterpterms.kode_pterms, po_header_draft.tipe_com
+                        from po_header 
+                        inner join po_item on po_item.id_po = po_header.id
+                        left join po_header_draft on po_header_draft.id = po_header.id_draft
+                        left join (select id_po_draft, sum(IF(kategori = 'Plus',total,(total * -1))) total from po_add_biaya a INNER JOIN po_master_pilihan b on b.id = a.id_kategori GROUP BY id_po_draft) ad on ad.id_po_draft = po_header.id_draft
+                        inner join mastersupplier on mastersupplier.Id_Supplier = po_header.id_supplier
+                        inner join masterpterms on masterpterms.id = po_header.id_terms
+                        where po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and supplier = '$nama_supp' and masterpterms.kode_pterms = 'CBD' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com IN ('','REGULAR') || po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and supplier = '$nama_supp' and masterpterms.kode_pterms = 'CBD' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com IS NULL || po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and supplier = '$nama_supp' and masterpterms.kode_pterms = 'CBD' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com = 'BUYER' group by no_po) a LEFT JOIN (select no_po, SUM(subtotal) subtotal, SUM(tax) tax, SUM(total) total from ftr_cbd where status != 'Cancel' GROUP BY no_po) b on b.no_po = a.no_po where (a.total - COALESCE(b.total,0)) != 0");
 
-            while($row = mysqli_fetch_array($sql)){
-            $po = $row['no_po'];
-            $sub = $row['sub'];
-            $tax = $row['tax'];
-            $total = $row['total'];
-            $querys = mysqli_query($conn2,"select no_po, status, cancel_date from ftr_cbd where no_po = '$po' and status != 'Cancel'");
-            $rows = mysqli_fetch_array($querys);
-            $n_po = isset($rows['no_po']) ? $rows['no_po'] : null;
-            $stat = isset($rows['status']) ? $rows['status'] : null;
+
+
+                    while($row = mysqli_fetch_array($sql)){
+                        $po = $row['no_po'];
+                        $sub = $row['sub'];
+                        $tax = $row['tax'];
+                        $total = $row['total'];
+                        // $querys = mysqli_query($conn2,"select no_po, status, cancel_date from ftr_cbd where no_po = '$po' and status != 'Cancel'");
+                        // $rows = mysqli_fetch_array($querys);
+                        // $n_po = isset($rows['no_po']) ? $rows['no_po'] : null;
+                        // $stat = isset($rows['status']) ? $rows['status'] : null;
             // echo $n_po;
-            $cancel_date = isset($rows['cancel_date']);                
-            if($po == $n_po && $stat != 'Cancel'){
-                echo '';
-            }else{                    
-                    echo '<tr>
+                        // $cancel_date = isset($rows['cancel_date']);                
+                        // if($po == $n_po && $stat != 'Cancel'){
+                        //     echo '';
+                        // }else{                    
+                            echo '<tr>
                             <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" <?php if(in_array("1",$_POST[select])) echo "checked=checked";?></td>                        
                             <td style="width:50px;" value="'.$row['no_po'].'">'.$row['no_po'].'</td>
                             <td style="width:100px;">
@@ -246,78 +247,84 @@ where po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_d
                             <td class="dt_tax" style="width:100px;text-align:right;" data-tax="'.$tax.'">'.number_format($tax,2).'</td>                            
                             <td class="dt_total" style="width:100px;text-align:right;" data-total="'.$total.'">'.number_format($total,2).'</td>
                             <td style="width:50px;" value="'.$row['matauang'].'">'.$row['matauang'].'</td>                            
-                            <td style="display: none;" value="'.$row['supplier'].'">'.$row['supplier'].'</td>                                                                                                                
-                        </tr>';
-                        
-                }
-                }                
+                            <td style="display: none;" value="'.$row['supplier'].'">'.$row['supplier'].'</td>   
+                            <td style="width:100px;">
+                            <input type="text" style="font-size: 14px;" class="form-control" id="txt_amount" name="txt_amount" value="" disabled>
+                            <input type="hidden" name="paid_subtotal[]" class="paid_subtotal" value="0">
+                            <input type="hidden" name="paid_tax[]" class="paid_tax" value="0">
+                            <input type="hidden" name="paid_total[]" class="paid_total" value="0">
+                            </td>                                                                                                              
+                            </tr>';
+
+                        // }
+                    }                
                     ?>
-            </tbody>                    
+                </tbody>                    
             </table>                    
-<div class="box footer">   
-        <form id="form-simpan">
-            <div class="form-row col mt-2">
-                <label for="subtotal" class="col-form-label" style="width: 100px;"><b>Subtotal</b></label>
-            <div class="col-md-3 mb-3">                              
-                <input type="text" class="form-control-plaintext" name="subtotal" id="subtotal" value="" placeholder="0.00" style="font-size: 14px;text-align:right;" readonly>
+            <div class="box footer">   
+                <form id="form-simpan">
+                    <div class="form-row col mt-2">
+                        <label for="subtotal" class="col-form-label" style="width: 100px;"><b>Subtotal</b></label>
+                        <div class="col-md-3 mb-3">                              
+                            <input type="text" class="form-control-plaintext" name="subtotal" id="subtotal" value="" placeholder="0.00" style="font-size: 14px;text-align:right;" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row col">
+                        <label for="pajak" class="col-form-label" style="width: 100px;"><b>Tax (PPn)</b></label>
+                        <div class="col-md-3 mb-3">                              
+                            <input type="text" class="form-control-plaintext" name="pajak" id="pajak" value="" placeholder="0.00" style="font-size: 14px;text-align:right;" readonly>
+                        </div>
+                    </div>          
+                    <div class="form-row col">
+                        <label for="total" class="col-form-label" style="width: 100px;"><b>Total</b></label>
+                        <div class="col-md-3 mb-3">                              
+                            <input type="text" class="form-control-plaintext" name="total" id="total" value="" placeholder="0.00" style="font-size: 14px;text-align:right;" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row col">
+                        <div class="col-md-3 mb-3">                              
+                            <button type="button" style="border-radius: 6px" class="btn-outline-primary btn-sm" name="simpan" id="simpan"><span class="fa fa-floppy-o"></span> Save</button>                
+                            <button type="button" style="border-radius: 6px" class="btn-outline-danger btn-sm" name="batal" id="batal" onclick="location.href='ftrcbd.php'"><span class="fa fa-angle-double-left"></span> Back</button>               
+                        </div>
+                    </div>                                    
+                </form>
             </div>
-            </div>
-            <div class="form-row col">
-                <label for="pajak" class="col-form-label" style="width: 100px;"><b>Tax (PPn)</b></label>
-            <div class="col-md-3 mb-3">                              
-                <input type="text" class="form-control-plaintext" name="pajak" id="pajak" value="" placeholder="0.00" style="font-size: 14px;text-align:right;" readonly>
-            </div>
-            </div>          
-           <div class="form-row col">
-                <label for="total" class="col-form-label" style="width: 100px;"><b>Total</b></label>
-            <div class="col-md-3 mb-3">                              
-                <input type="text" class="form-control-plaintext" name="total" id="total" value="" placeholder="0.00" style="font-size: 14px;text-align:right;" readonly>
-            </div>
-            </div>
-           <div class="form-row col">
-            <div class="col-md-3 mb-3">                              
-            <button type="button" style="border-radius: 6px" class="btn-outline-primary btn-sm" name="simpan" id="simpan"><span class="fa fa-floppy-o"></span> Save</button>                
-            <button type="button" style="border-radius: 6px" class="btn-outline-danger btn-sm" name="batal" id="batal" onclick="location.href='ftrcbd.php'"><span class="fa fa-angle-double-left"></span> Back</button>               
-            </div>
-            </div>                                    
-        </form>
-        </div>
 
-<div class="modal fade" id="mymodalpo" data-target="#mymodalpo" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-        <div class="modal-dialog">
-        <div class="modal-content">
-        <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-        <h4 class="modal-title" id="txt_po"></h4>
-        </div>
-        <div class="container">
-        <div class="row">
-          <div id="txt_tgl_po" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-          <div id="txt_supp2" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>        
-          <div id="txt_curr" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>                            
-          <div id="details" class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;"></div>          
-        </div>
-        </div>
-        </div>
-    <!-- /.modal-content --> 
+            <div class="modal fade" id="mymodalpo" data-target="#mymodalpo" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
+                            <h4 class="modal-title" id="txt_po"></h4>
+                        </div>
+                        <div class="container">
+                            <div class="row">
+                              <div id="txt_tgl_po" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+                              <div id="txt_supp2" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>        
+                              <div id="txt_curr" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>                            
+                              <div id="details" class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;"></div>          
+                          </div>
+                      </div>
+                  </div>
+                  <!-- /.modal-content --> 
+              </div>
+              <!-- /.modal-dialog --> 
+          </div>         
+
+      </div><!-- body-row END -->
   </div>
-      <!-- /.modal-dialog --> 
-    </div>         
-                                
-</div><!-- body-row END -->
-</div>
 </div>
 
-  <!-- Bootstrap core JavaScript -->
-  <script src="../vendor/jquery/jquery.min.js"></script>
-  <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
-  <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
-  <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
+<!-- Bootstrap core JavaScript -->
+<script src="../vendor/jquery/jquery.min.js"></script>
+<script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
+<script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
 
 <script>
   // Hide submenus
-$('#body-row .collapse').collapse('hide'); 
+  $('#body-row .collapse').collapse('hide'); 
 
 // Collapse/Expand icon
 $('#collapse-icon').addClass('fa-angle-double-left'); 
@@ -348,26 +355,26 @@ function SidebarCollapse () {
 
 <script>
     $(document).ready(function() {
-    $('#mytable').dataTable();
-    
-     $("[data-toggle=tooltip]").tooltip();
-    
-} );
+        $('#mytable').dataTable();
+
+        $("[data-toggle=tooltip]").tooltip();
+
+    } );
 </script>
 
 <script type="text/javascript">
     $(document).ready(function () {
-    $('.tanggal').datepicker({
-        format: "dd-mm-yyyy",
-        autoclose:true
+        $('.tanggal').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose:true
+        });
     });
-});
 </script>
 
 <script>
-$(function() {
-    $('.selectpicker').selectpicker();
-});
+    $(function() {
+        $('.selectpicker').selectpicker();
+    });
 </script>
 
 <!--<script type="text/javascript"> 
@@ -393,42 +400,81 @@ $(function() {
 </script>-->
 
 <script type="text/javascript">
-function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
-  try {
-    decimalCount = Math.abs(decimalCount);
-    decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
+    function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
+      try {
+        decimalCount = Math.abs(decimalCount);
+        decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
 
-    const negativeSign = amount < 0 ? "-" : "";
+        const negativeSign = amount < 0 ? "-" : "";
 
-    let i = parseInt(amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)).toString();
-    let j = (i.length > 3) ? i.length % 3 : 0;
+        let i = parseInt(amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)).toString();
+        let j = (i.length > 3) ? i.length % 3 : 0;
 
-    return negativeSign + (j ? i.substr(0, j) + thousands : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : "");
-  } catch (e) {
-    console.log(e)
-  }
+        return negativeSign + (j ? i.substr(0, j) + thousands : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : "");
+    } catch (e) {
+        console.log(e)
+    }
 };
-    $("input[type=checkbox]").click(function(){
+$("input[type=checkbox]").click(function(){
     var sum_sub = 0;
     var sum_tax = 0;
     var ceklist = 0;
     var sum_total = 0;
-    $(this).closest('tr').find('td:eq(2) input').prop('disabled', true);             
+    $(this).closest('tr').find('td:eq(2) input').prop('disabled', true).val('');;
+    $(this).closest('tr').find('td:eq(9) input').prop('disabled', true).val('');; 
     $("input[type=checkbox]:checked").each(function () {        
-    var price = parseFloat($(this).closest('tr').find('td:eq(4)').attr('data-subtotal'),10) || 0;
-    var tax = parseFloat($(this).closest('tr').find('td:eq(5)').attr('data-tax'),10) ||0;
-    var pph = parseFloat($(this).closest('tr').find('td:eq(6) input').val(),10) ||0;
-    var select_pi = $(this).closest('tr').find('td:eq(2) input');
-    select_pi.prop('disabled', false);                    
-    sum_sub += price;
-    sum_tax += tax;
-    sum_total = sum_sub + sum_tax;     
+        var select_pi = $(this).closest('tr').find('td:eq(2) input');
+        select_pi.prop('disabled', false);  
+        var select_total = $(this).closest('tr').find('td:eq(9) input');
+        select_total.prop('disabled', false);                      
     });
+    $("#select").val("1");                    
+});      
+
+$("input[name=txt_amount]").keyup(function(){
+    var $row = $(this).closest('tr');
+
+    // Ambil total PO sebagai max input
+    var max_po = parseFloat($row.find('td:eq(6)').attr('data-total')) || 0;
+    var current_val = parseFloat($(this).val()) || 0;
+    if(current_val > max_po){
+        $(this).val(max_po);
+        current_val = max_po;
+    }
+
+    var price = parseFloat($row.find('td:eq(4)').attr('data-subtotal')) || 0;
+    var tax = parseFloat($row.find('td:eq(5)').attr('data-tax')) || 0;
+    var total_po = price + tax;
+    var percent = total_po > 0 ? (current_val / total_po) : 0;
+
+    var bayar_sub = price * percent;
+    var bayar_tax = tax * percent;
+    var bayar_total = bayar_sub + bayar_tax;
+
+    // Simpan ke hidden input
+    $row.find(".paid_subtotal").val(bayar_sub);
+    $row.find(".paid_tax").val(bayar_tax);
+    $row.find(".paid_total").val(bayar_total);
+
+    // Hitung total semua baris yang dicentang
+    var sum_sub = 0;
+    var sum_tax = 0;
+    var sum_total = 0;        
+
+    $("input[type=checkbox]:checked").each(function () {
+        sum_sub += parseFloat($(this).closest('tr').find(".paid_subtotal").val()) || 0;
+        sum_tax += parseFloat($(this).closest('tr').find(".paid_tax").val()) || 0;
+        sum_total += parseFloat($(this).closest('tr').find(".paid_total").val()) || 0;
+    });
+
     $("#subtotal").val(formatMoney(sum_sub));
     $("#pajak").val(formatMoney(sum_tax));    
     $("#total").val(formatMoney(sum_total));
-    $("#select").val("1");                    
-});        
+});
+
+
+
+
 </script>
 
 <!--<script type="text/javascript">
@@ -464,48 +510,48 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
 <script type="text/javascript">
     $("#form-simpan").on("click", "#simpan", function(){
         $("input[type=checkbox]:checked").each(function () {
-        var noftrcbd = document.getElementById('noftrcbd').value;        
-        var tglftrcbd = document.getElementById('tanggal').value;
-        var tgl_bayar = document.getElementById('payment_date').value;
-        var keterangan = document.getElementById('memo').value;        
-        var nama_supp = $('select[name=nama_supp] option').filter(':selected').val();       
-        var curr = $(this).closest('tr').find('td:eq(7)').attr('value');                               
-        var no_po = $(this).closest('tr').find('td:eq(1)').attr('value');
-        var no_pi = $(this).closest('tr').find('td:eq(2) input').val();
-        var tgl_po = $(this).closest('tr').find('td:eq(3)').attr('value');
-        var create_user = '<?php echo $user; ?>';         
-        var sub = parseFloat($(this).closest('tr').find('td:eq(4)').attr('data-subtotal'),10) || 0;
-        var tax = parseFloat($(this).closest('tr').find('td:eq(5)').attr('data-tax'),10) ||0;
-        var total = parseFloat($(this).closest('tr').find('td:eq(6)').attr('data-total'),10) ||0;
-        var sum_sub = 0;
-        var sum_tax = 0;
-        var sum_total = 0;       
-        sum_sub += sub;
-        sum_tax += tax;       
-        sum_total += total;
-        if(no_pi != ''  && tgl_bayar != '-'){
-        $.ajax({
-            type:'POST',
-            url:'insertftrcbd.php',
-            data: {'noftrcbd':noftrcbd, 'tglftrcbd':tglftrcbd, 'tgl_bayar':tgl_bayar, 'keterangan':keterangan, 'no_po':no_po, 'no_pi':no_pi, 'tgl_po':tgl_po, 'nama_supp':nama_supp, 'curr':curr, 'create_user':create_user, 'sum_sub':sum_sub, 'sum_tax':sum_tax, 'sum_total':sum_total},
-            cache: 'false',
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){
-                console.log(response);
+            var noftrcbd = document.getElementById('noftrcbd').value;        
+            var tglftrcbd = document.getElementById('tanggal').value;
+            var tgl_bayar = document.getElementById('payment_date').value;
+            var keterangan = document.getElementById('memo').value;        
+            var nama_supp = $('select[name=nama_supp] option').filter(':selected').val();       
+            var curr = $(this).closest('tr').find('td:eq(7)').attr('value');                               
+            var no_po = $(this).closest('tr').find('td:eq(1)').attr('value');
+            var no_pi = $(this).closest('tr').find('td:eq(2) input').val();
+            var tgl_po = $(this).closest('tr').find('td:eq(3)').attr('value');
+            var create_user = '<?php echo $user; ?>';         
+            var sub   = parseFloat($(this).closest('tr').find('.paid_subtotal').val()) || 0;
+            var tax   = parseFloat($(this).closest('tr').find('.paid_tax').val()) || 0;
+            var total = parseFloat($(this).closest('tr').find('.paid_total').val()) || 0;
+            var sum_sub = 0;
+            var sum_tax = 0;
+            var sum_total = 0;       
+            sum_sub += sub;
+            sum_tax += tax;       
+            sum_total += total;
+            if(no_pi != ''  && tgl_bayar != '-'){
+                $.ajax({
+                    type:'POST',
+                    url:'insertftrcbd.php',
+                    data: {'noftrcbd':noftrcbd, 'tglftrcbd':tglftrcbd, 'tgl_bayar':tgl_bayar, 'keterangan':keterangan, 'no_po':no_po, 'no_pi':no_pi, 'tgl_po':tgl_po, 'nama_supp':nama_supp, 'curr':curr, 'create_user':create_user, 'sum_sub':sum_sub, 'sum_tax':sum_tax, 'sum_total':sum_total},
+                    cache: 'false',
+                    close: function(e){
+                        e.preventDefault();
+                    },
+                    success: function(response){
+                        console.log(response);
                 // alert("Data saved successfully");
                 window.location = 'ftrcbd.php';
-                },
+            },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
                 alert(xhr);
             }
         });
-    }else{
-        $(this).closest('tr').find('td:eq(2) input').focus();
-        alert("PI number can't be empty");
-    }
+            }else{
+                $(this).closest('tr').find('td:eq(2) input').focus();
+                alert("PI number can't be empty");
+            }
         });                
         if(document.getElementById('payment_date').value == '-'){
             alert("Please Input Payment Date");
@@ -527,26 +573,26 @@ $("#select_all").click(function() {
 
 <script type="text/javascript">     
     $('table tbody tr').on('click', 'td:eq(1)', function(){                
-    $('#mymodalpo').modal('show');
-    var no_po = $(this).closest('tr').find('td:eq(1)').attr('value');
-    var tgl_po = $(this).closest('tr').find('td:eq(3)').text();
-    var supp = $(this).closest('tr').find('td:eq(8)').attr('value');
-    var curr = $(this).closest('tr').find('td:eq(7)').attr('value');   
+        $('#mymodalpo').modal('show');
+        var no_po = $(this).closest('tr').find('td:eq(1)').attr('value');
+        var tgl_po = $(this).closest('tr').find('td:eq(3)').text();
+        var supp = $(this).closest('tr').find('td:eq(8)').attr('value');
+        var curr = $(this).closest('tr').find('td:eq(7)').attr('value');   
 
-    $.ajax({
-    type : 'post',
-    url : 'ajaxpocbd.php',
-    data : {'no_po': no_po},
-    success : function(data){
+        $.ajax({
+            type : 'post',
+            url : 'ajaxpocbd.php',
+            data : {'no_po': no_po},
+            success : function(data){
     $('#details').html(data); //menampilkan data ke dalam modal
-        }
-    });         
+}
+});         
         //make your ajax call populate items or what even you need
-    $('#txt_po').html(no_po);
-    $('#txt_tgl_po').html('Tgl PO : ' + tgl_po + '');
-    $('#txt_supp2').html('Supplier : ' + supp + '');
-    $('#txt_curr').html('Currency : ' + curr + '');                               
-});
+        $('#txt_po').html(no_po);
+        $('#txt_tgl_po').html('Tgl PO : ' + tgl_po + '');
+        $('#txt_supp2').html('Supplier : ' + supp + '');
+        $('#txt_curr').html('Currency : ' + curr + '');                               
+    });
 
 </script>
 
@@ -582,8 +628,8 @@ $(document).ready(function (){
 });
 </script>-->
 <!--<script src="//netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>-->
-  
+    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>-->
+
 </body>
 
 </html>

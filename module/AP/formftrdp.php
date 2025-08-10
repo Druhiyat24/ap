@@ -186,6 +186,7 @@
                             <th style="width:100px;">NO PI</th>                            
                             <th style="width:50px;">PO Date</th>                            
                             <th style="width:100px;">Total PO</th>
+                            <th style="width:100px;">Outstanding PO</th>
                             <th style="width:100px;">DP %</th>                            
                             <th style="width:100px;">DP Amount</th>
                             <th style="width:100px;">Currency</th>                            
@@ -210,15 +211,15 @@
             $pono = $rows['pono'];
 
             if(strpos($pono, 'PO/') !== false){
-            $sql = mysqli_query($conn1,"select po_header.id as id_po, po_header.pono as no_po, po_header.podate as podate, mastersupplier.Supplier as supplier, SUM(po_item.qty * po_item.price) as sub, SUM((po_item.qty * po_item.price) * (po_header.tax / 100)) as tax, SUM((po_item.qty * po_item.price) + ((po_item.qty * po_item.price) * (po_header.tax / 100))) as total, po_item.curr as matauang, po_header.app as app, po_item.cancel as cancel, masterpterms.kode_pterms, po_header_draft.tipe_com
+            $sql = mysqli_query($conn1,"select id_po, a.no_po, podate, supplier, sub, tax, a.total total_po, (a.total - COALESCE(b.dp_value,0)) total, matauang, app, cancel, kode_pterms, tipe_com from (select po_header.id as id_po, po_header.pono as no_po, po_header.podate as podate, mastersupplier.Supplier as supplier, SUM(po_item.qty * po_item.price) as sub, SUM((po_item.qty * po_item.price) * (po_header.tax / 100)) as tax, SUM((po_item.qty * po_item.price) + ((po_item.qty * po_item.price) * (po_header.tax / 100))) as total, po_item.curr as matauang, po_header.app as app, po_item.cancel as cancel, masterpterms.kode_pterms, po_header_draft.tipe_com
 from po_header 
 inner join po_item on po_item.id_po = po_header.id
 left JOIN po_header_draft on po_header_draft.id = po_header.id_draft
 inner join mastersupplier on mastersupplier.Id_Supplier = po_header.id_supplier
 inner join masterpterms on masterpterms.id = po_header.id_terms
-where po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and supplier = '$nama_supp' and masterpterms.kode_pterms like '%DP%' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com is null || po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and supplier = '$nama_supp' and masterpterms.kode_pterms like '%DP%' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com = 'REGULAR' group by no_po");
+where po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and supplier = '$nama_supp' and masterpterms.kode_pterms like '%DP%' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com is null || po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and supplier = '$nama_supp' and masterpterms.kode_pterms like '%DP%' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com = 'REGULAR' group by no_po) a left join (select no_po, SUM(dp_value) dp_value from ftr_dp where status != 'Cancel' GROUP BY no_po) b on b.no_po = a.no_po where (a.total - COALESCE(b.dp_value,0)) != 0");
 }else{
-            $sql = mysqli_query($conn1,"select po_header.id as id_po, po_header.pono as no_po, jo.jo_no, po_header.podate as podate, mastersupplier.Supplier as supplier, masterpterms.kode_pterms, po_item.curr as matauang,
+            $sql = mysqli_query($conn1,"select id_po, a.no_po, podate, supplier, sub, tax, a.total total_po, (a.total - COALESCE(b.dp_value,0)) total, matauang, app, cancel, kode_pterms, tipe_com from (select po_header.id as id_po, po_header.pono as no_po, jo.jo_no, po_header.podate as podate, mastersupplier.Supplier as supplier, masterpterms.kode_pterms, po_item.curr as matauang,
 SUM(po_item.qty * po_item.price) as sub,  SUM((po_item.qty * po_item.price) * (po_header.tax / 100)) as tax, SUM((po_item.qty * po_item.price) + ((po_item.qty * po_item.price) * (po_header.tax / 100))) as total, po_header_draft.tipe_com
 from po_header
 inner join mastersupplier on mastersupplier.Id_Supplier = po_header.id_supplier
@@ -236,7 +237,7 @@ inner join masterweight on masterweight.id_length = masterlength.id
 inner join mastercolor on mastercolor.id_weight = masterweight.id
 inner join masterdesc on masterdesc.id_color = mastercolor.id
 and po_item.id_gen = masterdesc.id
-where po_header.app = 'A' and supplier = '$nama_supp' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and masterpterms.kode_pterms like '%DP%' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com is null || po_header.app = 'A' and supplier = '$nama_supp' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and masterpterms.kode_pterms like '%DP%' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com = 'REGULAR' group by no_po");
+where po_header.app = 'A' and supplier = '$nama_supp' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and masterpterms.kode_pterms like '%DP%' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com is null || po_header.app = 'A' and supplier = '$nama_supp' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and masterpterms.kode_pterms like '%DP%' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com = 'REGULAR' group by no_po) a left join (select no_po, SUM(dp_value) dp_value from ftr_dp where status != 'Cancel' GROUP BY no_po) b on b.no_po = a.no_po where (a.total - COALESCE(b.dp_value,0)) != 0");
         }
 
             while($row = mysqli_fetch_array($sql)){
@@ -245,16 +246,16 @@ where po_header.app = 'A' and supplier = '$nama_supp' and po_header.podate BETWE
             $tax = $row['tax'];
             $total = $row['total'];
 
-            $quer = mysqli_query($conn2,"select no_po, status from kontrabon where no_po = '$po' and status != 'Cancel'");
-            $r = mysqli_fetch_array($quer);
-            $n_pok = isset($r['no_po']) ? $r['no_po'] : null;
-            $sta = isset($r['status']) ? $r['status'] : null;
+            // $quer = mysqli_query($conn2,"select no_po, status from kontrabon where no_po = '$po' and status != 'Cancel'");
+            // $r = mysqli_fetch_array($quer);
+            // $n_pok = isset($r['no_po']) ? $r['no_po'] : null;
+            // $sta = isset($r['status']) ? $r['status'] : null;
 
-            $querys = mysqli_query($conn2,"select no_po, status, cancel_date from ftr_dp where no_po = '$po' and status != 'Cancel'");
-            $rows = mysqli_fetch_array($querys);
-            $n_po = isset($rows['no_po']) ? $rows['no_po'] : null;
-            $stat = isset($rows['status']) ? $rows['status'] : null;
-            $cancel_date = isset($rows['cancel_date']); 
+            // $querys = mysqli_query($conn2,"select no_po, status, cancel_date from ftr_dp where no_po = '$po' and status != 'Cancel'");
+            // $rows = mysqli_fetch_array($querys);
+            // $n_po = isset($rows['no_po']) ? $rows['no_po'] : null;
+            // $stat = isset($rows['status']) ? $rows['status'] : null;
+            // $cancel_date = isset($rows['cancel_date']); 
 
             if($po == $n_po && $stat != 'Cancel' or $po == $n_pok && $sta != 'Cancel'){
                 echo '';
@@ -266,7 +267,8 @@ where po_header.app = 'A' and supplier = '$nama_supp' and po_header.podate BETWE
                             <input type="text" style="font-size: 14px;" class="form-control" id="txt_pi" name="txt_pi" value="" disabled>
                             </td>                            
                             <td style="width:100px;" value="'.$row['podate'].'">'.date("d-M-Y",strtotime($row['podate'])).'</td>                            
-                            <td class="dt_total" style="width:100px;text-align: right;" data-total="'.$total.'">'.number_format($total,2).'</td>
+                            <td class="dt_total" style="width:100px;text-align: right;" data-total="'.$row['total_po'].'">'.number_format($row['total_po'],2).'</td>
+                            <td class="dt_total" style="width:100px;text-align: right;" data-total="'.$row['total'].'">'.number_format($row['total'],2).'</td>
                             <td style="width:100px;">
                             <input type="number" style="font-size: 14px;text-align: right;" class="form-control" id="txt_dp" name="txt_dp" data-value="" value="" disabled>
                             </td>                            
@@ -285,7 +287,7 @@ where po_header.app = 'A' and supplier = '$nama_supp' and po_header.podate BETWE
 <div class="box footer">   
         <form id="form-simpan">
             <div class="form-row col mt-2">
-                <label for="subtotal" class="col-form-label" style="width: 100px;"><b>Total PO</b></label>
+                <label for="subtotal" class="col-form-label" style="width: 100px;"><b>Outstanding PO</b></label>
             <div class="col-md-3 mb-3">                              
                 <input type="text" class="form-control-plaintext" name="subtotal" id="subtotal" value="" placeholder="0.00" style="font-size: 12px;text-align: right;" readonly>
             </div>
@@ -443,17 +445,17 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
     // var sum_total = 0;
     $(this).closest('tr').find('td:eq(2) input').prop('disabled', true);
     $(this).closest('tr').find('td:eq(2) input').val("");       
-    $(this).closest('tr').find('td:eq(5) input').prop('disabled', true);
-    $(this).closest('tr').find('td:eq(5) input').val("");     
     $(this).closest('tr').find('td:eq(6) input').prop('disabled', true);
-    $(this).closest('tr').find('td:eq(6) input').val("");                          
+    $(this).closest('tr').find('td:eq(6) input').val("");     
+    $(this).closest('tr').find('td:eq(7) input').prop('disabled', true);
+    $(this).closest('tr').find('td:eq(7) input').val("");                          
     $("input[type=checkbox]:checked").each(function () {        
     // var price = parseFloat($(this).closest('tr').find('td:eq(4)').attr('data-total'),10) || 0;
     // var dp = parseFloat($(this).closest('tr').find('td:eq(5) input').val(),10) || 0;    
     // var dp_value = parseFloat($(this).closest('tr').find('td:eq(6) input').val(),10) || 0;
     var select_pi = $(this).closest('tr').find('td:eq(2) input');
-    var select_dp = $(this).closest('tr').find('td:eq(5) input');
-    var select_dp_value = $(this).closest('tr').find('td:eq(6) input');        
+    var select_dp = $(this).closest('tr').find('td:eq(6) input');
+    var select_dp_value = $(this).closest('tr').find('td:eq(7) input');        
     select_pi.prop('disabled', false);
     select_dp.prop('disabled', false);
     select_dp_value.prop('disabled', false);                                
@@ -477,28 +479,32 @@ const parseCurrency = (str) => str.replace(/,/g,'');
     $("input[name=txt_dp]").keyup(function(){
         var dp_value = 0;
         var sum_total_po = 0;
+        var sum_total_po_show = 0;
         var sum_total_dp_value = 0;
         var total = 0;
     $("input[type=checkbox]:checked").each(function () {         
         var total_po = parseFloat($(this).closest('tr').find('td:eq(4)').attr('data-total'),10) || 0;
-        var dp = parseFloat($(this).closest('tr').find('td:eq(5) input').val(),10) || 0;
-        var select_dp = $(this).closest('tr').find('td:eq(5) input');
+        var ost_po = parseFloat($(this).closest('tr').find('td:eq(5)').attr('data-total'),10) || 0;
+        var dp = parseFloat($(this).closest('tr').find('td:eq(6) input').val(),10) || 0;
+        var select_dp = $(this).closest('tr').find('td:eq(6) input');
         if(dp >= 50){
         select_dp.val(50);
-        sum_total_po += total_po;
+        sum_total_po += ost_po;
+        sum_total_po_show += ost_po; 
         sum_total_dp_value = total_po/2;
         dp_value += sum_total_dp_value;
         total = sum_total_po - dp_value;            
         }else{
-        sum_total_po += total_po;
+        sum_total_po += ost_po;
+        sum_total_po_show += ost_po; 
         sum_total_dp_value = total_po * (dp / 100);
         dp_value += sum_total_dp_value;
         total = sum_total_po - dp_value;
         }
-        parseFloat($(this).closest('tr').find('td:eq(6) input').val(formatMoney(sum_total_dp_value)),10);
-        parseFloat($(this).closest('tr').find('td:eq(6) input').attr('data-value', sum_total_dp_value));         
+        parseFloat($(this).closest('tr').find('td:eq(7) input').val(formatMoney(sum_total_dp_value)),10);
+        parseFloat($(this).closest('tr').find('td:eq(7) input').attr('data-value', sum_total_dp_value));         
     });               
-        $("#subtotal").val(formatMoney(sum_total_po));        
+        $("#subtotal").val(formatMoney(sum_total_po_show));        
         $("#pajak").val(formatMoney(dp_value));
         $("#total").val(formatMoney(total));                
     });    
@@ -508,28 +514,32 @@ const parseCurrency = (str) => str.replace(/,/g,'');
     $("input[name=txt_dp_value]").keyup(function(){
         var dp_code = 0;
         var sum_total_po = 0;
+        var sum_total_po_show = 0;
         var sum_total_dp_value = 0;
         var total = 0;     
     $("input[type=checkbox]:checked").each(function () {                
         var total_po = parseFloat($(this).closest('tr').find('td:eq(4)').attr('data-total'),10) || 0;
-        var dp_value = parseFloat($(this).closest('tr').find('td:eq(6) input').val(),10) || 0;
-        var select_dp_value = $(this).closest('tr').find('td:eq(6) input');
+        var ost_po = parseFloat($(this).closest('tr').find('td:eq(5)').attr('data-total'),10) || 0;
+        var dp_value = parseFloat($(this).closest('tr').find('td:eq(7) input').val(),10) || 0;
+        var select_dp_value = $(this).closest('tr').find('td:eq(7) input');
         if(dp_value >= (total_po / 2)){
         select_dp_value.val(total_po/2);
-        sum_total_po += total_po;        
+        sum_total_po += ost_po;     
+        sum_total_po_show += ost_po;   
         dp_code = 50;
         sum_total_dp_value += total_po/2;
         total = sum_total_po - sum_total_dp_value;
         }else{
-        sum_total_po += total_po;        
+        sum_total_po += ost_po;  
+        sum_total_po_show += ost_po;      
         dp_code = (dp_value / total_po) * 50;
         sum_total_dp_value += dp_value;
         total = sum_total_po - sum_total_dp_value;
         }
-        parseFloat($(this).closest('tr').find('td:eq(5) input').val(formatMoney(dp_code)),10);
-        parseFloat($(this).closest('tr').find('td:eq(6) input').attr('data-value', sum_total_dp_value));        
+        parseFloat($(this).closest('tr').find('td:eq(6) input').val(formatMoney(dp_code)),10);
+        parseFloat($(this).closest('tr').find('td:eq(67) input').attr('data-value', sum_total_dp_value));        
     });        
-        $("#subtotal").val(formatMoney(sum_total_po));
+        $("#subtotal").val(formatMoney(sum_total_po_show));
         $("#pajak").val(formatMoney(sum_total_dp_value));
         $("#total").val(formatMoney(total));                        
     });
@@ -591,14 +601,14 @@ function addListener(elm,index){
         var tgl_bayar = document.getElementById('payment_date').value;
         var keterangan = document.getElementById('memo').value;        
         var nama_supp = $('select[name=nama_supp] option').filter(':selected').val();       
-        var curr = $(this).closest('tr').find('td:eq(7)').attr('value');                               
+        var curr = $(this).closest('tr').find('td:eq(8)').attr('value');                               
         var no_po = $(this).closest('tr').find('td:eq(1)').attr('value');
         var no_pi = $(this).closest('tr').find('td:eq(2) input').val();
         var tgl_po = $(this).closest('tr').find('td:eq(3)').attr('value');
         var create_user = '<?php echo $user; ?>';         
-        var total = parseFloat($(this).closest('tr').find('td:eq(4)').attr('data-total'),10) ||0;
-        var dp_code = $(this).closest('tr').find('td:eq(5) input').val();
-        var dp_value = $(this).closest('tr').find('td:eq(6) input').attr('data-value');
+        var total = parseFloat($(this).closest('tr').find('td:eq(5)').attr('data-total'),10) ||0;
+        var dp_code = $(this).closest('tr').find('td:eq(6) input').val();
+        var dp_value = $(this).closest('tr').find('td:eq(7) input').attr('data-value');
         var balance = 0;
         balance += total - dp_value;
         if(no_pi != '' && dp_code != '' && tgl_bayar != '-'){        
