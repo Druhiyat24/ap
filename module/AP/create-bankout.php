@@ -488,6 +488,8 @@
                         $total_idr = $total;
                     }elseif ($curr == 'CNY') {
                         $total_idr = $total * 2234.01;
+                    }elseif ($curr == 'EUR') {
+                        $total_idr = $total * 19023.82;
                     }else{
                         $total_idr = $total * $rate;
                     }
