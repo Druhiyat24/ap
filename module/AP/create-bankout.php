@@ -414,7 +414,7 @@
                 <th style="width:100px;">PPN</th>                                                            
                 <th style="width:100px;">PPH</th>
                 <th style="width:100px;">Total</th>
-                <th style="display: none">PPH</th>
+                <th style="width:100px;">Total IDR</th>
                 <th style="display: none">Total</th>
                 <th style="display: none">PPH</th>
                 <th style="display: none">Total</th>
@@ -502,7 +502,7 @@
                     <td style="width:100px;" value-ppn="'.$row['ppn'].'">'.number_format($row['ppn'],2).'</td>
                     <td style="width:100px;" value-pph="'.$row['pph'].'">'.number_format($row['pph'],2).'</td>
                     <td style="width:100px;" data-total="'.$row['total'].'">'.number_format($row['total'],2).'</td>
-                    <td style="display: none;" data-total-idr="'.$total_idr.'">'.number_format($total_idr,2).'</td>
+                    <td style="width:100px;" data-total-idr="'.$total_idr.'">'.number_format($total_idr,2).'</td>
                     <td style="display: none;" value-curr="'.$row['curr'].'">'.$row['curr'].'</td>
                     <td style="display: none;" value-akun="'.$row['frm_akun'].'">'.$row['frm_akun'].'</td>
                     <td style="display: none;" value-bank="'.$row['bank_name'].'">'.$row['bank_name'].'</td>
