@@ -474,7 +474,7 @@
                     $curr=$row['curr'];
                     $pv_date=$row['pv_date'];
 
-                    $sqlz = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where tanggal = '$pv_date' and v_codecurr = 'PAJAK'");
+                    $sqlz = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where tanggal = '$pv_date' and v_codecurr = 'PAJAK' and curr = '$curr'");
                     $rowz = mysqli_fetch_array($sqlz);
                     $rates = isset($rowz['rate']) ? $rowz['rate'] : 0;
 
@@ -484,12 +484,12 @@
                         $rate = $rowz['rate'];
                     }
 
-                    if ($curr == 'USD') {
-                        $total_idr = $total * $rate;
+                    if ($curr == 'IDR') {
+                        $total_idr = $total;
                     }elseif ($curr == 'CNY') {
                         $total_idr = $total * 2234.01;
                     }else{
-                        $total_idr = $total;
+                        $total_idr = $total * $rate;
                     }
                     echo '<tr>
                     <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" <?php if(in_array("1",$_POST[select])) echo "checked=checked";?></td>                        
