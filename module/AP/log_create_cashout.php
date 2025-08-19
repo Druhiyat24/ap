@@ -16,6 +16,8 @@ $type_co = $_POST['type_co'];
 $coa_akun = "1.01.03";
 $nama_coa = "KAS BESAR";
 $curr = "IDR";
+$total_nag = $_POST['total_nag'];
+$total_nak = $_POST['total_nak'];
 
 
 
@@ -30,14 +32,14 @@ $curr = "IDR";
 // echo $ref_date;
 
 $sqlnkb = mysqli_query($conn2,"select max(no_co) from c_cash_out where YEAR(tgl_co) = YEAR('$doc_date') AND MONTH(tgl_co) = MONTH('$doc_date')");
- $rownkb = mysqli_fetch_array($sqlnkb);
- $kodeBarang = $rownkb['max(no_co)'];
- $urutan = (int) substr($kodeBarang, 14, 5);
- $urutan++;
- $bln = $bulan;
- $thn = $tahun;
- $huruf = substr($doc_num,0,7);
- $kode = $huruf ."/". $bln."".$thn ."/". sprintf("%05s", $urutan);
+$rownkb = mysqli_fetch_array($sqlnkb);
+$kodeBarang = $rownkb['max(no_co)'];
+$urutan = (int) substr($kodeBarang, 14, 5);
+$urutan++;
+$bln = $bulan;
+$thn = $tahun;
+$huruf = substr($doc_num,0,7);
+$kode = $huruf ."/". $bln."".$thn ."/". sprintf("%05s", $urutan);
 
 $sqlx = mysqli_query($conn1,"select if(max(id) is null,'0',max(id)) as id FROM c_report_pettycash where akun = '$coa_akun'");
 $rowx = mysqli_fetch_array($sqlx);
@@ -52,22 +54,32 @@ $balance2 = $balance - $total;
 
 $query = "INSERT INTO tbl_log_cash (nama_user,activitas,from_pc,log_date,doc_num,doc_date) 
 VALUES 
-	('$create_user', '$aktivitas', '$from_ip', '$create_date', '$kode', '$doc_date')";
+('$create_user', '$aktivitas', '$from_ip', '$create_date', '$kode', '$doc_date')";
 
 $queryss = "INSERT INTO c_report_pettycash (transaksi_date,no_doc,deskripsi,akun,categori,cf_categori,curr,debit,credit, balance, status) 
 VALUES 
-	('$doc_date', '$kode', '$pesan', '$coa_akun', '', '', '$curr', '0','$total', '$balance2', 'Draft')";
+('$doc_date', '$kode', '$pesan', '$coa_akun', '', '', '$curr', '0','$total', '$balance2', 'Draft')";
 
 $executes = mysqli_query($conn2,$queryss);
 
 $execute = mysqli_query($conn2,$query);
 
 
-$queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
-VALUES 
-   ('$kode', '$doc_date', '$type_co', '$coa_akun', '$nama_coa', '-', '-', '-', '', '-', '-', 'IDR', '1', '0', '$total', '0', '$total', 'Draft', '$pesan', '$create_user', '$create_date', '', '', '', '')";
+if ($total_nag != 0) {
+   $queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date,profit_center) 
+   VALUES 
+   ('$kode', '$doc_date', '$type_co', '$coa_akun', '$nama_coa', '-', '-', '-', '', '-', '-', 'IDR', '1', '0', '$total_nag', '0', '$total_nag', 'Draft', '$pesan', '$create_user', '$create_date', '', '', '', '', 'NAG')";
 
-$executess2 = mysqli_query($conn2,$queryss2);
+   $executess2 = mysqli_query($conn2,$queryss2);
+}
+
+if ($total_nak != 0) {
+   $queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date,profit_center) 
+   VALUES 
+   ('$kode', '$doc_date', '$type_co', '$coa_akun', '$nama_coa', '-', '-', '-', '', '-', '-', 'IDR', '1', '0', '$total_nak', '0', '$total_nak', 'Draft', '$pesan', '$create_user', '$create_date', '', '', '', '', 'NAK')";
+
+   $executess2 = mysqli_query($conn2,$queryss2);
+}
 
 
 if(!$execute){	

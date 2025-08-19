@@ -81,11 +81,13 @@
                             }?>
                         </select>
                     </div>
+                    <div class="col-md-1">
+                    </div>
                     <?php 
                     $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
                     if ( $ref == 'Cash Out') {
                         echo '
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                         <label for="reff_doc" class="col-form-label" style="width: 150px;" ><b>Reff Document</b></label>  
                         <select class="form-control selectpicker" name="reff_doc" id="reff_doc" data-live-search="true" required onchange="this.form.submit()">
                         <option value="" disabled selected="true">Select reff doc</option> ';?> 
@@ -112,7 +114,7 @@
 
 
                     ?>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <?php 
                         $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
                         if ( $ref == 'Cash Out') {
@@ -158,12 +160,38 @@
 
              </div>
 
-
-
-
              <?php 
              $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
-             if ($ref == 'Cash Out') {
+             if ( $ref != 'Cash Out') { ?>
+                 <div class="col-md-2 mb-3">
+                    <label for="h_profit_center"><b>Profit Center</b></label>            
+                    <select class="form-control selectpicker" name="h_profit_center" id="h_profit_center" data-dropup-auto="false" data-live-search="true">
+                        <option value="" disabled selected="true">Select Profit Center</option>                                                 
+                        <?php
+                        $nama_supp ='';
+                        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                            $nama_supp = isset($_POST['h_profit_center']) ? $_POST['h_profit_center']: null;
+                        }                 
+                        $sql = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
+                        while ($row = mysqli_fetch_array($sql)) {
+                            $data = $row['kode_pc'];
+                            $data2 = $row['nama_pc'];
+                            if($row['kode_pc'] == $_POST['h_profit_center']){
+                                $isSelected = ' selected="selected"';
+                            }else{
+                                $isSelected = '';
+
+                            }
+                            echo '<option value="'.$data.'"'.$isSelected.'">'. $data2 .'</option>';    
+                        }?>
+                    </select>
+                </div>
+            <?php } ?> 
+
+
+            <?php 
+            $ref = isset($_POST['ref_num']) ? $_POST['ref_num']: null;
+            if ($ref == 'Cash Out') {
                 echo '
                 </div>
                 </br>
@@ -521,8 +549,8 @@
 
 
 
-        </br>
-            </div>
+            </br>
+        </div>
 
         <div class="form-row">
 
@@ -1058,9 +1086,61 @@ function modal_input_amt(){
 
 <script type="text/javascript">
 
-  $(document).on('change', '.prof_ctr', function () {
-    const selectedProfCtr = $(this).val();  // Ambil nilai prof_ctr yang dipilih
-    const costCtrDropdown = $(this).closest('tr').find('.cost_ctr');  // Temukan dropdown cost_ctr dalam baris yang sama
+//   $(document).on('change', '.prof_ctr', function () {
+//     const selectedProfCtr = $(this).val();  // Ambil nilai prof_ctr yang dipilih
+//     const costCtrDropdown = $(this).closest('tr').find('.cost_ctr');  // Temukan dropdown cost_ctr dalam baris yang sama
+
+//     // Kosongkan dropdown cost_ctr sebelum diisi
+//     costCtrDropdown.selectpicker('destroy');  // Hancurkan selectpicker lama
+//     costCtrDropdown.empty();  // Kosongkan semua opsi yang ada
+//     costCtrDropdown.append('<option value="-"> - </option>');  // Tambahkan opsi default
+//     costCtrDropdown.selectpicker();  // Inisialisasi ulang selectpicker
+
+//     if (selectedProfCtr && selectedProfCtr !== '-') {
+//         // Lakukan AJAX ke server untuk mengambil data cost_ctr
+//         $.ajax({
+//             url: 'getCostCenter.php',  // Ganti dengan URL endpoint server Anda
+//             type: 'POST',
+//             data: { prof_ctr: selectedProfCtr },  // Kirim data prof_ctr ke server
+//             dataType: 'json',
+//             success: function (response) {
+//                 // Periksa apakah respons valid
+//                 if (response && response.length > 0) {
+//                     $.each(response, function (index, costCtr) {
+//                         console.log(costCtr);  // Debug data yang diterima
+//                         costCtrDropdown.append(`<option value="${costCtr.value}">${costCtr.text}</option>`);
+//                     });
+
+//                     // Re-inisialisasi selectpicker setelah menambah opsi
+//                     costCtrDropdown.selectpicker('refresh');
+//                 } else {
+//                     console.error('Tidak ada data yang diterima dari server.');
+//                     // alert('Tidak ada data cost center yang tersedia.');
+//                 }
+//             },
+//             error: function (xhr, status, error) {
+//                 console.error('AJAX Error:', status, error);
+//                 alert('Gagal mengambil data cost center.');
+//             }
+//         });
+//     } else {
+//         // Jika tidak ada pilihan valid, tambahkan opsi default dan refresh selectpicker
+//         // costCtrDropdown.append('<option value="-"> - </option>');
+//         costCtrDropdown.selectpicker('refresh');
+//     }
+// });
+
+$(document).on('change', '.prof_ctr', function () {
+    const selectedProfCtr = $(this).val();
+    const row = $(this).closest('tr'); 
+    updateCostCenter(selectedProfCtr, row);
+});
+
+
+
+// Fungsi reusable untuk isi dropdown Cost Center berdasarkan Profit Center
+function updateCostCenter(profCtr, row) {
+    const costCtrDropdown = $(row).find('.cost_ctr'); // dropdown cost center pada baris tsb
 
     // Kosongkan dropdown cost_ctr sebelum diisi
     costCtrDropdown.selectpicker('destroy');  // Hancurkan selectpicker lama
@@ -1068,26 +1148,26 @@ function modal_input_amt(){
     costCtrDropdown.append('<option value="-"> - </option>');  // Tambahkan opsi default
     costCtrDropdown.selectpicker();  // Inisialisasi ulang selectpicker
 
-    if (selectedProfCtr && selectedProfCtr !== '-') {
+    if (profCtr && profCtr !== '-') {
         // Lakukan AJAX ke server untuk mengambil data cost_ctr
         $.ajax({
             url: 'getCostCenter.php',  // Ganti dengan URL endpoint server Anda
             type: 'POST',
-            data: { prof_ctr: selectedProfCtr },  // Kirim data prof_ctr ke server
+            data: { prof_ctr: profCtr },  // Kirim data prof_ctr ke server
             dataType: 'json',
             success: function (response) {
-                // Periksa apakah respons valid
                 if (response && response.length > 0) {
                     $.each(response, function (index, costCtr) {
-                        console.log(costCtr);  // Debug data yang diterima
-                        costCtrDropdown.append(`<option value="${costCtr.value}">${costCtr.text}</option>`);
+                        costCtrDropdown.append(
+                            `<option value="${costCtr.value}">${costCtr.text}</option>`
+                            );
                     });
 
                     // Re-inisialisasi selectpicker setelah menambah opsi
                     costCtrDropdown.selectpicker('refresh');
                 } else {
-                    console.error('Tidak ada data yang diterima dari server.');
-                    // alert('Tidak ada data cost center yang tersedia.');
+                    console.warn('Tidak ada data cost center dari server.');
+                    costCtrDropdown.selectpicker('refresh');
                 }
             },
             error: function (xhr, status, error) {
@@ -1096,11 +1176,10 @@ function modal_input_amt(){
             }
         });
     } else {
-        // Jika tidak ada pilihan valid, tambahkan opsi default dan refresh selectpicker
-        // costCtrDropdown.append('<option value="-"> - </option>');
+        // kalau kosong / "-", tetap refresh selectpicker
         costCtrDropdown.selectpicker('refresh');
     }
-});
+}
 
 
 
@@ -1154,8 +1233,15 @@ function modal_input_amt(){
 
     row.innerHTML = element1;
 
-    // Initialize Select2 and SelectPicker
     initializePlugins();
+    $('.selectpicker').selectpicker('refresh');
+
+    var headerPC = $('#h_profit_center').val();
+    if (headerPC) {
+        $(row).find('.prof_ctr').val(headerPC);
+        $(row).find('.prof_ctr').selectpicker('refresh');
+        updateCostCenter(headerPC, row);
+    }
 }
 
 function deleteRow2()
@@ -1251,6 +1337,15 @@ function InsertRow(tableID)
                 `;
                 var newRow = table.insertRow(i+1);
                 newRow.innerHTML = element2;
+
+                $('.selectpicker').selectpicker('refresh');
+
+                var headerPC = $('#h_profit_center').val();
+                if (headerPC) {
+                    $(row).find('.prof_ctr').val(headerPC);
+                    $(row).find('.prof_ctr').selectpicker('refresh');
+                    updateCostCenter(headerPC, row);
+                }
 
             }
 
@@ -1763,7 +1858,8 @@ function addListener(elm,index){
         if (refer == 'None' || refer == 'Settlement') {
             var no_pci = document.getElementById('no_doc').value;        
             var tgl_pci = document.getElementById('tgl_active').value;
-            var reff = $('select[name=ref_num] option').filter(':selected').val();    
+            var reff = $('select[name=ref_num] option').filter(':selected').val();   
+            var h_profit_center = $('select[name=h_profit_center] option').filter(':selected').val();    
             var reff_doc = "-";  
             if (refer == 'None') {     
                 var oth_doc = document.getElementById('oth_doc').value; 
@@ -1779,11 +1875,46 @@ function addListener(elm,index){
             var create_by = '<?php echo $user; ?>';
             var balance = tot_debit_h - h_tot_credit;
 
+            var total_nak = 0;
+            var total_nag = 0;
+
+            var isValid = true;
+            var errMsg  = "";
+
+            $("input[type=checkbox]:checked").each(function (i) {
+             if (i === 0) return true;
+             var no_coa   = $(this).closest('tr').find('td:eq(1)').find('select[name=nomor_coa] option:selected').val();
+             var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option:selected').val();
+             var credit_PC   = parseFloat($(this).closest('tr').find('td:eq(8) input').val()) || 0;
+
+             if (!no_coa || no_coa === "-") {
+                isValid = false;
+                errMsg = "Harap isi Nomor COA di semua baris yang dipilih.";
+                return false; 
+            }
+            if (!prof_ctr || prof_ctr === "-") {
+                isValid = false;
+                errMsg = "Harap isi Profit Center di semua baris yang dipilih.";
+                return false;
+            }
+
+            if (prof_ctr === "NAK") {
+                total_nak += credit_PC;
+            } else if (prof_ctr === "NAG") {
+                total_nag += credit_PC;
+            }
+        });
+
+            if (!isValid) {
+                alert(errMsg);
+                return;
+            }
+
             if(refer == 'None' && coa_akun != '' && amount != '' && amount != '0' && balance == '0' || refer == 'Settlement' && coa_akun != '' && balance == '0'){
                 $.ajax({
                     type:'POST',
                     url:'insert_petty_in_h.php',
-                    data: {'no_pci':no_pci, 'tgl_pci':tgl_pci, 'reff':reff, 'reff_doc':reff_doc, 'oth_doc':oth_doc, 'coa_akun':coa_akun, 'curr':curr, 'amount':amount, 'create_by':create_by, 'pesan':pesan},
+                    data: {'no_pci':no_pci, 'tgl_pci':tgl_pci, 'reff':reff, 'reff_doc':reff_doc, 'oth_doc':oth_doc, 'coa_akun':coa_akun, 'curr':curr, 'amount':amount, 'create_by':create_by, 'pesan':pesan, 'total_nak':total_nak, 'total_nag':total_nag, 'h_profit_center':h_profit_center},
                     cache: 'false',
                     close: function(e){
                         e.preventDefault();
@@ -1824,15 +1955,14 @@ function addListener(elm,index){
                                     },
                                     success: function(response){
                                         console.log(response);
-                  // alert(response);
 
-                  window.location = 'petty-cashin.php';
-              },
-              error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                alert(xhr);
-            }
-        });
+                                        window.location = 'petty-cashin.php';
+                                    },
+                                    error: function (xhr, ajaxOptions, thrownError) {
+                                        console.log(xhr);
+                                        alert(xhr);
+                                    }
+                                });
                             }
 
                         });
