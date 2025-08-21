@@ -10,6 +10,13 @@
         z-index: 1;
     }
 
+    #mytable2 thead th {
+        position: sticky;
+        top: 0;
+        background-color: white;
+        z-index: 1;
+    }
+
     /* Styling untuk table-wrapper jika perlu */
     .table-wrapper {
         max-width: 100%;
@@ -76,6 +83,30 @@
                                 $isSelected = '';
                             }
                             echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
+                        }?>
+                    </select>
+                </div>
+
+                <div class="col-md-2 mb-3">
+                    <label for="h_profit_center" class="col-form-label" style="width: 150px;"><b>Profit Center</b></label>            
+                    <select class="form-control selectpicker" name="h_profit_center" id="h_profit_center" data-dropup-auto="false" data-live-search="true">
+                        <option value="" disabled selected="true">Select Profit Center</option>                                                 
+                        <?php
+                        $nama_supp ='';
+                        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                            $nama_supp = isset($_POST['h_profit_center']) ? $_POST['h_profit_center']: null;
+                        }                 
+                        $sql = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
+                        while ($row = mysqli_fetch_array($sql)) {
+                            $data = $row['kode_pc'];
+                            $data2 = $row['nama_pc'];
+                            if($row['kode_pc'] == $_POST['h_profit_center']){
+                                $isSelected = ' selected="selected"';
+                            }else{
+                                $isSelected = '';
+
+                            }
+                            echo '<option value="'.$data.'"'.$isSelected.'">'. $data2 .'</option>';    
                         }?>
                     </select>
                 </div>
@@ -284,7 +315,6 @@ $rate = $rowy['rate'];
 echo $rate;
 
 ?>">
-
 <input type="hidden" style="font-size: 14px;text-align: right;" class="form-control" id="nomrate" name="nomrate" placeholder="0.00" readonly>
 <input type="hidden" name="nomrate_h" id="nomrate_h">
 <div class="col-md-9">
@@ -651,7 +681,7 @@ echo $rate;
                                 }else{
                                     $data = 'style="font-size: 12px;text-align:center;"';
                                 } ?>
-                                <table <?php echo $data ?> id="mytable" class="table table-striped table-bordered" cellspacing="0" width="100%">
+                                <table <?php echo $data ?> id="mytable2" class="table table-striped table-bordered" cellspacing="0" width="100%">
                                     <thead>
                                         <tr><th class="text-center">-</th>
                                             <th class="text-center">COA</th>
@@ -814,6 +844,19 @@ function SidebarCollapse () {
             infoFiltered: "" // Untuk keadaan filter
         }    // Menjaga header tetap terlihat
     });
+
+       $('#mytable2').DataTable({
+            paging: false,          // Menambahkan paging
+            searching: false,       // Menambahkan pencarian
+            scrollCollapse: true,  // Mengatasi jika data tidak cukup
+            fixedHeader: true,     // Menjaga header tetap terlihat
+            language: {
+            info: "", // Menghilangkan teks "Showing 1 to 1 of 1 entries"
+            infoEmpty: "", // Untuk keadaan ketika tidak ada data
+            infoFiltered: "" // Untuk keadaan filter
+        }    // Menjaga header tetap terlihat
+    });
+
        $("[data-toggle=tooltip]").tooltip();
 
    } );
@@ -946,9 +989,75 @@ function input_credit(){
 
 <script type="text/javascript">
 
- $(document).on('change', '.prof_ctr', function () {
-    const selectedProfCtr = $(this).val();  // Ambil nilai prof_ctr yang dipilih
-    const costCtrDropdown = $(this).closest('tr').find('.cost_ctr');  // Temukan dropdown cost_ctr dalam baris yang sama
+//  $(document).on('change', '.prof_ctr', function () {
+//     const selectedProfCtr = $(this).val();  // Ambil nilai prof_ctr yang dipilih
+//     const costCtrDropdown = $(this).closest('tr').find('.cost_ctr');  // Temukan dropdown cost_ctr dalam baris yang sama
+
+//     // Kosongkan dropdown cost_ctr sebelum diisi
+//     costCtrDropdown.selectpicker('destroy');  // Hancurkan selectpicker lama
+//     costCtrDropdown.empty();  // Kosongkan semua opsi yang ada
+//     costCtrDropdown.append('<option value="-"> - </option>');  // Tambahkan opsi default
+//     costCtrDropdown.selectpicker();  // Inisialisasi ulang selectpicker
+
+//     if (selectedProfCtr && selectedProfCtr !== '-') {
+//         // Lakukan AJAX ke server untuk mengambil data cost_ctr
+//         $.ajax({
+//             url: 'getCostCenter.php',  // Ganti dengan URL endpoint server Anda
+//             type: 'POST',
+//             data: { prof_ctr: selectedProfCtr },  // Kirim data prof_ctr ke server
+//             dataType: 'json',
+//             success: function (response) {
+//                 // Periksa apakah respons valid
+//                 if (response && response.length > 0) {
+//                     $.each(response, function (index, costCtr) {
+//                         console.log(costCtr);  // Debug data yang diterima
+//                         costCtrDropdown.append(`<option value="${costCtr.value}">${costCtr.text}</option>`);
+//                     });
+
+//                     // Re-inisialisasi selectpicker setelah menambah opsi
+//                     costCtrDropdown.selectpicker('refresh');
+//                 } else {
+//                     console.error('Tidak ada data yang diterima dari server.');
+//                     // alert('Tidak ada data cost center yang tersedia.');
+//                 }
+//             },
+//             error: function (xhr, status, error) {
+//                 console.error('AJAX Error:', status, error);
+//                 alert('Gagal mengambil data cost center.');
+//             }
+//         });
+//     } else {
+//         // Jika tidak ada pilihan valid, tambahkan opsi default dan refresh selectpicker
+//         // costCtrDropdown.append('<option value="-"> - </option>');
+//         costCtrDropdown.selectpicker('refresh');
+//     }
+// });
+
+$(document).on('change', '.prof_ctr', function () {
+    const selectedProfCtr = $(this).val();
+    const row = $(this).closest('tr'); 
+    const selectedCoa = row.find('select.no_coa').val() || '-';
+    // console.log("row:", row.html());
+    // console.log("no_coa element:", row.find('.no_coa'));
+    // console.log("selectedCoa:", selectedCoa);
+    updateCostCenter(selectedProfCtr, selectedCoa, row);
+});
+
+$(document).on('change', '.no_coa', function () {
+    const selectedCoa = $(this).val();
+    const row = $(this).closest('tr'); 
+    const selectedProfCtr = row.find('select.prof_ctr').val() || '-';
+    // console.log("row:", row.html());
+    // console.log("no_coa element:", row.find('.no_coa'));
+    // console.log("selectedCoa:", selectedCoa);
+    updateCostCenter(selectedProfCtr, selectedCoa, row);
+});
+
+
+
+// Fungsi reusable untuk isi dropdown Cost Center berdasarkan Profit Center
+function updateCostCenter(profCtr, noCoa, row) {
+    const costCtrDropdown = $(row).find('.cost_ctr'); // dropdown cost center pada baris tsb
 
     // Kosongkan dropdown cost_ctr sebelum diisi
     costCtrDropdown.selectpicker('destroy');  // Hancurkan selectpicker lama
@@ -956,39 +1065,37 @@ function input_credit(){
     costCtrDropdown.append('<option value="-"> - </option>');  // Tambahkan opsi default
     costCtrDropdown.selectpicker();  // Inisialisasi ulang selectpicker
 
-    if (selectedProfCtr && selectedProfCtr !== '-') {
+    if (profCtr && profCtr !== '-') {
+        // console.log(profCtr + ' ' + noCoa)
         // Lakukan AJAX ke server untuk mengambil data cost_ctr
         $.ajax({
             url: 'getCostCenter.php',  // Ganti dengan URL endpoint server Anda
             type: 'POST',
-            data: { prof_ctr: selectedProfCtr },  // Kirim data prof_ctr ke server
+            data: { prof_ctr: profCtr , no_coa: noCoa },  // Kirim data prof_ctr ke server
             dataType: 'json',
             success: function (response) {
-                // Periksa apakah respons valid
                 if (response && response.length > 0) {
                     $.each(response, function (index, costCtr) {
-                        console.log(costCtr);  // Debug data yang diterima
-                        costCtrDropdown.append(`<option value="${costCtr.value}">${costCtr.text}</option>`);
+                        costCtrDropdown.append(
+                            `<option value="${costCtr.value}">${costCtr.text}</option>`
+                            );
                     });
 
-                    // Re-inisialisasi selectpicker setelah menambah opsi
                     costCtrDropdown.selectpicker('refresh');
                 } else {
-                    console.error('Tidak ada data yang diterima dari server.');
-                    // alert('Tidak ada data cost center yang tersedia.');
+                    console.warn('Tidak ada data cost center dari server.');
+                    costCtrDropdown.selectpicker('refresh');
                 }
             },
             error: function (xhr, status, error) {
                 console.error('AJAX Error:', status, error);
-                alert('Gagal mengambil data cost center.');
             }
         });
     } else {
-        // Jika tidak ada pilihan valid, tambahkan opsi default dan refresh selectpicker
-        // costCtrDropdown.append('<option value="-"> - </option>');
         costCtrDropdown.selectpicker('refresh');
     }
-});
+}
+
 
    // Initialize external plugins
    function initializePlugins() {
@@ -1015,7 +1122,7 @@ function input_credit(){
     const element1 = `<tr>
     <td id="select"><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>
     <td style="width: 50px">
-    <select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="220px" data-size="5">
+    <select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="220px" data-size="5">
     <option value="-"> - </option>
     <?php
     $sql = mysqli_query($conn1, "SELECT no_coa as id_coa, CONCAT(no_coa, ' ', nama_coa) as coa FROM mastercoa_v2");
@@ -1057,6 +1164,14 @@ function input_credit(){
 
     // Initialize Select2 and SelectPicker
     initializePlugins();
+    // $('.selectpicker').selectpicker('refresh');
+
+    var headerPC = $('#h_profit_center').val();
+    if (headerPC) {
+        $(row).find('.prof_ctr').val(headerPC);
+        $(row).find('.prof_ctr').selectpicker('refresh');
+        // updateCostCenter(headerPC, row);
+    }
 }
 
 
@@ -1092,7 +1207,7 @@ function addRow_adv(tableID) {
     const element1 = `<tr>
     <td id="select"><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>
     <td style="width: 50px">
-    <select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="220px" data-size="5">
+    <select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="220px" data-size="5">
     <option value="1.49.98" >1.49.98 UANG MUKA PEMBELIAN - KAS KECIL</option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2 where no_coa != '1.49.98'"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?>
     </select>
     </td>
@@ -1126,7 +1241,15 @@ function addRow_adv(tableID) {
     `;
 
 
-    row.innerHTML = element1;    
+    row.innerHTML = element1;  
+    // $('.selectpicker').selectpicker('refresh');
+
+    var headerPC = $('#h_profit_center').val();
+    if (headerPC) {
+        $(row).find('.prof_ctr').val(headerPC);
+        $(row).find('.prof_ctr').selectpicker('refresh');
+        // updateCostCenter(headerPC, row);
+    }  
 }
 
 
@@ -1249,7 +1372,7 @@ function InsertRow(tableID)
                 const element2 = `<tr>
                 <td id="select"><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>
                 <td style="width: 50px">
-                <select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="220px" data-size="5">
+                <select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="220px" data-size="5">
                 <option value="-"> - </option>
                 <?php
                 $sql = mysqli_query($conn1, "SELECT no_coa as id_coa, CONCAT(no_coa, ' ', nama_coa) as coa FROM mastercoa_v2");
@@ -1288,6 +1411,14 @@ function InsertRow(tableID)
                 `;
                 var newRow = table.insertRow(i+1);
                 newRow.innerHTML = element2;
+                // $('.selectpicker').selectpicker('refresh');
+
+    var headerPC = $('#h_profit_center').val();
+    if (headerPC) {
+        $(row).find('.prof_ctr').val(headerPC);
+        $(row).find('.prof_ctr').selectpicker('refresh');
+        // updateCostCenter(headerPC, row);
+    }
 
             }
 
@@ -1323,7 +1454,7 @@ function InsertRow_adv(tableID)
                 const element2 = `<tr>
                 <td id="select"><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>
                 <td style="width: 50px">
-                <select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="220px" data-size="5">
+                <select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="220px" data-size="5">
                 <option value="1.49.98" >1.49.98 UANG MUKA PEMBELIAN - KAS KECIL</option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2 where no_coa != '1.49.98'"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?>
                 </select>
                 </td>
@@ -1357,6 +1488,14 @@ function InsertRow_adv(tableID)
                 `;
                 var newRow = table.insertRow(i+1);
                 newRow.innerHTML = element2;
+                // $('.selectpicker').selectpicker('refresh');
+
+    var headerPC = $('#h_profit_center').val();
+    if (headerPC) {
+        $(row).find('.prof_ctr').val(headerPC);
+        $(row).find('.prof_ctr').selectpicker('refresh');
+        // updateCostCenter(headerPC, row);
+    }
 
             }
 
@@ -1889,6 +2028,7 @@ function addListener(elm,index){
                 var oth_doc = '';    
                 var nama_supp = $('select[name=nama_supp] option').filter(':selected').val();       
             }   
+            var h_profit_center = $('select[name=h_profit_center] option').filter(':selected').val();
             var akun = document.getElementById('akun').value;        
             var curr = document.getElementById('valuta').value; 
             var amount = document.getElementById('nominal_h').value || 0;        
@@ -1898,11 +2038,49 @@ function addListener(elm,index){
             var debit = document.getElementById('nomcredit').value;
             var balance = debit - credit;
 
+            var total_nak = 0;
+            var total_nag = 0;
+
+            var isValid = true;
+            var errMsg  = "";
+
+            $("#mytable input[type=checkbox]:checked").each(function (i) {
+             if (i === 0) return true;
+             var no_coa   = $(this).closest('tr').find('td:eq(1)').find('select[name=nomor_coa] option:selected').val();
+             var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option:selected').val();
+             var debit_PC   = parseFloat($(this).closest('tr').find('td:eq(7) input').val()) || 0;
+             var credit_PC   = parseFloat($(this).closest('tr').find('td:eq(8) input').val()) || 0;
+
+             console.log(no_coa);
+
+             if (!no_coa || no_coa === "-") {
+                isValid = false;
+                errMsg = "Harap isi Nomor COA di semua baris yang dipilih.";
+                return false; 
+            }
+            if (!prof_ctr || prof_ctr === "-") {
+                isValid = false;
+                errMsg = "Harap isi Profit Center di semua baris yang dipilih.";
+                return false;
+            }
+
+            if (prof_ctr === "NAK") {
+                total_nak += (debit_PC - credit_PC);
+            } else if (prof_ctr === "NAG") {
+                total_nag += (debit_PC - credit_PC);
+            }
+        });
+
+            if (!isValid) {
+                alert(errMsg);
+                return;
+            }
+
             if(refer == 'Settlement' && nama_supp != '' && akun != '' && balance == '0' || amount != '' && nama_supp != '' && akun != '' && balance == '0'){
                 $.ajax({
                     type:'POST',
                     url:'insert_petty_cashout_h.php',
-                    data: {'no_pco':no_pco, 'tgl_pco':tgl_pco, 'reff':reff, 'nama_supp':nama_supp, 'akun':akun, 'curr':curr, 'amount':amount, 'deskripsi':deskripsi, 'create_by':create_by, 'oth_doc':oth_doc},
+                    data: {'no_pco':no_pco, 'tgl_pco':tgl_pco, 'reff':reff, 'nama_supp':nama_supp, 'akun':akun, 'curr':curr, 'amount':amount, 'deskripsi':deskripsi, 'create_by':create_by, 'oth_doc':oth_doc, 'total_nak':total_nak, 'total_nag':total_nag, 'h_profit_center':h_profit_center},
                     cache: 'false',
                     close: function(e){
                         e.preventDefault();
@@ -1997,12 +2175,13 @@ if($('select[name=nama_supp] option').filter(':selected').val() == '' || $('sele
     var debit = document.getElementById('nominaldeb_h').value;
     var balance = debit - credit;
     var oth_doc = '';
+    var h_profit_center = $('select[name=h_profit_center] option').filter(':selected').val();
 
     if(amount != '' && nama_supp != '' && akun != '' && balance == '0'){
         $.ajax({
             type:'POST',
             url:'insert_petty_cashout_h.php',
-            data: {'no_pco':no_pco, 'tgl_pco':tgl_pco, 'reff':reff, 'nama_supp':nama_supp, 'akun':akun, 'curr':curr, 'amount':amount, 'deskripsi':deskripsi, 'create_by':create_by, 'oth_doc':oth_doc},
+            data: {'no_pco':no_pco, 'tgl_pco':tgl_pco, 'reff':reff, 'nama_supp':nama_supp, 'akun':akun, 'curr':curr, 'amount':amount, 'deskripsi':deskripsi, 'create_by':create_by, 'oth_doc':oth_doc, 'h_profit_center':h_profit_center},
             cache: 'false',
             close: function(e){
                 e.preventDefault();
@@ -2035,11 +2214,12 @@ if($('select[name=nama_supp] option').filter(':selected').val() == '' || $('sele
                     var t_credit = document.getElementById('nominalcre_h').value;
                     var t_debit = document.getElementById('nominaldeb_h').value;
                     var balance = t_debit - t_credit;
+                    var h_profit_center = $('select[name=h_profit_center] option').filter(':selected').val();
                     if(amount != '' && nama_supp != '' && akun != '' && balance == '0'){
                         $.ajax({
                             type:'POST',
                             url:'insert_petty_cashout_det.php',
-                            data: {'no_pco':no_pco, 'tgl_pco':tgl_pco, 'no_coa':no_coa, 'reff_doc':reff_doc, 'reff_date':reff_date, 'deskripsi':deskripsi, 'debit':debit, 'credit':credit, 'no_pay':no_pay, 'pay_date':pay_date, 'due_date':due_date, 'dpp':dpp, 'ppn':ppn, 'pph':pph, 'total':total, 'total_idr':total_idr, 'curr':curr, 'kodelp':kodelp, 'amount_lp':amount_lp, 'pesan':pesan},
+                            data: {'no_pco':no_pco, 'tgl_pco':tgl_pco, 'no_coa':no_coa, 'reff_doc':reff_doc, 'reff_date':reff_date, 'deskripsi':deskripsi, 'debit':debit, 'credit':credit, 'no_pay':no_pay, 'pay_date':pay_date, 'due_date':due_date, 'dpp':dpp, 'ppn':ppn, 'pph':pph, 'total':total, 'total_idr':total_idr, 'curr':curr, 'kodelp':kodelp, 'amount_lp':amount_lp, 'pesan':pesan, 'h_profit_center':h_profit_center},
                             cache: 'false',
                             close: function(e){
                                 e.preventDefault();

@@ -585,16 +585,30 @@ function SidebarCollapse () {
 
 <script type="text/javascript">
 
-   $(document).on('change', '.prof_ctr', function () {
+$(document).on('change', '.prof_ctr', function () {
     const selectedProfCtr = $(this).val();
     const row = $(this).closest('tr'); 
-    updateCostCenter(selectedProfCtr, row);
+    const selectedCoa = row.find('select.no_coa').val() || '-';
+    // console.log("row:", row.html());
+    // console.log("no_coa element:", row.find('.no_coa'));
+    // console.log("selectedCoa:", selectedCoa);
+    updateCostCenter(selectedProfCtr, selectedCoa, row);
+});
+
+$(document).on('change', '.no_coa', function () {
+    const selectedCoa = $(this).val();
+    const row = $(this).closest('tr'); 
+    const selectedProfCtr = row.find('select.prof_ctr').val() || '-';
+    // console.log("row:", row.html());
+    // console.log("no_coa element:", row.find('select.no_coa'));
+    // console.log("selectedCoa:", selectedCoa);
+    updateCostCenter(selectedProfCtr, selectedCoa, row);
 });
 
 
 
 // Fungsi reusable untuk isi dropdown Cost Center berdasarkan Profit Center
-function updateCostCenter(profCtr, row) {
+function updateCostCenter(profCtr, noCoa, row) {
     const costCtrDropdown = $(row).find('.nomor_cc'); // dropdown cost center pada baris tsb
 
     // Kosongkan dropdown cost_ctr sebelum diisi
@@ -604,11 +618,12 @@ function updateCostCenter(profCtr, row) {
     costCtrDropdown.selectpicker();  // Inisialisasi ulang selectpicker
 
     if (profCtr && profCtr !== '-') {
+        // console.log(profCtr + ' ' + noCoa)
         // Lakukan AJAX ke server untuk mengambil data cost_ctr
         $.ajax({
             url: 'getCostCenter.php',  // Ganti dengan URL endpoint server Anda
             type: 'POST',
-            data: { prof_ctr: profCtr },  // Kirim data prof_ctr ke server
+            data: { prof_ctr: profCtr , no_coa: noCoa },  // Kirim data prof_ctr ke server
             dataType: 'json',
             success: function (response) {
                 if (response && response.length > 0) {
@@ -618,7 +633,6 @@ function updateCostCenter(profCtr, row) {
                             );
                     });
 
-                    // Re-inisialisasi selectpicker setelah menambah opsi
                     costCtrDropdown.selectpicker('refresh');
                 } else {
                     console.warn('Tidak ada data cost center dari server.');
@@ -627,13 +641,24 @@ function updateCostCenter(profCtr, row) {
             },
             error: function (xhr, status, error) {
                 console.error('AJAX Error:', status, error);
-                alert('Gagal mengambil data cost center.');
             }
         });
     } else {
-        // kalau kosong / "-", tetap refresh selectpicker
         costCtrDropdown.selectpicker('refresh');
     }
+}
+
+function initializePlugins() {
+    $(function () {
+        $('.selectpicker').selectpicker();
+        $('.tanggal').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true
+        });
+        $('.select2').select2({
+            theme: 'bootstrap4'
+        });
+    });
 }
 
    // JavaScript Document
@@ -664,20 +689,20 @@ function updateCostCenter(profCtr, row) {
     })
   });
     $coa = '';
-    var element1 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td><select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="250px" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="200px" data-size="5"><option value="-"> - </option><?php $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'"); foreach ($sql3 as $fc) : ?> <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option> <?php endforeach; ?> </select> </td> <td> <select class="form-control selectpicker nomor_cc" name="nomor_cc[]" id="nomor_cc" data-live-search="true" data-width="200px" data-size="5"> <option value="-"> - </option> </select> </td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="text-align: right;font-size: 12px;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
+    var element1 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td><select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="250px" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="200px" data-size="5"><option value="-"> - </option><?php $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'"); foreach ($sql3 as $fc) : ?> <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option> <?php endforeach; ?> </select> </td> <td> <select class="form-control selectpicker nomor_cc" name="nomor_cc[]" id="nomor_cc" data-live-search="true" data-width="200px" data-size="5"> <option value="-"> - </option> </select> </td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="text-align: right;font-size: 12px;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
 
 
     row.innerHTML = element1;  
-
+    initializePlugins();
     // refresh plugin bootstrap-select
-    $('.selectpicker').selectpicker('refresh');
+    // $('.selectpicker').selectpicker('refresh');
 
     // >>> isi dropdown prof_ctr ikut header
     var headerPC = $('#h_profit_center').val();
     if (headerPC) {
         $(row).find('.prof_ctr').val(headerPC);
         $(row).find('.prof_ctr').selectpicker('refresh');
-        updateCostCenter(headerPC, row);
+        // updateCostCenter(headerPC, row);
     }  
 }
 
@@ -731,19 +756,19 @@ function InsertRow(tableID)
                         autoclose:true
                     });
                 });
-                var element2 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td><select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="250px" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="200px" data-size="5"><option value="-"> - </option><?php $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'"); foreach ($sql3 as $fc) : ?> <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option> <?php endforeach; ?> </select> </td> <td> <select class="form-control selectpicker nomor_cc" name="nomor_cc[]" id="nomor_cc" data-live-search="true" data-width="200px" data-size="5"> <option value="-"> - </option> </select> </td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="text-align: right;font-size: 12px;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
+                var element2 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td><select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="250px" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="200px" data-size="5"><option value="-"> - </option><?php $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'"); foreach ($sql3 as $fc) : ?> <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option> <?php endforeach; ?> </select> </td> <td> <select class="form-control selectpicker nomor_cc" name="nomor_cc[]" id="nomor_cc" data-live-search="true" data-width="200px" data-size="5"> <option value="-"> - </option> </select> </td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="text-align: right;font-size: 12px;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
                 var newRow = table.insertRow(i+1);
                 newRow.innerHTML = element2;
-
+                initializePlugins();
                 // refresh plugin bootstrap-select
-                $('.selectpicker').selectpicker('refresh');
+                // $('.selectpicker').selectpicker('refresh');
 
     // >>> isi dropdown prof_ctr ikut header
     var headerPC = $('#h_profit_center').val();
     if (headerPC) {
         $(row).find('.prof_ctr').val(headerPC);
         $(row).find('.prof_ctr').selectpicker('refresh');
-        updateCostCenter(headerPC, row);
+        // updateCostCenter(headerPC, row);
     }
 
 }
@@ -1121,7 +1146,7 @@ function addListener(elm,index){
                         var dokumen = document.getElementById('dokumen').value;                               
                         var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[name=nomor_coa] option').filter(':selected').val();  
                         var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val();    
-                        var no_costcenter =$(this).closest('tr').find('td:eq(3)').find('select[name=nomor_cc] option').filter(':selected').val(); 
+                        var no_costcenter =$(this).closest('tr').find('td:eq(3)').find('select[id=nomor_cc] option').filter(':selected').val(); 
                         var buyer = $(this).closest('tr').find('td:eq(4) input').val();                               
                         var ws = $(this).closest('tr').find('td:eq(5) input').val();
                         var req_by = $(this).closest('tr').find('td:eq(6) input').val();                               

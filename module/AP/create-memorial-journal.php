@@ -112,10 +112,33 @@
             </select>
 
         </div>
-        <div class="col-md-4 mb-3">            
+        <div class="col-md-2 mb-3">
+            <label for="h_profit_center" class="col-form-label" style="width: 150px;"><b>Profit Center</b></label>            
+            <select class="form-control selectpicker" name="h_profit_center" id="h_profit_center" data-dropup-auto="false" data-live-search="true">
+                <option value="" disabled selected="true">Select Profit Center</option>                                                 
+                <?php
+                $nama_supp ='';
+                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                    $nama_supp = isset($_POST['h_profit_center']) ? $_POST['h_profit_center']: null;
+                }                 
+                $sql = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
+                while ($row = mysqli_fetch_array($sql)) {
+                    $data = $row['kode_pc'];
+                    $data2 = $row['tampil'];
+                    if($row['kode_pc'] == $_POST['h_profit_center']){
+                        $isSelected = ' selected="selected"';
+                    }else{
+                        $isSelected = '';
+
+                    }
+                    echo '<option value="'.$data.'"'.$isSelected.'">'. $data2 .'</option>';    
+                }?>
+            </select>
         </div>
+        <div class="col-md-2 mb-3"></div>
         <?php 
         $ref = isset($_POST['nama_type']) ? $_POST['nama_type']: null;
+        // echo($ref);
         if ($ref == 'CMJ001') { ?>
             <div class="col-md-2 mb-3">
                 <label for="filter_cmj" class="col-form-label" style="width: 150px;"><b>Type</b></label>            
@@ -431,6 +454,7 @@
                                     <th class="text-center" style="width: 2%">-</th>
                                     <th class="text-center" style="display: none;">-</th>
                                     <th class="text-center" style="width: 14%">COA</th>
+                                    <th class="text-center" style="width: 11%">Profit Center</th>
                                     <th class="text-center" style="display: none;">-</th>
                                     <th class="text-center" style="width: 12%">Cost Center</th>
                                     <th class="text-center" style="width: 8%">Reference</th>
@@ -482,23 +506,23 @@
                                 }
 
                                 if ($ref_num == 'HRIS') {
-                                    $sql = mysqli_query($conn3,"select no_journal,no_coa, nama_coa, no_cc, cc_name, reff_number, reff_date, buyer,ws,curr,debit, credit, deskripsi from (select a.no_journal,c.no_coa,c.nama_coa,a.kode_bagian no_cc,a.nama_bagian cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,(a.gaji - a.potongan + (a.gaji_neto - (a.gaji + a.tunjangan_karyawan_rupiah + a.total_lembur_rupiah + a.bonus - a.piutang_karyawan - a.piutang_bazzar - a.bpjs_tk - a.bpjs_ks - a.potongan))) debit, '0' credit, CONCAT('UPAH DEPT ',UPPER(a.nama_bagian),' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian INNER JOIN mastercoa_v2 c on c.no_coa = b.coa_gaji where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m') 
+                                    $sql = mysqli_query($conn3,"select no_journal,id_pc, profit_center, no_coa, nama_coa, no_cc, cc_name, reff_number, reff_date, buyer,ws,curr,debit, credit, deskripsi from (select a.no_journal,c.no_coa,c.nama_coa,a.kode_bagian no_cc,a.nama_bagian cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,(a.gaji - a.potongan + (a.gaji_neto - (a.gaji + a.tunjangan_karyawan_rupiah + a.total_lembur_rupiah + a.bonus - a.piutang_karyawan - a.piutang_bazzar - a.bpjs_tk - a.bpjs_ks - a.potongan))) debit, '0' credit, CONCAT('UPAH DEPT ',UPPER(a.nama_bagian),' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi, b.id_pc, b.profit_center from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian INNER JOIN mastercoa_v2 c on c.no_coa = b.coa_gaji where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m') 
                                         UNION
-                                        select a.no_journal,c.no_coa,c.nama_coa,a.kode_bagian no_cc,a.nama_bagian cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,a.tunjangan_karyawan_rupiah debit, '0' credit, CONCAT('TUNJANGAN DEPT ',UPPER(a.nama_bagian),' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian INNER JOIN mastercoa_v2 c on c.no_coa = b.coa_tunj where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m')
+                                        select a.no_journal,c.no_coa,c.nama_coa,a.kode_bagian no_cc,a.nama_bagian cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,a.tunjangan_karyawan_rupiah debit, '0' credit, CONCAT('TUNJANGAN DEPT ',UPPER(a.nama_bagian),' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi, b.id_pc, b.profit_center from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian INNER JOIN mastercoa_v2 c on c.no_coa = b.coa_tunj where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m')
                                         UNION
-                                        select a.no_journal,c.no_coa,c.nama_coa,a.kode_bagian no_cc,a.nama_bagian cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,a.total_lembur_rupiah debit, '0' credit, CONCAT('LEMBUR DEPT ',UPPER(a.nama_bagian),' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian INNER JOIN mastercoa_v2 c on c.no_coa = b.coa_lembur where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m')
+                                        select a.no_journal,c.no_coa,c.nama_coa,a.kode_bagian no_cc,a.nama_bagian cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,a.total_lembur_rupiah debit, '0' credit, CONCAT('LEMBUR DEPT ',UPPER(a.nama_bagian),' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi, b.id_pc, b.profit_center from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian INNER JOIN mastercoa_v2 c on c.no_coa = b.coa_lembur where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m')
                                         UNION
-                                        select a.no_journal,c.no_coa,c.nama_coa,a.kode_bagian no_cc,a.nama_bagian cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,a.bonus debit, '0' credit, CONCAT('BONUS DEPT ',UPPER(a.nama_bagian),' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian INNER JOIN mastercoa_v2 c on c.no_coa = b.coa_bonus where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m')
+                                        select a.no_journal,c.no_coa,c.nama_coa,a.kode_bagian no_cc,a.nama_bagian cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,a.bonus debit, '0' credit, CONCAT('BONUS DEPT ',UPPER(a.nama_bagian),' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi, b.id_pc, b.profit_center from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian INNER JOIN mastercoa_v2 c on c.no_coa = b.coa_bonus where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m')
                                         UNION
-                                        select a.no_journal, '1.34.51' no_coa, 'PIUTANG LAIN-LAIN PIHAK KETIGA - KARYAWAN' nama_coa,'-' no_cc,'-' cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,'0' debit, SUM(a.piutang_karyawan) credit, CONCAT('PINJAMAN KARYAWAN',' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m')
+                                        select a.no_journal, '1.34.51' no_coa, 'PIUTANG LAIN-LAIN PIHAK KETIGA - KARYAWAN' nama_coa,'-' no_cc,'-' cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,'0' debit, SUM(a.piutang_karyawan) credit, CONCAT('PINJAMAN KARYAWAN',' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi, b.id_pc, b.profit_center from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m') GROUP BY b.id_pc
                                         UNION
-                                        select a.no_journal, '1.34.51' no_coa, 'PIUTANG LAIN-LAIN PIHAK KETIGA - KARYAWAN' nama_coa,'-' no_cc,'-' cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,'0' debit, SUM(a.piutang_bazzar) credit, CONCAT('POTONGAN BAZZAR',' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m')
+                                        select a.no_journal, '1.34.51' no_coa, 'PIUTANG LAIN-LAIN PIHAK KETIGA - KARYAWAN' nama_coa,'-' no_cc,'-' cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,'0' debit, SUM(a.piutang_bazzar) credit, CONCAT('POTONGAN BAZZAR',' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi, b.id_pc, b.profit_center from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m') GROUP BY b.id_pc
                                         UNION
-                                        select a.no_journal, '2.51.31' no_coa, 'BIAYA YANG MASIH HARUS DIBAYAR - BPJS' nama_coa,'-' no_cc,'-' cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,'0' debit, SUM(a.bpjs_tk) credit, CONCAT('AKRUAL BPJS TK',' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m')
+                                        select a.no_journal, '2.51.31' no_coa, 'BIAYA YANG MASIH HARUS DIBAYAR - BPJS' nama_coa,'-' no_cc,'-' cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,'0' debit, SUM(a.bpjs_tk) credit, CONCAT('AKRUAL BPJS TK',' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi, b.id_pc, b.profit_center from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m') GROUP BY b.id_pc
                                         UNION
-                                        select a.no_journal, '2.51.31' no_coa, 'BIAYA YANG MASIH HARUS DIBAYAR - BPJS' nama_coa,'-' no_cc,'-' cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,'0' debit, SUM(a.bpjs_ks) credit, CONCAT('AKRUAL BPJS KS',' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m')
+                                        select a.no_journal, '2.51.31' no_coa, 'BIAYA YANG MASIH HARUS DIBAYAR - BPJS' nama_coa,'-' no_cc,'-' cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,'0' debit, SUM(a.bpjs_ks) credit, CONCAT('AKRUAL BPJS KS',' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi, b.id_pc, b.profit_center from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m') GROUP BY b.id_pc
                                         UNION
-                                        select a.no_journal, '2.51.21' no_coa, 'BIAYA YANG MASIH HARUS DIBAYAR - GAJI' nama_coa,'-' no_cc,'-' cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,'0' debit, SUM(a.gaji_neto) credit, CONCAT('AKRUAL BEBAN UPAH',' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m')) a where a.no_journal is null");
+                                        select a.no_journal, '2.51.21' no_coa, 'BIAYA YANG MASIH HARUS DIBAYAR - GAJI' nama_coa,'-' no_cc,'-' cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,'0' debit, SUM(a.gaji_neto) credit, CONCAT('AKRUAL BEBAN UPAH',' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi, b.id_pc, b.profit_center from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m') GROUP BY b.id_pc) a where a.no_journal is null");
 }else{
     '';
 } ?>
@@ -529,6 +553,7 @@ if ($ref == 'HRIS') {
             <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" <?php if(in_array("1",$_POST[select])) echo "checked=checked";? checked disabled></td>                        
             <td style="display:none;" value="'.$row['no_coa'].'">'.$row['no_coa'].'</td>
             <td style="" value="'.$row['nama_coa'].'">'.$row['no_coa'].' '.$row['nama_coa'].'</td>
+            <td style="" value="'.$row['id_pc'].'">'.$row['profit_center'].'</td>
             <td style="display:none;" value="'.$row['no_cc'].'">'.$row['no_cc'].'</td>
             <td style="" value="'.$row['cc_name'].'">'.$row['cc_name'].'</td>
             <td style="" value="'.$row['reff_number'].'">'.$row['reff_number'].'</td>
@@ -761,6 +786,7 @@ function SidebarCollapse () {
      $("[data-toggle=tooltip]").tooltip();
 
  } );
+
 </script>
 
 <script type="text/javascript">
@@ -804,9 +830,31 @@ function SidebarCollapse () {
 
 <script type="text/javascript">
 
-    $(document).on('change', '.prof_ctr', function () {
-    const selectedProfCtr = $(this).val();  // Ambil nilai prof_ctr yang dipilih
-    const costCtrDropdown = $(this).closest('tr').find('.nomor_cc');  // Temukan dropdown cost_ctr dalam baris yang sama
+$(document).on('change', '.prof_ctr', function () {
+    const selectedProfCtr = $(this).val();
+    const row = $(this).closest('tr'); 
+    const selectedCoa = row.find('select.no_coa').val() || '-';
+    // console.log("row:", row.html());
+    // console.log("no_coa element:", row.find('.no_coa'));
+    // console.log("selectedCoa:", selectedCoa);
+    updateCostCenter(selectedProfCtr, selectedCoa, row);
+});
+
+   $(document).on('change', '.no_coa', function () {
+    const selectedCoa = $(this).val();
+    const row = $(this).closest('tr'); 
+    const selectedProfCtr = row.find('select.prof_ctr').val() || '-';
+    // console.log("row:", row.html());
+    // console.log("no_coa element:", row.find('.no_coa'));
+    // console.log("selectedCoa:", selectedCoa);
+    updateCostCenter(selectedProfCtr, selectedCoa, row);
+});
+
+
+
+// Fungsi reusable untuk isi dropdown Cost Center berdasarkan Profit Center
+function updateCostCenter(profCtr, noCoa, row) {
+    const costCtrDropdown = $(row).find('.nomor_cc'); // dropdown cost center pada baris tsb
 
     // Kosongkan dropdown cost_ctr sebelum diisi
     costCtrDropdown.selectpicker('destroy');  // Hancurkan selectpicker lama
@@ -814,39 +862,51 @@ function SidebarCollapse () {
     costCtrDropdown.append('<option value="-"> - </option>');  // Tambahkan opsi default
     costCtrDropdown.selectpicker();  // Inisialisasi ulang selectpicker
 
-    if (selectedProfCtr && selectedProfCtr !== '-') {
+    if (profCtr && profCtr !== '-') {
+        // console.log(profCtr + ' ' + noCoa)
         // Lakukan AJAX ke server untuk mengambil data cost_ctr
         $.ajax({
             url: 'getCostCenter.php',  // Ganti dengan URL endpoint server Anda
             type: 'POST',
-            data: { prof_ctr: selectedProfCtr },  // Kirim data prof_ctr ke server
+            data: { prof_ctr: profCtr , no_coa: noCoa },  // Kirim data prof_ctr ke server
             dataType: 'json',
             success: function (response) {
-                // Periksa apakah respons valid
                 if (response && response.length > 0) {
                     $.each(response, function (index, costCtr) {
-                        console.log(costCtr);  // Debug data yang diterima
-                        costCtrDropdown.append(`<option value="${costCtr.value}">${costCtr.text}</option>`);
+                        costCtrDropdown.append(
+                            `<option value="${costCtr.value}">${costCtr.text}</option>`
+                            );
                     });
 
-                    // Re-inisialisasi selectpicker setelah menambah opsi
                     costCtrDropdown.selectpicker('refresh');
                 } else {
-                    console.error('Tidak ada data yang diterima dari server.');
-                    // alert('Tidak ada data cost center yang tersedia.');
+                    console.warn('Tidak ada data cost center dari server.');
+                    costCtrDropdown.selectpicker('refresh');
                 }
             },
             error: function (xhr, status, error) {
                 console.error('AJAX Error:', status, error);
-                alert('Gagal mengambil data cost center.');
             }
         });
     } else {
-        // Jika tidak ada pilihan valid, tambahkan opsi default dan refresh selectpicker
-        // costCtrDropdown.append('<option value="-"> - </option>');
         costCtrDropdown.selectpicker('refresh');
     }
-});
+}
+
+
+function initializePlugins() {
+    $(function () {
+        $('.selectpicker').selectpicker();
+        $('.tanggal').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose: true
+        });
+        $('.select2bs4').select2({
+            theme: 'bootstrap4'
+        });
+    });
+}
+
 
    // JavaScript Document
    function addRow(tableID) {
@@ -882,7 +942,7 @@ function SidebarCollapse () {
     <input type="checkbox" id="select" name="select[]" value="" checked disabled>
     </td>
     <td style="width: 50px;">
-    <select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="200px">
+    <select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="200px">
     <option value="-">-</option>
     <?php 
     $sql = mysqli_query($conn1, "SELECT no_coa AS id_coa, CONCAT(no_coa, ' ', nama_coa) AS coa FROM mastercoa_v2"); 
@@ -960,7 +1020,16 @@ foreach ($sql3 as $ws) :
 </td>
 </tr>`;
 
-row.innerHTML = element1;    
+row.innerHTML = element1;   
+initializePlugins();
+    // $('.selectpicker').selectpicker('refresh');
+
+    var headerPC = $('#h_profit_center').val();
+    if (headerPC) {
+        $(row).find('.prof_ctr').val(headerPC);
+        $(row).find('.prof_ctr').selectpicker('refresh');
+        // updateCostCenter(headerPC, row);
+    } 
 
 }
 
@@ -1034,7 +1103,7 @@ function InsertRow(tableID)
                 <input type="checkbox" id="select" name="select[]" value="" checked disabled>
                 </td>
                 <td style="width: 50px;">
-                <select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="200px">
+                <select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="200px">
                 <option value="-">-</option>
                 <?php 
                 $sql = mysqli_query($conn1, "SELECT no_coa AS id_coa, CONCAT(no_coa, ' ', nama_coa) AS coa FROM mastercoa_v2"); 
@@ -1113,6 +1182,15 @@ function InsertRow(tableID)
     </tr>`;
     var newRow = table.insertRow(i+1);
     newRow.innerHTML = element2;
+    initializePlugins();
+    // $('.selectpicker').selectpicker('refresh');
+
+    var headerPC = $('#h_profit_center').val();
+    if (headerPC) {
+        $(row).find('.prof_ctr').val(headerPC);
+        $(row).find('.prof_ctr').selectpicker('refresh');
+        // updateCostCenter(headerPC, row);
+    }
 
 }
 
@@ -1578,132 +1656,261 @@ function addListener(elm,index){
 </script> -->
 
 <script type="text/javascript">
-    $("#form-simpan").on("click", "#simpan", function(){
-        $("input[type=checkbox][id='select']:checked").each(function () {
-            var fil_cmj = $('select[name=filter_cmj] option').filter(':selected').val();
-            var cek_sb1 = document.getElementById('fil_sb1').value;
-            var no_mj_sb1= document.getElementById('no_doc_sb1').value;   
-            if (fil_cmj == 'HRIS') {
-                var no_mj= document.getElementById('no_doc').value;  
-                var mj_date = document.getElementById('tgl_doc').value; 
-                var tgl_hris = document.getElementById('tgl_hris').value; 
-                var id_cmj = $('select[name=nama_type] option').filter(':selected').val();     
-                var no_coa = $(this).closest('tr').find('td:eq(1)').attr('value'); 
-                var prof_ctr = '';
-                var no_costcenter = $(this).closest('tr').find('td:eq(3)').attr('value'); 
-                var no_reff = $(this).closest('tr').find('td:eq(5)').attr('value');
-                var reff_date = $(this).closest('tr').find('td:eq(6)').attr('value');                           
-                var buyer = $(this).closest('tr').find('td:eq(7)').attr('value');           
-                var no_ws = $(this).closest('tr').find('td:eq(8)').attr('value');                            
-                var curr = $(this).closest('tr').find('td:eq(9)').attr('value');      
-                var rate = '1'; 
-                var debit = $(this).closest('tr').find('td:eq(10)').attr('value') || 0;                               
-                var credit = $(this).closest('tr').find('td:eq(11)').attr('value') || 0;
-                var keterangan = $(this).closest('tr').find('td:eq(12)').attr('value');
-                var create_user = '<?php echo $user; ?>';
-                var t_credit = document.getElementById('txt_credit_h').value;
-                var t_debit = document.getElementById('txt_debit_h').value;
 
-            }else{
-                var no_mj= document.getElementById('no_doc').value;  
-                var mj_date = document.getElementById('tgl_doc').value; 
-                var tgl_hris = '';
-                var id_cmj = $('select[name=nama_type] option').filter(':selected').val();     
-                var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[name=nomor_coa] option').filter(':selected').val();
-                var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val();
-                var no_costcenter = $(this).closest('tr').find('td:eq(3)').find('select[id=nomor_cc] option').filter(':selected').val();  
-                // var no_costcenter = $(this).closest('tr').find('td:eq(2)').find('select[name=nomor_cc] option').filter(':selected').val(); 
-                var no_reff = $(this).closest('tr').find('td:eq(4) input').val();
-                var reff_date = $(this).closest('tr').find('td:eq(5) input').val();                           
-                var buyer = $(this).closest('tr').find('td:eq(6)').find('select[name=buyer] option').filter(':selected').val();           
-                var no_ws = $(this).closest('tr').find('td:eq(7)').find('select[name=no_ws] option').filter(':selected').val();                            
-                var curr = $(this).closest('tr').find('td:eq(8)').find('select[name=currenc] option').filter(':selected').val();      
-                var rate =$(this).closest('tr').find('td:eq(9) input').val(); 
-                var debit = $(this).closest('tr').find('td:eq(10) input').val() || 0;                               
-                var credit = $(this).closest('tr').find('td:eq(11) input').val() || 0;
-                var keterangan = $(this).closest('tr').find('td:eq(12) input').val();
-                var create_user = '<?php echo $user; ?>';
-                var t_credit = document.getElementById('txt_credit_h').value;
-                var t_debit = document.getElementById('txt_debit_h').value;
+    $("#form-simpan").on("click", "#simpan", function (e) {
+    e.preventDefault(); // cegah submit otomatis
 
-                var valid = true;
-                $("input[type=checkbox][id='select']:checked").each(function () {
-                    // var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[name=nomor_coa] option').filter(':selected').val();
-                    // var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val();
+    var isValid = true;
+    var errMsg = "";
 
-        //             if (!no_coa) {
-        //                 alert("Ada baris dengan Nomor COA kosong! Mohon lengkapi sebelum menyimpan.");
-        //                 valid = false;
-        //     return false; // Hentikan iterasi jika ada yang kosong
-        // }
-        // if (!prof_ctr) {
-        //     alert("Ada baris dengan Profit Center kosong! Mohon lengkapi sebelum menyimpan.");
-        //     valid = false;
-        //     return false; // Hentikan iterasi jika ada yang kosong
-        // }
-    });
+    var fil_cmj   = $('select[name=filter_cmj] option:selected').val();
+    var cek_sb1   = $("#fil_sb1").val();
+    var no_mj_sb1 = $("#no_doc_sb1").val();
+    var no_mj     = $("#no_doc").val();
+    var mj_date   = $("#tgl_doc").val();
+    var t_credit  = $("#txt_credit_h").val();
+    var t_debit   = $("#txt_debit_h").val();
+    var id_cmj    = $('select[name=nama_type] option:selected').val();
+    var tgl_hris  = (fil_cmj == 'HRIS') ? $("#tgl_hris").val() : "";
 
-                if (!valid) {
-        return; // Hentikan semua proses jika validasi gagal
+    // === Validasi global sebelum loop ===
+    if (id_cmj == '' || id_cmj == '-') {
+        alert("Please Select Type Journal");
+        return;
     }
-}
+    if ((t_credit == '' && t_debit == '') || (t_credit == '0' && t_debit == '0')) {
+        alert("Please Enter Amount");
+        return;
+    }
+    if (t_credit < 0 || t_debit < 0) {
+        alert("Amount Can't be minus");
+        return;
+    }
+    if (t_credit != t_debit) {
+        alert("Debit and Credit can't Balance");
+        return;
+    }
 
-if (id_cmj != '' && t_credit == t_debit && t_credit >= 1 && t_debit >= 1) {
-    $.ajax({
-        type:'POST',
-        url:'insert_memorial_journal.php',
-        data: {'cek_sb1':cek_sb1, 'no_mj_sb1':no_mj_sb1, 'no_mj':no_mj, 'mj_date':mj_date, 'tgl_hris':tgl_hris, 'id_cmj':id_cmj, 'no_coa':no_coa, 'no_costcenter':no_costcenter, 'no_reff':no_reff,'reff_date':reff_date, 'buyer':buyer, 'no_ws':no_ws, 'curr':curr, 'rate':rate, 'debit':debit, 'credit':credit, 'keterangan':keterangan, 'create_user':create_user, 'prof_ctr':prof_ctr},
-        cache: 'false',
-        close: function(e){
-            e.preventDefault();
-        },
-        success: function(response){
-            console.log(response);
-                // alert(response);
-                window.location = 'memorial-journal.php';
+    var rows = $("#mytable input[type=checkbox][id='select']:checked");
+    if (rows.length === 0) {
+        alert("Pilih minimal satu baris data!");
+        return;
+    }
+
+    var totalRows = rows.length;
+    var completed = 0;
+    var hasError  = false;
+
+    // === Loop baris checkbox yang dipilih ===
+    rows.each(function () {
+        var row = $(this).closest('tr');
+
+        var no_coa, prof_ctr, no_costcenter, no_reff, reff_date,
+            buyer, no_ws, curr, rate, debit, credit, keterangan;
+
+        if (fil_cmj == 'HRIS') {
+            no_coa       = row.find('td:eq(1)').attr('value');
+            prof_ctr     = row.find('td:eq(3)').attr('value');
+            no_costcenter= row.find('td:eq(4)').attr('value');
+            no_reff      = row.find('td:eq(6)').attr('value');
+            reff_date    = row.find('td:eq(7)').attr('value');
+            buyer        = row.find('td:eq(8)').attr('value');
+            no_ws        = row.find('td:eq(9)').attr('value');
+            curr         = row.find('td:eq(10)').attr('value');
+            rate         = '1';
+            debit        = row.find('td:eq(11)').attr('value') || 0;
+            credit       = row.find('td:eq(12)').attr('value') || 0;
+            keterangan   = row.find('td:eq(13)').attr('value');
+        } else {
+            no_coa       = row.find('td:eq(1) select[name=nomor_coa]').val();
+            prof_ctr     = row.find('td:eq(2) select[id=prof_ctr]').val();
+            no_costcenter= row.find('td:eq(3) select[id=nomor_cc]').val();
+            no_reff      = row.find('td:eq(4) input').val();
+            reff_date    = row.find('td:eq(5) input').val();
+            buyer        = row.find('td:eq(6) select[name=buyer]').val();
+            no_ws        = row.find('td:eq(7) select[name=no_ws]').val();
+            curr         = row.find('td:eq(8) select[name=currenc]').val();
+            rate         = row.find('td:eq(9) input').val();
+            debit        = row.find('td:eq(10) input').val() || 0;
+            credit       = row.find('td:eq(11) input').val() || 0;
+            keterangan   = row.find('td:eq(12) input').val();
+
+            // validasi COA & Profit Center
+            if (!no_coa || no_coa === "-") {
+                isValid = false;
+                errMsg  = "Harap isi Nomor COA di semua baris yang dipilih.";
+                return false; // break loop
+            }
+            if (!prof_ctr || prof_ctr === "-") {
+                isValid = false;
+                errMsg  = "Harap isi Profit Center di semua baris yang dipilih.";
+                return false; // break loop
+            }
+        }
+
+        if (!isValid) {
+            return false; // stop looping jika ada error
+        }
+
+        // === AJAX per baris ===
+        $.ajax({
+            type: 'POST',
+            url: 'insert_memorial_journal.php',
+            data: {
+                'cek_sb1': cek_sb1,
+                'no_mj_sb1': no_mj_sb1,
+                'no_mj': no_mj,
+                'mj_date': mj_date,
+                'tgl_hris': tgl_hris,
+                'id_cmj': id_cmj,
+                'no_coa': no_coa,
+                'no_costcenter': no_costcenter,
+                'no_reff': no_reff,
+                'reff_date': reff_date,
+                'buyer': buyer,
+                'no_ws': no_ws,
+                'curr': curr,
+                'rate': rate,
+                'debit': debit,
+                'credit': credit,
+                'keterangan': keterangan,
+                'create_user': '<?php echo $user; ?>',
+                'prof_ctr': prof_ctr
             },
-            error: function (xhr, ajaxOptions, thrownError) {
+            cache: false,
+            success: function (response) {
+                console.log(response);
+            },
+            error: function (xhr) {
                 console.log(xhr);
-                alert(xhr);
+                hasError = true;
+                alert("Error: " + xhr.responseText);
+            },
+            complete: function () {
+                completed++;
+                // cek apakah semua request selesai
+                if (completed === totalRows && !hasError) {
+                    alert("Data berhasil disimpan");
+                    window.location = 'memorial-journal.php';
+                }
             }
         });
-} 
 
-});
-if($('select[name=nama_type] option').filter(':selected').val() == '' ){
-    alert("Please Select Type Journal");
-}else if(document.getElementById('txt_credit_h').value == '' && document.getElementById('txt_debit_h').value == '' || document.getElementById('txt_credit_h').value == '0' && document.getElementById('txt_debit_h').value == '0'){
-    alert("Please Enter Amount");
-}else if( document.getElementById('txt_credit_h').value < 0 && document.getElementById('txt_debit_h').value < 0){
-    alert("Amount Can't be minus");
-}else if(document.getElementById('txt_credit_h').value != document.getElementById('txt_debit_h').value){
-    alert("Debit and Credit can't Balance");
-}else{  
-
-    var valid = true;
-    $("input[type=checkbox][id='select']:checked").each(function () {
-        // var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[name=nomor_coa] option').filter(':selected').val();
-        // var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val();
-
-        // if (!no_coa) {
-        //     alert("Ada baris dengan Nomor COA kosong! Mohon lengkapi sebelum menyimpan.");
-        //     valid = false;
-        //     return false; // Hentikan iterasi jika ada yang kosong
-        // }
-        // if (!prof_ctr) {
-        //     alert("Ada baris dengan Profit Center kosong! Mohon lengkapi sebelum menyimpan.");
-        //     valid = false;
-        //     return false; // Hentikan iterasi jika ada yang kosong
-        // }
     });
 
-    if (valid) {
-        alert("data saved successfully");
-    }             
+    if (!isValid) {
+        alert(errMsg);
+        return;
+    }
 
-    
-}
 });
+
+//     $("#form-simpan").on("click", "#simpan", function(){
+//         $("#mytable input[type=checkbox][id='select']:checked").each(function () {
+//             var fil_cmj = $('select[name=filter_cmj] option').filter(':selected').val();
+//             var cek_sb1 = document.getElementById('fil_sb1').value;
+//             var no_mj_sb1= document.getElementById('no_doc_sb1').value;   
+//             if (fil_cmj == 'HRIS') {
+//                 var no_mj= document.getElementById('no_doc').value;  
+//                 var mj_date = document.getElementById('tgl_doc').value; 
+//                 var tgl_hris = document.getElementById('tgl_hris').value; 
+//                 var id_cmj = $('select[name=nama_type] option').filter(':selected').val();     
+//                 var no_coa = $(this).closest('tr').find('td:eq(1)').attr('value'); 
+//                 var prof_ctr = '';
+//                 var no_costcenter = $(this).closest('tr').find('td:eq(3)').attr('value'); 
+//                 var no_reff = $(this).closest('tr').find('td:eq(5)').attr('value');
+//                 var reff_date = $(this).closest('tr').find('td:eq(6)').attr('value');                           
+//                 var buyer = $(this).closest('tr').find('td:eq(7)').attr('value');           
+//                 var no_ws = $(this).closest('tr').find('td:eq(8)').attr('value');                            
+//                 var curr = $(this).closest('tr').find('td:eq(9)').attr('value');      
+//                 var rate = '1'; 
+//                 var debit = $(this).closest('tr').find('td:eq(10)').attr('value') || 0;                               
+//                 var credit = $(this).closest('tr').find('td:eq(11)').attr('value') || 0;
+//                 var keterangan = $(this).closest('tr').find('td:eq(12)').attr('value');
+//                 var create_user = '<?php echo $user; ?>';
+//                 var t_credit = document.getElementById('txt_credit_h').value;
+//                 var t_debit = document.getElementById('txt_debit_h').value;
+
+//             }else{
+//                 var no_mj= document.getElementById('no_doc').value;  
+//                 var mj_date = document.getElementById('tgl_doc').value; 
+//                 var tgl_hris = '';
+//                 var id_cmj = $('select[name=nama_type] option').filter(':selected').val();     
+//                 var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[name=nomor_coa] option').filter(':selected').val();
+//                 var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val();
+//                 var no_costcenter = $(this).closest('tr').find('td:eq(3)').find('select[id=nomor_cc] option').filter(':selected').val();  
+//                 // var no_costcenter = $(this).closest('tr').find('td:eq(2)').find('select[name=nomor_cc] option').filter(':selected').val(); 
+//                 var no_reff = $(this).closest('tr').find('td:eq(4) input').val();
+//                 var reff_date = $(this).closest('tr').find('td:eq(5) input').val();                           
+//                 var buyer = $(this).closest('tr').find('td:eq(6)').find('select[name=buyer] option').filter(':selected').val();           
+//                 var no_ws = $(this).closest('tr').find('td:eq(7)').find('select[name=no_ws] option').filter(':selected').val();                            
+//                 var curr = $(this).closest('tr').find('td:eq(8)').find('select[name=currenc] option').filter(':selected').val();      
+//                 var rate =$(this).closest('tr').find('td:eq(9) input').val(); 
+//                 var debit = $(this).closest('tr').find('td:eq(10) input').val() || 0;                               
+//                 var credit = $(this).closest('tr').find('td:eq(11) input').val() || 0;
+//                 var keterangan = $(this).closest('tr').find('td:eq(12) input').val();
+//                 var create_user = '<?php echo $user; ?>';
+//                 var t_credit = document.getElementById('txt_credit_h').value;
+//                 var t_debit = document.getElementById('txt_debit_h').value;
+
+//                 var isValid = true;
+//                 var errMsg  = "";
+
+//                 console.log(no_coa + ' ' + prof_ctr);
+
+//                    if (!no_coa || no_coa === "-") {
+//                     isValid = false;
+//                     errMsg = "Harap isi Nomor COA di semua baris yang dipilih.";
+//                     return false; 
+//                 }
+//                 if (!prof_ctr || prof_ctr === "-") {
+//                     isValid = false;
+//                     errMsg = "Harap isi Profit Center di semua baris yang dipilih.";
+//                     return false;
+//                 }
+
+//                 if (!isValid) {
+//                     alert(errMsg);
+//                     return;
+//                 }
+
+//             }
+
+//             if (id_cmj != '' && t_credit == t_debit && t_credit >= 1 && t_debit >= 1) {
+//                 $.ajax({
+//                     type:'POST',
+//                     url:'insert_memorial_journal.php',
+//                     data: {'cek_sb1':cek_sb1, 'no_mj_sb1':no_mj_sb1, 'no_mj':no_mj, 'mj_date':mj_date, 'tgl_hris':tgl_hris, 'id_cmj':id_cmj, 'no_coa':no_coa, 'no_costcenter':no_costcenter, 'no_reff':no_reff,'reff_date':reff_date, 'buyer':buyer, 'no_ws':no_ws, 'curr':curr, 'rate':rate, 'debit':debit, 'credit':credit, 'keterangan':keterangan, 'create_user':create_user, 'prof_ctr':prof_ctr},
+//                     cache: 'false',
+//                     close: function(e){
+//                         e.preventDefault();
+//                     },
+//                     success: function(response){
+//                         console.log(response);
+//                 // alert(response);
+//                 window.location = 'memorial-journal.php';
+//             },
+//             error: function (xhr, ajaxOptions, thrownError) {
+//                 console.log(xhr);
+//                 alert(xhr);
+//             }
+//         });
+//             } 
+
+//         });
+// if($('select[name=nama_type] option').filter(':selected').val() == '' ){
+//     alert("Please Select Type Journal");
+// }else if(document.getElementById('txt_credit_h').value == '' && document.getElementById('txt_debit_h').value == '' || document.getElementById('txt_credit_h').value == '0' && document.getElementById('txt_debit_h').value == '0'){
+//     alert("Please Enter Amount");
+// }else if( document.getElementById('txt_credit_h').value < 0 && document.getElementById('txt_debit_h').value < 0){
+//     alert("Amount Can't be minus");
+// }else if(document.getElementById('txt_credit_h').value != document.getElementById('txt_debit_h').value){
+//     alert("Debit and Credit can't Balance");
+// }else{ 
+
+//     alert("data saved successfully");          
+// }
+// });
 </script>
 
 <script type="text/javascript">

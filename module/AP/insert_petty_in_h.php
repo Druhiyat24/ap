@@ -18,7 +18,7 @@ $create_by = $_POST['create_by'];
 $create_date = date("Y-m-d H:i:s");
 $total_nak = isset($_POST['total_nak']) ? $_POST['total_nak'] : 0;
 $total_nag = isset($_POST['total_nag']) ? $_POST['total_nag'] : 0;
-
+$h_profit_center = $_POST['h_profit_center'];
 
 
 // echo "< -- >";
@@ -92,9 +92,9 @@ if ($reff == 'None' || $reff == 'Settlement') {
    }
 }else{
 
-   $queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
+   $queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
    VALUES 
-   ('$kode', '$tgl_pci', '$reff', '$coa_akun', '$nama_coa', '-', '-', '-', '', '-', '-', 'IDR', '1', '$amount', '0', '$amount', '0', 'Draft', '$pesan', '$create_by', '$create_date', '', '', '', '')";
+   ('$kode', '$tgl_pci', '$reff', '$coa_akun', '$nama_coa', '-', '-', '-', '', '-', '-', 'IDR', '1', '$amount', '0', '$amount', '0', 'Draft', '$pesan', '$create_by', '$create_date', '', '', '', '', '$h_profit_center')";
 
    $executess2 = mysqli_query($conn2,$queryss2);
 }

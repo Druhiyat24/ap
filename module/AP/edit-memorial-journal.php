@@ -443,7 +443,7 @@ while($row = mysql_fetch_array($sqlpv)){
     echo'<tr>
     <td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>
     <td >
-    <select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-width="200px" data-live-search="true"> <option value="'.$row['no_coa'].'" >'.$row['coa'].'</option>';  $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2 where no_coa != '$coa'"); foreach ($sql as $cc) : echo'<option value="'.$cc["id_coa"].'"> '.$cc["coa"].' </option>'; endforeach; ?>
+    <select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-width="200px" data-live-search="true"> <option value="'.$row['no_coa'].'" >'.$row['coa'].'</option>';  $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2 where no_coa != '$coa'"); foreach ($sql as $cc) : echo'<option value="'.$cc["id_coa"].'"> '.$cc["coa"].' </option>'; endforeach; ?>
     <?php
     echo '
     </select>
@@ -813,9 +813,30 @@ function SidebarCollapse () {
 <script type="text/javascript">
 
     $(document).on('change', '.prof_ctr', function () {
-    const selectedProfCtr = $(this).val();  // Ambil nilai prof_ctr yang dipilih
-    // alert(selectedProfCtr);
-    const costCtrDropdown = $(this).closest('tr').find('.nomor_cc');  // Temukan dropdown cost_ctr dalam baris yang sama
+    const selectedProfCtr = $(this).val();
+    const row = $(this).closest('tr'); 
+    const selectedCoa = row.find('select.no_coa').val() || '-';
+    // console.log("row:", row.html());
+    // console.log("no_coa element:", row.find('.no_coa'));
+    // console.log("selectedCoa:", selectedCoa);
+    updateCostCenter(selectedProfCtr, selectedCoa, row);
+});
+
+   $(document).on('change', '.no_coa', function () {
+    const selectedCoa = $(this).val();
+    const row = $(this).closest('tr'); 
+    const selectedProfCtr = row.find('select.prof_ctr').val() || '-';
+    // console.log("row:", row.html());
+    // console.log("no_coa element:", row.find('.no_coa'));
+    // console.log("selectedCoa:", selectedCoa);
+    updateCostCenter(selectedProfCtr, selectedCoa, row);
+});
+
+
+
+// Fungsi reusable untuk isi dropdown Cost Center berdasarkan Profit Center
+function updateCostCenter(profCtr, noCoa, row) {
+    const costCtrDropdown = $(row).find('.nomor_cc'); // dropdown cost center pada baris tsb
 
     // Kosongkan dropdown cost_ctr sebelum diisi
     costCtrDropdown.selectpicker('destroy');  // Hancurkan selectpicker lama
@@ -823,39 +844,36 @@ function SidebarCollapse () {
     costCtrDropdown.append('<option value="-"> - </option>');  // Tambahkan opsi default
     costCtrDropdown.selectpicker();  // Inisialisasi ulang selectpicker
 
-    if (selectedProfCtr && selectedProfCtr !== '-') {
+    if (profCtr && profCtr !== '-') {
+        // console.log(profCtr + ' ' + noCoa)
         // Lakukan AJAX ke server untuk mengambil data cost_ctr
         $.ajax({
             url: 'getCostCenter.php',  // Ganti dengan URL endpoint server Anda
             type: 'POST',
-            data: { prof_ctr: selectedProfCtr },  // Kirim data prof_ctr ke server
+            data: { prof_ctr: profCtr , no_coa: noCoa },  // Kirim data prof_ctr ke server
             dataType: 'json',
             success: function (response) {
-                // Periksa apakah respons valid
                 if (response && response.length > 0) {
                     $.each(response, function (index, costCtr) {
-                        console.log(costCtr);  // Debug data yang diterima
-                        costCtrDropdown.append(`<option value="${costCtr.value}">${costCtr.text}</option>`);
+                        costCtrDropdown.append(
+                            `<option value="${costCtr.value}">${costCtr.text}</option>`
+                            );
                     });
 
-                    // Re-inisialisasi selectpicker setelah menambah opsi
                     costCtrDropdown.selectpicker('refresh');
                 } else {
-                    console.error('Tidak ada data yang diterima dari server.');
-                    // alert('Tidak ada data cost center yang tersedia.');
+                    console.warn('Tidak ada data cost center dari server.');
+                    costCtrDropdown.selectpicker('refresh');
                 }
             },
             error: function (xhr, status, error) {
                 console.error('AJAX Error:', status, error);
-                alert('Gagal mengambil data cost center.');
             }
         });
     } else {
-        // Jika tidak ada pilihan valid, tambahkan opsi default dan refresh selectpicker
-        // costCtrDropdown.append('<option value="-"> - </option>');
         costCtrDropdown.selectpicker('refresh');
     }
-});
+}
 
    // JavaScript Document
    function addRow(tableID) {
@@ -891,7 +909,7 @@ function SidebarCollapse () {
     <input type="checkbox" id="select" name="select[]" value="" checked disabled>
     </td>
     <td style="width: 50px;">
-    <select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="200px">
+    <select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="200px">
     <option value="-">-</option>
     <?php 
     $sql = mysqli_query($conn1, "SELECT no_coa AS id_coa, CONCAT(no_coa, ' ', nama_coa) AS coa FROM mastercoa_v2"); 
@@ -1042,7 +1060,7 @@ function InsertRow(tableID)
                 <input type="checkbox" id="select" name="select[]" value="" checked disabled>
                 </td>
                 <td style="width: 50px;">
-                <select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="200px">
+                <select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="200px">
                 <option value="-">-</option>
                 <?php 
                 $sql = mysqli_query($conn1, "SELECT no_coa AS id_coa, CONCAT(no_coa, ' ', nama_coa) AS coa FROM mastercoa_v2"); 
