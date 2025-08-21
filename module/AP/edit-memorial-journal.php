@@ -357,7 +357,7 @@
 
         <div class="col-md-12">
             <div class="table">
-                <div class="table-wrapper">
+                <div class="tableFix" style="height: 400px;">
                     <table id="mytable" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
                         <thead>
                             <tr><th class="text-center" style="width: 2%">-</th>

@@ -1,25 +1,17 @@
 <?php include '../header.php' ?>
-<!-- <style >
-    .modal {
-  text-align: center;
-  padding: 0!important;
-}
+<style >
+    #datatable thead th {
+        position: sticky;
+        top: 0;
+        background-color: white;
+        z-index: 1;
+    }
 
-.modal:before {
-  content: '';
-  display: inline-block;
-  height: 100%;
-  vertical-align: middle;
-  margin-right: -4px;
-}
-
-.modal-dialog {
-  display: inline-table;
-  width: 700px;
-  text-align: left;
-  vertical-align: middle;
-}
-</style> -->
+    .table-wrapper {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+</style>
 <!-- MAIN -->
 <div class="col p-4">
     <h2 class="text-center">UPLOAD MEMORIAL JOURNAL</h2>
@@ -164,9 +156,10 @@
 
             <div class="col-md-12">
                 <div class="table">
-                    <table id="datatable" class="table table-striped table-bordered" role="grid" cellspacing="0" width="100%">
+                 <div class="tableFix" style="height: 400px;">
+                    <table id="datatable" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
                         <thead>
-                            <tr class="thead-dark">
+                            <tr style="line-height: 35px;">
                                 <th class="text-center" style="display: none;">-</th>
                                 <th class="text-center" style="width: 11%">No Journal</th>
                                 <th class="text-center" style="width: 11%">Date</th>
@@ -182,6 +175,7 @@
                                 <th class="text-center" style="width: 9%">Debit</th>
                                 <th class="text-center" style="width: 9%">Credit</th>
                                 <th class="text-center" style="width: 10%">Remark</th>
+                                <th class="text-center" style="display: none;"></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -192,11 +186,36 @@
                             $tax = '';
                             $total = '';            
 
-                            $sql = mysqli_query($conn2,"select a.no_mj,a.mj_date,a.id_cmj,b.nama_cmj,concat(c.no_coa,' ', c.nama_coa) as coa , d.cc_name,a.no_coa,a.no_costcenter, a.no_reff, a.reff_date,a.buyer,a.no_ws,a.curr,a.rate,a.debit,a.credit,a.credit_idr,a.debit_idr,a.keterangan,a.status, kode_pc, CONCAT(mp.id_pc,' - ',nama_pc) nama_pc from tbl_memorial_journal_temp a left join master_category_mj b on b.id_cmj = a.id_cmj left join mastercoa_v2 c on c.no_coa = a.no_coa left join b_master_cc d on d.no_cc = a.no_costcenter LEFT JOIN master_pc mp on mp.kode_pc = a.profit_center where a.create_by = '$user'");
+                            // $sql = mysqli_query($conn2,"select a.no_mj,a.mj_date,a.id_cmj,b.nama_cmj,concat(c.no_coa,' ', c.nama_coa) as coa , d.cc_name,a.no_coa,a.no_costcenter, a.no_reff, a.reff_date,a.buyer,a.no_ws,a.curr,a.rate,a.debit,a.credit,a.credit_idr,a.debit_idr,a.keterangan,a.status, kode_pc, CONCAT(mp.id_pc,' - ',nama_pc) nama_pc from tbl_memorial_journal_temp a left join master_category_mj b on b.id_cmj = a.id_cmj left join mastercoa_v2 c on c.no_coa = a.no_coa left join b_master_cc d on d.no_cc = a.no_costcenter LEFT JOIN master_pc mp on mp.kode_pc = a.profit_center where a.create_by = '$user'");
 
+                            $sql = mysqli_query($conn2,"select a.*, ifnull(filter,'-') filter from (select a.id, a.no_mj,a.mj_date,a.id_cmj,b.nama_cmj,concat(c.no_coa,' ', c.nama_coa) as coa , d.cc_name,a.no_coa,a.no_costcenter, a.no_reff, a.reff_date,a.buyer,a.no_ws,a.curr,a.rate,a.debit,a.credit,a.credit_idr,a.debit_idr,a.keterangan,a.status, kode_pc, CONCAT(mp.id_pc,' - ',nama_pc) nama_pc from tbl_memorial_journal_temp a left join master_category_mj b on b.id_cmj = a.id_cmj left join mastercoa_v2 c on c.no_coa = a.no_coa left join b_master_cc d on d.no_cc = a.no_costcenter LEFT JOIN master_pc mp on mp.kode_pc = a.profit_center where a.create_by = '$user') a LEFT JOIN
+                                (select id filter from (select a.id, a.no_mj,a.mj_date,a.id_cmj,b.nama_cmj,concat(c.no_coa,' ', c.nama_coa) as coa , d.cc_name,a.no_coa,a.no_costcenter, a.no_reff, a.reff_date,a.buyer,a.no_ws,a.curr,a.rate,a.debit,a.credit,a.credit_idr,a.debit_idr,a.keterangan,a.status, kode_pc, CONCAT(mp.id_pc,' - ',nama_pc) nama_pc from tbl_memorial_journal_temp a left join master_category_mj b on b.id_cmj = a.id_cmj left join mastercoa_v2 c on c.no_coa = a.no_coa left join b_master_cc d on d.no_cc = a.no_costcenter LEFT JOIN master_pc mp on mp.kode_pc = a.profit_center where a.create_by = '$user') a INNER JOIN 
+                                (select no_coa, no_cc, id_pc from (select a.no_coa, b.no_cc, b.id_pc from (select no_coa, support_gen_adm, support_prod, prod, support_sell from mastercoa_v2 where support_gen_adm != 'N' OR support_prod != 'N' OR prod != 'N' OR support_sell != 'N') a inner join
+                                (select no_cc, cc_name, id_pc, 'Y' support_gen_adm from b_master_cc where group2 = 'SUPPORTING GENERAL & ADMINISTRATION' and status = 'Active') b on b.support_gen_adm = a. support_gen_adm
+                                UNION
+                                select a.no_coa, b.no_cc, b.id_pc from (select no_coa, support_gen_adm, support_prod, prod, support_sell from mastercoa_v2 where support_gen_adm != 'N' OR support_prod != 'N' OR prod != 'N' OR support_sell != 'N') a inner join
+                                (select no_cc, cc_name, id_pc, 'Y' support_prod from b_master_cc where group2 = 'SUPPORTING PRODUCTION' and status = 'Active') b on b.support_prod = a. support_prod
+                                UNION
+                                select a.no_coa, b.no_cc, b.id_pc from (select no_coa, support_gen_adm, support_prod, prod, support_sell from mastercoa_v2 where support_gen_adm != 'N' OR support_prod != 'N' OR prod != 'N' OR support_sell != 'N') a inner join
+                                (select no_cc, cc_name, id_pc, 'Y' prod from b_master_cc where group2 = 'PRODUCTION' and status = 'Active') b on b.prod = a.prod
+                                UNION
+                                select a.no_coa, b.no_cc, b.id_pc from (select no_coa, support_gen_adm, support_prod, prod, support_sell from mastercoa_v2 where support_gen_adm != 'N' OR support_prod != 'N' OR prod != 'N' OR support_sell != 'N') a inner join
+                                (select no_cc, cc_name, id_pc, 'Y' support_sell from b_master_cc where group2 = 'SUPPORTING SELLING' and status = 'Active') b on b.support_sell = a.support_sell)a GROUP BY no_coa, no_cc, id_pc
+                                UNION
+                                select no_coa, '' no_cc, 'NAK' id_pc from mastercoa_v2
+                                UNION
+                                select no_coa, '' no_cc, 'NAG' id_pc from mastercoa_v2
+                                ORDER BY no_coa asc) b on b.no_coa = a.no_coa and b.no_cc = a.no_costcenter and b.id_pc = a.kode_pc) b on b.filter = a.id");
 
-                            while($row = mysqli_fetch_array($sql)){                    
-                                echo '<tr>
+                            $style = '';
+                            while($row = mysqli_fetch_array($sql)){ 
+                                $filter = $row['filter'];  
+                                if ($filter == '-') {
+                                    $style = 'style="background-color: #ff4d4d;color: white;"';
+                                } else{
+                                    $style = '';
+                                }               
+                                echo '<tr '.$style.'>
                                 <td style="width:10px;display: none"><input type="checkbox" id="select" name="select[]" value="" checked></td>                        
                                 <td style="width:50px;" value="'.$row['no_mj'].'">'.$row['no_mj'].'</td>
                                 <td style="width:100px;" value="'.$row['mj_date'].'">'.date("d-M-Y",strtotime($row['mj_date'])).'</td>
@@ -211,7 +230,8 @@
                                 <td value="'.$row['curr'].'">'.$row['curr'].'</td>
                                 <td value="'.$row['debit'].'">'.$row['debit'].'</td>
                                 <td value="'.$row['credit'].'">'.$row['credit'].'</td>
-                                <td value="'.$row['keterangan'].'">'.$row['keterangan'].'</td>                 
+                                <td value="'.$row['keterangan'].'">'.$row['keterangan'].'</td> 
+                                <td style="display: none;" value="'.$row['filter'].'">'.$row['filter'].'</td>                 
                                 </tr>';
                             }                  
                             ?>
@@ -219,15 +239,16 @@
 
 
                     </table>   
-                </div>                 
-                <div class="box footer">   
-                    <form id="form-simpan">
-                        <div class="form-row col">
-                            <div class="col-md-4">
-                            </br>
-
-
+                </div>      
+            </div>           
+            <div class="box footer">   
+                <form id="form-simpan">
+                    <div class="form-row col">
+                        <div class="col-md-4">
                         </br>
+
+
+                    </br>
         <!--     <div class="input-group" >
                 <label for="nama_supp" class="col-form-label" style="width: 80px;"><b>Tax (11%)</b></label>
                 <input type="checkbox" id="check_vat_baru" name="check_vat_baru" onclick="modal_input_vat_baru()">
@@ -419,33 +440,33 @@
 
 <script>
   // Hide submenus
-    $('#body-row .collapse').collapse('hide'); 
+  $('#body-row .collapse').collapse('hide'); 
 
 // Collapse/Expand icon
-    $('#collapse-icon').addClass('fa-angle-double-left'); 
+$('#collapse-icon').addClass('fa-angle-double-left'); 
 
 // Collapse click
-    $('[data-toggle=sidebar-colapse]').click(function() {
-        SidebarCollapse();
-    });
+$('[data-toggle=sidebar-colapse]').click(function() {
+    SidebarCollapse();
+});
 
-    function SidebarCollapse () {
-        $('.menu-collapsed').toggleClass('d-none');
-        $('.sidebar-submenu').toggleClass('d-none');
-        $('.submenu-icon').toggleClass('d-none');
-        $('#sidebar-container').toggleClass('sidebar-expanded sidebar-collapsed');
+function SidebarCollapse () {
+    $('.menu-collapsed').toggleClass('d-none');
+    $('.sidebar-submenu').toggleClass('d-none');
+    $('.submenu-icon').toggleClass('d-none');
+    $('#sidebar-container').toggleClass('sidebar-expanded sidebar-collapsed');
 
     // Treating d-flex/d-none on separators with title
-        var SeparatorTitle = $('.sidebar-separator-title');
-        if ( SeparatorTitle.hasClass('d-flex') ) {
-            SeparatorTitle.removeClass('d-flex');
-        } else {
-            SeparatorTitle.addClass('d-flex');
-        }
+    var SeparatorTitle = $('.sidebar-separator-title');
+    if ( SeparatorTitle.hasClass('d-flex') ) {
+        SeparatorTitle.removeClass('d-flex');
+    } else {
+        SeparatorTitle.addClass('d-flex');
+    }
 
     // Collapse/Expand icon
-        $('#collapse-icon').toggleClass('fa-angle-double-left fa-angle-double-right');
-    }
+    $('#collapse-icon').toggleClass('fa-angle-double-left fa-angle-double-right');
+}
 </script>
 <script>
     $(function() {
@@ -474,12 +495,22 @@
 </script>
 
 <script>
+
     $(document).ready(function() {
-        $('#datatable').dataTable();
+       $('#datatable').DataTable({
+            paging: false,          // Menambahkan paging
+            searching: false,       // Menambahkan pencarian
+            scrollCollapse: true,  // Mengatasi jika data tidak cukup
+            fixedHeader: true,     // Menjaga header tetap terlihat
+            language: {
+            info: "", // Menghilangkan teks "Showing 1 to 1 of 1 entries"
+            infoEmpty: "", // Untuk keadaan ketika tidak ada data
+            infoFiltered: "" // Untuk keadaan filter
+        }    // Menjaga header tetap terlihat
+    });
+       $("[data-toggle=tooltip]").tooltip();
 
-        $("[data-toggle=tooltip]").tooltip();
-
-    } );
+   } );
 </script>
 
 
@@ -516,125 +547,125 @@
 <script type="text/javascript">
 
    // JavaScript Document
-    function addRow(tableID) {
-        var tableID = "tbody2";
+   function addRow(tableID) {
+    var tableID = "tbody2";
+    var table = document.getElementById(tableID);
+    var rowCount = table.rows.length;
+    var row = table.insertRow(rowCount);
+
+    $(function() {
+        $('.selectpicker').selectpicker();
+    });
+    $(document).ready(function () {
+        $('.tanggal').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose:true
+        });
+    });
+    $(function() {
+      //Initialize Select2 Elements
+      var selectcoba = rowCount;
+      $('.rowCount').select2({
+         theme: 'bootstrap4'
+     })
+      //Initialize Select2 Elements
+      $('.select2add').select2({
+        theme: 'bootstrap4'
+    })
+  });
+    $coa = '';
+    var element1 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td style="width: 50px"><select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td ><select class="form-control selectpicker" name="nomor_cc" id="nomor_cc" data-live-search="true"> <option value="-" > - </option><?php $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name as cost_name from b_master_cc"); foreach ($sql2 as $cc) : ?> <option value="<?= $cc["code_combine"]; ?>"><?= $cc["cost_name"]; ?> </option><?php endforeach; ?></select></td><td><input type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input type="text" class="form-control tanggal" name="keterangan[]" placeholder="" autocomplete="off"></td><td><select class="form-control selectpicker" name="buyer" id="buyer" data-live-search="true"> <option value="-" > - </option><?php $sql4 = mysqli_query($conn1,"select distinct(Supplier) as buyer from mastersupplier where tipe_sup = 'C' order by Supplier ASC"); foreach ($sql4 as $ms) : ?> <option value="<?= $ms["buyer"]; ?>"><?= $ms["buyer"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control selectpicker" name="no_ws" id="no_ws" data-live-search="true"> <option value="-" > - </option><?php $sql3 = mysqli_query($conn1,"select DISTINCT kpno no_ws from act_costing where cost_date >= '2022-01-01'"); foreach ($sql3 as $ws) : ?> <option value="<?= $ws["no_ws"]; ?>"><?= $ws["no_ws"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control selectpicker" name="currenc" id="currenc" onchange="ubahrate(this.value)" data-live-search="true"><option value="IDR">IDR</option><option value="USD">USD</option></select></td><td style="text-align: right; display: none"><input type="number" style="text-align: right;" class="form-control" name="keterangan[]" placeholder="" autocomplete="off" readonly value="1"></td><td style="text-align: right;"><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt2(value)" autocomplete = "off"></td><td><input type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
+    row.innerHTML = element1;    
+
+}
+
+function deleteRow()
+{
+    try
+    {
+        var table = document.getElementById("tbody2");
+        var rowCount = table.rows.length;
+        for(var i=0; i<rowCount; i++)
+        {
+            var row = table.rows[i];
+            var chkbox = row.cells[12].childNodes[0];
+            if (null != chkbox && true == chkbox.checked)
+            {
+                if (rowCount <= 1)
+                {
+                    alert("Tidak dapat menghapus semua baris.");
+                    break;
+                }
+                table.deleteRow(i);
+                rowCount--;
+                i--;
+            }
+        }
+    } catch(e)
+    {
+        alert(e);
+    }
+}
+
+function InsertRow(tableID)
+{
+    try{
         var table = document.getElementById(tableID);
         var rowCount = table.rows.length;
-        var row = table.insertRow(rowCount);
-
-        $(function() {
-            $('.selectpicker').selectpicker();
-        });
-        $(document).ready(function () {
-            $('.tanggal').datepicker({
-                format: "dd-mm-yyyy",
-                autoclose:true
-            });
-        });
-        $(function() {
-      //Initialize Select2 Elements
-          var selectcoba = rowCount;
-          $('.rowCount').select2({
-           theme: 'bootstrap4'
-       })
-      //Initialize Select2 Elements
-          $('.select2add').select2({
-            theme: 'bootstrap4'
-        })
-      });
-        $coa = '';
-        var element1 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td style="width: 50px"><select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td ><select class="form-control selectpicker" name="nomor_cc" id="nomor_cc" data-live-search="true"> <option value="-" > - </option><?php $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name as cost_name from b_master_cc"); foreach ($sql2 as $cc) : ?> <option value="<?= $cc["code_combine"]; ?>"><?= $cc["cost_name"]; ?> </option><?php endforeach; ?></select></td><td><input type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input type="text" class="form-control tanggal" name="keterangan[]" placeholder="" autocomplete="off"></td><td><select class="form-control selectpicker" name="buyer" id="buyer" data-live-search="true"> <option value="-" > - </option><?php $sql4 = mysqli_query($conn1,"select distinct(Supplier) as buyer from mastersupplier where tipe_sup = 'C' order by Supplier ASC"); foreach ($sql4 as $ms) : ?> <option value="<?= $ms["buyer"]; ?>"><?= $ms["buyer"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control selectpicker" name="no_ws" id="no_ws" data-live-search="true"> <option value="-" > - </option><?php $sql3 = mysqli_query($conn1,"select DISTINCT kpno no_ws from act_costing where cost_date >= '2022-01-01'"); foreach ($sql3 as $ws) : ?> <option value="<?= $ws["no_ws"]; ?>"><?= $ws["no_ws"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control selectpicker" name="currenc" id="currenc" onchange="ubahrate(this.value)" data-live-search="true"><option value="IDR">IDR</option><option value="USD">USD</option></select></td><td style="text-align: right; display: none"><input type="number" style="text-align: right;" class="form-control" name="keterangan[]" placeholder="" autocomplete="off" readonly value="1"></td><td style="text-align: right;"><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt2(value)" autocomplete = "off"></td><td><input type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
-        row.innerHTML = element1;    
-
-    }
-    
-    function deleteRow()
-    {
-        try
+        for(var i=0; i<rowCount; i++)
         {
-            var table = document.getElementById("tbody2");
-            var rowCount = table.rows.length;
-            for(var i=0; i<rowCount; i++)
+            var row = table.rows[i];
+            var chkbox = row.cells[11].childNodes[0];
+            if (null != chkbox && true == chkbox.checked)
             {
-                var row = table.rows[i];
-                var chkbox = row.cells[12].childNodes[0];
-                if (null != chkbox && true == chkbox.checked)
-                {
-                    if (rowCount <= 1)
-                    {
-                        alert("Tidak dapat menghapus semua baris.");
-                        break;
-                    }
-                    table.deleteRow(i);
-                    rowCount--;
-                    i--;
-                }
-            }
-        } catch(e)
-        {
-            alert(e);
-        }
-    }
+                $(function() {
+                    $('.selectpicker').selectpicker();
 
-    function InsertRow(tableID)
-    {
-        try{
-            var table = document.getElementById(tableID);
-            var rowCount = table.rows.length;
-            for(var i=0; i<rowCount; i++)
-            {
-                var row = table.rows[i];
-                var chkbox = row.cells[11].childNodes[0];
-                if (null != chkbox && true == chkbox.checked)
-                {
-                    $(function() {
-                        $('.selectpicker').selectpicker();
+                });
 
+                $(document).ready(function () {
+                    $('.tanggal').datepicker({
+                        format: "dd-mm-yyyy",
+                        autoclose:true
                     });
-
-                    $(document).ready(function () {
-                        $('.tanggal').datepicker({
-                            format: "dd-mm-yyyy",
-                            autoclose:true
-                        });
-                    });
-                    var element2 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td style="width: 50px"><select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td ><select class="form-control selectpicker" name="nomor_cc" id="nomor_cc" data-live-search="true"> <option value="-" > - </option><?php $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name as cost_name from b_master_cc"); foreach ($sql2 as $cc) : ?> <option value="<?= $cc["code_combine"]; ?>"><?= $cc["cost_name"]; ?> </option><?php endforeach; ?></select></td><td><input type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input type="text" class="form-control tanggal" name="keterangan[]" placeholder="" autocomplete="off"></td><td><select class="form-control selectpicker" name="buyer" id="buyer" data-live-search="true"> <option value="-" > - </option><?php $sql4 = mysqli_query($conn1,"select distinct(Supplier) as buyer from mastersupplier where tipe_sup = 'C' order by Supplier ASC"); foreach ($sql4 as $ms) : ?> <option value="<?= $ms["buyer"]; ?>"><?= $ms["buyer"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control selectpicker" name="no_ws" id="no_ws" data-live-search="true"> <option value="-" > - </option><?php $sql3 = mysqli_query($conn1,"select DISTINCT kpno no_ws from act_costing where cost_date >= '2022-01-01'"); foreach ($sql3 as $ws) : ?> <option value="<?= $ws["no_ws"]; ?>"><?= $ws["no_ws"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control selectpicker" name="currenc" id="currenc" onchange="ubahrate(this.value)" data-live-search="true"><option value="IDR">IDR</option><option value="USD">USD</option></select></td><td style="text-align: right; display: none"><input type="number" style="text-align: right;" class="form-control" name="keterangan[]" placeholder="" autocomplete="off" readonly value="1"></td><td style="text-align: right;"><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt2(value)" autocomplete = "off"></td><td><input type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
-                    var newRow = table.insertRow(i+1);
-                    newRow.innerHTML = element2;
-                    
-                }
+                });
+                var element2 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td style="width: 50px"><select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td ><select class="form-control selectpicker" name="nomor_cc" id="nomor_cc" data-live-search="true"> <option value="-" > - </option><?php $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name as cost_name from b_master_cc"); foreach ($sql2 as $cc) : ?> <option value="<?= $cc["code_combine"]; ?>"><?= $cc["cost_name"]; ?> </option><?php endforeach; ?></select></td><td><input type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input type="text" class="form-control tanggal" name="keterangan[]" placeholder="" autocomplete="off"></td><td><select class="form-control selectpicker" name="buyer" id="buyer" data-live-search="true"> <option value="-" > - </option><?php $sql4 = mysqli_query($conn1,"select distinct(Supplier) as buyer from mastersupplier where tipe_sup = 'C' order by Supplier ASC"); foreach ($sql4 as $ms) : ?> <option value="<?= $ms["buyer"]; ?>"><?= $ms["buyer"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control selectpicker" name="no_ws" id="no_ws" data-live-search="true"> <option value="-" > - </option><?php $sql3 = mysqli_query($conn1,"select DISTINCT kpno no_ws from act_costing where cost_date >= '2022-01-01'"); foreach ($sql3 as $ws) : ?> <option value="<?= $ws["no_ws"]; ?>"><?= $ws["no_ws"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control selectpicker" name="currenc" id="currenc" onchange="ubahrate(this.value)" data-live-search="true"><option value="IDR">IDR</option><option value="USD">USD</option></select></td><td style="text-align: right; display: none"><input type="number" style="text-align: right;" class="form-control" name="keterangan[]" placeholder="" autocomplete="off" readonly value="1"></td><td style="text-align: right;"><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt2(value)" autocomplete = "off"></td><td><input type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
+                var newRow = table.insertRow(i+1);
+                newRow.innerHTML = element2;
 
             }
-        } catch(e)
-        {
-            alert(e);
+
         }
+    } catch(e)
+    {
+        alert(e);
+    }
+}
+
+function hitungRow(){
+    var table = document.getElementById("tbody2");
+    var rowCount2 = table.rows.length;
+    var tota = 0;
+    var tot_price = 0;
+
+    for(var i=0; i<rowCount2; i++){
+
+        var price = parseFloat(document.getElementById("tbody2").rows[i].cells[6].children[0].value,10) || 0;
+
+        tota += price;
+
+        document.getElementsByName("total_value_h")[0].value = tota.toFixed(2);
+        document.getElementsByName("total_value")[0].value = formatMoney(tota.toFixed(2));
     }
 
-    function hitungRow(){
-        var table = document.getElementById("tbody2");
-        var rowCount2 = table.rows.length;
-        var tota = 0;
-        var tot_price = 0;
-
-        for(var i=0; i<rowCount2; i++){
-
-            var price = parseFloat(document.getElementById("tbody2").rows[i].cells[6].children[0].value,10) || 0;
-
-            tota += price;
-
-            document.getElementsByName("total_value_h")[0].value = tota.toFixed(2);
-            document.getElementsByName("total_value")[0].value = formatMoney(tota.toFixed(2));
-        }
-
-    }
+}
 
 
-    async function hapusbaris(){
-     await deleteRow()
-     console.log("result");
-     hitungRow();
- }
+async function hapusbaris(){
+   await deleteRow()
+   console.log("result");
+   hitungRow();
+}
 </script>
 
 <script type="text/javascript">
@@ -694,41 +725,41 @@
     // var val = document.getElementById('valuta').value;
     // var tot_pay = parseFloat(document.getElementById('total_cek_h').value,10) || 0; 
     // var tot_pay2 = parseFloat(document.getElementById('total_cek_idr_h').value,10) || 0;     
-        var table = document.getElementById("tbody2");
-        var total = 0;
-        var total2 = 0;
-        var val = 0;
-        var val2 = 0;
-        var harga = 0;
-        var totall = 0;
-        for (var i = 0; i < (table.rows.length); i++) {
+    var table = document.getElementById("tbody2");
+    var total = 0;
+    var total2 = 0;
+    var val = 0;
+    var val2 = 0;
+    var harga = 0;
+    var totall = 0;
+    for (var i = 0; i < (table.rows.length); i++) {
 
-            var rate = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
-            var amt = document.getElementById("tbody2").rows[i].cells[9].children[0].value;
-            var amt2 = document.getElementById("tbody2").rows[i].cells[10].children[0];
-            if (amt == '') {
-                val = 0;
-                val2 = 0;
-                amt2.readOnly = false;
-            }else{
-                val = amt;
-                val2 = amt * rate;
-                amt2.readOnly = true;
-            }
-            total += parseFloat(val);
-            total2 += parseFloat(val2);
+        var rate = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
+        var amt = document.getElementById("tbody2").rows[i].cells[9].children[0].value;
+        var amt2 = document.getElementById("tbody2").rows[i].cells[10].children[0];
+        if (amt == '') {
+            val = 0;
+            val2 = 0;
+            amt2.readOnly = false;
+        }else{
+            val = amt;
+            val2 = amt * rate;
+            amt2.readOnly = true;
+        }
+        total += parseFloat(val);
+        total2 += parseFloat(val2);
 
     // totall = tot_pay2 + tota;
 
 
 
 
-            document.getElementsByName("txt_debit")[0].value = formatMoney(total.toFixed(2));
-            document.getElementsByName("txt_debit_h")[0].value = total.toFixed(2);
-            document.getElementsByName("txt_debit_idr")[0].value = formatMoney(total2.toFixed(2));
-            document.getElementsByName("txt_debit_idr_h")[0].value = total2.toFixed(2);
-        }
-    }
+    document.getElementsByName("txt_debit")[0].value = formatMoney(total.toFixed(2));
+    document.getElementsByName("txt_debit_h")[0].value = total.toFixed(2);
+    document.getElementsByName("txt_debit_idr")[0].value = formatMoney(total2.toFixed(2));
+    document.getElementsByName("txt_debit_idr_h")[0].value = total2.toFixed(2);
+}
+}
 </script>
 
 <script type="text/javascript">
@@ -736,41 +767,41 @@
     // var val = document.getElementById('valuta').value;
     // var tot_pay = parseFloat(document.getElementById('total_cek_h').value,10) || 0; 
     // var tot_pay2 = parseFloat(document.getElementById('total_cek_idr_h').value,10) || 0;     
-        var table = document.getElementById("tbody2");
-        var total = 0;
-        var total2 = 0;
-        var val = 0;
-        var val2 = 0;
-        var harga = 0;
-        var totall = 0;
-        for (var i = 0; i < (table.rows.length); i++) {
+    var table = document.getElementById("tbody2");
+    var total = 0;
+    var total2 = 0;
+    var val = 0;
+    var val2 = 0;
+    var harga = 0;
+    var totall = 0;
+    for (var i = 0; i < (table.rows.length); i++) {
 
-            var rate = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
-            var amt = document.getElementById("tbody2").rows[i].cells[9].children[0];
-            var amt2 = document.getElementById("tbody2").rows[i].cells[10].children[0].value;
-            if (amt2 == '') {
-                val = 0;
-                val2 = 0;
-                amt.readOnly = false;
-            }else{
-                val = amt2;
-                val2 = amt2 * rate;
-                amt.readOnly = true;
-            }
-            total += parseFloat(val);
-            total2 += parseFloat(val2);
+        var rate = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
+        var amt = document.getElementById("tbody2").rows[i].cells[9].children[0];
+        var amt2 = document.getElementById("tbody2").rows[i].cells[10].children[0].value;
+        if (amt2 == '') {
+            val = 0;
+            val2 = 0;
+            amt.readOnly = false;
+        }else{
+            val = amt2;
+            val2 = amt2 * rate;
+            amt.readOnly = true;
+        }
+        total += parseFloat(val);
+        total2 += parseFloat(val2);
 
     // totall = tot_pay2 + tota;
 
 
 
 
-            document.getElementsByName("txt_credit")[0].value = formatMoney(total.toFixed(2));
-            document.getElementsByName("txt_credit_h")[0].value = total.toFixed(2);
-            document.getElementsByName("txt_credit_idr")[0].value = formatMoney(total2.toFixed(2));
-            document.getElementsByName("txt_credit_idr_h")[0].value = total2.toFixed(2);
-        }
-    }
+    document.getElementsByName("txt_credit")[0].value = formatMoney(total.toFixed(2));
+    document.getElementsByName("txt_credit_h")[0].value = total.toFixed(2);
+    document.getElementsByName("txt_credit_idr")[0].value = formatMoney(total2.toFixed(2));
+    document.getElementsByName("txt_credit_idr_h")[0].value = total2.toFixed(2);
+}
+}
 </script>
 
 
@@ -928,28 +959,28 @@ function changeValueACC(id){
 
 <script type="text/javascript">
 // get all number fields
-    var numInputs = document.querySelectorAll('input[type="number"]');
+var numInputs = document.querySelectorAll('input[type="number"]');
 
 // Loop through the collection and call addListener on each element
-    Array.prototype.forEach.call(numInputs, addListener); 
+Array.prototype.forEach.call(numInputs, addListener); 
 
 
-    function addListener(elm,index){
+function addListener(elm,index){
   elm.setAttribute('min', 1);  // set the min attribute on each field
   
   elm.addEventListener('keypress', function(e){  // add listener to each field 
-   var key = !isNaN(e.charCode) ? e.charCode : e.keyCode;
-   str = String.fromCharCode(key); 
-   if (str.localeCompare('-') === 0){
-     event.preventDefault();
- }
+     var key = !isNaN(e.charCode) ? e.charCode : e.keyCode;
+     str = String.fromCharCode(key); 
+     if (str.localeCompare('-') === 0){
+       event.preventDefault();
+   }
 
 });
   
 }
 </script>
 
-
+<!-- 
 <script type="text/javascript">     
     $("#simpan").on("click", function(){ 
         var txt_credit_h = document.getElementById('txt_credit_h').value; 
@@ -957,13 +988,13 @@ function changeValueACC(id){
         if (txt_debit_h == txt_credit_h) {
 
     // $('#mymodal2').modal('show');
-        }else{
-            alert("Debit and Credit can't balance")
-        }         
+}else{
+    alert("Debit and Credit can't balance")
+}         
 
-    });
+});
 
-</script>
+</script> -->
 
 <script type="text/javascript">
     $("#reset").on("click", function(){ 
@@ -990,45 +1021,55 @@ function changeValueACC(id){
 
 <script type="text/javascript">
   $("#simpan").on("click", function(){ 
-        // var pass = document.getElementById('pass').value;
-        // var txt_pass = document.getElementById('txt_pass').value;
-        // var status = document.getElementById('txt_type').value;
-        // var id_cf = document.getElementById('txt_id').value;
     var txt_credit_h = document.getElementById('txt_credit_h').value; 
     var txt_debit_h = document.getElementById('txt_debit_h').value;
     var create_user = '<?php echo $user; ?>';   
-    if (txt_debit_h == txt_credit_h) {
-        $.ajax({
-            type:'POST',
-            url:'insert_upload_mj.php',
-            data: {'create_user':create_user},
-            cache: 'false',
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){
-                // $('#tbl_cf').html(response);
-                // console.log(response);
-                // $('#modal-form2').modal('toggle');
-                // $('#modal-form2').modal('hide');
-               alert("Data saved successfully");
-               window.location = 'memorial-journal.php';
-           },
-           error: function (xhr, ajaxOptions, thrownError) {
-            console.log(xhr);
-            alert(xhr);
+    console.log(txt_credit_h + ' ' + txt_debit_h);
+
+    var isValid = true;
+    var errMsg  = "";
+
+    $("input[type=checkbox]:checked").each(function (i) {
+       var filter = $(this).closest('tr').find('td:eq(15)').attr('value');
+       console.log(filter);
+       if (!filter || filter === "-") {
+        isValid = false;
+        errMsg = "Gagal: Ada baris yang tidak sesuai, Silahkan cek kembali.\nNotes: Baris tidak sesuai berwarna merah";
+
+        return false; 
         }
-    }); 
+    
+    });
+
+    if (txt_debit_h != txt_credit_h) {
+        isValid = false;
+        errMsg = "Debit dan Kredit tidak sama.";
+        }
+
+    if (!isValid) {
+        alert(errMsg);
+        return;
     }
 
-
-        // if(document.getElementById('pass').value == document.getElementById('txt_pass').value){
-        //     alert("Data changed successfully");
-        //     return false;   
-        // }else{
-        //     alert("Incorrect Password");
-        // return false;           
-        // }
+    if (txt_debit_h == txt_credit_h) {
+            $.ajax({
+                type:'POST',
+                url:'insert_upload_mj.php',
+                data: {'create_user':create_user},
+                cache: 'false',
+                close: function(e){
+                    e.preventDefault();
+                },
+                success: function(response){
+                alert("Data saved successfully");
+                window.location = 'memorial-journal.php';
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr);
+                alert(xhr);
+            }
+        }); 
+    }
 
 
 });
