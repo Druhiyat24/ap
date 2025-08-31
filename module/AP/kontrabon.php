@@ -549,8 +549,12 @@ function SidebarCollapse () {
 
 <script type="text/javascript">
     document.getElementById('btncreate').onclick = function () {
-        location.href = "formkontrabon.php";
+        location.href = "form_kontrabon.php";
     };
+
+    // document.getElementById('btncreate').onclick = function () {
+    //     location.href = "formkontrabon.php";
+    // };
 </script>
 <!-- -->
 <script type="text/javascript">
