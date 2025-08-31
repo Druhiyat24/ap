@@ -27,7 +27,15 @@
                         <div class="col-md-3 mb-3">            
                             <label for="nokontrabon"><b>No Kontra Bon</b></label>
                             <?php
-                            $sql = mysqli_query($conn2,"select CONCAT('SI/APR/',DATE_FORMAT(CURRENT_DATE(), '%Y'),'/',DATE_FORMAT(CURRENT_DATE(), '%m'),'/',LPAD((COALESCE(max(SUBSTR(no_kbon,16)),0) + 1),5,0)) nomor from kontrabon_h WHERE no_kbon != 'SI/APR/2024/12/06591' and YEAR(tgl_kbon) = YEAR (CURRENT_DATE())");
+                            $sql = mysqli_query($conn2,"select CONCAT(
+                                'SI/APR/',
+                                DATE_FORMAT(CURRENT_DATE(), '%Y'), '/',
+                                DATE_FORMAT(CURRENT_DATE(), '%m'), '/',
+                                LPAD(
+                                COALESCE(MAX(CAST(RIGHT(no_kbon, 5) AS UNSIGNED)), 0) + 1,
+                                5, '0'
+                                )
+                            ) nomor from kontrabon_h WHERE no_kbon != 'SI/APR/2024/12/06591' and YEAR(tgl_kbon) = YEAR (CURRENT_DATE())");
                             $row = mysqli_fetch_array($sql);
                             $kodeBarang = $row['nomor'];
 
@@ -90,176 +98,176 @@
                             echo $top;
                         } 
 
-                    ?>">
-                    <input type="hidden" style="font-size: 13px;;" name="tanggal3" id="tanggal3" class="form-control form-control-sm"
-                    value="<?php             
-                    $start_date ='';
-                    $end_date ='';
-                    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                        $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-                        $end_date = date("Y-m-d",strtotime($_POST['end_date']));
-                    }
+                        ?>">
+                        <input type="hidden" style="font-size: 13px;;" name="tanggal3" id="tanggal3" class="form-control form-control-sm"
+                        value="<?php             
+                        $start_date ='';
+                        $end_date ='';
+                        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                            $start_date = date("Y-m-d",strtotime($_POST['start_date']));
+                            $end_date = date("Y-m-d",strtotime($_POST['end_date']));
+                        }
 
-                    $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
-                    $sql = mysqli_query($conn2,"select distinct max(tgl_bpb) from bpb_new where supplier = '$nama_supp' and is_invoiced != 'Invoiced' and confirm2 != '' and status != 'Cancel' and tgl_bpb between '$start_date' and '$end_date' ");
-                    $row = mysqli_fetch_array($sql);
-                    $tgl = $row['max(tgl_bpb)'];         
+                        $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
+                        $sql = mysqli_query($conn2,"select distinct max(tgl_bpb) from bpb_new where supplier = '$nama_supp' and is_invoiced != 'Invoiced' and confirm2 != '' and status != 'Cancel' and tgl_bpb between '$start_date' and '$end_date' ");
+                        $row = mysqli_fetch_array($sql);
+                        $tgl = $row['max(tgl_bpb)'];         
 
 
-                    if(!empty($nama_supp)) {
+                        if(!empty($nama_supp)) {
 
-                        echo date("Y-m-d",strtotime($tgl));
-                    }
-                    else{
-                        echo date("Y-m-d");
-                    }  ?>">
+                            echo date("Y-m-d",strtotime($tgl));
+                        }
+                        else{
+                            echo date("Y-m-d");
+                        }  ?>">
 
-                    <input type="hidden" style="font-size: 13px;;" name="tanggal4" id="tanggal4" class="form-control form-control-sm"
-                    value="<?php             
-                    $start_date ='';
-                    $end_date ='';
-                    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                        $tkbon = date("Y-m-d",strtotime($_POST['tanggal']));
-                    }     
+                        <input type="hidden" style="font-size: 13px;;" name="tanggal4" id="tanggal4" class="form-control form-control-sm"
+                        value="<?php             
+                        $start_date ='';
+                        $end_date ='';
+                        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                            $tkbon = date("Y-m-d",strtotime($_POST['tanggal']));
+                        }     
 
-                    if(!empty($tkbon)) {
+                        if(!empty($tkbon)) {
 
-                        echo date("Y-m-d",strtotime($tkbon));
-                    }
-                    else{
-                        echo date("Y-m-d");
-                    }  ?>">
-                </div>
+                            echo date("Y-m-d",strtotime($tkbon));
+                        }
+                        else{
+                            echo date("Y-m-d");
+                        }  ?>">
+                    </div>
 
-                <div class="col-md-3 mb-3">            
-                    <label for="profit_center"><b>Profit Center <i style="color: red;">*</i></b></label>            
-                    <select class="form-control selectpicker" name="profit_center" id="profit_center" data-dropup-auto="false" data-live-search="true" onchange="updateNoKontraBon()">
-                        <option value="" disabled selected="true">Select Profit Center</option>                                                 
-                        <?php
-                        $profit_center = isset($_POST['profit_center']) ? $_POST['profit_center']: null;               
-                        $sql = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
-                        while ($row = mysqli_fetch_array($sql)) {
-                            $data = $row['kode_pc'];
-                            $data2 = $row['nama_pc'];
-                            if($row['kode_pc'] == $profit_center ){
-                                $isSelected = ' selected="selected"';
-                            }else{
-                                $isSelected = '';
+                    <div class="col-md-3 mb-3">            
+                        <label for="profit_center"><b>Profit Center <i style="color: red;">*</i></b></label>            
+                        <select class="form-control selectpicker" name="profit_center" id="profit_center" data-dropup-auto="false" data-live-search="true" onchange="updateNoKontraBon()">
+                            <option value="" disabled selected="true">Select Profit Center</option>                                                 
+                            <?php
+                            $profit_center = isset($_POST['profit_center']) ? $_POST['profit_center']: null;               
+                            $sql = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
+                            while ($row = mysqli_fetch_array($sql)) {
+                                $data = $row['kode_pc'];
+                                $data2 = $row['nama_pc'];
+                                if($row['kode_pc'] == $profit_center ){
+                                    $isSelected = ' selected="selected"';
+                                }else{
+                                    $isSelected = '';
 
-                            }
-                            echo '<option value="'.$data.'"'.$isSelected.'">'. $data2 .'</option>';    
-                        }?>
-                    </select>  
+                                }
+                                echo '<option value="'.$data.'"'.$isSelected.'">'. $data2 .'</option>';    
+                            }?>
+                        </select>  
 
-                    <input type="hidden" readonly style="font-size: 13px;;" class="form-control form-control-sm" id="jurnal" name="jurnal" 
-                    value="0" placeholder="<?php echo "KONTRA BON" ?>">
-                </div>
+                        <input type="hidden" readonly style="font-size: 13px;;" class="form-control form-control-sm" id="jurnal" name="jurnal" 
+                        value="0" placeholder="<?php echo "KONTRA BON" ?>">
+                    </div>
 
-                <div class="col-md-2 mb-3">            
-                    <label for="matauang"><b>Currency</b></label>
-                    <input type="text" readonly class="form-control form-control-sm" id="matauang" name="matauang" value="">                      
-                </div>                                         
+                    <div class="col-md-2 mb-3">            
+                        <label for="matauang"><b>Currency</b></label>
+                        <input type="text" readonly class="form-control form-control-sm" id="matauang" name="matauang" value="">                      
+                    </div>                                         
 
-                <div class="col-md-3 mb-3">            
-                    <label for="txt_inv"><b>No Supplier Invoice <i style="color: red;">*</i></b></label>          
-                    <input type="text" style="font-size: 13px;;" class="form-control form-control-sm" id="txt_inv" name="txt_inv" 
-                    value="<?php
-                    $txt_inv = isset($_POST['txt_inv']) ? $_POST['txt_inv']: null;
-                    echo $txt_inv; 
-                ?>" required>
-            </div>
+                    <div class="col-md-3 mb-3">            
+                        <label for="txt_inv"><b>No Supplier Invoice <i style="color: red;">*</i></b></label>          
+                        <input type="text" style="font-size: 13px;;" class="form-control form-control-sm" id="txt_inv" name="txt_inv" 
+                        value="<?php
+                        $txt_inv = isset($_POST['txt_inv']) ? $_POST['txt_inv']: null;
+                        echo $txt_inv; 
+                        ?>" required>
+                    </div>
 
-            <div class="col-md-2 mb-3">            
-                <label for="txt_tglsi"><b>Supplier Invoice Date <i style="color: red;">*</i></b></label>   
-                <input type="text" style="font-size: 13px;;" class="form-control form-control-sm tanggal" name="txt_tglsi" id="txt_tglsi" 
-                value="<?php 
-                if(!empty($_POST['txt_tglsi'])) {
-                    echo date("Y-m-d",strtotime($_POST['txt_tglsi']));
-                }
-                else{
-                    echo date("Y-m-d");
-                } ?>">
-            </div>
+                    <div class="col-md-2 mb-3">            
+                        <label for="txt_tglsi"><b>Supplier Invoice Date <i style="color: red;">*</i></b></label>   
+                        <input type="text" style="font-size: 13px;;" class="form-control form-control-sm tanggal" name="txt_tglsi" id="txt_tglsi" 
+                        value="<?php 
+                        if(!empty($_POST['txt_tglsi'])) {
+                            echo date("Y-m-d",strtotime($_POST['txt_tglsi']));
+                        }
+                        else{
+                            echo date("Y-m-d");
+                        } ?>">
+                    </div>
 
-            <div class="col-md-3 mb-3">            
-                <label for="no_faktur"><b>No Tax Invoice <i style="color: red;">*</i></b></label>            
-                <input type="text" style="font-size: 13px;;" class="form-control form-control-sm" id="no_faktur" name="no_faktur" 
-                value="<?php 
-                $no_faktur = isset($_POST['no_faktur']) ? $_POST['no_faktur']: null;
-                echo $no_faktur; 
-            ?>" required>
-        </div>
+                    <div class="col-md-3 mb-3">            
+                        <label for="no_faktur"><b>No Tax Invoice <i style="color: red;">*</i></b></label>            
+                        <input type="text" style="font-size: 13px;;" class="form-control form-control-sm" id="no_faktur" name="no_faktur" 
+                        value="<?php 
+                        $no_faktur = isset($_POST['no_faktur']) ? $_POST['no_faktur']: null;
+                        echo $no_faktur; 
+                        ?>" required>
+                    </div>
 
-        <div class="col-md-2 mb-3">            
-            <label for="txt_tgltempo"><b>Due Date <i style="color: red;">*</i></b></label>   
-            <input type="text" style="font-size: 13px;;" class="form-control form-control-sm tanggal1" name="txt_tgltempo" id="txt_tgltempo" 
-            value="<?php
-            $start_date ='';
-            $end_date ='';
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $startdate = date("Y-m-d",strtotime($_POST['tanggal']));
-                $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-                $end_date = date("Y-m-d",strtotime($_POST['end_date']));
-            }
+                    <div class="col-md-2 mb-3">            
+                        <label for="txt_tgltempo"><b>Due Date <i style="color: red;">*</i></b></label>   
+                        <input type="text" style="font-size: 13px;;" class="form-control form-control-sm tanggal1" name="txt_tgltempo" id="txt_tgltempo" 
+                        value="<?php
+                        $start_date ='';
+                        $end_date ='';
+                        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                            $startdate = date("Y-m-d",strtotime($_POST['tanggal']));
+                            $start_date = date("Y-m-d",strtotime($_POST['start_date']));
+                            $end_date = date("Y-m-d",strtotime($_POST['end_date']));
+                        }
 
-            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
-            $sql = mysqli_query($conn2,"select distinct max(tgl_bpb), top from bpb_new where supplier = '$nama_supp' and is_invoiced != 'Invoiced' and confirm2 != '' and tgl_bpb between '$start_date' and '$end_date' ");
-            $row = mysqli_fetch_array($sql);
-            $tgl = $row['max(tgl_bpb)'];
-            $top = $row['top'];            
+                        $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
+                        $sql = mysqli_query($conn2,"select distinct max(tgl_bpb), top from bpb_new where supplier = '$nama_supp' and is_invoiced != 'Invoiced' and confirm2 != '' and tgl_bpb between '$start_date' and '$end_date' ");
+                        $row = mysqli_fetch_array($sql);
+                        $tgl = $row['max(tgl_bpb)'];
+                        $top = $row['top'];            
 
             // $top = 30; && $tanggal != '1970-01-01'
             // echo $top;
 
-            if(!empty($nama_supp) && $top != 0) {
-                echo date("Y-m-d",strtotime($startdate . "+$top days"));
-            }
-            else{
-                echo date("Y-m-d");
-            } 
+                        if(!empty($nama_supp) && $top != 0 && $startdate != '1970-01-01') {
+                            echo date("Y-m-d",strtotime($startdate . "+$top days"));
+                        }
+                        else{
+                            echo date("Y-m-d");
+                        } 
 
 
-        ?>">
-    </div>
+                        ?>">
+                    </div>
 
 
-    <div class="col-md-6 mb-3">
-        <label for="nama_supp"><b>Supplier</b></label>            
-        <div class="input-group">
-            <input type="text" readonly style="font-size: 13px;" class="form-control" name="txt_supp" id="txt_supp" 
-            value="<?php 
-            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
-            echo $nama_supp; 
-        ?>">
+                    <div class="col-md-6 mb-3">
+                        <label for="nama_supp"><b>Supplier</b></label>            
+                        <div class="input-group">
+                            <input type="text" readonly style="font-size: 13px;" class="form-control" name="txt_supp" id="txt_supp" 
+                            value="<?php 
+                            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
+                            echo $nama_supp; 
+                            ?>">
 
 
-        <div class="input-group-append col">
-            <input 
-            style="border: 0;
-            line-height: 1;
-            padding: 0 10px;
-            font-size: 1rem;
-            text-align: center;
-            color: #fff;
-            text-shadow: 1px 1px 1px #000;
-            border-radius: 6px;
-            background-color: rgb(95, 158, 160);"
-            type="button"
-            name="mysupp"
-            id="mysupp"
-            value="Select">
-            <input type="hidden" name="bpbvalue" id="bpbvalue" value="">      
+                            <div class="input-group-append col">
+                                <input 
+                                style="border: 0;
+                                line-height: 1;
+                                padding: 0 10px;
+                                font-size: 1rem;
+                                text-align: center;
+                                color: #fff;
+                                text-shadow: 1px 1px 1px #000;
+                                border-radius: 6px;
+                                background-color: rgb(95, 158, 160);"
+                                type="button"
+                                name="mysupp"
+                                id="mysupp"
+                                value="Select">
+                                <input type="hidden" name="bpbvalue" id="bpbvalue" value="">      
+                            </div>
+
+                        </div>
+                    </div>                   
+                </div>
+            </div>
         </div>
+    </form>
 
-    </div>
-</div>                   
-</div>
-</div>
-</div>
-</form>
-
-<form id="form-simpan">
-    <div class="card shadow-sm mb-4">
+    <form id="form-simpan">
+        <div class="card shadow-sm mb-4">
                 <!-- <div class="card-header" style="background-color: #60A5FA; color: white; font-weight: bold;">
                     Data FTR
                 </div> -->
@@ -823,10 +831,10 @@
 
 <div class="row mt-3">
   <div class="col">
-    <button type="button" class="btn btn-outline-primary btn-sm me-2" id="simpan">
+    <button type="button" class="btn btn-primary btn-sm me-2" id="simpan">
       <span class="fa fa-floppy-o"></span> Save
   </button>
-  <button type="button" class="btn btn-outline-danger btn-sm" onclick="location.href='kontrabon.php'">
+  <button type="button" class="btn btn-danger btn-sm" onclick="location.href='kontrabon.php'">
       <span class="fa fa-angle-double-left"></span> Back
   </button>
 </div>
@@ -844,78 +852,81 @@
 </form>
 
 <div class="modal fade" id="mymodal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                <h4 class="modal-title" id="Heading">Choose Supplier</h4>
-            </div>
-            <div class="modal-body">
-              <div class="form-group">
-                <form id="modal-form" method="post">
-                    <label for="nama_supp"><b>Supplier</b></label>
-                    <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true">
-                        <option value="" disabled selected="true">select</option>                
-                        <?php 
-                        $sql = mysqli_query($conn1,"select distinct(Supplier) from mastersupplier where tipe_sup = 'S' order by Supplier ASC");
-                        while ($row = mysqli_fetch_array($sql)) {
-                            $data = $row['Supplier'];
-                            if($row['Supplier'] == $_POST['nama_supp']){
-                                $isSelected = ' selected="selected"';
-                            }else{
-                                $isSelected = '';
-                            }
-                            echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
-                        }?>
-                    </select>
+  <div class="modal-dialog modal-lg"> <!-- kasih modal-lg biar lega -->
+    <div class="modal-content shadow-lg rounded-3">
 
-                    <label><b>BPB Date</b></label>
-                    <div class="input-group-append">           
-                        <input type="text" style="font-size: 13px;;" class="form-control tanggal_fil" id="start_date" name="start_date" 
-                        value="<?php
-                        $start_date ='';
-                        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                          $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-                      }
-                      if(!empty($_POST['start_date'])) {
-                        echo $_POST['start_date'];
+      <!-- Header -->
+      <div class="modal-header text-white" style="background-color: #191970;">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
+        <h4 class="modal-title text-white" id="Heading">Add Data</h4>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+        <form id="modal-form" method="post">
+
+          <!-- Supplier -->
+          <div class="form-group mb-3">
+            <label for="nama_supp"><b>Supplier</b></label>
+            <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true">
+                <option value="" disabled selected="true">select</option>                
+                <?php 
+                $sql = mysqli_query($conn1,"select distinct(Supplier) from mastersupplier where tipe_sup = 'S' order by Supplier ASC");
+                while ($row = mysqli_fetch_array($sql)) {
+                    $data = $row['Supplier'];
+                    if($row['Supplier'] == $_POST['nama_supp']){
+                        $isSelected = ' selected="selected"';
+                    }else{
+                        $isSelected = '';
                     }
-                    else{
-                        echo date("d-m-Y");
-                    } ?>" 
-                    placeholder="Tanggal Awal">
+                    echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
+                }?>
+            </select>
+        </div>
 
-                    <label class="col-md-1" for="end_date"><b>-</b></label>
-                    <input type="text" style="font-size: 13px;;" class="form-control tanggal_fil" id="end_date" name="end_date" 
-                    value="<?php
-                    $end_date ='';
-                    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                      $end_date = date("Y-m-d",strtotime($_POST['start_date']));
-                  }
-                  if(!empty($_POST['end_date'])) {
-                    echo $_POST['end_date'];
-                }
-                else{
+        <!-- BPB Date -->
+        <div class="form-group">
+            <label><b>BPB Date</b></label>
+            <div class="d-flex align-items-center gap-2">
+              <input type="text" class="form-control tanggal_fil mr-2" id="start_date" name="start_date" 
+              value="<?php
+              if(!empty($_POST['start_date'])) {
+                echo $_POST['start_date'];
+                } else {
                     echo date("d-m-Y");
                 } ?>" 
-                placeholder="Tanggal Akhir">
-            </div>  
-            <div class="modal-footer">
-                <button type="submit" id="send" name="send" class="btn btn-warning btn-lg" style="width: 100%;"><span class="fa fa-check"></span>
-                    Save
-                </button>
-            </div> 
+                placeholder="Tanggal Awal">
+
+                <span class="mx-2">-</span>
+
+                <input type="text" class="form-control tanggal_fil" id="end_date" name="end_date" 
+                value="<?php
+                if(!empty($_POST['end_date'])) {
+                    echo $_POST['end_date'];
+                    } else {
+                        echo date("d-m-Y");
+                    } ?>" 
+                    placeholder="Tanggal Akhir">
+                </div>
+            </div>
 
         </form>
     </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-dismiss="modal">
+          <i class="fa fa-times"></i> Close
+      </button>
+      <button type="submit" form="modal-form" id="send" name="send" class="btn btn-warning">
+          <i class="fa fa-search" aria-hidden="true"></i> Search
+      </button>
+  </div>
+
+</div>
+</div>
 </div>
 
-
-</div>
-<!-- /.modal-content --> 
-</div>
-<!-- /.modal-dialog --> 
-</div>
 
 <div class="modal fade" id="mymodalbpb" data-target="#mymodalbpb" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
     <div class="modal-dialog">
@@ -957,27 +968,30 @@
 
 
 <script>
-    
+
     document.addEventListener("DOMContentLoaded", function() {
-    let savedPc = localStorage.getItem("profit_center");
-    if (savedPc) {
-        document.getElementById("profit_center").value = savedPc;
-        updateNoKontraBon();
-    }
-});
+        let savedPc = localStorage.getItem("profit_center");
+        if (savedPc) {
+            document.getElementById("profit_center").value = savedPc;
+            updateNoKontraBon();
+        }
+    });
 
-document.getElementById("profit_center").addEventListener("change", function() {
-    localStorage.setItem("profit_center", this.value);
-});
+    document.getElementById("profit_center").addEventListener("change", function() {
+        localStorage.setItem("profit_center", this.value);
+        document.querySelector("#mytable tbody").innerHTML = "";
+        document.querySelector("#mytable1 tbody").innerHTML = "";
+        document.querySelector("#mytable2 tbody").innerHTML = "";
+    });
 
-function updateNoKontraBon() {
-    let pc = document.getElementById("profit_center").value;  
-    let input = document.getElementById("nokontrabon");  
-    let current = input.value.trim();  
+    function updateNoKontraBon() {
+        let pc = document.getElementById("profit_center").value;  
+        let input = document.getElementById("nokontrabon");  
+        let current = input.value.trim();  
 
-    let parts = current.split("/");
+        let parts = current.split("/");
 
-    console.log(parts[0] + ' ' + parts[1] + ' ' + parts[2] + ' ' + parts[3] + ' ' + parts[4] + ' ' + parts[5]);
+        console.log(parts[0] + ' ' + parts[1] + ' ' + parts[2] + ' ' + parts[3] + ' ' + parts[4] + ' ' + parts[5]);
 
     // kalau masih 5 bagian (belum ada PC)
     if (parts.length === 5) {
@@ -989,6 +1003,7 @@ function updateNoKontraBon() {
         // [0]=SI, [1]=APR, [2]=PC lama, [3]=YYYY, [4]=MM, [5]=00025
         input.value = parts[0] + "/" + parts[1] + "/" + pc + "/" + parts[3] + "/" + parts[4] + "/" + parts[5];
     }
+
 }
 </script>
 
@@ -1308,7 +1323,7 @@ function ubahtanggal(value){
         var tglbpb = $(this).closest('tr').find('td:eq(3)').attr('value');  
         var tglbpb2 = $(this).closest('tr').find('td:eq(3)').attr('dates');
         var po = $(this).closest('tr').find('td:eq(2)').attr('value'); 
-        var curr = $(this).closest('tr').find('td:eq(14)').attr('value') || $(this).closest('tr').find('td:eq(7)').attr('valuess'); 
+        var curr = $(this).closest('tr').find('td:eq(14)').attr('value') || $(this).closest('tr').find('td:eq(7)').attr('valuess') || document.getElementById('matauang').value || 'IDR'; 
         var po1 = document.getElementById('po').value;  
         var tax1 = parseFloat(document.getElementById('pajak_h').value,10) || 0;
         var cbd1 = parseFloat(document.getElementById('ttl_dp_h').value,10) || 0;
@@ -1828,12 +1843,13 @@ if (!processedPO.includes(po)) {
         var matclass = document.getElementById('h_matclass').value;
         var n_code_category = document.getElementById('h_code_ctg').value;
         var cus_ctg = document.getElementById('h_cus_ctg').value;
+        var profit_center = $('select[name=profit_center] option').filter(':selected').val();
         //&& tgl_kbon_h >= tgl_kbon_p 
         if(total_h != '' && total_h >= 0 ){        
             $.ajax({
                 type:'POST',
                 url:'insertkbon_h.php',
-                data: {'no_kbon_h':no_kbon_h, 'tgl_kbon_h':tgl_kbon_h,'nama_supp_h':nama_supp_h, 'no_faktur_h':no_faktur_h, 'supp_inv_h':supp_inv_h, 'tgl_inv_h':tgl_inv_h, 'tgl_tempo_h':tgl_tempo_h, 'curr_h':curr_h, 'create_user_h':create_user_h, 'sub_h':sub_h, 'tax_h':tax_h, 'dp_h':dp_h, 'pph_h':pph_h, 'total_h':total_h, 'jml_return':jml_return, 'lr_kurs':lr_kurs, 's_qty':s_qty, 's_harga':s_harga, 'materai':materai, 'pot_beli':pot_beli, 'ekspedisi':ekspedisi, 'moq':moq, 'jml_potong':jml_potong, 'no_po_h':no_po_h, 'tgl_kbon_s':tgl_kbon_s, 'unik_code':unik_code, 'mattype':mattype, 'matclass':matclass, 'n_code_category':n_code_category, 'cus_ctg':cus_ctg},
+                data: {'no_kbon_h':no_kbon_h, 'tgl_kbon_h':tgl_kbon_h,'nama_supp_h':nama_supp_h, 'no_faktur_h':no_faktur_h, 'supp_inv_h':supp_inv_h, 'tgl_inv_h':tgl_inv_h, 'tgl_tempo_h':tgl_tempo_h, 'curr_h':curr_h, 'create_user_h':create_user_h, 'sub_h':sub_h, 'tax_h':tax_h, 'dp_h':dp_h, 'pph_h':pph_h, 'total_h':total_h, 'jml_return':jml_return, 'lr_kurs':lr_kurs, 's_qty':s_qty, 's_harga':s_harga, 'materai':materai, 'pot_beli':pot_beli, 'ekspedisi':ekspedisi, 'moq':moq, 'jml_potong':jml_potong, 'no_po_h':no_po_h, 'tgl_kbon_s':tgl_kbon_s, 'unik_code':unik_code, 'mattype':mattype, 'matclass':matclass, 'n_code_category':n_code_category, 'cus_ctg':cus_ctg, 'profit_center':profit_center},
                 cache: 'false',
                 close: function(e){
                     e.preventDefault();
@@ -1847,6 +1863,7 @@ if (!processedPO.includes(po)) {
                         var tgl_kbon_p = document.getElementById('tgl_perhitungan').value;
                         var jurnal = document.getElementById('jurnal').value;
                         var nama_supp = $('select[name=nama_supp] option').filter(':selected').val();
+                        var profit_center = $('select[name=profit_center] option').filter(':selected').val();
                         var no_faktur = document.getElementById('no_faktur').value;
                         var supp_inv = document.getElementById('txt_inv').value;
                         var tgl_inv = document.getElementById('txt_tglsi').value;
@@ -1878,10 +1895,20 @@ if (!processedPO.includes(po)) {
                         var cus_ctg = $(this).closest('#mytable tr').find('td:eq(18)').attr('value') || $(this).closest('#mytable1 tr').find('td:eq(11)').attr('valuess'); 
 
                         //table ftr 
-                        var no_ftr = $(this).closest('#mytable2 tr').find('td:eq(1)').attr('no-ftr');;
-                        var no_po_ftr = $(this).closest('#mytable2 tr').find('td:eq(2)').attr('po-ftr');;
-                        var tgl_po_ftr = $(this).closest('#mytable2 tr').find('td:eq(3)').attr('tglpo-ftr');;
-                        var no_pi_ftr = $(this).closest('#mytable2 tr').find('td:eq(4)').attr('pi-ftr');;
+                        var no_ftr = $(this).closest('#mytable2 tr').find('td:eq(1)').attr('no-ftr');
+                        var no_po_ftr = $(this).closest('#mytable2 tr').find('td:eq(2)').attr('po-ftr');
+                        var tgl_po_ftr = $(this).closest('#mytable2 tr').find('td:eq(3)').attr('tglpo-ftr');
+                        var no_pi_ftr = $(this).closest('#mytable2 tr').find('td:eq(4)').attr('pi-ftr');
+                        var ttl_ftr = parseFloat($(this).closest('#mytable2 tr').find('td:eq(6) input').val(),10) || 0;
+                        var curr_ftr = $(this).closest('#mytable2 tr').find('td:eq(7)').attr('curr-ftr');
+                        var kbon_ftr = $(this).closest('#mytable2 tr').find('td:eq(8)').attr('kbon-ftr');
+                        var tglkbon_ftr = $(this).closest('#mytable2 tr').find('td:eq(9)').attr('tglkbon-ftr');
+                        var lp_ftr = $(this).closest('#mytable2 tr').find('td:eq(10)').attr('lp-ftr');
+                        var tgllp_ftr = $(this).closest('#mytable2 tr').find('td:eq(11)').attr('tgllp-ftr');
+                        var pv_ftr = $(this).closest('#mytable2 tr').find('td:eq(12)').attr('pv-ftr');
+                        var bankout_ftr = $(this).closest('#mytable2 tr').find('td:eq(13)').attr('bankout-ftr');
+                        var bankoutdate_ftr = $(this).closest('#mytable2 tr').find('td:eq(14)').attr('bankoutdate-ftr');
+                        var coa_ftr = $(this).closest('#mytable2 tr').find('td:eq(15)').attr('coa-ftr');
 
                         var sum_pph = 0;
                         var sum_sub = 0;
@@ -1894,13 +1921,13 @@ if (!processedPO.includes(po)) {
                         sum_pph += sum_sub * (pph / 100);   
                         sum_total += total - sum_pph - sum_dp;
         // && tgl_kbon >= tgl_kbon_p
-        if(total != '' && total >= 0){        
+        if(total != '' && total >= 0){     
             $.ajax({
                 type:'POST',
                 url:'insertkbon.php',
                 data: {'no_kbon':no_kbon, 'tgl_kbon':tgl_kbon, 'jurnal':jurnal, 'no_bpb':no_bpb, 'no_po':no_po,  'no_ro':no_ro,
                 'nama_supp':nama_supp, 'tgl_bpb':tgl_bpb, 'no_faktur':no_faktur, 'supp_inv':supp_inv, 'tgl_inv':tgl_inv, 'tgl_tempo':tgl_tempo,
-                'curr':curr, 'ceklist':ceklist, 'cash':cash, 'create_user':create_user, 'sum_sub':sum_sub, 'sum_tax':sum_tax, 'sum_dp':sum_dp, 'sum_pph':sum_pph, 'sum_total':sum_total, 'start_date':start_date, 'end_date':end_date, 'pph':pph, 'idtax':idtax, 'tgl_po':tgl_po, 'ttl_ro':ttl_ro, 'no_bppb':no_bppb, 'unik_code':unik_code, 'mattype':mattype, 'matclass':matclass, 'n_code_category':n_code_category, 'cus_ctg':cus_ctg},
+                'curr':curr, 'ceklist':ceklist, 'cash':cash, 'create_user':create_user, 'sum_sub':sum_sub, 'sum_tax':sum_tax, 'sum_dp':sum_dp, 'sum_pph':sum_pph, 'sum_total':sum_total, 'start_date':start_date, 'end_date':end_date, 'pph':pph, 'idtax':idtax, 'tgl_po':tgl_po, 'ttl_ro':ttl_ro, 'no_bppb':no_bppb, 'unik_code':unik_code, 'mattype':mattype, 'matclass':matclass, 'n_code_category':n_code_category, 'cus_ctg':cus_ctg, 'no_ftr':no_ftr, 'no_po_ftr':no_po_ftr, 'tgl_po_ftr':tgl_po_ftr, 'no_pi_ftr':no_pi_ftr, 'ttl_ftr':ttl_ftr, 'curr_ftr':curr_ftr, 'kbon_ftr':kbon_ftr, 'tglkbon_ftr':tglkbon_ftr, 'lp_ftr':lp_ftr, 'tgllp_ftr':tgllp_ftr, 'pv_ftr':pv_ftr, 'bankout_ftr':bankout_ftr, 'bankoutdate_ftr':bankoutdate_ftr, 'coa_ftr':coa_ftr, 'profit_center':profit_center},
                 cache: 'false',
                 close: function(e){
                     e.preventDefault();
@@ -1916,6 +1943,7 @@ if (!processedPO.includes(po)) {
                 alert(xhr);
             }
         });
+            // console.log(data);
         }
     });
 console.log(response);

@@ -60,6 +60,8 @@ $querys = mysqli_query($conn2,$sqls);
 $sqlssas = "update return_kb set status = '$status' where no_kbon = '$no_kbon'";
 $queryssas = mysqli_query($conn2,$sqlssas);
 
+$query5 = mysqli_query($conn2,"update kontrabon_ftr set status = 'Cancel' where no_kbon = '$no_kbon'");
+
 $sql1 = "update kartu_hutang set no_kbon='$kbon', tgl_kbon='$tglkbon', supp_inv='$supp_inv', tgl_inv='$tgl_inv', no_faktur='$no_faktur', tgl_tempo='$tgl_tempo', create_date='$confirm_date2', pph='$pph_value' where no_kbon = '$no_kbon'";
 $query1 = mysqli_query($conn2,$sql1);
 

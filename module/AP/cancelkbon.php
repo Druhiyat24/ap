@@ -24,7 +24,9 @@ if($execute){
 	$query3 = mysqli_query($conn2,"update potongan set status = 'Cancel' where no_kbon = '$no_kbon'");
 
 	$query4 = mysqli_query($conn2,"update bppb_new set is_invoiced = 'Waiting', no_kbon = null where no_kbon = '$no_kbon'");
-	// $query3 = mysqli_query($conn2,"delete from detail where no_kbon = '$no_kbon'");
+
+	$query5 = mysqli_query($conn2,"update kontrabon_ftr set status = 'Cancel' where no_kbon = '$no_kbon'");
+		// $query3 = mysqli_query($conn2,"delete from detail where no_kbon = '$no_kbon'");
 
 	$sql1 = mysqli_query($conn2,"select list_payment_cbd.no_kbon as no_kbon, list_payment_cbd.no_po as no_po, kontrabon_h.dp_value as amount, list_payment_cbd.amount_update as balance from list_payment_cbd inner join kontrabon_h on kontrabon_h.no_po = list_payment_cbd.no_po where kontrabon_h.no_kbon = '$no_kbon' group by kontrabon_h.no_kbon");
 $row = mysqli_fetch_array($sql1);

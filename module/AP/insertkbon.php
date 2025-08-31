@@ -46,6 +46,23 @@ $matclass = $_POST['matclass'];
 $n_code_category = $_POST['n_code_category'];
 $cus_ctg = $_POST['cus_ctg'];
 
+$no_ftr = $_POST['no_ftr'];
+$no_po_ftr = $_POST['no_po_ftr'];
+$tgl_po_ftr = date("Y-m-d",strtotime($_POST['tgl_po_ftr']));
+$no_pi_ftr = $_POST['no_pi_ftr'];
+$ttl_ftr = $_POST['ttl_ftr'];
+$curr_ftr = $_POST['curr_ftr'];
+$kbon_ftr = $_POST['kbon_ftr'];
+$tglkbon_ftr = date("Y-m-d",strtotime($_POST['tglkbon_ftr']));
+$lp_ftr = $_POST['lp_ftr'];
+$tgllp_ftr = date("Y-m-d",strtotime($_POST['tgllp_ftr']));
+$pv_ftr = $_POST['pv_ftr'];
+$bankout_ftr = $_POST['bankout_ftr'];
+$bankoutdate_ftr = date("Y-m-d",strtotime($_POST['bankoutdate_ftr']));
+$coa_ftr = $_POST['coa_ftr'];
+
+$profit_center = $_POST['profit_center'];
+
 // echo $no_ro;
 
 $sql123 = mysqli_query($conn2,"select no_kbon, no_bpb from kontrabon where no_kbon = '$no_kbon' and no_bpb = '$no_bpb' and status != 'Cancel'");
@@ -54,198 +71,228 @@ $dup_kbon = $row123['no_kbon'];
 $dup_bpb = $row123['no_bpb'];
 
 $sqlnkb = mysqli_query($conn2,"select no_kbon from kontrabon_h where unik_code = '$unik_code'");
- $rownkb = mysqli_fetch_array($sqlnkb);
- $kode = $rownkb['no_kbon'];
+$rownkb = mysqli_fetch_array($sqlnkb);
+$kode = $rownkb['no_kbon'];
+
+
+$kata1 = "KONTRABON";
+// $supp = $nama_supp.toUpperCase();
+
+$keter = $kata1 ." ". $nama_supp;
 
 
 if ($dup_kbon != null && $dup_bpb == $no_bpb) {
 	echo '';
 }else{
 
-$sql1 = mysqli_query($conn2,"select no_kbon from kontrabon_dp where no_bpb = '$no_bpb'");
-while($row = mysqli_fetch_array($sql1)){
-$kbon = $row['no_kbon'];
+	$sql1 = mysqli_query($conn2,"select no_kbon from kontrabon_dp where no_bpb = '$no_bpb'");
+	while($row = mysqli_fetch_array($sql1)){
+		$kbon = $row['no_kbon'];
 
-if($sum_dp != '0'){
-	echo '';
-}else{
-$sql11 = "update ftr_dp set status='$status_update' where no_po='$no_po'";
-$query11 = mysqli_query($conn2,$sql11);
+		if($sum_dp != '0'){
+			echo '';
+		}else{
+			$sql11 = "update ftr_dp set status='$status_update' where no_po='$no_po'";
+			$query11 = mysqli_query($conn2,$sql11);
 
-$sql111 = "update kontrabon_dp set status='$status_update' where no_po='$no_po'";
-$query111 = mysqli_query($conn2,$sql111);
+			$sql111 = "update kontrabon_dp set status='$status_update' where no_po='$no_po'";
+			$query111 = mysqli_query($conn2,$sql111);
 
-$sql1111 = "update list_payment_dp set status='$status_update' where no_po='$no_po'";
-$query1111 = mysqli_query($conn2,$sql1111);
+			$sql1111 = "update list_payment_dp set status='$status_update' where no_po='$no_po'";
+			$query1111 = mysqli_query($conn2,$sql1111);
 
-$sql11111 = "update kontrabon_h_dp set status='$status_update' where no_kbon='$kbon'";
-$query11111 = mysqli_query($conn2,$sql11111);
+			$sql11111 = "update kontrabon_h_dp set status='$status_update' where no_kbon='$kbon'";
+			$query11111 = mysqli_query($conn2,$sql11111);
 
-}
-}
+		}
+	}
+
+
+	if($no_ftr != '' ){
+		$query_ftr = "INSERT INTO kontrabon_ftr (no_kbon, tgl_kbon, nama_supp, no_ftr, no_po, tgl_po,no_pi, curr, total_ftr, no_pv, no_bankout, tgl_bankout, no_coa, status, created_by, created_date) 
+		VALUES 
+		('$kode', '$tgl_kbon', '$nama_supp', '$no_ftr', '$no_po_ftr', '$tgl_po_ftr', '$no_pi_ftr', '$curr_ftr', '$ttl_ftr', '$pv_ftr', '$bankout_ftr', '$bankoutdate_ftr', '$coa_ftr', '$status', '$create_user', '$create_date')";
+
+		$execute_ftr = mysqli_query($conn2,$query_ftr);
+
+		$sqlcoa_ftr = mysqli_query($conn1,"SELECT no_coa, nama_coa from mastercoa_v2 where no_coa = '$coa_ftr' Limit 1");
+		$rowcoa_ftr = mysqli_fetch_array($sqlcoa_ftr);
+		$no_coa_ftr = $rowcoa_ftr['no_coa'];
+		$nama_coa_ftr = $rowcoa_ftr['nama_coa'];
+
+		if ($curr_ftr != 'IDR') {
+			$sqlftr = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where tanggal = '$bankout_ftr' and v_codecurr = 'PAJAK' and curr = '$curr_ftr'");
+			$rowftr = mysqli_fetch_array($sqlftr);
+			$rate_ftr = isset($rowftr['rate']) ? $rowftr['rate'] : 1;
+		}else{
+			$rate_ftr = 1;
+		}
+
+		$ttl_ftr_idr = $ttl_ftr * $rate_ftr;
+
+		$jurnal_ftr = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+		VALUES 
+		('$kode', '$create_date', 'AP - Kontrabon', '$no_coa_ftr', '$nama_coa_ftr', '-', '-', '$no_ftr', '', '-', '-', '$curr_ftr', '$rate_ftr', '0', '$ttl_ftr', '0', '$ttl_ftr_idr', 'Draft', '$keter','$create_user', '$create_date', '', '', '', '', '$profit_center')";
+
+		$execute_jurnal_ftr = mysqli_query($conn2,$jurnal_ftr);
+	}
+
+
+	if(isset($ceklist) && $no_bpb != '' ){	
+		$query = "INSERT INTO kontrabon (no_kbon, tgl_kbon, id_jurnal, nama_supp, no_faktur, no_bpb, no_po, tgl_bpb,tgl_po, supp_inv, tgl_inv, tgl_tempo, subtotal, tax, idtax, pph_code, pph_value, total, dp_value, curr, ceklist, post_date, update_date, status, status_int, create_user, create_date, start_date, end_date) 
+		VALUES 
+		('$kode', '$tgl_kbon', '$jurnal', '$nama_supp', '$no_faktur', '$no_bpb', '$no_po', '$tgl_bpb', '$tgl_po', '$supp_inv', '$tgl_inv', '$tgl_tempo', '$sum_sub', '$sum_tax', '$idtax', '$pph', '$sum_pph', '$sum_total', '$sum_dp', '$curr', '$ceklist', '$post_date', '$update_date', '$status', '$status_int', '$create_user', '$create_date', '$start_date', '$end_date')";
+		$execute = mysqli_query($conn2,$query);
+		$squerys = mysqli_query($conn2,"update bppb_new set is_invoiced = '$status_invoice', no_kbon = '$no_kbon' where no_ro= '$no_ro'");
+
+		if ($curr != 'IDR') {
+			$sqlx = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where tanggal = '$tgl_bpb' and v_codecurr = 'PAJAK'");
+			$rowx = mysqli_fetch_array($sqlx);
+			$h_rate = isset($rowx['rate']) ? $rowx['rate'] : 0;
+
+			if($h_rate == 0){
+				$sqly = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where id = (select max(id) as id FROM masterrate where v_codecurr = 'PAJAK') and v_codecurr = 'PAJAK'");
+				$rowy = mysqli_fetch_array($sqly);
+				$rate = $rowy['rate'];
+				$tglrate = $rowy['tanggal'];
+			}else{
+				$rate = $h_rate;
+			}
+		}else{
+			$rate = 1;
+		}
+
+		$idr_sub = $sum_dpp * $rate;
+		$idr_tax = $sum_tax * $rate;
+		$idr_ttl_ro = $ttl_ro * $rate;
+
+		$sqlcoa = mysqli_query($conn1,"SELECT no_coa, nama_coa from mastercoa_v2 where cus_ctg like '%$cus_ctg%' and mattype like '%$mattype%' and matclass like '%$matclass%' and n_code_category like '%$n_code_category%' and inv_type like '%bpb_credit%' Limit 1");
+		$rowcoa = mysqli_fetch_array($sqlcoa);
+		$no_coa_deb = $rowcoa['no_coa'];
+		$nama_coa_deb = $rowcoa['nama_coa'];
+
+		$querykbon1 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+		VALUES 
+		('$kode', '$create_date', 'AP - Kontrabon', '$no_coa_deb', '$nama_coa_deb', '-', '-','$no_bpb', '$tgl_bpb', '-', '-', '$curr', '$rate', '$sum_dpp', '0', '$idr_sub', '0', 'Draft', '$keter', '$create_user', '$create_date', '', '', '', '', '$profit_center')";
+
+		$executekbon1 = mysqli_query($conn2,$querykbon1);
+
+		if ($sum_tax > 0) {
+			$sqlcoa3 = mysqli_query($conn1,"SELECT no_coa, nama_coa from mastercoa_v2 where inv_type like '%PPN MASUKAN%' Limit 1");
+			$rowcoa3 = mysqli_fetch_array($sqlcoa3);
+			$no_coa_ppn = $rowcoa3['no_coa'];
+			$nama_coa_ppn = $rowcoa3['nama_coa'];
+
+
+			$queryss4 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+			VALUES 
+			('$kode', '$create_date', 'AP - Kontrabon', '$no_coa_ppn', '$nama_coa_ppn', '-', '-', '$no_bpb', '$tgl_bpb', '-', '-', '$curr', '$rate', '0', '$sum_tax', '0', '$idr_tax', 'Draft', '$keter','$create_user', '$create_date', '', '', '', '', '$profit_center')";
+
+			$executess4 = mysqli_query($conn2,$queryss4);
+
+		}else{
+
+		}
 
 
 
-if(isset($ceklist) && $no_bpb != '' ){	
-$query = "INSERT INTO kontrabon (no_kbon, tgl_kbon, id_jurnal, nama_supp, no_faktur, no_bpb, no_po, tgl_bpb,tgl_po, supp_inv, tgl_inv, tgl_tempo, subtotal, tax, idtax, pph_code, pph_value, total, dp_value, curr, ceklist, post_date, update_date, status, status_int, create_user, create_date, start_date, end_date) 
-VALUES 
-	('$kode', '$tgl_kbon', '$jurnal', '$nama_supp', '$no_faktur', '$no_bpb', '$no_po', '$tgl_bpb', '$tgl_po', '$supp_inv', '$tgl_inv', '$tgl_tempo', '$sum_sub', '$sum_tax', '$idtax', '$pph', '$sum_pph', '$sum_total', '$sum_dp', '$curr', '$ceklist', '$post_date', '$update_date', '$status', '$status_int', '$create_user', '$create_date', '$start_date', '$end_date')";
-$execute = mysqli_query($conn2,$query);
-$squerys = mysqli_query($conn2,"update bppb_new set is_invoiced = '$status_invoice', no_kbon = '$no_kbon' where no_ro= '$no_ro'");
+	}
 
-if ($curr != 'IDR') {
-$sqlx = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where tanggal = '$tgl_bpb' and v_codecurr = 'PAJAK'");
-$rowx = mysqli_fetch_array($sqlx);
-$h_rate = isset($rowx['rate']) ? $rowx['rate'] : 0;
+	if($no_ro != ''){
+		$queryess = "INSERT INTO return_kb (no_kbon, no_ro, no_bpbrtn, total_ro, status) 
+		VALUES 
+		('$kode', '$no_ro', '$no_bppb', '$ttl_ro', '$status')";
+		$executeess = mysqli_query($conn2,$queryess);
 
-if($h_rate == 0){
-$sqly = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where id = (select max(id) as id FROM masterrate where v_codecurr = 'PAJAK') and v_codecurr = 'PAJAK'");
-$rowy = mysqli_fetch_array($sqly);
-$rate = $rowy['rate'];
-$tglrate = $rowy['tanggal'];
-}else{
-	$rate = $h_rate;
-}
-}else{
-	$rate = 1;
-}
+		$squery_bppb = mysqli_query($conn2,"update bppb_new set no_kbon = '$kode' where no_bppb = '$no_bppb';");
 
-$idr_sub = $sum_dpp * $rate;
-$idr_tax = $sum_tax * $rate;
-$idr_ttl_ro = $ttl_ro * $rate;
+		if ($curr != 'IDR') {
+			$sqlx = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where tanggal = '$tgl_bpb' and v_codecurr = 'PAJAK'");
+			$rowx = mysqli_fetch_array($sqlx);
+			$h_rate = isset($rowx['rate']) ? $rowx['rate'] : 0;
 
-$kata1 = "KONTRABON";
+			if($h_rate == 0){
+				$sqly = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where id = (select max(id) as id FROM masterrate where v_codecurr = 'PAJAK') and v_codecurr = 'PAJAK'");
+				$rowy = mysqli_fetch_array($sqly);
+				$rate = $rowy['rate'];
+				$tglrate = $rowy['tanggal'];
+			}else{
+				$rate = $h_rate;
+			}
+		}else{
+			$rate = 1;
+		}
+
+		$idr_sub = $sum_dpp * $rate;
+		$idr_tax = $sum_tax * $rate;
+		$idr_ttl_ro = $ttl_ro * $rate;
+
+		$kata1 = "KONTRABON";
 // $supp = $nama_supp.toUpperCase();
 
-$keter = $kata1 ." ". $nama_supp;
+		$keter = $kata1 ." ". $nama_supp;
 
-$sqlcoa = mysqli_query($conn1,"SELECT no_coa, nama_coa from mastercoa_v2 where cus_ctg like '%$cus_ctg%' and mattype like '%$mattype%' and matclass like '%$matclass%' and n_code_category like '%$n_code_category%' and inv_type like '%bpb_credit%' Limit 1");
-$rowcoa = mysqli_fetch_array($sqlcoa);
-$no_coa_deb = $rowcoa['no_coa'];
-$nama_coa_deb = $rowcoa['nama_coa'];
-
-$querykbon1 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
-VALUES 
-   ('$kode', '$create_date', 'AP - Kontrabon', '$no_coa_deb', '$nama_coa_deb', '-', '-','$no_bpb', '$tgl_bpb', '-', '-', '$curr', '$rate', '$sum_dpp', '0', '$idr_sub', '0', 'Draft', '$keter', '$create_user', '$create_date', '', '', '', '')";
-
-$executekbon1 = mysqli_query($conn2,$querykbon1);
-
-if ($sum_tax > 0) {
-	$sqlcoa3 = mysqli_query($conn1,"SELECT no_coa, nama_coa from mastercoa_v2 where inv_type like '%PPN MASUKAN%' Limit 1");
-$rowcoa3 = mysqli_fetch_array($sqlcoa3);
-$no_coa_ppn = $rowcoa3['no_coa'];
-$nama_coa_ppn = $rowcoa3['nama_coa'];
-
-
-$queryss4 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
-VALUES 
-   ('$kode', '$create_date', 'AP - Kontrabon', '$no_coa_ppn', '$nama_coa_ppn', '-', '-', '$no_bpb', '$tgl_bpb', '-', '-', '$curr', '$rate', '0', '$sum_tax', '0', '$idr_tax', 'Draft', '$keter','$create_user', '$create_date', '', '', '', '')";
-
- $executess4 = mysqli_query($conn2,$queryss4);
-
-}else{
-
-}
+		$sqlbppb = mysqli_query($conn1,"select tgl_bppb,tax,round(sum((qty*price) * tax / 100),2) tax_ro from bppb_new where no_bppb = '$no_bppb' GROUP BY no_bppb");
+		$rowbppb = mysqli_fetch_array($sqlbppb);
+		$tgl_bppb = isset($rowbppb['tgl_bppb']) ? $rowbppb['tgl_bppb'] : 0;
+		$val_tax_ro = isset($rowbppb['tax']) ? $rowbppb['tax'] : 0;
+		$tax_ro = isset($rowbppb['tax_ro']) ? $rowbppb['tax_ro'] : 0;
+		$idr_tax_ro = $tax_ro * $rate;
 
 
 
-}
-
-if($no_ro != ''){
-$queryess = "INSERT INTO return_kb (no_kbon, no_ro, no_bpbrtn, total_ro, status) 
-VALUES 
-	('$kode', '$no_ro', '$no_bppb', '$ttl_ro', '$status')";
-$executeess = mysqli_query($conn2,$queryess);
-
-$squery_bppb = mysqli_query($conn2,"update bppb_new set no_kbon = '$kode' where no_bppb = '$no_bppb';");
-
-if ($curr != 'IDR') {
-$sqlx = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where tanggal = '$tgl_bpb' and v_codecurr = 'PAJAK'");
-$rowx = mysqli_fetch_array($sqlx);
-$h_rate = isset($rowx['rate']) ? $rowx['rate'] : 0;
-
-if($h_rate == 0){
-$sqly = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where id = (select max(id) as id FROM masterrate where v_codecurr = 'PAJAK') and v_codecurr = 'PAJAK'");
-$rowy = mysqli_fetch_array($sqly);
-$rate = $rowy['rate'];
-$tglrate = $rowy['tanggal'];
-}else{
-	$rate = $h_rate;
-}
-}else{
-	$rate = 1;
-}
-
-$idr_sub = $sum_dpp * $rate;
-$idr_tax = $sum_tax * $rate;
-$idr_ttl_ro = $ttl_ro * $rate;
-
-$kata1 = "KONTRABON";
-// $supp = $nama_supp.toUpperCase();
-
-$keter = $kata1 ." ". $nama_supp;
-
-$sqlbppb = mysqli_query($conn1,"select tgl_bppb,tax,round(sum((qty*price) * tax / 100),2) tax_ro from bppb_new where no_bppb = '$no_bppb' GROUP BY no_bppb");
-$rowbppb = mysqli_fetch_array($sqlbppb);
-$tgl_bppb = isset($rowbppb['tgl_bppb']) ? $rowbppb['tgl_bppb'] : 0;
-$val_tax_ro = isset($rowbppb['tax']) ? $rowbppb['tax'] : 0;
-$tax_ro = isset($rowbppb['tax_ro']) ? $rowbppb['tax_ro'] : 0;
-$idr_tax_ro = $tax_ro * $rate;
+		$sqlcoa = mysqli_query($conn1,"SELECT no_coa, nama_coa from mastercoa_v2 where cus_ctg like '%$cus_ctg%' and mattype like '%$mattype%' and matclass like '%$matclass%' and n_code_category like '%$n_code_category%' and inv_type like '%bpb_credit%' Limit 1");
+		$rowcoa = mysqli_fetch_array($sqlcoa);
+		$no_coa_deb = $rowcoa['no_coa'];
+		$nama_coa_deb = $rowcoa['nama_coa'];
 
 
+		$queryss5 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+		VALUES 
+		('$kode', '$create_date', 'AP - Kontrabon', '$no_coa_deb', '$nama_coa_deb', '-', '-', '$no_bppb', '$tgl_bppb', '-', '-', '$curr', '$rate', '0', '$ttl_ro', '0', '$idr_ttl_ro', 'Draft', '$keter','$create_user', '$create_date', '', '', '', '', '$profit_center')";
 
-$sqlcoa = mysqli_query($conn1,"SELECT no_coa, nama_coa from mastercoa_v2 where cus_ctg like '%$cus_ctg%' and mattype like '%$mattype%' and matclass like '%$matclass%' and n_code_category like '%$n_code_category%' and inv_type like '%bpb_credit%' Limit 1");
-$rowcoa = mysqli_fetch_array($sqlcoa);
-$no_coa_deb = $rowcoa['no_coa'];
-$nama_coa_deb = $rowcoa['nama_coa'];
+		$executess5 = mysqli_query($conn2,$queryss5);
 
+		if ($val_tax_ro > 0) {
 
-$queryss5 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
-VALUES 
-   ('$kode', '$create_date', 'AP - Kontrabon', '$no_coa_deb', '$nama_coa_deb', '-', '-', '$no_bppb', '$tgl_bppb', '-', '-', '$curr', '$rate', '0', '$ttl_ro', '0', '$idr_ttl_ro', 'Draft', '$keter','$create_user', '$create_date', '', '', '', '')";
+			$queryss6 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+			VALUES 
+			('$kode', '$create_date', 'AP - Kontrabon', '1.52.07', 'PAJAK DIBAYAR DIMUKA PPN MASUKAN (UNBILLED)', '-', '-', '$no_bppb', '$tgl_bppb', '-', '-', '$curr', '$rate', '$tax_ro', '0', '$idr_tax_ro', '0', 'Draft', '$keter','$create_user', '$create_date', '', '', '', '', '$profit_center')";
 
- $executess5 = mysqli_query($conn2,$queryss5);
+			$executess6 = mysqli_query($conn2,$queryss6);
 
- if ($val_tax_ro > 0) {
-	
-$queryss6 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
-VALUES 
-   ('$kode', '$create_date', 'AP - Kontrabon', '1.52.07', 'PAJAK DIBAYAR DIMUKA PPN MASUKAN (UNBILLED)', '-', '-', '$no_bppb', '$tgl_bppb', '-', '-', '$curr', '$rate', '$tax_ro', '0', '$idr_tax_ro', '0', 'Draft', '$keter','$create_user', '$create_date', '', '', '', '')";
+			$queryss7 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+			VALUES 
+			('$kode', '$create_date', 'AP - Kontrabon', '1.52.04', 'PAJAK DIBAYAR DIMUKA PPN MASUKAN', '-', '-', '$no_bppb', '$tgl_bppb', '-', '-', '$curr', '$rate', '0', '$tax_ro', '0', '$idr_tax_ro', 'Draft', '$keter','$create_user', '$create_date', '', '', '', '', '$profit_center')";
 
- $executess6 = mysqli_query($conn2,$queryss6);
+			$executess7 = mysqli_query($conn2,$queryss7);
 
- $queryss7 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
-VALUES 
-   ('$kode', '$create_date', 'AP - Kontrabon', '1.52.04', 'PAJAK DIBAYAR DIMUKA PPN MASUKAN', '-', '-', '$no_bppb', '$tgl_bppb', '-', '-', '$curr', '$rate', '0', '$tax_ro', '0', '$idr_tax_ro', 'Draft', '$keter','$create_user', '$create_date', '', '', '', '')";
-
- $executess7 = mysqli_query($conn2,$queryss7);
-
-}
+		}
 
 
-}else{
-	echo '';
-}
+	}else{
+		echo '';
+	}
 
-if($execute){
+	if($execute){
 
-$squery = mysqli_query($conn2,"update bpb_new set is_invoiced = '$status_invoice' where no_bpb= '$no_bpb'");
-$squerysss = mysqli_query($conn2,"delete from kontrabon where no_bpb = '' and no_po = '' ");
-$sql2 = mysqli_query($conn2,"select no_po from list_payment_cbd where no_po = '$no_po'");
-$row = mysqli_fetch_array($sql2);
-$nopo = $row['no_po'];
-$update_amount = $cash - $sum_dp;
+		$squery = mysqli_query($conn2,"update bpb_new set is_invoiced = '$status_invoice' where no_bpb= '$no_bpb'");
+		$squerysss = mysqli_query($conn2,"delete from kontrabon where no_bpb = '' and no_po = '' ");
+		$sql2 = mysqli_query($conn2,"select no_po from list_payment_cbd where no_po = '$no_po'");
+		$row = mysqli_fetch_array($sql2);
+		$nopo = $row['no_po'];
+		$update_amount = $cash - $sum_dp;
 // $sql3 = "update kontrabon_h_cbd set amount_update = '$update_amount' where no_po = '$no_po' and status = 'Approved'";
 // $exec = mysqli_query($conn2,$sql3);
 
-$sql1 = "update kartu_hutang set no_kbon='$no_kbon' where no_bpb = '$no_bpb' and no_po='$no_po'";
-$query1 = mysqli_query($conn2,$sql1);
+		$sql1 = "update kartu_hutang set no_kbon='$no_kbon' where no_bpb = '$no_bpb' and no_po='$no_po'";
+		$query1 = mysqli_query($conn2,$sql1);
 
-$sqlac = "update status set no_kbon='$no_kbon',tgl_kbon = '$tgl_kbon' where no_bpb = '$no_bpb'";
-$queryac = mysqli_query($conn2,$sqlac);
+		$sqlac = "update status set no_kbon='$no_kbon',tgl_kbon = '$tgl_kbon' where no_bpb = '$no_bpb'";
+		$queryac = mysqli_query($conn2,$sqlac);
+	}
 }
-}
-	
+
 
 mysqli_close($conn2);
 //$execute = mysql_query($query,$conn2);
