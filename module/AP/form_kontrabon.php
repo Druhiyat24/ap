@@ -56,7 +56,7 @@
                             $start_date ='';
                             $end_date ='';
                             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                                $tanggal = date("Y-m-d",strtotime($_POST['tanggal']));
+                                $tanggal = date("Y-m-d",strtotime($_POST['tanggal_kbn']));
                                 $start_date = date("Y-m-d",strtotime($_POST['start_date']));
                                 $end_date = date("Y-m-d",strtotime($_POST['end_date']));
                             }
@@ -79,7 +79,7 @@
                         $start_date ='';
                         $end_date ='';
                         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                            $startdate = date("Y-m-d",strtotime($_POST['tanggal']));
+                            $startdate = date("Y-m-d",strtotime($_POST['tanggal_kbn']));
                             $start_date = date("Y-m-d",strtotime($_POST['start_date']));
                             $end_date = date("Y-m-d",strtotime($_POST['end_date']));
                         }
@@ -127,7 +127,7 @@
                         $start_date ='';
                         $end_date ='';
                         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                            $tkbon = date("Y-m-d",strtotime($_POST['tanggal']));
+                            $tkbon = date("Y-m-d",strtotime($_POST['tanggal_kbn']));
                         }     
 
                         if(!empty($tkbon)) {
@@ -205,7 +205,7 @@
                         $start_date ='';
                         $end_date ='';
                         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                            $startdate = date("Y-m-d",strtotime($_POST['tanggal']));
+                            $startdate = date("Y-m-d",strtotime($_POST['tanggal_kbn']));
                             $start_date = date("Y-m-d",strtotime($_POST['start_date']));
                             $end_date = date("Y-m-d",strtotime($_POST['end_date']));
                         }
@@ -886,6 +886,7 @@
         </div>
 
         <input type="hidden" style="font-size: 13px;" name="h_profit_center" id="h_profit_center" class="form-control form-control-sm" value="">
+        <input type="hidden" style="font-size: 13px;" name="tanggal_kbn" id="tanggal_kbn" class="form-control form-control-sm" value="">
 
         <!-- BPB Date -->
         <div class="form-group">
@@ -978,6 +979,8 @@
             document.getElementById("profit_center").value = savedPc;
             updateNoKontraBon();
         }
+            let tanggal = document.getElementById('tanggal').value;
+            ubahtanggal(tanggal);
     });
 
     document.getElementById("profit_center").addEventListener("change", function() {
@@ -1015,6 +1018,7 @@
     $(document).ready(function() {
         $("#mysupp").on("click", function() {
             let profit_center = $('select[name=profit_center] option').filter(':selected').val();
+            let tanggal = document.getElementById('tanggal').value;
 
             if(profit_center == ""){
                 alert("Please Input Profit Center.");
@@ -1023,6 +1027,7 @@
             }
 
             $('#h_profit_center').val(profit_center);
+            $('#tanggal_kbn').val(tanggal);
 
             $("#mymodal").modal("show");
         });
@@ -1860,6 +1865,7 @@ if (!processedPO.includes(po)) {
                     e.preventDefault();
                 },
                 success: function(response){
+                    localStorage.removeItem("profit_center");
                     $("input[type=checkbox]:checked").each(function () {
                         //header
                         var no_kbon = document.getElementById('nokontrabon').value; 
