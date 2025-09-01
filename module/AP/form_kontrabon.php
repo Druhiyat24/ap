@@ -310,8 +310,9 @@
                                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     $start_date = date("Y-m-d",strtotime($_POST['start_date']));
                                     $end_date = date("Y-m-d",strtotime($_POST['end_date']));
-                                    $profit_center = isset($_POST['profit_center']) ? $_POST['profit_center']: null;
+                                    $profit_center = isset($_POST['h_profit_center']) ? $_POST['h_profit_center']: null;
                                 }
+                                // echo $profit_center;
                                 $querys = mysqli_query($conn2,"select distinct (no_bpb) from bpb_new");
                                 $rows = mysqli_fetch_array($querys);
                                 $no_bpb = isset($rows['no_bpb']) ?  $rows['no_bpb'] : null;
@@ -322,7 +323,7 @@
                                     $persen .= '<option data-idtax="'.$rs['idtax'].'" value="'.$rs['percentage'].'">'.$rs['kriteria'].'</option>';
                                 }                        
 
-                                $sql = mysqli_query($conn2,"select a.no_bpb,a.curr, a.pono, a.tgl_bpb, a.tgl_po, SUM(a.qty * a.price) as sub, if(a.qty is null,SUM((a.qty * a.price) * (a.tax / 100)) ,SUM(((a.qty) * a.price) * (a.tax / 100))) as tax, if(a.qty is null,SUM((a.qty * a.price) + ((a.qty * a.price) * (a.tax / 100))) ,SUM((a.qty * a.price) + (((a.qty) * a.price) * (a.tax / 100)))) as total, a.top, a.confirm1, a.confirm2, a.supplier, a.tgl_po,a.id_item,a.id_supplier,b.mattype,if(b.matclass like '%ACCESORIES%','ACCESORIES',b.matclass) matclass,if(b.n_code_category is null,'-',b.n_code_category) n_code_category from bpb_new a INNER JOIN masteritem b on b.id_item = a.id_item  where a.supplier = '$nama_supp' and a.tgl_bpb between '$start_date' and '$end_date' and a.is_invoiced != 'Invoiced' and a.confirm2 != '' and status != 'Cancel' group by a.no_bpb");
+                                $sql = mysqli_query($conn2,"select a.no_bpb,a.curr, a.pono, a.tgl_bpb, a.tgl_po, SUM(a.qty * a.price) as sub, if(a.qty is null,SUM((a.qty * a.price) * (a.tax / 100)) ,SUM(((a.qty) * a.price) * (a.tax / 100))) as tax, if(a.qty is null,SUM((a.qty * a.price) + ((a.qty * a.price) * (a.tax / 100))) ,SUM((a.qty * a.price) + (((a.qty) * a.price) * (a.tax / 100)))) as total, a.top, a.confirm1, a.confirm2, a.supplier, a.tgl_po,a.id_item,a.id_supplier,b.mattype,if(b.matclass like '%ACCESORIES%','ACCESORIES',b.matclass) matclass,if(b.n_code_category is null,'-',b.n_code_category) n_code_category from bpb_new a INNER JOIN masteritem b on b.id_item = a.id_item  where a.supplier = '$nama_supp' and a.tgl_bpb between '$start_date' and '$end_date' and a.is_invoiced != 'Invoiced' and a.confirm2 != '' and status != 'Cancel' and a.profit_center = '$profit_center' group by a.no_bpb");
 
 
                                 while($row = mysqli_fetch_array($sql)){
@@ -884,6 +885,8 @@
             </select>
         </div>
 
+        <input type="hidden" style="font-size: 13px;" name="h_profit_center" id="h_profit_center" class="form-control form-control-sm" value="">
+
         <!-- BPB Date -->
         <div class="form-group">
             <label><b>BPB Date</b></label>
@@ -1018,6 +1021,8 @@
                 $("#profit_center").focus();
                 return;
             }
+
+            $('#h_profit_center').val(profit_center);
 
             $("#mymodal").modal("show");
         });
