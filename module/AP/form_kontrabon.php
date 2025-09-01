@@ -1254,6 +1254,7 @@ function myFunction2() {
             success: function(response) { 
                 // console.log(response);
                 $('#nokontrabon').val(response); 
+                updateNoKontraBon(); 
             }
         });
     // result.setDate(result.getDate() + txt_top);
