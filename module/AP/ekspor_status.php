@@ -4,41 +4,39 @@
 </head>
 <body>
     <style type="text/css">
-    body{
-        font-family: sans-serif;
-    }
-    table{
-        margin: 20px auto;
-        border-collapse: collapse;
-    }
-    table th,
-    table td{
-        border: 1px solid #3c3c3c;
-        padding: 3px 8px;
- 
-    }
-    a{
-        background: blue;
-        color: #fff;
-        padding: 8px 10px;
-        text-decoration: none;
-        border-radius: 2px;
-    }
+        body{
+            font-family: sans-serif;
+        }
+        table{
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        table th,
+        table td{
+            border: 1px solid #3c3c3c;
+            padding: 3px 8px;
+
+        }
+        a{
+            background: blue;
+            color: #fff;
+            padding: 8px 10px;
+            text-decoration: none;
+            border-radius: 2px;
+        }
     </style>
- 
+
     <?php
     header("Content-type: application/vnd-ms-excel");
-    header("Content-Disposition: attachment; filename=Status.xls");
+    header("Content-Disposition: attachment; filename=Status Information.xls");
     $nama_supp=$_GET['nama_supp'];
     $filter=$_GET['filter'];
     $start_date = date("d F Y",strtotime($_GET['start_date']));
     $end_date = date("d F Y",strtotime($_GET['end_date'])); ?>
 
-    <center>
         <h4>STATUS INFORMATION <?php echo $nama_supp; ?><br/> PERIODE <?php echo $start_date; ?> - <?php echo $end_date; ?></h4>
-    </center>
     FILTER DATE: <?php echo $filter; ?>
- 
+
     <table style="width:100%;font-size:10px;" border="1" >
         <tr>
             <th style="text-align: center; vertical-align: middle;">No</th>
@@ -46,6 +44,7 @@
             <th style="text-align: center; vertical-align: middle;">No BPB</th>
             <th style="text-align: center; vertical-align: middle;">BPB Date</th>
             <th style="text-align: center; vertical-align: middle;">BPB Approved Date</th>
+            <th style="text-align: center; vertical-align: middle;">BPB Verified Date</th>
             <th style="text-align: center; vertical-align: middle;">No Kontrabon</th>
             <th style="text-align: center; vertical-align: middle;">Kontrabon Date</th>
             <th style="text-align: center; vertical-align: middle;">Kontrabon Approved Date</th>
@@ -53,139 +52,65 @@
             <th style="text-align: center; vertical-align: middle;">List Payment Date</th>
             <th style="text-align: center; vertical-align: middle;">List Payment Approved Date</th>
             <th style="text-align: center; vertical-align: middle;">List Payment Closed Date</th>
-            <th style="text-align: center; vertical-align: middle;">List Payment Approve</th>                         
-            <th style="text-align: center; vertical-align: middle;">No Payment</th>                                    
-            <th style="text-align: center; vertical-align: middle;">Payment Date</th>  
+            <th style="text-align: center; vertical-align: middle;">No Payment</th>
+            <th style="text-align: center; vertical-align: middle;">Payment Date</th>
         </tr>
         <?php 
         // koneksi database
         include '../../conn/conn.php';
         $nama_supp=$_GET['nama_supp'];
         $filter=$_GET['filter'];
+        $query=$_GET['query'];
         $start_date = date("Y-m-d",strtotime($_GET['start_date']));
         $end_date = date("Y-m-d",strtotime($_GET['end_date']));
-        // menampilkan data pegawai
-  
-//         if ($filter == 'tgl_bpb') {
-        
-//     if ($nama_supp == 'ALL') {
-//     $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where tgl_bpb between '$start_date' and '$end_date' group by no_bpb");
-//     }
-//     else{
-//     $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where supp = '$nama_supp' and tgl_bpb between '$start_date' and '$end_date' group by no_bpb");
-//     }
 
-//     }elseif ($filter == 'tgl_kbon') {
-//        if ($nama_supp == 'ALL' ) {
-//     $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where tgl_kbon between '$start_date' and '$end_date' group by no_bpb");
-//     } 
-//     else{
-//     $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where supp = '$nama_supp' and tgl_kbon between '$start_date' and '$end_date' group by no_bpb");
-//     }
-
-// }elseif ($filter == 'tgl_lp') {
-//         if ($nama_supp == 'ALL' ) {
-//     $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where tgl_lp between '$start_date' and '$end_date' group by no_bpb");
-//     }    
-//     else{
-//     $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where supp = '$nama_supp' and tgl_lp between '$start_date' and '$end_date' group by no_bpb");
-//     }
-
-//     }else{
-//         if ($nama_supp == 'ALL') {
-//     $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where tgl_pay between '$start_date' and '$end_date' group by no_bpb");
-//     }    
-    
-//     else{
-//     $sql = mysqli_query($conn2,"select id, supp, no_bpb, tgl_bpb, no_kbon, tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay from status where supp = '$nama_supp' and tgl_pay between '$start_date' and '$end_date' group by no_bpb");
-//     }
-//     }
-
-        $sql = mysqli_query($conn2,"select a.id, supp, a.no_bpb, a.tgl_bpb, a.no_kbon, a.tgl_kbon, no_lp, tgl_lp, no_pay, tgl_pay, DATE_FORMAT(b.confirm_date, '%Y-%m-%d') tgl_approve_lp,tgl_approve_bpb, tgl_approve_kbon, tgl_approve_lp, tgl_closing_lp from status a left join list_payment b on b.no_payment  = a.no_lp where tgl_pay between '$start_date' and '$end_date' group by a.no_bpb");
+        $sql = mysqli_query($conn2,$query);
 
         $no = 1;
 
-        while($row = mysqli_fetch_array($sql)){
-            $tgl_kb = isset($row['tgl_kbon']) ? $row['tgl_kbon'] :null;
-    $tgl_lp = isset($row['tgl_lp']) ? $row['tgl_lp'] :null;
-    $tgl_pay = isset($row['tgl_pay']) ? $row['tgl_pay'] :null;
-    $tgl_approvebpb = isset($row['tgl_approve_bpb']) ? $row['tgl_approve_bpb'] :null;
-    $tgl_approvekbon = isset($row['tgl_approve_kbon']) ? $row['tgl_approve_kbon'] :null;
-    $tgl_approvelp = isset($row['tgl_approve_lp']) ? $row['tgl_approve_lp'] :null;
-    $tgl_closinglp = isset($row['tgl_closing_lp']) ? $row['tgl_closing_lp'] :null;
-
-    if ($tgl_approvebpb != '') {
-        $tgl_approve_bpb = date("d-M-Y",strtotime($row['tgl_approve_bpb']));
-    }else{
-        $tgl_approve_bpb = '-';
-    }
-
-    if ($tgl_approvekbon != '') {
-        $tgl_approve_kbon = date("d-M-Y",strtotime($row['tgl_approve_kbon']));
-    }else{
-        $tgl_approve_kbon = '-';
-    }
-
-    if ($tgl_approvelp != '') {
-        $tgl_approve_lp = date("d-M-Y",strtotime($row['tgl_approve_lp']));
-    }else{
-        $tgl_approve_lp = '-';
-    }
-
-    if ($tgl_closinglp != '') {
-        $tgl_closing_lp = date("d-M-Y",strtotime($row['tgl_closing_lp']));
-    }else{
-        $tgl_closing_lp = '-';
-    }
-
-    if ($tgl_kb != '') {
-        $tgl_kbon = date("d-M-Y",strtotime($row['tgl_kbon']));
-        $kbon = $row['no_kbon'];
-    }else{
-        $tgl_kbon = '-';
-        $kbon = '-';
-    }
-
-    if ($tgl_lp != '') {
-        $tgl_lipa = date("d-M-Y",strtotime($row['tgl_lp']));
-        $approve_lp = date("d-M-Y",strtotime($row['tgl_approve_lp']));
-        $lipa = $row['no_lp'];
-    }else{
-        $tgl_lipa = '-';
-        $approve_lp = '-';
-        $lipa = '-';
-    }
-
-    if ($tgl_pay != '') {
-        $tgl_payment = date("d-M-Y",strtotime($row['tgl_pay']));
-        $payment = $row['no_pay'];
-    }else{
-        $tgl_payment = '-';
-        $payment = '-';
-    }
-
-
-        echo '<tr style="font-size:12px;text-align:center;">
-            <td >'.$no++.'</td>
-            <td style="width: 250px;text-align:left;" value="'.$row['supp'].'">'.$row['supp'].'</td>
-            <td value="'.$row['no_bpb'].'">'.$row['no_bpb'].'</td>
-            <td style="" value="'.$row['tgl_bpb'].'">'.date("d-M-Y",strtotime($row['tgl_bpb'])).'</td>
-            <td style="" value="'.$tgl_approve_bpb.'">'.$tgl_approve_bpb.'</td>
-            <td value="'.$kbon.'">'.$kbon.'</td>
-            <td style="" value="'.$tgl_kbon.'">'.$tgl_kbon.'</td>
-            <td style="" value="'.$tgl_approve_kbon.'">'.$tgl_approve_kbon.'</td>
-            <td value="'.$lipa.'">'.$lipa.'</td>
-            <td style="" value="'.$tgl_lipa.'">'.$tgl_lipa.'</td>
-            <td style="" value="'.$tgl_approve_lp.'">'.$tgl_approve_lp.'</td>
-            <td style="" value="'.$approve_lp.'">'.$approve_lp.'</td>
-            <td style="" value="'.$tgl_closing_lp.'">'.$tgl_closing_lp.'</td>
-            <td value="'.$payment.'">'.$payment.'</td>
-            <td style="" value="'.$tgl_payment.'">'.$tgl_payment.'</td>
-             ';
-         
-        ?>
-        <?php 
+        function formatDateOrDash($date) {
+            return (!empty($date) && $date != '0000-00-00')
+            ? date("d-M-Y", strtotime($date))
+            : '-';
         }
+
+        function valueOrDash($value) {
+            return !empty($value) ? $value : '-';
+        }
+
+        while ($row = mysqli_fetch_array($sql)) {
+            $tgl_verif_bpb   = formatDateOrDash($row['verif_date'] ?? null);
+            $tgl_approve_bpb = formatDateOrDash($row['approve_bpb'] ?? null);
+            $tgl_approve_kbon= formatDateOrDash($row['approve_kbon'] ?? null);
+            $tgl_approve_lp  = formatDateOrDash($row['approve_lp'] ?? null);
+            $tgl_closing_lp  = formatDateOrDash($row['close_lp'] ?? null);
+            $tgl_kbon        = formatDateOrDash($row['tgl_kbon'] ?? null);
+            $tgl_lipa        = formatDateOrDash($row['tgl_payment'] ?? null);
+            $tgl_payment     = formatDateOrDash($row['tgl_pelunasan'] ?? null);
+
+            $kbon    = valueOrDash($row['no_kbon'] ?? null);
+            $lipa    = valueOrDash($row['no_payment'] ?? null);
+            $payment = valueOrDash($row['no_pelunasan'] ?? null);
+
+            echo '<tr style="font-size: 12px; text-align: center;">';
+            echo '<td >'.$no++.'</td>';
+            echo '<td style="width: 250px; text-align: left;" value="'.$row['nama_supp'].'">'.$row['nama_supp'].'</td>';
+            echo '<td value="'.$row['no_bpb'].'">'.$row['no_bpb'].'</td>';
+            echo '<td value="'.$row['tgl_bpb'].'">'.formatDateOrDash($row['tgl_bpb']).'</td>';
+            echo '<td value="'.$tgl_approve_bpb.'">'.$tgl_approve_bpb.'</td>';
+            echo '<td value="'.$tgl_verif_bpb.'">'.$tgl_verif_bpb.'</td>';
+            echo '<td value="'.$kbon.'">'.$kbon.'</td>';
+            echo '<td value="'.$tgl_kbon.'">'.$tgl_kbon.'</td>';
+            echo '<td value="'.$tgl_approve_kbon.'">'.$tgl_approve_kbon.'</td>';
+            echo '<td value="'.$lipa.'">'.$lipa.'</td>';
+            echo '<td value="'.$tgl_lipa.'">'.$tgl_lipa.'</td>';
+            echo '<td value="'.$tgl_approve_lp.'">'.$tgl_approve_lp.'</td>';
+            echo '<td value="'.$tgl_closing_lp.'">'.$tgl_closing_lp.'</td>';
+            echo '<td value="'.$payment.'">'.$payment.'</td>';
+            echo '<td value="'.$tgl_payment.'">'.$tgl_payment.'</td>';
+            echo '</tr>';
+        }
+
         ?>
     </table>
 
