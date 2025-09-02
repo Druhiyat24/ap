@@ -287,7 +287,7 @@ input::-webkit-inner-spin-button {
             $menu = isset($rss['ket']) ? $rss['ket'] :0;
             $id = isset($rss['id']) ? $rss['id'] :0;
 
-            $sql = mysqli_query($conn2,"select count(distinct(no_bpb)) as no_bpb from bpb_new where status = 'GMF' and profit_center is null");
+            $sql = mysqli_query($conn2,"select count(distinct(no_bpb)) as no_bpb from bpb_new where status = 'GMF' and profit_center = 'NAG'");
             $row = mysqli_fetch_array($sql);
             $count = $row['no_bpb'];
             if($count != '0'){
