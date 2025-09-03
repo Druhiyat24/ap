@@ -14,7 +14,7 @@
 <!-- MAIN -->
 <div class="container-fluid mt-4 p-4">
   <div class="card border-secondary mb-3">
-    <div class="card-header text-left" style="background-color: #191970;">
+    <div class="card-header text-left" style="background: linear-gradient(90deg, #191970, #1e90ff);">
       <h5 class="mb-0 text-white" >FORM KONTRABON</h5>
   </div>
   <form id="form-data" method="post">

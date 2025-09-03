@@ -555,7 +555,7 @@ function SidebarCollapse () {
 
 <script type="text/javascript">
     document.getElementById('btncreate').onclick = function () {
-        location.href = "formpayment.php";
+        location.href = "form_payment.php";
     };
 </script>
 <script type="text/javascript">

@@ -463,7 +463,7 @@ $(function() {
 
 <script type="text/javascript">
     document.getElementById('btncreate').onclick = function () {
-    location.href = "formpelunasanFTR2a.php";
+    location.href = "form_pelunasan.php";
 };
 </script>
 <script type="text/javascript">
