@@ -160,7 +160,7 @@
             left join (select bppbno as no_req,idws_act from bppb_req group by no_req) br on a.no_req = br.no_req 
             left join so on tmpjod.id_so=so.id 
             left join act_costing ac on so.id_cost=ac.id 
-            where LEFT(a.no_bppb,2) = 'GK' and b.status != 'N' and a.status != 'cancel' and a.tgl_bppb BETWEEN  '$start_date' and '$end_date' and matclass= 'FABRIC' GROUP BY b.id_jo,b.id_item,b.satuan,b.no_bppb,(coalesce(price_in,0) + COALESCE(nilai_barang,0)) order by a.no_bppb) a LEFT JOIN (select a.no_bppb, id_jo, id_item, price from whs_bppb_ro a INNER JOIN whs_bppb_h b on b.no_bppb = a.no_bppb where b.status != 'cancel' and b.tgl_bppb BETWEEN  '$start_date' and '$end_date') b on b.no_bppb = a.bppbno and b.id_item = a.id_item and b.id_jo = a.id_jo LEFT JOIN (select * from (select tgl_dok, no_barcode from whs_lokasi_inmaterial a inner join whs_inmaterial_fabric b on b.no_dok = a.no_dok GROUP BY no_barcode
+            where LEFT(a.no_bppb,2) = 'GK' and b.status != 'N' and a.status != 'cancel' and a.tgl_bppb BETWEEN  '$start_date' and '$end_date' GROUP BY b.id_jo,b.id_item,b.satuan,b.no_bppb,(coalesce(price_in,0) + COALESCE(nilai_barang,0)) order by a.no_bppb) a LEFT JOIN (select a.no_bppb, id_jo, id_item, price from whs_bppb_ro a INNER JOIN whs_bppb_h b on b.no_bppb = a.no_bppb where b.status != 'cancel' and b.tgl_bppb BETWEEN  '$start_date' and '$end_date') b on b.no_bppb = a.bppbno and b.id_item = a.id_item and b.id_jo = a.id_jo LEFT JOIN (select * from (select tgl_dok, no_barcode from whs_lokasi_inmaterial a inner join whs_inmaterial_fabric b on b.no_dok = a.no_dok GROUP BY no_barcode
             UNION
             select tgl_bpb, no_barcode from whs_sa_fabric GROUP BY no_barcode
                         UNION
