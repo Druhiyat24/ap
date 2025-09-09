@@ -118,9 +118,9 @@
             }
 
             if($nama_supp == 'ALL'){
-            $sql = mysql_query("select id, no_bpb, tgl_bpb, create_date, pono, supplier, top, curr, confirm1, tgl_po, SUM((qty * price) + ((qty * price) * (tax /100))) as total from bpb_new where confirm2 != '' and is_invoiced = 'Waiting' and tgl_bpb between '$start_date' and '$end_date' group by no_bpb",$conn1);                
+            $sql = mysql_query("select id, no_bpb, tgl_bpb, create_date, pono, supplier, top, curr, confirm1, tgl_po, SUM((qty * price) + ((qty * price) * (tax /100))) as total from bpb_new where is_invoiced = 'Waiting' and tgl_bpb between '$start_date' and '$end_date' group by no_bpb",$conn1);                
             }else {
-            $sql = mysql_query("select id, no_bpb, tgl_bpb, create_date, pono, supplier, top, curr, confirm1, tgl_po, SUM((qty * price) + ((qty * price) * (tax /100))) as total from bpb_new where confirm2 != '' and is_invoiced = 'Waiting' and tgl_bpb between '$start_date' and '$end_date' and supplier='$nama_supp' group by no_bpb ",$conn1);
+            $sql = mysql_query("select id, no_bpb, tgl_bpb, create_date, pono, supplier, top, curr, confirm1, tgl_po, SUM((qty * price) + ((qty * price) * (tax /100))) as total from bpb_new where is_invoiced = 'Waiting' and tgl_bpb between '$start_date' and '$end_date' and supplier='$nama_supp' group by no_bpb ",$conn1);
             }
                             
             if (!empty($nama_supp && $start_date && $end_date)) {                                              
