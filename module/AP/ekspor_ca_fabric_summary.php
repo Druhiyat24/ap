@@ -520,7 +520,7 @@ while($row2 = mysqli_fetch_array($sql)){
     }
     // $total_sal_nilai = round($row2['total_awal'],2);
     // $total_sal_price = round($total_sal_price / $total_sal_qty ,2);
-    $total_sal_nilai = round($row2['total_awal'],2) + round($row2['total_adj_bfr'],2);
+    $total_sal_nilai = round($row2['total_awal'],4) + round($row2['total_adj_bfr'],4);
     // $total_sal_price = round($total_sal_nilai / $total_sal_qty ,2); 
     $total_sal_price = ($total_sal_qty != 0) ? round($total_sal_nilai / $total_sal_qty,2) : 0;
     $total_in_qty = $row2['qty_a'] + $row2['qty_b'] + $row2['qty_c'] + $row2['qty_d'] + $row2['qty_e'];
