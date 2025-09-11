@@ -60,11 +60,7 @@ if ($txt_idctg5 == '') {
 }elseif($txt_idctg5 == '11.'){
 	$id_ctg5 = "456";
 	echo $id_ctg5;
-}elseif(strpos($txt_idctg5, '.') !== false){
-	$id_ctg5 = "789";
-	echo $id_ctg5;
-}
-else{
+}else{
 	
 $sqlx = mysqli_query($conn2,"select id_ctg5 FROM master_coa_ctg5 where id_ctg5 = '$txt_idctg5' ");
 $rowx = mysqli_fetch_array($sqlx);
