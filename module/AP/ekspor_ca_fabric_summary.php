@@ -558,8 +558,13 @@ while($row2 = mysqli_fetch_array($sql)){
     }else{
         $qtyall = $qty_all;
     }
-    $total_end_price = $nilai_all / $qtyall;
+    $total_end_price = round($nilai_all,2) / round($qtyall,2);
     $total_end_nilai = $total_end_qty * $total_end_price;
+    if (round($total_end_nilai,2) == 0 && round($total_end_nilai,2) == 0) {
+        $total_end_price = 0;
+    }else{
+        $total_end_price = $total_end_price;
+    }
 
     echo ' <tr style="font-size:12px;text-align:center;">
     <td style="text-align : left;" value = "'.$no.'">'.$no.'</td>
