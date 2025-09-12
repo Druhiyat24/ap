@@ -507,7 +507,6 @@
 
 
 $total_sal_qty =0;
-$total_sal_nilai_ =0;
 $total_sal_nilai =0;
 $total_sal_price =0;
 $no = 0;
@@ -521,10 +520,9 @@ while($row2 = mysqli_fetch_array($sql)){
     }
     // $total_sal_nilai = round($row2['total_awal'],2);
     // $total_sal_price = round($total_sal_price / $total_sal_qty ,2);
-    $total_sal_nilai_ = round($row2['total_awal'],2) + round($row2['total_adj_bfr'],2);
+    $total_sal_nilai = round($row2['total_awal'],2) + round($row2['total_adj_bfr'],2);
     // $total_sal_price = round($total_sal_nilai / $total_sal_qty ,2); 
-    $total_sal_price = ($total_sal_qty != 0) ? round($total_sal_nilai_ / $total_sal_qty,2) : 0;
-    // $total_sal_nilai = round($total_sal_qty * $total_sal_price,2);
+    $total_sal_price = ($total_sal_qty != 0) ? round($total_sal_nilai / $total_sal_qty,2) : 0;
     $total_in_qty = $row2['qty_a'] + $row2['qty_b'] + $row2['qty_c'] + $row2['qty_d'] + $row2['qty_e'];
     $total_in_nilai = $row2['total_a'] + $row2['total_b'] + $row2['total_c'] + $row2['total_d'] + $row2['total_e'];
     $qty_adj = round($row2['qty_adj'],2);
@@ -572,7 +570,7 @@ while($row2 = mysqli_fetch_array($sql)){
     <td style="text-align : left;" value = "'.$row2['ws'].'">'.$row2['ws'].'</td>
     <td style="text-align : right;" value = "'.$total_sal_qty.'">'.number_format($total_sal_qty,2).'</td>
     <td style="text-align : right;" value = "'.$total_sal_price.'">'.number_format($total_sal_price,2).'</td>
-    <td style="text-align : right;" value = "'.$total_sal_nilai_.'">'.number_format($total_sal_nilai_,2).'</td>
+    <td style="text-align : right;" value = "'.$total_sal_nilai.'">'.number_format($total_sal_nilai,2).'</td>
     <td style="text-align : right;" value = "'.$row2['qty_a'].'">'.number_format($row2['qty_a'],2).'</td>
     <td style="text-align : right;" value = "'.$row2['price_a'].'">'.number_format($row2['price_a'],2).'</td>
     <td style="text-align : right;" value = "'.$row2['total_a'].'">'.number_format($row2['total_a'],2).'</td>
