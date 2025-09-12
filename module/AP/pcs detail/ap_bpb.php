@@ -163,6 +163,14 @@ union (select nama_supp, no_bpb, tgl_bpb, top, duedate, curr, total from tbl_tam
     $tgl_bpbin = $row['bpbdate'];
     $currin = $row['curr'];
 
+    $sqlcoa = mysqli_query($conn1,"select * from (select a.no_journal,a.no_coa,a.nama_coa,b.item_type1,b.item_type2,b.relasi from (select no_journal,no_coa,nama_coa from tbl_list_journal where credit != '' and type_journal = 'AP - BPB' and no_coa != '1.52.07' and no_journal = '$no_bpb' union select no_journal,no_coa,nama_coa from tbl_list_journal where debit != '' and type_journal = 'AP - BPB RETURN' and no_coa != '1.52.07' and no_journal = '$no_bpb') a left join mastercoa_v2 b on b.no_coa = a.no_coa) a where item_type1 is not null");
+        $rowcoa = mysqli_fetch_array($sqlcoa);
+        $no_coa = isset($rowcoa['no_coa']) ? $rowcoa['no_coa'] : null;
+        $nama_coa = isset($rowcoa['nama_coa']) ? $rowcoa['nama_coa'] : null;
+        $item_type1 = isset($rowcoa['item_type1']) ? $rowcoa['item_type1'] : null;
+        $item_type2 = isset($rowcoa['item_type2']) ? $rowcoa['item_type2'] : null;
+        $relasi = isset($rowcoa['relasi']) ? $rowcoa['relasi'] : null;
+
      $sqldate = mysqli_query($conn1,"select a.bppbno_int,b.jml_pterms as top,DATE_ADD(a.bppbdate, INTERVAL b.jml_pterms DAY) as due_date from bppb a left join bpb d on d.bpbno = a.bpbno_ro left JOIN po_header b on b.pono = d.pono inner join mastersupplier c on c.Id_Supplier = a.id_supplier  where a.bppbno_int = '$no_bpb' and a.bpbno_ro != '' group by bppbno_int");
     $rowdate = mysqli_fetch_array($sqldate);
     $bppbno_int = isset($rowdate['bppbno_int']) ? $rowdate['bppbno_int'] : null;
@@ -179,7 +187,7 @@ union (select nama_supp, no_bpb, tgl_bpb, top, duedate, curr, total from tbl_tam
         union
 select no_doc, tgl_doc from tbl_tamb_ap where no_doc = '$no_bpb' and tgl_pay between '$start_date' and '$end_date' GROUP BY no_doc
 UNION
-select reff_doc,reff_date from tbl_list_journal where reff_doc = '$no_bpb' and no_journal like '%GM/NAG%' and type_journal = 'ACCOUNT PAYABLE' and (debit != 0 OR credit != 0) and tgl_journal >= '2024-09-01' and tgl_journal between '$start_date' and '$end_date' GROUP BY reff_doc");
+select reff_doc,reff_date from tbl_list_journal where reff_doc = '$no_bpb' and no_journal like '%GM/NAG%' and no_coa = '$no_coa' and type_journal = 'ACCOUNT PAYABLE' and (debit != 0 OR credit != 0) and tgl_journal >= '2024-09-01' and tgl_journal between '$start_date' and '$end_date' GROUP BY reff_doc");
     $rowlp = mysqli_fetch_array($sqllp);
     $no_lp = isset($rowlp['no_bpb']) ? $rowlp['no_bpb'] : null;
 
@@ -188,7 +196,7 @@ select reff_doc,reff_date from tbl_list_journal where reff_doc = '$no_bpb' and n
         union
 select no_doc, tgl_doc, tgl_doc tgl_doc2 from tbl_tamb_ap where no_doc = '$no_bpb' and tgl_pay < '$start_date' GROUP BY no_doc
 UNION
-select reff_doc,reff_date,reff_date from tbl_list_journal where reff_doc = '$no_bpb' and no_journal like '%GM/NAG%' and type_journal = 'ACCOUNT PAYABLE' and (debit != 0 OR credit != 0) and tgl_journal >= '2024-09-01' and tgl_journal < '$start_date' GROUP BY reff_doc");
+select reff_doc,reff_date,reff_date from tbl_list_journal where reff_doc = '$no_bpb' and no_journal like '%GM/NAG%' and no_coa = '$no_coa' and type_journal = 'ACCOUNT PAYABLE' and (debit != 0 OR credit != 0) and tgl_journal >= '2024-09-01' and tgl_journal < '$start_date' GROUP BY reff_doc");
     $rowlp2 = mysqli_fetch_array($sqllp2);
     $no_lp2 = isset($rowlp2['no_bpb']) ? $rowlp2['no_bpb'] : null;
     $tgl = isset($rowlp2['tgl_kbon2']) ? $rowlp2['tgl_kbon2'] : null;
@@ -345,13 +353,6 @@ select reff_doc,reff_date,reff_date from tbl_list_journal where reff_doc = '$no_
         $ttl_pro_due5 += $pro_due5;
         $ttl_tot_produe += $tot_produe;
 
-        $sqlcoa = mysqli_query($conn1,"select * from (select a.no_journal,a.no_coa,a.nama_coa,b.item_type1,b.item_type2,b.relasi from (select no_journal,no_coa,nama_coa from tbl_list_journal where credit != '' and type_journal = 'AP - BPB' and no_coa != '1.52.07' and no_journal = '$no_bpb' union select no_journal,no_coa,nama_coa from tbl_list_journal where debit != '' and type_journal = 'AP - BPB RETURN' and no_coa != '1.52.07' and no_journal = '$no_bpb') a left join mastercoa_v2 b on b.no_coa = a.no_coa) a where item_type1 is not null");
-        $rowcoa = mysqli_fetch_array($sqlcoa);
-        $no_coa = isset($rowcoa['no_coa']) ? $rowcoa['no_coa'] : null;
-        $nama_coa = isset($rowcoa['nama_coa']) ? $rowcoa['nama_coa'] : null;
-        $item_type1 = isset($rowcoa['item_type1']) ? $rowcoa['item_type1'] : null;
-        $item_type2 = isset($rowcoa['item_type2']) ? $rowcoa['item_type2'] : null;
-        $relasi = isset($rowcoa['relasi']) ? $rowcoa['relasi'] : null;
  
         echo '<tr style="font-size:12px;text-align:center;">
             <td value = "'.$row['Supplier'].'">'.$row['Supplier'].'</td>
