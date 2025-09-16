@@ -67,6 +67,7 @@
             <th style="text-align: center;vertical-align: middle;">CF Direct Debit</th>
             <th style="text-align: center;vertical-align: middle;">CF Direct Credit</th>
             <th style="text-align: center;vertical-align: middle;">CF Indirect</th>
+            <th style="text-align: center;vertical-align: middle;">ID Journal</th>
         </tr>
         <?php 
         // koneksi database
@@ -96,7 +97,7 @@
                                                 when no_journal like '%GM/%' then 'GM'
                         end asal, profit_center from tbl_list_journal where tgl_journal between '$start_date' and '$end_date' and no_journal not like '%KKK%' 
 union
-select DISTINCT '' id,no_journal, tgl_journal, type_journal, no_coa, nama_coa, CONCAT(no_coa,' ',nama_coa) coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, Round(debit,2) debit, Round(credit,2) credit, ROUND(debit * rate,2) debit_idr, ROUND(credit * rate,2) credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date,case when no_journal like '%/ALK/%' then 'AR'
+select DISTINCT id,no_journal, tgl_journal, type_journal, no_coa, nama_coa, CONCAT(no_coa,' ',nama_coa) coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, Round(debit,2) debit, Round(credit,2) credit, ROUND(debit * rate,2) debit_idr, ROUND(credit * rate,2) credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date,case when no_journal like '%/ALK/%' then 'AR'
                         when no_journal like '%L/NAG%' then 'AR'
                                                 when no_journal like '%E/NAG%' then 'AR'
                                                 when no_journal like '%/INM/%' then 'AR'
@@ -190,6 +191,7 @@ left JOIN
             <td  value = "'.$idndirdebit.'">'.$idndirdebit.'</td>
             <td  value = "'.$idndircredit.'">'.$idndircredit.'</td>
             <td  value = "'.$idnindir.'">'.$idnindir.'</td>
+            <td  value = "'.$row['id'].'">'.$row['id'].'</td>
              ';
          }
          

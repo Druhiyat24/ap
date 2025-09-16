@@ -219,7 +219,7 @@ WHERE  tbl_list_journal.create_by = '' and tbl_log.activity = 'Create invoice Ma
             <td style="width: 150px;text-align: left" value = "'.$row['type_journal'].'">'.$row['type_journal'].'</td>
             <td style="width: 150px;text-align: left" value = "'.$row['coa'].'">'.$row['coa'].'</td>
             <td style="width: 150px;text-align: left" value = "'.$row['profit_center'].'">'.$row['nama_pc'].'</td>
-            <td style="width: 150px;text-align: left" value = "'.$row['no_cc'].'">'.$row['no_cc'].'</td>
+            <td style="width: 150px;text-align: left" value = "'.$row['no_costcenter'].'">'.$row['no_costcenter'].'</td>
             <td style="width: 150px;text-align: left" value = "'.$row['nama_costcenter'].'">'.$row['nama_costcenter'].'</td>
             <td style="width: 150px;text-align: left" value = "'.$row['reff_doc'].'">'.$row['reff_doc'].'</td>
             <td style="width: 100px;text-align: left" value = "'.$Reffdate.'">'.$Reffdate.'</td>
