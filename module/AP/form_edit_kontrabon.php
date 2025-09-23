@@ -312,21 +312,21 @@ echo $nokbon['no_kbon'];
                                     // $id_supplier = $row['id_supplier'];
                                     // $pono = isset($row['pono']) ? $row['pono'] : null;
 
-                                 echo '<tr>
-                                 <td style="display: none;"><input type="checkbox" class="chkA"  id="select" name="select[]" value="" <?php if(in_array("1",$_POST[select])) echo "checked=checked";? disabled></td>                        
-                                 <td value="'.$row['no_bpb'].'">'.$row['no_bpb'].'</td>
-                                 <td value="'.$row['no_po'].'">'.$row['no_po'].'</td>                            
-                                 <td dates="'.date("Y-m-d",strtotime($row['tgl_bpb'])).'" value="'.$row['tgl_bpb'].'">'.date("d-M-Y",strtotime($row['tgl_bpb'])).'</td>                            
-                                 <td class="dt_price" style="width:100px;text-align:right;" data-link="1" data-subtotal="'.$row['subtotal'].'">'.number_format($row['subtotal'],2).'</td>
-                                 <td class="dt_tax" style="width:100px;text-align:right;" data-tax="'.$row['tax'].'">'.number_format($row['tax'],2).'</td>
-                                 <td style="width:200px;">                            
-                                 <select class="form-control selectpicker" style="width:150px;" name="combo_pph" id="combo_pph" disabled>
-                                 <option data-idtax="'.$row['pph_code'].'" value="'.$row['percentage'].'">'.$row['kriteria'].'</option>';
-                                 if ($row['pph_code'] != 0) {
-                                     echo '<option data-idtax="0" value="0">Non PPH</option>';
-                                 }
+                                   echo '<tr>
+                                   <td style="display: none;"><input type="checkbox" class="chkA"  id="select" name="select[]" value="" <?php if(in_array("1",$_POST[select])) echo "checked=checked";? disabled></td>                        
+                                   <td value="'.$row['no_bpb'].'">'.$row['no_bpb'].'</td>
+                                   <td value="'.$row['no_po'].'">'.$row['no_po'].'</td>                            
+                                   <td dates="'.date("Y-m-d",strtotime($row['tgl_bpb'])).'" value="'.$row['tgl_bpb'].'">'.date("d-M-Y",strtotime($row['tgl_bpb'])).'</td>                            
+                                   <td class="dt_price" style="width:100px;text-align:right;" data-link="1" data-subtotal="'.$row['subtotal'].'">'.number_format($row['subtotal'],2).'</td>
+                                   <td class="dt_tax" style="width:100px;text-align:right;" data-tax="'.$row['tax'].'">'.number_format($row['tax'],2).'</td>
+                                   <td style="width:200px;">                            
+                                   <select class="form-control selectpicker" style="width:150px;" name="combo_pph" id="combo_pph" disabled>
+                                   <option data-idtax="'.$row['pph_code'].'" value="'.$row['percentage'].'">'.$row['kriteria'].'</option>';
+                                   if ($row['pph_code'] != 0) {
+                                       echo '<option data-idtax="0" value="0">Non PPH</option>';
+                                   }
 
-                                 $sql_tax = mysqli_query(
+                                   $sql_tax = mysqli_query(
                                     $conn2,
                                     "SELECT idtax, kriteria, percentage 
                                     FROM mtax 
@@ -334,7 +334,7 @@ echo $nokbon['no_kbon'];
                                     AND idtax != '".$row['idtax']."'"
                                 );
 
-                                 while ($tax = mysqli_fetch_assoc($sql_tax)) {
+                                   while ($tax = mysqli_fetch_assoc($sql_tax)) {
                                     echo '<option data-idtax="'.$tax['idtax'].'" value="'.$tax['percentage'].'">'.$tax['kriteria'].'</option>';
                                 }
 
@@ -413,8 +413,8 @@ echo $nokbon['no_kbon'];
                                 <?php
 
                                 $querys = mysqli_query($conn2,"select a.no_ro, no_bppb, tgl_bppb, no_bpb, total_ro, curr, mattype, matclass, n_code_category, cus_ctg from ap_edit_return_kb a INNER JOIN (select no_bppb, no_ro, tgl_bppb, no_bpb, curr from bppb_new GROUP BY no_bppb) b on b.no_bppb = a.no_bpbrtn LEFT JOIN (select reff_doc, a.no_coa, mattype, matclass, n_code_category, cus_ctg from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa where no_journal = '$no_kbon' and a.nama_coa like '%GR/IR%' and type_journal = 'AP - Kontrabon' GROUP BY reff_doc
-                                   UNION
-                                   select reff_doc, a.no_coa, mattype, matclass, n_code_category, cus_ctg from ap_journal_temp a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa where no_journal = '$no_kbon' and a.nama_coa like '%GR/IR%' and type_journal = 'AP - Kontrabon' GROUP BY reff_doc) c on c.reff_doc = b.no_bppb where no_kbon = '$no_kbon'");
+                                 UNION
+                                 select reff_doc, a.no_coa, mattype, matclass, n_code_category, cus_ctg from ap_journal_temp a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa where no_journal = '$no_kbon' and a.nama_coa like '%GR/IR%' and type_journal = 'AP - Kontrabon' GROUP BY reff_doc) c on c.reff_doc = b.no_bppb where no_kbon = '$no_kbon'");
 
                                 while($row1 = mysqli_fetch_array($querys)){
                                     echo '<tr>
@@ -441,19 +441,19 @@ echo $nokbon['no_kbon'];
                     <div class="form-row col mt-3">
                         <label for="potongan" class="col-form-label" style="width: 150px;font-size: 13px;;"><b><u>Total Return</u></b></label>
                         <div class="col-md-2 mb-3">    
-                           <?php
-                           $sql = mysqli_query($conn2,"select sum(total_ro) total_ro from ap_edit_return_kb where no_kbon = '$no_kbon'");
-                           $row = mysqli_fetch_array($sql);                         
-                           $total_ro = $row['total_ro'];
-                           ?>                                  
-                           <input type="text" class="form-control form-control-sm" name="potongan" id="potongan" value="<?= number_format($total_ro,2); ?>" placeholder="0.00" style="font-size: 13px;;text-align: right;" readonly>
-                           <input type="hidden" name="potongan_h" id="potongan_h" value="<?= $total_ro; ?>">
-                           <input type="hidden" name="h_mattype" id="h_mattype" value="">
-                           <input type="hidden" name="h_matclass" id="h_matclass" value="">
-                           <input type="hidden" name="h_code_ctg" id="h_code_ctg" value="">
-                           <input type="hidden" name="h_cus_ctg" id="h_cus_ctg" value="">
-                       </div>
-                       <div class="col-md-2 mb-3">
+                         <?php
+                         $sql = mysqli_query($conn2,"select sum(total_ro) total_ro from ap_edit_return_kb where no_kbon = '$no_kbon'");
+                         $row = mysqli_fetch_array($sql);                         
+                         $total_ro = $row['total_ro'];
+                         ?>                                  
+                         <input type="text" class="form-control form-control-sm" name="potongan" id="potongan" value="<?= number_format($total_ro,2); ?>" placeholder="0.00" style="font-size: 13px;;text-align: right;" readonly>
+                         <input type="hidden" name="potongan_h" id="potongan_h" value="<?= $total_ro; ?>">
+                         <input type="hidden" name="h_mattype" id="h_mattype" value="">
+                         <input type="hidden" name="h_matclass" id="h_matclass" value="">
+                         <input type="hidden" name="h_code_ctg" id="h_code_ctg" value="">
+                         <input type="hidden" name="h_cus_ctg" id="h_cus_ctg" value="">
+                     </div>
+                     <div class="col-md-2 mb-3">
                         <button 
                         type="button" 
                         id="edit_bppb" 
@@ -841,7 +841,7 @@ echo $nokbon['no_kbon'];
         </div>
 
         <div class="col-md-6">
-           <div class="form-group">
+         <div class="form-group">
             <label><b>BPB Date</b></label>
             <div class="d-flex align-items-center gap-2">
               <input type="text" class="form-control form-control-sm tanggal_fil mr-2" id="start_date_e1" name="start_date_e1" 
@@ -973,7 +973,7 @@ echo $nokbon['no_kbon'];
         </div>
 
         <div class="col-md-6">
-           <div class="form-group">
+         <div class="form-group">
             <label><b>BPPB Date</b></label>
             <div class="d-flex align-items-center gap-2">
               <input type="text" class="form-control form-control-sm tanggal_fil mr-2" id="start_date_e2" name="start_date_e2" 
@@ -1087,7 +1087,7 @@ echo $nokbon['no_kbon'];
         </div>
 
         <div class="col-md-6">
-           <div class="form-group">
+         <div class="form-group">
             <label><b>FTR Date</b></label>
             <div class="d-flex align-items-center gap-2">
               <input type="text" class="form-control form-control-sm tanggal_fil mr-2" id="start_date_e3" name="start_date_e3" 
@@ -1495,6 +1495,28 @@ function SidebarCollapse () {
 
 
         $(document).on('input', '#mytable1_edit tbody input[name="txt_amount_edit"]', function () {
+            var sum_amount = 0;
+            var sum_total = 0;
+            var sum_balance = 0;        
+            $("input[type=checkbox]:checked").each(function () {        
+                var amount = parseFloat($(this).closest('#mytable1_edit tr').find('td:eq(6) input').val(),10) || 0;
+                var balance = parseFloat($(this).closest('#mytable1_edit tr').find('td:eq(5)').attr('data-total-ro-edit'),10) || 0;
+                var select_amount = $(this).closest('#mytable1_edit tr').find('td:eq(6) input');                
+                if(amount > balance){
+                    select_amount.val(balance);
+                    sum_amount += balance;
+                    sum_total = sum_amount;
+                }else{
+                    sum_amount += amount;
+                    sum_total = sum_amount;        
+                }   
+            });
+            $("#potongan_edit").val(formatMoney(sum_total));
+            $("#potongan_h_edit").val(sum_total.toFixed(4));
+        });
+
+
+        $(document).on('input', '#mytable2_edit tbody input[name="txt_amount_edit"]', function () {
             var sum_amount = 0;
             var sum_total = 0;
             var sum_balance = 0;        
@@ -1931,6 +1953,128 @@ $('#btnSaveBPPB').on('click', function(e) {
 });
 
 
+$('#btnSaveFTR').on('click', function(e) {
+    e.preventDefault();
+
+    let dataArr = [];
+
+    $('#mytable2_edit tbody tr').each(function() {
+        let checkbox = $(this).find('.select3_edit');
+        if (checkbox.is(':checked')) {
+            let no_kbon = $('#nokontrabon').val();
+            let tgl_kbon = $('#tanggal').val();
+            let pc_kbon = $('#profit_center').val();
+            let nama_supp = $('#nama_supp_e2').val();
+            let invoice = $('#txt_inv').val();
+            let faktur = $('#no_faktur').val();
+            let tglsi = $('#txt_tglsi').val();
+            let tgltempo = $('#txt_tgltempo').val();
+            var create_user = '<?php echo $user; ?>';
+
+            var no_ftr = $(this).closest('#mytable2_edit tr').find('td:eq(1)').attr('no-ftr');
+            var no_po_ftr = $(this).closest('#mytable2_edit tr').find('td:eq(2)').attr('po-ftr');
+            var tgl_po_ftr = $(this).closest('#mytable2_edit tr').find('td:eq(3)').attr('tglpo-ftr');
+            var no_pi_ftr = $(this).closest('#mytable2_edit tr').find('td:eq(4)').attr('pi-ftr');
+            var ttl_ftr = parseFloat($(this).closest('#mytable2_edit tr').find('td:eq(6) input').val(),10) || 0;
+            var curr_ftr = $(this).closest('#mytable2_edit tr').find('td:eq(7)').attr('curr-ftr');
+            var kbon_ftr = $(this).closest('#mytable2_edit tr').find('td:eq(8)').attr('kbon-ftr');
+            var tglkbon_ftr = $(this).closest('#mytable2_edit tr').find('td:eq(9)').attr('tglkbon-ftr');
+            var lp_ftr = $(this).closest('#mytable2_edit tr').find('td:eq(10)').attr('lp-ftr');
+            var tgllp_ftr = $(this).closest('#mytable2_edit tr').find('td:eq(11)').attr('tgllp-ftr');
+            var pv_ftr = $(this).closest('#mytable2_edit tr').find('td:eq(12)').attr('pv-ftr');
+            var bankout_ftr = $(this).closest('#mytable2_edit tr').find('td:eq(13)').attr('bankout-ftr');
+            var bankoutdate_ftr = $(this).closest('#mytable2_edit tr').find('td:eq(14)').attr('bankoutdate-ftr');
+            var coa_ftr = $(this).closest('#mytable2_edit tr').find('td:eq(15)').attr('coa-ftr');
+
+            let start_date = $('#start_date_e3').val();
+            let end_date = $('#end_date_e3').val();
+
+            // var sum_pph = 0;
+            // var sum_sub = 0;
+            // var sum_tax = 0;
+            // var sum_total = 0;
+            // var sum_dp = 0;
+            // sum_sub += price;
+            // sum_tax += tax;
+            // sum_pph += sum_sub * (pph / 100);   
+            // sum_total += (sum_sub + sum_tax) - sum_pph - sum_dp;
+
+
+            dataArr.push({
+                no_kbon: no_kbon,
+                tgl_kbon: tgl_kbon,
+                pc_kbon: pc_kbon,
+                nama_supp: nama_supp,
+                invoice: invoice,
+                faktur: faktur,
+                tglsi: tglsi,
+                tgltempo: tgltempo,
+                create_user: create_user,
+
+                no_ro: no_ro,
+                no_bppb: no_bppb,
+                tgl_bppb: tgl_bppb,
+                ttl_ro: ttl_ro,
+                curr: curr,
+                mattype: mattype,
+                matclass: matclass,
+                n_code_category: n_code_category,
+                cus_ctg: cus_ctg,
+
+                start_date: start_date,
+                end_date: end_date
+                
+            });
+            console.log("Current dataArr:", dataArr);
+        }
+    });
+
+    if (dataArr.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'No BPPB selected',
+            text: 'Please check at least one BPPB to save.'
+        });
+        return;
+    }
+
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "The new data will replace the old data.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, save it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: 'insert_bppb_kontrabon_edit.php',
+                type: 'POST',
+                data: {data: JSON.stringify(dataArr)},
+                success: function(res) {
+                    // alert(JSON.stringify(res));
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Saved!',
+                        text: 'Your data has been successfully saved.'
+                    }).then(() => {
+                        // Refresh table or close modal
+                        location.reload();
+                    });
+                },
+                error: function(xhr, status, error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Something went wrong: ' + error
+                    });
+                }
+            });
+        }
+    });
+});
 
 });
 </script>
