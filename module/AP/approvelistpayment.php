@@ -32,7 +32,7 @@ $exec = mysqli_query($conn2,$sql2);
 }
 
 if(isset($no_payment)){
-	if(strpos($no_payment, 'LP/NAG/') !== false) {
+	if(strpos($no_payment, 'LP/') !== false) {
 $sql = "update list_payment set confirm_date = '$confirm_date', confirm_user = '$approve_user', status = 'Approved',status_int = '$status_int' where no_payment = '$no_payment'";
 $execute = mysqli_query($conn2,$sql);
 
