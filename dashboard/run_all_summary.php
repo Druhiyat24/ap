@@ -1,7 +1,7 @@
 <?php
 function run_php_remote($url, $nama_file)
 {
-    // echo "▶️ Menjalankan: $nama_file ...<br>";
+    echo "▶️ Menjalankan: $nama_file ...<br>";
 
     $start = microtime(true); // mulai waktu
 
@@ -20,9 +20,9 @@ function run_php_remote($url, $nama_file)
     if ($output === false || $httpcode !== 200) {
         echo "❌ Gagal: $nama_file";
         if ($err) echo " (Error: $err)";
-        // echo " ⏱️ Waktu: {$duration}s<br><br>";
+        echo " ⏱️ Waktu: {$duration}s<br><br>";
     } else {
-        // echo "✅ Berhasil: $nama_file ⏱️ Waktu: {$duration}s<br><br>";
+        echo "✅ Berhasil: $nama_file ⏱️ Waktu: {$duration}s<br><br>";
     }
 
     ob_flush();

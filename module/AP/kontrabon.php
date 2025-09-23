@@ -328,9 +328,24 @@ if($id == '7'){
                                 <a id="delete" href=""><button style="border-radius: 6px" type="button" class="btn-xs btn-danger"><i class="fa fa-trash" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;" onclick="alert_cancel();"> Cancel</i></button></a>
                                 <br />
                                 <br />
-                                <a href="pdf_kontrabon.php?nokontrabon='.$row['no_kbon'].'" target="_blank"><button style="border-radius: 6px" type="button" class="btn-xs btn-success"><i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Pdf</i></button></a>';                
+                                <a href="pdf_kontrabon.php?nokontrabon='.$row['no_kbon'].'" target="_blank"><button style="border-radius: 6px" type="button" class="btn-xs btn-success"><i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Pdf</i></button></a>
+                                <button 
+                                type="button" 
+                                class="btn-xs btn-warning edit-btn" 
+                                data-kbon="'.$row['no_kbon'].'" 
+                                style="border-radius: 4px">
+                                <i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> <b>Edit</b></i>
+                                </button>';                
                             }elseif($status == 'draft' and $fin == '1' and $app != '1') {
-                                echo ' <a href="pdf_kontrabon.php?nokontrabon='.$row['no_kbon'].'" target="_blank"><button style="border-radius: 6px" type="button" class="btn-xs btn-success"><i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Pdf</i></button></a>';                
+                                echo ' <a href="pdf_kontrabon.php?nokontrabon='.$row['no_kbon'].'" target="_blank"><button style="border-radius: 6px" type="button" class="btn-xs btn-success"><i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Pdf</i></button></a>
+
+                                <button 
+                                type="button" 
+                                class="btn-xs btn-warning edit-btn" 
+                                data-kbon="'.$row['no_kbon'].'" 
+                                style="border-radius: 6px">
+                                <i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"></i> Edit
+                                </button>';                
                             }elseif($status == 'Cancel' and $group != 'STAFF' and $fin == '1') {
                                 echo ' <p style="font-size: 13px;margin-bottom: -1px"><i class="fa fa-ban fa-lg" style="padding-right: 3px; padding-left: 5px; color: red" ></i><b>Canceled</b></p>';                
                             }elseif($status == 'Cancel' and $group == 'STAFF' and $fin == '1') {
@@ -398,7 +413,10 @@ if($id == '7'){
 <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
-<script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>  
+<script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script> 
+<script language="JavaScript" src="../css/4.1.1/select2.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
+
 <script>
   // Hide submenus
   $('#body-row .collapse').collapse('hide'); 
@@ -446,12 +464,49 @@ function SidebarCollapse () {
             autoclose:true
         });
     });
-</script>
 
-<script>
     $(function() {
         $('.selectpicker').selectpicker();
     });
+</script>
+
+<script type="text/javascript">
+    $(document).on("click", ".edit-btn", function() {
+    let no_kbon = $(this).data("kbon");
+    alert(no_kbon);
+    let encodedNoKbon = btoa(no_kbon); // sama dengan base64_encode di PHP
+
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You are about to edit this document.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, edit it!",
+        cancelButtonText: "Cancel"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Update status ke "Updating"
+            $.ajax({
+                type: "POST",
+                url: "copy_data_kontrabon.php",
+                data: { no_kbon: no_kbon, status: "Updating" },
+                success: function(res) {
+                    if (res.trim() === "OK") {
+                         localStorage.removeItem("profit_center");
+                        // Redirect ke form edit setelah sukses update
+                        window.open("form_edit_kontrabon.php?no_kbon=" + encodedNoKbon, "_blank");
+                    } else {
+                        Swal.fire("Error", res, "error");
+                    }
+                },
+                error: function(xhr) {
+                    Swal.fire("Error", xhr.responseText, "error");
+                }
+            });
+        }
+    });
+});
+
 </script>
 
 <script type="text/javascript">
