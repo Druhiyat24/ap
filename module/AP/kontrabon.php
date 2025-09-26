@@ -226,7 +226,8 @@ if($id == '7'){
                         <th style="text-align: center;vertical-align: middle;display: none;">Tgl No Faktur</th>
                         <th style="text-align: center;vertical-align: middle;display: none;">No Supplier Invocie</th>
                         <th style="text-align: center;vertical-align: middle;display: none;">Tgl Supplier Invocie</th>
-                        <th style="text-align: center;vertical-align: middle;display: none;">PPh Code</th>                                          
+                        <th style="text-align: center;vertical-align: middle;display: none;">PPh Code</th>
+                        <th style="text-align: center;vertical-align: middle;display: none;">status closing</th>                                          
                     </tr>
                 </thead>
 
@@ -273,9 +274,19 @@ if($id == '7'){
                 while($row = mysqli_fetch_array($sql)){
                     if (!empty($row)) {
                         $kbonno = $row['no_kbon'];
+                        $tgl_kbon = $row['tgl_kbon'];
 
                         $sql45 = mysqli_query($conn2,"select a.no_kbon, (c.qty * c.price) * (d.tax / 100) as tax_return from kontrabon a left join bppb_new c on c.no_bpb = a.no_bpb left join bpb_new d on d.no_bpb = a.no_bpb where a.no_kbon = '$kbonno' and a.no_bpb != '' group by a.no_kbon");
                         while($row45 = mysqli_fetch_array($sql45)){
+
+                            $querys = mysqli_query($conn2,"select sum(total_ftr) total_ftr from kontrabon_ftr where no_kbon = '$kbonno' group by no_kbon");
+                            $rows = mysqli_fetch_array($querys);
+                            $total_ftr = $rows['total_ftr'];
+
+                            $query_closing = mysqli_query($conn2,"select status_closing FROM tbl_closing_periode WHERE '$tgl_kbon' BETWEEN tgl_awal AND tgl_akhir");
+                            $row_closing = mysqli_fetch_array($query_closing);
+                            $status_closing = $row_closing['status_closing'];
+
                             $tax_return = $row45['tax_return'];
 
 
@@ -283,7 +294,7 @@ if($id == '7'){
                             $tax1 = $row['tax'];
                             $tax = $tax1 ;
                             $pph = $row['pph_value'];
-                            $dp = $row['dp_value'];
+                            $dp = $rows['total_ftr'];
                             $return1 = $row['jml_return'];
                             $return = $return1 ;
                             $potong = $row['jml_potong'];
@@ -298,7 +309,7 @@ if($id == '7'){
                             <td style="text-align:right;" value = "'.$row['SUM(a.subtotal)'].'">'.number_format($row['SUM(a.subtotal)'],2).'</td>
                             <td style="text-align:right;" value = "'.$tax.'">'.number_format($tax,2).'</td>
                             <td style="text-align:right;" value = "'.$row['pph_value'].'">- '.number_format($row['pph_value'],2).'</td>
-                            <td style="text-align:right;" value = "'.$row['dp_value'].'">- '.number_format($row['dp_value'],2).'</td>            
+                            <td style="text-align:right;" value = "'.$dp.'">- '.number_format($dp,2).'</td>            
                             <td style="text-align:right;" value = "'.$return.'">'.number_format($return,2).'</td>
                             <td style="text-align:right;" value = "'.$ttl_potong.'">'.number_format($ttl_potong,2).'</td>
                             <td style="text-align:right;" value = "'.$total.'">'.number_format($total,2).'</td>
@@ -350,7 +361,11 @@ if($id == '7'){
                                 echo ' <p style="font-size: 13px;margin-bottom: -1px"><i class="fa fa-ban fa-lg" style="padding-right: 3px; padding-left: 5px; color: red" ></i><b>Canceled</b></p>';                
                             }elseif($status == 'Cancel' and $group == 'STAFF' and $fin == '1') {
                                 echo ' <p style="font-size: 13px;margin-bottom: -1px"><i class="fa fa-ban fa-lg" style="padding-right: 3px; padding-left: 5px; color: red" ></i><b>Canceled</b></p>';                
-                            }                                        
+                            }elseif($status == 'Updated'){
+                                echo ' <p style="font-size: 13px;margin-bottom: -1px"><i class="fas fa-check-double" style="padding-right: 3px; padding-left: 5px; color: green"></i><b>Updated</b></p>';
+                            }elseif($status == 'Updating'){
+                                echo ' <a href="form_edit_kontrabon.php?no_kbon='.base64_encode($row['no_kbon']).' "><button style="border-radius: 6px" type="button" class="btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Continue Editing</i></button></a>';  
+                            }                                 
                             echo '</td>';
                             echo '<td value = "'.$row['tgl_bpb'].'" style="display: none;">'.date("d-M-Y",strtotime($row['tgl_bpb'])).'</td>
                             <td value = "'.$row['no_po'].'" style="display: none;">'.$row['no_po'].'</td>
@@ -362,7 +377,8 @@ if($id == '7'){
                             <td value = "'.$row['no_faktur'].'" style="display: none;">'.$row['no_faktur'].'</td>
                             <td value = "'.$row['supp_inv'].'" style="display: none;">'.$row['supp_inv'].'</td>
                             <td value = "'.$row['tgl_inv'].'" style="display: none;">'.date("d-M-Y",strtotime($row['tgl_inv'])).'</td>
-                            <td value = "'.$row['pph_code'].'" style="display: none;">'.$row['pph_code'].'</td>                                                            
+                            <td value = "'.$row['pph_code'].'" style="display: none;">'.$row['pph_code'].'</td> 
+                            <td value = "'.$status_closing.'" style="display: none;">'.$status_closing.'</td>                                                            
                             </tr>';
                         }
                     }
@@ -472,19 +488,21 @@ function SidebarCollapse () {
 
 <script type="text/javascript">
     $(document).on("click", ".edit-btn", function() {
-    let no_kbon = $(this).data("kbon");
-    alert(no_kbon);
+        let no_kbon = $(this).data("kbon");
+        var closing = $(this).closest('tr').find('td:eq(25)').attr('value');
+    // alert(no_kbon + ' ' + closing);
     let encodedNoKbon = btoa(no_kbon); // sama dengan base64_encode di PHP
 
-    Swal.fire({
-        title: "Are you sure?",
-        text: "You are about to edit this document.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Yes, edit it!",
-        cancelButtonText: "Cancel"
-    }).then((result) => {
-        if (result.isConfirmed) {
+    if (closing == 'Open') {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You are about to edit this document.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, edit it!",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
             // Update status ke "Updating"
             $.ajax({
                 type: "POST",
@@ -492,9 +510,10 @@ function SidebarCollapse () {
                 data: { no_kbon: no_kbon, status: "Updating" },
                 success: function(res) {
                     if (res.trim() === "OK") {
-                         localStorage.removeItem("profit_center");
+                     localStorage.removeItem("profit_center");
                         // Redirect ke form edit setelah sukses update
-                        window.open("form_edit_kontrabon.php?no_kbon=" + encodedNoKbon, "_blank");
+                        window.location.href = "form_edit_kontrabon.php?no_kbon=" + encodedNoKbon;
+                        // window.open("form_edit_kontrabon.php?no_kbon=" + encodedNoKbon, "_blank");
                     } else {
                         Swal.fire("Error", res, "error");
                     }
@@ -505,6 +524,16 @@ function SidebarCollapse () {
             });
         }
     });
+    }else{
+        Swal.fire({
+            icon: "error",
+            title: "Sorry!",
+            text: "The kontrabon period has already been closed.",
+            confirmButtonText: "OK"
+        });
+
+    }
+
 });
 
 </script>

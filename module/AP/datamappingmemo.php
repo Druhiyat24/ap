@@ -8,7 +8,7 @@ $rate = 0;
 $eqv_idr = 0;
 $id_sub_ctg = isset($_POST['id_sub_ctg']) ? $_POST['id_sub_ctg']: null;
 
-    $sql = mysqli_query($conn1,"select id,jns_trans,ditagihkan,id_ctg,nm_ctg,id_sub_ctg,nm_sub_ctg,id_item,item_name,no_coa,nama_coa,id_cc,cc_name from memo_mapping_v2 where id_sub_ctg = '$id_sub_ctg'");
+    $sql = mysqli_query($conn1,"select a.id,jns_trans,ditagihkan,id_ctg,nm_ctg,id_sub_ctg,nm_sub_ctg,id_item,item_name,no_coa,nama_coa,id_cc,cc_name, nama_pc from memo_mapping_v2 a inner join master_pc b on b.kode_pc = a.profit_center where id_sub_ctg = '$id_sub_ctg'");
   
     $table = ' ';
     $no = 1;
@@ -22,6 +22,7 @@ $id_sub_ctg = isset($_POST['id_sub_ctg']) ? $_POST['id_sub_ctg']: null;
                             <td value = "'.$row['nama_coa'].'">'.$row['nama_coa'].'</td>
                             <td value = "'.$row['id_cc'].'">'.$row['id_cc'].'</td>
                             <td value = "'.$row['cc_name'].'">'.$row['cc_name'].'</td>
+                            <td value = "'.$row['nama_pc'].'">'.$row['nama_pc'].'</td>
                             <td style="font-size:12px;text-align:center;">';
                                 $no_coa = $row['no_coa'];
                                 $query2 = mysqli_query($conn2,"select id,no_coa,nama_coa from tbl_list_journal where no_journal like '%MEMO%' and no_coa != '2.18.02' and no_coa = '$no_coa' GROUP BY no_coa");

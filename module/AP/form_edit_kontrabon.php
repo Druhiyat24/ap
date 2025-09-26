@@ -83,186 +83,186 @@ echo $nokbon['no_kbon'];
                                 echo $top;
                             } 
 
-                            ?>">
-                            <input type="hidden" style="font-size: 13px;;" name="tanggal3" id="tanggal3" class="form-control form-control-sm"
-                            value="<?php             
-                            $start_date ='';
-                            $end_date ='';
-                            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                                $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-                                $end_date = date("Y-m-d",strtotime($_POST['end_date']));
-                            }
+                        ?>">
+                        <input type="hidden" style="font-size: 13px;;" name="tanggal3" id="tanggal3" class="form-control form-control-sm"
+                        value="<?php             
+                        $start_date ='';
+                        $end_date ='';
+                        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                            $start_date = date("Y-m-d",strtotime($_POST['start_date']));
+                            $end_date = date("Y-m-d",strtotime($_POST['end_date']));
+                        }
 
-                            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
-                            $sql = mysqli_query($conn2,"select distinct max(tgl_bpb) from bpb_new where supplier = '$nama_supp' and is_invoiced != 'Invoiced' and confirm2 != '' and status != 'Cancel' and tgl_bpb between '$start_date' and '$end_date' ");
-                            $row = mysqli_fetch_array($sql);
-                            $tgl = $row['max(tgl_bpb)'];         
+                        $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
+                        $sql = mysqli_query($conn2,"select distinct max(tgl_bpb) from bpb_new where supplier = '$nama_supp' and is_invoiced != 'Invoiced' and confirm2 != '' and status != 'Cancel' and tgl_bpb between '$start_date' and '$end_date' ");
+                        $row = mysqli_fetch_array($sql);
+                        $tgl = $row['max(tgl_bpb)'];         
 
 
-                            if(!empty($nama_supp)) {
+                        if(!empty($nama_supp)) {
 
-                                echo date("Y-m-d",strtotime($tgl));
-                            }
-                            else{
-                                echo date("Y-m-d");
-                            }  ?>">
+                            echo date("Y-m-d",strtotime($tgl));
+                        }
+                        else{
+                            echo date("Y-m-d");
+                        }  ?>">
 
-                            <input type="hidden" style="font-size: 13px;;" name="tanggal4" id="tanggal4" class="form-control form-control-sm"
-                            value="<?php             
-                            $start_date ='';
-                            $end_date ='';
-                            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                                $tkbon = date("Y-m-d",strtotime($_POST['tanggal_kbn']));
-                            }     
+                        <input type="hidden" style="font-size: 13px;;" name="tanggal4" id="tanggal4" class="form-control form-control-sm"
+                        value="<?php             
+                        $start_date ='';
+                        $end_date ='';
+                        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                            $tkbon = date("Y-m-d",strtotime($_POST['tanggal_kbn']));
+                        }     
 
-                            if(!empty($tkbon)) {
+                        if(!empty($tkbon)) {
 
-                                echo date("Y-m-d",strtotime($tkbon));
-                            }
-                            else{
-                                echo date("Y-m-d");
-                            }  ?>">
-                        </div>
-                        <!-- onchange="updateNoKontraBon()" -->
-                        <div class="col-md-3 mb-3">            
-                            <label for="profit_center"><b>Profit Center <i style="color: red;">*</i></b></label>            
-                            <select class="form-control selectpicker" name="profit_center" id="profit_center" data-dropup-auto="false" data-live-search="true">
-                                <option value="" disabled selected="true">Select Profit Center</option>                                                 
-                                <?php
-                                $sql = mysqli_query($conn2,"select profit_center, nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from ap_edit_kontrabon_h a left join master_pc b on b.kode_pc = a.profit_center where no_kbon = '$no_kbon'");
-                                $row = mysqli_fetch_array($sql);  
-                                $kode_pc = $row['profit_center']; 
-                                $nama_pc = $row['nama_pc'];  
-                                $isSelected = ' selected="selected"';                      
-                                if(!empty($no_kbon)) {
-                                    echo '<option value="'.$kode_pc.'"'.$isSelected.'">'. $nama_pc .'</option>'; 
-                                }
-                                else{
-                                    echo '<option value="-">Select Supplier</option>'; 
-                                }
-
-                                $profit_center = isset($_POST['profit_center']) ? $_POST['profit_center']: null;               
-                                $sql = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active' and kode_pc != '$kode_pc'");
-                                while ($row = mysqli_fetch_array($sql)) {
-                                    $data = $row['kode_pc'];
-                                    $data2 = $row['nama_pc'];
-                                    if($row['kode_pc'] == $profit_center ){
-                                        $isSelected = ' selected="selected"';
-                                    }else{
-                                        $isSelected = '';
-
-                                    }
-                                    echo '<option value="'.$data.'"'.$isSelected.'">'. $data2 .'</option>';    
-                                }?>
-                            </select>  
-
-                            <input type="hidden" readonly style="font-size: 13px;;" class="form-control form-control-sm" id="jurnal" name="jurnal" 
-                            value="0" placeholder="<?php echo "KONTRA BON" ?>">
-                        </div>
-
-                        <div class="col-md-2 mb-3">            
-                            <label for="matauang"><b>Currency</b></label>
-                            <input type="text" readonly class="form-control form-control-sm" id="matauang" name="matauang" value="<?php 
-                            $sql = mysqli_query($conn2,"select curr from ap_edit_kontrabon_h where no_kbon = '$no_kbon'");
-                            $row = mysqli_fetch_array($sql);                         
-                            echo $row['curr'];
-                            ?>">                      
-                        </div>                                         
-
-                        <div class="col-md-3 mb-3">            
-                            <label for="txt_inv"><b>No Supplier Invoice <i style="color: red;">*</i></b></label>          
-                            <input type="text" style="font-size: 13px;;" class="form-control form-control-sm" id="txt_inv" name="txt_inv" 
-                            value="<?php
-                            $sql = mysqli_query($conn2,"select supp_inv from ap_edit_kontrabon_h where no_kbon = '$no_kbon'");
-                            $row = mysqli_fetch_array($sql);                         
-                            $supp_inv = $row['supp_inv'];
-
-                            $txt_inv = isset($_POST['txt_inv']) ? $_POST['txt_inv']: $supp_inv;
-                            echo $txt_inv; 
-                            ?>" required>
-                        </div>
-
-                        <div class="col-md-2 mb-3">            
-                            <label for="txt_tglsi"><b>Supplier Invoice Date <i style="color: red;">*</i></b></label>   
-                            <input type="text" style="font-size: 13px;;" class="form-control form-control-sm tanggal" name="txt_tglsi" id="txt_tglsi" 
-                            value="<?php 
-                            $sql = mysqli_query($conn2,"select tgl_inv from ap_edit_kontrabon where no_kbon = '$no_kbon'");
-                            $row = mysqli_fetch_array($sql);                         
+                            echo date("Y-m-d",strtotime($tkbon));
+                        }
+                        else{
+                            echo date("Y-m-d");
+                        }  ?>">
+                    </div>
+                    <!-- onchange="updateNoKontraBon()" -->
+                    <div class="col-md-3 mb-3">            
+                        <label for="profit_center"><b>Profit Center <i style="color: red;">*</i></b></label>            
+                        <select class="form-control selectpicker" name="profit_center" id="profit_center" data-dropup-auto="false" data-live-search="true">
+                            <option value="" disabled selected="true">Select Profit Center</option>                                                 
+                            <?php
+                            $sql = mysqli_query($conn2,"select profit_center, nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from ap_edit_kontrabon_h a left join master_pc b on b.kode_pc = a.profit_center where no_kbon = '$no_kbon'");
+                            $row = mysqli_fetch_array($sql);  
+                            $kode_pc = $row['profit_center']; 
+                            $nama_pc = $row['nama_pc'];  
+                            $isSelected = ' selected="selected"';                      
                             if(!empty($no_kbon)) {
-                                echo date("Y-m-d",strtotime($row['tgl_inv']));
+                                echo '<option value="'.$kode_pc.'"'.$isSelected.'">'. $nama_pc .'</option>'; 
                             }
                             else{
-                                echo date("Y-m-d");
-                            }  ?>">
-                        </div>
-
-                        <div class="col-md-3 mb-3">            
-                            <label for="no_faktur"><b>No Tax Invoice <i style="color: red;">*</i></b></label>            
-                            <input type="text" style="font-size: 13px;;" class="form-control form-control-sm" id="no_faktur" name="no_faktur" 
-                            value="<?php 
-                            $sql = mysqli_query($conn2,"select no_faktur from ap_edit_kontrabon_h where no_kbon = '$no_kbon'");
-                            $row = mysqli_fetch_array($sql);                         
-                            $faktur_h = $row['no_faktur'];
-
-                            $no_faktur = isset($_POST['no_faktur']) ? $_POST['no_faktur']: $faktur_h;
-                            echo $no_faktur; 
-                            ?>" required>
-                        </div>
-
-                        <div class="col-md-2 mb-3">            
-                            <label for="txt_tgltempo"><b>Due Date <i style="color: red;">*</i></b></label>   
-                            <input type="text" style="font-size: 13px;;" class="form-control form-control-sm tanggal1" name="txt_tgltempo" id="txt_tgltempo" 
-                            value="<?php 
-                            $sql = mysqli_query($conn2,"select tgl_tempo from ap_edit_kontrabon where no_kbon = '$no_kbon'");
-                            $row = mysqli_fetch_array($sql);                         
-                            if(!empty($no_kbon)) {
-                                echo date("Y-m-d",strtotime($row['tgl_tempo']));
+                                echo '<option value="-">Select Supplier</option>'; 
                             }
-                            else{
-                                echo date("Y-m-d");
-                            }  ?>">
-                        </div>
 
+                            $profit_center = isset($_POST['profit_center']) ? $_POST['profit_center']: null;               
+                            $sql = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active' and kode_pc != '$kode_pc'");
+                            while ($row = mysqli_fetch_array($sql)) {
+                                $data = $row['kode_pc'];
+                                $data2 = $row['nama_pc'];
+                                if($row['kode_pc'] == $profit_center ){
+                                    $isSelected = ' selected="selected"';
+                                }else{
+                                    $isSelected = '';
 
-                        <div class="col-md-6 mb-3">
-                            <label for="nama_supp"><b>Supplier</b></label>            
-                            <div class="input-group">
-                                <input type="text" readonly style="font-size: 13px;" class="form-control" name="txt_supp" id="txt_supp" 
-                                value="<?php 
-                                $sql = mysqli_query($conn2,"select nama_supp from ap_edit_kontrabon_h where no_kbon = '$no_kbon'");
-                                $row = mysqli_fetch_array($sql);                         
-                                $nama_supp_h = $row['nama_supp'];
-                                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: $nama_supp_h;
-                                echo $nama_supp; 
-                                ?>">
+                                }
+                                echo '<option value="'.$data.'"'.$isSelected.'">'. $data2 .'</option>';    
+                            }?>
+                        </select>  
 
+                        <input type="hidden" readonly style="font-size: 13px;;" class="form-control form-control-sm" id="jurnal" name="jurnal" 
+                        value="0" placeholder="<?php echo "KONTRA BON" ?>">
+                    </div>
 
-                                <div class="input-group-append col">
-                                    <button 
-                                    type="button"
-                                    name="edit_header"
-                                    id="edit_header"
-                                    class="btn btn-warning"
-                                    style="
-                                    line-height: 1;
-                                    padding: 4px 12px;
-                                    font-size: 0.875rem;
-                                    border-radius: 6px;">
-                                    <i class="fas fa-save"></i> Edit Header
-                                </button>
+                    <div class="col-md-2 mb-3">            
+                        <label for="matauang"><b>Currency</b></label>
+                        <input type="text" readonly class="form-control form-control-sm" id="matauang" name="matauang" value="<?php 
+                        $sql = mysqli_query($conn2,"select curr from ap_edit_kontrabon_h where no_kbon = '$no_kbon'");
+                        $row = mysqli_fetch_array($sql);                         
+                        echo $row['curr'];
+                    ?>">                      
+                </div>                                         
 
-                                <input type="hidden" name="bpbvalue" id="bpbvalue" value="">      
-                            </div>
+                <div class="col-md-3 mb-3">            
+                    <label for="txt_inv"><b>No Supplier Invoice <i style="color: red;">*</i></b></label>          
+                    <input type="text" style="font-size: 13px;;" class="form-control form-control-sm" id="txt_inv" name="txt_inv" 
+                    value="<?php
+                    $sql = mysqli_query($conn2,"select supp_inv from ap_edit_kontrabon_h where no_kbon = '$no_kbon'");
+                    $row = mysqli_fetch_array($sql);                         
+                    $supp_inv = $row['supp_inv'];
 
-                        </div>
-                    </div>                   
-                </div>
+                    $txt_inv = isset($_POST['txt_inv']) ? $_POST['txt_inv']: $supp_inv;
+                    echo $txt_inv; 
+                ?>" required>
             </div>
-        </div>
-    </form>
 
-    <form id="form-simpan">
-        <div class="card shadow-sm mb-4">
+            <div class="col-md-2 mb-3">            
+                <label for="txt_tglsi"><b>Supplier Invoice Date <i style="color: red;">*</i></b></label>   
+                <input type="text" style="font-size: 13px;;" class="form-control form-control-sm tanggal" name="txt_tglsi" id="txt_tglsi" 
+                value="<?php 
+                $sql = mysqli_query($conn2,"select tgl_inv from ap_edit_kontrabon where no_kbon = '$no_kbon'");
+                $row = mysqli_fetch_array($sql);                         
+                if(!empty($no_kbon)) {
+                    echo date("Y-m-d",strtotime($row['tgl_inv']));
+                }
+                else{
+                    echo date("Y-m-d");
+                }  ?>">
+            </div>
+
+            <div class="col-md-3 mb-3">            
+                <label for="no_faktur"><b>No Tax Invoice <i style="color: red;">*</i></b></label>            
+                <input type="text" style="font-size: 13px;;" class="form-control form-control-sm" id="no_faktur" name="no_faktur" 
+                value="<?php 
+                $sql = mysqli_query($conn2,"select no_faktur from ap_edit_kontrabon_h where no_kbon = '$no_kbon'");
+                $row = mysqli_fetch_array($sql);                         
+                $faktur_h = $row['no_faktur'];
+
+                $no_faktur = isset($_POST['no_faktur']) ? $_POST['no_faktur']: $faktur_h;
+                echo $no_faktur; 
+            ?>" required>
+        </div>
+
+        <div class="col-md-2 mb-3">            
+            <label for="txt_tgltempo"><b>Due Date <i style="color: red;">*</i></b></label>   
+            <input type="text" style="font-size: 13px;;" class="form-control form-control-sm tanggal1" name="txt_tgltempo" id="txt_tgltempo" 
+            value="<?php 
+            $sql = mysqli_query($conn2,"select tgl_tempo from ap_edit_kontrabon where no_kbon = '$no_kbon'");
+            $row = mysqli_fetch_array($sql);                         
+            if(!empty($no_kbon)) {
+                echo date("Y-m-d",strtotime($row['tgl_tempo']));
+            }
+            else{
+                echo date("Y-m-d");
+            }  ?>">
+        </div>
+
+
+        <div class="col-md-6 mb-3">
+            <label for="nama_supp"><b>Supplier</b></label>            
+            <div class="input-group">
+                <input type="text" readonly style="font-size: 13px;" class="form-control" name="txt_supp" id="txt_supp" 
+                value="<?php 
+                $sql = mysqli_query($conn2,"select nama_supp from ap_edit_kontrabon_h where no_kbon = '$no_kbon'");
+                $row = mysqli_fetch_array($sql);                         
+                $nama_supp_h = $row['nama_supp'];
+                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: $nama_supp_h;
+                echo $nama_supp; 
+            ?>">
+
+
+            <div class="input-group-append col">
+                <button 
+                type="button"
+                name="edit_header"
+                id="edit_header"
+                class="btn btn-warning"
+                style="
+                line-height: 1;
+                padding: 4px 12px;
+                font-size: 0.875rem;
+                border-radius: 6px;">
+                <i class="fas fa-save"></i> Edit Header
+            </button>
+
+            <input type="hidden" name="bpbvalue" id="bpbvalue" value="">      
+        </div>
+
+    </div>
+</div>                   
+</div>
+</div>
+</div>
+</form>
+
+<form id="form-simpan">
+    <div class="card shadow-sm mb-4">
                 <!-- <div class="card-header" style="background-color: #60A5FA; color: white; font-weight: bold;">
                     Data FTR
                 </div> -->
@@ -313,21 +313,21 @@ echo $nokbon['no_kbon'];
                                     // $id_supplier = $row['id_supplier'];
                                     // $pono = isset($row['pono']) ? $row['pono'] : null;
 
-                                 echo '<tr>
-                                 <td style="display: none;"><input type="checkbox" class="chkA"  id="select" name="select[]" value="" <?php if(in_array("1",$_POST[select])) echo "checked=checked";? disabled></td>                        
-                                 <td value="'.$row['no_bpb'].'">'.$row['no_bpb'].'</td>
-                                 <td value="'.$row['no_po'].'">'.$row['no_po'].'</td>                            
-                                 <td dates="'.date("Y-m-d",strtotime($row['tgl_bpb'])).'" value="'.$row['tgl_bpb'].'">'.date("d-M-Y",strtotime($row['tgl_bpb'])).'</td>                            
-                                 <td class="dt_price" style="width:100px;text-align:right;" data-link="1" data-subtotal="'.$row['subtotal'].'">'.number_format($row['subtotal'],2).'</td>
-                                 <td class="dt_tax" style="width:100px;text-align:right;" data-tax="'.$row['tax'].'">'.number_format($row['tax'],2).'</td>
-                                 <td style="width:200px;">                            
-                                 <select class="form-control selectpicker" style="width:150px;" name="combo_pph" id="combo_pph" disabled>
-                                 <option data-idtax="'.$row['pph_code'].'" value="'.$row['percentage'].'">'.$row['kriteria'].'</option>';
-                                 if ($row['pph_code'] != 0) {
-                                     echo '<option data-idtax="0" value="0">Non PPH</option>';
-                                 }
+                                   echo '<tr>
+                                   <td style="display: none;"><input type="checkbox" class="chkA"  id="select" name="select[]" value="" <?php if(in_array("1",$_POST[select])) echo "checked=checked";? disabled></td>                        
+                                   <td value="'.$row['no_bpb'].'">'.$row['no_bpb'].'</td>
+                                   <td value="'.$row['no_po'].'">'.$row['no_po'].'</td>                            
+                                   <td dates="'.date("Y-m-d",strtotime($row['tgl_bpb'])).'" value="'.$row['tgl_bpb'].'">'.date("d-M-Y",strtotime($row['tgl_bpb'])).'</td>                            
+                                   <td class="dt_price" style="width:100px;text-align:right;" data-link="1" data-subtotal="'.$row['subtotal'].'">'.number_format($row['subtotal'],2).'</td>
+                                   <td class="dt_tax" style="width:100px;text-align:right;" data-tax="'.$row['tax'].'">'.number_format($row['tax'],2).'</td>
+                                   <td style="width:200px;">                            
+                                   <select class="form-control selectpicker" style="width:150px;" name="combo_pph" id="combo_pph" disabled>
+                                   <option data-idtax="'.$row['pph_code'].'" value="'.$row['percentage'].'">'.$row['kriteria'].'</option>';
+                                   if ($row['pph_code'] != 0) {
+                                       echo '<option data-idtax="0" value="0">Non PPH</option>';
+                                   }
 
-                                 $sql_tax = mysqli_query(
+                                   $sql_tax = mysqli_query(
                                     $conn2,
                                     "SELECT idtax, kriteria, percentage 
                                     FROM mtax 
@@ -335,7 +335,7 @@ echo $nokbon['no_kbon'];
                                     AND idtax != '".$row['idtax']."'"
                                 );
 
-                                 while ($tax = mysqli_fetch_assoc($sql_tax)) {
+                                   while ($tax = mysqli_fetch_assoc($sql_tax)) {
                                     echo '<option data-idtax="'.$tax['idtax'].'" value="'.$tax['percentage'].'">'.$tax['kriteria'].'</option>';
                                 }
 
@@ -414,8 +414,8 @@ echo $nokbon['no_kbon'];
                                 <?php
 
                                 $querys = mysqli_query($conn2,"select a.no_ro, no_bppb, tgl_bppb, no_bpb, total_ro, curr, mattype, matclass, n_code_category, cus_ctg from ap_edit_return_kb a INNER JOIN (select no_bppb, no_ro, tgl_bppb, no_bpb, curr from bppb_new GROUP BY no_bppb) b on b.no_bppb = a.no_bpbrtn LEFT JOIN (select reff_doc, a.no_coa, mattype, matclass, n_code_category, cus_ctg from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa where no_journal = '$no_kbon' and a.nama_coa like '%GR/IR%' and type_journal = 'AP - Kontrabon' GROUP BY reff_doc
-                                   UNION
-                                   select reff_doc, a.no_coa, mattype, matclass, n_code_category, cus_ctg from ap_journal_temp a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa where no_journal = '$no_kbon' and a.nama_coa like '%GR/IR%' and type_journal = 'AP - Kontrabon' GROUP BY reff_doc) c on c.reff_doc = b.no_bppb where no_kbon = '$no_kbon'");
+                                 UNION
+                                 select reff_doc, a.no_coa, mattype, matclass, n_code_category, cus_ctg from ap_journal_temp a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa where no_journal = '$no_kbon' and a.nama_coa like '%GR/IR%' and type_journal = 'AP - Kontrabon' GROUP BY reff_doc) c on c.reff_doc = b.no_bppb where no_kbon = '$no_kbon'");
 
                                 while($row1 = mysqli_fetch_array($querys)){
                                     echo '<tr>
@@ -442,19 +442,19 @@ echo $nokbon['no_kbon'];
                     <div class="form-row col mt-3">
                         <label for="potongan" class="col-form-label" style="width: 150px;font-size: 13px;;"><b><u>Total Return</u></b></label>
                         <div class="col-md-2 mb-3">    
-                           <?php
-                           $sql = mysqli_query($conn2,"select sum(total_ro) total_ro from ap_edit_return_kb where no_kbon = '$no_kbon'");
-                           $row = mysqli_fetch_array($sql);                         
-                           $total_ro = $row['total_ro'];
-                           ?>                                  
-                           <input type="text" class="form-control form-control-sm" name="potongan" id="potongan" value="<?= number_format($total_ro,2); ?>" placeholder="0.00" style="font-size: 13px;;text-align: right;" readonly>
-                           <input type="hidden" name="potongan_h" id="potongan_h" value="<?= $total_ro; ?>">
-                           <input type="hidden" name="h_mattype" id="h_mattype" value="">
-                           <input type="hidden" name="h_matclass" id="h_matclass" value="">
-                           <input type="hidden" name="h_code_ctg" id="h_code_ctg" value="">
-                           <input type="hidden" name="h_cus_ctg" id="h_cus_ctg" value="">
-                       </div>
-                       <div class="col-md-2 mb-3">
+                         <?php
+                         $sql = mysqli_query($conn2,"select sum(total_ro) total_ro from ap_edit_return_kb where no_kbon = '$no_kbon'");
+                         $row = mysqli_fetch_array($sql);                         
+                         $total_ro = $row['total_ro'];
+                         ?>                                  
+                         <input type="text" class="form-control form-control-sm" name="potongan" id="potongan" value="<?= number_format($total_ro,2); ?>" placeholder="0.00" style="font-size: 13px;;text-align: right;" readonly>
+                         <input type="hidden" name="potongan_h" id="potongan_h" value="<?= $total_ro; ?>">
+                         <input type="hidden" name="h_mattype" id="h_mattype" value="">
+                         <input type="hidden" name="h_matclass" id="h_matclass" value="">
+                         <input type="hidden" name="h_code_ctg" id="h_code_ctg" value="">
+                         <input type="hidden" name="h_cus_ctg" id="h_cus_ctg" value="">
+                     </div>
+                     <div class="col-md-2 mb-3">
                         <button 
                         type="button" 
                         id="edit_bppb" 
@@ -725,7 +725,7 @@ echo $nokbon['no_kbon'];
     <button type="button" class="btn btn-primary btn-sm me-2" id="simpan">
       <span class="fa fa-floppy-o"></span> Save
   </button>
-  <button type="button" class="btn btn-danger btn-sm" onclick="location.href='kontrabon.php'">
+  <button type="button" class="btn btn-danger btn-sm" id="batal">
       <span class="fa fa-angle-double-left"></span> Back
   </button>
 </div>
@@ -863,7 +863,7 @@ echo $nokbon['no_kbon'];
         </div>
 
         <div class="col-md-6">
-           <div class="form-group">
+         <div class="form-group">
             <label><b>BPB Date</b></label>
             <div class="d-flex align-items-center gap-2">
               <input type="text" class="form-control form-control-sm tanggal_fil mr-2" id="start_date_e1" name="start_date_e1" 
@@ -995,7 +995,7 @@ echo $nokbon['no_kbon'];
         </div>
 
         <div class="col-md-6">
-           <div class="form-group">
+         <div class="form-group">
             <label><b>BPPB Date</b></label>
             <div class="d-flex align-items-center gap-2">
               <input type="text" class="form-control form-control-sm tanggal_fil mr-2" id="start_date_e2" name="start_date_e2" 
@@ -1109,7 +1109,7 @@ echo $nokbon['no_kbon'];
         </div>
 
         <div class="col-md-6">
-           <div class="form-group">
+         <div class="form-group">
             <label><b>FTR Date</b></label>
             <div class="d-flex align-items-center gap-2">
               <input type="text" class="form-control form-control-sm tanggal_fil mr-2" id="start_date_e3" name="start_date_e3" 
@@ -1506,7 +1506,7 @@ function SidebarCollapse () {
             $("input[type=checkbox]:checked").each(function () {
                 var select_amount = $(this).closest('#mytable2_edit tr').find('td:eq(6) input');
                 select_amount.prop('disabled', false);
-                var price = parseFloat($(this).closest('tr').find('td:eq(5)').attr('total-ftr'),10) || 0;
+                var price = parseFloat($(this).closest('#mytable2_edit tr').find('td:eq(5)').attr('total-ftr'),10) || 0;
                 sum_sub += price;
             });
 
@@ -2769,7 +2769,7 @@ if (!processedPO.includes(po)) {
         var tgl_kbon_h = document.getElementById('tanggal').value;
         var tgl_kbon_p = document.getElementById('tgl_perhitungan').value;
         var tgl_kbon_s = document.getElementById('tanggal4').value; 
-        var nama_supp_h = $('select[name=nama_supp] option').filter(':selected').val();
+        var nama_supp_h = document.getElementById('txt_supp').value;
         var no_faktur_h = document.getElementById('no_faktur').value;
         var no_po_h = document.getElementById('po').value;
         var supp_inv_h = document.getElementById('txt_inv').value;
@@ -2800,7 +2800,7 @@ if (!processedPO.includes(po)) {
         if(total_h != '' && total_h >= 0 ){        
             $.ajax({
                 type:'POST',
-                url:'insertkbon_h.php',
+                url:'insert_kontrabon_edit_all.php',
                 data: {'no_kbon_h':no_kbon_h, 'tgl_kbon_h':tgl_kbon_h,'nama_supp_h':nama_supp_h, 'no_faktur_h':no_faktur_h, 'supp_inv_h':supp_inv_h, 'tgl_inv_h':tgl_inv_h, 'tgl_tempo_h':tgl_tempo_h, 'curr_h':curr_h, 'create_user_h':create_user_h, 'sub_h':sub_h, 'tax_h':tax_h, 'dp_h':dp_h, 'pph_h':pph_h, 'total_h':total_h, 'jml_return':jml_return, 'lr_kurs':lr_kurs, 's_qty':s_qty, 's_harga':s_harga, 'materai':materai, 'pot_beli':pot_beli, 'ekspedisi':ekspedisi, 'moq':moq, 'jml_potong':jml_potong, 'no_po_h':no_po_h, 'tgl_kbon_s':tgl_kbon_s, 'unik_code':unik_code, 'mattype':mattype, 'matclass':matclass, 'n_code_category':n_code_category, 'cus_ctg':cus_ctg, 'profit_center':profit_center},
                 cache: 'false',
                 close: function(e){
@@ -2808,115 +2808,19 @@ if (!processedPO.includes(po)) {
                 },
                 success: function(response){
                     localStorage.removeItem("profit_center");
-                    $("input[type=checkbox]:checked").each(function () {
-                        //header
-                        var no_kbon = document.getElementById('nokontrabon').value; 
-                        var unik_code = document.getElementById('unik_code').value;       
-                        var tgl_kbon = document.getElementById('tanggal').value;
-                        var tgl_kbon_p = document.getElementById('tgl_perhitungan').value;
-                        var jurnal = document.getElementById('jurnal').value;
-                        var nama_supp = $('select[name=nama_supp] option').filter(':selected').val();
-                        var profit_center = $('select[name=profit_center] option').filter(':selected').val();
-                        var no_faktur = document.getElementById('no_faktur').value;
-                        var supp_inv = document.getElementById('txt_inv').value;
-                        var tgl_inv = document.getElementById('txt_tglsi').value;
-                        var tgl_tempo = document.getElementById('txt_tgltempo').value;        
-                        var curr = document.getElementById('matauang').value;
-                        var ceklist = document.getElementById('select').value;          
-                        var total = document.getElementById('total_h').value; 
-                        var dp = document.getElementById('ttl_dp_h').value;
-                        var start_date = document.getElementById('start_date').value;
-                        var end_date = document.getElementById('end_date').value;  
-                        var create_user = '<?php echo $user; ?>';
-                        //table bpb                               
-                        var no_bpb = $(this).closest('#mytable tr').find('td:eq(1)').attr('value');
-                        var no_po = $(this).closest('#mytable tr').find('td:eq(2)').attr('value');
-                        var tgl_bpb = $(this).closest('#mytable tr').find('td:eq(3)').attr('value');
-                        var price = parseFloat($(this).closest('#mytable tr').find('td:eq(4)').attr('data-subtotal'),10) ||0;
-                        var tax = parseFloat($(this).closest('#mytable tr').find('td:eq(5)').attr('data-tax'),10) ||0;
-                        var cash = parseFloat($(this).closest('#mytable tr').find('td:eq(8)').attr('data'),10) ||0;
-                        var tgl_po = $(this).closest('#mytable tr').find('td:eq(12)').attr('value');
-                        var pph = parseFloat($(this).closest('#mytable tr').find('td:eq(6)').find('select[name=combo_pph] option').filter(':selected').val(),10) ||0;
-                        var idtax = $(this).closest('#mytable tr').find('td:eq(6)').find('select[name=combo_pph] option').filter(':selected').attr('data-idtax');
-                        //table ro
-                        var no_ro = $(this).closest('#mytable1 tr').find('td:eq(1)').attr('data-ro');
-                        var no_bppb = $(this).closest('#mytable1 tr').find('td:eq(2)').attr('valuess');
-                        var ttl_ro = parseFloat($(this).closest('#mytable1 tr').find('td:eq(6) input').val(),10) || 0;
-                        var mattype = $(this).closest('#mytable tr').find('td:eq(15)').attr('value') || $(this).closest('#mytable1 tr').find('td:eq(8)').attr('valuess');
-                        var matclass = $(this).closest('#mytable tr').find('td:eq(16)').attr('value') || $(this).closest('#mytable1 tr').find('td:eq(9)').attr('valuess');
-                        var n_code_category = $(this).closest('#mytable tr').find('td:eq(17)').attr('value') || $(this).closest('#mytable1 tr').find('td:eq(10)').attr('valuess');
-                        var cus_ctg = $(this).closest('#mytable tr').find('td:eq(18)').attr('value') || $(this).closest('#mytable1 tr').find('td:eq(11)').attr('valuess'); 
-
-                        //table ftr 
-                        var no_ftr = $(this).closest('#mytable2 tr').find('td:eq(1)').attr('no-ftr');
-                        var no_po_ftr = $(this).closest('#mytable2 tr').find('td:eq(2)').attr('po-ftr');
-                        var tgl_po_ftr = $(this).closest('#mytable2 tr').find('td:eq(3)').attr('tglpo-ftr');
-                        var no_pi_ftr = $(this).closest('#mytable2 tr').find('td:eq(4)').attr('pi-ftr');
-                        var ttl_ftr = parseFloat($(this).closest('#mytable2 tr').find('td:eq(6) input').val(),10) || 0;
-                        var curr_ftr = $(this).closest('#mytable2 tr').find('td:eq(7)').attr('curr-ftr');
-                        var kbon_ftr = $(this).closest('#mytable2 tr').find('td:eq(8)').attr('kbon-ftr');
-                        var tglkbon_ftr = $(this).closest('#mytable2 tr').find('td:eq(9)').attr('tglkbon-ftr');
-                        var lp_ftr = $(this).closest('#mytable2 tr').find('td:eq(10)').attr('lp-ftr');
-                        var tgllp_ftr = $(this).closest('#mytable2 tr').find('td:eq(11)').attr('tgllp-ftr');
-                        var pv_ftr = $(this).closest('#mytable2 tr').find('td:eq(12)').attr('pv-ftr');
-                        var bankout_ftr = $(this).closest('#mytable2 tr').find('td:eq(13)').attr('bankout-ftr');
-                        var bankoutdate_ftr = $(this).closest('#mytable2 tr').find('td:eq(14)').attr('bankoutdate-ftr');
-                        var coa_ftr = $(this).closest('#mytable2 tr').find('td:eq(15)').attr('coa-ftr');
-
-                        var sum_pph = 0;
-                        var sum_sub = 0;
-                        var sum_tax = 0;
-                        var sum_total = 0;
-                        var sum_dp = 0;
-                        sum_sub += price;
-                        sum_tax += tax;
-                        sum_dp += dp;  
-                        sum_pph += sum_sub * (pph / 100);   
-                        sum_total += total - sum_pph - sum_dp;
-        // && tgl_kbon >= tgl_kbon_p
-        if(total != '' && total >= 0){     
-            $.ajax({
-                type:'POST',
-                url:'insertkbon.php',
-                data: {'no_kbon':no_kbon, 'tgl_kbon':tgl_kbon, 'jurnal':jurnal, 'no_bpb':no_bpb, 'no_po':no_po,  'no_ro':no_ro,
-                'nama_supp':nama_supp, 'tgl_bpb':tgl_bpb, 'no_faktur':no_faktur, 'supp_inv':supp_inv, 'tgl_inv':tgl_inv, 'tgl_tempo':tgl_tempo,
-                'curr':curr, 'ceklist':ceklist, 'cash':cash, 'create_user':create_user, 'sum_sub':sum_sub, 'sum_tax':sum_tax, 'sum_dp':sum_dp, 'sum_pph':sum_pph, 'sum_total':sum_total, 'start_date':start_date, 'end_date':end_date, 'pph':pph, 'idtax':idtax, 'tgl_po':tgl_po, 'ttl_ro':ttl_ro, 'no_bppb':no_bppb, 'unik_code':unik_code, 'mattype':mattype, 'matclass':matclass, 'n_code_category':n_code_category, 'cus_ctg':cus_ctg, 'no_ftr':no_ftr, 'no_po_ftr':no_po_ftr, 'tgl_po_ftr':tgl_po_ftr, 'no_pi_ftr':no_pi_ftr, 'ttl_ftr':ttl_ftr, 'curr_ftr':curr_ftr, 'kbon_ftr':kbon_ftr, 'tglkbon_ftr':tglkbon_ftr, 'lp_ftr':lp_ftr, 'tgllp_ftr':tgllp_ftr, 'pv_ftr':pv_ftr, 'bankout_ftr':bankout_ftr, 'bankoutdate_ftr':bankoutdate_ftr, 'coa_ftr':coa_ftr, 'profit_center':profit_center},
-                cache: 'false',
-                close: function(e){
-                    e.preventDefault();
-                },
-                success: function(response){
                     console.log(response);
-                  // alert(response);
+                    alert('Data Saved Successfully');
+                    window.location = 'kontrabon.php';
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(xhr);
+                    alert(xhr);
+                }
+            }); 
+        }  
+              
 
-                  window.location = 'kontrabon.php';
-              },
-              error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                alert(xhr);
-            }
-        });
-            // console.log(data);
-        }
-    });
-console.log(response);
-alert(response);
-window.location = 'kontrabon.php';
-},
-error: function (xhr, ajaxOptions, thrownError) {
-    console.log(xhr);
-    alert(xhr);
-}
-}); 
-}  
-
-        // else if (document.getElementById('tanggal').value < document.getElementById('tgl_perhitungan').value){
-        // alert("Contrabon Date Can't be less than BPB Date ");
-        // }               
-
-        if(document.querySelectorAll("input[name='select[]']:checked").length == 0){
-            alert("Please check the BPB number");
-        }else if (document.getElementById('total_h').value == ''){
+       if (document.getElementById('total_h').value == ''){
             document.getElementById('calculate').focus();
             alert("Please do the calculation ");
         }else if (document.getElementById('total_h').value < 0){
@@ -2924,6 +2828,30 @@ error: function (xhr, ajaxOptions, thrownError) {
         }else{
 
         } 
+    });
+
+
+    $("#form-simpan").on("click", "#batal", function(){
+        var no_kbon_h = document.getElementById('nokontrabon').value;
+      
+            $.ajax({
+                type:'POST',
+                url:'batal_edit_kontrabon.php',
+                data: {'no_kbon_h':no_kbon_h},
+                cache: 'false',
+                close: function(e){
+                    e.preventDefault();
+                },
+                success: function(response){
+                    localStorage.removeItem("profit_center");
+                    window.location = 'kontrabon.php';
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(xhr);
+                    alert(xhr);
+                }
+            });  
+              
     });
 </script>
 

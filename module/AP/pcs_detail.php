@@ -124,9 +124,9 @@ $insert_date = date("Y-m-d H:i:s");?>
             <div class="col-md-12">
                 </br>
     <?php 
-        include 'pcs detail/ap_bpb.php'; 
+        include 'pcs detail/ap_bpb_new.php'; 
  
-        include 'pcs detail/ap_kb.php'; 
+        include 'pcs detail/ap_kbon_new.php'; 
  
         include 'pcs detail/ap_lp.php'; 
 

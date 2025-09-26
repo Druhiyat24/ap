@@ -19,20 +19,20 @@ $post_date = date("Y-m-d H:i:s");
 $update_date = date("Y-m-d H:i:s");
 $status = 'draft';
 $create_user_h = $_POST['create_user_h'];
-$sub_h = $_POST['sub_h'];
-$tax_h = $_POST['tax_h'];
-$dp_h = $_POST['dp_h'];
-$total_h = $_POST['total_h'];
-$balance = $total_h;
-$jml_return = $_POST['jml_return'];
-$lr_kurs = $_POST['lr_kurs'];
-$s_qty = $_POST['s_qty'];
-$s_harga = $_POST['s_harga'];
-$materai = $_POST['materai'];
-$pot_beli = $_POST['pot_beli'];
-$ekspedisi = $_POST['ekspedisi'];
-$moq = $_POST['moq'];
-$jml_potong = $_POST['jml_potong'];
+$sub_h      = $_POST['sub_h']      ?? 0;
+$tax_h      = $_POST['tax_h']      ?? 0;
+$dp_h       = $_POST['dp_h']       ?? 0;
+$total_h    = $_POST['total_h']    ?? 0;
+$balance    = $total_h;
+$jml_return = $_POST['jml_return'] ?? 0;
+$lr_kurs    = $_POST['lr_kurs']    ?? 0;
+$s_qty      = $_POST['s_qty']      ?? 0;
+$s_harga    = $_POST['s_harga']    ?? 0;
+$materai    = $_POST['materai']    ?? 0;
+$pot_beli   = $_POST['pot_beli']   ?? 0;
+$ekspedisi  = $_POST['ekspedisi']  ?? 0;
+$moq        = $_POST['moq']        ?? 0;
+$jml_potong = $_POST['jml_potong'] ?? 0;
 $status_invoice = 'Invoiced';
 $mattype = $_POST['mattype'];
 $matclass = $_POST['matclass'];
@@ -94,16 +94,28 @@ if ($jml_potong == '') {
 $ttl_kbon = (($sub_h + $lr_kurs1 + $s_qty1 + $s_harga1 + $materai1 + $ekspedisi1 + $moq1) - $pot_beli1) + $tax_h - $jml_return;
 
 $sqlno = mysqli_query($conn1,"select CONCAT(
-	'SI/APR/$profit_center/',
+	'SI/APR/', '$profit_center', '/',
 	DATE_FORMAT(CURRENT_DATE(), '%Y'), '/',
 	DATE_FORMAT(CURRENT_DATE(), '%m'), '/',
 	LPAD(
-	COALESCE(MAX(CAST(RIGHT(no_kbon, 5) AS UNSIGNED)), 0) + 1,
+	CAST(SUBSTRING_INDEX('$no_kbon_h', '/', -1) AS UNSIGNED),
 	5, '0'
+	),
+	'-REV_',
+	LPAD(
+	COALESCE(
+	MAX(
+	CAST(SUBSTRING_INDEX(no_kbon, '-REV_', -1) AS UNSIGNED)
+	), 
+	0
+	) + 1,
+	2, '0'
 	)
-) nomor from kontrabon_h WHERE no_kbon != 'SI/APR/2024/12/06591' and YEAR(tgl_kbon) = YEAR ('$tgl_kbon_h')");
+	) AS new_nomor
+	FROM kontrabon_h
+	WHERE no_kbon LIKE CONCAT(SUBSTRING_INDEX('$no_kbon_h', '-REV_', 1), '%')");
 $rowno = mysqli_fetch_array($sqlno);
-$kode = isset($rowno['nomor']) ? $rowno['nomor'] : 0;
+$kode = isset($rowno['new_nomor']) ? $rowno['new_nomor'] : 0;
 
 $queryss = "INSERT INTO potongan (no_kbon, tgl_kbon, nama_supp, jml_return, lr_kurs, s_qty, s_harga, materai, pot_beli, ekspedisi, moq, jml_potong, status)
 VALUES 
@@ -138,7 +150,6 @@ $idr_ekspedisi 	= $ekspedisi1 * $rate;
 $idr_moq 			= $moq1 * $rate;
 
 $kata1 = "KONTRABON";
-// $supp = $nama_supp.toUpperCase();
 
 $keter = $kata1 ." ". $nama_supp_h;
 
@@ -150,7 +161,6 @@ if ($profit_center == 'NAG') {
 	$nama_cc = 'KNITTING PRODUCTION';
 }
 
-//coa labarugi kurs
 if ($lr_kurs1 == 0) {
 	
 }else{
@@ -339,19 +349,8 @@ if ($tax_h >= 1) {
 	('$kode', '$create_date', 'AP - Kontrabon', '$no_coa_ppn', '$nama_coa_ppn', '-', '-', '$no_faktur_h', '', '-', '-', '$curr_h', '$rate', '$tax_h', '0', '$idr_tax_h', '0', 'Draft', '$keter', '$create_user_h', '$create_date', '', '', '', '', '$profit_center')";
 
 	$executess4 = mysqli_query($conn2,$queryss4);
-}else{
-
 }
 
-
-// $sqlx = mysqli_query($conn1,"select max(id) as id FROM masterrate where v_codecurr = 'HARIAN'");
-// $rowx = mysqli_fetch_array($sqlx);
-// $maxid = $rowx['id'];
-
-// $sqly = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where id = '$maxid' and v_codecurr = 'HARIAN'");
-// $rowy = mysqli_fetch_array($sqly);
-// $rate = $rowy['rate'];
-// $tglrate = $rowy['tanggal'];
 
 $pph_h1 = $pph_h * $rate;
 
@@ -370,6 +369,40 @@ if($curr_h == 'IDR'){
 	$execute = mysqli_query($conn2,$query);
 
 }
+
+$query_log = "INSERT INTO ap_edit_kontrabon_log ( no_kbon, no_kbon_new, created_by, created_date)
+VALUES 
+('$no_kbon_h', '$kode', '$create_user_h', '$create_date')";
+$execute_log = mysqli_query($conn2,$query_log);
+
+$jurnal_balik = mysqli_query($conn2,"INSERT into tbl_list_journal select '', no_journal, '$create_date' tgl_journal, CONCAT('Reverse ',type_journal) type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, credit, debit, credit_idr, debit_idr, status, keterangan, create_by, create_date, '$create_user_h' approve_by, CURRENT_TIMESTAMP() approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center from tbl_list_journal where no_journal = '$no_kbon_h'");
+
+
+$sqlcopy1 = mysqli_query($conn2,"insert into kontrabon select '', '$kode' no_kbon, '$tgl_kbon_h' tgl_kbon, id_jurnal, nama_supp, no_faktur, no_bpb, no_po, tgl_bpb, tgl_po, supp_inv, tgl_inv, subtotal, tax, total, balance, dp_value, curr, ceklist, tgl_tempo, idtax, pph_code, pph_value, post_date, update_date, 'draft' status, status_int, create_user, confirm_user, confirm_date, '$create_date' create_date, cancel_date, cancel_user, start_date, end_date, lp_inv from ap_edit_kontrabon where no_kbon = '$no_kbon_h'");
+
+$sqlcopy2 = mysqli_query($conn2,"insert into kontrabon_ftr select '', '$kode' no_kbon, '$tgl_kbon_h' tgl_kbon, nama_supp, no_ftr, no_po, tgl_po, no_pi, curr, total_ftr, no_pv, no_bankout, tgl_bankout, no_coa, 'draft' status, created_by, '$create_date' created_date from ap_edit_kontrabon_ftr where no_kbon = '$no_kbon_h'");
+
+$sqlcopy3 = mysqli_query($conn2,"insert into return_kb select '', '$kode' no_kbon, no_ro, no_bpbrtn, total_ro, 'draft' status from ap_edit_return_kb where no_kbon = '$no_kbon_h'");
+
+$sqlcopy4 = mysqli_query($conn2,"insert into tbl_list_journal select '', '$kode' no_journal, '$create_date' tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, 'draft' status, keterangan, create_by, '$create_date' create_date, approve_by, approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center from ap_journal_temp where no_journal = '$no_kbon_h'");
+
+
+$uptquery1 = mysqli_query($conn2,"update kontrabon set status = 'Updated' where no_kbon= '$no_kbon_h'");
+$uptquery2 = mysqli_query($conn2,"update kontrabon_h set status = 'Updated' where no_kbon= '$no_kbon_h'");
+$uptquery3 = mysqli_query($conn2,"update kontrabon_ftr set status = 'Updated' where no_kbon= '$no_kbon_h'");
+$uptquery4 = mysqli_query($conn2,"update return_kb set status = 'Updated' where no_kbon= '$no_kbon_h'");
+$uptquery5 = mysqli_query($conn2,"update potongan set status = 'Updated' where no_kbon= '$no_kbon_h'");
+
+$delquery1 = mysqli_query($conn2,"delete from ap_edit_kontrabon where no_kbon= '$no_kbon_h'");
+$delquery2 = mysqli_query($conn2,"delete from ap_edit_kontrabon_h where no_kbon= '$no_kbon_h'");
+$delquery3 = mysqli_query($conn2,"delete from ap_edit_kontrabon_ftr where no_kbon= '$no_kbon_h'");
+$delquery4 = mysqli_query($conn2,"delete from ap_edit_return_kb where no_kbon= '$no_kbon_h'");
+$delquery5 = mysqli_query($conn2,"delete from ap_edit_potongan where no_kbon= '$no_kbon_h'");
+$delquery6 = mysqli_query($conn2,"delete from ap_journal_temp where no_journal= '$no_kbon_h'");
+
+$uptquery6 = mysqli_query($conn2,"update bpb_new a INNER JOIN kontrabon b ON b.no_bpb = a.no_bpb SET a.is_invoiced = 'Waiting' where b.no_kbon = '$no_kbon_h'");
+
+$uptquery6 = mysqli_query($conn2,"update bpb_new a INNER JOIN kontrabon b ON b.no_bpb = a.no_bpb SET a.is_invoiced = 'Invoiced' where b.no_kbon = '$kode'");
 
 
 if($execute){

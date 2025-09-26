@@ -11,6 +11,7 @@ $ditagihkan = $_POST['ditagihkan'];
 $id_item = $_POST['id_item'];
 $no_coa = $_POST['no_coa'];
 $no_cc = $_POST['no_cc'];
+$h_profit_center = $_POST['h_profit_center'];
 $no_coa_cre = "2.18.02";
 $nama_coa_cre = "UTANG LAIN-LAIN - FORWARDER";
 $keterangan = '=SUB KATEGORI" "(VENDOR)", "(BUYER)", "JENIS TRANSAKSI", "INVOICE VENDOR"';
@@ -27,9 +28,9 @@ $sqlz = mysqli_query($conn1,"select id,item_name from master_memo_item where akt
 $rowz = mysqli_fetch_array($sqlz);
 $item_name = $rowz['item_name'];
 
-$query = "INSERT INTO memo_mapping_v2 (jns_trans,ditagihkan,id_ctg,nm_ctg,id_sub_ctg,nm_sub_ctg,id_item,item_name,no_coa,nama_coa,no_coa_cre,nama_coa_cre,id_cc,cc_name,keterangan,status) 
+$query = "INSERT INTO memo_mapping_v2 (jns_trans,ditagihkan,id_ctg,nm_ctg,id_sub_ctg,nm_sub_ctg,id_item,item_name,no_coa,nama_coa,no_coa_cre,nama_coa_cre,id_cc,cc_name,keterangan,status, profit_center) 
 VALUES 
-	('$jns_trans', '$ditagihkan', '$id_ctg', '$nm_ctg', '$id_sub_ctg', '$nm_sub_ctg','$id_item','$item_name','$no_coa','$nama_coa','$no_coa_cre','$nama_coa_cre','$no_cc','$cc_name','$keterangan','Y')";
+	('$jns_trans', '$ditagihkan', '$id_ctg', '$nm_ctg', '$id_sub_ctg', '$nm_sub_ctg','$id_item','$item_name','$no_coa','$nama_coa','$no_coa_cre','$nama_coa_cre','$no_cc','$cc_name','$keterangan','Y','$h_profit_center')";
 
 $execute = mysqli_query($conn2,$query);
 
