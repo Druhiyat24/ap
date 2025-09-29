@@ -265,7 +265,7 @@ placeholder="Tanggal Akhir">
   if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $akun = isset($_POST['akun']) ? $_POST['akun']: null;
 }                 
-$sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa, SUBSTR(nama_coa,11,1) as kode from mastercoa_v2 where  no_coa like '%1.01%' and nama_coa like '%kas kecil%'");
+$sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa, kode_cash as kode from mastercoa_v2 where  no_coa like '%1.01%' and nama_coa like '%kas kecil%'");
 $jsArray = "var prdName = new Array();\n";
 
 while ($row = mysqli_fetch_array($sql)) {
