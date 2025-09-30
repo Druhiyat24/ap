@@ -1715,6 +1715,11 @@ echo'</ul>
         </a>';
     }
 
+    echo '<a href="AP/reverse_bank.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-angle-right fa-fw"></span>
+        <span class="menu-collapsed">Bank Out</span>
+        </a>';
+
     echo '</ul>
     </li>';
 

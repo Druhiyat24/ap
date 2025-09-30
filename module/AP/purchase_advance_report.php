@@ -29,13 +29,13 @@
             <form id="form-data" action="purchase_advance_report.php" method="post">        
                 <div class="form-row">
 
-                  <div class="col-md-4">
+                  <div class="col-md-3">
                     <label for="nama_type"><b>No COA</b></label>            
                     <select style="background-color: gray;" class="form-control selectpicker" name="coa_number" id="coa_number" data-dropup-auto="false" data-live-search="true" required>
-                       <option value="ALL"  selected="true">ALL</option> 
-                       <?php
-                       $coa_number ='';
-                       if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                     <option value="ALL"  selected="true">ALL</option> 
+                     <?php
+                     $coa_number ='';
+                     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         $coa_number = isset($_POST['coa_number']) ? $_POST['coa_number']: null;
                     }                 
                     $sql = mysql_query("select DISTINCT no_coa, nama_coa, CONCAT(no_coa,' - ',nama_coa) as coa from mastercoa_v2 where nama_coa like '%uang muka pembelian%'",$conn1);
@@ -52,40 +52,64 @@
                 </select>
             </div>
 
+            <div class="col-md-3 mb-3">
+                <label for="h_profit_center"><b>Profit Center</b></label>            
+                <select class="form-control selectpicker" name="h_profit_center" id="h_profit_center" data-dropup-auto="false" data-live-search="true">
+                    <option value="ALL"  selected="true">ALL</option>                                                 
+                    <?php
+                    $nama_supp ='';
+                    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                        $nama_supp = isset($_POST['h_profit_center']) ? $_POST['h_profit_center']: null;
+                    }                 
+                    $sql = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
+                    while ($row = mysqli_fetch_array($sql)) {
+                        $data = $row['kode_pc'];
+                        $data2 = $row['tampil'];
+                        if($row['kode_pc'] == $_POST['h_profit_center']){
+                            $isSelected = ' selected="selected"';
+                        }else{
+                            $isSelected = '';
+
+                        }
+                        echo '<option value="'.$data.'"'.$isSelected.'">'. $data2 .'</option>';    
+                    }?>
+                </select>
+            </div>
+
             <div class="col-md-2 mb-3"> 
                 <label for="start_date"><b>From</b></label>          
                 <input type="text" style="font-size: 12px;" class="form-control tanggal" id="start_date" name="start_date" 
                 value="<?php
                 $start_date ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                 $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-             }
-             if(!empty($_POST['start_date'])) {
-                 echo $_POST['start_date'];
-             }
-             else{
-                 echo date("d-m-Y");
-             } ?>" 
-             placeholder="Tanggal Awal">
-         </div>
+                   $start_date = date("Y-m-d",strtotime($_POST['start_date']));
+               }
+               if(!empty($_POST['start_date'])) {
+                   echo $_POST['start_date'];
+               }
+               else{
+                   echo date("d-m-Y");
+               } ?>" 
+               placeholder="Tanggal Awal">
+           </div>
 
-         <div class="col-md-2 mb-3"> 
+           <div class="col-md-2 mb-3"> 
             <label for="end_date"><b>To</b></label>          
             <input type="text" style="font-size: 12px;" class="form-control tanggal" id="end_date" name="end_date" 
             value="<?php
             $end_date ='';
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-             $end_date = date("Y-m-d",strtotime($_POST['end_date']));
-         }
-         if(!empty($_POST['end_date'])) {
-             echo $_POST['end_date'];
-         }
-         else{
-             echo date("d-m-Y");
-         } ?>" 
-         placeholder="Tanggal Awal">
-     </div>
-     <div class="input-group-append col">                                   
+               $end_date = date("Y-m-d",strtotime($_POST['end_date']));
+           }
+           if(!empty($_POST['end_date'])) {
+               echo $_POST['end_date'];
+           }
+           else{
+               echo date("d-m-Y");
+           } ?>" 
+           placeholder="Tanggal Awal">
+       </div>
+       <div class="input-group-append col">                                   
         <button  type="submit" id="submit" value=" Search " style="height: 35px; margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
         line-height: 1;
         padding: -2px 8px;
@@ -118,16 +142,33 @@
     $kata_akhir = date("Y",strtotime($start_date));
     $kata_filter = $kata_awal . $tengah . $kata_akhir;
     $coa_number = isset($_POST['coa_number']) ? $_POST['coa_number']: null;
+    $h_profit_center = isset($_POST['h_profit_center']) ? $_POST['h_profit_center']: null;
 
-    if ($coa_number == 'ALL') {
+    if ($tanggal_awal >= '2025-09-01') {
+        if ($coa_number == 'ALL' && $h_profit_center == 'ALL') {
+            $where = '';
+        }elseif($coa_number != 'ALL' && $h_profit_center == 'ALL'){
+            $where = "Where no_coa = '$coa_number'";
+        }elseif($coa_number == 'ALL' && $h_profit_center != 'ALL'){
+            $where = "Where profit_center = '$h_profit_center'";
+        }else{
+            $where = "Where no_coa = '$coa_number' and profit_center = '$h_profit_center'";
+        }
 
-        echo '<a style="padding-right: 10px;" target="_blank" href="ekspor_pa_report_all.php?start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-info " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>
+        echo '<a style="padding-right: 10px;" target="_blank" href="ekspor_pa_report_new.php?start_date='.$start_date.'&&end_date='.$end_date.'&&profit_center='.$h_profit_center.'&&where='.$where.'"><button type="button" class="btn btn-info " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
 
-        ';
     }else{
-        echo '<a style="padding-right: 10px;" target="_blank" href="ekspor_pa_report_coa.php?start_date='.$start_date.' && end_date='.$end_date.' && coa_number='.$coa_number.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>
 
-        ';
+        if ($coa_number == 'ALL') {
+
+            echo '<a style="padding-right: 10px;" target="_blank" href="ekspor_pa_report_all.php?start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-info " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>
+
+            ';
+        }else{
+            echo '<a style="padding-right: 10px;" target="_blank" href="ekspor_pa_report_coa.php?start_date='.$start_date.' && end_date='.$end_date.' && coa_number='.$coa_number.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>
+
+            ';
+        }
     }
         //<a style="padding-right: 5px;" target="_blank" href="ekspor_sfp_ytd.php?start_date='.$start_date.' && end_date='.$end_date.' && kata_filter='.$kata_filter.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel SFP</i></button></a>
 
@@ -159,11 +200,12 @@
 <div class="box body">
     <div class="row">       
         <div class="col-md-12">      
-         <div class="tableFix" style="height: 450px;">        
+           <div class="tableFix" style="height: 450px;">        
             <table id="mytable2" class="table table-striped table-bordered text-nowrap" role="grid" cellspacing="0" width="100%">
                 <thead>
                     <tr class="thead-dark">
                         <th style="text-align: center;vertical-align: middle;width: 10%;">COA</th>
+                        <th style="text-align: center;vertical-align: middle;width: 10%;">Profit Center</th>
                         <th style="text-align: center;vertical-align: middle;width: 10%;">No FTR</th>
                         <th style="text-align: center;vertical-align: middle;width: 8%;">FTR Date</th>
                         <th style="text-align: center;vertical-align: middle;width: 9%;">No Bankout</th>
@@ -188,6 +230,7 @@
             $coa_number ='';
             $start_date ='';
             $end_date =''; 
+            $h_profit_center= '';
             $date_now = date("Y-m-d");  
             $tanggal_awal = date("Y-m-d",strtotime($date_now ));
             $tanggal_akhir = date("Y-m-d",strtotime($date_now ));
@@ -202,6 +245,7 @@
             $kata_filter2 = $kata_awal . $tengah . $kata_akhir;          
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $coa_number = isset($_POST['coa_number']) ? $_POST['coa_number']: null;
+                $h_profit_center = isset($_POST['h_profit_center']) ? $_POST['h_profit_center']: null;
                 $start_date = date("Y-m-d",strtotime($_POST['start_date']));
                 $end_date = date("Y-m-d",strtotime($_POST['end_date']));   
                 $tanggal_awal = date("Y-m-d",strtotime($_POST['start_date']));
@@ -218,15 +262,25 @@
                 $kata_filter = $kata_awal . $tengah . $kata_akhir;         
             }
 
-            if ($coa_number == 'ALL') {
-                $sql = mysqli_query($conn2,"SELECT a.coa, a.no_coa, a.no_ftr, a.tgl_ftr, a.no_pi, a.no_po, a.tgl_po, a.supp, a.no_bankout, a.tgl_bankout, a.deskripsi, a.curr, a.saldo_awal, a.addition, (a.ded + COALESCE(b.total_adj,0)) ded, a.ded_gm, a.forex, (a.saldo_akhir - COALESCE(b.total_adj,0)) saldo_akhir from (SELECT coa, no_coa, no_ftr, tgl_ftr, no_pi, no_po, tgl_po, supp, no_bankout, tgl_bankout, deskripsi, curr, saldo_awal, addition_idr addition, ded_idr ded, tot_gm ded_gm, forex, (saldo_awal + addition_idr - (ded_idr + tot_gm) - forex) saldo_akhir from (select coa, no_coa, no_ftr, tgl_ftr, no_pi, no_po, tgl_po, supp, no_bankout, tgl_bankout, deskripsi, curr, if ((saldo_awal - ded_bfr - tot_gm_bfr) <= 0, 0, (saldo_awal_idr - ded_bfr_idr - tot_gm_bfr)) saldo_awal, saldo_awal_idr, addition_idr, ded_bfr_idr, ded_idr, tot_gm_bfr, tot_gm, IF(curr ='USD' and (saldo_awal + addition - (ded_bfr + ded + tot_gm_bfr_ocy + tot_gm_ocy)) = 0 ,(if ((saldo_awal - ded_bfr - tot_gm_bfr) <= 0, 0, (saldo_awal_idr - ded_bfr_idr - tot_gm_bfr)) + addition_idr - (ded_idr + tot_gm)),0) forex from (select coa, no_coa, no_ftr, tgl_ftr, no_pi, a.no_po, tgl_po, supp, no_bankout, tgl_bankout, deskripsi, a.curr, COALESCE(saldo_awal,0) saldo_awal, COALESCE(saldo_awal_idr,0) saldo_awal_idr, COALESCE(addition,0) addition, COALESCE(addition_idr,0) addition_idr, b.curr curr_ded_po_bfr, COALESCE(ded_bfr,0) ded_bfr, COALESCE(ded_bfr_idr,0) ded_bfr_idr, c.curr curr_ded_po, COALESCE(ded,0) ded, COALESCE(ded_idr,0) ded_idr, d.curr curr_ded_gm_bfr, COALESCE(tot_gm_bfr_ocy,0) tot_gm_bfr_ocy, COALESCE(tot_gm_bfr,0) tot_gm_bfr, e.curr curr_ded_gm, COALESCE(tot_gm_ocy,0) tot_gm_ocy, COALESCE(tot_gm,0) tot_gm from (
+            if ($start_date >= '2025-09-01') {
+                if ($coa_number == 'ALL' && $h_profit_center == 'ALL') {
+                    $where = '';
+                }elseif($coa_number != 'ALL' && $h_profit_center == 'ALL'){
+                    $where = "Where no_coa = '$coa_number'";
+                }elseif($coa_number == 'ALL' && $h_profit_center != 'ALL'){
+                    $where = "Where profit_center = '$h_profit_center'";
+                }else{
+                    $where = "Where no_coa = '$coa_number' and profit_center = '$h_profit_center'";
+                }
+
+                $sql = mysqli_query($conn2,"SELECT a.*, b.nama_pc from (select a.coa, a.no_coa, a.no_ftr, a.tgl_ftr, a.no_pi, a.no_po, a.tgl_po, profit_center, a.supp, a.no_bankout, a.tgl_bankout, a.deskripsi, a.curr, a.saldo_awal, a.addition, (a.ded + COALESCE(b.total_adj,0)) ded, a.ded_gm, a.forex, (a.saldo_akhir - COALESCE(b.total_adj,0)) saldo_akhir from (SELECT coa, no_coa, no_ftr, tgl_ftr, no_pi, no_po, tgl_po, profit_center, supp, no_bankout, tgl_bankout, deskripsi, curr, saldo_awal, addition_idr addition, ded_idr ded, tot_gm ded_gm, forex, (saldo_awal + addition_idr - (ded_idr + tot_gm) - forex) saldo_akhir from (select coa, no_coa, no_ftr, tgl_ftr, no_pi, no_po, tgl_po, profit_center, supp, no_bankout, tgl_bankout, deskripsi, curr, if ((saldo_awal - ded_bfr - tot_gm_bfr) <= 0, 0, (saldo_awal_idr - ded_bfr_idr - tot_gm_bfr)) saldo_awal, saldo_awal_idr, addition_idr, ded_bfr_idr, ded_idr, tot_gm_bfr, tot_gm, IF(curr ='USD' and (saldo_awal + addition - (ded_bfr + ded + tot_gm_bfr_ocy + tot_gm_ocy)) = 0 ,(if ((saldo_awal - ded_bfr - tot_gm_bfr) <= 0, 0, (saldo_awal_idr - ded_bfr_idr - tot_gm_bfr)) + addition_idr - (ded_idr + tot_gm)),0) forex from (select coa, no_coa, a.no_ftr, tgl_ftr, no_pi, a.no_po, tgl_po, profit_center, supp, a.no_bankout, tgl_bankout, deskripsi, a.curr, COALESCE(saldo_awal,0) saldo_awal, COALESCE(saldo_awal_idr,0) saldo_awal_idr, COALESCE(addition,0) addition, COALESCE(addition_idr,0) addition_idr, b.curr curr_ded_po_bfr, (COALESCE(ded_bfr,0) + COALESCE(ded_bfr_ftr,0)) ded_bfr, (COALESCE(ded_bfr_idr,0)  + COALESCE(ded_bfr_ftr_idr,0)) ded_bfr_idr, c.curr curr_ded_po, (COALESCE(ded,0) + COALESCE(ded_ftr,0)) ded, (COALESCE(ded_idr,0) + COALESCE(ded_ftr_idr,0)) ded_idr, d.curr curr_ded_gm_bfr, COALESCE(tot_gm_bfr_ocy,0) tot_gm_bfr_ocy, COALESCE(tot_gm_bfr,0) tot_gm_bfr, e.curr curr_ded_gm, COALESCE(tot_gm_ocy,0) tot_gm_ocy, COALESCE(tot_gm,0) tot_gm, ded_bfr_ftr, ded_bfr_ftr_idr from (
 #Pemasukan Before
-                    select * from (select CASE
+                    select * from (select * from(select CASE
                         WHEN reff_doc like '%CBD%' OR reff_doc like '%DP%' THEN
                         no_ftr_cbd
                         ELSE
                         reff_doc
-                        END no_ftr, IF(no_ftr_cbd is null,'-',tgl_ftr_cbd) tgl_ftr, no_pi, IF(reff_doc LIKE '%KKK%',reff_doc,no_po) no_po, tgl_po, nama_supp supp, no_journal no_bankout, tgl_journal tgl_bankout, debit saldo_awal, debit_idr saldo_awal_idr,0 addition, 0 addition_idr, a.curr, rate, no_coa, coa, deskripsi from (select nama_supp, no_coa, coa, no_journal, tgl_journal,reff_bk, reff_pv, CASE
+                        END no_ftr, IF(no_ftr_cbd is null,'-',tgl_ftr_cbd) tgl_ftr, no_pi, IF(reff_doc LIKE '%KKK%',reff_doc,no_po) no_po, tgl_po, profit_center, nama_supp supp, no_journal no_bankout, tgl_journal tgl_bankout, debit saldo_awal, debit_idr saldo_awal_idr,0 addition, 0 addition_idr, a.curr, rate, no_coa, coa, deskripsi from (select profit_center, nama_supp, no_coa, coa, no_journal, tgl_journal,reff_bk, reff_pv, CASE
                             WHEN reff_bk not like '%PV%' THEN
                             CONCAT(no_coa,no_journal)
                             ELSE
@@ -237,11 +291,16 @@
                             CONCAT(no_coa,no_journal)
                             END
                             END reff_doc, curr, debit, rate, debit_idr, deskripsi
-                            from (select a.nama_supp, no_coa, a.coa, no_journal, tgl_journal,a.reff_doc reff_bk, upper(b.reff_doc) reff_pv, curr, debit, rate, debit_idr,deskripsi from (select no_journal, tgl_journal, no_coa , CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from b_bankout_h where stat_rpt is null GROUP BY no_bankout) b on b.no_bankout = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and no_journal like '%BK%' and tgl_journal < '$start_date' GROUP BY no_journal, no_coa, reff_doc
+                            from (select a.profit_center, a.nama_supp, no_coa, a.coa, no_journal, tgl_journal,a.reff_doc reff_bk, upper(b.reff_doc) reff_pv, curr, debit, rate, debit_idr,deskripsi from (select a.profit_center, no_journal, tgl_journal, no_coa , CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from b_bankout_h where stat_rpt is null GROUP BY no_bankout) b on b.no_bankout = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and no_journal like '%BK%' and tgl_journal < '$start_date' and tgl_journal > '2025-08-31' GROUP BY no_journal, no_coa, reff_doc
                                 UNION
-                                select no_journal, tgl_journal, no_coa, CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from c_petty_cashout_h where reff = 'Advance') b on b.no_pco = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and no_journal like '%KKK%' and tgl_journal < '$start_date' GROUP BY no_journal, no_coa, reff_doc ORDER BY tgl_journal asc) a LEFT JOIN (select a.coa, b.nama_coa, a.no_pv, a.reff_doc, sum(a.amount) amount from tbl_pv a INNER JOIN mastercoa_v2 b on b.no_coa = a.coa where nama_coa like '%UANG MUKA PEMBELIAN%' GROUP BY no_pv, coa) b on b.no_pv = a.reff_doc and b.coa = a.no_coa) a) a left join (select a.no_ftr_cbd, a.tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, c.no_payment, a.curr from (select no_ftr_cbd, tgl_ftr_cbd, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_cbd GROUP BY no_ftr_cbd) a INNER JOIN kontrabon_cbd b on b.no_cbd = a.no_ftr_cbd INNER JOIN list_payment_cbd c on c.no_kbon = b.no_kbon GROUP BY no_ftr_cbd
+                                select a.profit_center, no_journal, tgl_journal, no_coa, CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from c_petty_cashout_h where reff = 'Advance') b on b.no_pco = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and no_journal like '%KKK%' and tgl_journal < '$start_date' and tgl_journal > '2025-08-31' GROUP BY no_journal, no_coa, reff_doc ORDER BY tgl_journal asc) a LEFT JOIN (select a.coa, b.nama_coa, a.no_pv, a.reff_doc, sum(a.amount) amount from tbl_pv a INNER JOIN mastercoa_v2 b on b.no_coa = a.coa where nama_coa like '%UANG MUKA PEMBELIAN%' GROUP BY no_pv, coa) b on b.no_pv = a.reff_doc and b.coa = a.no_coa) a) a left join (select a.no_ftr_cbd, a.tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, c.no_payment, a.curr from (select no_ftr_cbd, tgl_ftr_cbd, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_cbd GROUP BY no_ftr_cbd) a INNER JOIN kontrabon_cbd b on b.no_cbd = a.no_ftr_cbd INNER JOIN list_payment_cbd c on c.no_kbon = b.no_kbon GROUP BY no_ftr_cbd
                         UNION
                         select a.no_ftr_dp, a.tgl_ftr_dp, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, c.no_payment, a.curr from (select no_ftr_dp, tgl_ftr_dp, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_dp GROUP BY no_ftr_dp) a INNER JOIN kontrabon_dp b on b.no_dp = a.no_ftr_dp INNER JOIN list_payment_dp c on c.no_kbon = b.no_kbon GROUP BY no_ftr_dp order by no_payment asc) b on b.no_payment = a.reff_doc order by tgl_journal asc) a
+                    UNION
+                    select no_ftr, tgl_ftr, no_pi, no_po, tgl_po, profit_center, supp, no_bankout, tgl_bankout, saldo_awal, saldo_awal_idr, addition, addition_idr, curr, rate, no_coa, coa, deskripsi from pa_saldo_awal
+
+
+                    ) a
 
                     UNION
 #Pemasukan
@@ -250,7 +309,7 @@
                         no_ftr_cbd
                         ELSE
                         reff_doc
-                        END no_ftr, IF(no_ftr_cbd is null,'-',tgl_ftr_cbd) tgl_ftr, no_pi, IF(reff_doc LIKE '%KKK%',reff_doc,no_po) no_po, tgl_po, nama_supp supp, no_journal no_bankout, tgl_journal tgl_bankout, 0 saldo_awal, 0 saldo_awal_idr,debit addition, debit_idr addition_idr, a.curr, rate, no_coa, coa, deskripsi from (select nama_supp, no_coa, coa, no_journal, tgl_journal,reff_bk, reff_pv, CASE
+                        END no_ftr, IF(no_ftr_cbd is null,'-',tgl_ftr_cbd) tgl_ftr, no_pi, IF(reff_doc LIKE '%KKK%',reff_doc,no_po) no_po, tgl_po,profit_center, nama_supp supp, no_journal no_bankout, tgl_journal tgl_bankout, 0 saldo_awal, 0 saldo_awal_idr,debit addition, debit_idr addition_idr, a.curr, rate, no_coa, coa, deskripsi from (select profit_center, nama_supp, no_coa, coa, no_journal, tgl_journal,reff_bk, reff_pv, CASE
                             WHEN reff_bk not like '%PV%' THEN
                             CONCAT(no_coa,no_journal)
                             ELSE
@@ -261,12 +320,88 @@
                             CONCAT(no_coa,no_journal)
                             END
                             END reff_doc, curr, debit, rate, debit_idr, deskripsi
-                            from (select a.nama_supp, no_coa, a.coa, no_journal, tgl_journal,a.reff_doc reff_bk, upper(b.reff_doc) reff_pv, curr, debit, rate, debit_idr, deskripsi from (select no_journal, tgl_journal, no_coa, CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from b_bankout_h where stat_rpt is null GROUP BY no_bankout) b on b.no_bankout = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and no_journal like '%BK%' and tgl_journal BETWEEN '$start_date' and '$end_date' GROUP BY no_journal, no_coa, reff_doc 
+                            from (select profit_center, a.nama_supp, no_coa, a.coa, no_journal, tgl_journal,a.reff_doc reff_bk, upper(b.reff_doc) reff_pv, curr, debit, rate, debit_idr, deskripsi from (select a.profit_center, no_journal, tgl_journal, no_coa, CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from b_bankout_h where stat_rpt is null GROUP BY no_bankout) b on b.no_bankout = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and no_journal like '%BK%' and tgl_journal BETWEEN '$start_date' and '$end_date'  and tgl_journal > '2025-08-31' GROUP BY no_journal, no_coa, reff_doc 
                                 UNION
-                                select no_journal, tgl_journal, no_coa, CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from c_petty_cashout_h where reff = 'Advance') b on b.no_pco = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and no_journal like '%KKK%' and tgl_journal BETWEEN '$start_date' and '$end_date' GROUP BY no_journal, no_coa, reff_doc ORDER BY tgl_journal asc) a LEFT JOIN (select a.coa, b.nama_coa, a.no_pv, a.reff_doc, sum(a.amount) amount from tbl_pv a INNER JOIN mastercoa_v2 b on b.no_coa = a.coa where nama_coa like '%UANG MUKA PEMBELIAN%' GROUP BY no_pv, coa) b on b.no_pv = a.reff_doc and b.coa = a.no_coa) a) a left join (select a.no_ftr_cbd, a.tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, c.no_payment, a.curr from (select no_ftr_cbd, tgl_ftr_cbd, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_cbd GROUP BY no_ftr_cbd) a INNER JOIN kontrabon_cbd b on b.no_cbd = a.no_ftr_cbd INNER JOIN list_payment_cbd c on c.no_kbon = b.no_kbon GROUP BY no_ftr_cbd
+                                select a.profit_center, no_journal, tgl_journal, no_coa, CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from c_petty_cashout_h where reff = 'Advance') b on b.no_pco = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and no_journal like '%KKK%' and tgl_journal BETWEEN '$start_date' and '$end_date' and tgl_journal > '2025-08-31' GROUP BY no_journal, no_coa, reff_doc ORDER BY tgl_journal asc) a LEFT JOIN (select a.coa, b.nama_coa, a.no_pv, a.reff_doc, sum(a.amount) amount from tbl_pv a INNER JOIN mastercoa_v2 b on b.no_coa = a.coa where nama_coa like '%UANG MUKA PEMBELIAN%' GROUP BY no_pv, coa) b on b.no_pv = a.reff_doc and b.coa = a.no_coa) a) a left join (select a.no_ftr_cbd, a.tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, c.no_payment, a.curr from (select no_ftr_cbd, tgl_ftr_cbd, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_cbd GROUP BY no_ftr_cbd) a INNER JOIN kontrabon_cbd b on b.no_cbd = a.no_ftr_cbd INNER JOIN list_payment_cbd c on c.no_kbon = b.no_kbon GROUP BY no_ftr_cbd
                         UNION
                         select a.no_ftr_dp, a.tgl_ftr_dp, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, c.no_payment, a.curr from (select no_ftr_dp, tgl_ftr_dp, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_dp GROUP BY no_ftr_dp) a INNER JOIN kontrabon_dp b on b.no_dp = a.no_ftr_dp INNER JOIN list_payment_dp c on c.no_kbon = b.no_kbon GROUP BY no_ftr_dp order by no_payment asc) b on b.no_payment = a.reff_doc order by tgl_journal asc) a
                     ) a 
+#total Deduction By PO Before
+LEFT JOIN (
+    select CONCAT(no_coa,oth_doc) no_po, tgl_journal kbon_date, curr, sum(credit - debit) ded_bfr, sum(credit - debit) ded_bfr_idr from (select no_journal, tgl_journal, no_coa, nama_coa,curr, rate, debit, credit from tbl_list_journal where type_journal = 'Settlement' and nama_coa like '%UANG MUKA PEMBELIAN%') a INNER JOIN (select no_pci, oth_doc from (select no_pci, oth_doc from c_petty_cashin_h where reff = 'Settlement' and status != 'Cancel' GROUP BY no_pci, oth_doc
+        UNION
+        select no_pco, reff_doc from c_petty_cashout_h where reff = 'Settlement' and status != 'Cancel' GROUP BY no_pco, reff_doc) a) b on b.no_pci = a.no_journal where tgl_journal < '$start_date' and tgl_journal > '2025-08-31' GROUP BY no_coa, oth_doc) b on b.no_po = a.no_po
+#total Deduction By FTR Before
+LEFT JOIN (
+    select no_ftr, a.no_po, no_bankout, DATE_FORMAT(a.create_date, '%Y-%m-%d') tgl_kbon, sum(total_ftr) ded_bfr_ftr, SUM(IF(a.curr = 'USD',round(total_ftr * COALESCE(c.rate,1),2),total_ftr)) ded_bfr_ftr_idr from kontrabon_h a INNER JOIN kontrabon_ftr b on b.no_kbon = a.no_kbon left join (select tanggal, curr, rate from masterrate where v_codecurr = 'PAJAK' GROUP BY tanggal, curr) c on c.tanggal = DATE_FORMAT(a.create_date, '%Y-%m-%d') and c.curr = a.curr where a.status != 'Cancel' and DATE_FORMAT(a.create_date, '%Y-%m-%d') < '$start_date' GROUP BY no_ftr, a.no_po, no_bankout) bb on bb.no_ftr = a.no_ftr and bb.no_po = a.no_po and bb.no_bankout = a.no_bankout
+#total Deduction By PO
+LEFT JOIN (select CONCAT(no_coa,oth_doc) no_po, tgl_journal kbon_date, curr, sum(credit - debit) ded, sum(credit - debit) ded_idr from (select no_journal, tgl_journal, no_coa, nama_coa,curr, rate, debit, credit from tbl_list_journal where type_journal = 'Settlement' and nama_coa like '%UANG MUKA PEMBELIAN%') a INNER JOIN (select no_pci, oth_doc from (select no_pci, oth_doc from c_petty_cashin_h where reff = 'Settlement' and status != 'Cancel' GROUP BY no_pci, oth_doc
+    UNION
+    select no_pco, reff_doc from c_petty_cashout_h where reff = 'Settlement' and status != 'Cancel' GROUP BY no_pco, reff_doc) a) b on b.no_pci = a.no_journal where tgl_journal BETWEEN '$start_date' and '$end_date' GROUP BY no_coa, oth_doc) c on c.no_po = a.no_po
+#total Deduction By FTR
+LEFT JOIN (select no_ftr, a.no_po, no_bankout, DATE_FORMAT(a.create_date, '%Y-%m-%d') tgl_kbon, sum(total_ftr) ded_ftr, SUM(IF(a.curr = 'USD',round(total_ftr * COALESCE(c.rate,1),2),total_ftr)) ded_ftr_idr from kontrabon_h a INNER JOIN kontrabon_ftr b on b.no_kbon = a.no_kbon left join (select tanggal, curr, rate from masterrate where v_codecurr = 'PAJAK' GROUP BY tanggal, curr) c on c.tanggal = DATE_FORMAT(a.create_date, '%Y-%m-%d') and c.curr = a.curr where a.status != 'Cancel' and DATE_FORMAT(a.create_date, '%Y-%m-%d') BETWEEN '$start_date' and '$end_date' and DATE_FORMAT(a.create_date, '%Y-%m-%d') > '2025-08-31' GROUP BY no_ftr, a.no_po, no_bankout) cc on cc.no_ftr = a.no_ftr and cc.no_po = a.no_po and cc.no_bankout = a.no_bankout
+#total Deduction GM Before
+LEFT JOIN (select reff_doc, curr, sum((credit - debit)) tot_gm_bfr_ocy, if(curr = 'USD',sum((credit * rate) - (debit * rate)),sum(credit - debit)) tot_gm_bfr from tbl_list_journal where nama_coa like '%uang muka pembelian%' and (no_journal like '%GM/%' or no_journal like '%BM/%' or no_journal like '%BK/%') and (reff_doc not like '%BK%' and reff_doc not like '%KK%') and tgl_journal > '2025-08-31' and tgl_journal < '$start_date' GROUP BY reff_doc
+    UNION
+    select CONCAT(no_coa,reff_doc) reff_doc, curr, sum((credit - debit)) tot_gm_bfr_ocy, if(curr = 'USD',sum((credit * rate) - (debit * rate)),sum(credit - debit)) tot_gm_bfr from tbl_list_journal where nama_coa like '%uang muka pembelian%' and (no_journal like '%GM/%' or no_journal like '%BM/%') and (reff_doc like '%BK%' OR reff_doc like '%KK%') and tgl_journal > '2025-08-31' and tgl_journal < '$start_date' GROUP BY reff_doc
+    ) d on d.reff_doc = a.no_ftr
+#total Deduction GM 
+LEFT JOIN (select * from (select reff_doc, curr, sum((credit - debit)) tot_gm_ocy, if(curr = 'USD',sum((credit * rate) - (debit * rate)),sum(credit - debit)) tot_gm from tbl_list_journal where nama_coa like '%uang muka pembelian%' and (no_journal like '%GM/%' or no_journal like '%BM/%' or no_journal like '%BK/%') and (reff_doc not like '%BK%' and reff_doc not like '%KK%') and tgl_journal > '2025-08-31' and tgl_journal BETWEEN '$start_date' and '$end_date' GROUP BY reff_doc
+    UNION
+    select CONCAT(no_coa,reff_doc) reff_doc, curr, sum((credit - debit)) tot_gm_ocy, if(curr = 'USD',sum((credit * rate) - (debit * rate)),sum(credit - debit)) tot_gm from tbl_list_journal where nama_coa like '%uang muka pembelian%' and (no_journal like '%GM/%' or no_journal like '%BM/%') and (reff_doc like '%BK%' OR reff_doc like '%KK%') and tgl_journal > '2025-08-31' and tgl_journal BETWEEN '$start_date' and '$end_date' GROUP BY reff_doc) a where reff_doc != '-') e on e.reff_doc = a.no_ftr) a) a order by tgl_bankout asc) a LEFT JOIN
+(select no_coa, no_po, no_ftr, no_bankout, sum(total) total_adj from tbl_adjust_purchase_advance where tanggal > '2025-08-31' and tanggal BETWEEN '$start_date' and '$end_date' and status = 'Y' GROUP BY no_coa, no_po, no_ftr, no_bankout) b on b.no_coa = a.no_coa and b.no_po = a.no_po and b.no_ftr = a.no_ftr and a.no_bankout = b.no_bankout LEFT JOIN
+(select no_coa, no_po, no_ftr, no_bankout, sum(total) total_adj_bfr from tbl_adjust_purchase_advance where  tanggal > '2025-08-31' and tanggal < '$start_date' and tanggal > '2025-08-31'  and status = 'Y' GROUP BY no_coa, no_po, no_ftr, no_bankout) c on c.no_coa = a.no_coa and c.no_po = a.no_po and c.no_ftr = a.no_ftr and a.no_bankout = c.no_bankout) a left join master_pc b on b.kode_pc = a.profit_center $where");
+}else{
+
+    if ($coa_number == 'ALL') {
+        $sql = mysqli_query($conn2,"SELECT a.coa, a.no_coa, a.no_ftr, a.tgl_ftr, a.no_pi, a.no_po, a.tgl_po, a.supp, a.no_bankout, a.tgl_bankout, a.deskripsi, a.curr, a.saldo_awal, a.addition, (a.ded + COALESCE(b.total_adj,0)) ded, a.ded_gm, a.forex, (a.saldo_akhir - COALESCE(b.total_adj,0)) saldo_akhir from (SELECT coa, no_coa, no_ftr, tgl_ftr, no_pi, no_po, tgl_po, supp, no_bankout, tgl_bankout, deskripsi, curr, saldo_awal, addition_idr addition, ded_idr ded, tot_gm ded_gm, forex, (saldo_awal + addition_idr - (ded_idr + tot_gm) - forex) saldo_akhir from (select coa, no_coa, no_ftr, tgl_ftr, no_pi, no_po, tgl_po, supp, no_bankout, tgl_bankout, deskripsi, curr, if ((saldo_awal - ded_bfr - tot_gm_bfr) <= 0, 0, (saldo_awal_idr - ded_bfr_idr - tot_gm_bfr)) saldo_awal, saldo_awal_idr, addition_idr, ded_bfr_idr, ded_idr, tot_gm_bfr, tot_gm, IF(curr ='USD' and (saldo_awal + addition - (ded_bfr + ded + tot_gm_bfr_ocy + tot_gm_ocy)) = 0 ,(if ((saldo_awal - ded_bfr - tot_gm_bfr) <= 0, 0, (saldo_awal_idr - ded_bfr_idr - tot_gm_bfr)) + addition_idr - (ded_idr + tot_gm)),0) forex from (select coa, no_coa, no_ftr, tgl_ftr, no_pi, a.no_po, tgl_po, supp, no_bankout, tgl_bankout, deskripsi, a.curr, COALESCE(saldo_awal,0) saldo_awal, COALESCE(saldo_awal_idr,0) saldo_awal_idr, COALESCE(addition,0) addition, COALESCE(addition_idr,0) addition_idr, b.curr curr_ded_po_bfr, COALESCE(ded_bfr,0) ded_bfr, COALESCE(ded_bfr_idr,0) ded_bfr_idr, c.curr curr_ded_po, COALESCE(ded,0) ded, COALESCE(ded_idr,0) ded_idr, d.curr curr_ded_gm_bfr, COALESCE(tot_gm_bfr_ocy,0) tot_gm_bfr_ocy, COALESCE(tot_gm_bfr,0) tot_gm_bfr, e.curr curr_ded_gm, COALESCE(tot_gm_ocy,0) tot_gm_ocy, COALESCE(tot_gm,0) tot_gm from (
+#Pemasukan Before
+            select * from (select CASE
+                WHEN reff_doc like '%CBD%' OR reff_doc like '%DP%' THEN
+                no_ftr_cbd
+                ELSE
+                reff_doc
+                END no_ftr, IF(no_ftr_cbd is null,'-',tgl_ftr_cbd) tgl_ftr, no_pi, IF(reff_doc LIKE '%KKK%',reff_doc,no_po) no_po, tgl_po, nama_supp supp, no_journal no_bankout, tgl_journal tgl_bankout, debit saldo_awal, debit_idr saldo_awal_idr,0 addition, 0 addition_idr, a.curr, rate, no_coa, coa, deskripsi from (select nama_supp, no_coa, coa, no_journal, tgl_journal,reff_bk, reff_pv, CASE
+                    WHEN reff_bk not like '%PV%' THEN
+                    CONCAT(no_coa,no_journal)
+                    ELSE
+                    CASE
+                    WHEN reff_pv like '%CBD%' OR reff_pv like '%DP%' THEN
+                    reff_pv
+                    ELSE
+                    CONCAT(no_coa,no_journal)
+                    END
+                    END reff_doc, curr, debit, rate, debit_idr, deskripsi
+                    from (select a.nama_supp, no_coa, a.coa, no_journal, tgl_journal,a.reff_doc reff_bk, upper(b.reff_doc) reff_pv, curr, debit, rate, debit_idr,deskripsi from (select no_journal, tgl_journal, no_coa , CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from b_bankout_h where stat_rpt is null GROUP BY no_bankout) b on b.no_bankout = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and no_journal like '%BK%' and tgl_journal < '$start_date' GROUP BY no_journal, no_coa, reff_doc
+                        UNION
+                        select no_journal, tgl_journal, no_coa, CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from c_petty_cashout_h where reff = 'Advance') b on b.no_pco = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and no_journal like '%KKK%' and tgl_journal < '$start_date' GROUP BY no_journal, no_coa, reff_doc ORDER BY tgl_journal asc) a LEFT JOIN (select a.coa, b.nama_coa, a.no_pv, a.reff_doc, sum(a.amount) amount from tbl_pv a INNER JOIN mastercoa_v2 b on b.no_coa = a.coa where nama_coa like '%UANG MUKA PEMBELIAN%' GROUP BY no_pv, coa) b on b.no_pv = a.reff_doc and b.coa = a.no_coa) a) a left join (select a.no_ftr_cbd, a.tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, c.no_payment, a.curr from (select no_ftr_cbd, tgl_ftr_cbd, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_cbd GROUP BY no_ftr_cbd) a INNER JOIN kontrabon_cbd b on b.no_cbd = a.no_ftr_cbd INNER JOIN list_payment_cbd c on c.no_kbon = b.no_kbon GROUP BY no_ftr_cbd
+                UNION
+                select a.no_ftr_dp, a.tgl_ftr_dp, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, c.no_payment, a.curr from (select no_ftr_dp, tgl_ftr_dp, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_dp GROUP BY no_ftr_dp) a INNER JOIN kontrabon_dp b on b.no_dp = a.no_ftr_dp INNER JOIN list_payment_dp c on c.no_kbon = b.no_kbon GROUP BY no_ftr_dp order by no_payment asc) b on b.no_payment = a.reff_doc order by tgl_journal asc) a
+
+            UNION
+#Pemasukan
+            select * from (select CASE
+                WHEN reff_doc like '%CBD%' OR reff_doc like '%DP%' THEN
+                no_ftr_cbd
+                ELSE
+                reff_doc
+                END no_ftr, IF(no_ftr_cbd is null,'-',tgl_ftr_cbd) tgl_ftr, no_pi, IF(reff_doc LIKE '%KKK%',reff_doc,no_po) no_po, tgl_po, nama_supp supp, no_journal no_bankout, tgl_journal tgl_bankout, 0 saldo_awal, 0 saldo_awal_idr,debit addition, debit_idr addition_idr, a.curr, rate, no_coa, coa, deskripsi from (select nama_supp, no_coa, coa, no_journal, tgl_journal,reff_bk, reff_pv, CASE
+                    WHEN reff_bk not like '%PV%' THEN
+                    CONCAT(no_coa,no_journal)
+                    ELSE
+                    CASE
+                    WHEN reff_pv like '%CBD%' OR reff_pv like '%DP%' THEN
+                    reff_pv
+                    ELSE
+                    CONCAT(no_coa,no_journal)
+                    END
+                    END reff_doc, curr, debit, rate, debit_idr, deskripsi
+                    from (select a.nama_supp, no_coa, a.coa, no_journal, tgl_journal,a.reff_doc reff_bk, upper(b.reff_doc) reff_pv, curr, debit, rate, debit_idr, deskripsi from (select no_journal, tgl_journal, no_coa, CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from b_bankout_h where stat_rpt is null GROUP BY no_bankout) b on b.no_bankout = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and no_journal like '%BK%' and tgl_journal BETWEEN '$start_date' and '$end_date' GROUP BY no_journal, no_coa, reff_doc 
+                        UNION
+                        select no_journal, tgl_journal, no_coa, CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from c_petty_cashout_h where reff = 'Advance') b on b.no_pco = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and no_journal like '%KKK%' and tgl_journal BETWEEN '$start_date' and '$end_date' GROUP BY no_journal, no_coa, reff_doc ORDER BY tgl_journal asc) a LEFT JOIN (select a.coa, b.nama_coa, a.no_pv, a.reff_doc, sum(a.amount) amount from tbl_pv a INNER JOIN mastercoa_v2 b on b.no_coa = a.coa where nama_coa like '%UANG MUKA PEMBELIAN%' GROUP BY no_pv, coa) b on b.no_pv = a.reff_doc and b.coa = a.no_coa) a) a left join (select a.no_ftr_cbd, a.tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, c.no_payment, a.curr from (select no_ftr_cbd, tgl_ftr_cbd, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_cbd GROUP BY no_ftr_cbd) a INNER JOIN kontrabon_cbd b on b.no_cbd = a.no_ftr_cbd INNER JOIN list_payment_cbd c on c.no_kbon = b.no_kbon GROUP BY no_ftr_cbd
+                UNION
+                select a.no_ftr_dp, a.tgl_ftr_dp, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, c.no_payment, a.curr from (select no_ftr_dp, tgl_ftr_dp, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_dp GROUP BY no_ftr_dp) a INNER JOIN kontrabon_dp b on b.no_dp = a.no_ftr_dp INNER JOIN list_payment_dp c on c.no_kbon = b.no_kbon GROUP BY no_ftr_dp order by no_payment asc) b on b.no_payment = a.reff_doc order by tgl_journal asc) a
+            ) a 
 #total Deduction By PO Before
 LEFT JOIN (select no_po, kbon_date, curr, ded_bfr, IF(curr = 'USD',round(ded_bfr * COALESCE(rate,1),2),ded_bfr) ded_bfr_idr from (select no_po, curr, dp_value ded_bfr, DATE_FORMAT(create_date, '%Y-%m-%d') kbon_date from kontrabon_h where dp_value > 0 and status != 'Cancel' and DATE_FORMAT(create_date, '%Y-%m-%d') < '$start_date' GROUP BY no_po) a left join (select tanggal, rate from masterrate where v_codecurr = 'PAJAK' GROUP BY tanggal) b on b.tanggal = a.kbon_date
     UNION
@@ -369,6 +504,7 @@ LEFT JOIN (select reff_doc, curr, sum((credit - debit)) tot_gm_ocy, if(curr = 'U
         (select no_coa, no_po, no_ftr, no_bankout, sum(total) total_adj from tbl_adjust_purchase_advance where tanggal BETWEEN '$start_date' and '$end_date' and status = 'Y' and no_coa = '$coa_number' GROUP BY no_coa, no_po, no_ftr, no_bankout) b on b.no_coa = a.no_coa and b.no_po = a.no_po and b.no_ftr = a.no_ftr and a.no_bankout = b.no_bankout LEFT JOIN
         (select no_coa, no_po, no_ftr, no_bankout, sum(total) total_adj_bfr from tbl_adjust_purchase_advance where tanggal < '$start_date'  and status = 'Y' and no_coa = '$coa_number' GROUP BY no_coa, no_po, no_ftr, no_bankout) c on c.no_coa = a.no_coa and c.no_po = a.no_po and c.no_ftr = a.no_ftr and a.no_bankout = c.no_bankout");
 }
+}
 
 $ttl_beg =0;
 $ttl_add =0;
@@ -390,12 +526,17 @@ while($row2 = mysqli_fetch_array($sql)){
     // $rowcoa = mysql_fetch_array($sqlcoa);
     // $coa = $rowcoa['coa'];
 
-    if ($no_ftr == 'FTR/C/NAG/0425/00308' and $no_po == 'SMT/0425/030/01607') {
-        $dednya = 0;
-        $saldoakhir = $row2['saldo_akhir'] + $row2['ded'];
-    }else{
+    if ($start_date >= '2025-09-01') {
         $dednya = $row2['ded'];
         $saldoakhir = $row2['saldo_akhir'];
+    }else{       
+        if ($no_ftr == 'FTR/C/NAG/0425/00308' and $no_po == 'SMT/0425/030/01607') {
+            $dednya = 0;
+            $saldoakhir = $row2['saldo_akhir'] + $row2['ded'];
+        }else{
+            $dednya = $row2['ded'];
+            $saldoakhir = $row2['saldo_akhir'];
+        }
     }
 
     if(strpos($no_ftr, 'BK/') !== false) {
@@ -428,6 +569,7 @@ while($row2 = mysqli_fetch_array($sql)){
     }else{
         echo ' <tr style="font-size:12px;text-align:center;">
         <td style="text-align : left;" value = "'.$row2['coa'].'">'.$row2['coa'].'</td>
+        <td style="text-align : left;" value = "'.$row2['nama_pc'].'">'.$row2['nama_pc'].'</td>
         <td style="text-align : left;" value = "'.$row2['no_ftr'].'">'.$noftr.'</td>
         <td style="width: 100px;" value = "'.$row2['tgl_ftr'].'">'.$ftrdate.'</td>
         <td style="text-align : left;" value = "'.$row2['no_bankout'].'">'.$row2['no_bankout'].'</td>
@@ -449,7 +591,7 @@ while($row2 = mysqli_fetch_array($sql)){
 }
 
 echo ' <tr >
-<th colspan="10" style="text-align : center;" value = "Total">Total</td>
+<th colspan="11" style="text-align : center;" value = "Total">Total</td>
 <th style="text-align : right;" value = "'.$ttl_beg.'">'.number_format($ttl_beg,2).'</th>
 <th style="text-align : right;" value = "'.$ttl_add.'">'.number_format($ttl_add,2).'</th>
 <th style="text-align : right;" value = "'.$ttl_ded.'">'.number_format($ttl_ded,2).'</th>
@@ -649,9 +791,9 @@ function SidebarCollapse () {
                 // alert(response);            
             },
             error:  function (xhr, ajaxOptions, thrownError) {
-             alert(xhr);
-         }
-     });
+               alert(xhr);
+           }
+       });
         alert("Copy Saldo successfully");     
     });
 </script>
