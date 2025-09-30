@@ -5,9 +5,9 @@ ini_set('display_errors', 0);
 include '../../conn/conn.php'; 
 $user = isset($_SESSION['username']) ? $_SESSION['username'] : '';
 if ($user == '') {
-    $script = "<script>
-    window.location = '../function/logout.php';</script>";
-    echo $script;
+  $script = "<script>
+  window.location = '../function/logout.php';</script>";
+  echo $script;
 }
 ?>
 
@@ -15,172 +15,172 @@ if ($user == '') {
 <html lang="en">
 
 <head>
-    <style>
-        img {
-          display: block;
-          margin-left: auto;
-          margin-right: auto;
-          height: 30px;
-      }
-      .box {
-          border-style: outset;
-          box-sizing: border-box;
-      }
-      .body {
-        font-size: 14px;
+  <style>
+    img {
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      height: 30px;
+    }
+    .box {
+      border-style: outset;
+      box-sizing: border-box;
+    }
+    .body {
+      font-size: 14px;
     }
     .box .header {
-        font-size: 14px;
+      font-size: 14px;
     }
     .form-control-plaintext {
       border: 1px solid grey;
-  }
-  .form-row {
+    }
+    .form-row {
       margin-right: 0;
       margin-left: -10px;
-  }
-  .filter-option {
-    font-size: 12px;
-}
-.datatable_wrapper{
-    font-size: 12px;
-}
+    }
+    .filter-option {
+      font-size: 12px;
+    }
+    .datatable_wrapper{
+      font-size: 12px;
+    }
 
-.container-1 input#myInput{
-  width: 220px;
-  height: 32px;
-  position: relative;
-  background: white;
-  font-size: 10pt;
-  float: right;
-  color: #63717f;
-  padding-left: 15px;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
-}
+    .container-1 input#myInput{
+      width: 220px;
+      height: 32px;
+      position: relative;
+      background: white;
+      font-size: 10pt;
+      float: right;
+      color: #63717f;
+      padding-left: 15px;
+      -webkit-border-radius: 5px;
+      -moz-border-radius: 5px;
+      border-radius: 5px;
+    }
 
-a{
-    font-size: 14px;
-}
+    a{
+      font-size: 14px;
+    }
 
-table{
-    font-size: 12px;
-}
+    table{
+      font-size: 12px;
+    }
 
-h2.text-center{
-    font-size: 22px;
-}
+    h2.text-center{
+      font-size: 22px;
+    }
 
-h3.text-center{
-    font-size: 22px;
-}
-
-
-/* Chrome, Safari, Edge, Opera */
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.tableFix { /* Scrollable parent element */
-  position: relative;
-  overflow: auto;
-  height: 100px;
-  font-size: 12px;
-}
-
-.tableFix table{
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.tableFix th,
-.tableFix td{
-  padding: 8px;
-  text-align: left;
-}
-
-.tableFix thead {
-  position: sticky;  /* Edge, Chrome, FF */
-  top: 0px;
-  background: #F0F8FF;  /* Some background is needed */
-}
+    h3.text-center{
+      font-size: 22px;
+    }
 
 
-.dropdown-submenu {
-    position: relative;
-}
+    /* Chrome, Safari, Edge, Opera */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
 
-.dropdown-submenu>.dropdown-menu {
-    top: 0;
-    left: 100%;
-    margin-top: -6px;
-    margin-left: -1px;
-    -webkit-border-radius: 0 6px 6px 6px;
-    -moz-border-radius: 0 6px 6px;
-    border-radius: 0 6px 6px 6px;
-}
+    .tableFix { /* Scrollable parent element */
+      position: relative;
+      overflow: auto;
+      height: 100px;
+      font-size: 12px;
+    }
 
-.dropdown-submenu:hover>.dropdown-menu {
-    display: block;
-}
+    .tableFix table{
+      width: 100%;
+      border-collapse: collapse;
+    }
 
-.dropdown-submenu>a:after {
-    display: block;
-    content: " ";
-    float: right;
-    width: 0;
-    height: 0;
-    border-color: transparent;
-    border-style: solid;
-    border-width: 5px 0 5px 5px;
-    border-left-color: black;
-    margin-top: 5px;
-    margin-right: -10px;
-}
+    .tableFix th,
+    .tableFix td{
+      padding: 8px;
+      text-align: left;
+    }
 
-.dropdown-submenu:hover>a:after {
-    border-left-color: #fff;
-}
-
-.dropdown-submenu.pull-left {
-    float: none;
-}
-
-.dropdown-submenu.pull-left>.dropdown-menu {
-    left: -100%;
-    margin-left: 10px;
-    -webkit-border-radius: 6px 0 6px 6px;
-    -moz-border-radius: 6px 0 6px 6px;
-    border-radius: 6px 0 6px 6px;
-}
+    .tableFix thead {
+      position: sticky;  /* Edge, Chrome, FF */
+      top: 0px;
+      background: #F0F8FF;  /* Some background is needed */
+    }
 
 
-/* Modify the background color */
-.skin-green .main-header .navbar {
-    background-color: black;
-}
+    .dropdown-submenu {
+      position: relative;
+    }
 
-.swal-wide{
-    width:400px !important;
-    height: 200px !important;
-}
+    .dropdown-submenu>.dropdown-menu {
+      top: 0;
+      left: 100%;
+      margin-top: -6px;
+      margin-left: -1px;
+      -webkit-border-radius: 0 6px 6px 6px;
+      -moz-border-radius: 0 6px 6px;
+      border-radius: 0 6px 6px 6px;
+    }
 
-</style>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="description" content="">
-<meta name="author" content="">
+    .dropdown-submenu:hover>.dropdown-menu {
+      display: block;
+    }
 
-<title>SB V2.0</title>
+    .dropdown-submenu>a:after {
+      display: block;
+      content: " ";
+      float: right;
+      width: 0;
+      height: 0;
+      border-color: transparent;
+      border-style: solid;
+      border-width: 5px 0 5px 5px;
+      border-left-color: black;
+      margin-top: 5px;
+      margin-right: -10px;
+    }
 
-<!-- Bootstrap core CSS -->
-<link href="../css/4.1.1/main.css" rel="stylesheet">  
-<link href="../css/4.1.1/bootstrap.min.css" rel="stylesheet">
-<link href="../css/4.1.1/datatables.min.css" rel="stylesheet">
-<link href="../css/4.1.1/bootstrap-select.min.css" rel="stylesheet">
+    .dropdown-submenu:hover>a:after {
+      border-left-color: #fff;
+    }
+
+    .dropdown-submenu.pull-left {
+      float: none;
+    }
+
+    .dropdown-submenu.pull-left>.dropdown-menu {
+      left: -100%;
+      margin-left: 10px;
+      -webkit-border-radius: 6px 0 6px 6px;
+      -moz-border-radius: 6px 0 6px 6px;
+      border-radius: 6px 0 6px 6px;
+    }
+
+
+    /* Modify the background color */
+    .skin-green .main-header .navbar {
+      background-color: black;
+    }
+
+    .swal-wide{
+      width:400px !important;
+      height: 200px !important;
+    }
+
+  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>SB V2.0</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="../css/4.1.1/main.css" rel="stylesheet">  
+  <link href="../css/4.1.1/bootstrap.min.css" rel="stylesheet">
+  <link href="../css/4.1.1/datatables.min.css" rel="stylesheet">
+  <link href="../css/4.1.1/bootstrap-select.min.css" rel="stylesheet">
 <!-- <link href="../fontawesome/css/font-awesome.min.css" rel="stylesheet">
 -->
 <link href="../fontawesome5/css/all.min.css" rel="stylesheet">
@@ -193,446 +193,446 @@ input::-webkit-inner-spin-button {
 <link href="../css/4.1.1/responsive.bootstrap4.min.css" rel="stylesheet">
 <link href="../css/4.1.1/sweetalert2.min" rel="stylesheet">
 <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/css/select2.min.css" />
-    <link rel="stylesheet" href="https://select2.github.io/select2-bootstrap-theme/css/select2-bootstrap.css" /> -->
+  <link rel="stylesheet" href="https://select2.github.io/select2-bootstrap-theme/css/select2-bootstrap.css" /> -->
 </head>
 
 <!-- <body style="background-color: #F8F8FF;"> -->
-    <body>
+  <body>
 
 
-        <!-- Bootstrap NavBar -->
+    <!-- Bootstrap NavBar -->
 
 
-        <nav class="navbar navbar-expand-md navbar-dark bg-primary">
-          <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <a class="" href="#">
-            <img src="../img/NAG logo SIGN.png" alt="">
-        </a>
-        <a class=" text-white" style="font-size: 15px;"><b>PT.NIRWANA ALABARE GARMENT</b></a>
+    <nav class="navbar navbar-expand-md navbar-dark bg-primary">
+      <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <a class="" href="#">
+        <img src="../img/NAG logo SIGN.png" alt="">
+      </a>
+      <a class=" text-white" style="font-size: 15px;"><b>PT.NIRWANA ALABARE GARMENT</b></a>
 
-        <div class="collapse navbar-collapse" id="navbarNavDropdown">
-            <ul class="navbar-nav mr-auto">
+      <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav mr-auto">
         <!-- <div class="dropdown-menu" aria-labelledby="navbarDropdown">
           <a class="dropdown-item" href="#">Action</a>
           <a class="dropdown-item" href="#">Another action</a>
           <div class="dropdown-divider"></div>
           <a class="dropdown-item" href="#">Something else here</a>
-      </div> -->
+        </div> -->
 
-      <!-- navbar master -->
-      <li class="nav-item dropdown active">
-        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          <span class="fa fa-book mr-1"></span> Master
-      </a>
-      <div class="dropdown-menu bg-dark " aria-labelledby="navbarDropdown" style="width:200px;">
+        <!-- navbar master -->
+        <li class="nav-item dropdown active">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span class="fa fa-book mr-1"></span> Master
+          </a>
+          <div class="dropdown-menu bg-dark " aria-labelledby="navbarDropdown" style="width:200px;">
+            <?php
+            $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Master'");
+            $rs = mysqli_fetch_array($querys);
+            $menu = isset($rs['menu']) ? $rs['menu'] :0;
+            $id = isset($rs['id']) ? $rs['id'] :0;
+
+            if($id == '49'){                             
+              echo '
+              <a href="../AP/master-cash-flow.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-paperclip fa-fw"></span>
+              <span class="menu-collapsed">Cash Flow</span>
+
+              </a>
+              <a href="../AP/master-coa-category1.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-paperclip fa-fw "></span>
+              <span class="menu-collapsed">Category COA</span>
+              </a>
+              <a href="../AP/master-coa.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-paperclip fa-fw "></span>
+              <span class="menu-collapsed">Chart Of Account</span>
+              </a>
+              <a href="../AP/master-costcenter.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-paperclip fa-fw "></span>
+              <span class="menu-collapsed">Cost Center</span>
+              </a>
+              <a href="../AP/master-profit-center.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-paperclip fa-fw "></span>
+              <span class="menu-collapsed">Profit Center</span>
+              </a>
+              <a href="../AP/master-bank.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-paperclip fa-fw "></span>
+              <span class="menu-collapsed">Bank</span>
+              </a>
+              <a href="../AP/master-mapping-memo.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-paperclip fa-fw "></span>
+              <span class="menu-collapsed">Mapping Memo</span>
+              </a>
+              ';
+            }else{
+              echo '';
+            }
+            ?>  
+          </div>
+        </li>
+
+        <!-- navbar AP -->
+        <li class="nav-item dropdown active">
+          <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fa fa-paypal mr-1"></span> AP<span class="caret"></span></a>
+          <ul class="dropdown-menu bg-dark text-white" role="menu">
+            <?php
+            $querys = mysqli_query($conn1,"select Groupp, purchasing, approve_po from userpassword where username = '$user'");
+            $rs = mysqli_fetch_array($querys);
+            $group = $rs['Groupp'];
+            $pur = $rs['purchasing'];
+            $app_po = $rs['approve_po'];
+
+            $queryss = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%BPB%' and useraccess.menu != 'Transfer BPB' and useraccess.menu != 'Accept BPB Whs-Acc' and useraccess.menu != 'Maintain BPB' and useraccess.menu not like '%create%' and profit_center != 'NAK' group by username");
+            while($rss = mysqli_fetch_array($queryss)){
+              $menu = isset($rss['ket']) ? $rss['ket'] :0;
+              $id = isset($rss['id']) ? $rss['id'] :0;
+
+              $sql = mysqli_query($conn2,"select count(distinct(no_bpb)) as no_bpb from bpb_new where status = 'GMF' and profit_center = 'NAG'");
+              $row = mysqli_fetch_array($sql);
+              $count = $row['no_bpb'];
+              if($count != '0'){
+                $notif = '<span class="badge" style="background-color: red;">'.$count.'</span>';
+              }else{
+                $notif = '';
+              } 
+
+              $sql1 = mysqli_query($conn2,"select count(distinct(no_ro)) as no_ro from bppb_new where status = 'GMF'");
+              $row1 = mysqli_fetch_array($sql1);
+              $count1 = $row1['no_ro'];
+              $countjml = $count + $count1;
+              if($count1 != '0'){
+                $notif1 = '<span class="badge" style="background-color: red;">'.$count1.'</span>';
+              }else{
+                $notif1 = '';
+              }
+
+
+            } 
+
+            $queryss2 = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%update%'  group by username");
+            $menu2 = '';
+            while($rss2 = mysqli_fetch_array($queryss2)){
+              $menu2 = isset($rss2['ket']) ? $rss2['ket'] :0;
+            }    
+
+            if($menu == 'Y' || $menu2 == 'Y'){  
+              echo '
+              <li class="dropdown-submenu ">
+              <a class="dropdown-item bg-dark text-white" href="#">
+              <span class="fa fa-envelope-o fa-fw "></span>
+              <span class="menu-collapsed">BPB Garment</span>
+              </a>
+              <ul class="dropdown-menu bg-dark text-white" role="menu">';
+              if($id == '1'){ 
+               echo'<a href="../AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa fa-thumbs-up fa-fw "></span>
+               <span class="menu-collapsed">Approve BPB</span>
+               '.$notif.'
+               </a>';
+             }elseif($id == '2'){ 
+               echo'<a href="../AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa-share fa-fw "></span>
+               <span class="menu-collapsed">Verifikasi BPB</span>
+               </a>';
+             }elseif($id == '19'){ 
+               echo'<a href="../AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
+               <span class="menu-collapsed">Approve BPB Return</span>
+               '.$notif1.'
+               </a>';
+             }elseif($id == '20'){ 
+               echo'<a href="../AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
+               <span class="fa fa-share fa-fw "></span>
+               <span class="menu-collapsed">Verifikasi BPB Return</span>
+               </a>';
+             }elseif($id == '1,2'){ 
+               echo'<a href="../AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa fa-thumbs-up fa-fw "></span>
+               <span class="menu-collapsed">Approve BPB</span>
+               '.$notif.'
+               </a>
+               <a href="../AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa-share fa-fw "></span>
+               <span class="menu-collapsed">Verifikasi BPB</span>
+               </a>';
+             }elseif($id == '1,19'){ 
+               echo'<a href="../AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa fa-thumbs-up fa-fw "></span>
+               <span class="menu-collapsed">Approve BPB</span>
+               '.$notif.'
+               </a>
+               <a href="../AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
+               <span class="menu-collapsed">Approve BPB Return</span>
+               '.$notif1.'
+               </a>';
+             }elseif($id == '1,20'){ 
+               echo'<a href="../AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa fa-thumbs-up fa-fw "></span>
+               <span class="menu-collapsed">Approve BPB</span>
+               '.$notif.'
+               </a>
+               <a href="../AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa-share fa-fw "></span>
+               <span class="menu-collapsed">Verifikasi BPB Return</span>
+               </a>';
+             }elseif($id == '2,19'){ 
+               echo'<a href="../AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa-share fa-fw "></span>
+               <span class="menu-collapsed">Verifikasi BPB</span>
+               </a>
+               <a href="../AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
+               <span class="menu-collapsed">Approve BPB Return</span>
+               '.$notif1.'
+               </a>';
+             }elseif($id == '2,20'){ 
+               echo'<a href="../AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa-share fa-fw "></span>
+               <span class="menu-collapsed">Verifikasi BPB</span>
+               </a>
+               <a href="../AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa-share fa-fw "></span>
+               <span class="menu-collapsed">Verifikasi BPB Return</span>
+               </a>';
+             }elseif($id == '19,20'){ 
+               echo'<a href="../AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
+               <span class="menu-collapsed">Approve BPB Return</span>
+               '.$notif1.'
+               </a>
+               <a href="../AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa-share fa-fw "></span>
+               <span class="menu-collapsed">Verifikasi BPB Return</span>
+               </a>';
+             }elseif($id == '1,2,19'){ 
+               echo'<a href="../AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa fa-thumbs-up fa-fw "></span>
+               <span class="menu-collapsed">Approve BPB</span>
+               '.$notif.'
+               </a>
+               <a href="../AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa-share fa-fw "></span>
+               <span class="menu-collapsed">Verifikasi BPB</span>
+               </a>
+               <a href="../AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
+               <span class="menu-collapsed">Approve BPB Return</span>
+               '.$notif1.'
+               </a>';
+             }elseif($id == '1,2,20'){ 
+               echo'<a href="../AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa fa-thumbs-up fa-fw "></span>
+               <span class="menu-collapsed">Approve BPB</span>
+               '.$notif.'
+               </a>
+               <a href="../AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa-share fa-fw "></span>
+               <span class="menu-collapsed">Verifikasi BPB</span>
+               </a>
+               <a href="../AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa-share fa-fw "></span>
+               <span class="menu-collapsed">Verifikasi BPB Return</span>
+               </a>';
+             }elseif($id == '2,19,20'){ 
+               echo'<a href="../AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa-share fa-fw "></span>
+               <span class="menu-collapsed">Verifikasi BPB</span>
+               </a>
+               <a href="../AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
+               <span class="menu-collapsed">Approve BPB Return</span>
+               '.$notif1.'
+               </a>
+               <a href="../AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa-share fa-fw "></span>
+               <span class="menu-collapsed">Verifikasi BPB Return</span>
+               </a>';
+             }elseif($id == '1,2,19,20'){ 
+               echo'<a href="../AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa fa-thumbs-up fa-fw "></span>
+               <span class="menu-collapsed">Approve BPB</span>
+               '.$notif.'
+               </a>
+               <a href="../AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa-share fa-fw "></span>
+               <span class="menu-collapsed">Verifikasi BPB</span>
+               </a>
+               <a href="../AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa fa-thumbs-up fa-fw "></span>
+               <span class="menu-collapsed">Approve BPB Return</span>
+               '.$notif1.'
+               </a>
+               <a href="../AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
+               <span  class="fa fa-share fa-fw "></span>
+               <span class="menu-collapsed">Verifikasi BPB Return</span>
+               </a>
+               ';
+             }else{
+              echo '';
+            }
+            if($menu2 == 'Y'){
+              echo '<a href="../AP/update_bpb.php" class="dropdown-item bg-dark text-white">
+              <span  class="fa fa-pencil fa-fw "></span>
+              <span class="menu-collapsed">Update BPB</span>
+              </a>
+              <a href="../AP/report-faktur-pajak.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-files-o fa-fw "></span>
+              <span class="menu-collapsed">Report FP</span>
+              </a>';
+            }
+
+            echo'</ul>
+            </li>';
+          }
+          ?>
+
+          <!-- BPB Knitting -->
+
           <?php
-          $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Master'");
+          $querys = mysqli_query($conn1,"select Groupp, purchasing, approve_po from userpassword where username = '$user'");
           $rs = mysqli_fetch_array($querys);
-          $menu = isset($rs['menu']) ? $rs['menu'] :0;
-          $id = isset($rs['id']) ? $rs['id'] :0;
+          $group = $rs['Groupp'];
+          $pur = $rs['purchasing'];
+          $app_po = $rs['approve_po'];
 
-          if($id == '49'){                             
+          $queryss_nak = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%BPB%' and useraccess.menu != 'Transfer BPB' and useraccess.menu != 'Accept BPB Whs-Acc' and useraccess.menu not like '%create%' and profit_center = 'NAK' group by username");
+          while($rss_nak = mysqli_fetch_array($queryss_nak)){
+            $menu_nak = isset($rss_nak['ket']) ? $rss_nak['ket'] :0;
+            $id_nak = isset($rss_nak['id']) ? $rss_nak['id'] :0;
+
+            $sql_nak = mysqli_query($conn2,"select count(distinct(no_bpb)) as no_bpb from bpb_new where status = 'GMF' and profit_center = 'NAK'");
+            $row_nak = mysqli_fetch_array($sql_nak);
+            $count_nak = $row_nak['no_bpb'];
+            if($count_nak != '0'){
+              $notif_nak = '<span class="badge" style="background-color: red;">'.$count_nak.'</span>';
+            }else{
+              $notif_nak = '';
+            } 
+
+
+          }
+
+
+          if($menu_nak == 'Y'){  
             echo '
-            <a href="../AP/master-cash-flow.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-paperclip fa-fw"></span>
-            <span class="menu-collapsed">Cash Flow</span>
-
+            <li class="dropdown-submenu ">
+            <a class="dropdown-item bg-dark text-white" href="#">
+            <span class="fa fa-envelope-o fa-fw "></span>
+            <span class="menu-collapsed">BPB Knitting</span>
             </a>
-            <a href="../AP/master-coa-category1.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-paperclip fa-fw "></span>
-            <span class="menu-collapsed">Category COA</span>
-            </a>
-            <a href="../AP/master-coa.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-paperclip fa-fw "></span>
-            <span class="menu-collapsed">Chart Of Account</span>
-            </a>
-            <a href="../AP/master-costcenter.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-paperclip fa-fw "></span>
-            <span class="menu-collapsed">Cost Center</span>
-            </a>
-            <a href="../AP/master-profit-center.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-paperclip fa-fw "></span>
-            <span class="menu-collapsed">Profit Center</span>
-            </a>
-            <a href="../AP/master-bank.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-paperclip fa-fw "></span>
-            <span class="menu-collapsed">Bank</span>
-            </a>
-            <a href="../AP/master-mapping-memo.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-paperclip fa-fw "></span>
-            <span class="menu-collapsed">Mapping Memo</span>
-            </a>
-            ';
-        }else{
+            <ul class="dropdown-menu bg-dark text-white" role="menu">';
+            if($id_nak == '87'){ 
+              echo'<a href="../AP/verifikasibpb_knitting.php" class="dropdown-item bg-dark text-white">
+              <span  class="fa fa-share fa-fw "></span>
+              <span class="menu-collapsed">Verifikasi BPB</span>
+              </a>';
+            }elseif($id_nak == '86'){
+              echo'<a href="../AP/formapprovebpb_knitting.php" class="dropdown-item bg-dark text-white">
+              <span  class="fa fa fa-thumbs-up fa-fw "></span>
+              <span class="menu-collapsed">Approve BPB</span>
+              '.$notif_nak.'
+              </a>';
+            }elseif($id_nak == '86,87'){ 
+             echo'<a href="../AP/verifikasibpb_knitting.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa-share fa-fw "></span>
+             <span class="menu-collapsed">Verifikasi BPB</span>
+             </a>';
+             echo'<a href="../AP/formapprovebpb_knitting.php" class="dropdown-item bg-dark text-white">
+             <span  class="fa fa fa-thumbs-up fa-fw "></span>
+             <span class="menu-collapsed">Approve BPB</span>
+             '.$notif_nak.'
+             </a>';
+           }else{
             echo '';
+          }
+          echo'</ul>
+          </li>';
         }
-        ?>  
-    </div>
-</li>
+        ?>
 
-<!-- navbar AP -->
-<li class="nav-item dropdown active">
-  <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fa fa-paypal mr-1"></span> AP<span class="caret"></span></a>
-  <ul class="dropdown-menu bg-dark text-white" role="menu">
-      <?php
-      $querys = mysqli_query($conn1,"select Groupp, purchasing, approve_po from userpassword where username = '$user'");
-      $rs = mysqli_fetch_array($querys);
-      $group = $rs['Groupp'];
-      $pur = $rs['purchasing'];
-      $app_po = $rs['approve_po'];
+        <?php
+        $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'FTR'");
+        $rs = mysqli_fetch_array($querys);
+        $menu = isset($rs['menu']) ? $rs['menu'] :0;
+        $id = isset($rs['id']) ? $rs['id'] :0;
 
-      $queryss = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%BPB%' and useraccess.menu != 'Transfer BPB' and useraccess.menu != 'Accept BPB Whs-Acc' and useraccess.menu != 'Maintain BPB' and useraccess.menu not like '%create%' and profit_center != 'NAK' group by username");
-      while($rss = mysqli_fetch_array($queryss)){
-        $menu = isset($rss['ket']) ? $rss['ket'] :0;
-        $id = isset($rss['id']) ? $rss['id'] :0;
-
-        $sql = mysqli_query($conn2,"select count(distinct(no_bpb)) as no_bpb from bpb_new where status = 'GMF' and profit_center = 'NAG'");
-        $row = mysqli_fetch_array($sql);
-        $count = $row['no_bpb'];
-        if($count != '0'){
-            $notif = '<span class="badge" style="background-color: red;">'.$count.'</span>';
+        if($id == '4'){  
+          echo '
+          <li class="dropdown-submenu ">
+          <a class="dropdown-item bg-dark text-white" href="#">
+          <span s class="fa fa-money fa-fw "></span>
+          <span class="menu-collapsed">FTR</span>
+          </a>
+          <ul class="dropdown-menu bg-dark text-white" role="menu">
+          <a href="../AP/ftrcbd.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-paper-plane-o fa-fw "></span>
+          <span class="menu-collapsed">FTR CBD</span>
+          </a>
+          <a href="../AP/ftrdp.php" class="dropdown-item bg-dark text-white">
+          <span  class="fa fa-paper-plane-o fa-fw "></span>
+          <span class="menu-collapsed">FTR DP</span>
+          </a>
+          </ul>
+          </li>';
         }else{
-            $notif = '';
-        } 
-
-        $sql1 = mysqli_query($conn2,"select count(distinct(no_ro)) as no_ro from bppb_new where status = 'GMF'");
-        $row1 = mysqli_fetch_array($sql1);
-        $count1 = $row1['no_ro'];
-        $countjml = $count + $count1;
-        if($count1 != '0'){
-            $notif1 = '<span class="badge" style="background-color: red;">'.$count1.'</span>';
-        }else{
-            $notif1 = '';
+          echo '';
         }
+        ?>
 
+        <?php
+        $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Invoice Received'");
+        $rs = mysqli_fetch_array($querys);
+        $menu = isset($rs['menu']) ? $rs['menu'] :0;
+        $id = isset($rs['id']) ? $rs['id'] :0;
 
-    } 
+        $querys2 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, GROUP_CONCAT(menurole.id) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu IN ('Transfer BPB') GROUP BY username");
+        $rs2 = mysqli_fetch_array($querys2);
+        $menu2 = isset($rs2['menu']) ? $rs2['menu'] :0;
+        $id2 = isset($rs2['id']) ? $rs2['id'] :0;
 
-    $queryss2 = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%update%'  group by username");
-    $menu2 = '';
-    while($rss2 = mysqli_fetch_array($queryss2)){
-        $menu2 = isset($rss2['ket']) ? $rss2['ket'] :0;
-    }    
-
-    if($menu == 'Y' || $menu2 == 'Y'){  
         echo '
         <li class="dropdown-submenu ">
         <a class="dropdown-item bg-dark text-white" href="#">
-        <span class="fa fa-envelope-o fa-fw "></span>
-        <span class="menu-collapsed">BPB Garment</span>
+        <span s class="fa fa-list-alt fa-fw "></span>
+        <span class="menu-collapsed">Document Tracking</span>
         </a>
         <ul class="dropdown-menu bg-dark text-white" role="menu">';
-        if($id == '1'){ 
-         echo'<a href="../AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa fa-thumbs-up fa-fw "></span>
-         <span class="menu-collapsed">Approve BPB</span>
-         '.$notif.'
-         </a>';
-     }elseif($id == '2'){ 
-         echo'<a href="../AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa-share fa-fw "></span>
-         <span class="menu-collapsed">Verifikasi BPB</span>
-         </a>';
-     }elseif($id == '19'){ 
-         echo'<a href="../AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
-         <span class="menu-collapsed">Approve BPB Return</span>
-         '.$notif1.'
-         </a>';
-     }elseif($id == '20'){ 
-         echo'<a href="../AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
-         <span class="fa fa-share fa-fw "></span>
-         <span class="menu-collapsed">Verifikasi BPB Return</span>
-         </a>';
-     }elseif($id == '1,2'){ 
-         echo'<a href="../AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa fa-thumbs-up fa-fw "></span>
-         <span class="menu-collapsed">Approve BPB</span>
-         '.$notif.'
-         </a>
-         <a href="../AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa-share fa-fw "></span>
-         <span class="menu-collapsed">Verifikasi BPB</span>
-         </a>';
-     }elseif($id == '1,19'){ 
-         echo'<a href="../AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa fa-thumbs-up fa-fw "></span>
-         <span class="menu-collapsed">Approve BPB</span>
-         '.$notif.'
-         </a>
-         <a href="../AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
-         <span class="menu-collapsed">Approve BPB Return</span>
-         '.$notif1.'
-         </a>';
-     }elseif($id == '1,20'){ 
-         echo'<a href="../AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa fa-thumbs-up fa-fw "></span>
-         <span class="menu-collapsed">Approve BPB</span>
-         '.$notif.'
-         </a>
-         <a href="../AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa-share fa-fw "></span>
-         <span class="menu-collapsed">Verifikasi BPB Return</span>
-         </a>';
-     }elseif($id == '2,19'){ 
-         echo'<a href="../AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa-share fa-fw "></span>
-         <span class="menu-collapsed">Verifikasi BPB</span>
-         </a>
-         <a href="../AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
-         <span class="menu-collapsed">Approve BPB Return</span>
-         '.$notif1.'
-         </a>';
-     }elseif($id == '2,20'){ 
-         echo'<a href="../AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa-share fa-fw "></span>
-         <span class="menu-collapsed">Verifikasi BPB</span>
-         </a>
-         <a href="../AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa-share fa-fw "></span>
-         <span class="menu-collapsed">Verifikasi BPB Return</span>
-         </a>';
-     }elseif($id == '19,20'){ 
-         echo'<a href="../AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
-         <span class="menu-collapsed">Approve BPB Return</span>
-         '.$notif1.'
-         </a>
-         <a href="../AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa-share fa-fw "></span>
-         <span class="menu-collapsed">Verifikasi BPB Return</span>
-         </a>';
-     }elseif($id == '1,2,19'){ 
-         echo'<a href="../AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa fa-thumbs-up fa-fw "></span>
-         <span class="menu-collapsed">Approve BPB</span>
-         '.$notif.'
-         </a>
-         <a href="../AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa-share fa-fw "></span>
-         <span class="menu-collapsed">Verifikasi BPB</span>
-         </a>
-         <a href="../AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
-         <span class="menu-collapsed">Approve BPB Return</span>
-         '.$notif1.'
-         </a>';
-     }elseif($id == '1,2,20'){ 
-         echo'<a href="../AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa fa-thumbs-up fa-fw "></span>
-         <span class="menu-collapsed">Approve BPB</span>
-         '.$notif.'
-         </a>
-         <a href="../AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa-share fa-fw "></span>
-         <span class="menu-collapsed">Verifikasi BPB</span>
-         </a>
-         <a href="../AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa-share fa-fw "></span>
-         <span class="menu-collapsed">Verifikasi BPB Return</span>
-         </a>';
-     }elseif($id == '2,19,20'){ 
-         echo'<a href="../AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa-share fa-fw "></span>
-         <span class="menu-collapsed">Verifikasi BPB</span>
-         </a>
-         <a href="../AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa fa-thumbs-up fa-fw mr-2"></span>
-         <span class="menu-collapsed">Approve BPB Return</span>
-         '.$notif1.'
-         </a>
-         <a href="../AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa-share fa-fw "></span>
-         <span class="menu-collapsed">Verifikasi BPB Return</span>
-         </a>';
-     }elseif($id == '1,2,19,20'){ 
-         echo'<a href="../AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa fa-thumbs-up fa-fw "></span>
-         <span class="menu-collapsed">Approve BPB</span>
-         '.$notif.'
-         </a>
-         <a href="../AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa-share fa-fw "></span>
-         <span class="menu-collapsed">Verifikasi BPB</span>
-         </a>
-         <a href="../AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa fa-thumbs-up fa-fw "></span>
-         <span class="menu-collapsed">Approve BPB Return</span>
-         '.$notif1.'
-         </a>
-         <a href="../AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
-         <span  class="fa fa-share fa-fw "></span>
-         <span class="menu-collapsed">Verifikasi BPB Return</span>
-         </a>
-         ';
-     }else{
-        echo '';
-    }
-    if($menu2 == 'Y'){
-        echo '<a href="../AP/update_bpb.php" class="dropdown-item bg-dark text-white">
-        <span  class="fa fa-pencil fa-fw "></span>
-        <span class="menu-collapsed">Update BPB</span>
-        </a>
-        <a href="../AP/report-faktur-pajak.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-files-o fa-fw "></span>
-        <span class="menu-collapsed">Report FP</span>
-        </a>';
-    }
-
-    echo'</ul>
-    </li>';
-}
-?>
-
-<!-- BPB Knitting -->
-
-<?php
-$querys = mysqli_query($conn1,"select Groupp, purchasing, approve_po from userpassword where username = '$user'");
-$rs = mysqli_fetch_array($querys);
-$group = $rs['Groupp'];
-$pur = $rs['purchasing'];
-$app_po = $rs['approve_po'];
-
-$queryss_nak = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%BPB%' and useraccess.menu != 'Transfer BPB' and useraccess.menu != 'Accept BPB Whs-Acc' and useraccess.menu not like '%create%' and profit_center = 'NAK' group by username");
-while($rss_nak = mysqli_fetch_array($queryss_nak)){
-    $menu_nak = isset($rss_nak['ket']) ? $rss_nak['ket'] :0;
-    $id_nak = isset($rss_nak['id']) ? $rss_nak['id'] :0;
-
-    $sql_nak = mysqli_query($conn2,"select count(distinct(no_bpb)) as no_bpb from bpb_new where status = 'GMF' and profit_center = 'NAK'");
-    $row_nak = mysqli_fetch_array($sql_nak);
-    $count_nak = $row_nak['no_bpb'];
-    if($count_nak != '0'){
-        $notif_nak = '<span class="badge" style="background-color: red;">'.$count_nak.'</span>';
-    }else{
-        $notif_nak = '';
-    } 
+        if(strpos($id2, '77') !== false){    
+          echo '<a href="../AP/bpb_received.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-share fa-fw "></span>
+          <span class="menu-collapsed">BPB Transferred</span>
+          </a>';
+        }
 
 
-}
-
-
-if($menu_nak == 'Y'){  
-    echo '
-    <li class="dropdown-submenu ">
-    <a class="dropdown-item bg-dark text-white" href="#">
-    <span class="fa fa-envelope-o fa-fw "></span>
-    <span class="menu-collapsed">BPB Knitting</span>
-    </a>
-    <ul class="dropdown-menu bg-dark text-white" role="menu">';
-    if($id_nak == '87'){ 
-        echo'<a href="../AP/verifikasibpb_knitting.php" class="dropdown-item bg-dark text-white">
-        <span  class="fa fa-share fa-fw "></span>
-        <span class="menu-collapsed">Verifikasi BPB</span>
-        </a>';
-    }elseif($id_nak == '86'){
-        echo'<a href="../AP/formapprovebpb_knitting.php" class="dropdown-item bg-dark text-white">
-        <span  class="fa fa fa-thumbs-up fa-fw "></span>
-        <span class="menu-collapsed">Approve BPB</span>
-        '.$notif_nak.'
-        </a>';
-    }elseif($id_nak == '86,87'){ 
-     echo'<a href="../AP/verifikasibpb_knitting.php" class="dropdown-item bg-dark text-white">
-     <span  class="fa fa-share fa-fw "></span>
-     <span class="menu-collapsed">Verifikasi BPB</span>
-     </a>';
-     echo'<a href="../AP/formapprovebpb_knitting.php" class="dropdown-item bg-dark text-white">
-     <span  class="fa fa fa-thumbs-up fa-fw "></span>
-     <span class="menu-collapsed">Approve BPB</span>
-     '.$notif_nak.'
-     </a>';
- }else{
-    echo '';
-}
-echo'</ul>
-</li>';
-}
-?>
-
-<?php
-$querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'FTR'");
-$rs = mysqli_fetch_array($querys);
-$menu = isset($rs['menu']) ? $rs['menu'] :0;
-$id = isset($rs['id']) ? $rs['id'] :0;
-
-if($id == '4'){  
-    echo '
-    <li class="dropdown-submenu ">
-    <a class="dropdown-item bg-dark text-white" href="#">
-    <span s class="fa fa-money fa-fw "></span>
-    <span class="menu-collapsed">FTR</span>
-    </a>
-    <ul class="dropdown-menu bg-dark text-white" role="menu">
-    <a href="../AP/ftrcbd.php" class="dropdown-item bg-dark text-white">
-    <span class="fa fa-paper-plane-o fa-fw "></span>
-    <span class="menu-collapsed">FTR CBD</span>
-    </a>
-    <a href="../AP/ftrdp.php" class="dropdown-item bg-dark text-white">
-    <span  class="fa fa-paper-plane-o fa-fw "></span>
-    <span class="menu-collapsed">FTR DP</span>
-    </a>
-    </ul>
-    </li>';
-}else{
-    echo '';
-}
-?>
-
-<?php
-$querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Invoice Received'");
-$rs = mysqli_fetch_array($querys);
-$menu = isset($rs['menu']) ? $rs['menu'] :0;
-$id = isset($rs['id']) ? $rs['id'] :0;
-
-$querys2 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, GROUP_CONCAT(menurole.id) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu IN ('Transfer BPB') GROUP BY username");
-$rs2 = mysqli_fetch_array($querys2);
-$menu2 = isset($rs2['menu']) ? $rs2['menu'] :0;
-$id2 = isset($rs2['id']) ? $rs2['id'] :0;
-
-echo '
-<li class="dropdown-submenu ">
-<a class="dropdown-item bg-dark text-white" href="#">
-<span s class="fa fa-list-alt fa-fw "></span>
-<span class="menu-collapsed">Document Tracking</span>
-</a>
-<ul class="dropdown-menu bg-dark text-white" role="menu">';
-if(strpos($id2, '77') !== false){    
-    echo '<a href="../AP/bpb_received.php" class="dropdown-item bg-dark text-white">
-    <span class="fa fa-share fa-fw "></span>
-    <span class="menu-collapsed">BPB Transferred</span>
-    </a>';
-}
-
-
-if(strpos($id, '66') !== false){    
-    echo '<a href="../AP/invoice_received.php" class="dropdown-item bg-dark text-white">
-    <span class="fa fa-share fa-fw "></span>
-    <span class="menu-collapsed">Invoice Received</span>
-    </a>
-    <a href="../AP/report_invoice_received.php" class="dropdown-item bg-dark text-white">
-    <span class="fa fa-tags fa-fw "></span>
-    <span class="menu-collapsed">IR Report</span>
-    </a>';
-}
-echo'</ul>
-</li>';
-?>
+        if(strpos($id, '66') !== false){    
+          echo '<a href="../AP/invoice_received.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-share fa-fw "></span>
+          <span class="menu-collapsed">Invoice Received</span>
+          </a>
+          <a href="../AP/report_invoice_received.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-tags fa-fw "></span>
+          <span class="menu-collapsed">IR Report</span>
+          </a>';
+        }
+        echo'</ul>
+        </li>';
+        ?>
             <!-- <a href="../AP/trf_inv_fintoacc.php" class="dropdown-item bg-dark text-white">
                     <span class="fa fa-share fa-fw "></span>
                     <span class="menu-collapsed">Transfer Inv Fin - Acc</span>
-                </a> -->
+                  </a> -->
 
 
-                <?php
-                $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Kontrabon'");
-                $rs = mysqli_fetch_array($querys);
-                $menu = isset($rs['menu']) ? $rs['menu'] :0;
-                $id = isset($rs['id']) ? $rs['id'] :0;
+                  <?php
+                  $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Kontrabon'");
+                  $rs = mysqli_fetch_array($querys);
+                  $menu = isset($rs['menu']) ? $rs['menu'] :0;
+                  $id = isset($rs['id']) ? $rs['id'] :0;
 
-                if($id == '6'){
+                  if($id == '6'){
                     echo '
                     <li class="dropdown-submenu ">
                     <a class="dropdown-item bg-dark text-white" href="#">
@@ -654,19 +654,19 @@ echo'</ul>
                     </a>
                     </ul>
                     </li>';
-                }else{
+                  }else{
                     echo '';
-                }
-                ?>
+                  }
+                  ?>
 
 
-                <?php
-                $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'List Payment'");
-                $rs = mysqli_fetch_array($querys);
-                $menu = isset($rs['menu']) ? $rs['menu'] :0;
-                $id = isset($rs['id']) ? $rs['id'] :0;
+                  <?php
+                  $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'List Payment'");
+                  $rs = mysqli_fetch_array($querys);
+                  $menu = isset($rs['menu']) ? $rs['menu'] :0;
+                  $id = isset($rs['id']) ? $rs['id'] :0;
 
-                if($id == '8'){  
+                  if($id == '8'){  
                     echo '
                     <li class="dropdown-submenu ">
                     <a class="dropdown-item bg-dark text-white" href="#">
@@ -688,19 +688,19 @@ echo'</ul>
                     </a>
                     </ul>
                     </li>';
-                }else{
+                  }else{
                     echo '';
-                }
-                ?>
+                  }
+                  ?>
 
 
-                <?php
-                $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Payment'");
-                $rs = mysqli_fetch_array($querys);
-                $menu = isset($rs['menu']) ? $rs['menu'] :0;
-                $id = isset($rs['id']) ? $rs['id'] :0;
+                  <?php
+                  $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Payment'");
+                  $rs = mysqli_fetch_array($querys);
+                  $menu = isset($rs['menu']) ? $rs['menu'] :0;
+                  $id = isset($rs['id']) ? $rs['id'] :0;
 
-                if($id == '10'){
+                  if($id == '10'){
                     echo '
                     <li class="dropdown-submenu ">
                     <a class="dropdown-item bg-dark text-white" href="#">
@@ -722,51 +722,51 @@ echo'</ul>
                     </a>
                     </ul>
                     </li>';
-                }else{
+                  }else{
                     echo '';
-                }
-                ?>
+                  }
+                  ?>
 
-                <?php
-                $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%Closing%' and useraccess.menu != 'Closing Periode'");
-                $rs = mysqli_fetch_array($querys);
-                $menu = isset($rs['menu']) ? $rs['menu'] :0;
-                $id = isset($rs['id']) ? $rs['id'] :0;
+                  <?php
+                  $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%Closing%' and useraccess.menu != 'Closing Periode'");
+                  $rs = mysqli_fetch_array($querys);
+                  $menu = isset($rs['menu']) ? $rs['menu'] :0;
+                  $id = isset($rs['id']) ? $rs['id'] :0;
 
-                $sql123 = mysqli_query($conn2,"select count(distinct(no_payment)) as no_pay from list_payment where status = 'Approved'");
-                $row123 = mysqli_fetch_array($sql123);
-                $count123 = $row123['no_pay'];
+                  $sql123 = mysqli_query($conn2,"select count(distinct(no_payment)) as no_pay from list_payment where status = 'Approved'");
+                  $row123 = mysqli_fetch_array($sql123);
+                  $count123 = $row123['no_pay'];
 
-                $sqlsa = mysqli_query($conn2,"select count(distinct(no_pay)) as no_paysa from saldo_awal where status = 'Approved' and no_pay not like '%LP/NAG%'");
-                $rowsa = mysqli_fetch_array($sqlsa);
-                $countsa = $rowsa['no_paysa'];
+                  $sqlsa = mysqli_query($conn2,"select count(distinct(no_pay)) as no_paysa from saldo_awal where status = 'Approved' and no_pay not like '%LP/NAG%'");
+                  $rowsa = mysqli_fetch_array($sqlsa);
+                  $countsa = $rowsa['no_paysa'];
 
-                $countlpsa12 = $count123 + $countsa;
-                if($countlpsa12 != '0'){
+                  $countlpsa12 = $count123 + $countsa;
+                  if($countlpsa12 != '0'){
                     $notif123 = '<span class="badge" style="background-color: red;">'.$countlpsa12.'</span>';
-                }else{
+                  }else{
                     $notif123 = '';
-                }
+                  }
 
-                $sql456 = mysqli_query($conn2,"select count(distinct(no_payment)) as no_pay from list_payment_cbd where status = 'Approved'");
-                $row456 = mysqli_fetch_array($sql456);
-                $count456 = $row456['no_pay'];
-                if($count456 != '0'){
+                  $sql456 = mysqli_query($conn2,"select count(distinct(no_payment)) as no_pay from list_payment_cbd where status = 'Approved'");
+                  $row456 = mysqli_fetch_array($sql456);
+                  $count456 = $row456['no_pay'];
+                  if($count456 != '0'){
                     $notif456 = '<span class="badge" style="background-color: red;">'.$count456.'</span>';
-                }else{
+                  }else{
                     $notif456 = '';
-                }
+                  }
 
-                $sql789 = mysqli_query($conn2,"select count(distinct(no_payment)) as no_pay from list_payment_dp where status = 'Approved'");
-                $row789 = mysqli_fetch_array($sql789);
-                $count789 = $row789['no_pay'];
-                if($count789 != '0'){
+                  $sql789 = mysqli_query($conn2,"select count(distinct(no_payment)) as no_pay from list_payment_dp where status = 'Approved'");
+                  $row789 = mysqli_fetch_array($sql789);
+                  $count789 = $row789['no_pay'];
+                  if($count789 != '0'){
                     $notif789 = '<span class="badge" style="background-color: red;">'.$count789.'</span>';
-                }else{
+                  }else{
                     $notif789 = '';
-                }
+                  }
 
-                if($id == '22'){
+                  if($id == '22'){
                     echo '
                     <li class="dropdown-submenu ">
                     <a class="dropdown-item bg-dark text-white" href="#">
@@ -795,18 +795,18 @@ echo'</ul>
                     </a>
                     </ul>
                     </li>';
-                }else{
+                  }else{
                     echo '';
-                }
-                ?>
+                  }
+                  ?>
 
-                <?php
-                $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Status'");
-                $rs = mysqli_fetch_array($querys);
-                $menu = isset($rs['menu']) ? $rs['menu'] :0;
-                $id = isset($rs['id']) ? $rs['id'] :0;
+                  <?php
+                  $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Status'");
+                  $rs = mysqli_fetch_array($querys);
+                  $menu = isset($rs['menu']) ? $rs['menu'] :0;
+                  $id = isset($rs['id']) ? $rs['id'] :0;
 
-                if($id == '30'){       
+                  if($id == '30'){       
                     echo '
                     <li class="dropdown-submenu ">
                     <a class="dropdown-item bg-dark text-white" href="#">
@@ -820,43 +820,43 @@ echo'</ul>
                     </a>
                     </ul>
                     </li>';
-                }else{
+                  }else{
                     echo '';
-                }
-                ?>
+                  }
+                  ?>
 
-                <?php
-                $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Report'");
-                $rs = mysqli_fetch_array($querys);
-                $menu = isset($rs['menu']) ? $rs['menu'] :0;
-                $id = isset($rs['id']) ? $rs['id'] :0;
-
-
-                $querys2 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Development'");
-                $rs2 = mysqli_fetch_array($querys2);
-                $menu2 = isset($rs2['menu']) ? $rs2['menu'] :0;
-                $id2 = isset($rs2['id']) ? $rs2['id'] :0;
+                  <?php
+                  $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Report'");
+                  $rs = mysqli_fetch_array($querys);
+                  $menu = isset($rs['menu']) ? $rs['menu'] :0;
+                  $id = isset($rs['id']) ? $rs['id'] :0;
 
 
-                $querys3 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%Rekap Pelunasan%'");
-                $rs3 = mysqli_fetch_array($querys3);
-                $menu3 = isset($rs3['menu']) ? $rs3['menu'] :0;
-                $id3 = isset($rs3['id']) ? $rs3['id'] :0;
+                  $querys2 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Development'");
+                  $rs2 = mysqli_fetch_array($querys2);
+                  $menu2 = isset($rs2['menu']) ? $rs2['menu'] :0;
+                  $id2 = isset($rs2['id']) ? $rs2['id'] :0;
 
-                $sql_pr = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Purchase Report'  group by username");
-                $menu_pr = '';
-                while($rpr = mysqli_fetch_array($sql_pr)){
+
+                  $querys3 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%Rekap Pelunasan%'");
+                  $rs3 = mysqli_fetch_array($querys3);
+                  $menu3 = isset($rs3['menu']) ? $rs3['menu'] :0;
+                  $id3 = isset($rs3['id']) ? $rs3['id'] :0;
+
+                  $sql_pr = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Purchase Report'  group by username");
+                  $menu_pr = '';
+                  while($rpr = mysqli_fetch_array($sql_pr)){
                     $menu_pr = isset($rpr['ket']) ? $rpr['ket'] :0;
-                } 
+                  } 
 
-                echo '<li class="dropdown-submenu ">
-                <a class="dropdown-item bg-dark text-white" href="#">
-                <span class="fa fa-files-o fa-fw"></span>
-                <span class="menu-collapsed">Report</span>
-                </a>
-                <ul class="dropdown-menu bg-dark text-white" role="menu">';
+                  echo '<li class="dropdown-submenu ">
+                  <a class="dropdown-item bg-dark text-white" href="#">
+                  <span class="fa fa-files-o fa-fw"></span>
+                  <span class="menu-collapsed">Report</span>
+                  </a>
+                  <ul class="dropdown-menu bg-dark text-white" role="menu">';
 
-                if($id2 == '35'){
+                  if($id2 == '35'){
                     echo '<a href="../AP/pcs_detail.php" class="dropdown-item bg-dark text-white">
                     <span class="fa fa-tags fa-fw "></span>
                     <span class="menu-collapsed">AP Report</span>
@@ -869,17 +869,17 @@ echo'</ul>
                     <span class="fa fa-tags fa-fw "></span>
                     <span class="menu-collapsed">Rekap Pelunasan</span>
                     </a>';
-                }elseif($id == '18' && $id3 == '0'){
+                  }elseif($id == '18' && $id3 == '0'){
                     echo '<a href="../AP/pcs_detail.php" class="dropdown-item bg-dark text-white">
                     <span class="fa fa-tags fa-fw "></span>
                     <span class="menu-collapsed">AP Report</span>
                     </a>';
-                }elseif($id == '0' && $id3 == '57'){
+                  }elseif($id == '0' && $id3 == '57'){
                     echo '<a href="../AP/rekap-pelunasan.php" class="dropdown-item bg-dark text-white">
                     <span class="fa fa-tags fa-fw "></span>
                     <span class="menu-collapsed">Rekap Pelunasan</span>
                     </a>';
-                }elseif($id == '18' && $id3 == '57'){
+                  }elseif($id == '18' && $id3 == '57'){
                     echo '<a href="../AP/pcs_detail.php" class="dropdown-item bg-dark text-white">
                     <span class="fa fa-tags fa-fw "></span>
                     <span class="menu-collapsed">AP Report</span>
@@ -888,10 +888,10 @@ echo'</ul>
                     <span class="fa fa-tags fa-fw "></span>
                     <span class="menu-collapsed">Rekap Pelunasan</span>
                     </a>';
-                }else{
+                  }else{
                     echo '';
-                }
-                if($menu_pr == 'Y'){
+                  }
+                  if($menu_pr == 'Y'){
                     echo '<a href="../AP/laporan_pembelian.php" class="dropdown-item bg-dark text-white">
                     <span class="fa fa-tags fa-fw "></span>
                     <span class="menu-collapsed">Purchase Report</span>
@@ -900,658 +900,658 @@ echo'</ul>
                     <span class="fa fa-tags fa-fw "></span>
                     <span class="menu-collapsed">Purchase Return Report</span>
                     </a>';
-                }else{
-                }
-                if ($menu_pr == 'Y' || $id == '18' && $id3 == '57' || $id == '0' && $id3 == '57' || $id2 == '35' || 
+                  }else{
+                  }
+                  if ($menu_pr == 'Y' || $id == '18' && $id3 == '57' || $id == '0' && $id3 == '57' || $id2 == '35' || 
                     $id == '18' && $id3 == '0') {
                     echo '';
-            }
-            echo '</ul>
-            </li>';
-            ?>
+                }
+                echo '</ul>
+                </li>';
+                ?>
 
-            <?php
-            $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%Approval%'");
-            $rs = mysqli_fetch_array($querys);
-            $menu = isset($rs['menu']) ? $rs['menu'] :0;
-            $id = isset($rs['id']) ? $rs['id'] :0;
+                <?php
+                $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%Approval%'");
+                $rs = mysqli_fetch_array($querys);
+                $menu = isset($rs['menu']) ? $rs['menu'] :0;
+                $id = isset($rs['id']) ? $rs['id'] :0;
 
-            $sqlkb = mysqli_query($conn2," select count(distinct(no_kbon)) as no_kbon from kontrabon_h where status = 'draft'");
-            $rowkb = mysqli_fetch_array($sqlkb);
-            $countkb = $rowkb['no_kbon'];
-            if($countkb != '0'){
-                $notifkb = '<span class="badge" style="background-color: red;">'.$countkb.'</span>';
-            }else{
-                $notifkb = '';
-            }
+                $sqlkb = mysqli_query($conn2," select count(distinct(no_kbon)) as no_kbon from kontrabon_h where status = 'draft'");
+                $rowkb = mysqli_fetch_array($sqlkb);
+                $countkb = $rowkb['no_kbon'];
+                if($countkb != '0'){
+                  $notifkb = '<span class="badge" style="background-color: red;">'.$countkb.'</span>';
+                }else{
+                  $notifkb = '';
+                }
 
-            $sqllp = mysqli_query($conn2," select count(distinct(no_payment)) as no_pay from list_payment where status = 'draft'");
-            $rowlp = mysqli_fetch_array($sqllp);
-            $countlp = $rowlp['no_pay'];
+                $sqllp = mysqli_query($conn2," select count(distinct(no_payment)) as no_pay from list_payment where status = 'draft'");
+                $rowlp = mysqli_fetch_array($sqllp);
+                $countlp = $rowlp['no_pay'];
 
-            $sqlsa = mysqli_query($conn2,"select count(distinct(no_pay)) as no_paysa from saldo_awal where status = 'draft' and no_pay not like '%LP/NAG%'");
-            $rowsa = mysqli_fetch_array($sqlsa);
-            $countsa = $rowsa['no_paysa'];
+                $sqlsa = mysqli_query($conn2,"select count(distinct(no_pay)) as no_paysa from saldo_awal where status = 'draft' and no_pay not like '%LP/NAG%'");
+                $rowsa = mysqli_fetch_array($sqlsa);
+                $countsa = $rowsa['no_paysa'];
 
-            $countlpsa = $countlp + $countsa;
+                $countlpsa = $countlp + $countsa;
 
-            if($countlpsa != '0'){
-                $notiflp = '<span class="badge" style="background-color: red;">'.$countlpsa.'</span>';
-            }else{
-                $notiflp = '';
-            }
+                if($countlpsa != '0'){
+                  $notiflp = '<span class="badge" style="background-color: red;">'.$countlpsa.'</span>';
+                }else{
+                  $notiflp = '';
+                }
 
 
-            $sqlpay = mysqli_query($conn2," select COUNT(id) jml from (select a.id, payment_ftr_id, tgl_pelunasan, nama_pc, nama_supp, valuta_ftr curr, sum(ttl_bayar) total from payment_ftr a INNER JOIN master_pc b on b.kode_pc = a.profit_center where a.status = 'draft' GROUP BY payment_ftr_id) a");
-            $rowpay = mysqli_fetch_array($sqlpay);
-            $countpay = $rowpay['jml'];
-            if($countpay != '0'){
-                $notifpay = '<span class="badge" style="background-color: red;">'.$countpay.'</span>';
-            }else{
-                $notifpay = '';
-            }
+                $sqlpay = mysqli_query($conn2," select COUNT(id) jml from (select a.id, payment_ftr_id, tgl_pelunasan, nama_pc, nama_supp, valuta_ftr curr, sum(ttl_bayar) total from payment_ftr a INNER JOIN master_pc b on b.kode_pc = a.profit_center where a.status = 'draft' GROUP BY payment_ftr_id) a");
+                $rowpay = mysqli_fetch_array($sqlpay);
+                $countpay = $rowpay['jml'];
+                if($countpay != '0'){
+                  $notifpay = '<span class="badge" style="background-color: red;">'.$countpay.'</span>';
+                }else{
+                  $notifpay = '';
+                }
 
-            echo '<li class="dropdown-submenu ">
-            <a class="dropdown-item bg-dark text-white" href="#">
-            <span class="fa fa-thumbs-o-up fa-fw"></span>
-            <span class="menu-collapsed">Approval</span>
-            </a>
-            <ul class="dropdown-menu bg-dark text-white" role="menu">';
+                echo '<li class="dropdown-submenu ">
+                <a class="dropdown-item bg-dark text-white" href="#">
+                <span class="fa fa-thumbs-o-up fa-fw"></span>
+                <span class="menu-collapsed">Approval</span>
+                </a>
+                <ul class="dropdown-menu bg-dark text-white" role="menu">';
 
-            if(strpos($id, '31') !== false){
-                echo '<a href="../AP/formapprovekb.php" class="dropdown-item bg-dark text-white">
-                <span class="fa fa-ticket fa-fw "></span>
-                <span class="menu-collapsed">Kontrabon Reg</span>
-                '.$notifkb.'
-                </a>';
-            }
+                if(strpos($id, '31') !== false){
+                  echo '<a href="../AP/formapprovekb.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-ticket fa-fw "></span>
+                  <span class="menu-collapsed">Kontrabon Reg</span>
+                  '.$notifkb.'
+                  </a>';
+                }
 
-            if(strpos($id, '33') !== false){
-                echo '<a href="../AP/formapprovelp.php" class="dropdown-item bg-dark text-white">
-                <span class="fa fa-ticket fa-fw "></span>
-                <span class="menu-collapsed">List Payment Reg</span>
-                '.$notiflp.'
-                </a>';
-            }
+                if(strpos($id, '33') !== false){
+                  echo '<a href="../AP/formapprovelp.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-ticket fa-fw "></span>
+                  <span class="menu-collapsed">List Payment Reg</span>
+                  '.$notiflp.'
+                  </a>';
+                }
 
-            if(strpos($id, '91') !== false){
-                echo '<a href="../AP/form_approve_payment.php" class="dropdown-item bg-dark text-white">
-                <span class="fa fa-ticket fa-fw "></span>
-                <span class="menu-collapsed">Payment Reg</span>
-                '.$notifpay.'
-                </a>';
-            }
-            
-            echo '</ul>
-            </li>';
-            ?>
+                if(strpos($id, '91') !== false){
+                  echo '<a href="../AP/form_approve_payment.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-ticket fa-fw "></span>
+                  <span class="menu-collapsed">Payment Reg</span>
+                  '.$notifpay.'
+                  </a>';
+                }
 
-            <?php
-            $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Request Debitnote'");
-            $rs = mysqli_fetch_array($querys);
-            $menu = isset($rs['menu']) ? $rs['menu'] :0;
-            $id = isset($rs['id']) ? $rs['id'] :0;
+                echo '</ul>
+                </li>';
+                ?>
 
-            if($id == '78'){    
+                <?php
+                $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Request Debitnote'");
+                $rs = mysqli_fetch_array($querys);
+                $menu = isset($rs['menu']) ? $rs['menu'] :0;
+                $id = isset($rs['id']) ? $rs['id'] :0;
+
+                if($id == '78'){    
+                  echo '
+                  <a href="../AP/request_debitnote.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-registered fa-fw"></span>
+                  <span class="menu-collapsed">Request Debit Note</span>
+                  </a>';
+                }
+                ?>
+
+              </ul>
+            </li>
+
+
+            <!-- END Menu AP -->
+            <!-- navbar Bank -->
+            <li class="nav-item dropdown active">
+              <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fa fa-university mr-1"></span> Bank<span class="caret"></span></a>
+              <ul class="dropdown-menu bg-dark text-white" role="menu">
+                <?php
+                $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Bank'");
+                $rs = mysqli_fetch_array($querys);
+                $menu = isset($rs['menu']) ? $rs['menu'] :0;
+                $id = isset($rs['id']) ? $rs['id'] :0;
+
+                $querys2 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'E - Statement'");
+                $rs2 = mysqli_fetch_array($querys2);
+                $menu2 = isset($rs2['menu']) ? $rs2['menu'] :0;
+                $id2 = isset($rs2['id']) ? $rs2['id'] :0;
+
+                if($id == '36'){
+                  echo '
+                  <a href="../AP/bank-in22.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-sign-in fa-fw mr-3"></span>
+                  <span class="menu-collapsed">Bank In</span>
+                  </a>
+                  <a href="../AP/bank-out.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-sign-out fa-fw mr-3"></span>
+                  <span class="menu-collapsed">Bank Out</span>
+                  </a>
+                  <a href="../AP/payment-voucher.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-money fa-fw mr-3"></span>
+                  <span class="menu-collapsed">Payment Voucher</span>
+                  </a>
+                  <a href="../AP/bankreport.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-file-excel-o fa-fw mr-3"></span>
+                  <span class="menu-collapsed">Report</span>
+                  </a>';
+                }
+
+                if($id2 == '62'){
+                  echo '<a href="../AP/e_statement.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-money fa-fw mr-3"></span>
+                  <span class="menu-collapsed">E-Statement</span>
+                  </a>';
+                }
+
+                ?>
+                <?php
+                $querys = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and  useraccess.menu like '%Bank%' and useraccess.menu like '%Approval%' group by username");
+                $rs = mysqli_fetch_array($querys);
+                $menu = isset($rs['menu']) ? $rs['menu'] :0;
+                $id = isset($rs['id']) ? $rs['id'] :0;
+
                 echo '
-                <a href="../AP/request_debitnote.php" class="dropdown-item bg-dark text-white">
-                <span class="fa fa-registered fa-fw"></span>
-                <span class="menu-collapsed">Request Debit Note</span>
-                </a>';
-            }
-            ?>
+                <li class="dropdown-submenu ">
+                <a class="dropdown-item bg-dark text-white" href="#">
+                <span class="fa fa-thumbs-up fa-fw"></span>
+                <span class="menu-collapsed">Approval</span>
+                </a>
+                <ul class="dropdown-menu bg-dark text-white" role="menu">';
 
-        </ul>
-    </li>
+                if ($id == '41') {
+                  echo '
+                  <a href="../AP/approve-pv.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw "></span>
+                  <span class="menu-collapsed">Payment Voucher</span>
+                  </a> ';
+                }elseif($id == '42'){
+                  echo '
+                  <a href="../AP/approve-inbank.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw "></span>
+                  <span class="menu-collapsed">Incoming Bank</span>
+                  </a> ';
+                }elseif($id == '43'){
+                  echo '
+                  <a href="../AP/approve-outbank.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw "></span>
+                  <span class="menu-collapsed">Outgoing bank</span>
+                  </a> ';
+                }elseif($id == '41,42'){
+                  echo '
+                  <a href="../AP/approve-pv.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw "></span>
+                  <span class="menu-collapsed">Payment Voucher</span>
+                  </a>
+                  <a href="../AP/approve-inbank.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw "></span>
+                  <span class="menu-collapsed">Incoming Bank</span>
+                  </a> ';
+                }elseif($id == '41,43'){
+                  echo '
+                  <a href="../AP/approve-pv.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw "></span>
+                  <span class="menu-collapsed">Payment Voucher</span>
+                  </a>
+                  <a href="../AP/approve-outbank.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw "></span>
+                  <span class="menu-collapsed">Outgoing bank</span>
+                  </a> ';
+                }elseif($id == '42,43'){
+                  echo '
+                  <a href="../AP/approve-inbank.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw "></span>
+                  <span class="menu-collapsed">Incoming Bank</span>
+                  </a>
+                  <a href="../AP/approve-outbank.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw "></span>
+                  <span class="menu-collapsed">Outgoing bank</span>
+                  </a>';
+                }elseif($id == '41,42,43'){
+                  echo '
+                  <a href="../AP/approve-pv.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw "></span>
+                  <span class="menu-collapsed">Payment Voucher</span>
+                  </a>
+                  <a href="../AP/approve-inbank.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw "></span>
+                  <span class="menu-collapsed">Incoming Bank</span>
+                  </a>
+                  <a href="../AP/approve-outbank.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw "></span>
+                  <span class="menu-collapsed">Outgoing bank</span>
+                  </a> ';
+                }else{
+                  echo '';
+                }
+                echo '</ul>
+                </li>';
+                ?>
+              </ul>
+            </li>
+            <!-- END Menu Bank -->
 
+            <!-- navbar Cash -->
+            <li class="nav-item dropdown active">
+              <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fa fa-money mr-1"></span> Cash<span class="caret"></span></a>
+              <ul class="dropdown-menu bg-dark text-white" role="menu">
+                <?php
+                $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Cash'");
+                $rs = mysqli_fetch_array($querys);
+                $menu = isset($rs['menu']) ? $rs['menu'] :0;
+                $id = isset($rs['id']) ? $rs['id'] :0;
 
-    <!-- END Menu AP -->
-    <!-- navbar Bank -->
-    <li class="nav-item dropdown active">
-        <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fa fa-university mr-1"></span> Bank<span class="caret"></span></a>
-        <ul class="dropdown-menu bg-dark text-white" role="menu">
-          <?php
-          $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Bank'");
-          $rs = mysqli_fetch_array($querys);
-          $menu = isset($rs['menu']) ? $rs['menu'] :0;
-          $id = isset($rs['id']) ? $rs['id'] :0;
+                if($id == '38'){                             
+                  echo '
+                  <a href="../AP/cash-in.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-sign-in fa-fw"></span>
+                  <span class="menu-collapsed">Cash In</span>
+                  </a>
+                  <a href="../AP/cash-out.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-sign-out fa-fw"></span>
+                  <span class="menu-collapsed">Cash Out</span>
+                  </a>
+                  <a href="../AP/petty-cashin.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-credit-card fa-fw"></span>
+                  <span class="menu-collapsed">Petty Cash In</span>
+                  </a>
+                  <a href="../AP/petty-cashout.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-credit-card fa-fw"></span>
+                  <span class="menu-collapsed">Petty Cash Out</span>
+                  </a>
+                  <a href="../AP/cashreport.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-file-excel-o fa-fw"></span>
+                  <span class="menu-collapsed">Report Cash</span>
+                  </a>';
+                }else{
+                  echo '';
+                }
+                ?>
 
-          $querys2 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'E - Statement'");
-          $rs2 = mysqli_fetch_array($querys2);
-          $menu2 = isset($rs2['menu']) ? $rs2['menu'] :0;
-          $id2 = isset($rs2['id']) ? $rs2['id'] :0;
+                <?php
+                $querys = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and  useraccess.menu like '%Cash%' and useraccess.menu like '%Approval%' group by username");
+                $rs = mysqli_fetch_array($querys);
+                $menu = isset($rs['menu']) ? $rs['menu'] :0;
+                $id = isset($rs['id']) ? $rs['id'] :0;
 
-          if($id == '36'){
-            echo '
-            <a href="../AP/bank-in22.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-sign-in fa-fw mr-3"></span>
-            <span class="menu-collapsed">Bank In</span>
-            </a>
-            <a href="../AP/bank-out.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-sign-out fa-fw mr-3"></span>
-            <span class="menu-collapsed">Bank Out</span>
-            </a>
-            <a href="../AP/payment-voucher.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-money fa-fw mr-3"></span>
-            <span class="menu-collapsed">Payment Voucher</span>
-            </a>
-            <a href="../AP/bankreport.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-file-excel-o fa-fw mr-3"></span>
-            <span class="menu-collapsed">Report</span>
-            </a>';
-        }
+                echo '
+                <li class="dropdown-submenu ">
+                <a class="dropdown-item bg-dark text-white" href="#">
+                <span class="fa fa-thumbs-up fa-fw"></span>
+                <span class="menu-collapsed">Approval</span>
+                </a>
+                <ul class="dropdown-menu bg-dark text-white" role="menu">';
 
-        if($id2 == '62'){
-            echo '<a href="../AP/e_statement.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-money fa-fw mr-3"></span>
-            <span class="menu-collapsed">E-Statement</span>
-            </a>';
-        }
+                if ($id == '44') {
+                  echo '
+                  <a href="../AP/approve-cashin.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Cash In</span>
+                  </a> ';
+                }elseif($id == '45'){
+                  echo '
+                  <a href="../AP/approve-cashout.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Cash Out</span>
+                  </a> ';
+                }elseif($id == '46'){
+                  echo '
+                  <a href="../AP/approve-petty-cashin.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Petty Cash In</span>
+                  </a> ';
+                }elseif($id == '47'){
+                  echo '
+                  <a href="../AP/approve-petty-cashout.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Petty Cash Out</span>
+                  </a> ';
+                }elseif($id == '44,45'){
+                  echo '
+                  <a href="../AP/approve-cashin.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Cash In</span>
+                  </a>
+                  <a href="../AP/approve-cashout.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Cash Out</span>
+                  </a>';
+                }elseif($id == '44,46'){
+                  echo '
+                  <a href="../AP/approve-cashin.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Cash In</span>
+                  </a>
+                  <a href="../AP/approve-petty-cashin.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Petty Cash In</span>
+                  </a> ';
+                }elseif($id == '44,47'){
+                  echo '
+                  <a href="../AP/approve-cashin.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Cash In</span>
+                  </a>
+                  <a href="../AP/approve-petty-cashout.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Petty Cash Out</span>
+                  </a> ';
+                }elseif($id == '45,46'){
+                  echo '
+                  <a href="../AP/approve-cashout.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Cash Out</span>
+                  </a>
+                  <a href="../AP/approve-petty-cashin.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Petty Cash In</span>
+                  </a>';
+                }elseif($id == '45,47'){
+                  echo '
+                  <a href="../AP/approve-cashout.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Cash Out</span>
+                  </a>
+                  <a href="../AP/approve-petty-cashout.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Petty Cash Out</span>
+                  </a> ';
+                }elseif($id == '46,47'){
+                  echo '
+                  <a href="../AP/approve-petty-cashin.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Petty Cash In</span>
+                  </a>
+                  <a href="../AP/approve-petty-cashout.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Petty Cash Out</span>
+                  </a> ';
+                }elseif($id == '44,45,46'){
+                  echo '
+                  <a href="../AP/approve-cashin.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Cash In</span>
+                  </a>
+                  <a href="../AP/approve-cashout.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Cash Out</span>
+                  </a>
+                  <a href="../AP/approve-petty-cashin.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Petty Cash In</span>
+                  </a> ';
+                }elseif($id == '44,45,47'){
+                  echo '
+                  <a href="../AP/approve-cashin.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Cash In</span>
+                  </a>
+                  <a href="../AP/approve-cashout.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Cash Out</span>
+                  </a>
+                  <a href="../AP/approve-petty-cashout.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Petty Cash Out</span>
+                  </a> ';
+                }elseif($id == '44,46,47'){
+                  echo '
+                  <a href="../AP/approve-cashin.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Cash In</span>
+                  </a>
+                  <a href="../AP/approve-petty-cashin.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Petty Cash In</span>
+                  </a>
+                  <a href="../AP/approve-petty-cashout.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Petty Cash Out</span>
+                  </a> ';
+                }elseif($id == '45,46,47'){
+                  echo '
+                  <a href="../AP/approve-cashout.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Cash Out</span>
+                  </a>
+                  <a href="../AP/approve-petty-cashin.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Petty Cash In</span>
+                  </a>
+                  <a href="../AP/approve-petty-cashout.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Petty Cash Out</span>
+                  </a> ';
+                }elseif($id == '44,45,46,47'){
+                  echo '
+                  <a href="../AP/approve-cashin.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Cash In</span>
+                  </a>
+                  <a href="../AP/approve-cashout.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Cash Out</span>
+                  </a>
+                  <a href="../AP/approve-petty-cashin.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Petty Cash In</span>
+                  </a>
+                  <a href="../AP/approve-petty-cashout.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-thumbs-up fa-fw"></span>
+                  <span class="menu-collapsed">Petty Cash Out</span>
+                  </a> ';
+                }else{
+                  echo '';
+                }
+                echo '</ul>
+                </li>';
+                ?>
+              </ul>
+            </li>
+            <!-- END Menu Cash -->
 
-        ?>
-        <?php
-        $querys = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and  useraccess.menu like '%Bank%' and useraccess.menu like '%Approval%' group by username");
-        $rs = mysqli_fetch_array($querys);
-        $menu = isset($rs['menu']) ? $rs['menu'] :0;
-        $id = isset($rs['id']) ? $rs['id'] :0;
+            <!-- navbar Accounting -->
+            <li class="nav-item dropdown active">
+              <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fa fa-bar-chart mr-1"></span> Accounting<span class="caret"></span></a>
+              <ul class="dropdown-menu bg-dark text-white" role="menu">
+                <?php
+                $querys = mysqli_query($conn1,"select Groupp, purchasing, approve_po from userpassword where username = '$user'");
+                $rs = mysqli_fetch_array($querys);
+                $group = $rs['Groupp'];
+                $pur = $rs['purchasing'];
+                $app_po = $rs['approve_po'];
 
-        echo '
-        <li class="dropdown-submenu ">
-        <a class="dropdown-item bg-dark text-white" href="#">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Approval</span>
-        </a>
-        <ul class="dropdown-menu bg-dark text-white" role="menu">';
+                $queryss = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%Acct%' and menurole.status = 'Menu' group by username");
+                while($rss = mysqli_fetch_array($queryss)){
+                  $menu = isset($rss['ket']) ? $rss['ket'] :0;
+                  $id = isset($rss['id']) ? $rss['id'] :0;
 
-        if ($id == '41') {
-            echo '
-            <a href="../AP/approve-pv.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-thumbs-up fa-fw "></span>
-            <span class="menu-collapsed">Payment Voucher</span>
-            </a> ';
-        }elseif($id == '42'){
-            echo '
-            <a href="../AP/approve-inbank.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-thumbs-up fa-fw "></span>
-            <span class="menu-collapsed">Incoming Bank</span>
-            </a> ';
-        }elseif($id == '43'){
-            echo '
-            <a href="../AP/approve-outbank.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-thumbs-up fa-fw "></span>
-            <span class="menu-collapsed">Outgoing bank</span>
-            </a> ';
-        }elseif($id == '41,42'){
-            echo '
-            <a href="../AP/approve-pv.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-thumbs-up fa-fw "></span>
-            <span class="menu-collapsed">Payment Voucher</span>
-            </a>
-            <a href="../AP/approve-inbank.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-thumbs-up fa-fw "></span>
-            <span class="menu-collapsed">Incoming Bank</span>
-            </a> ';
-        }elseif($id == '41,43'){
-            echo '
-            <a href="../AP/approve-pv.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-thumbs-up fa-fw "></span>
-            <span class="menu-collapsed">Payment Voucher</span>
-            </a>
-            <a href="../AP/approve-outbank.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-thumbs-up fa-fw "></span>
-            <span class="menu-collapsed">Outgoing bank</span>
-            </a> ';
-        }elseif($id == '42,43'){
-            echo '
-            <a href="../AP/approve-inbank.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-thumbs-up fa-fw "></span>
-            <span class="menu-collapsed">Incoming Bank</span>
-            </a>
-            <a href="../AP/approve-outbank.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-thumbs-up fa-fw "></span>
-            <span class="menu-collapsed">Outgoing bank</span>
-            </a>';
-        }elseif($id == '41,42,43'){
-            echo '
-            <a href="../AP/approve-pv.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-thumbs-up fa-fw "></span>
-            <span class="menu-collapsed">Payment Voucher</span>
-            </a>
-            <a href="../AP/approve-inbank.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-thumbs-up fa-fw "></span>
-            <span class="menu-collapsed">Incoming Bank</span>
-            </a>
-            <a href="../AP/approve-outbank.php" class="dropdown-item bg-dark text-white">
-            <span class="fa fa-thumbs-up fa-fw "></span>
-            <span class="menu-collapsed">Outgoing bank</span>
-            </a> ';
-        }else{
-            echo '';
-        }
-        echo '</ul>
-        </li>';
-        ?>
-    </ul>
-</li>
-<!-- END Menu Bank -->
+                }      
 
-<!-- navbar Cash -->
-<li class="nav-item dropdown active">
-    <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fa fa-money mr-1"></span> Cash<span class="caret"></span></a>
-    <ul class="dropdown-menu bg-dark text-white" role="menu">
-      <?php
-      $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Cash'");
-      $rs = mysqli_fetch_array($querys);
-      $menu = isset($rs['menu']) ? $rs['menu'] :0;
-      $id = isset($rs['id']) ? $rs['id'] :0;
+                $queryss2 = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Closing Periode' and menurole.status = 'Menu' group by username");
+                while($rss2 = mysqli_fetch_array($queryss2)){
+                  $menu2 = isset($rss2['ket']) ? $rss2['ket'] :0;
+                  $id2 = isset($rss2['id']) ? $rss2['id'] :0;
 
-      if($id == '38'){                             
-        echo '
-        <a href="../AP/cash-in.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-sign-in fa-fw"></span>
-        <span class="menu-collapsed">Cash In</span>
-        </a>
-        <a href="../AP/cash-out.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-sign-out fa-fw"></span>
-        <span class="menu-collapsed">Cash Out</span>
-        </a>
-        <a href="../AP/petty-cashin.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-credit-card fa-fw"></span>
-        <span class="menu-collapsed">Petty Cash In</span>
-        </a>
-        <a href="../AP/petty-cashout.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-credit-card fa-fw"></span>
-        <span class="menu-collapsed">Petty Cash Out</span>
-        </a>
-        <a href="../AP/cashreport.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-file-excel-o fa-fw"></span>
-        <span class="menu-collapsed">Report Cash</span>
-        </a>';
-    }else{
-        echo '';
-    }
-    ?>
+                }          
 
-    <?php
-    $querys = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and  useraccess.menu like '%Cash%' and useraccess.menu like '%Approval%' group by username");
-    $rs = mysqli_fetch_array($querys);
-    $menu = isset($rs['menu']) ? $rs['menu'] :0;
-    $id = isset($rs['id']) ? $rs['id'] :0;
+                if($menu == 'Y'){               
+                  echo '';
+                  if(strpos($id, '50') !== false){ 
+                   echo'<a href="../AP/memorial-journal.php" class="dropdown-item bg-dark text-white">
+                   <span class="fa fa-bars fa-fw"></span>
+                   <span class="menu-collapsed">Memorial Journal</span>
+                   </a>';
+                 }if(strpos($id, '51') !== false){ 
+                   echo'<a href="../AP/list-journal.php" class="dropdown-item bg-dark text-white">
+                   <span class="fa fa-list-alt fa-fw"></span>
+                   <span class="menu-collapsed">List Journal</span>
+                   </a>';
+                 }if(strpos($id, '52') !== false){ 
+                   echo'<a href="../AP/general-ledger.php" class="dropdown-item bg-dark text-white">
+                   <span class="fa fa-print fa-list"></span>
+                   <span class="menu-collapsed">General Ledger</span>
+                   </a>';
+                 }
 
-    echo '
-    <li class="dropdown-submenu ">
-    <a class="dropdown-item bg-dark text-white" href="#">
-    <span class="fa fa-thumbs-up fa-fw"></span>
-    <span class="menu-collapsed">Approval</span>
-    </a>
-    <ul class="dropdown-menu bg-dark text-white" role="menu">';
-
-    if ($id == '44') {
-        echo '
-        <a href="../AP/approve-cashin.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Cash In</span>
-        </a> ';
-    }elseif($id == '45'){
-        echo '
-        <a href="../AP/approve-cashout.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Cash Out</span>
-        </a> ';
-    }elseif($id == '46'){
-        echo '
-        <a href="../AP/approve-petty-cashin.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Petty Cash In</span>
-        </a> ';
-    }elseif($id == '47'){
-        echo '
-        <a href="../AP/approve-petty-cashout.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Petty Cash Out</span>
-        </a> ';
-    }elseif($id == '44,45'){
-        echo '
-        <a href="../AP/approve-cashin.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Cash In</span>
-        </a>
-        <a href="../AP/approve-cashout.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Cash Out</span>
-        </a>';
-    }elseif($id == '44,46'){
-        echo '
-        <a href="../AP/approve-cashin.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Cash In</span>
-        </a>
-        <a href="../AP/approve-petty-cashin.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Petty Cash In</span>
-        </a> ';
-    }elseif($id == '44,47'){
-        echo '
-        <a href="../AP/approve-cashin.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Cash In</span>
-        </a>
-        <a href="../AP/approve-petty-cashout.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Petty Cash Out</span>
-        </a> ';
-    }elseif($id == '45,46'){
-        echo '
-        <a href="../AP/approve-cashout.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Cash Out</span>
-        </a>
-        <a href="../AP/approve-petty-cashin.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Petty Cash In</span>
-        </a>';
-    }elseif($id == '45,47'){
-        echo '
-        <a href="../AP/approve-cashout.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Cash Out</span>
-        </a>
-        <a href="../AP/approve-petty-cashout.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Petty Cash Out</span>
-        </a> ';
-    }elseif($id == '46,47'){
-        echo '
-        <a href="../AP/approve-petty-cashin.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Petty Cash In</span>
-        </a>
-        <a href="../AP/approve-petty-cashout.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Petty Cash Out</span>
-        </a> ';
-    }elseif($id == '44,45,46'){
-        echo '
-        <a href="../AP/approve-cashin.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Cash In</span>
-        </a>
-        <a href="../AP/approve-cashout.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Cash Out</span>
-        </a>
-        <a href="../AP/approve-petty-cashin.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Petty Cash In</span>
-        </a> ';
-    }elseif($id == '44,45,47'){
-        echo '
-        <a href="../AP/approve-cashin.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Cash In</span>
-        </a>
-        <a href="../AP/approve-cashout.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Cash Out</span>
-        </a>
-        <a href="../AP/approve-petty-cashout.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Petty Cash Out</span>
-        </a> ';
-    }elseif($id == '44,46,47'){
-        echo '
-        <a href="../AP/approve-cashin.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Cash In</span>
-        </a>
-        <a href="../AP/approve-petty-cashin.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Petty Cash In</span>
-        </a>
-        <a href="../AP/approve-petty-cashout.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Petty Cash Out</span>
-        </a> ';
-    }elseif($id == '45,46,47'){
-        echo '
-        <a href="../AP/approve-cashout.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Cash Out</span>
-        </a>
-        <a href="../AP/approve-petty-cashin.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Petty Cash In</span>
-        </a>
-        <a href="../AP/approve-petty-cashout.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Petty Cash Out</span>
-        </a> ';
-    }elseif($id == '44,45,46,47'){
-        echo '
-        <a href="../AP/approve-cashin.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Cash In</span>
-        </a>
-        <a href="../AP/approve-cashout.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Cash Out</span>
-        </a>
-        <a href="../AP/approve-petty-cashin.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Petty Cash In</span>
-        </a>
-        <a href="../AP/approve-petty-cashout.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-thumbs-up fa-fw"></span>
-        <span class="menu-collapsed">Petty Cash Out</span>
-        </a> ';
-    }else{
-        echo '';
-    }
-    echo '</ul>
-    </li>';
-    ?>
-</ul>
-</li>
-<!-- END Menu Cash -->
-
-<!-- navbar Accounting -->
-<li class="nav-item dropdown active">
-    <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fa fa-bar-chart mr-1"></span> Accounting<span class="caret"></span></a>
-    <ul class="dropdown-menu bg-dark text-white" role="menu">
-      <?php
-      $querys = mysqli_query($conn1,"select Groupp, purchasing, approve_po from userpassword where username = '$user'");
-      $rs = mysqli_fetch_array($querys);
-      $group = $rs['Groupp'];
-      $pur = $rs['purchasing'];
-      $app_po = $rs['approve_po'];
-
-      $queryss = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%Acct%' and menurole.status = 'Menu' group by username");
-      while($rss = mysqli_fetch_array($queryss)){
-        $menu = isset($rss['ket']) ? $rss['ket'] :0;
-        $id = isset($rss['id']) ? $rss['id'] :0;
-
-    }      
-
-    $queryss2 = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Closing Periode' and menurole.status = 'Menu' group by username");
-    while($rss2 = mysqli_fetch_array($queryss2)){
-        $menu2 = isset($rss2['ket']) ? $rss2['ket'] :0;
-        $id2 = isset($rss2['id']) ? $rss2['id'] :0;
-
-    }          
-
-    if($menu == 'Y'){               
-        echo '';
-        if(strpos($id, '50') !== false){ 
-         echo'<a href="../AP/memorial-journal.php" class="dropdown-item bg-dark text-white">
-         <span class="fa fa-bars fa-fw"></span>
-         <span class="menu-collapsed">Memorial Journal</span>
-         </a>';
-     }if(strpos($id, '51') !== false){ 
-         echo'<a href="../AP/list-journal.php" class="dropdown-item bg-dark text-white">
-         <span class="fa fa-list-alt fa-fw"></span>
-         <span class="menu-collapsed">List Journal</span>
-         </a>';
-     }if(strpos($id, '52') !== false){ 
-         echo'<a href="../AP/general-ledger.php" class="dropdown-item bg-dark text-white">
-         <span class="fa fa-print fa-list"></span>
-         <span class="menu-collapsed">General Ledger</span>
-         </a>';
-     }
-
-     echo '<li class="dropdown-submenu ">
-     <a class="dropdown-item bg-dark text-white" href="#">
-     <span class="fa fa-list-ul fa-fw"></span>
-     <span class="menu-collapsed">Sub Ledger</span>
-     </a>
-     <ul class="dropdown-menu bg-dark text-white" role="menu">';
-     if(strpos($id, '64') !== false){
-        echo'<a href="../AP/other_receivable_report.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-fax fa-fw"></span>
-        <span class="menu-collapsed">Other Receivable</span>
-        </a>';
-    }
-    if(strpos($id, '65') !== false){
-        echo'<a href="../AP/other_payable_report.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-fax fa-fw"></span>
-        <span class="menu-collapsed">Other Payable</span>
-        </a>';
-    }
-    if(strpos($id, '82') !== false){
-        echo'<a href="../AP/purchase_advance_report.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-fax fa-fw"></span>
-        <span class="menu-collapsed">Purchase Advance</span>
-        </a>';
-    }
-    echo'</ul>
-    </li>';
-    if(strpos($id, '53') !== false){ 
-     echo'<li class="dropdown-submenu ">
-     <a class="dropdown-item bg-dark text-white" href="#">
-     <span class="fa fa-balance-scale fa-fw"></span>
-     <span class="menu-collapsed">Financial Statement</span>
-     </a>
-     <ul class="dropdown-menu bg-dark text-white" role="menu">
-     <a href="../AP/financial-statement-ytd.php" class="dropdown-item bg-dark text-white">
-     <span class="fa fa-calendar fa-fw mr-3"></span>
-     <span class="menu-collapsed">Year To Date</span>
-     </a>
-     <a href="../AP/trial-balance-monthly.php" class="dropdown-item bg-dark text-white">
-     <span class="fa fa-calendar-o fa-fw mr-3"></span>
-     <span class="menu-collapsed">Monthly</span>
-     </a>
-     </ul>
-     </li>';
- }
+                 echo '<li class="dropdown-submenu ">
+                 <a class="dropdown-item bg-dark text-white" href="#">
+                 <span class="fa fa-list-ul fa-fw"></span>
+                 <span class="menu-collapsed">Sub Ledger</span>
+                 </a>
+                 <ul class="dropdown-menu bg-dark text-white" role="menu">';
+                 if(strpos($id, '64') !== false){
+                  echo'<a href="../AP/other_receivable_report.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-fax fa-fw"></span>
+                  <span class="menu-collapsed">Other Receivable</span>
+                  </a>';
+                }
+                if(strpos($id, '65') !== false){
+                  echo'<a href="../AP/other_payable_report.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-fax fa-fw"></span>
+                  <span class="menu-collapsed">Other Payable</span>
+                  </a>';
+                }
+                if(strpos($id, '82') !== false){
+                  echo'<a href="../AP/purchase_advance_report.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-fax fa-fw"></span>
+                  <span class="menu-collapsed">Purchase Advance</span>
+                  </a>';
+                }
+                echo'</ul>
+                </li>';
+                if(strpos($id, '53') !== false){ 
+                 echo'<li class="dropdown-submenu ">
+                 <a class="dropdown-item bg-dark text-white" href="#">
+                 <span class="fa fa-balance-scale fa-fw"></span>
+                 <span class="menu-collapsed">Financial Statement</span>
+                 </a>
+                 <ul class="dropdown-menu bg-dark text-white" role="menu">
+                 <a href="../AP/financial-statement-ytd.php" class="dropdown-item bg-dark text-white">
+                 <span class="fa fa-calendar fa-fw mr-3"></span>
+                 <span class="menu-collapsed">Year To Date</span>
+                 </a>
+                 <a href="../AP/trial-balance-monthly.php" class="dropdown-item bg-dark text-white">
+                 <span class="fa fa-calendar-o fa-fw mr-3"></span>
+                 <span class="menu-collapsed">Monthly</span>
+                 </a>
+                 </ul>
+                 </li>';
+               }
 
 
-}
+             }
 
-if(strpos($id2, '88') !== false){ 
+             if(strpos($id2, '88') !== false){ 
         // code...
- echo'<a href="../AP/closing-periode.php" class="dropdown-item bg-dark text-white">
- <span class="fas fa-lock fa-fw"></span>
- <span class="menu-collapsed">Closing Periode</span>
- </a>';
-}
+               echo'<a href="../AP/closing-periode.php" class="dropdown-item bg-dark text-white">
+               <span class="fas fa-lock fa-fw"></span>
+               <span class="menu-collapsed">Closing Periode</span>
+               </a>';
+             }
 
-echo '<li class="dropdown-submenu ">
-<a class="dropdown-item bg-dark text-white" href="#">
-<span class="fab fa-rev"></span>
-<span class="menu-collapsed">Repost Journal</span>
-</a>
-<ul class="dropdown-menu bg-dark text-white" role="menu">';
-if(strpos($id, '90') !== false){
-    echo'<a href="../AP/repost-bank-out.php" class="dropdown-item bg-dark text-white">
-    <span class="fas fa-landmark"></span>
-    <span class="menu-collapsed">Bank Out</span>
-    </a>';
-}
-echo'</ul>
-</li>';
+             echo '<li class="dropdown-submenu ">
+             <a class="dropdown-item bg-dark text-white" href="#">
+             <span class="fab fa-rev"></span>
+             <span class="menu-collapsed">Repost Journal</span>
+             </a>
+             <ul class="dropdown-menu bg-dark text-white" role="menu">';
+             if(strpos($id, '90') !== false){
+              echo'<a href="../AP/repost-bank-out.php" class="dropdown-item bg-dark text-white">
+              <span class="fas fa-landmark"></span>
+              <span class="menu-collapsed">Bank Out</span>
+              </a>';
+            }
+            echo'</ul>
+            </li>';
 
-?>
-</ul>
-</li>
-<!-- END Menu Accounting -->
+            ?>
+          </ul>
+        </li>
+        <!-- END Menu Accounting -->
 
-<!-- navbar Cost Accounting -->
-<li class="nav-item dropdown active">
-    <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fa fa-industry mr-1"></span> Cost Accounting<span class="caret"></span></a>
-    <ul class="dropdown-menu bg-dark text-white" role="menu">
-      <?php
+        <!-- navbar Cost Accounting -->
+        <li class="nav-item dropdown active">
+          <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fa fa-industry mr-1"></span> Cost Accounting<span class="caret"></span></a>
+          <ul class="dropdown-menu bg-dark text-white" role="menu">
+            <?php
 
-      $queryss = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%Cost Accounting%' and menurole.status = 'Menu' group by username");
-      while($rss = mysqli_fetch_array($queryss)){
-        $menu = isset($rss['ket']) ? $rss['ket'] :0;
-        $id = isset($rss['id']) ? $rss['id'] :0;
+            $queryss = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%Cost Accounting%' and menurole.status = 'Menu' group by username");
+            while($rss = mysqli_fetch_array($queryss)){
+              $menu = isset($rss['ket']) ? $rss['ket'] :0;
+              $id = isset($rss['id']) ? $rss['id'] :0;
 
-    }           
+            }           
 
-    if(strpos($id, '85') !== false){
-        echo '           
-        <li class="dropdown-submenu ">
-        <a class="dropdown-item bg-dark text-white" href="#">
-        <span s class="fa fa-tasks fa-fw "></span>
-        <span class="menu-collapsed">Fabric</span>
-        </a>
-        <ul class="dropdown-menu bg-dark text-white" role="menu">
+            if(strpos($id, '85') !== false){
+              echo '           
+              <li class="dropdown-submenu ">
+              <a class="dropdown-item bg-dark text-white" href="#">
+              <span s class="fa fa-tasks fa-fw "></span>
+              <span class="menu-collapsed">Fabric</span>
+              </a>
+              <ul class="dropdown-menu bg-dark text-white" role="menu">
 
-        <a href="../AP/ca_fabric_trx_in.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-cart-arrow-down fa-fw "></span>
-        <span class="menu-collapsed">Trx In</span>
-        </a>
-        <a href="../AP/ca_fabric_trx_out.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-paper-plane fa-fw "></span>
-        <span class="menu-collapsed">Trx Out</span>
-        </a>
-        <a href="../AP/ca_fabric_summary.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-calculator fa-fw "></span>
-        <span class="menu-collapsed">Summary</span>
-        </a>
-        <a href="../AP/ca_fabric_summary_sc.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-calculator fa-fw "></span>
-        <span class="menu-collapsed">Summary Subcont</span>
-        </a>
-        <a href="../AP/update_bpb_fabric.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-pencil-square fa-fw "></span>
-        <span class="menu-collapsed">Update Trx In</span>
-        </a>
-        <a href="../AP/adjust-subcont.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-pencil-square fa-fw "></span>
-        <span class="menu-collapsed">Update Subcontractor</span>
-        </a>
+              <a href="../AP/ca_fabric_trx_in.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-cart-arrow-down fa-fw "></span>
+              <span class="menu-collapsed">Trx In</span>
+              </a>
+              <a href="../AP/ca_fabric_trx_out.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-paper-plane fa-fw "></span>
+              <span class="menu-collapsed">Trx Out</span>
+              </a>
+              <a href="../AP/ca_fabric_summary.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-calculator fa-fw "></span>
+              <span class="menu-collapsed">Summary</span>
+              </a>
+              <a href="../AP/ca_fabric_summary_sc.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-calculator fa-fw "></span>
+              <span class="menu-collapsed">Summary Subcont</span>
+              </a>
+              <a href="../AP/update_bpb_fabric.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-pencil-square fa-fw "></span>
+              <span class="menu-collapsed">Update Trx In</span>
+              </a>
+              <a href="../AP/adjust-subcont.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-pencil-square fa-fw "></span>
+              <span class="menu-collapsed">Update Subcontractor</span>
+              </a>
 
-        </ul>
-        </li>';
-    }
+              </ul>
+              </li>';
+            }
 
-    ?>
-</ul>
-</li>
-<!-- END Menu Cost Accounting -->
+            ?>
+          </ul>
+        </li>
+        <!-- END Menu Cost Accounting -->
 
 
-<!-- navbar Exim -->
-<li class="nav-item dropdown active">
-    <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fa fa-cubes mr-1"></span> Exim<span class="caret"></span></a>
-    <ul class="dropdown-menu bg-dark text-white" role="menu">
-      <?php
+        <!-- navbar Exim -->
+        <li class="nav-item dropdown active">
+          <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fa fa-cubes mr-1"></span> Exim<span class="caret"></span></a>
+          <ul class="dropdown-menu bg-dark text-white" role="menu">
+            <?php
 
-      $queryss = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%Exim%' and menurole.status = 'Menu' group by username");
-      while($rss = mysqli_fetch_array($queryss)){
-        $menu = isset($rss['ket']) ? $rss['ket'] :0;
-        $id = isset($rss['id']) ? $rss['id'] :0;
+            $queryss = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%Exim%' and menurole.status = 'Menu' group by username");
+            while($rss = mysqli_fetch_array($queryss)){
+              $menu = isset($rss['ket']) ? $rss['ket'] :0;
+              $id = isset($rss['id']) ? $rss['id'] :0;
 
-    }           
+            }           
 
-    if($menu == 'Y'){               
-        echo '';
-        if(strpos($id, '83') !== false){ 
-         echo'<a href="../AP/exim-calculatin-cost-report.php" class="dropdown-item bg-dark text-white">
-         <span class="fa fa-bars fa-fw"></span>
-         <span class="menu-collapsed">Calculation Cost Report</span>
-         </a>';
-     }
+            if($menu == 'Y'){               
+              echo '';
+              if(strpos($id, '83') !== false){ 
+               echo'<a href="../AP/exim-calculatin-cost-report.php" class="dropdown-item bg-dark text-white">
+               <span class="fa fa-bars fa-fw"></span>
+               <span class="menu-collapsed">Calculation Cost Report</span>
+               </a>';
+             }
      // if(strpos($id, '84') !== false){ 
      //     echo'<a href="#" class="dropdown-item bg-dark text-white">
      //     <span class="fa fa-list-alt fa-fw"></span>
@@ -1560,244 +1560,266 @@ echo'</ul>
      // }
 
 
- }
+           }
 
- ?>
-</ul>
-</li>
-<!-- END Menu Exim -->
+           ?>
+         </ul>
+       </li>
+       <!-- END Menu Exim -->
 
-<li class="nav-item dropdown active">
-    <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fas fa-retweet mr-1"></span> Reverse<span class="caret"></span></a>
-    <ul class="dropdown-menu bg-dark text-white" role="menu">
-      <?php
-      $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Reverse'");
-      $rs = mysqli_fetch_array($querys);
-      $menu = isset($rs['menu']) ? $rs['menu'] :0;
-      $id = isset($rs['id']) ? $rs['id'] :0;
-
-      $querymtn = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Maintain BPB'");
-      $rsl2 = mysqli_fetch_array($querymtn);
-      $menu2 = isset($rsl2['menu']) ? $rsl2['menu'] :0;
-      $mtn = isset($rsl2['id']) ? $rsl2['id'] :0;
-
-
-      echo '
-      <li class="dropdown-submenu ">
-      <a class="dropdown-item bg-dark text-white" href="#">
-      <span class="fa fa-envelope fa-fw"></span>
-      <span class="menu-collapsed">BPB</span>
-      </a>
-      <ul class="dropdown-menu bg-dark text-white" role="menu">';
-      if(strpos($mtn, '89') !== false){    
-        echo '<a href="../AP/maintain-bpb.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-minus-square-o fa-fw "></span>
-        <span class="menu-collapsed">BPB</span>
-        </a>';
-    }
-    if($id == '34'){
-        echo '
-        <a href="../AP/formreversebpb.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-minus-square-o fa-fw"></span>
-        <span class="menu-collapsed">Verifikasi BPB</span>                
-        </a>';
-    }
-    echo '</ul>
-    </li>';
-    ?>
-
-    <?php
-    $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Maintain FTR'");
-    $rs = mysqli_fetch_array($querys);
-    $menu = isset($rs['menu']) ? $rs['menu'] :0;
-    $id = isset($rs['id']) ? $rs['id'] :0;
-
-    if($id == '12'){
-        echo '
-        <li class="dropdown-submenu ">
-        <a class="dropdown-item bg-dark text-white" href="#">
-        <span class="fa fa-money fa-fw"></span>
-        <span class="menu-collapsed">FTR</span>
-        </a>
+       <li class="nav-item dropdown active">
+        <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fas fa-retweet mr-1"></span> Reverse<span class="caret"></span></a>
         <ul class="dropdown-menu bg-dark text-white" role="menu">
-        <a href="../AP/pengajuan_ftrcbd.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-minus-square-o fa-fw"></span>
-        <span class="menu-collapsed">FTR CBD</span>
-        </a>
-        <a href="../AP/pengajuan_ftrdp.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-minus-square-o fa-fw"></span>
-        <span class="menu-collapsed">FTR DP</span>
-        </a>
+          <?php
+          $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Reverse'");
+          $rs = mysqli_fetch_array($querys);
+          $menu = isset($rs['menu']) ? $rs['menu'] :0;
+          $id = isset($rs['id']) ? $rs['id'] :0;
+
+          $querymtn = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Maintain BPB'");
+          $rsl2 = mysqli_fetch_array($querymtn);
+          $menu2 = isset($rsl2['menu']) ? $rsl2['menu'] :0;
+          $mtn = isset($rsl2['id']) ? $rsl2['id'] :0;
+
+
+          echo '
+          <li class="dropdown-submenu ">
+          <a class="dropdown-item bg-dark text-white" href="#">
+          <span class="fa fa-envelope fa-fw"></span>
+          <span class="menu-collapsed">BPB</span>
+          </a>
+          <ul class="dropdown-menu bg-dark text-white" role="menu">';
+          if(strpos($mtn, '89') !== false){    
+            echo '<a href="../AP/maintain-bpb.php" class="dropdown-item bg-dark text-white">
+            <span class="fa fa-minus-square-o fa-fw "></span>
+            <span class="menu-collapsed">BPB</span>
+            </a>';
+          }
+          if($id == '34'){
+            echo '
+            <a href="../AP/formreversebpb.php" class="dropdown-item bg-dark text-white">
+            <span class="fa fa-minus-square-o fa-fw"></span>
+            <span class="menu-collapsed">Verifikasi BPB</span>                
+            </a>';
+          }
+          echo '</ul>
+          </li>';
+          ?>
+
+          <?php
+          $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Maintain FTR'");
+          $rs = mysqli_fetch_array($querys);
+          $menu = isset($rs['menu']) ? $rs['menu'] :0;
+          $id = isset($rs['id']) ? $rs['id'] :0;
+
+          if($id == '12'){
+            echo '
+            <li class="dropdown-submenu ">
+            <a class="dropdown-item bg-dark text-white" href="#">
+            <span class="fa fa-money fa-fw"></span>
+            <span class="menu-collapsed">FTR</span>
+            </a>
+            <ul class="dropdown-menu bg-dark text-white" role="menu">
+            <a href="../AP/pengajuan_ftrcbd.php" class="dropdown-item bg-dark text-white">
+            <span class="fa fa-minus-square-o fa-fw"></span>
+            <span class="menu-collapsed">FTR CBD</span>
+            </a>
+            <a href="../AP/pengajuan_ftrdp.php" class="dropdown-item bg-dark text-white">
+            <span class="fa fa-minus-square-o fa-fw"></span>
+            <span class="menu-collapsed">FTR DP</span>
+            </a>
+            </ul>
+            </li>';
+          }else{
+            echo '';
+          }
+          ?>
+
+          <?php
+          $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Maintain Kontrabon'");
+          $rs = mysqli_fetch_array($querys);
+          $menu = isset($rs['menu']) ? $rs['menu'] :0;
+          $id = isset($rs['id']) ? $rs['id'] :0;
+
+          if($id == '14'){
+            echo '
+            <li class="dropdown-submenu ">
+            <a class="dropdown-item bg-dark text-white" href="#">
+            <span class="fa fa-btc fa-fw"></span>
+            <span class="menu-collapsed">Kontra Bon</span>
+            </a>
+            <ul class="dropdown-menu bg-dark text-white" role="menu">
+            <a href="../AP/pengajuankb.php" class="dropdown-item bg-dark text-white">
+            <span class="fa fa-minus-square-o fa-fw"></span>
+            <span class="menu-collapsed"> Kontrabon Reg</span>
+            </a>
+            <a href="../AP/pengajuankb_cbd.php" class="dropdown-item bg-dark text-white">
+            <span class="fa fa-minus-square-o fa-fw"></span>
+            <span class="menu-collapsed">Kontrabon CBD</span>
+            </a>
+            <a href="../AP/pengajuankb_dp.php" class="dropdown-item bg-dark text-white">
+            <span class="fa fa-minus-square-o fa-fw"></span>
+            <span class="menu-collapsed">Kontrabon DP</span>
+            </a>
+            </ul>
+            </li>';
+          }else{
+            echo '';
+          }
+          ?>
+
+          <?php
+          $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Maintain List Payment'");
+          $rs = mysqli_fetch_array($querys);
+          $menu = isset($rs['menu']) ? $rs['menu'] :0;
+          $id = isset($rs['id']) ? $rs['id'] :0;
+
+          if($id == '16'){
+            echo '
+            <li class="dropdown-submenu ">
+            <a class="dropdown-item bg-dark text-white" href="#">
+            <span class="fa fa-usd fa-fw"></span>
+            <span class="menu-collapsed">List Payment</span>
+            </a>
+            <ul class="dropdown-menu bg-dark text-white" role="menu">
+            <a href="../AP/pengajuanpayment.php" class="dropdown-item bg-dark text-white">
+            <span class="fa fa-minus-square-o fa-fw"></span>
+            <span class="menu-collapsed">List Payment Reg</span>
+            </a>
+            <a href="../AP/pengajuanpaymentcbd.php" class="dropdown-item bg-dark text-white">
+            <span class="fa fa-minus-square-o fa-fw"></span>
+            <span class="menu-collapsed">List Payment CBD</span>
+            </a>
+            <a href="../AP/pengajuanpaymentdp.php" class="dropdown-item bg-dark text-white">
+            <span class="fa fa-minus-square-o fa-fw"></span>
+            <span class="menu-collapsed">List Payment DP</span>
+            </a>
+            </ul>
+            </li>';
+          }
+          ?>
+
+          <?php
+          $querys = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%Reverse%' group by username");
+          $rs = mysqli_fetch_array($querys);
+          $menu = isset($rs['menu']) ? $rs['menu'] :0;
+          $id = isset($rs['id']) ? $rs['id'] :0;
+
+          echo '<li class="dropdown-submenu ">
+          <a class="dropdown-item bg-dark text-white" href="#">
+          <span class="fas fa-history fa-fw"></span>
+          <span class="menu-collapsed">Reverse</span>
+          </a>
+          <ul class="dropdown-menu bg-dark text-white" role="menu">';
+
+          if(strpos($id, '94') !== false){
+            echo '<a href="../AP/reverse_kontrabon.php" class="dropdown-item bg-dark text-white">
+            <span class="fa fa-angle-right fa-fw"></span>
+            <span class="menu-collapsed">Kontrabon</span>
+            </a>';
+          }
+          if(strpos($id, '92') !== false){
+            echo '<a href="../AP/reverse_payment.php" class="dropdown-item bg-dark text-white">
+            <span class="fa fa-angle-right fa-fw"></span>
+            <span class="menu-collapsed">Payment</span>
+            </a>';
+          }
+
+          echo '<a href="../AP/reverse_bank.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-angle-right fa-fw"></span>
+          <span class="menu-collapsed">Bank Out</span>
+          </a>';
+
+          echo '<a href="../AP/reverse_petty_cash.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-angle-right fa-fw"></span>
+          <span class="menu-collapsed">Petty Cash</span>
+          </a>';  
+
+          echo '</ul>
+          </li>';
+
+          ?>
+
+          <?php
+          $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%Approval%'");
+          $rs = mysqli_fetch_array($querys);
+          $menu = isset($rs['menu']) ? $rs['menu'] :0;
+          $id = isset($rs['id']) ? $rs['id'] :0;
+
+          $sql_rvspay = mysqli_query($conn2," select COUNT(id) jml from (select id from ap_reverse_h where rvs_number like '%PAY%' and status = 'DRAFT') a");
+          $row_rvspay = mysqli_fetch_array($sql_rvspay);
+          $count_rvspay = $row_rvspay['jml'];
+          if($count_rvspay != '0'){
+            $notif_rvspay = '<span class="badge" style="background-color: red;">'.$count_rvspay.'</span>';
+          }else{
+            $notif_rvspay = '';
+          }
+
+          echo '<li class="dropdown-submenu ">
+          <a class="dropdown-item bg-dark text-white" href="#">
+          <span class="fa fa-thumbs-o-up fa-fw"></span>
+          <span class="menu-collapsed">Approval</span>
+          </a>
+          <ul class="dropdown-menu bg-dark text-white" role="menu">';
+
+
+          if(strpos($id, '95') !== false){
+            echo '<a href="../AP/form_approve_reverse_kontrabon.php" class="dropdown-item bg-dark text-white">
+            <span class="fas fa-angle-right fa-fw "></span>
+            <span class="menu-collapsed">Kontrabon</span>
+            '.$notif_rvspay.'
+            </a>';
+          }
+
+          if(strpos($id, '93') !== false){
+            echo '<a href="../AP/form_approve_reverse_payment.php" class="dropdown-item bg-dark text-white">
+            <span class="fa fa-angle-right fa-fw "></span>
+            <span class="menu-collapsed">Payment</span>
+            '.$notif_rvspay.'
+            </a>';
+          }
+
+          echo '<a href="../AP/form_approve_reverse_bank.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-angle-right fa-fw "></span>
+          <span class="menu-collapsed">Bank</span>
+          '.$notif_rvspay.'
+          </a>';
+
+          echo '<a href="../AP/form_approve_reverse_petty_cash.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-angle-right fa-fw "></span>
+          <span class="menu-collapsed">Petty Cash</span>
+          '.$notif_rvspay.'
+          </a>';
+
+          echo '</ul>
+          </li>';
+          ?>
+
         </ul>
-        </li>';
-    }else{
-        echo '';
-    }
-    ?>
+      </li>
 
-    <?php
-    $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Maintain Kontrabon'");
-    $rs = mysqli_fetch_array($querys);
-    $menu = isset($rs['menu']) ? $rs['menu'] :0;
-    $id = isset($rs['id']) ? $rs['id'] :0;
-
-    if($id == '14'){
-        echo '
-        <li class="dropdown-submenu ">
-        <a class="dropdown-item bg-dark text-white" href="#">
-        <span class="fa fa-btc fa-fw"></span>
-        <span class="menu-collapsed">Kontra Bon</span>
-        </a>
+      <!-- navbar Other Menu -->
+      <li class="nav-item dropdown active">
+        <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fa fa-cogs mr-1"></span> Setting<span class="caret"></span></a>
         <ul class="dropdown-menu bg-dark text-white" role="menu">
-        <a href="../AP/pengajuankb.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-minus-square-o fa-fw"></span>
-        <span class="menu-collapsed"> Kontrabon Reg</span>
-        </a>
-        <a href="../AP/pengajuankb_cbd.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-minus-square-o fa-fw"></span>
-        <span class="menu-collapsed">Kontrabon CBD</span>
-        </a>
-        <a href="../AP/pengajuankb_dp.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-minus-square-o fa-fw"></span>
-        <span class="menu-collapsed">Kontrabon DP</span>
-        </a>
-        </ul>
-        </li>';
-    }else{
-        echo '';
-    }
-    ?>
+          <?php
+          $querys = mysqli_query($conn1,"select Groupp from userpassword where username = '$user'");
+          $rs = mysqli_fetch_array($querys);
+          $group = isset($rs['Groupp']) ? $rs['Groupp'] : null;
 
-    <?php
-    $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Maintain List Payment'");
-    $rs = mysqli_fetch_array($querys);
-    $menu = isset($rs['menu']) ? $rs['menu'] :0;
-    $id = isset($rs['id']) ? $rs['id'] :0;
-
-    if($id == '16'){
-        echo '
-        <li class="dropdown-submenu ">
-        <a class="dropdown-item bg-dark text-white" href="#">
-        <span class="fa fa-usd fa-fw"></span>
-        <span class="menu-collapsed">List Payment</span>
-        </a>
-        <ul class="dropdown-menu bg-dark text-white" role="menu">
-        <a href="../AP/pengajuanpayment.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-minus-square-o fa-fw"></span>
-        <span class="menu-collapsed">List Payment Reg</span>
-        </a>
-        <a href="../AP/pengajuanpaymentcbd.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-minus-square-o fa-fw"></span>
-        <span class="menu-collapsed">List Payment CBD</span>
-        </a>
-        <a href="../AP/pengajuanpaymentdp.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-minus-square-o fa-fw"></span>
-        <span class="menu-collapsed">List Payment DP</span>
-        </a>
-        </ul>
-        </li>';
-    }
-    ?>
-
-    <?php
-    $querys = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%Reverse%' group by username");
-    $rs = mysqli_fetch_array($querys);
-    $menu = isset($rs['menu']) ? $rs['menu'] :0;
-    $id = isset($rs['id']) ? $rs['id'] :0;
-
-    echo '<li class="dropdown-submenu ">
-    <a class="dropdown-item bg-dark text-white" href="#">
-    <span class="fas fa-history fa-fw"></span>
-    <span class="menu-collapsed">Reverse</span>
-    </a>
-    <ul class="dropdown-menu bg-dark text-white" role="menu">';
-
-    if(strpos($id, '94') !== false){
-        echo '<a href="../AP/reverse_kontrabon.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-angle-right fa-fw"></span>
-        <span class="menu-collapsed">Kontrabon</span>
-        </a>';
-    }
-    if(strpos($id, '92') !== false){
-        echo '<a href="../AP/reverse_payment.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-angle-right fa-fw"></span>
-        <span class="menu-collapsed">Payment</span>
-        </a>';
-    }
-
-    echo '</ul>
-    </li>';
-
-    ?>
-
-    <?php
-    $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%Approval%'");
-    $rs = mysqli_fetch_array($querys);
-    $menu = isset($rs['menu']) ? $rs['menu'] :0;
-    $id = isset($rs['id']) ? $rs['id'] :0;
-
-    $sql_rvspay = mysqli_query($conn2," select COUNT(id) jml from (select id from ap_reverse_h where rvs_number like '%PAY%' and status = 'DRAFT') a");
-    $row_rvspay = mysqli_fetch_array($sql_rvspay);
-    $count_rvspay = $row_rvspay['jml'];
-    if($count_rvspay != '0'){
-        $notif_rvspay = '<span class="badge" style="background-color: red;">'.$count_rvspay.'</span>';
-    }else{
-        $notif_rvspay = '';
-    }
-
-    echo '<li class="dropdown-submenu ">
-    <a class="dropdown-item bg-dark text-white" href="#">
-    <span class="fa fa-thumbs-o-up fa-fw"></span>
-    <span class="menu-collapsed">Approval</span>
-    </a>
-    <ul class="dropdown-menu bg-dark text-white" role="menu">';
-
-
-    if(strpos($id, '95') !== false){
-        echo '<a href="../AP/form_approve_reverse_kontrabon.php" class="dropdown-item bg-dark text-white">
-        <span class="fas fa-angle-right fa-fw "></span>
-        <span class="menu-collapsed">Kontrabon</span>
-        '.$notif_rvspay.'
-        </a>';
-    }
-
-    if(strpos($id, '93') !== false){
-        echo '<a href="../AP/form_approve_reverse_payment.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-angle-right fa-fw "></span>
-        <span class="menu-collapsed">Payment</span>
-        '.$notif_rvspay.'
-        </a>';
-    }
-
-    echo '</ul>
-    </li>';
-    ?>
-
-</ul>
-</li>
-
-<!-- navbar Other Menu -->
-<li class="nav-item dropdown active">
-    <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fa fa-cogs mr-1"></span> Setting<span class="caret"></span></a>
-    <ul class="dropdown-menu bg-dark text-white" role="menu">
-        <?php
-        $querys = mysqli_query($conn1,"select Groupp from userpassword where username = '$user'");
-        $rs = mysqli_fetch_array($querys);
-        $group = isset($rs['Groupp']) ? $rs['Groupp'] : null;
-
-        if($group != 'STAFF' && $group != null){                      
+          if($group != 'STAFF' && $group != null){                      
             echo '
             <a href="../AP/userrole.php" class="dropdown-item bg-dark text-white">
             <span class="fa fa-user-plus fa-fw"></span>
             <span class="menu-collapsed">Userrole</span>
             </a>';
-        }else{
+          }else{
             echo '';
-        }
-        ?>
-    </ul>
-</li>
-<!-- END Menu Other Menu -->
+          }
+          ?>
+        </ul>
+      </li>
+      <!-- END Menu Other Menu -->
 
       <!-- <li class="nav-item dropdown active">
           <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown">Proses<span class="caret"></span></a>
@@ -1821,38 +1843,38 @@ echo'</ul>
 
           </ul>
         </li>
-    -->
-</ul>
+      -->
+    </ul>
 
 
-<ul class="navbar-nav ml-auto">
-   <li class="nav-item active">
-    <a class="nav-link" href="../function/logout.php" style="font-size:12px;"><span class="fa fa-power-off">Log-out</a>
-    </li>
-    <li class="nav-item active">
+    <ul class="navbar-nav ml-auto">
+     <li class="nav-item active">
+      <a class="nav-link" href="../function/logout.php" style="font-size:12px;"><span class="fa fa-power-off">Log-out</a>
+      </li>
+      <li class="nav-item active">
         <a class="nav-link" href="../index.php" style="font-size:12px;"><span class="fa fa-home">Home</a>
         </li>
         <li class="nav-item active">
-            <span class="navbar-text text-white" style="font-size:12px;"><span class="fa fa-user"> <?php echo $user ?> </span></span>
+          <span class="navbar-text text-white" style="font-size:12px;"><span class="fa fa-user"> <?php echo $user ?> </span></span>
         </li>
-    </div>
+      </div>
 
-</nav>
+    </nav>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
         const selects = document.querySelectorAll('select[name="nama_supp"]');
 
         selects.forEach(function(select) {
-            if (!select.value || select.value === '') {
-                const optAll = select.querySelector('option[value="ALL"]');
-                if (optAll) {
-                    optAll.selected = true;
-                }
+          if (!select.value || select.value === '') {
+            const optAll = select.querySelector('option[value="ALL"]');
+            if (optAll) {
+              optAll.selected = true;
             }
+          }
         });
-    });
-</script>
+      });
+    </script>
 
 
     <!-- sidebar-container END -->

@@ -1717,8 +1717,13 @@ echo'</ul>
 
     echo '<a href="AP/reverse_bank.php" class="dropdown-item bg-dark text-white">
         <span class="fa fa-angle-right fa-fw"></span>
-        <span class="menu-collapsed">Bank Out</span>
+        <span class="menu-collapsed">Bank</span>
         </a>';
+
+      echo '<a href="AP/reverse_petty_cash.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-angle-right fa-fw"></span>
+        <span class="menu-collapsed">Petty Cash</span>
+        </a>';  
 
     echo '</ul>
     </li>';

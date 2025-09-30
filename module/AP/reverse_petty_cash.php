@@ -57,44 +57,44 @@
   <div class="card shadow border-0">
     <div class="card-header text-white py-2 px-3" 
     style="background: linear-gradient(90deg, #191970, #1e90ff);">
-    <h5 class="mb-0"><i class="fas fa-history"></i> REVERSE BANK</h5>
+    <h5 class="mb-0"><i class="fas fa-history"></i> REVERSE PETTY CASH</h5>
 </div>
 
 <div class="card-body p-3">
-  <form id="form-data" action="reverse_bank.php" method="post">
+  <form id="form-data" action="reverse_petty_cash.php" method="post">
     <div class="row g-3">
       <!-- Supplier -->
       <div class="col-md-4">
         <label for="profit_center"><b>Type Document <i style="color: red;">*</i></b></label>            
         <select class="form-control form-control-sm select2bs4" name="type_doc" id="type_doc" data-dropup-auto="false" data-live-search="true">
             <option value="ALL" selected="true">ALL</option>                                                 
-            <option value="BANK IN" <?php
+            <option value="PETTY CASH IN" <?php
             $type_doc = '';
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $type_doc = isset($_POST['type_doc']) ? $_POST['type_doc']: null;
             }                 
-            if($type_doc == 'BANK IN'){
+            if($type_doc == 'PETTY CASH IN'){
                 $isSelected = ' selected="selected"';
             }else{
                 $isSelected = '';
             }
             echo $isSelected;
             ?>
-            >BANK IN</option>
+            >PETTY CASH IN</option>
 
-            <option value="BANK OUT" <?php
+            <option value="PETTY CASH OUT" <?php
             $type_doc = '';
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $type_doc = isset($_POST['type_doc']) ? $_POST['type_doc']: null;
             }                 
-            if($type_doc == 'BANK OUT'){
+            if($type_doc == 'PETTY CASH OUT'){
                 $isSelected = ' selected="selected"';
             }else{
                 $isSelected = '';
             }
             echo $isSelected;
             ?>
-            >BANK OUT</option>
+            >PETTY CASH OUT</option>
 
         </select>
     </div>
@@ -222,10 +222,10 @@ if ($status == 'ALL' && $type_doc == 'ALL') {
     $where = " AND a.status = '$status' AND a.type_doc = '$type_doc'";
 }
 
-$sql = "select a.rvs_number, rvs_date, type_doc, doc_number, doc_date, nama_supp, curr, total, IF(b.deskripsi is null OR b.deskripsi = '',a.deskripsi,b.deskripsi) deskripsi, a.status, a.created_by, a.created_date from ap_reverse_h a INNER JOIN ap_reverse_det b on b.rvs_number = a.rvs_number where rvs_date BETWEEN '$start_date' AND '$end_date' and b.status = 'Y' and a.rvs_number like '%BN/%' $where";
+$sql = "select a.rvs_number, rvs_date, type_doc, doc_number, doc_date, nama_supp, curr, total, IF(b.deskripsi is null OR b.deskripsi = '',a.deskripsi,b.deskripsi) deskripsi, a.status, a.created_by, a.created_date from ap_reverse_h a INNER JOIN ap_reverse_det b on b.rvs_number = a.rvs_number where rvs_date BETWEEN '$start_date' AND '$end_date' and b.status = 'Y' and a.rvs_number like '%PC/%' $where";
 
 
-echo '<a target="_blank" href="ekspor_reverse_bank.php?type_doc='.$type_doc.'&& status='.$status.'&& start_date='.$start_date.' && end_date='.$end_date.'&& query='.$sql.'"><button type="button" class="btn btn-success ml-2" style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
+echo '<a target="_blank" href="ekspor_reverse_petty_cash.php?type_doc='.$type_doc.'&& status='.$status.'&& start_date='.$start_date.' && end_date='.$end_date.'&& query='.$sql.'"><button type="button" class="btn btn-success ml-2" style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
 ?>     
 
 </div>
@@ -277,7 +277,7 @@ echo '<a target="_blank" href="ekspor_reverse_bank.php?type_doc='.$type_doc.'&& 
         }else{
             $where = " AND status = '$status' AND type_doc = '$type_doc'";
         }
-        $sql = mysqli_query($conn2,"select rvs_number, rvs_date, type_doc, deskripsi, status, created_by, created_date from ap_reverse_h where rvs_date BETWEEN '$start_date' AND '$end_date' and rvs_number like '%BN/%' $where");
+        $sql = mysqli_query($conn2,"select rvs_number, rvs_date, type_doc, deskripsi, status, created_by, created_date from ap_reverse_h where rvs_date BETWEEN '$start_date' AND '$end_date' and rvs_number like '%PC/%' $where");
 
 
         function formatDateOrDash($date) {
@@ -588,13 +588,13 @@ $(document).on("click", ".btn-cancel", function () {
 
 <script type="text/javascript">
     document.getElementById('btncreate').onclick = function () {
-        location.href = "form_reverse_bank.php";
+        location.href = "form_reverse_petty_cash.php";
     };
 </script>
 
 <script type="text/javascript">
     document.getElementById('reset').onclick = function () {
-        location.href = "reverse_bank.php";
+        location.href = "reverse_petty_cash.php";
     };
 </script>
 
