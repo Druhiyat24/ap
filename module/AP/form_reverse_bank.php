@@ -275,7 +275,7 @@
             <div class="form-row col mt-3">
                 <div class="col-md-3 mb-3">                              
                     <button type="button" style="border-radius: 6px" class="btn-primary btn-sm" name="simpan" id="simpan"><span class="fa fa-floppy-o"></span> Save</button>                
-                    <button type="button" style="border-radius: 6px" class="btn-danger btn-sm" name="batal" id="batal" onclick="location.href='reverse_kontrabon.php'"><span class="fa fa-angle-double-left"></span> Back</button>           
+                    <button type="button" style="border-radius: 6px" class="btn-danger btn-sm" name="batal" id="batal" onclick="location.href='reverse_bank.php'"><span class="fa fa-angle-double-left"></span> Back</button>           
                 </div>
             </div>                                    
         </form>
