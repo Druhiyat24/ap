@@ -3,11 +3,7 @@
     $start_date = isset($_POST['start_date']) ? $_POST['start_date'] : null;
     $end_date = isset($_POST['end_date']) ? $_POST['end_date'] : null;
     $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null; 
-    if($nama_supp == 'ALL'){
-        echo '<a target="_blank" href="pcs_detail_kbon_all_new.php?nama_supp='.$nama_supp.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size:11px"> EXCEL AP - KONTRABON </i></button></a>';
-    }else{
-        echo '<a target="_blank" href="pcs_detail_kbon.php?nama_supp='.$nama_supp.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size:11px"> EXCEL AP - KONTRABON </i></button></a>';
-    }
+        echo '<a target="_blank" href="pcs_detail_kbon_all_new.php?nama_supp='.$nama_supp.'&& start_date='.$start_date.'&&end_date='.$end_date.'"><button type="button" class="btn btn-success"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size:11px"> EXCEL AP - KONTRABON </i></button></a>';
 
     ?>
 </div> 
