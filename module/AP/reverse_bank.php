@@ -193,17 +193,17 @@
 </button> -->
 
 <?php
-$querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create Reverse Payment'");
+$querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create Reverse Bank'");
 $rs = mysqli_fetch_array($querys);
 $id = isset($rs['id']) ? $rs['id'] : 0;
 
-if($id == '96'){
-    // echo '<button id="btncreate" type="button" class="btn btn-primary btn-sm ml-2"><span class="fa fa-pencil-square-o"></span> Create</button>';
+if($id == '99'){
+    echo '<button id="btncreate" type="button" class="btn btn-primary btn-sm ml-2"><span class="fa fa-pencil-square-o"></span> Create</button>';
 }else{
     echo '';
 }
 
-echo '<button id="btncreate" type="button" class="btn btn-primary btn-sm ml-2"><span class="fa fa-pencil-square-o"></span> Create</button>';
+// echo '<button id="btncreate" type="button" class="btn btn-primary btn-sm ml-2"><span class="fa fa-pencil-square-o"></span> Create</button>';
 ?>
 
 <?php

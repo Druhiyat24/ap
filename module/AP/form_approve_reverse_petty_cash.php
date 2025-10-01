@@ -308,7 +308,7 @@
 
         $.ajax({
             type:'POST',
-            url:'approve_reverse_payment.php',
+            url:'approve_reverse_petty_cash.php',
             data: data,
             success: function(response){
                 console.log("Approved:", response);
