@@ -200,7 +200,7 @@
             }                                     
             echo'<tr '.$bg.' >                       
             <td style="" value="'.$row['no_payment'].'">'.$row['no_payment'].'</td>
-            <td style="" value="'.$row['tgl_payment'].'">'.date("d-M-Y",strtotime($row['tgl_payment'])).'</td>
+            <td style="" value="'.$row['tgl_payment'].'">'.date("Y-m-d",strtotime($row['tgl_payment'])).'</td>
             <td style="" value="'.$row['nama_supp'].'">'.$row['nama_supp'].'</td>                                                                  
             <td style="display:none;" value="'.$row['curr'].'">'.$row['curr'].'</td>
             <td style="" value="'.$row['amount'].'">'.$row['curr'].' '.number_format($row['amount'],2).'</td>                                      
@@ -210,7 +210,7 @@
             <td style="display: none;" value="'.$row['valuta_bayar'].'">'.$row['valuta_bayar'].'</td>                            
             <td style=";display:none;" value="'.$nom.'">'.$row['valuta_bayar'].' '.$nom1.'</td>
             <td style="display:none;" value="'.$row['curr'].'">'.$row['curr'].'</td>
-            <td style="" value="'.$row['tgl_tempo'].'">'.date("d-M-Y",strtotime($row['tgl_tempo'])).'</td>
+            <td style="" value="'.$row['tgl_tempo'].'">'.date("Y-m-d",strtotime($row['tgl_tempo'])).'</td>
             <td style="width:10px; text-align: center;"><input type="checkbox" name="select[]" data-id="'.$row['no_payment'].'"></td>
             </tr>';                
 
