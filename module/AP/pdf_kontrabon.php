@@ -242,7 +242,7 @@ CSS HEADER
 	</td> -->
 	<td style="text-align:center;padding-top: -15px;padding-bottom: -10px;">
 		<?php
-		$sql1 = mysqli_query($conn2,"select create_date from kontrabon where no_kbon = '$no_kbon'");
+		$sql1 = mysqli_query($conn2,"select create_date from kontrabon_h where no_kbon = '$no_kbon'");
 		$rows = mysqli_fetch_array($sql1);
 		$create_date = $rows['create_date'];
 		echo date("d M Y", strtotime($create_date));
@@ -250,7 +250,7 @@ CSS HEADER
 	</td>
 	<td style="text-align:center;padding-top: -15px;padding-bottom: -10px;">
 		<?php
-		$sql3 = mysqli_query($conn2,"select tgl_kbon from kontrabon where no_kbon = '$no_kbon'");
+		$sql3 = mysqli_query($conn2,"select tgl_kbon from kontrabon_h where no_kbon = '$no_kbon'");
 		$rows = mysqli_fetch_array($sql3);
 		$tgl_kbon = $rows['tgl_kbon'];
 		echo date("d M Y", strtotime($tgl_kbon));
@@ -258,7 +258,7 @@ CSS HEADER
 	</td>
 	<td style="text-align:center;padding-top: -15px;padding-bottom: -10px;">
 		<?php
-		$sql2 = mysqli_query($conn2,"select tgl_tempo from kontrabon where no_kbon = '$no_kbon'");
+		$sql2 = mysqli_query($conn2,"select tgl_tempo from kontrabon_h where no_kbon = '$no_kbon'");
 		$rows1 = mysqli_fetch_array($sql2);
 		$tgl_tempo = $rows1['tgl_tempo'];
 		echo date("d M Y", strtotime($tgl_tempo));
