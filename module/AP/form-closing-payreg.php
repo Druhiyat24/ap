@@ -60,20 +60,24 @@
     <h5 class="mb-0"><i class="fas fa-thumbs-up"></i> CLOSING PAYMENT REGULER <span class="badge bg-danger ms-2">
         <i class="fas fa-bell"></i> 
         <?php
-        $type_doc ='ALL';
+        $nama_supplier ='ALL';
         $where ='';
 
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $type_doc = isset($_POST['type_doc']) ? $_POST['type_doc']: 'ALL';            
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nama_supplier'])) {
+            $nama_supplier = $_POST['nama_supplier'];
         }
 
-        if($type_doc == 'ALL'){
+        elseif (isset($_GET['nama_supplier'])) {
+            $nama_supplier = $_GET['nama_supplier'];
+        }
+
+        if($nama_supplier == 'ALL'){
             $where = '';
         }else {
-            $where ="AND type_doc = '$type_doc'";
+            $where ="AND nama_supp = '$nama_supplier'";
         }
         
-        $sql = mysqli_query($conn2,"select COUNT(id) jml from (select id from ap_reverse_h where rvs_number like '%PC/%' and status = 'DRAFT' $where) a");
+        $sql = mysqli_query($conn2,"select count(distinct(no_payment)) as jml from list_payment where status = 'Approved' $where ");
         $row = mysqli_fetch_array($sql);
         $jml = $row['jml'];
         echo $jml;
@@ -83,40 +87,25 @@
 </div>
 
 <div class="card-body p-3">
-    <form id="form-data" action="form-closing-payreg.php"method="post">
+    <form id="formSupplier" action="form-closing-payreg.php"method="post">
+        <input type="hidden" name="nama_supplier" id="hidden_supplier">
         <div class="row g-3">
           <!-- Supplier -->
           <div class="col-md-3">
-            <label for="nama_supp"><b>Supplier</b></label>            
-            <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true" onchange="this.form.submit()">
-                <option value="ALL" <?php
-                $nama_supp = '';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                    $status = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
-                }                 
-                if($nama_supp == 'ALL'){
-                    $isSelected = ' selected="selected"';
-                }else{
-                    $isSelected = '';
-                }
-                echo $isSelected;
-                ?>                
-                >ALL</option>                                 
+            <label for="nama_supplier"><b>Supplier</b></label>            
+            <select class="form-control selectpicker" name="nama_supplier" id="nama_supplier" data-dropup-auto="false" data-live-search="true" onchange="document.getElementById('formSupplier').submit()">
+                <option value="ALL" <?= ($nama_supplier == 'ALL') ? 'selected' : '' ?>>ALL</option>
                 <?php
-                $nama_supp ='';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                    $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
-                }                 
-                $sql = mysqli_query($conn1,"select distinct(Supplier) from mastersupplier where tipe_sup = 'S' order by Supplier ASC");
-                while ($row = mysqli_fetch_array($sql)) {
+                $sql = mysqli_query($conn1,"SELECT DISTINCT Supplier FROM mastersupplier WHERE tipe_sup = 'S' ORDER BY Supplier ASC");
+                while ($row = mysqli_fetch_assoc($sql)) {
                     $data = $row['Supplier'];
-                    if($row['Supplier'] == $_POST['nama_supp']){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
+                    $isSelected = ($data == $nama_supplier) ? 'selected' : '';
+                    if ($data != '') {
+                    echo "<option value=\"$data\" $isSelected>$data</option>";
                     }
-                    echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
-                }?>
+                }
+                ?>
+
             </select>
         </div>
     </div>
@@ -133,7 +122,6 @@
           style="width:100%">
           <thead class="table-gradient text-white">
             <tr>
-              <th style="width:10px;"><input type="checkbox" id="select_all"></th>                        
               <th style="width:100px;">No List Payment</th>
               <th style="width:100px;">List Payment Date</th>
               <th style="width:200px;">Supplier</th>
@@ -146,30 +134,36 @@
               <th style="width:100px;width:100px;display: none;">Nominal</th>
               <th style="width:100px;display: none;">Currency</th>
               <th style="width:100px;">Due Date</th>
+              <th style="width:5%; text-align: center;"><input type="checkbox" id="select_all"></th>                 
           </tr>
       </thead>
       <tbody>
         <?php
-            $nama_supp ='';
-           
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
-            
-            }
+        $nama_supplier = 'ALL';
 
-            if(empty($nama_supp) or $nama_supp == 'ALL'){
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['nama_supplier'])) {
+            $nama_supplier = $_POST['nama_supplier'];
+        }
+
+        elseif (isset($_GET['nama_supplier'])) {
+            $nama_supplier = $_GET['nama_supplier'];
+        }
+
+            // echo $nama_supplier;
+
+        if(empty($nama_supplier) or $nama_supplier == 'ALL'){
             $sql = mysqli_query($conn2,"select a.no_payment, a.tgl_payment, a.nama_supp, a.curr, sum(a.amount) as amount, a.status, b.payment_ftr_id, b.tgl_pelunasan, b.cara_bayar, b.account, b.bank, b.valuta_bayar, b.nominal, b.nominal_fgn, b.ttl_bayar, a.tgl_tempo from list_payment a left join payment_ftr b on b.list_payment_id = a.no_payment where a.`status` = 'Approved' group by a.no_payment
                 union
 
                 select a.no_pay as no_payment, a.tgl_pay as tgl_payment, a.supplier as nama_supp, a.valuta as curr, sum(a.total) as amount,a.status,b.payment_ftr_id, b.tgl_pelunasan, b.cara_bayar, b.account, b.bank, b.valuta_bayar, b.nominal, b.nominal_fgn, b.ttl_bayar,due_date from saldo_awal a left join payment_ftr b on b.list_payment_id = a.no_pay where a.`status` = 'Approved' group by a.no_pay");                
-            }else {
-            $sql = mysqli_query($conn2,"select a.no_payment, a.tgl_payment, a.nama_supp, a.curr, sum(a.amount) as amount, a.status, b.payment_ftr_id, b.tgl_pelunasan, b.cara_bayar, b.account, b.bank, b.valuta_bayar, b.nominal, b.nominal_fgn, b.ttl_bayar, a.tgl_tempo from list_payment a left join payment_ftr b on b.list_payment_id = a.no_payment where a.`status` = 'Approved' and a.nama_supp = '$nama_supp' group by a.no_payment
+        }else {
+            $sql = mysqli_query($conn2,"select a.no_payment, a.tgl_payment, a.nama_supp, a.curr, sum(a.amount) as amount, a.status, b.payment_ftr_id, b.tgl_pelunasan, b.cara_bayar, b.account, b.bank, b.valuta_bayar, b.nominal, b.nominal_fgn, b.ttl_bayar, a.tgl_tempo from list_payment a left join payment_ftr b on b.list_payment_id = a.no_payment where a.`status` = 'Approved' and a.nama_supp = '$nama_supplier' group by a.no_payment
                 union
 
-            select a.no_pay as no_payment, a.tgl_pay as tgl_payment, a.supplier as nama_supp, a.valuta as curr, sum(a.total) as amount,a.status,b.payment_ftr_id, b.tgl_pelunasan, b.cara_bayar, b.account, b.bank, b.valuta_bayar, b.nominal, b.nominal_fgn, b.ttl_bayar,due_date from saldo_awal a left join payment_ftr b on b.list_payment_id = a.no_pay where a.`status` = 'Approved' and a.supplier = '$nama_supp' group by a.no_pay");
-            }
-                                                                         
-            while($row = mysqli_fetch_array($sql)){ 
+                select a.no_pay as no_payment, a.tgl_pay as tgl_payment, a.supplier as nama_supp, a.valuta as curr, sum(a.total) as amount,a.status,b.payment_ftr_id, b.tgl_pelunasan, b.cara_bayar, b.account, b.bank, b.valuta_bayar, b.nominal, b.nominal_fgn, b.ttl_bayar,due_date from saldo_awal a left join payment_ftr b on b.list_payment_id = a.no_pay where a.`status` = 'Approved' and a.supplier = '$nama_supplier' group by a.no_pay");
+        }
+
+        while($row = mysqli_fetch_array($sql)){ 
             $curr = isset($row['valuta_bayar']) ? $row['valuta_bayar'] :null;
             $no_paymt = isset($row['payment_ftr_id']) ? $row['payment_ftr_id'] :null;
 
@@ -183,9 +177,9 @@
                 $method = $row['cara_bayar'];
                 $tgl_lunas = date("d-M-Y",strtotime($row['tgl_pelunasan']));
                 $no_lunas = $row['payment_ftr_id'];
-            if ($curr == 'IDR') {
-                $nom = isset($row['nominal']) ? $row['nominal'] :0;  
-                $nom1 = number_format($nom,2);  
+                if ($curr == 'IDR') {
+                    $nom = isset($row['nominal']) ? $row['nominal'] :0;  
+                    $nom1 = number_format($nom,2);  
                 } elseif($curr == 'USD'){
                     $nom = isset($row['nominal_fgn']) ? $row['nominal_fgn'] :0;
                     $nom1 = number_format($nom,2);
@@ -193,35 +187,31 @@
                     $nom = isset($row['ttl_bayar']) ? $row['ttl_bayar'] :0;
                     $nom1 = number_format($nom,2);
                 }     
-                }                                     
-                    echo'<tr>
-                            <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" <?php if(in_array("1",$_POST[select])) echo "checked=checked";?></td>                        
-                            <td style="" value="'.$row['no_payment'].'">'.$row['no_payment'].'</td>
-                            <td style="" value="'.$row['tgl_payment'].'">'.date("d-M-Y",strtotime($row['tgl_payment'])).'</td>
-                            <td style="" value="'.$row['nama_supp'].'">'.$row['nama_supp'].'</td>                                                                  
-                            <td style="display:none;" value="'.$row['curr'].'">'.$row['curr'].'</td>
-                            <td style="" value="'.$row['amount'].'">'.$row['curr'].' '.number_format($row['amount'],2).'</td>                                      
-                            <td style="display:none;" value="'.$no_lunas.'">'.$no_lunas.'</td>
-                            <td style=";display:none;" value="'.$tgl_lunas.'">'.$tgl_lunas.'</td>
-                            <td style=";display:none;" value="'.$method.'">'.$method.'</td>
-                            <td style="display: none;" value="'.$row['valuta_bayar'].'">'.$row['valuta_bayar'].'</td>                            
-                            <td style=";display:none;" value="'.$nom.'">'.$row['valuta_bayar'].' '.$nom1.'</td>
-                            <td style="display:none;" value="'.$row['curr'].'">'.$row['curr'].'</td>
-                            <td style="" value="'.$row['tgl_tempo'].'">'.date("d-M-Y",strtotime($row['tgl_tempo'])).'</td>
-                        </tr>';                
-                   
-                    } ?>
-  </tbody>
+            }                                     
+            echo'<tr>                       
+            <td style="" value="'.$row['no_payment'].'">'.$row['no_payment'].'</td>
+            <td style="" value="'.$row['tgl_payment'].'">'.date("d-M-Y",strtotime($row['tgl_payment'])).'</td>
+            <td style="" value="'.$row['nama_supp'].'">'.$row['nama_supp'].'</td>                                                                  
+            <td style="display:none;" value="'.$row['curr'].'">'.$row['curr'].'</td>
+            <td style="" value="'.$row['amount'].'">'.$row['curr'].' '.number_format($row['amount'],2).'</td>                                      
+            <td style="display:none;" value="'.$no_lunas.'">'.$no_lunas.'</td>
+            <td style=";display:none;" value="'.$tgl_lunas.'">'.$tgl_lunas.'</td>
+            <td style=";display:none;" value="'.$method.'">'.$method.'</td>
+            <td style="display: none;" value="'.$row['valuta_bayar'].'">'.$row['valuta_bayar'].'</td>                            
+            <td style=";display:none;" value="'.$nom.'">'.$row['valuta_bayar'].' '.$nom1.'</td>
+            <td style="display:none;" value="'.$row['curr'].'">'.$row['curr'].'</td>
+            <td style="" value="'.$row['tgl_tempo'].'">'.date("d-M-Y",strtotime($row['tgl_tempo'])).'</td>
+            <td style="width:10px; text-align: center;"><input type="checkbox" name="select[]" data-id="'.$row['no_payment'].'"></td>
+            </tr>';                
+
+        } ?>
+    </tbody>
 </table>
 </div>
 <form id="form-simpan">
     <div class="mt-3">
         <button type="button" name="approve" id="approve" class="btn btn-success">
-          <i class="fas fa-check-circle"></i> Approve
-      </button>
-
-      <button type="button" name="cancel" id="cancel" class="btn btn-danger ml-2">
-          <i class="fas fa-times"></i> Cancel
+          <i class="fas fa-check-circle"></i> Close Payment
       </button>
   </div>
 </form>
@@ -236,34 +226,18 @@
         <div class="modal-content">
             <div class="modal-header text-white" style="background-color: #2563EB;">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                <h4 class="modal-title" id="txt_rvs"></h4>
+                <h4 class="modal-title" id="txt_list_payment"></h4>
             </div>
             <div class="container">
                 <div class="row">
-                  <div id="txt_rvs_date" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                  <div id="txt_doc_type" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>        
-                  <div id="txt_deskripsi" class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;"></div>                                                    
-                  <div id="details" class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;">
-                      <table id="mytable2" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
-                        <thead>
-                            <tr>
-                                <th style="width:20%;">No Document</th>
-                                <th style="width:13%;">Document Date</th> 
-                                <th style="width:19%;">Supplier</th>
-                                <th style="width:10%;">Curr</th>
-                                <th style="width:13%;">Total</th>  
-                                <th style="width:25%;">Deskripsi</th>
-
-                            </tr>
-                        </thead>
-
-                        <tbody id="datatable_modal">
-
-                        </tbody>
-                    </table> 
-                </div>           
-            </div>
-        </div>
+                  <div id="txt_tgl_list_payment" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+                  <div id="txt_nama_supp" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>        
+                  <div id="txt_curr" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+                 <!--  <div id="txt_create_user" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+                  <div id="txt_status" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+                  <div id="txt_keterangan" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div> -->                                                    
+                  <div id="details" class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;"></div>          
+              </div>
     </div>
 </div>
 </div>      
@@ -279,17 +253,35 @@
 <script language="JavaScript" src="../css/4.1.1/select2.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
 
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let save_supp = localStorage.getItem("nama_supplier") || "ALL";
+
+    // set nilai ke select
+    document.getElementById("nama_supplier").value = save_supp;
+    $('#nama_supplier').selectpicker('refresh'); // wajib untuk bootstrap-select
+
+    // event saat dropdown berubah
+    document.getElementById("nama_supplier").addEventListener("change", function() {
+        localStorage.setItem("nama_supplier", this.value);
+        document.getElementById("formSupplier").submit();
+    });
+});
+</script>
+
+
 <script type="text/javascript">
     // Select All
     $("#select_all").on("click", function(){
-      $("input[name='selected_ids[]']").prop("checked", this.checked);
+      $("input[name='select[]']").prop("checked", this.checked);
   });
 
-    $("#form-simpan").on("click", "#approve", function(e){
+    $("#form-simpan").on("click", "#approve", function(e) {
         e.preventDefault();
 
         let selected = $("input[name='select[]']:checked");
-        if(selected.length === 0){
+        if (selected.length === 0) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Oops!',
@@ -303,41 +295,45 @@
         let processed = 0;
         let errors = 0;
 
+        let currentSupplier = $("#nama_supplier").val();
+
         selected.each(function () {
             let row = $(this).closest('tr');
 
             let data = {
-                rvs_number  : row.find('td:eq(0)').attr('value'),
-                approve_user: approve_user
+                no_pay       : row.find('td:eq(0)').attr('value'),
+                update_user  : approve_user,
+                nama_supplier: currentSupplier
             };
 
             $.ajax({
-                type:'POST',
-                url:'approve_reverse_petty_cash.php',
+                type: 'POST',
+                url: 'closed.php',
                 data: data,
-                success: function(response){
+                success: function(response) {
                     console.log("Approved:", response);
                 },
-                error: function(xhr, ajaxOptions, thrownError){
+                error: function(xhr, ajaxOptions, thrownError) {
                     console.error(xhr.responseText);
                     errors++;
                 },
-                complete: function(){
+                complete: function() {
                     processed++;
-                    if(processed === total){
-                        if(errors === 0){
+                    if (processed === total) {
+                        if (errors === 0) {
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Success!',
-                                text: total + ' reverse(s) approved successfully'
+                                text: total + ' Payment has been successfully closed'
                             }).then(() => {
-                                window.location = 'form-closing-payreg.php';
-                            });
+                            // reload dengan supplier terakhir
+                            window.location = 'form-closing-payreg.php?nama_supplier=' + encodeURIComponent(currentSupplier);
+                        });
                         } else {
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Failed!',
-                                text: (total-errors) + ' approved successfully, ' + errors + ' failed'
+                                text: (total - errors) + ' Payment has been successfully closed ' + errors + ' failed to close'
                             });
                         }
                     }
@@ -345,6 +341,7 @@
             });
         });
     });
+
 
 
 
@@ -411,40 +408,30 @@
 
 
 </script>
-
 <script type="text/javascript">     
     $('table tbody tr').on('click', 'td:eq(0)', function(){                
-     var no_rvs = $(this).closest('tr').find('td:eq(0)').attr('value');
-     var rvs_date = $(this).closest('tr').find('td:eq(1)').attr('value');
-     var type_doc = $(this).closest('tr').find('td:eq(2)').attr('value');
-     var deskripsi = $(this).closest('tr').find('td:eq(3)').attr('value');
+        $('#modal-show').modal('show');
+        var no_payment = $(this).closest('tr').find('td:eq(0)').attr('value');
+        var tgl_list_payment = $(this).closest('tr').find('td:eq(1)').text();
+        var supp = $(this).closest('tr').find('td:eq(2)').attr('value');
+        var curr = $(this).closest('tr').find('td:eq(3)').attr('value');
+        var create_user = $(this).closest('tr').find('td:eq(7)').attr('value');
+        var keterangan = $(this).closest('tr').find('td:eq(16)').attr('value');               
 
-     $.ajax({
-        type:'POST',
-        url:'get_data_reverse_ap.php',
-        data: {'no_rvs':no_rvs},
-        cache: 'false',
-        close: function(e){
-            e.preventDefault();
-            return false; 
-        },
-        success: function(data){
-            $('#datatable_modal').html(data);
-
-                // alert(data);  
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                alert(xhr);
-            }
-        }); 
-
-     $('#txt_rvs').html(no_rvs);
-     $('#txt_rvs_date').html('<b>Reverse Date : </b>' + rvs_date + '');
-     $('#txt_doc_type').html('<b>Type Document : </b>' + type_doc + '');
-     $('#txt_deskripsi').html('<b>Descriptions : </b>' + deskripsi + '');
-     $('#modal-show').modal('show');                                  
- });
+        $.ajax({
+            type : 'post',
+            url : 'ajaxlistpayment.php',
+            data : {'no_payment': no_payment},
+            success : function(data){
+    $('#details').html(data); //menampilkan data ke dalam modal
+}
+});         
+        //make your ajax call populate items or what even you need
+        $('#txt_list_payment').html(no_payment);
+        $('#txt_tgl_list_payment').html('Tgl List Payment : ' + tgl_list_payment + '');
+        $('#txt_nama_supp').html('Supplier : ' + supp + '');
+        $('#txt_curr').html('Currency : ' + curr + '');                                         
+    });
 
 </script>
 

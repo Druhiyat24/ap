@@ -767,7 +767,7 @@ if($id == '22'){
     <span class="menu-collapsed">Closing Payment</span>
     </a>
     <ul class="dropdown-menu bg-dark text-white" role="menu">
-    <a href="AP/formclosing-payreg.php" class="dropdown-item bg-dark text-white">
+    <a href="AP/form-closing-payreg.php" class="dropdown-item bg-dark text-white">
     <span class="fa fa-tags fa-fw "></span>
     <span class="menu-collapsed">Close Payment Reg</span>
     '.$notif123.'
