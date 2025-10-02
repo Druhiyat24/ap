@@ -34,8 +34,8 @@ $execute_uptmm = mysqli_query($conn2,$query_uptmm);
 if(!$query) {
 	die('Error: ' . mysqli_error());	
 }else{
-	$sql3 = "Delete from tbl_list_journal where no_journal='$no_bi'";
-	$query3 = mysqli_query($conn2,$sql3);
+	// $sql3 = "Delete from tbl_list_journal where no_journal='$no_bi'";
+	// $query3 = mysqli_query($conn2,$sql3);
 }
 
 mysqli_close($conn2);
