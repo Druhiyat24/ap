@@ -166,6 +166,16 @@
         while($row = mysqli_fetch_array($sql)){ 
             $curr = isset($row['valuta_bayar']) ? $row['valuta_bayar'] :null;
             $no_paymt = isset($row['payment_ftr_id']) ? $row['payment_ftr_id'] :null;
+            $tgl_tempo = $row['tgl_tempo'];
+            $tgl_sekarang = date("Y-m-d");
+
+            if ($tgl_tempo <= $tgl_sekarang) {
+                $bg = 'style="background-color: #CD5C5C;color: white;"';
+                #DC143C
+                #CD5C5C
+            }else{
+                $bg = '';
+            }
 
             if ($no_paymt == '') {
                 $nom = '-';
@@ -188,7 +198,7 @@
                     $nom1 = number_format($nom,2);
                 }     
             }                                     
-            echo'<tr>                       
+            echo'<tr '.$bg.' >                       
             <td style="" value="'.$row['no_payment'].'">'.$row['no_payment'].'</td>
             <td style="" value="'.$row['tgl_payment'].'">'.date("d-M-Y",strtotime($row['tgl_payment'])).'</td>
             <td style="" value="'.$row['nama_supp'].'">'.$row['nama_supp'].'</td>                                                                  
@@ -211,7 +221,7 @@
 <form id="form-simpan">
     <div class="mt-3">
         <button type="button" name="approve" id="approve" class="btn btn-success">
-          <i class="fas fa-check-circle"></i> Close Payment
+          <i class="fas fa-clipboard-check"></i> Close Payment
       </button>
   </div>
 </form>
