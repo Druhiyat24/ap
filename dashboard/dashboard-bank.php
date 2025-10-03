@@ -25,7 +25,7 @@
   }
 </style>
 
-<div class="row">
+<div class="row div-dashboard">
     <div class="col-md-12">
         <div class="row p-3">
             <div class="col-md-4">

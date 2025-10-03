@@ -56,7 +56,7 @@
   <button id="refreshDashboard" class="btn btn-sm btn-warning">🔁 Update</button>
 <p id="refreshInfo" style="margin-top: 10px;"></p>
 </p> -->
-        <div class="row">
+        <div class="row div-dashboard">
             <div class="col-md-8">
                 <div class="row">
                     <div class="col-md-6">

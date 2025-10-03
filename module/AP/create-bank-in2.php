@@ -1247,7 +1247,7 @@ placeholder="Tanggal Akhir">
                     echo '<div class="input-group">
                     <label for="profit_center" class="col-form-label" style="width: 150px;"><b>Profit Center</b></label>            
                     <select class="form-control selectpicker" name="profit_center" id="profit_center" data-dropup-auto="false" data-live-search="true" onChange="UbahCostArc(this.value)">
-                    <option value="" disabled selected="true">Select Cost Center</option>';
+                    <option value="" disabled selected="true">Select Profit Center</option>';
                 }?>                                                
                 <?php
                 $akun ='';
@@ -1356,7 +1356,7 @@ placeholder="Tanggal Akhir">
                         <div class="form-row col">
                             <div class="col-md-3 mb-3">                              
                                 <button type="button" style="border-radius: 6px" class="btn-outline-primary btn-sm" name="simpan" id="simpan"><span class="fa fa-floppy-o"></span> Save</button>                
-                                <button type="button" style="border-radius: 6px" class="btn-outline-danger btn-sm" name="batal" id="batal" onclick="location.href='bank-in22.php'"><span class="fa fa-angle-double-left"></span> Back</button>           
+                                <button type="button" style="border-radius: 6px" class="btn-outline-danger btn-sm" name="batal" id="batal" onclick="location.href='bank-in.php'"><span class="fa fa-angle-double-left"></span> Back</button>           
                             </div>
                         </div>                                    
                     </form>
@@ -2397,7 +2397,7 @@ function addListener(elm,index){
                                     console.log(response);
                   // alert(response);
 
-                  window.location = 'bank-in22.php';
+                  window.location = 'bank-in.php';
               },
               error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
@@ -2409,7 +2409,7 @@ function addListener(elm,index){
                     });
                     console.log(response);
                     alert(response);
-                    window.location = 'bank-in22.php';
+                    window.location = 'bank-in.php';
                 },
                 error: function (xhr, ajaxOptions, thrownError) {
                     console.log(xhr);
@@ -2463,7 +2463,7 @@ function addListener(elm,index){
                 success: function(response){
                     console.log(response);
                     alert(response);
-                    window.location = 'bank-in22.php';
+                    window.location = 'bank-in.php';
                 },
                 error: function (xhr, ajaxOptions, thrownError) {
                     console.log(xhr);
@@ -2539,7 +2539,7 @@ function addListener(elm,index){
                                 console.log(response);
                   // alert(response);
 
-                  window.location = 'bank-in22.php';
+                  window.location = 'bank-in.php';
               },
               error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
@@ -2551,7 +2551,7 @@ function addListener(elm,index){
                 });
                  console.log(response);
                  alert(response);
-                 window.location = 'bank-in22.php';
+                 window.location = 'bank-in.php';
              },
              error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
