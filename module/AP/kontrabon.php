@@ -7,8 +7,8 @@
         <div class="box header">
 
             <form id="form-data" action="kontrabon.php" method="post">        
-                <div class="form-row">
-                    <div class="col-md-12">
+                <div class="form-row mb-2">
+                    <div class="col-md-4">
                         <label for="nama_supp"><b>Supplier</b></label>            
                         <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true">
                             <?php
@@ -30,7 +30,7 @@
                         </select>
                     </div>
 
-                    <div class="col-md-5">
+                    <div class="col-md-3">
                         <label for="status"><b>Status</b></label>            
                         <select class="form-control selectpicker" name="status" id="status" data-dropup-auto="false" data-live-search="true">
                             <option value="ALL" <?php
@@ -87,44 +87,94 @@
                             >Cancel</option>                                                                                                             
                         </select>
                     </div>
-                    <div class="form-row">
-                        <div class="col-md-6"> 
-                            <label for="start_date"><b>From</b></label>
-                            <input type="text" class="form-control tanggal" id="start_date" name="start_date" 
-                            value="<?php
-                            $start_date ='';
+                    <div class="col-md-4"></div>
+
+                    <div class="col-md-2">
+                        <label for="filter_date"><b>Filter Date</b></label>            
+                        <select class="form-control selectpicker" name="filter_date" id="filter_date" data-dropup-auto="false" data-live-search="true">
+                            <option value="tgl_kbon" <?php
+                            $filter_date = '';
                             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                               $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-                           }
-                           if(!empty($_POST['start_date'])) {
-                               echo $_POST['start_date'];
-                           }
-                           else{
-                               echo date("d-m-Y");
-                           } ?>" 
-                           placeholder="Start Date" autocomplete='off'>
-                       </div>
+                                $filter_date = isset($_POST['filter_date']) ? $_POST['filter_date']: null;
+                            }                 
+                            if($filter_date == 'tgl_kbon'){
+                                $isSelected = ' selected="selected"';
+                            }else{
+                                $isSelected = '';
+                            }
+                            echo $isSelected;
+                            ?>                
+                            >Kontrabon Date</option>
+                            <option value="create_date" <?php
+                            $filter_date = '';
+                            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                                $filter_date = isset($_POST['filter_date']) ? $_POST['filter_date']: null;
+                            }                 
+                            if($filter_date == 'create_date'){
+                                $isSelected = ' selected="selected"';
+                            }else{
+                                $isSelected = '';
+                            }
+                            echo $isSelected;
+                            ?>                
+                            >Created Date</option>
+                            <option value="confirm_date" <?php
+                            $filter_date = '';
+                            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                                $filter_date = isset($_POST['filter_date']) ? $_POST['filter_date']: null;
+                            }                 
+                            if($filter_date == 'confirm_date'){
+                                $isSelected = ' selected="selected"';
+                            }else{
+                                $isSelected = '';
+                            }
+                            echo $isSelected;
+                            ?>
+                            >Approved Date</option>                                                                                                             
+                        </select>
+                    </div>
 
-                       <div class="col-md-6 mb-1">
-                        <label for="end_date"><b>To</b></label>        
-                        <input type="text" class="form-control tanggal" id="end_date" name="end_date" 
-                        value="<?php
-                        $end_date ='';
-                        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                           $end_date = date("Y-m-d",strtotime($_POST['end_date']));
-                       }
-                       if(!empty($_POST['end_date'])) {
-                           echo $_POST['end_date'];
-                       }
-                       else{
-                           echo date("d-m-Y");
-                       } ?>" 
-                       placeholder="Tanggal Akhir">
-                   </div>
-               </div>
 
-               <div class="input-group-append col">                                   
-                <button type="submit" id="submit" value=" Search " style="margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
+                    <div class="col-md-4"> 
+                        <div class="form-row">
+                            <div class="col-md-6"> 
+                                <label for="start_date"><b>From</b></label>
+                                <input type="text" class="form-control form-control-sm tanggal" id="start_date" name="start_date" 
+                                value="<?php
+                                $start_date ='';
+                                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                                 $start_date = date("Y-m-d",strtotime($_POST['start_date']));
+                             }
+                             if(!empty($_POST['start_date'])) {
+                                 echo $_POST['start_date'];
+                             }
+                             else{
+                                 echo date("d-m-Y");
+                             } ?>" 
+                             placeholder="Start Date" autocomplete='off'>
+                         </div>
+
+                         <div class="col-md-6 mb-1">
+                            <label for="end_date"><b>To</b></label>        
+                            <input type="text" class="form-control form-control-sm tanggal" id="end_date" name="end_date" 
+                            value="<?php
+                            $end_date ='';
+                            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                             $end_date = date("Y-m-d",strtotime($_POST['end_date']));
+                         }
+                         if(!empty($_POST['end_date'])) {
+                             echo $_POST['end_date'];
+                         }
+                         else{
+                             echo date("d-m-Y");
+                         } ?>" 
+                         placeholder="Tanggal Akhir">
+                     </div>
+                 </div>
+             </div>
+
+             <div class="input-group-append col">                                   
+                <button type="submit" class="btn-primary" id="submit" value=" Search " style="margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
                 line-height: 1;
                 padding: -2px 8px;
                 font-size: 1rem;
@@ -144,10 +194,29 @@
                 background-color:rgb(250, 69, 1)"><i class="fa fa-repeat" aria-hidden="true"></i> Reset </button>
 
                 <?php
-                $start_date = isset($_POST['start_date']) ? $_POST['start_date'] : null;
-                $end_date = isset($_POST['end_date']) ? $_POST['end_date'] : null;
-                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null; 
-                $status = isset($_POST['status']) ? $_POST['status']: null;
+                $nama_supp ='';
+                $status = '';
+                $start_date ='';
+                $end_date ='';
+                $filter_date = '';
+                $tgl_filter = '';
+                $date_now = date("Y-m-d");                
+                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                    $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null; 
+                    $status = isset($_POST['status']) ? $_POST['status']: null;
+                    $start_date = date("Y-m-d",strtotime($_POST['start_date']));
+                    $end_date = date("Y-m-d",strtotime($_POST['end_date']));     
+                    $filter_date = isset($_POST['filter_date']) ? $_POST['filter_date']: null;           
+                }
+
+
+                if ($filter_date == 'tgl_kbon') {
+                    $tgl_filter = 'a.tgl_kbon';
+                }elseif ($filter_date == 'create_date') {
+                    $tgl_filter = 'a.create_date';
+                }else{
+                    $tgl_filter = 'a.confirm_date';
+                }
 
                 if($nama_supp != 'ALL' and $status == 'ALL'){
                     $where = "and a.nama_supp = '$nama_supp'";
@@ -158,24 +227,20 @@
                 }else{
                     $where = "";
                 }
-                // echo $status;
 
-                echo '<a target="_blank" href="ekspor_kb_all.php?nama_supp='.$nama_supp.'&&status='.$status.'&&start_date='.$start_date.'&&end_date='.$end_date.'&&where='.$where.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
-//         tgl_bpb
-// tgl_kbon
-// tgl_lp
-// tgl_pay
-                // if($status == 'ALL'){
-                //     echo '<a target="_blank" href="ekspor_kb_all.php?nama_supp='.$nama_supp.' && status='.$status.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
-                // }elseif($status == 'draft'){
-                //     echo '<a target="_blank" href="ekspor_kb_draft.php?nama_supp='.$nama_supp.' && status='.$status.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>'; 
-                // }elseif($status == 'Approved'){
-                //     echo '<a target="_blank" href="ekspor_kb_app.php?nama_supp='.$nama_supp.' && status='.$status.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
-                // }elseif($status == 'Cancel'){
-                //     echo '<a target="_blank" href="ekspor_kb_cancel.php?nama_supp='.$nama_supp.' && status='.$status.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>'; 
-                // }else{
-                //     $filterr = ""; 
-                // }
+                echo '<a target="_blank" href="ekspor_kb_all.php?nama_supp='.$nama_supp.'&&status='.$status.'&&start_date='.$start_date.'&&end_date='.$end_date.'&&where='.$where.'&&tgl_filter='.$tgl_filter.'"><button type="button" class="btn-success"
+            style="margin-top: 30px; margin-bottom: 5px; margin-right: 15px;
+            border: 0;
+            line-height: 1.2;
+            padding: 6px 14px;
+            font-size: 14px;
+            text-align: center;
+            color: #fff;
+            text-shadow: 1px 1px 1px #000;
+            border-radius: 6px;
+            cursor: pointer;">
+            <i class="fa fa-file-excel-o" aria-hidden="true"></i> Excel
+        </button></a>';
                 ?> 
             </div>                                                            
         </div>
@@ -237,39 +302,52 @@ if($id == '7'){
                     $status = '';
                     $start_date ='';
                     $end_date ='';
+                    $filter_date = '';
+                    $tgl_filter = '';
                     $date_now = date("Y-m-d");                
                     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null; 
                         $status = isset($_POST['status']) ? $_POST['status']: null;
                         $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-                        $end_date = date("Y-m-d",strtotime($_POST['end_date']));                
+                        $end_date = date("Y-m-d",strtotime($_POST['end_date']));     
+                        $filter_date = isset($_POST['filter_date']) ? $_POST['filter_date']: null;           
                     }
+
+
+                    if ($filter_date == 'tgl_kbon') {
+                        $tgl_filter = 'a.tgl_kbon';
+                    }elseif ($filter_date == 'create_date') {
+                        $tgl_filter = 'a.create_date';
+                    }else{
+                        $tgl_filter = 'a.confirm_date';
+                    }
+
                     if(empty($nama_supp) and empty($status) and empty($start_date) and empty($end_date)){
-                     $sql = mysqli_query($conn2,"select a.no_kbon, a.tgl_kbon, a.no_bpb,a.no_po,a.tgl_bpb,a.tgl_po, a.nama_supp, SUM(a.subtotal), SUM(a.tax) as tax, SUM(a.total), a.curr, a.create_user, a.status, a.tgl_tempo, a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value, a.pph_code, d.tgl_kbon2,b.jml_return, b.jml_potong from kontrabon a INNER JOIN potongan b on b.no_kbon = a.no_kbon inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.tgl_kbon = '$date_now' and a.no_bpb != '' group by a.no_kbon");
-                 }
-                 elseif ($nama_supp == 'ALL' and $status == 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {            
-                     $sql = mysqli_query($conn2,"select a.no_kbon, a.tgl_kbon, a.no_bpb,a.no_po,a.tgl_bpb,a.tgl_po, a.nama_supp, SUM(a.subtotal), SUM(a.tax) as tax, SUM(a.total), a.curr, a.create_user, a.status, a.tgl_tempo, a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value, a.pph_code, d.tgl_kbon2,b.jml_return, b.jml_potong from kontrabon a INNER JOIN potongan b on b.no_kbon = a.no_kbon inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.no_bpb != ''  group by a.no_kbon");
-                 }
-                 elseif ($nama_supp == 'ALL' and $status == 'ALL' and !empty($start_date) and !empty($end_date)) {
-                     $sql = mysqli_query($conn2,"select a.no_kbon, a.tgl_kbon, a.no_bpb,a.no_po,a.tgl_bpb,a.tgl_po, a.nama_supp, SUM(a.subtotal), SUM(a.tax) as tax, SUM(a.total), a.curr, a.create_user, a.status, a.tgl_tempo, a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value, a.pph_code, d.tgl_kbon2,b.jml_return, b.jml_potong from kontrabon a INNER JOIN potongan b on b.no_kbon = a.no_kbon inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.tgl_kbon between '$start_date' and '$end_date' and a.no_bpb != '' group by a.no_kbon");
-                 }
-                 elseif ($nama_supp != 'ALL' and $status == 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-                     $sql = mysqli_query($conn2,"select a.no_kbon, a.tgl_kbon, a.no_bpb,a.no_po,a.tgl_bpb,a.tgl_po, a.nama_supp, SUM(a.subtotal), SUM(a.tax) as tax, SUM(a.total), a.curr, a.create_user, a.status, a.tgl_tempo, a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value, a.pph_code, d.tgl_kbon2,b.jml_return, b.jml_potong from kontrabon a INNER JOIN potongan b on b.no_kbon = a.no_kbon inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.nama_supp = '$nama_supp' and a.no_bpb != '' group by a.no_kbon");
-                 }
-                 elseif ($nama_supp != 'ALL' and $status == 'ALL' and !empty($start_date) and !empty($end_date)) {
-                     $sql = mysqli_query($conn2,"select a.no_kbon, a.tgl_kbon, a.no_bpb,a.no_po,a.tgl_bpb,a.tgl_po, a.nama_supp, SUM(a.subtotal), SUM(a.tax) as tax, SUM(a.total), a.curr, a.create_user, a.status, a.tgl_tempo, a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value, a.pph_code, d.tgl_kbon2,b.jml_return, b.jml_potong from kontrabon a INNER JOIN potongan b on b.no_kbon = a.no_kbon inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.nama_supp = '$nama_supp' and a.tgl_kbon between '$start_date' and '$end_date' and a.no_bpb != '' group by a.no_kbon");
-                 }
-                 elseif ($nama_supp == 'ALL' and $status != 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-                     $sql = mysqli_query($conn2,"select a.no_kbon, a.tgl_kbon, a.no_bpb,a.no_po,a.tgl_bpb,a.tgl_po, a.nama_supp, SUM(a.subtotal), SUM(a.tax) as tax, SUM(a.total), a.curr, a.create_user, a.status, a.tgl_tempo, a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value, a.pph_code, d.tgl_kbon2,b.jml_return, b.jml_potong from kontrabon a INNER JOIN potongan b on b.no_kbon = a.no_kbon inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.status = '$status' and a.no_bpb != '' group by a.no_kbon");
-                 }
-                 elseif ($nama_supp == 'ALL' and $status != 'ALL' and !empty($start_date) and !empty($end_date)) {
-                     $sql = mysqli_query($conn2,"select a.no_kbon, a.tgl_kbon, a.no_bpb,a.no_po,a.tgl_bpb,a.tgl_po, a.nama_supp, SUM(a.subtotal), SUM(a.tax) as tax, SUM(a.total), a.curr, a.create_user, a.status, a.tgl_tempo, a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value, a.pph_code, d.tgl_kbon2,b.jml_return, b.jml_potong from kontrabon a INNER JOIN potongan b on b.no_kbon = a.no_kbon inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.status = '$status' and a.tgl_kbon between '$start_date' and '$end_date' and a.no_bpb != '' group by a.no_kbon");
-                 }
-                 elseif ($nama_supp != 'ALL' and $status != 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-                     $sql = mysqli_query($conn2,"select a.no_kbon, a.tgl_kbon, a.no_bpb,a.no_po,a.tgl_bpb,a.tgl_po, a.nama_supp, SUM(a.subtotal), SUM(a.tax) as tax, SUM(a.total), a.curr, a.create_user, a.status, a.tgl_tempo, a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value, a.pph_code, d.tgl_kbon2,b.jml_return, b.jml_potong from kontrabon a INNER JOIN potongan b on b.no_kbon = a.no_kbon inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.status = '$status' and a.nama_supp = '$nama_supp' and a.no_bpb != '' group by a.no_kbon");
-                 }
-                 else{
-                    $sql = mysqli_query($conn2,"select a.no_kbon, a.tgl_kbon, a.no_bpb,a.no_po,a.tgl_bpb,a.tgl_po, a.nama_supp, SUM(a.subtotal), SUM(a.tax) as tax, SUM(a.total), a.curr, a.create_user, a.status, a.tgl_tempo, a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value, a.pph_code, d.tgl_kbon2,b.jml_return, b.jml_potong from kontrabon a INNER JOIN potongan b on b.no_kbon = a.no_kbon inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.status = '$status' and a.nama_supp = '$nama_supp' and a.tgl_kbon between '$start_date' and '$end_date' and a.no_bpb != '' group by a.no_kbon");
+                       $sql = mysqli_query($conn2,"select a.no_kbon, a.tgl_kbon, a.no_bpb,a.no_po,a.tgl_bpb,a.tgl_po, a.nama_supp, SUM(a.subtotal), SUM(a.tax) as tax, SUM(a.total), a.curr, a.create_user, a.status, a.tgl_tempo, a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value, a.pph_code, d.tgl_kbon2,b.jml_return, b.jml_potong from kontrabon a INNER JOIN potongan b on b.no_kbon = a.no_kbon inner join kontrabon_h d on d.no_kbon = a.no_kbon where $tgl_filter = '$date_now' and a.no_bpb != '' group by a.no_kbon");
+                   }
+                   elseif ($nama_supp == 'ALL' and $status == 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {            
+                       $sql = mysqli_query($conn2,"select a.no_kbon, a.tgl_kbon, a.no_bpb,a.no_po,a.tgl_bpb,a.tgl_po, a.nama_supp, SUM(a.subtotal), SUM(a.tax) as tax, SUM(a.total), a.curr, a.create_user, a.status, a.tgl_tempo, a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value, a.pph_code, d.tgl_kbon2,b.jml_return, b.jml_potong from kontrabon a INNER JOIN potongan b on b.no_kbon = a.no_kbon inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.no_bpb != ''  group by a.no_kbon");
+                   }
+                   elseif ($nama_supp == 'ALL' and $status == 'ALL' and !empty($start_date) and !empty($end_date)) {
+                       $sql = mysqli_query($conn2,"select a.no_kbon, a.tgl_kbon, a.no_bpb,a.no_po,a.tgl_bpb,a.tgl_po, a.nama_supp, SUM(a.subtotal), SUM(a.tax) as tax, SUM(a.total), a.curr, a.create_user, a.status, a.tgl_tempo, a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value, a.pph_code, d.tgl_kbon2,b.jml_return, b.jml_potong from kontrabon a INNER JOIN potongan b on b.no_kbon = a.no_kbon inner join kontrabon_h d on d.no_kbon = a.no_kbon where $tgl_filter between '$start_date' and '$end_date' and a.no_bpb != '' group by a.no_kbon");
+                   }
+                   elseif ($nama_supp != 'ALL' and $status == 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
+                       $sql = mysqli_query($conn2,"select a.no_kbon, a.tgl_kbon, a.no_bpb,a.no_po,a.tgl_bpb,a.tgl_po, a.nama_supp, SUM(a.subtotal), SUM(a.tax) as tax, SUM(a.total), a.curr, a.create_user, a.status, a.tgl_tempo, a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value, a.pph_code, d.tgl_kbon2,b.jml_return, b.jml_potong from kontrabon a INNER JOIN potongan b on b.no_kbon = a.no_kbon inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.nama_supp = '$nama_supp' and a.no_bpb != '' group by a.no_kbon");
+                   }
+                   elseif ($nama_supp != 'ALL' and $status == 'ALL' and !empty($start_date) and !empty($end_date)) {
+                       $sql = mysqli_query($conn2,"select a.no_kbon, a.tgl_kbon, a.no_bpb,a.no_po,a.tgl_bpb,a.tgl_po, a.nama_supp, SUM(a.subtotal), SUM(a.tax) as tax, SUM(a.total), a.curr, a.create_user, a.status, a.tgl_tempo, a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value, a.pph_code, d.tgl_kbon2,b.jml_return, b.jml_potong from kontrabon a INNER JOIN potongan b on b.no_kbon = a.no_kbon inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.nama_supp = '$nama_supp' and $tgl_filter between '$start_date' and '$end_date' and a.no_bpb != '' group by a.no_kbon");
+                   }
+                   elseif ($nama_supp == 'ALL' and $status != 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
+                       $sql = mysqli_query($conn2,"select a.no_kbon, a.tgl_kbon, a.no_bpb,a.no_po,a.tgl_bpb,a.tgl_po, a.nama_supp, SUM(a.subtotal), SUM(a.tax) as tax, SUM(a.total), a.curr, a.create_user, a.status, a.tgl_tempo, a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value, a.pph_code, d.tgl_kbon2,b.jml_return, b.jml_potong from kontrabon a INNER JOIN potongan b on b.no_kbon = a.no_kbon inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.status = '$status' and a.no_bpb != '' group by a.no_kbon");
+                   }
+                   elseif ($nama_supp == 'ALL' and $status != 'ALL' and !empty($start_date) and !empty($end_date)) {
+                       $sql = mysqli_query($conn2,"select a.no_kbon, a.tgl_kbon, a.no_bpb,a.no_po,a.tgl_bpb,a.tgl_po, a.nama_supp, SUM(a.subtotal), SUM(a.tax) as tax, SUM(a.total), a.curr, a.create_user, a.status, a.tgl_tempo, a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value, a.pph_code, d.tgl_kbon2,b.jml_return, b.jml_potong from kontrabon a INNER JOIN potongan b on b.no_kbon = a.no_kbon inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.status = '$status' and $tgl_filter between '$start_date' and '$end_date' and a.no_bpb != '' group by a.no_kbon");
+                   }
+                   elseif ($nama_supp != 'ALL' and $status != 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
+                       $sql = mysqli_query($conn2,"select a.no_kbon, a.tgl_kbon, a.no_bpb,a.no_po,a.tgl_bpb,a.tgl_po, a.nama_supp, SUM(a.subtotal), SUM(a.tax) as tax, SUM(a.total), a.curr, a.create_user, a.status, a.tgl_tempo, a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value, a.pph_code, d.tgl_kbon2,b.jml_return, b.jml_potong from kontrabon a INNER JOIN potongan b on b.no_kbon = a.no_kbon inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.status = '$status' and a.nama_supp = '$nama_supp' and a.no_bpb != '' group by a.no_kbon");
+                   }
+                   else{
+                    $sql = mysqli_query($conn2,"select a.no_kbon, a.tgl_kbon, a.no_bpb,a.no_po,a.tgl_bpb,a.tgl_po, a.nama_supp, SUM(a.subtotal), SUM(a.tax) as tax, SUM(a.total), a.curr, a.create_user, a.status, a.tgl_tempo, a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value, a.pph_code, d.tgl_kbon2,b.jml_return, b.jml_potong from kontrabon a INNER JOIN potongan b on b.no_kbon = a.no_kbon inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.status = '$status' and a.nama_supp = '$nama_supp' and $tgl_filter between '$start_date' and '$end_date' and a.no_bpb != '' group by a.no_kbon");
                 }
                 while($row = mysqli_fetch_array($sql)){
                     if (!empty($row)) {
@@ -510,7 +588,7 @@ function SidebarCollapse () {
                 data: { no_kbon: no_kbon, status: "Updating" },
                 success: function(res) {
                     if (res.trim() === "OK") {
-                     localStorage.removeItem("profit_center");
+                       localStorage.removeItem("profit_center");
                         // Redirect ke form edit setelah sukses update
                         window.location.href = "form_edit_kontrabon.php?no_kbon=" + encodedNoKbon;
                         // window.open("form_edit_kontrabon.php?no_kbon=" + encodedNoKbon, "_blank");
@@ -564,9 +642,9 @@ function SidebarCollapse () {
                 window.location.reload();                                               
             },
             error:  function (xhr, ajaxOptions, thrownError) {
-               alert(xhr);
-           }
-       });
+             alert(xhr);
+         }
+     });
     });
 </script>
 
@@ -587,9 +665,9 @@ function SidebarCollapse () {
                 window.location.reload();                                                                            
             },
             error:  function (xhr, ajaxOptions, thrownError) {
-               alert(xhr);
-           }
-       });
+             alert(xhr);
+         }
+     });
     });
 </script>
 

@@ -18,22 +18,34 @@ if ($user == '') {
 <head>
     <style>
         img {
-          display: block;
-          margin-left: auto;
-          margin-right: auto;
-          height: 30px;
-      }
-      .box {
-          border-style: outset;
-          box-sizing: border-box;
-      }
-      .body {
-        font-size: 14px;
-    }
-    .box .header {
-        font-size: 14px;
-    }
-    .form-control-plaintext {
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      height: 30px;
+  }
+  .box {
+      border-style: outset;
+      box-sizing: border-box;
+  }
+  .body {
+      font-size: 12px;     
+  }
+
+  body {
+      transform: scale(0.9);       /* skala 80% */
+    transform-origin: 0 0;       /* titik awal zoom dari pojok kiri atas */
+     width: 111.11%;
+  }
+  .div-dashboard{
+    transform: scale(0.9);       /* skala 80% */
+    transform-origin: 0 0;       /* titik awal zoom dari pojok kiri atas */
+     width: 111.11%;
+  }
+
+  .box .header {
+      font-size: 12px;
+  }
+  .form-control-plaintext {
       border: 1px solid grey;
   }
   .form-row {
@@ -41,132 +53,147 @@ if ($user == '') {
       margin-left: -10px;
   }
   .filter-option {
-    font-size: 12px;
-}
-.datatable_wrapper{
-    font-size: 12px;
-}
+      font-size: 12px;
+  }
+  .datatable_wrapper{
+      font-size: 12px;
+  }
 
-.container-1 input#myInput{
-  width: 220px;
-  height: 32px;
-  position: relative;
-  background: white;
-  font-size: 12pt;
-  float: right;
-  color: #63717f;
-  padding-left: 15px;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
-}
+  .container-1 input#myInput{
+      width: 220px;
+      height: 32px;
+      position: relative;
+      background: white;
+      font-size: 10pt;
+      float: right;
+      color: #63717f;
+      padding-left: 15px;
+      -webkit-border-radius: 5px;
+      -moz-border-radius: 5px;
+      border-radius: 5px;
+  }
 
-a{
-    font-size: 14px;
-}
+  a{
+      font-size: 14px;
+  }
 
-table{
-    font-size: 12px;
-}
+  table{
+      font-size: 12px;
+  }
 
-h2.text-center{
-    font-size: 22px;
-}
+  table{
+      font-size: 12px;
+  }
 
-h3.text-center{
-    font-size: 22px;
-}
+  h2.text-center{
+      font-size: 18px;
+  }
 
+  h3.text-center{
+      font-size: 18px;
+  }
 
-/* Chrome, Safari, Edge, Opera */
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
+  h4{
+      font-size: 20px;
+  }
 
-.tableFix { /* Scrollable parent element */
-  position: relative;
-  overflow: auto;
-  height: 100px;
-}
-
-.tableFix table{
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.tableFix th,
-.tableFix td{
-  padding: 8px;
-  text-align: left;
-}
-
-.tableFix thead th {
-  position: sticky;  /* Edge, Chrome, FF */
-  top: 0px;
-  background: #F0F8FF;  /* Some background is needed */
-}
+  h5.text-white{
+      font-size: 18px;
+  }
 
 
-.dropdown-submenu {
-    position: relative;
-}
+  /* Chrome, Safari, Edge, Opera */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+  }
 
-.dropdown-submenu>.dropdown-menu {
-    top: 0;
-    left: 100%;
-    margin-top: -6px;
-    margin-left: -1px;
-    -webkit-border-radius: 0 6px 6px 6px;
-    -moz-border-radius: 0 6px 6px;
-    border-radius: 0 6px 6px 6px;
-}
+  .tableFix { /* Scrollable parent element */
+      position: relative;
+      overflow: auto;
+      height: 100px;
+      font-size: 12px;
+  }
 
-.dropdown-submenu:hover>.dropdown-menu {
-    display: block;
-}
+  .tableFix table{
+      width: 100%;
+      border-collapse: collapse;
+  }
 
-.dropdown-submenu>a:after {
-    display: block;
-    content: " ";
-    float: right;
-    width: 0;
-    height: 0;
-    border-color: transparent;
-    border-style: solid;
-    border-width: 5px 0 5px 5px;
-    border-left-color: black;
-    margin-top: 5px;
-    margin-right: -10px;
-}
+  .tableFix th,
+  .tableFix td{
+      padding: 8px;
+      text-align: left;
+  }
 
-.dropdown-submenu:hover>a:after {
-    border-left-color: #fff;
-}
-
-.dropdown-submenu.pull-left {
-    float: none;
-}
-
-.dropdown-submenu.pull-left>.dropdown-menu {
-    left: -100%;
-    margin-left: 10px;
-    -webkit-border-radius: 6px 0 6px 6px;
-    -moz-border-radius: 6px 0 6px 6px;
-    border-radius: 6px 0 6px 6px;
-}
+  .tableFix thead {
+      position: sticky;  /* Edge, Chrome, FF */
+      top: 0px;
+      background: #F0F8FF;  /* Some background is needed */
+  }
 
 
-/* Modify the background color */
-.skin-green .main-header .navbar {
-    background-color: black;
-}
+  .dropdown-submenu {
+      position: relative;
+  }
 
-.swal-wide{
-    width:400px !important;
-    height: 200px !important;
-}
+  .dropdown-submenu>.dropdown-menu {
+      top: 0;
+      left: 100%;
+      margin-top: -6px;
+      margin-left: -1px;
+      -webkit-border-radius: 0 6px 6px 6px;
+      -moz-border-radius: 0 6px 6px;
+      border-radius: 0 6px 6px 6px;
+  }
+
+  .dropdown-submenu:hover>.dropdown-menu {
+      display: block;
+  }
+
+  .dropdown-submenu>a:after {
+      display: block;
+      content: " ";
+      float: right;
+      width: 0;
+      height: 0;
+      border-color: transparent;
+      border-style: solid;
+      border-width: 5px 0 5px 5px;
+      border-left-color: black;
+      margin-top: 5px;
+      margin-right: -10px;
+  }
+
+  .dropdown-submenu:hover>a:after {
+      border-left-color: #fff;
+  }
+
+  .dropdown-submenu.pull-left {
+      float: none;
+  }
+
+  .dropdown-submenu.pull-left>.dropdown-menu {
+      left: -100%;
+      margin-left: 10px;
+      -webkit-border-radius: 6px 0 6px 6px;
+      -moz-border-radius: 6px 0 6px 6px;
+      border-radius: 6px 0 6px 6px;
+  }
+
+
+  /* Modify the background color */
+  .skin-green .main-header .navbar {
+      background-color: black;
+  }
+
+  .swal-wide{
+      width:400px !important;
+      height: 200px !important;
+  }
+
+  
 
 </style>
 <meta charset="utf-8">
@@ -201,10 +228,19 @@ input::-webkit-inner-spin-button {
       <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
-    <a class="" href="#">
+    <!-- <a class="" href="#">
         <img src="img/NAG logo SIGN.png" alt="">
     </a>
-    <a class=" text-white" style="font-size: 15px;"><b>PT.NIRWANA ALABARE GARMENT</b></a>
+    <a class=" text-white" style="font-size: 15px;"><b>PT.NIRWANA ALABARE GARMENT</b></a> -->
+
+    <div class="text-center mr-2">
+  <a href="#">
+    <img src="img/NAG logo SIGN.png" alt="" style="max-width:40px; height:auto; display:block; margin:0 auto; margin-bottom: 2px;">
+  </a>
+  <a class="text-white d-block" style="font-size: 6px; text-decoration:none;">
+    <b>PT. NIRWANA ALABARE GARMENT</b>
+  </a>
+</div>
 
     <div class="collapse navbar-collapse" id="navbarNavDropdown">
         <ul class="navbar-nav mr-auto">
@@ -1014,7 +1050,7 @@ if($id == '78'){
 
       if($id == '36'){
         echo '
-        <a href="AP/bank-in22.php" class="dropdown-item bg-dark text-white">
+        <a href="AP/bank-in.php" class="dropdown-item bg-dark text-white">
         <span class="fa fa-sign-in fa-fw mr-3"></span>
         <span class="menu-collapsed">Bank In</span>
         </a>

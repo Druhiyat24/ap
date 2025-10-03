@@ -27,10 +27,16 @@ if ($user == '') {
       box-sizing: border-box;
   }
   .body {
-      font-size: 14px;
+      font-size: 12px;     
+  }
+
+  body {
+      transform: scale(0.9);       /* skala 80% */
+    transform-origin: 0 0;       /* titik awal zoom dari pojok kiri atas */
+     width: 111.11%;
   }
   .box .header {
-      font-size: 14px;
+      font-size: 12px;
   }
   .form-control-plaintext {
       border: 1px solid grey;
@@ -63,17 +69,32 @@ if ($user == '') {
   a{
       font-size: 14px;
   }
+  button{
+      font-size: 13px !important;
+  }
+
+  table{
+      font-size: 12px;
+  }
 
   table{
       font-size: 12px;
   }
 
   h2.text-center{
-      font-size: 22px;
+      font-size: 20px;
   }
 
   h3.text-center{
-      font-size: 22px;
+      font-size: 20px;
+  }
+
+  h4{
+      font-size: 20px;
+  }
+
+  h5.text-white{
+      font-size: 18px;
   }
 
 
@@ -207,10 +228,15 @@ if ($user == '') {
       <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
-    <a class="" href="#">
-        <img src="../img/NAG logo SIGN.png" alt="">
-    </a>
-    <a class=" text-white" style="font-size: 15px;"><b>PT.NIRWANA ALABARE GARMENT</b></a>
+    <div class="text-center mr-2">
+  <a href="#">
+    <img src="../img/NAG logo SIGN.png" alt="" style="max-width:40px; height:auto; display:block; margin:0 auto; margin-bottom: 2px;">
+  </a>
+  <a class="text-white d-block" style="font-size: 7px; text-decoration:none;">
+    <b>PT. NIRWANA ALABARE GARMENT</b>
+  </a>
+</div>
+
 
     <div class="collapse navbar-collapse" id="navbarNavDropdown">
         <ul class="navbar-nav mr-auto">
@@ -1023,7 +1049,7 @@ echo'</ul>
 
         if($id == '36'){
           echo '
-          <a href="../AP/bank-in22.php" class="dropdown-item bg-dark text-white">
+          <a href="../AP/bank-in.php" class="dropdown-item bg-dark text-white">
           <span class="fa fa-sign-in fa-fw mr-3"></span>
           <span class="menu-collapsed">Bank In</span>
           </a>
