@@ -311,7 +311,6 @@ if($id == '7'){
                         $start_date = date("Y-m-d",strtotime($_POST['start_date']));
                         $end_date = date("Y-m-d",strtotime($_POST['end_date']));     
                         $filter_date = isset($_POST['filter_date']) ? $_POST['filter_date']: null;           
-                    }
 
 
                     if ($filter_date == 'tgl_kbon') {
@@ -320,6 +319,7 @@ if($id == '7'){
                         $tgl_filter = 'a.create_date';
                     }else{
                         $tgl_filter = 'a.confirm_date';
+                    }
                     }
 
                     if(empty($nama_supp) and empty($status) and empty($start_date) and empty($end_date)){
