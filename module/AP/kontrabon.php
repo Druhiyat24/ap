@@ -303,7 +303,7 @@ if($id == '7'){
                     $start_date ='';
                     $end_date ='';
                     $filter_date = '';
-                    $tgl_filter = '';
+                    $tgl_filter = 'a.tgl_kbon';
                     $date_now = date("Y-m-d");                
                     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null; 
