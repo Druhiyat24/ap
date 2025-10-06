@@ -377,23 +377,23 @@ if($id == '37'){
                     <td style=" text-align : center" value="'.$app_date.'">'.$app_date.'</td>
                     ';
                     echo'<td style=" text-align : center">';
-                    // if ($status == 'Draft' and $ref_data == 'AR Collection') {
-                    //     echo '<button 
-                    //     type="button" 
-                    //     class="btn-xs btn-warning edit-ar-collection" 
-                    //     data-bank="'.$row['doc_num'].'" 
-                    //     style="border-radius: 6px; margin-right: 2px;">
-                    //     <i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"></i> Edit
-                    //     </button>';
-                    // }elseif ($status == 'Draft' and $ref_data == 'None') {
-                    //     echo '<button 
-                    //     type="button" 
-                    //     class="btn-xs btn-warning edit-none" 
-                    //     data-bank="'.$row['doc_num'].'" 
-                    //     style="border-radius: 6px; margin-right: 2px;">
-                    //     <i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"></i> Edit
-                    //     </button>';
-                    // }
+                    if ($status == 'Draft' and $ref_data == 'AR Collection') {
+                        echo '<button 
+                        type="button" 
+                        class="btn-xs btn-warning edit-ar-collection" 
+                        data-bank="'.$row['doc_num'].'" 
+                        style="border-radius: 6px; margin-right: 2px;">
+                        <i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"></i> Edit
+                        </button>';
+                    }elseif ($status == 'Draft' and $ref_data == 'None') {
+                        echo '<button 
+                        type="button" 
+                        class="btn-xs btn-warning edit-none" 
+                        data-bank="'.$row['doc_num'].'" 
+                        style="border-radius: 6px; margin-right: 2px;">
+                        <i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"></i> Edit
+                        </button>';
+                    }
                     // if($customer == 'Unrealize' and $status != 'Cancel') {
                     //     echo '
                     //     <button style="border-radius: 6px" type="button" id="btnupdate" name="btnupdate"  class="btn-xs btn-warning">Update</button>'; 
