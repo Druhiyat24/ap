@@ -2,7 +2,7 @@
         <?php
         $start_date = isset($_POST['start_date']) ? $_POST['start_date'] : null;
         $end_date = isset($_POST['end_date']) ? $_POST['end_date'] : null;
-        echo '<a target="_blank" href="pcs_detail_lp.php?nama_supp='.$nama_supp.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size:11px;"> EXCEL AP - LIST PAYMENT </i></button></a>';
+        echo '<a target="_blank" href="pcs_detail_lp.php?nama_supp='.$nama_supp.'&&start_date='.$start_date.'&&end_date='.$end_date.'"><button type="button" class="btn btn-success"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size:11px;"> EXCEL AP - LIST PAYMENT </i></button></a>';
         ?>
     </div> 
 
