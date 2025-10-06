@@ -31,11 +31,11 @@ if ($user == '') {
       font-size: 12px;     
   }
 
-  body {
-      transform: scale(0.9);       /* skala 80% */
-    transform-origin: 0 0;       /* titik awal zoom dari pojok kiri atas */
+/*  body {
+      transform: scale(0.9); 
+    transform-origin: 0 0;   
      width: 111.11%;
-  }
+  }*/
   .div-dashboard{
     transform: scale(0.9);       /* skala 80% */
     transform-origin: 0 0;       /* titik awal zoom dari pojok kiri atas */
