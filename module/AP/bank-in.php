@@ -382,16 +382,23 @@ if($id == '37'){
                     //     type="button" 
                     //     class="btn-xs btn-warning edit-ar-collection" 
                     //     data-bank="'.$row['doc_num'].'" 
-                    //     style="border-radius: 6px">
+                    //     style="border-radius: 6px; margin-right: 2px;">
+                    //     <i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"></i> Edit
+                    //     </button>';
+                    // }elseif ($status == 'Draft' and $ref_data == 'None') {
+                    //     echo '<button 
+                    //     type="button" 
+                    //     class="btn-xs btn-warning edit-none" 
+                    //     data-bank="'.$row['doc_num'].'" 
+                    //     style="border-radius: 6px; margin-right: 2px;">
                     //     <i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"></i> Edit
                     //     </button>';
                     // }
-                    if($customer == 'Unrealize' and $status != 'Cancel') {
-                        echo '
-                        <button style="border-radius: 6px" type="button" id="btnupdate" name="btnupdate"  class="btn-xs btn-warning">Update</button>'; 
-                    } else{
-                        echo'';
-                    }
+                    // if($customer == 'Unrealize' and $status != 'Cancel') {
+                    //     echo '
+                    //     <button style="border-radius: 6px" type="button" id="btnupdate" name="btnupdate"  class="btn-xs btn-warning">Update</button>'; 
+                    // }
+
                     if ($row['status'] == 'Cancel') {
                         echo '';
                     }else{
@@ -691,6 +698,39 @@ function SidebarCollapse () {
             if (result.isConfirmed) {
             // window.location.href = "form_edit_bank_in.php?doc_num=" + encodedDocNum;
             window.open("form_edit_bank_in.php?doc_num=" + encodedDocNum, "_blank");
+        }
+    });
+    }else{
+        Swal.fire({
+            icon: "error",
+            title: "Sorry!",
+            text: "The Bank period has already been closed.",
+            confirmButtonText: "OK"
+        });
+
+    }
+
+});
+
+
+    $(document).on("click", ".edit-none", function() {
+        let doc_num = $(this).data("bank");
+        var closing = $(this).closest('tr').find('td:eq(13)').attr('value');
+    // alert(no_kbon + ' ' + closing);
+    let encodedDocNum = btoa(doc_num); // sama dengan base64_encode di PHP
+
+    if (closing == 'Open') {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You are about to edit this document.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, edit it!",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
+            // window.location.href = "form_edit_bank_in.php?doc_num=" + encodedDocNum;
+            window.open("form_edit_bank_in_none.php?doc_num=" + encodedDocNum, "_blank");
         }
     });
     }else{

@@ -111,22 +111,43 @@ $row = mysqli_fetch_array($sql);                         ;
             </div>
 
             <div class="col-md-2 mb-3">            
-                <label for="nama_supp" style="width: 150px;"><b>Account</b></label>            
-                <input type="text" readonly style="font-size: 13px;" class="form-control form-control-sm" id="accountid" name="accountid" value="<?php 
+               <label for="profit_center" style="width: 150px;"><b>Profit Center</b></label>            
+               <select class="form-control selectpicker" name="profit_center" id="profit_center" data-dropup-auto="false" data-live-search="true" onChange="UbahCostArc(this.value)">                                   
+                <?php
+                $profit_center = $row['profit_center'];  
+                $isSelected = ' selected="selected"';  
+                $sql_pctr = mysqli_query($conn2,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where kode_pc = '$profit_center'");             
+                $row_pctr = mysqli_fetch_array($sql_pctr); 
+
                 if(!empty($doc_num)) {
-                    echo $row['akun'];
+                    echo '<option value="'.$profit_center.'"'.$isSelected.'">'. $row_pctr['tampil'] .'</option>'; 
                 }
                 else{
-                    echo '';
-                } 
-            ?>">
-        </div>
+                    echo '<option value="" disabled selected="true">Select Profit Center</option>'; 
+                }
 
-        <div class="col-md-2 mb-3">            
-            <label for="nama_supp" style="width: 150px;"><b>Bank</b></label>            
-            <input type="text" readonly style="font-size: 13px;" class="form-control form-control-sm" id="nama_bank" name="nama_bank" value="<?php 
+
+                $sql_pc = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active' and kode_pc != '$profit_center'");
+                while ($row_pc = mysqli_fetch_array($sql_pc)) {
+                    $data = $row_pc['tampil'];
+                    $code_combine = $row_pc['kode_pc'];
+                    if($row_pc['kode_pc'] == $_POST['profit_center']){
+                        $isSelected = ' selected="selected"';
+                    }else{
+                        $isSelected = '';
+                    }
+                    echo '<option value="'.$code_combine.'"'.$isSelected.'">'. $data .'</option>';    
+                }
+                ?>
+            </select>  
+        </div>
+        <div class="col-md-6 mb-3"> </div>
+
+        <div class="col-md-3 mb-3">            
+            <label for="nama_supp" style="width: 150px;"><b>Account</b></label>            
+            <input type="text" readonly style="font-size: 13px;" class="form-control form-control-sm" id="accountid" name="accountid" value="<?php 
             if(!empty($doc_num)) {
-                echo $row['bank'];
+                echo $row['akun'];
             }
             else{
                 echo '';
@@ -134,82 +155,31 @@ $row = mysqli_fetch_array($sql);                         ;
         ?>">
     </div>
 
-    <div class="col-md-1 mb-3">            
-        <label for="nama_supp" style="width: 150px;"><b>Curr</b></label>            
-        <input type="text" readonly style="font-size: 13px;" class="form-control form-control-sm" id="valuta" name="valuta" value="<?php 
+    <div class="col-md-2 mb-3">            
+    <label for="nama_supp" style="width: 150px;"><b>Curr</b></label>            
+    <input type="text" readonly style="font-size: 13px;" class="form-control form-control-sm" id="valuta" name="valuta" value="<?php 
+    if(!empty($doc_num)) {
+        echo $row['curr'];
+    }
+    else{
+        echo '';
+    } 
+?>">
+</div>
+
+    <div class="col-md-3 mb-3">            
+        <label for="nama_supp" style="width: 150px;"><b>Bank</b></label>            
+        <input type="text" readonly style="font-size: 13px;" class="form-control form-control-sm" id="nama_bank" name="nama_bank" value="<?php 
         if(!empty($doc_num)) {
-            echo $row['curr'];
+            echo $row['bank'];
         }
         else{
             echo '';
         } 
     ?>">
 </div>
+
 <div class="col-md-4 mb-3"></div>
-
-<div class="col-md-3 mb-3">            
-    <label for="nama_supp" style="width: 150px;"><b>Coa</b></label>            
-    <input type="text" readonly style="font-size: 13px;" class="form-control form-control-sm" id="no_coa_view" name="no_coa_view" value="<?php 
-    if(!empty($doc_num)) {
-        $id_coa = $row['id_coa'];
-        $sql_coa = mysqli_query($conn2,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2 where no_coa = '$id_coa'");             
-        $row_coa = mysqli_fetch_array($sql_coa); 
-        echo $row_coa['coa'];
-    }
-    else{
-        echo '';
-    } 
-?>">
-
-<input type="hidden" readonly style="font-size: 13px;" class="form-control form-control-sm" id="no_coa" name="no_coa" value="<?php 
-if(!empty($doc_num)) {
-    echo $row['id_coa'];
-}
-else{
-    echo '';
-} 
-?>">
-</div>
-
-<div class="col-md-2 mb-3">            
- <label for="profit_center" style="width: 150px;"><b>Profit Center</b></label>            
- <select class="form-control selectpicker" name="profit_center" id="profit_center" data-dropup-auto="false" data-live-search="true" onChange="UbahCostArc(this.value)">                                   
-    <?php
-    $profit_center = $row['profit_center'];  
-    $isSelected = ' selected="selected"';  
-    $sql_pctr = mysqli_query($conn2,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where kode_pc = '$profit_center'");             
-    $row_pctr = mysqli_fetch_array($sql_pctr); 
-
-    if(!empty($doc_num)) {
-        echo '<option value="'.$profit_center.'"'.$isSelected.'">'. $row_pctr['tampil'] .'</option>'; 
-    }
-    else{
-        echo '<option value="" disabled selected="true">Select Profit Center</option>'; 
-    }
-
-
-    $sql_pc = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active' and kode_pc != '$profit_center'");
-    while ($row_pc = mysqli_fetch_array($sql_pc)) {
-        $data = $row_pc['tampil'];
-        $code_combine = $row_pc['kode_pc'];
-        if($row_pc['kode_pc'] == $_POST['profit_center']){
-            $isSelected = ' selected="selected"';
-        }else{
-            $isSelected = '';
-        }
-        echo '<option value="'.$code_combine.'"'.$isSelected.'">'. $data .'</option>';    
-    }
-    ?>
-</select>  
-</div>
-
-<div class="col-md-2 mb-3">            
- <label for="nama_supp"  style="width: 150px;"><b>Cost Center</b></label>            
- <select class="form-control selectpicker" name="cost" id="cost" data-dropup-auto="false" data-live-search="true">
-    <option value="" disabled selected="true">Select Cost Center</option>
-</select>  
-</div>
-<div class="col-md-5 mb-3"></div>
 
 <div class="col-md-2 mb-3 custom-col">            
   <label for="amount" style="width: 150px;"><b>Amount</b></label>            
@@ -246,17 +216,17 @@ else{
         name="pesan" id="pesan"
         placeholder="descriptions..." required><?php echo !empty($doc_num) ? $row['deskripsi'] : ''; ?></textarea>   
         
-        <button 
+        <!-- <button 
         type="button"
         name="edit_data"
         id="edit_data"
         class="btn btn-success align-self-start"
         style="line-height: 1; padding: 4px 12px; font-size: 0.875rem; border-radius: 6px; height: 32px; margin-left: 10px;">
         <i class="fas fa-save"></i> Save
-    </button>     
+    </button>      -->
 </div>
 </div>
-             
+
 </div>
 </div>
 </div>
