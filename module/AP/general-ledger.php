@@ -157,6 +157,7 @@
         <thead>
         <tr class="thead-dark">
             <th style="text-align: center;vertical-align: middle;width: 18%;">No Journal</th>
+            <th style="display: none;">Date</th>
             <th style="text-align: center;vertical-align: middle;width: 10%;">Date</th>
             <th style="text-align: center;vertical-align: middle;width: 30%;">Descriptions</th>
             <th style="text-align: center;vertical-align: middle;width: 14%;">Debit</th>
@@ -238,6 +239,7 @@ FROM
 
         echo ' <tr style="font-size:12px;text-align:center;">
             <td style="text-align : left;" value = "">-</td>
+            <td style="display: none" value = "">-</td>
             <td style="text-align : left;" value = "">-</td>
             <td style="text-align : left;" value = "">SALDO AWAL</td>
             <td style="text-align : right;" value = "">-</td>
@@ -249,13 +251,10 @@ $limit = 0;
 if ($sql != '') {
     while($row2 = mysqli_fetch_array($sql)){
         $limit++;
-        // $sql3 = mysqli_query($conn2,"select (debit - credit) saldo2 from (select sum(debit_idr) debit, sum(credit_idr) credit from(select no_journal,tgl_journal,keterangan,(rate * debit) debit_idr,(rate * credit) credit_idr from tbl_list_journal where no_coa = '$coa_number' and tgl_journal BETWEEN '$start_date' and '$end_date' and status != 'Cancel' order by tgl_journal,id asc limit $limit) a) a");
-        // $row3 = mysqli_fetch_array($sql3);
-        // $saldo = isset($row3['saldo2']) ? $row3['saldo2'] : 0;
-        // $saldoakhir = $saldoawal + $saldo;
 
         echo ' <tr style="font-size:12px;text-align:center;">
             <td style="text-align : left;" value = "'.$row2['no_journal'].'">'.$row2['no_journal'].'</td>
+            <td style="display: none;">'.date("Y-m-d",strtotime($row2['tgl_journal'])).'</td>
             <td style="text-align : left;" value = "'.$row2['tgl_journal'].'">'.date("d-M-Y",strtotime($row2['tgl_journal'])).'</td>
             <td style="text-align : left;" value = "'.$row2['keterangan'].'">'.$row2['keterangan'].'</td>
             <td style="text-align : right;" value = "'.$row2['debit_idr'].'">'.number_format($row2['debit_idr'],2).'</td>
