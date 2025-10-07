@@ -172,8 +172,8 @@ else{
 </div>
 
 <div class="col-md-2 mb-3">            
- <label for="profit_center" style="width: 150px;"><b>Profit Center</b></label>            
- <select class="form-control selectpicker" name="profit_center" id="profit_center" data-dropup-auto="false" data-live-search="true" onChange="UbahCostArc(this.value)">                                   
+   <label for="profit_center" style="width: 150px;"><b>Profit Center</b></label>            
+   <select class="form-control selectpicker" name="profit_center" id="profit_center" data-dropup-auto="false" data-live-search="true" onChange="UbahCostArc(this.value)">                                   
     <?php
     $profit_center = $row['profit_center'];  
     $isSelected = ' selected="selected"';  
@@ -204,8 +204,8 @@ else{
 </div>
 
 <div class="col-md-2 mb-3">            
- <label for="nama_supp"  style="width: 150px;"><b>Cost Center</b></label>            
- <select class="form-control selectpicker" name="cost" id="cost" data-dropup-auto="false" data-live-search="true">
+   <label for="nama_supp"  style="width: 150px;"><b>Cost Center</b></label>            
+   <select class="form-control selectpicker" name="cost" id="cost" data-dropup-auto="false" data-live-search="true">
     <option value="" disabled selected="true">Select Cost Center</option>
 </select>  
 </div>
@@ -246,6 +246,12 @@ else{
         name="pesan" id="pesan"
         placeholder="descriptions..." required><?php echo !empty($doc_num) ? $row['deskripsi'] : ''; ?></textarea>   
         
+    </div>
+</div>
+
+<div class="col-md-2 mb-3 mt-4">
+    <div class="form-group mt-2">
+
         <button 
         type="button"
         name="edit_data"
@@ -253,10 +259,12 @@ else{
         class="btn btn-success align-self-start"
         style="line-height: 1; padding: 4px 12px; font-size: 0.875rem; border-radius: 6px; height: 32px; margin-left: 10px;">
         <i class="fas fa-save"></i> Save
-    </button>     
+    </button>
+
+    <button type="button" style="border-radius: 6px" class="btn-danger btn-sm" name="batal" id="batal" onclick="location.href='bank-in.php'"><span class="fa fa-angle-double-left"></span> Back</button>
 </div>
 </div>
-             
+
 </div>
 </div>
 </div>
@@ -431,7 +439,7 @@ document.getElementById('rate').addEventListener('input', function(e) {
                             title: "Success",
                             text: "Data has been successfully updated!"
                         }).then(() => {
-                            window.location.href = "bank-in.php?";
+                            window.location.href = "bank-in.php";
                         });
                     } else {
                         Swal.fire("Error", res, "error");

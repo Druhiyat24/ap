@@ -44,6 +44,8 @@ if ($doc_num) {
 
 	$sql = "UPDATE tbl_bankin_arcollection SET date = '$date', customer = '$customer', profit_center = '$profit_center', amount = '$amount', outstanding = '$amount', rate = '$rate', eqv_idr = '$eqv_idr', deskripsi = '$deskripsi' WHERE doc_num = '$doc_num'";
 
+	$Update_report = mysqli_query($conn2,"UPDATE b_reportbank set transaksi_date = '$date', debit = '$amount', deskripsi = '$deskripsi' where no_doc = '$doc_num'");
+
 	$queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
    VALUES 
    ('$doc_num', '$date', '$type_journal', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '$amount', '0', '$eqv_idr', '0', 'Draft', '$deskripsi', '$create_user', '$create_date', '', '', '', '', '$profit_center')";
