@@ -153,6 +153,7 @@
         $ttl_pro_due4 = 0;
         $ttl_pro_due5 = 0;
         $ttl_tot_produe = 0;
+        $input_reverse    = 0;
 
         $sqldel = "delete from rpt_ap_kbon where user_create = '$user'";
         $querydel = mysqli_query($conn1,$sqldel);
@@ -344,6 +345,12 @@ $tambah_ += $tambah;
 $tambahan_ += $tambahan;
 $reverse += $total_rvs;
 
+if ($total_rvs <= 0) {
+        $input_reverse = 0;
+    }else{
+        $input_reverse = $total_rvs;
+    }
+
 if($sa_awal == '0' and $tambah == '0' and $tambahan == '0' and $kurang == '0' and $sa_akhir == '0'){
     echo '';
 }else{
@@ -466,9 +473,10 @@ if($sa_awal == '0' and $tambah == '0' and $tambahan == '0' and $kurang == '0' an
     <td style="text-align:right;" value="'.$tot_produe.'">'.number_format($tot_produe,2).'</td>
     ';
 
-    $queryin2 = "INSERT INTO rpt_ap_kbon (nama_supp,no_kbon,tgl_kbon,due_date,curr,beg_balance,add_bpb,add_adj,deduction,end_balance,end_balance_idr,create_date,due_0,due_1,due_2,due_3,due_4,due_5,due_6,due_7,due_total,produe_0,produe_1,produe_2,produe_3,produe_4,produe_5,produe_6,produe_total,filter_awal,filter_akhir,no_coa,item_type1,item_type2,relasi,user_create) 
+
+    $queryin2 = "INSERT INTO rpt_ap_kbon (nama_supp,no_kbon,tgl_kbon,due_date,curr,beg_balance,add_bpb,add_adj,deduction,end_balance,end_balance_idr,create_date,due_0,due_1,due_2,due_3,due_4,due_5,due_6,due_7,due_total,produe_0,produe_1,produe_2,produe_3,produe_4,produe_5,produe_6,produe_total,filter_awal,filter_akhir,no_coa,item_type1,item_type2,relasi,user_create, reverse) 
     VALUES 
-    ('$suppin2', '$kbonin', '$tgl_kbonin', '$duedate2', '$currin2', '$sa_awal', '$tambah', '$tambahan', '$kurang', '$sa_akhir', '$saldo_akhir_idr', '$insert_date', '$due_current', '$due_1', '$due_2', '$due_3', '$due_4', '$due_5', '$due_6', '$due_7', '$tot_due', '$pro_due', '$pro_due0', '$pro_due1', '$pro_due2', '$pro_due3', '$pro_due4', '$pro_due5', '$tot_produe', '$start_date', '$end_date', '$no_coa', '$item_type1', '$item_type2', '$relasi','$user')";
+    ('$suppin2', '$kbonin', '$tgl_kbonin', '$duedate2', '$currin2', '$sa_awal', '$tambah', '$tambahan', '$kurang', '$sa_akhir', '$saldo_akhir_idr', '$insert_date', '$due_current', '$due_1', '$due_2', '$due_3', '$due_4', '$due_5', '$due_6', '$due_7', '$tot_due', '$pro_due', '$pro_due0', '$pro_due1', '$pro_due2', '$pro_due3', '$pro_due4', '$pro_due5', '$tot_produe', '$start_date', '$end_date', '$no_coa', '$item_type1', '$item_type2', '$relasi','$user', '$input_reverse')";
 
     $executein2 = mysqli_query($conn1,$queryin2);
 
