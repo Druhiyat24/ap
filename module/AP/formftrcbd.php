@@ -258,7 +258,7 @@
                     }  
 
                     }else{
-                        $sql = pg_query($conn4,"select no_po, max(podate) podate, max(supplier) supplier, round(sum(sub),2) sub, round(sum(tax),2) tax, round(sum(sub + tax),2) total, max(matauang) matauang, max(app) app, max(cancel) cancel, max(kode_pterms) kode_pterms, max(tipe_com) tipe_com from (select no_po, tanggal podate, c.nama_supplier supplier, (qty * harga_per_unit) sub, ((qty * harga_per_unit) * ppn/100) tax, currency matauang, 'A' app, 'N' cancel, '-' kode_pterms, '-' tipe_com from purchase_orders a INNER JOIN purchase_order_details b on b.purchase_order_id = a.id INNER JOIN master_supplier c on c.id = a.id_supplier where status_po = 'approved') a where podate BETWEEN '$start_date' and '$end_date' and supplier = '$nama_supp' GROUP BY no_po ");
+                        $sql = pg_query($conn4,"select no_po, max(podate) podate, max(supplier) supplier, round(sum(sub),2) sub, round(sum(tax),2) tax, round(sum(sub + tax),2) total, max(matauang) matauang, max(app) app, max(cancel) cancel, max(kode_pterms) kode_pterms, max(tipe_com) tipe_com from (select no_po, tanggal podate, c.nama_supplier supplier, (qty * harga_per_unit) sub, ((qty * harga_per_unit) * ppn/100) tax, currency matauang, 'A' app, 'N' cancel, '-' kode_pterms, '-' tipe_com from purchase_orders a INNER JOIN purchase_order_details b on b.purchase_order_id = a.id INNER JOIN master_supplier c on c.id = a.id_supplier where status_po = 'approved') a where podate BETWEEN '$start_date' and '$end_date' and upper(supplier) = '$nama_supp' GROUP BY no_po ");
 
                         while($row = pg_fetch_assoc($sql)){
                         $po = $row['no_po'];
