@@ -267,92 +267,108 @@ $row = mysqli_fetch_array($sql);                         ;
                                 $doc_num = base64_decode($_GET['doc_num']); 
                                 $no_bk = $_POST['no_bk'] ?? ($no_reff ?? null);
 
-                                $sql = mysqli_query($conn2,"select a.no_bankout, GROUP_CONCAT(c.no_coa,' ',c.nama_coa) as coa,b.no_coa,a.bankout_date,a.nama_supp,a.curr, a.amount, a.outstanding, a.status, a.deskripsi, a.eqv_idr, kode_pc, CONCAT(id_pc,' - ',nama_pc) nama_pc from b_bankout_h a inner join b_bankout_none b on b.no_bankout = a.no_bankout inner join mastercoa_v2 c on c.no_coa = b.no_coa LEFT JOIN master_pc mp on mp.kode_pc = b.profit_center where a.no_bankout = '$no_bk'
-                                   union
-                                   select a.no_bankout,GROUP_CONCAT(e.no_coa,' ',e.nama_coa) as coa,d.coa no_coa,a.bankout_date,a.nama_supp,a.curr, a.amount, a.outstanding, a.status, a.deskripsi, a.eqv_idr, '' kode_pc, '' nama_pc from b_bankout_h a inner join b_bankout_det b on b.no_bankout = a.no_bankout INNER JOIN tbl_pv_h c on c.no_pv = b.no_reff inner join tbl_pv d on d.no_pv = c.no_pv left join mastercoa_v2 e on e.no_coa = d.coa where a.no_bankout = '$no_bk'");
+                                echo'<input type="text" style="font-size: 14px;text-align: right;display:none;" class="form-control" id="dataamount2" name="dataamount2" placeholder=""
+                                value="';?> <?php             
+                                $sql_bkdet = mysqli_query($conn2,"select round(sum(eqv_idr),0) as amount from b_bankout_h  where no_bankout = '$no_bk' ");
+                                $row_bkdet = mysqli_fetch_array($sql_bkdet);
+                                $amount = isset($row_bkdet['amount']) ? $row_bkdet['amount']: null;         
 
-                                while($row_detbk = mysqli_fetch_array($sql)){
-                                    $no_reff = $row_detbk['no_bankout'];
-                                    if(!empty($no_reff)) {
+                                if(!empty($no_bk)) {
 
-                                        echo '<tr>
-                                        <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>                      
-                                        <td style="width:150px;">
-                                        <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="kode_pc" name="kode_pc" data="'.$row_detbk['kode_pc'].'" value="'.$row_detbk['nama_pc'].'" disabled>
-                                        </td>
-                                        <td style="width:150px;">
-                                        <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="no_coa" name="no_coa" data="'.$row_detbk['no_coa'].'" value="'.$row_detbk['coa'].'" disabled>
-                                        </td>
-                                        <td style="width:100px;">
-                                        <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="no_bankout" name="no_bankout" value="'.$row_detbk['no_bankout'].'" disabled>
-                                        </td>
-                                        <td style="width:80px;">
-                                        <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="bankout_date" name="bankout_date" value="'.$row_detbk['bankout_date'].'" disabled>
-                                        </td>
-                                        <td style="width:100px;">
-                                        <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="deskripsi" name="deskripsi" value="'.$row_detbk['deskripsi'].'" disabled>
-                                        </td>
-                                        <td style="width:50px;">
-                                        <input style="text-align: right;font-size: 12px" type="text" class="form-control" id="txt_debit" name="txt_debit" value="0" disabled>
-                                        </td>
-                                        <td style="width:50px;">
-                                        <input style="text-align: right;font-size: 12px" type="text" class="form-control" id="txt_credit" name="txt_credit" data= "'.number_format($row_detbk['eqv_idr'],2).'" value="'.$row_detbk['eqv_idr'].'" disabled>
-                                        </td>
+                                  echo $amount;      
+                              }
+                              else{
+                                echo '';
+                            } ?><?php echo '">';
 
-                                        </tr>';
-                                    }
-                                }
+                            $sql = mysqli_query($conn2,"select a.no_bankout, GROUP_CONCAT(c.no_coa,' ',c.nama_coa) as coa,b.no_coa,a.bankout_date,a.nama_supp,a.curr, a.amount, a.outstanding, a.status, a.deskripsi, a.eqv_idr, kode_pc, CONCAT(id_pc,' - ',nama_pc) nama_pc from b_bankout_h a inner join b_bankout_none b on b.no_bankout = a.no_bankout inner join mastercoa_v2 c on c.no_coa = b.no_coa LEFT JOIN master_pc mp on mp.kode_pc = b.profit_center where a.no_bankout = '$no_bk'
+                               union
+                               select a.no_bankout,GROUP_CONCAT(e.no_coa,' ',e.nama_coa) as coa,d.coa no_coa,a.bankout_date,a.nama_supp,a.curr, a.amount, a.outstanding, a.status, a.deskripsi, a.eqv_idr, '' kode_pc, '' nama_pc from b_bankout_h a inner join b_bankout_det b on b.no_bankout = a.no_bankout INNER JOIN tbl_pv_h c on c.no_pv = b.no_reff inner join tbl_pv d on d.no_pv = c.no_pv left join mastercoa_v2 e on e.no_coa = d.coa where a.no_bankout = '$no_bk'");
 
-                                if ($row['curr'] == 'USD') {
+                            while($row_detbk = mysqli_fetch_array($sql)){
+                                $no_reff = $row_detbk['no_bankout'];
+                                if(!empty($no_reff)) {
+
                                     echo '<tr>
                                     <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>                      
                                     <td style="width:150px;">
-                                    <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="kode_pc" name="kode_pc"  value="" disabled>
+                                    <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="kode_pc" name="kode_pc" data="'.$row_detbk['kode_pc'].'" value="'.$row_detbk['nama_pc'].'" readonly>
                                     </td>
                                     <td style="width:150px;">
-                                    <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="no_coa" name="no_coa" data="8.52.01" value="8.52.01 LABA / (RUGI) SELISIH KURS" disabled>
+                                    <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="no_coa" name="no_coa" data="'.$row_detbk['no_coa'].'" value="'.$row_detbk['coa'].'" readonly>
                                     </td>
                                     <td style="width:100px;">
-                                    <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="no_bankout" name="no_bankout">
+                                    <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="no_bankout" name="no_bankout" value="'.$row_detbk['no_bankout'].'" readonly>
                                     </td>
                                     <td style="width:80px;">
-                                    <input style="text-align: center;font-size: 12px" type="text" class="form-control tanggal" id="bankout_date" name="bankout_date">
+                                    <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="bankout_date" name="bankout_date" value="'.$row_detbk['bankout_date'].'" readonly>
                                     </td>
                                     <td style="width:100px;">
-                                    <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="deskripsi" name="deskripsi">
+                                    <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="deskripsi" name="deskripsi" value="'.$row_detbk['deskripsi'].'" readonly>
                                     </td>
                                     <td style="width:50px;">
-                                    <input style="text-align: right;font-size: 12px" type="text" class="form-control" value="0" id="datadeb" name="datadeb" disabled>
+                                    <input style="text-align: right;font-size: 12px" type="text" class="form-control" id="txt_debit_det" name="txt_debit_det" value="0" readonly>
                                     </td>
                                     <td style="width:50px;">
-                                    <input style="text-align: right;font-size: 12px" type="text" class="form-control" value="0" id="datacre" name="datacre"  disabled>
+                                    <input style="text-align: right;font-size: 12px" type="text" class="form-control" id="txt_credit_det" name="txt_credit_det" data= "'.number_format($row_detbk['eqv_idr'],2).'" value="'.$row_detbk['eqv_idr'].'" readonly>
                                     </td>
 
                                     </tr>';
                                 }
-                                ?>
-                            </tbody>          
-                        </table>
-                    </div>
+                            }
 
-                    <div class="form-row col mt-3">
-                        <div class="form-group">
+                            if ($row['curr'] == 'USD') {
+                                echo '<tr>
+                                <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>                      
+                                <td style="width:150px;">
+                                <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="kode_pc" name="kode_pc"  value="" readonly>
+                                </td>
+                                <td style="width:150px;">
+                                <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="no_coa" name="no_coa" data="8.52.01" value="8.52.01 LABA / (RUGI) SELISIH KURS" readonly>
+                                </td>
+                                <td style="width:100px;">
+                                <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="no_bankout" name="no_bankout">
+                                </td>
+                                <td style="width:80px;">
+                                <input style="text-align: center;font-size: 12px" type="text" class="form-control tanggal" id="bankout_date" name="bankout_date">
+                                </td>
+                                <td style="width:100px;">
+                                <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="deskripsi" name="deskripsi">
+                                </td>
+                                <td style="width:50px;">
+                                <input style="text-align: right;font-size: 12px" type="text" class="form-control" value="0" id="datadeb" name="datadeb" readonly>
+                                </td>
+                                <td style="width:50px;">
+                                <input style="text-align: right;font-size: 12px" type="text" class="form-control" value="0" id="datacre" name="datacre"  readonly>
+                                </td>
 
-                            <button 
-                            type="button"
-                            name="edit_data"
-                            id="edit_data"
-                            class="btn btn-success align-self-start"
-                            style="line-height: 1; padding: 4px 12px; font-size: 0.875rem; border-radius: 6px; height: 32px; margin-left: 10px;">
-                            <i class="fas fa-save"></i> Save
-                        </button>
+                                </tr>';
+                            }
+                            ?>
+                        </tbody>          
+                    </table>
+                </div>
 
-                        <button type="button" style="border-radius: 6px" class="btn-danger btn-sm" name="batal" id="batal" onclick="location.href='bank-in.php'"><span class="fa fa-angle-double-left"></span> Back</button>
-                    </div>
+                <div class="form-row col mt-3">
+                    <div class="form-group">
+                        <input type="text" name="total_debit" id="total_debit" value="<?= $row['eqv_idr']; ?>">
+                        <input type="text" name="total_credit" id="total_credit" value="<?= $row['eqv_idr']; ?>">
+
+                        <button 
+                        type="button"
+                        name="edit_data"
+                        id="edit_data"
+                        class="btn btn-success align-self-start"
+                        style="line-height: 1; padding: 4px 12px; font-size: 0.875rem; border-radius: 6px; height: 32px; margin-left: 10px;">
+                        <i class="fas fa-save"></i> Save
+                    </button>
+
+                    <button type="button" style="border-radius: 6px" class="btn-danger btn-sm" name="batal" id="batal" onclick="location.href='bank-in.php'"><span class="fa fa-angle-double-left"></span> Back</button>
                 </div>
             </div>
         </div>
-    </form>
+    </div>
+</form>
 </div>
 </div>
 
@@ -768,39 +784,50 @@ if (headerPC) {
 
 
 <script type="text/javascript">
-  function modal_input_amt() { 
-    let deb  = $("#eqv_idr").val().replace(/,/g, '') || 0;   
-    let rate = $("#rate").val().replace(/,/g, '') || 1;
+function modal_input_amt() {
+  const rate   = Number((document.getElementById('rate')?.value || '').replace(/,/g, '')) || 1;
+  const ttl_h  = Number((document.getElementById('amount')?.value || '').replace(/,/g, '')) || 0;
+  const credit = Number(document.getElementById('dataamount2')?.value || 0);
+  const txt_debit = Number(document.getElementsByName('txt_debit_det')?.value || 0);
+  const txt_credit = Number(document.getElementById('txt_credit_det')?.value || 0);
 
-    var table = document.getElementById("tbody2");
-    var tota = 0;
 
-    for (var i = 0; i < table.rows.length; i++) {
-        var $row  = $(table.rows[i]);
-        var curr  = $row.find("select[name='currenc']").val();
-        var price = parseFloat($row.find("input[name='txt_amount']").val()) || 0;
-        var price2 = $row.find("input[name='txt_credit']");
+  const ttl_jml = ttl_h * rate;
+  const debit = 0;
+  let jml_debit = 0;
+  let jml_credit = 0;
 
-        let harga = 0;
-        if (price === 0) {
-            price2.prop('readonly', false);
-        } else {
-            if (curr === 'USD') {
-                harga = price * rate;
-            } else {
-                harga = price;
-            }
-            price2.prop('readonly', true);
-        }
+  const diff = credit - ttl_jml;
 
-        tota += harga;
-    }
+  let datadeb = 0;
+  let datacre = 0;
 
-    let tot_deb = parseFloat(tota) + parseFloat(deb);
-
-    document.getElementsByName("tot_debit")[0].value = formatMoney(tot_deb.toFixed(2));
-    document.getElementsByName("h_tot_debit")[0].value = tot_deb.toFixed(2);
+  if (rate > 1) {
+  if (diff >= 0) {
+    datadeb = diff;
+    datacre = 0;
+  } else {
+    datadeb = 0;
+    datacre = Math.abs(diff);
+  }
+}else{
+    datadeb = 0;
+    datacre = 0;
 }
+
+  jml_debit = ttl_jml + txt_debit + datadeb;
+  jml_credit = txt_credit + datacre;
+
+  const elDeb = document.getElementsByName("datadeb")[0];
+  const elCre = document.getElementsByName("datacre")[0];
+
+  document.getElementsByName("total_debit")[0].value = jml_debit.toFixed(2);
+  document.getElementsByName("total_credit")[0].value = jml_credit.toFixed(2);
+
+  if (elDeb) elDeb.value = datadeb.toFixed(2);
+  if (elCre) elCre.value = datacre.toFixed(2);
+}
+
 
 </script>
 
