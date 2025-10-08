@@ -92,21 +92,7 @@ $row = mysqli_fetch_array($sql);                         ;
                         echo '<option value="Unrealize"  selected="true">Unrealize</option>'; 
                     }
 
-                    if ($customer != 'Unrealize') {
-                        echo '<option value="Unrealize" >Unrealize</option>'; 
-                    }
-
-                    $sql_supp = mysqli_query($conn1,"select distinct(Supplier) from mastersupplier where tipe_sup = 'C' and Supplier != '$customer' order by Supplier ASC");
-                    while ($row_supp = mysqli_fetch_array($sql_supp)) {
-                        $data = $row_supp['Supplier'];
-                        if($row_supp['Supplier'] == $_POST['nama_supp']){
-                            $isSelected = ' selected="selected"';
-                        }else{
-                            $isSelected = '';
-
-                        }
-                        echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';   
-                    }?>
+                    ?>
                 </select>  
             </div>
 
@@ -141,7 +127,31 @@ $row = mysqli_fetch_array($sql);                         ;
                 ?>
             </select>  
         </div>
-        <div class="col-md-6 mb-3"> </div>
+        <div class="col-md-3">
+            <label for="no_bk" style="width: 150px;" ><b>No Bank Out </b></label>  
+            <select class="form-control selectpicker" name="no_bk" id="no_bk" data-live-search="true" required onchange="this.form.submit()" data-size="10">
+                <?php
+                $sqldet_bk = mysqli_query($conn1,"select * from b_bankin_none where no_bankin = '$doc_num' and no_reff != ''");
+                $rowdet_bk = mysqli_fetch_array($sqldet_bk);
+                $no_reff = $rowdet_bk['no_reff'];
+                ?>
+
+                <option value="<?php echo !empty($doc_num) ? $no_reff : ''; ?>" selected="true"><?php echo !empty($doc_num) ? $no_reff : ''; ?></option> ';?> 
+                <?php 
+                $sqlacc = mysqli_query($conn1,"select no_bankout from b_bankout_h where status = 'Approved' and stat_bi != 'Y' and nama_supp = 'PT. NIRWANA ALABARE GARMENT'");
+                while ($row_bk = mysqli_fetch_array($sqlacc)) {
+                    $data = $row_bk['no_bankout'];
+                    if($row_bk['no_bankout'] == $_POST['no_bk']){
+                        $isSelected  = ' selected="selected"';
+                    }else{
+                        $isSelected = '';
+                    }
+                    echo '<option name="no_bk" value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
+                }
+                ?>
+            </select>
+        </div>
+        <div class="col-md-3 mb-3"> </div>
 
         <div class="col-md-3 mb-3">            
             <label for="nama_supp" style="width: 150px;"><b>Account</b></label>            
@@ -236,159 +246,96 @@ $row = mysqli_fetch_array($sql);                         ;
                 </div> -->
                 <div class="card-body p-2">
                     <div class="table-responsive">
-                        <table id="mytablenone" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
+
+                        <table id="mytable" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
                             <thead>
                                 <tr class="text-white" style="background-color: #1E3A8A;">
-                                    <th style="width:10px;">-</th>
-                                    <th style="width:100px;">Coa</th>
-                                    <th style="width:100px;">Profit Center</th> 
-                                    <th style="width:100px;">Cost Center</th>                                                           
-                                    <th style="width:100px;">Buyer</th>
-                                    <th style="width:100px;">WS</th>
-                                    <th style="width:50px;">Currency</th>
-                                    <th style="width:100px;">Debit</th>                                                           
-                                    <th style="width:100px;">Credit</th>
-                                    <th style="width:100px;">Description</th>
-                                    <th style="width:8px;">cek</th>
+                                    <th class="text-center">-</th>
+                                    <th class="text-center">Profit Center</th>
+                                    <th class="text-center">COA</th>
+                                    <th class="text-center">Reff Document</th>
+                                    <th class="text-center">Reff Date</th>
+                                    <th class="text-center">Description</th>
+                                    <th class="text-center">Debit</th>
+                                    <th class="text-center">Credit</th>
                                 </tr>
                             </thead>
 
-                            <tbody id="tbody2">
+                            <tbody>
+
                                 <?php
                                 $doc_num = base64_decode($_GET['doc_num']); 
-                                $sql_none = mysql_query("select no_doc, id_coa, id_cost_center, buyer, no_ws, curr, t_debit, t_credit, a.keterangan, a.profit_center, concat(b.no_coa,' ', b.nama_coa) as nama_coa,CONCAT(a.id_cost_center,' - ',d.cc_name) cc_name, CONCAT(mp.id_pc,' - ',nama_pc) nama_pc from tbl_bankin a left join mastercoa_v2 b on b.no_coa = a.id_coa left join b_master_cc d on d.no_cc = a.id_cost_center LEFT JOIN master_pc mp on mp.kode_pc = a.profit_center where no_doc = '$doc_num'",$conn1);
+                                $no_bk = $_POST['no_bk'] ?? ($no_reff ?? null);
 
-                                while($row = mysql_fetch_array($sql_none)){
-                                    $id_coa = $row['id_coa'];
-                                    $id_cost_center = $row['id_cost_center'];
-                                    $t_debit = $row['t_debit'];
-                                    $t_credit = $row['t_credit'];
-                                    $profit_center = $row['profit_center'];
+                                $sql = mysqli_query($conn2,"select a.no_bankout, GROUP_CONCAT(c.no_coa,' ',c.nama_coa) as coa,b.no_coa,a.bankout_date,a.nama_supp,a.curr, a.amount, a.outstanding, a.status, a.deskripsi, a.eqv_idr, kode_pc, CONCAT(id_pc,' - ',nama_pc) nama_pc from b_bankout_h a inner join b_bankout_none b on b.no_bankout = a.no_bankout inner join mastercoa_v2 c on c.no_coa = b.no_coa LEFT JOIN master_pc mp on mp.kode_pc = b.profit_center where a.no_bankout = '$no_bk'
+                                   union
+                                   select a.no_bankout,GROUP_CONCAT(e.no_coa,' ',e.nama_coa) as coa,d.coa no_coa,a.bankout_date,a.nama_supp,a.curr, a.amount, a.outstanding, a.status, a.deskripsi, a.eqv_idr, '' kode_pc, '' nama_pc from b_bankout_h a inner join b_bankout_det b on b.no_bankout = a.no_bankout INNER JOIN tbl_pv_h c on c.no_pv = b.no_reff inner join tbl_pv d on d.no_pv = c.no_pv left join mastercoa_v2 e on e.no_coa = d.coa where a.no_bankout = '$no_bk'");
 
-                                    echo '<tr">
-                                    <td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>
-                                    <td>
-                                    <select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="220px" data-size="5"> 
-                                    <option value="'.$row['id_coa'].'" >'.$row['nama_coa'].'</option>
-                                    <option value="-" > - </option>'; 
-                                    $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2 where no_coa != '$id_coa'"); 
-                                    foreach ($sql as $cc) : 
-                                     echo'<option value="'.$cc["id_coa"].'"> '.$cc["coa"].' </option>'; 
-                                 endforeach; ?>
-                                 <?php
-                                 echo '
-                                 </select>
-                                 </td>';
-                                 echo '
-                                 <td style="width: 200px;">
-                                 <select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" style="width: 250px"> 
-                                 <option value="'.$row['profit_center'].'" >'.$row['nama_pc'].'</option>';
-                                 $sql3 = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active' and kode_pc != '$profit_center'"); 
-                                 foreach ($sql3 as $fc) : 
-                                    echo'<option value="'.$fc["kode_pc"].'"> '.$fc["tampil"].' </option>'; 
-                                endforeach; 
-                                echo'</select>
-                                </td>';
-                                echo '
-                                <td style="width: 200px;">
-                                <select class="form-control selectpicker cost_ctr" name="cost_ctr" id="cost_ctr" data-live-search="true" data-width="200px" data-size="5"> 
-                                <option value="'.$row['id_cost_center'].'" >'.$row['cc_name'].'</option>';
-                                if ($row['id_cost_center'] != '-') {
-                                    echo '<option value="-" > - </option>';
-                                }
-                                $sql2 = mysqli_query($conn1,"select no_cc as code_combine,concat(no_cc,' - ',cc_name) as cost_name from b_master_cc where status = 'Active' and no_cc != '$id_cost_center'"); 
-                                foreach ($sql2 as $ccs) : 
-                                    echo'<option value="'.$ccs["code_combine"].'"> '.$ccs["cost_name"].' </option>'; 
-                                endforeach; ?>
-                                <?php
-                                echo '
-                                </select>
-                                </td>';
+                                while($row_detbk = mysqli_fetch_array($sql)){
+                                    $no_reff = $row_detbk['no_bankout'];
+                                    if(!empty($no_reff)) {
 
-                                echo '<td>
-                                <input style="text-align: left;font-size: 14px;" type="text" class="form-control" name="buyer" placeholder="" value="'.$row['buyer'].'" autocomplete = "off">
-                                </td>
-                                <td>
-                                <input style="text-align: left;font-size: 14px;" type="text" class="form-control" name="ws" placeholder="" value="'.$row['no_ws'].'" autocomplete = "off">
-                                </td>
-                                <td>
-                                <select class="form-control selectpicker" name="currenc" id="currenc" data-live-search="true">
-                                <option value="'.$row['curr'].'" >'.$row['curr'].'</option>';
-                                if ($row['curr'] == 'IDR') {
-                                    echo '<option value="USD">USD</option>';
-                                }else{
-                                    echo '<option value="IDR">IDR</option> ';
-                                }
-                                echo '</div>
-                                </td>';
-                                if ($t_debit == '0') {
-                                    echo '<td>
-                                    <input style="text-align: right;font-size: 14px;" type="number" min="1"class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off" readonly>
-                                    </td>';
-                                }else{
-                                    echo '<td>
-                                    <input style="text-align: right;font-size: 14px;" type="number" min="1" value="'.$t_debit.'"  class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off">
-                                    </td>';
+                                        echo '<tr>
+                                        <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>                      
+                                        <td style="width:150px;">
+                                        <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="kode_pc" name="kode_pc" data="'.$row_detbk['kode_pc'].'" value="'.$row_detbk['nama_pc'].'" disabled>
+                                        </td>
+                                        <td style="width:150px;">
+                                        <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="no_coa" name="no_coa" data="'.$row_detbk['no_coa'].'" value="'.$row_detbk['coa'].'" disabled>
+                                        </td>
+                                        <td style="width:100px;">
+                                        <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="no_bankout" name="no_bankout" value="'.$row_detbk['no_bankout'].'" disabled>
+                                        </td>
+                                        <td style="width:80px;">
+                                        <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="bankout_date" name="bankout_date" value="'.$row_detbk['bankout_date'].'" disabled>
+                                        </td>
+                                        <td style="width:100px;">
+                                        <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="deskripsi" name="deskripsi" value="'.$row_detbk['deskripsi'].'" disabled>
+                                        </td>
+                                        <td style="width:50px;">
+                                        <input style="text-align: right;font-size: 12px" type="text" class="form-control" id="txt_debit" name="txt_debit" value="0" disabled>
+                                        </td>
+                                        <td style="width:50px;">
+                                        <input style="text-align: right;font-size: 12px" type="text" class="form-control" id="txt_credit" name="txt_credit" data= "'.number_format($row_detbk['eqv_idr'],2).'" value="'.$row_detbk['eqv_idr'].'" disabled>
+                                        </td>
+
+                                        </tr>';
+                                    }
                                 }
 
-                                if ($t_credit == '0') {
-                                    echo '<td>
-                                    <input style="text-align: right;font-size: 14px;" type="number" min="1" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_cre(value)" autocomplete = "off" readonly>
-                                    </td>';
-                                }else{
-                                    echo '<td>
-                                    <input style="text-align: right;font-size: 14px;" type="number" min="1" value="'.$t_credit.'" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_cre(value)" autocomplete = "off">
-                                    </td>';
+                                if ($row['curr'] == 'USD') {
+                                    echo '<tr>
+                                    <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>                      
+                                    <td style="width:150px;">
+                                    <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="kode_pc" name="kode_pc"  value="" disabled>
+                                    </td>
+                                    <td style="width:150px;">
+                                    <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="no_coa" name="no_coa" data="8.52.01" value="8.52.01 LABA / (RUGI) SELISIH KURS" disabled>
+                                    </td>
+                                    <td style="width:100px;">
+                                    <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="no_bankout" name="no_bankout">
+                                    </td>
+                                    <td style="width:80px;">
+                                    <input style="text-align: center;font-size: 12px" type="text" class="form-control tanggal" id="bankout_date" name="bankout_date">
+                                    </td>
+                                    <td style="width:100px;">
+                                    <input style="text-align: center;font-size: 12px" type="text" class="form-control" id="deskripsi" name="deskripsi">
+                                    </td>
+                                    <td style="width:50px;">
+                                    <input style="text-align: right;font-size: 12px" type="text" class="form-control" value="0" id="datadeb" name="datadeb" disabled>
+                                    </td>
+                                    <td style="width:50px;">
+                                    <input style="text-align: right;font-size: 12px" type="text" class="form-control" value="0" id="datacre" name="datacre"  disabled>
+                                    </td>
+
+                                    </tr>';
                                 }
-
-                                echo'<td>
-                                <input style="text-align: left;font-size: 14px;" type="text" class="form-control" name="keterangan" placeholder="" value="'.$row['keterangan'].'" autocomplete = "off">
-                                </td>
-                                <td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""/></td>
-                                </tr>
-
-                                ';
-                            }
-                            ?>
-                        </tbody> 
-                        <?php
-                        echo '
-                        <tfoot>
-                        <tr>
-                        <td colspan="11" align="center">
-                        <button type="button" class="btn btn-primary" onclick=addRow("tbody2");>Add Row</button>
-                        <button type="button" class="btn btn-warning" onclick=InsertRow("tbody2");>Interject Row</button>
-                        <button type="button" class="btn btn-danger" onclick=deleteRow("tbody2");>Delete Row</button>
-                        </td>
-                        </tr>
-                        </tfoot>';
-                        ?>                   
-                    </table>
-                </div>
-                <div class="form-row col mt-3">
-                    <label for="subtotal" class="col-form-label" style="width: 150px; font-size: 13px;;"><b>Total Debit</b></label>
-                    <div class="col-md-2 mb-3"> 
-                        <?php
-                        $sql = mysqli_query($conn2,"select eqv_idr from tbl_bankin_arcollection where doc_num = '$doc_num'");
-                        $row = mysqli_fetch_array($sql);                         
-                        $eqv_idr = $row['eqv_idr'];
-                        ?>                                
-                        <input type="text" class="form-control form-control-sm" name="tot_debit" id="tot_debit" value="<?= number_format($eqv_idr,2); ?>" placeholder="0.00" style="font-size: 14px;;text-align: right;" readonly>
-                        <input type="hidden" name="h_tot_debit" id="h_tot_debit" value="<?= $eqv_idr; ?>">
-
+                                ?>
+                            </tbody>          
+                        </table>
                     </div>
-                </div>
 
-                <div class="form-row col mt-1">
-                    <label for="subtotal" class="col-form-label" style="width: 150px; font-size: 13px;;"><b>Total Credit</b></label>
-                    <div class="col-md-2 mb-3">                              
-                        <input type="text" class="form-control form-control-sm" name="tot_credit" id="tot_credit" value="<?= number_format($eqv_idr,2); ?>" placeholder="0.00" style="font-size: 14px;;text-align: right;" readonly>
-                        <input type="hidden" name="h_tot_credit" id="h_tot_credit" value="<?= $eqv_idr; ?>">
-
-                    </div>
-            </div>
-
-            <div class="form-row col mt-1">
+                    <div class="form-row col mt-3">
                         <div class="form-group">
 
                             <button 
@@ -402,10 +349,10 @@ $row = mysqli_fetch_array($sql);                         ;
 
                         <button type="button" style="border-radius: 6px" class="btn-danger btn-sm" name="batal" id="batal" onclick="location.href='bank-in.php'"><span class="fa fa-angle-double-left"></span> Back</button>
                     </div>
+                </div>
             </div>
         </div>
-    </div>
-</form>
+    </form>
 </div>
 </div>
 
