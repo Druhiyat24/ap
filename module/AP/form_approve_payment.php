@@ -348,7 +348,7 @@
         var nama_supp = $(this).closest('tr').find('td:eq(3)').text();
         $.ajax({
             type : 'post',
-            url : 'ajax_payment.php',
+            url : 'ajax_payment2.php',
             data : {'payment_ftr_id': payment_ftr_id},
             success : function(data){
     $('#details').html(data); //menampilkan data ke dalam modal
