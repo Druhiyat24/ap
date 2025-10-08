@@ -704,8 +704,8 @@ function SidebarCollapse () {
             cancelButtonText: "Cancel"
         }).then((result) => {
             if (result.isConfirmed) {
-            // window.location.href = "form_edit_bank_in.php?doc_num=" + encodedDocNum;
-            window.open("form_edit_bank_in.php?doc_num=" + encodedDocNum, "_blank");
+            window.location.href = "form_edit_bank_in.php?doc_num=" + encodedDocNum;
+            // window.open("form_edit_bank_in.php?doc_num=" + encodedDocNum, "_blank");
         }
     });
     }else{
@@ -737,8 +737,8 @@ function SidebarCollapse () {
             cancelButtonText: "Cancel"
         }).then((result) => {
             if (result.isConfirmed) {
-            // window.location.href = "form_edit_bank_in.php?doc_num=" + encodedDocNum;
-            window.open("form_edit_bank_in_none.php?doc_num=" + encodedDocNum, "_blank");
+            window.location.href = "form_edit_bank_in_none.php?doc_num=" + encodedDocNum;
+            // window.open("form_edit_bank_in_none.php?doc_num=" + encodedDocNum, "_blank");
         }
     });
     }else{
@@ -769,8 +769,8 @@ function SidebarCollapse () {
             cancelButtonText: "Cancel"
         }).then((result) => {
             if (result.isConfirmed) {
-            // window.location.href = "form_edit_bank_in.php?doc_num=" + encodedDocNum;
-            window.open("form_edit_bank_in_bk.php?doc_num=" + encodedDocNum, "_blank");
+            window.location.href = "form_edit_bank_in_bk.php?doc_num=" + encodedDocNum;
+            // window.open("form_edit_bank_in_bk.php?doc_num=" + encodedDocNum, "_blank");
         }
     });
     }else{

@@ -154,34 +154,34 @@ $end_date = date("Y-m-d",strtotime($enddate));
                                 } else {
                                     echo date('Y-m-d');
                                 }
-                            ?>" 
-                            placeholder="Tanggal Awal" onchange="this.form.submit()">
-                        </div>
-
-                        <div class="col-md-2 mb-3"> 
-                            <label for="end_date"><b>To</b></label>          
-                            <input type="text" style="font-size: 12px;" class="form-control tanggal" id="end_date" name="end_date" 
-                            value="<?php
-                            if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['end_date'])) {
-                                echo date('Y-m-d', strtotime($_POST['end_date']));
-                                } elseif (!empty($_GET['end_date'])) {
-                                    echo date('Y-m-d', strtotime($_GET['end_date']));
-                                    } else {
-                                        echo date('Y-m-d');
-                                    }
                                 ?>" 
-                                placeholder="Tanggal Akhir" onchange="this.form.submit()">
+                                placeholder="Tanggal Awal" onchange="this.form.submit()">
                             </div>
 
+                            <div class="col-md-2 mb-3"> 
+                                <label for="end_date"><b>To</b></label>          
+                                <input type="text" style="font-size: 12px;" class="form-control tanggal" id="end_date" name="end_date" 
+                                value="<?php
+                                if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['end_date'])) {
+                                    echo date('Y-m-d', strtotime($_POST['end_date']));
+                                    } elseif (!empty($_GET['end_date'])) {
+                                        echo date('Y-m-d', strtotime($_GET['end_date']));
+                                        } else {
+                                            echo date('Y-m-d');
+                                        }
+                                        ?>" 
+                                        placeholder="Tanggal Akhir" onchange="this.form.submit()">
+                                    </div>
 
-                            <?php
-                            $nama_supp ='';
-                            $start_date ='';
-                            $end_date =''; 
-                            $bank ='';
-                            $akun ='';
-                            $status ='';
-                            $date_now = date("Y-m-d");           
+
+                                    <?php
+                                    $nama_supp ='';
+                                    $start_date ='';
+                                    $end_date =''; 
+                                    $bank ='';
+                                    $akun ='';
+                                    $status ='';
+                                    $date_now = date("Y-m-d");           
                     //  if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     //     $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
                     //     $bank = isset($_POST['bank']) ? $_POST['bank']: null;
@@ -192,106 +192,6 @@ $end_date = date("Y-m-d",strtotime($enddate));
                     // }
 
                      // Ambil semua nilai dari POST atau fallback ke GET (jika ada link lemparan)
-                            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : (isset($_GET['nama_supp']) ? $_GET['nama_supp'] : 'ALL');
-                            $bank = isset($_POST['bank']) ? $_POST['bank'] : (isset($_GET['bank']) ? $_GET['bank'] : 'ALL');
-                            $akun = isset($_POST['akun']) ? $_POST['akun'] : (isset($_GET['akun']) ? $_GET['akun'] : 'ALL');
-                            $status = isset($_POST['status']) ? $_POST['status'] : (isset($_GET['status']) ? $_GET['status'] : 'ALL');
-                            $start_date = isset($_POST['start_date']) ? date("Y-m-d", strtotime($_POST['start_date'])) :
-                            (isset($_GET['start_date']) ? date("Y-m-d", strtotime($_GET['start_date'])) : date("Y-m-d"));
-                            $end_date = isset($_POST['end_date']) ? date("Y-m-d", strtotime($_POST['end_date'])) :
-                            (isset($_GET['end_date']) ? date("Y-m-d", strtotime($_GET['end_date'])) : date("Y-m-d"));
-
-
-                            if($nama_supp == 'ALL' and $bank == 'ALL' and $akun == 'ALL' and $status == 'ALL' and $start_date == '1970-01-01' and !empty($end_date)){
-                                $where = "where bankout_date = '$date_now'";
-                            }elseif($nama_supp == 'ALL' and $bank == 'ALL' and $akun == 'ALL' and $status == 'ALL' and !empty($start_date) and !empty($end_date)){
-                                $where = "where bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp != 'ALL' and $bank == 'ALL' and $akun == 'ALL' and $status == 'ALL'){
-                                $where = "where nama_supp = '$nama_supp' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp == 'ALL' and $bank != 'ALL' and $akun == 'ALL' and $status == 'ALL'){
-                                $where = "where bank = '$bank' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp == 'ALL' and $bank == 'ALL' and $akun != 'ALL' and $status == 'ALL'){
-                                $where = "where akun = '$akun' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp == 'ALL' and $bank == 'ALL' and $akun == 'ALL' and $status != 'ALL'){
-                                $where = "where status = '$status' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp != 'ALL' and $bank != 'ALL' and $akun == 'ALL' and $status == 'ALL'){
-                                $where = "where nama_supp = '$nama_supp' and bank = '$bank' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp != 'ALL' and $bank == 'ALL' and $akun != 'ALL' and $status == 'ALL'){
-                                $where = "where nama_supp = '$nama_supp' and akun = '$akun' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp != 'ALL' and $bank == 'ALL' and $akun == 'ALL' and $status != 'ALL'){
-                                $where = "where nama_supp = '$nama_supp' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp == 'ALL' and $bank != 'ALL' and $akun != 'ALL' and $status == 'ALL'){
-                                $where = "where bank = '$bank' and akun = '$akun' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp == 'ALL' and $bank != 'ALL' and $akun == 'ALL' and $status != 'ALL'){
-                                $where = "where bank = '$bank' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp == 'ALL' and $bank == 'ALL' and $akun != 'ALL' and $status != 'ALL'){
-                                $where = "where akun = '$akun' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp != 'ALL' and $bank != 'ALL' and $akun != 'ALL' and $status == 'ALL'){
-                                $where = "where nama_supp = '$nama_supp' and bank = '$bank' and akun = '$akun' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp != 'ALL' and $bank != 'ALL' and $akun == 'ALL' and $status != 'ALL'){
-                                $where = "where nama_supp = '$nama_supp' and bank = '$bank' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp != 'ALL' and $bank == 'ALL' and $akun != 'ALL' and $status != 'ALL'){
-                                $where = "where nama_supp = '$nama_supp' and akun = '$akun' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp == 'ALL' and $bank != 'ALL' and $akun != 'ALL' and $status != 'ALL'){
-                                $where = "where bank = '$bank' and akun = '$akun' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
-                            }else{
-                              $where = "where nama_supp = '$nama_supp' and bank = '$bank' and akun = '$akun' and status = '$status' and bankout_date between '$start_date' and '$end_date'";  
-                          }
-
-                          echo '<div class="col-md-2 mb-3"> 
-                          <a style="padding-right: 10px;" target="_blank" href="ekspor_bank_out.php?where='.$where.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>
-                          </div>';
-
-                          ?>           
-                      </div>                   
-                  </div>
-              </form>
-              <?php
-              $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create Bank'");
-              $rs = mysqli_fetch_array($querys);
-              $id = isset($rs['id']) ? $rs['id'] : 0;
-
-              if($id == '37'){
-                echo '<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>';
-            }else{
-                echo '';
-            }
-            ?>
-            <div class="box body">
-                <div class="row">       
-                    <div class="col-md-12">
-                        <form id="formdata2"> 
-                            <table id="mytable" class="table table-striped table-bordered" role="grid" cellspacing="0" width="100%">
-                                <thead>
-                                    <tr class="thead-dark">
-                                        <th style="text-align: center;vertical-align: middle;width: 12%;">No Bank In</th>
-                                        <th style="text-align: center;vertical-align: middle;width: 19%;">Source</th>
-                                        <th style="text-align: center;vertical-align: middle;width: 10%;">Date</th>
-                                        <th style="text-align: center;vertical-align: middle;width: 7%;">Curreny</th>
-                                        <th style="text-align: center;vertical-align: middle;width: 15%;">Amount</th>
-                                        <th style="text-align: center;vertical-align: middle;display: none;">Outstanding</th>
-                                        <th style="text-align: center;vertical-align: middle;width: 10%;">Status</th> 
-                                        <th style="text-align: center;vertical-align: middle;width: 10%;">Approve Date</th>  
-                                        <th style="text-align: center;vertical-align: middle;display: none;">Outstanding</th>
-                                        <th style="text-align: center;vertical-align: middle;display: none;">Outstanding</th>
-                                        <th style="text-align: center;vertical-align: middle;display: none;">Outstanding</th>
-                                        <th style="text-align: center;vertical-align: middle;display: none;">Outstanding</th>        
-                                        <th style="text-align: center;vertical-align: middle;width: 17%;">Action</th>
-                                        <th style="display: none;">Pdf Rekening Koran</th>
-                                        <th style="display: none;">Pdf Rekening Koran</th> 
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    <?php
-                                    $nama_supp ='';
-                                    $start_date ='';
-                                    $end_date =''; 
-                                    $bank ='';
-                                    $akun ='';
-                                    $status ='';
-                                    $date_now = date("Y-m-d");           
-                            // Ambil semua nilai dari POST atau fallback ke GET (jika ada link lemparan)
                                     $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : (isset($_GET['nama_supp']) ? $_GET['nama_supp'] : 'ALL');
                                     $bank = isset($_POST['bank']) ? $_POST['bank'] : (isset($_GET['bank']) ? $_GET['bank'] : 'ALL');
                                     $akun = isset($_POST['akun']) ? $_POST['akun'] : (isset($_GET['akun']) ? $_GET['akun'] : 'ALL');
@@ -338,223 +238,352 @@ $end_date = date("Y-m-d",strtotime($enddate));
                                       $where = "where nama_supp = '$nama_supp' and bank = '$bank' and akun = '$akun' and status = '$status' and bankout_date between '$start_date' and '$end_date'";  
                                   }
 
+                                  echo '<div class="col-md-2 mb-3"> 
+                                  <a style="padding-right: 10px;" target="_blank" href="ekspor_bank_out.php?where='.$where.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>
+                                  </div>';
 
-                                  $sql = mysql_query(" select no_bankout,bankout_date,nama_supp,curr, amount, outstanding,IF(reff_doc = 'Payment','List Payment',reff_doc) as reff_doc, akun, bank,status,IF(deskripsi = '','-',deskripsi) as deskripsi,approve_date, if(file_name is null,'-',file_name) file_name, file_name_as from b_bankout_h a left join (select no_bankout nobankout, GROUP_CONCAT(file_name SEPARATOR '|') file_name, file_name_as from b_bankout_dok where status is null GROUP BY no_bankout) b on b.nobankout = a.no_bankout $where ",$conn1);
+                                  ?>           
+                              </div>                   
+                          </div>
+                      </form>
+                      <?php
+                      $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create Bank'");
+                      $rs = mysqli_fetch_array($querys);
+                      $id = isset($rs['id']) ? $rs['id'] : 0;
 
-                                  while($row = mysql_fetch_array($sql)){
-                                    $file_name = $row['file_name']; 
-                                    $fileList = explode('|', $row['file_name']);
+                      if($id == '37'){
+                        echo '<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>';
+                    }else{
+                        echo '';
+                    }
+                    ?>
+                    <div class="box body">
+                        <div class="row">       
+                            <div class="col-md-12">
+                                <form id="formdata2"> 
+                                    <table id="mytable" class="table table-striped table-bordered" role="grid" cellspacing="0" width="100%">
+                                        <thead>
+                                            <tr class="thead-dark">
+                                                <th style="text-align: center;vertical-align: middle;width: 12%;">No Bank In</th>
+                                                <th style="text-align: center;vertical-align: middle;width: 19%;">Source</th>
+                                                <th style="text-align: center;vertical-align: middle;width: 10%;">Date</th>
+                                                <th style="text-align: center;vertical-align: middle;width: 7%;">Curreny</th>
+                                                <th style="text-align: center;vertical-align: middle;width: 15%;">Amount</th>
+                                                <th style="text-align: center;vertical-align: middle;display: none;">Outstanding</th>
+                                                <th style="text-align: center;vertical-align: middle;width: 10%;">Status</th> 
+                                                <th style="text-align: center;vertical-align: middle;width: 10%;">Approve Date</th>  
+                                                <th style="text-align: center;vertical-align: middle;display: none;">Outstanding</th>
+                                                <th style="text-align: center;vertical-align: middle;display: none;">Outstanding</th>
+                                                <th style="text-align: center;vertical-align: middle;display: none;">Outstanding</th>
+                                                <th style="text-align: center;vertical-align: middle;display: none;">Outstanding</th>        
+                                                <th style="text-align: center;vertical-align: middle;width: 17%;">Action</th>
+                                                <th style="display: none;">Pdf Rekening Koran</th>
+                                                <th style="display: none;">Pdf Rekening Koran</th> 
+                                            </tr>
+                                        </thead>
 
-                                    $approve_date = isset($row['approve_date']) ? $row['approve_date'] : null;
+                                        <tbody>
+                                            <?php
+                                            $nama_supp ='';
+                                            $start_date ='';
+                                            $end_date =''; 
+                                            $bank ='';
+                                            $akun ='';
+                                            $status ='';
+                                            $date_now = date("Y-m-d");           
+                            // Ambil semua nilai dari POST atau fallback ke GET (jika ada link lemparan)
+                                            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : (isset($_GET['nama_supp']) ? $_GET['nama_supp'] : 'ALL');
+                                            $bank = isset($_POST['bank']) ? $_POST['bank'] : (isset($_GET['bank']) ? $_GET['bank'] : 'ALL');
+                                            $akun = isset($_POST['akun']) ? $_POST['akun'] : (isset($_GET['akun']) ? $_GET['akun'] : 'ALL');
+                                            $status = isset($_POST['status']) ? $_POST['status'] : (isset($_GET['status']) ? $_GET['status'] : 'ALL');
+                                            $start_date = isset($_POST['start_date']) ? date("Y-m-d", strtotime($_POST['start_date'])) :
+                                            (isset($_GET['start_date']) ? date("Y-m-d", strtotime($_GET['start_date'])) : date("Y-m-d"));
+                                            $end_date = isset($_POST['end_date']) ? date("Y-m-d", strtotime($_POST['end_date'])) :
+                                            (isset($_GET['end_date']) ? date("Y-m-d", strtotime($_GET['end_date'])) : date("Y-m-d"));
 
-                                    if ($approve_date == null) {
-                                     $app_date = '-'; 
-                                 }else{
-                                    $app_date = date("d-M-Y",strtotime($approve_date));
-                                }
 
-                                echo'<tr>                       
-                                <td style="width:50px; text-align : center" value="'.$row['no_bankout'].'">'.$row['no_bankout'].'</td>
-                                <td style="width:200px; text-align : center" value="'.$row['nama_supp'].'">'.$row['nama_supp'].'</td>
-                                <td style="width:100px; text-align : center" value="'.$row['bankout_date'].'">'.date("d-M-Y",strtotime($row['bankout_date'])).'</td>                                                                                             
-                                <td style="width:50px; text-align : center" value="'.$row['curr'].'">'.$row['curr'].'</td>
-                                <td style="width:50px; text-align : center" value="'.$row['amount'].'">'.number_format($row['amount'],2).'</td>
-                                <td style="width:50px; text-align : center; display: none;" value="'.$row['outstanding'].'">'.number_format($row['outstanding'],2).'</td>
-                                <td style="width:50px; text-align : center" value="'.$row['status'].'">'.$row['status'].'</td>
-                                <td style="width:50px; text-align : center" value="'.$app_date.'">'.$app_date.'</td>
-                                <td style="display: none; text-align : center" value="'.$row['reff_doc'].'">'.$row['reff_doc'].'</td>
-                                <td style="display: none; text-align : center" value="'.$row['akun'].'">'.$row['akun'].'</td> 
-                                <td style="display: none; text-align : center" value="'.$row['bank'].'">'.$row['bank'].'</td>  
-                                <td style="display: none; text-align : center" value="'.$row['deskripsi'].'">'.$row['deskripsi'].'</td>';
-                                if ($row['status'] == 'Cancel') {
-                                    echo '<td style="text-align: center;"><b><i style="color:red">Cancelled</i></b></td>';
-                                }else{
-                                    if ($file_name == '-') {
-                                        echo '<td style="width:50px;text-align : center" >
-                                        <button style="border-radius: 6px;width: 45px; height: 30px;padding-bottom: 5px;" type="button" class="btn-xs btn-warning" id="btnupdate" name="btnupdate" title="Upload Document"><i class="fa fa-cloud-upload" aria-hidden="true" ></i></button>
+                                            if($nama_supp == 'ALL' and $bank == 'ALL' and $akun == 'ALL' and $status == 'ALL' and $start_date == '1970-01-01' and !empty($end_date)){
+                                                $where = "where bankout_date = '$date_now'";
+                                            }elseif($nama_supp == 'ALL' and $bank == 'ALL' and $akun == 'ALL' and $status == 'ALL' and !empty($start_date) and !empty($end_date)){
+                                                $where = "where bankout_date between '$start_date' and '$end_date'";
+                                            }elseif($nama_supp != 'ALL' and $bank == 'ALL' and $akun == 'ALL' and $status == 'ALL'){
+                                                $where = "where nama_supp = '$nama_supp' and bankout_date between '$start_date' and '$end_date'";
+                                            }elseif($nama_supp == 'ALL' and $bank != 'ALL' and $akun == 'ALL' and $status == 'ALL'){
+                                                $where = "where bank = '$bank' and bankout_date between '$start_date' and '$end_date'";
+                                            }elseif($nama_supp == 'ALL' and $bank == 'ALL' and $akun != 'ALL' and $status == 'ALL'){
+                                                $where = "where akun = '$akun' and bankout_date between '$start_date' and '$end_date'";
+                                            }elseif($nama_supp == 'ALL' and $bank == 'ALL' and $akun == 'ALL' and $status != 'ALL'){
+                                                $where = "where status = '$status' and bankout_date between '$start_date' and '$end_date'";
+                                            }elseif($nama_supp != 'ALL' and $bank != 'ALL' and $akun == 'ALL' and $status == 'ALL'){
+                                                $where = "where nama_supp = '$nama_supp' and bank = '$bank' and bankout_date between '$start_date' and '$end_date'";
+                                            }elseif($nama_supp != 'ALL' and $bank == 'ALL' and $akun != 'ALL' and $status == 'ALL'){
+                                                $where = "where nama_supp = '$nama_supp' and akun = '$akun' and bankout_date between '$start_date' and '$end_date'";
+                                            }elseif($nama_supp != 'ALL' and $bank == 'ALL' and $akun == 'ALL' and $status != 'ALL'){
+                                                $where = "where nama_supp = '$nama_supp' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
+                                            }elseif($nama_supp == 'ALL' and $bank != 'ALL' and $akun != 'ALL' and $status == 'ALL'){
+                                                $where = "where bank = '$bank' and akun = '$akun' and bankout_date between '$start_date' and '$end_date'";
+                                            }elseif($nama_supp == 'ALL' and $bank != 'ALL' and $akun == 'ALL' and $status != 'ALL'){
+                                                $where = "where bank = '$bank' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
+                                            }elseif($nama_supp == 'ALL' and $bank == 'ALL' and $akun != 'ALL' and $status != 'ALL'){
+                                                $where = "where akun = '$akun' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
+                                            }elseif($nama_supp != 'ALL' and $bank != 'ALL' and $akun != 'ALL' and $status == 'ALL'){
+                                                $where = "where nama_supp = '$nama_supp' and bank = '$bank' and akun = '$akun' and bankout_date between '$start_date' and '$end_date'";
+                                            }elseif($nama_supp != 'ALL' and $bank != 'ALL' and $akun == 'ALL' and $status != 'ALL'){
+                                                $where = "where nama_supp = '$nama_supp' and bank = '$bank' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
+                                            }elseif($nama_supp != 'ALL' and $bank == 'ALL' and $akun != 'ALL' and $status != 'ALL'){
+                                                $where = "where nama_supp = '$nama_supp' and akun = '$akun' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
+                                            }elseif($nama_supp == 'ALL' and $bank != 'ALL' and $akun != 'ALL' and $status != 'ALL'){
+                                                $where = "where bank = '$bank' and akun = '$akun' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
+                                            }else{
+                                              $where = "where nama_supp = '$nama_supp' and bank = '$bank' and akun = '$akun' and status = '$status' and bankout_date between '$start_date' and '$end_date'";  
+                                          }
 
-                                        <a href="pdf_bankout.php?no_bankout='.$row['no_bankout'].'" target="_blank"><button style="border-radius: 6px;width: 45px; height: 30px;padding-bottom: 5px;" type="button" class="btn-xs btn-success" title="Print PDF"><i class="fa fa-file-pdf-o" aria-hidden="true" ></i></button></a>
-                                        </td>';
-                                    }else{
 
-                                        echo '<td style="width:50px;text-align : center" >
-                                        <button style="border-radius: 6px;width: 45px; height: 30px;padding-bottom: 5px;" type="button" class="btn-xs btn-warning" id="btnupdate" name="btnupdate" title="Upload Document"><i class="fa fa-cloud-upload" aria-hidden="true" ></i></button>';
+                                          $sql = mysql_query(" select no_bankout,bankout_date,nama_supp,curr, amount, outstanding,IF(reff_doc = 'Payment','List Payment',reff_doc) as reff_doc, akun, bank,status,IF(deskripsi = '','-',deskripsi) as deskripsi,approve_date, if(file_name is null,'-',file_name) file_name, file_name_as from b_bankout_h a left join (select no_bankout nobankout, GROUP_CONCAT(file_name SEPARATOR '|') file_name, file_name_as from b_bankout_dok where status is null GROUP BY no_bankout) b on b.nobankout = a.no_bankout $where ",$conn1);
 
-                                        echo '<div class="dropdown d-inline">
-                                        <button class="btn btn-xs btn-success dropdown-toggle" type="button" style="padding-right:2px; width: 45px; height: 30px;" id="dropdownMenuButton' . $row['id'] . '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Print PDF">
-                                        <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
-                                        </button>
-                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton' . $row['id'] . '">';
+                                          while($row = mysql_fetch_array($sql)){
+                                            $file_name = $row['file_name']; 
+                                            $fileList = explode('|', $row['file_name']);
 
-                                        echo '<a class="dropdown-item" href="pdf_bankout.php?no_bankout=' . $row['no_bankout'] . '" target="_blank">
-                                        <i class="fa fa-print" aria-hidden="true"></i> PDF Bank Out
-                                        </a>';
-                                        echo '<div class="dropdown-divider"></div>';
+                                            $approve_date = isset($row['approve_date']) ? $row['approve_date'] : null;
 
-                                        foreach ($fileList as $index => $file) {
-                                            $file = trim($file);
-                                            if (!empty($file)) {
-                                                echo '<a class="dropdown-item" href="file_pdf/bank_out/' . $file . '" target="_blank">
-                                                <i class="fa fa-file-pdf-o" aria-hidden="true"></i> PDF Document ' . ($index + 1) . '
-                                                </a>';
-                                            }
+                                            if ($approve_date == null) {
+                                               $app_date = '-'; 
+                                           }else{
+                                            $app_date = date("d-M-Y",strtotime($approve_date));
                                         }
 
-                                        echo '</div>
-                                        </div>';
+                                        echo'<tr>                       
+                                        <td style="width:50px; text-align : center" value="'.$row['no_bankout'].'">'.$row['no_bankout'].'</td>
+                                        <td style="width:200px; text-align : center" value="'.$row['nama_supp'].'">'.$row['nama_supp'].'</td>
+                                        <td style="width:100px; text-align : center" value="'.$row['bankout_date'].'">'.date("d-M-Y",strtotime($row['bankout_date'])).'</td>                                                                                             
+                                        <td style="width:50px; text-align : center" value="'.$row['curr'].'">'.$row['curr'].'</td>
+                                        <td style="width:50px; text-align : center" value="'.$row['amount'].'">'.number_format($row['amount'],2).'</td>
+                                        <td style="width:50px; text-align : center; display: none;" value="'.$row['outstanding'].'">'.number_format($row['outstanding'],2).'</td>
+                                        <td style="width:50px; text-align : center" value="'.$row['status'].'">'.$row['status'].'</td>
+                                        <td style="width:50px; text-align : center" value="'.$app_date.'">'.$app_date.'</td>
+                                        <td style="display: none; text-align : center" value="'.$row['reff_doc'].'">'.$row['reff_doc'].'</td>
+                                        <td style="display: none; text-align : center" value="'.$row['akun'].'">'.$row['akun'].'</td> 
+                                        <td style="display: none; text-align : center" value="'.$row['bank'].'">'.$row['bank'].'</td>  
+                                        <td style="display: none; text-align : center" value="'.$row['deskripsi'].'">'.$row['deskripsi'].'</td>';
+                                        if ($row['status'] == 'Cancel') {
+                                            echo '<td style="text-align: center;"><b><i style="color:red">Cancelled</i></b></td>';
+                                        }else{
+                                            if ($file_name == '-') {
+                                                echo '<td style="width:50px;text-align : center" >
+                                                <button style="border-radius: 6px;width: 45px; height: 30px;padding-bottom: 5px;" type="button" class="btn-xs btn-info" id="btnupdate" name="btnupdate" title="Upload Document"><i class="fa fa-cloud-upload" aria-hidden="true" ></i></button>
 
-                                        echo '<div class="dropdown d-inline">
-                                        <button class="btn btn-danger btn-xs dropdown-toggle" type="button" id="deleteDropdown' . $row['id'] . '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="width: 45px; height: 30px;" title="Delete Document">
-                                        <i class="fa fa-trash" aria-hidden="true"></i>
-                                        </button>
-                                        <div class="dropdown-menu" aria-labelledby="deleteDropdown' . $row['id'] . '">';
+                                                <a href="pdf_bankout.php?no_bankout='.$row['no_bankout'].'" target="_blank"><button style="border-radius: 6px;width: 45px; height: 30px;padding-bottom: 5px;" type="button" class="btn-xs btn-success" title="Print PDF"><i class="fa fa-file-pdf-o" aria-hidden="true" ></i></button></a>';
+                                                if ($row['status'] == 'Draft' and $row['reff_doc'] == 'None') {
+                                                    echo '<button 
+                                                    type="button" 
+                                                    class="btn-xs btn-warning edit-none" 
+                                                    data-bank="'.$row['no_bankout'].'" 
+                                                    style="border-radius: 6px;width: 45px; height: 30px;padding-bottom: 5px; margin-left: 2px;padding-top: 2px;" title="Edit">
+                                                    <i class="fa fa-pencil-square-o" aria-hidden="true" ></i>
+                                                    </button>';
+                                                }elseif ($row['status'] == 'Draft' and $row['reff_doc'] == 'Payment Voucher') {
+                                                    echo '<button 
+                                                    type="button" 
+                                                    class="btn-xs btn-warning edit-pv" 
+                                                    data-bank="'.$row['no_bankout'].'" 
+                                                    style="border-radius: 6px;width: 45px; height: 30px;padding-bottom: 5px; margin-left: 2px;padding-top: 2px;" title="Edit">
+                                                    <i class="fa fa-pencil-square-o" aria-hidden="true" ></i>
+                                                    </button>';
+                                                }
+                                                echo'</td>';
+                                            }else{
 
-                                        foreach ($fileList as $index => $file) {
-                                            $file = trim($file);
-                                            if (!empty($file)) {
-                                                echo '<a class="dropdown-item text-danger delete-pdf-item" href="#" 
-                                                data-noreq="' . $row['no_bankout'] . '" 
-                                                data-filename="' . $file . '">
-                                                <i class="fa fa-print" aria-hidden="true"></i> Delete Document ' . ($index + 1) . '
+                                                echo '<td style="width:50px;text-align : center" >
+                                                <button style="border-radius: 6px;width: 45px; height: 30px;padding-bottom: 5px;" type="button" class="btn-xs btn-info" id="btnupdate" name="btnupdate" title="Upload Document"><i class="fa fa-cloud-upload" aria-hidden="true" ></i></button>';
+
+                                                echo '<div class="dropdown d-inline">
+                                                <button class="btn btn-xs btn-success dropdown-toggle" type="button" style="padding-right:2px; width: 45px; height: 30px;" id="dropdownMenuButton' . $row['id'] . '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Print PDF">
+                                                <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
+                                                </button>';
+
+                                                if ($row['status'] == 'Draft' and $row['reff_doc'] == 'None') {
+                                                    echo '<button 
+                                                    type="button" 
+                                                    class="btn-xs btn-warning edit-none" 
+                                                    data-bank="'.$row['no_bankout'].'" 
+                                                    style="border-radius: 6px;width: 45px; height: 30px;padding-bottom: 5px; margin-left: 2px;padding-top: 2px;" title="Edit">
+                                                    <i class="fa fa-pencil-square-o" aria-hidden="true" ></i>
+                                                    </button>';
+                                                }
+
+                                                echo '<div class="dropdown-menu" aria-labelledby="dropdownMenuButton' . $row['id'] . '">';
+
+                                                echo '<a class="dropdown-item" href="pdf_bankout.php?no_bankout=' . $row['no_bankout'] . '" target="_blank">
+                                                <i class="fa fa-print" aria-hidden="true"></i> PDF Bank Out
                                                 </a>';
+
+                                                echo '<div class="dropdown-divider"></div>';
+
+                                                foreach ($fileList as $index => $file) {
+                                                    $file = trim($file);
+                                                    if (!empty($file)) {
+                                                        echo '<a class="dropdown-item" href="file_pdf/bank_out/' . $file . '" target="_blank">
+                                                        <i class="fa fa-file-pdf-o" aria-hidden="true"></i> PDF Document ' . ($index + 1) . '
+                                                        </a>';
+                                                    }
+                                                }
+
+                                                echo '</div>
+                                                </div>';
+
+                                                echo '<div class="dropdown d-inline">
+                                                <button class="btn btn-danger btn-xs dropdown-toggle" type="button" id="deleteDropdown' . $row['id'] . '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="width: 45px; height: 30px;" title="Delete Document">
+                                                <i class="fa fa-trash" aria-hidden="true"></i>
+                                                </button>
+                                                <div class="dropdown-menu" aria-labelledby="deleteDropdown' . $row['id'] . '">';
+
+                                                foreach ($fileList as $index => $file) {
+                                                    $file = trim($file);
+                                                    if (!empty($file)) {
+                                                        echo '<a class="dropdown-item text-danger delete-pdf-item" href="#" 
+                                                        data-noreq="' . $row['no_bankout'] . '" 
+                                                        data-filename="' . $file . '">
+                                                        <i class="fa fa-print" aria-hidden="true"></i> Delete Document ' . ($index + 1) . '
+                                                        </a>';
+                                                    }
+                                                }
+
+                                                echo '</div></div>';
+                                                echo'
+                                                <button style="border-radius: 6px;padding-left:2px;width: 45px; height: 30px;padding-bottom: 5px;" type="button" class="btn-xs btn-primary" id="btnshow" name="btnshow" title="Show Document"><i class="fa fa-eye" aria-hidden="true"></i></button>
+                                                </td>';
                                             }
-                                        }
 
-                                        echo '</div></div>';
-                                        echo'
-                                        <button style="border-radius: 6px;padding-left:2px;width: 45px; height: 30px;padding-bottom: 5px;" type="button" class="btn-xs btn-info" id="btnshow" name="btnshow" title="Show Document"><i class="fa fa-eye" aria-hidden="true"></i></button>
-                                        </td>';
-                                    }
-
-                                }                                                                                  
-                                    echo '<td style="display: none;" value = "'.$row['file_name'].'">'.$row['file_name'].'</td>
-                                    <td style="display: none;" value = "'.$row['file_name_as'].'">'.$row['file_name_as'].'</td>';
-                                echo '</tr>';
+                                        }                                                                                  
+                                        echo '<td style="display: none;" value = "'.$row['file_name'].'">'.$row['file_name'].'</td>
+                                        <td style="display: none;" value = "'.$row['file_name_as'].'">'.$row['file_name_as'].'</td>';
+                                        echo '</tr>';
 
 
-                            } ?>
-                        </tbody>
-                    </table>  
-                </form>
-            </div> 
-        </div>                  
+                                    } ?>
+                                </tbody>
+                            </table>  
+                        </form>
+                    </div> 
+                </div>                  
 
-        <div class="modal fade" id="mymodal" data-target="#mymodal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                        <h4 class="modal-title" id="txt_bpb"></h4>
-                    </div>
-                    <div class="container">
-                        <div class="row">
-                            <div id="txt_tglbpb" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                            <div id="txt_no_po" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                            <div id="txt_supp" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                            <div id="txt_top" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>         
-                            <div id="txt_curr" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                            <div id="txt_confirm" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                            <div id="txt_tgl_po" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>                     
-                            <div id="details" class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;"></div>          
+                <div class="modal fade" id="mymodal" data-target="#mymodal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
+                                <h4 class="modal-title" id="txt_bpb"></h4>
+                            </div>
+                            <div class="container">
+                                <div class="row">
+                                    <div id="txt_tglbpb" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+                                    <div id="txt_no_po" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+                                    <div id="txt_supp" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+                                    <div id="txt_top" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>         
+                                    <div id="txt_curr" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+                                    <div id="txt_confirm" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+                                    <div id="txt_tgl_po" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>                     
+                                    <div id="details" class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;"></div>          
+                                </div>
+                            </div>
                         </div>
+                        <!-- /.modal-content --> 
                     </div>
-                </div>
-                <!-- /.modal-content --> 
-            </div>
-            <!-- /.modal-dialog --> 
-        </div>                            
+                    <!-- /.modal-dialog --> 
+                </div>                            
 
-        <div class="box footer">   
-            <form id="form-simpan">
-                <div class="form-row col">
-                    <div class="col-md-4 mb-2">
-                        <h4><i>Total</i></h4>
-                        <table >
-                            <?php
-                            $nama_supp ='';
-                            $start_date ='';
-                            $end_date =''; 
-                            $bank ='';
-                            $akun ='';
-                            $status ='';
-                            $date_now = date("Y-m-d");           
+                <div class="box footer">   
+                    <form id="form-simpan">
+                        <div class="form-row col">
+                            <div class="col-md-4 mb-2">
+                                <h4><i>Total</i></h4>
+                                <table >
+                                    <?php
+                                    $nama_supp ='';
+                                    $start_date ='';
+                                    $end_date =''; 
+                                    $bank ='';
+                                    $akun ='';
+                                    $status ='';
+                                    $date_now = date("Y-m-d");           
                     // Ambil semua nilai dari POST atau fallback ke GET (jika ada link lemparan)
-                            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : (isset($_GET['nama_supp']) ? $_GET['nama_supp'] : 'ALL');
-                            $bank = isset($_POST['bank']) ? $_POST['bank'] : (isset($_GET['bank']) ? $_GET['bank'] : 'ALL');
-                            $akun = isset($_POST['akun']) ? $_POST['akun'] : (isset($_GET['akun']) ? $_GET['akun'] : 'ALL');
-                            $status = isset($_POST['status']) ? $_POST['status'] : (isset($_GET['status']) ? $_GET['status'] : 'ALL');
-                            $start_date = isset($_POST['start_date']) ? date("Y-m-d", strtotime($_POST['start_date'])) :
-                            (isset($_GET['start_date']) ? date("Y-m-d", strtotime($_GET['start_date'])) : date("Y-m-d"));
-                            $end_date = isset($_POST['end_date']) ? date("Y-m-d", strtotime($_POST['end_date'])) :
-                            (isset($_GET['end_date']) ? date("Y-m-d", strtotime($_GET['end_date'])) : date("Y-m-d"));
+                                    $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : (isset($_GET['nama_supp']) ? $_GET['nama_supp'] : 'ALL');
+                                    $bank = isset($_POST['bank']) ? $_POST['bank'] : (isset($_GET['bank']) ? $_GET['bank'] : 'ALL');
+                                    $akun = isset($_POST['akun']) ? $_POST['akun'] : (isset($_GET['akun']) ? $_GET['akun'] : 'ALL');
+                                    $status = isset($_POST['status']) ? $_POST['status'] : (isset($_GET['status']) ? $_GET['status'] : 'ALL');
+                                    $start_date = isset($_POST['start_date']) ? date("Y-m-d", strtotime($_POST['start_date'])) :
+                                    (isset($_GET['start_date']) ? date("Y-m-d", strtotime($_GET['start_date'])) : date("Y-m-d"));
+                                    $end_date = isset($_POST['end_date']) ? date("Y-m-d", strtotime($_POST['end_date'])) :
+                                    (isset($_GET['end_date']) ? date("Y-m-d", strtotime($_GET['end_date'])) : date("Y-m-d"));
 
 
-                            if($nama_supp == 'ALL' and $bank == 'ALL' and $akun == 'ALL' and $status == 'ALL' and empty($start_date) and empty($end_date)){
-                                $where = "where bankout_date = '$date_now'";
-                            }elseif($nama_supp == 'ALL' and $bank == 'ALL' and $akun == 'ALL' and $status == 'ALL' and !empty($start_date) and !empty($end_date)){
-                                $where = "where bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp != 'ALL' and $bank == 'ALL' and $akun == 'ALL' and $status == 'ALL'){
-                                $where = "where nama_supp = '$nama_supp' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp == 'ALL' and $bank != 'ALL' and $akun == 'ALL' and $status == 'ALL'){
-                                $where = "where bank = '$bank' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp == 'ALL' and $bank == 'ALL' and $akun != 'ALL' and $status == 'ALL'){
-                                $where = "where akun = '$akun' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp == 'ALL' and $bank == 'ALL' and $akun == 'ALL' and $status != 'ALL'){
-                                $where = "where status = '$status' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp != 'ALL' and $bank != 'ALL' and $akun == 'ALL' and $status == 'ALL'){
-                                $where = "where nama_supp = '$nama_supp' and bank = '$bank' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp != 'ALL' and $bank == 'ALL' and $akun != 'ALL' and $status == 'ALL'){
-                                $where = "where nama_supp = '$nama_supp' and akun = '$akun' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp != 'ALL' and $bank == 'ALL' and $akun == 'ALL' and $status != 'ALL'){
-                                $where = "where nama_supp = '$nama_supp' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp == 'ALL' and $bank != 'ALL' and $akun != 'ALL' and $status == 'ALL'){
-                                $where = "where bank = '$bank' and akun = '$akun' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp == 'ALL' and $bank != 'ALL' and $akun == 'ALL' and $status != 'ALL'){
-                                $where = "where bank = '$bank' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp == 'ALL' and $bank == 'ALL' and $akun != 'ALL' and $status != 'ALL'){
-                                $where = "where akun = '$akun' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp != 'ALL' and $bank != 'ALL' and $akun != 'ALL' and $status == 'ALL'){
-                                $where = "where nama_supp = '$nama_supp' and bank = '$bank' and akun = '$akun' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp != 'ALL' and $bank != 'ALL' and $akun == 'ALL' and $status != 'ALL'){
-                                $where = "where nama_supp = '$nama_supp' and bank = '$bank' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp != 'ALL' and $bank == 'ALL' and $akun != 'ALL' and $status != 'ALL'){
-                                $where = "where nama_supp = '$nama_supp' and akun = '$akun' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
-                            }elseif($nama_supp == 'ALL' and $bank != 'ALL' and $akun != 'ALL' and $status != 'ALL'){
-                                $where = "where bank = '$bank' and akun = '$akun' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
-                            }else{
-                              $where = "where nama_supp = '$nama_supp' and bank = '$bank' and akun = '$akun' and status = '$status' and bankout_date between '$start_date' and '$end_date'";  
-                          }
+                                    if($nama_supp == 'ALL' and $bank == 'ALL' and $akun == 'ALL' and $status == 'ALL' and empty($start_date) and empty($end_date)){
+                                        $where = "where bankout_date = '$date_now'";
+                                    }elseif($nama_supp == 'ALL' and $bank == 'ALL' and $akun == 'ALL' and $status == 'ALL' and !empty($start_date) and !empty($end_date)){
+                                        $where = "where bankout_date between '$start_date' and '$end_date'";
+                                    }elseif($nama_supp != 'ALL' and $bank == 'ALL' and $akun == 'ALL' and $status == 'ALL'){
+                                        $where = "where nama_supp = '$nama_supp' and bankout_date between '$start_date' and '$end_date'";
+                                    }elseif($nama_supp == 'ALL' and $bank != 'ALL' and $akun == 'ALL' and $status == 'ALL'){
+                                        $where = "where bank = '$bank' and bankout_date between '$start_date' and '$end_date'";
+                                    }elseif($nama_supp == 'ALL' and $bank == 'ALL' and $akun != 'ALL' and $status == 'ALL'){
+                                        $where = "where akun = '$akun' and bankout_date between '$start_date' and '$end_date'";
+                                    }elseif($nama_supp == 'ALL' and $bank == 'ALL' and $akun == 'ALL' and $status != 'ALL'){
+                                        $where = "where status = '$status' and bankout_date between '$start_date' and '$end_date'";
+                                    }elseif($nama_supp != 'ALL' and $bank != 'ALL' and $akun == 'ALL' and $status == 'ALL'){
+                                        $where = "where nama_supp = '$nama_supp' and bank = '$bank' and bankout_date between '$start_date' and '$end_date'";
+                                    }elseif($nama_supp != 'ALL' and $bank == 'ALL' and $akun != 'ALL' and $status == 'ALL'){
+                                        $where = "where nama_supp = '$nama_supp' and akun = '$akun' and bankout_date between '$start_date' and '$end_date'";
+                                    }elseif($nama_supp != 'ALL' and $bank == 'ALL' and $akun == 'ALL' and $status != 'ALL'){
+                                        $where = "where nama_supp = '$nama_supp' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
+                                    }elseif($nama_supp == 'ALL' and $bank != 'ALL' and $akun != 'ALL' and $status == 'ALL'){
+                                        $where = "where bank = '$bank' and akun = '$akun' and bankout_date between '$start_date' and '$end_date'";
+                                    }elseif($nama_supp == 'ALL' and $bank != 'ALL' and $akun == 'ALL' and $status != 'ALL'){
+                                        $where = "where bank = '$bank' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
+                                    }elseif($nama_supp == 'ALL' and $bank == 'ALL' and $akun != 'ALL' and $status != 'ALL'){
+                                        $where = "where akun = '$akun' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
+                                    }elseif($nama_supp != 'ALL' and $bank != 'ALL' and $akun != 'ALL' and $status == 'ALL'){
+                                        $where = "where nama_supp = '$nama_supp' and bank = '$bank' and akun = '$akun' and bankout_date between '$start_date' and '$end_date'";
+                                    }elseif($nama_supp != 'ALL' and $bank != 'ALL' and $akun == 'ALL' and $status != 'ALL'){
+                                        $where = "where nama_supp = '$nama_supp' and bank = '$bank' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
+                                    }elseif($nama_supp != 'ALL' and $bank == 'ALL' and $akun != 'ALL' and $status != 'ALL'){
+                                        $where = "where nama_supp = '$nama_supp' and akun = '$akun' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
+                                    }elseif($nama_supp == 'ALL' and $bank != 'ALL' and $akun != 'ALL' and $status != 'ALL'){
+                                        $where = "where bank = '$bank' and akun = '$akun' and status = '$status' and bankout_date between '$start_date' and '$end_date'";
+                                    }else{
+                                      $where = "where nama_supp = '$nama_supp' and bank = '$bank' and akun = '$akun' and status = '$status' and bankout_date between '$start_date' and '$end_date'";  
+                                  }
 
-                          $jml = 0;
-                          $akun = 0;
-                          $sql = mysql_query("select sum(amount) as nominal, sum(outstanding) as outstanding from b_bankout_h $where",$conn1);
+                                  $jml = 0;
+                                  $akun = 0;
+                                  $sql = mysql_query("select sum(amount) as nominal, sum(outstanding) as outstanding from b_bankout_h $where",$conn1);
 
-                          $row = mysql_fetch_array($sql);                                                  
-                          $jml += $row['nominal'];
-                          $akun += $row['outstanding'];
-
-
-                          echo'<tr>   
-
-                          <th style="text-align: left;vertical-align: middle;">Amount</th>
-                          <th style="text-align: left;vertical-align: middle;"> </th>
-                          <th style="text-align: center;vertical-align: middle;"><input style="border: 3px solid #555; text-align: center; border-radius: 8px;" value = "'.number_format($jml,2).'" readonly></th>                                                                                                                                                                       
-                          </tr>';
+                                  $row = mysql_fetch_array($sql);                                                  
+                                  $jml += $row['nominal'];
+                                  $akun += $row['outstanding'];
 
 
-                          ?>
-                      </table>
-                  </div>
-              </div>                                   
-          </form>
+                                  echo'<tr>   
 
-      </div>  
+                                  <th style="text-align: left;vertical-align: middle;">Amount</th>
+                                  <th style="text-align: left;vertical-align: middle;"> </th>
+                                  <th style="text-align: center;vertical-align: middle;"><input style="border: 3px solid #555; text-align: center; border-radius: 8px;" value = "'.number_format($jml,2).'" readonly></th>                                                                                                                                                                       
+                                  </tr>';
 
-  </div><!-- body-row END -->
-</div>
-</div>
 
-<div class="form-row">
+                                  ?>
+                              </table>
+                          </div>
+                      </div>                                   
+                  </form>
+
+              </div>  
+
+          </div><!-- body-row END -->
+      </div>
+  </div>
+
+  <div class="form-row">
     <div class="modal fade" id="mymodal2" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -627,6 +656,9 @@ $end_date = date("Y-m-d",strtotime($enddate));
 <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/select2.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
+
 
 <script>
   // Hide submenus
@@ -660,15 +692,84 @@ function SidebarCollapse () {
 </script>
 
 <script>
-$(document).ready(function() {
-    try {
-        $('#mytable').DataTable();
-    } catch (e) {
-        console.error("DataTable error:", e);
-    }
+    $(document).ready(function() {
+        try {
+            $('#mytable').DataTable();
+        } catch (e) {
+            console.error("DataTable error:", e);
+        }
 
     // Tooltip init
     $("[data-toggle=tooltip]").tooltip();
+});
+</script>
+
+<script type="text/javascript">
+    $(document).on("click", ".edit-none", function() {
+        let doc_num = $(this).data("bank");
+        // var closing = $(this).closest('tr').find('td:eq(13)').attr('value');
+        var closing = 'Open';
+    // alert(no_kbon + ' ' + closing);
+    let encodedDocNum = btoa(doc_num); // sama dengan base64_encode di PHP
+
+    if (closing == 'Open') {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You are about to edit this document.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, edit it!",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "form_edit_bank_out_none.php?doc_num=" + encodedDocNum;
+            // window.open("form_edit_bank_in_none.php?doc_num=" + encodedDocNum, "_blank");
+        }
+    });
+    }else{
+        Swal.fire({
+            icon: "error",
+            title: "Sorry!",
+            text: "The Bank period has already been closed.",
+            confirmButtonText: "OK"
+        });
+
+    }
+
+});
+
+
+    $(document).on("click", ".edit-pv", function() {
+        let doc_num = $(this).data("bank");
+        // var closing = $(this).closest('tr').find('td:eq(13)').attr('value');
+        var closing = 'Open';
+    // alert(no_kbon + ' ' + closing);
+    let encodedDocNum = btoa(doc_num); // sama dengan base64_encode di PHP
+
+    if (closing == 'Open') {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You are about to edit this document.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, edit it!",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "form_edit_bank_out_pv.php?doc_num=" + encodedDocNum;
+            // window.open("form_edit_bank_in_none.php?doc_num=" + encodedDocNum, "_blank");
+        }
+    });
+    }else{
+        Swal.fire({
+            icon: "error",
+            title: "Sorry!",
+            text: "The Bank period has already been closed.",
+            confirmButtonText: "OK"
+        });
+
+    }
+
 });
 </script>
 
@@ -927,9 +1028,9 @@ $(document).ready(function(){
 
                 },
                 error:  function (xhr, ajaxOptions, thrownError) {
-                 alert(xhr);
-             }
-         });
+                   alert(xhr);
+               }
+           });
         });
         if(document.querySelectorAll("input[name='select[]']:checked").length >= 1){
             alert("Data saved successfully");

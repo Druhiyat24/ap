@@ -1024,8 +1024,8 @@ if (headerPC) {
                                 title: "Success",
                                 text: "Data has been successfully updated!"
                             }).then(() => {
-                                // window.location.href = "bank-in.php";
-                                window.location.reload();
+                                window.location.href = "bank-in.php";
+                                // window.location.reload();
                             });
                         } else {
                             Swal.fire("Error", res, "error");

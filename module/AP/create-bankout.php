@@ -784,10 +784,10 @@
                 <input type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete='off'> 
             </td>
             <td>
-                <input type="number" min="0" style="text-align: right;" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off">
+                <input type="text" min="0" style="text-align: right;" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off">
             </td>
             <td>
-                <input type="number" min="0" style="text-align: right;" style="font-size: 12px;" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_cre(value)" autocomplete = "off">
+                <input type="text" min="0" style="text-align: right;" style="font-size: 12px;" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_cre(value)" autocomplete = "off">
             </td>
             <td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""/></td>
         </tr>
