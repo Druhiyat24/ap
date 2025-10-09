@@ -390,6 +390,14 @@ $end_date = date("Y-m-d",strtotime($enddate));
                                                     style="border-radius: 6px;width: 45px; height: 30px;padding-bottom: 5px; margin-left: 2px;padding-top: 2px;" title="Edit">
                                                     <i class="fa fa-pencil-square-o" aria-hidden="true" ></i>
                                                     </button>';
+                                                }elseif ($row['status'] == 'Draft' and $row['reff_doc'] == 'List Payment') {
+                                                    echo '<button 
+                                                    type="button" 
+                                                    class="btn-xs btn-warning edit-lp" 
+                                                    data-bank="'.$row['no_bankout'].'" 
+                                                    style="border-radius: 6px;width: 45px; height: 30px;padding-bottom: 5px; margin-left: 2px;padding-top: 2px;" title="Edit">
+                                                    <i class="fa fa-pencil-square-o" aria-hidden="true" ></i>
+                                                    </button>';
                                                 }
                                                 echo'</td>';
                                             }else{
@@ -757,6 +765,40 @@ function SidebarCollapse () {
         }).then((result) => {
             if (result.isConfirmed) {
                 window.location.href = "form_edit_bank_out_pv.php?doc_num=" + encodedDocNum;
+            // window.open("form_edit_bank_in_none.php?doc_num=" + encodedDocNum, "_blank");
+        }
+    });
+    }else{
+        Swal.fire({
+            icon: "error",
+            title: "Sorry!",
+            text: "The Bank period has already been closed.",
+            confirmButtonText: "OK"
+        });
+
+    }
+
+});
+
+
+    $(document).on("click", ".edit-lp", function() {
+        let doc_num = $(this).data("bank");
+        // var closing = $(this).closest('tr').find('td:eq(13)').attr('value');
+        var closing = 'Open';
+    // alert(no_kbon + ' ' + closing);
+    let encodedDocNum = btoa(doc_num); // sama dengan base64_encode di PHP
+
+    if (closing == 'Open') {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You are about to edit this document.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, edit it!",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "form_edit_bank_out_lp.php?doc_num=" + encodedDocNum;
             // window.open("form_edit_bank_in_none.php?doc_num=" + encodedDocNum, "_blank");
         }
     });
