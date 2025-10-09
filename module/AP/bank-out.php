@@ -418,6 +418,22 @@ $end_date = date("Y-m-d",strtotime($enddate));
                                                     style="border-radius: 6px;width: 45px; height: 30px;padding-bottom: 5px; margin-left: 2px;padding-top: 2px;" title="Edit">
                                                     <i class="fa fa-pencil-square-o" aria-hidden="true" ></i>
                                                     </button>';
+                                                }elseif ($row['status'] == 'Draft' and $row['reff_doc'] == 'Payment Voucher') {
+                                                    echo '<button 
+                                                    type="button" 
+                                                    class="btn-xs btn-warning edit-pv" 
+                                                    data-bank="'.$row['no_bankout'].'" 
+                                                    style="border-radius: 6px;width: 45px; height: 30px;padding-bottom: 5px; margin-left: 2px;padding-top: 2px;" title="Edit">
+                                                    <i class="fa fa-pencil-square-o" aria-hidden="true" ></i>
+                                                    </button>';
+                                                }elseif ($row['status'] == 'Draft' and $row['reff_doc'] == 'List Payment') {
+                                                    echo '<button 
+                                                    type="button" 
+                                                    class="btn-xs btn-warning edit-lp" 
+                                                    data-bank="'.$row['no_bankout'].'" 
+                                                    style="border-radius: 6px;width: 45px; height: 30px;padding-bottom: 5px; margin-left: 2px;padding-top: 2px;" title="Edit">
+                                                    <i class="fa fa-pencil-square-o" aria-hidden="true" ></i>
+                                                    </button>';
                                                 }
 
                                                 echo '<div class="dropdown-menu" aria-labelledby="dropdownMenuButton' . $row['id'] . '">';
