@@ -597,7 +597,7 @@ function ubahtanggal(value) {
 
 
 
-$(document).on('change', '.prof_ctr', function () {
+$(document).on('change', '.nomor_profit', function () {
     const selectedProfCtr = $(this).val();
     const row = $(this).closest('tr'); 
     const selectedCoa = row.find('select.no_coa').val() || '-';
@@ -607,10 +607,10 @@ $(document).on('change', '.prof_ctr', function () {
     updateCostCenter(selectedProfCtr, selectedCoa, row);
 });
 
-$(document).on('change', '.no_coa', function () {
+$(document).on('change', '.nomor_coa', function () {
     const selectedCoa = $(this).val();
     const row = $(this).closest('tr'); 
-    const selectedProfCtr = row.find('select.prof_ctr').val() || '-';
+    const selectedProfCtr = row.find('select.nomor_profit').val() || '-';
     // console.log("row:", row.html());
     // console.log("no_coa element:", row.find('.no_coa'));
     // console.log("selectedCoa:", selectedCoa);
@@ -621,7 +621,7 @@ $(document).on('change', '.no_coa', function () {
 
 // Fungsi reusable untuk isi dropdown Cost Center berdasarkan Profit Center
 function updateCostCenter(profCtr, noCoa, row) {
-    const costCtrDropdown = $(row).find('.cost_ctr'); // dropdown cost center pada baris tsb
+    const costCtrDropdown = $(row).find('.nomor_coc'); // dropdown cost center pada baris tsb
 
     // Kosongkan dropdown cost_ctr sebelum diisi
     costCtrDropdown.selectpicker('destroy');  // Hancurkan selectpicker lama
