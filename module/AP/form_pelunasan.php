@@ -436,36 +436,36 @@
         <div class="form-group">
             <label><b>List Payment Date</b></label>
             <div class="d-flex align-items-center gap-2">
-               <input type="text" style="font-size: 14px;" class="form-control form-control-sm tanggal3" id="start_date" name="start_date" 
-               value="<?php
-               $start_date ='';
-               if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                  $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-              }
-              if(!empty($_POST['start_date'])) {
-                echo $_POST['start_date'];
-            }
-            else{
-                echo date("d-m-Y");
-            } ?>" 
-            placeholder="Tanggal Awal">
-
-            <span class="mx-2">-</span>
-
-            <input type="text" style="font-size: 14px;" class="form-control form-control-sm tanggal3" id="end_date" name="end_date" 
-            value="<?php
-            $end_date ='';
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-              $end_date = date("Y-m-d",strtotime($_POST['start_date']));
+             <input type="text" style="font-size: 14px;" class="form-control form-control-sm tanggal3" id="start_date" name="start_date" 
+             value="<?php
+             $start_date ='';
+             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+              $start_date = date("Y-m-d",strtotime($_POST['start_date']));
           }
-          if(!empty($_POST['end_date'])) {
-            echo $_POST['end_date'];
+          if(!empty($_POST['start_date'])) {
+            echo $_POST['start_date'];
         }
         else{
             echo date("d-m-Y");
         } ?>" 
-        placeholder="Tanggal Akhir">
-    </div>
+        placeholder="Tanggal Awal">
+
+        <span class="mx-2">-</span>
+
+        <input type="text" style="font-size: 14px;" class="form-control form-control-sm tanggal3" id="end_date" name="end_date" 
+        value="<?php
+        $end_date ='';
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+          $end_date = date("Y-m-d",strtotime($_POST['start_date']));
+      }
+      if(!empty($_POST['end_date'])) {
+        echo $_POST['end_date'];
+    }
+    else{
+        echo date("d-m-Y");
+    } ?>" 
+    placeholder="Tanggal Akhir">
+</div>
 </div>
 
 </form>
@@ -609,13 +609,55 @@ $(document).on('change', '.nomor_profit', function () {
 
 $(document).on('change', '.nomor_coa', function () {
     const selectedCoa = $(this).val();
+    const TextCoa = $(this).find('option:selected').text().trim();
     const row = $(this).closest('tr'); 
     const selectedProfCtr = row.find('select.nomor_profit').val() || '-';
     // console.log("row:", row.html());
     // console.log("no_coa element:", row.find('.no_coa'));
     // console.log("selectedCoa:", selectedCoa);
     updateCostCenter(selectedProfCtr, selectedCoa, row);
+
+    if (selectedCoa != '') {
+        if (TextCoa.toUpperCase().includes('UANG MUKA PEMBELIAN')) {
+            updateReffDoc(selectedCoa, row);
+        } else {
+            const existing = row.find('.reff_doc');
+            if (existing.prop('tagName') !== 'INPUT') {
+                existing.replaceWith('<input style="font-size: 12px;width: 150px;" type="text" class="form-control reff_doc" name="reff_doc[]" placeholder="" autocomplete="off">');
+            }
+        }
+    }
+
 });
+
+
+$(document).on('change', '.reff_doc', function () {
+    const selectedno_bk = $(this).val();
+    const row = $(this).closest('tr');
+
+    if (selectedno_bk !== '') {
+        $.ajax({
+            url: 'ajax_get_reff_date.php',
+            type: 'POST',
+            data: { no_bankout: selectedno_bk },
+            dataType: 'json',
+            success: function (response) {
+                if (response && response.tanggal) {
+                    // isi input .reff_date di baris yang sama
+                    row.find('.reff_date').val(response.tanggal);
+                } else {
+                    row.find('.reff_date').val('');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Error AJAX:', error);
+            }
+        });
+    } else {
+        row.find('.reff_date').val('');
+    }
+});
+
 
 
 
@@ -659,6 +701,48 @@ function updateCostCenter(profCtr, noCoa, row) {
         costCtrDropdown.selectpicker('refresh');
     }
 }
+
+
+function updateReffDoc(selectedCoa, row) {
+    // alert(selectedCoa);
+    $.ajax({
+        url: 'ajax_get_reff_doc.php',
+        type: 'POST',
+        data: { no_coa: selectedCoa },
+        dataType: 'json',
+        success: function (list) {
+            // buat ulang elemen <select>
+            const newSelect = $('<select>', {
+                class: 'form-control selectpicker reff_doc',
+                name: 'reff_doc[]',
+                'data-live-search': 'true'
+            });
+
+            newSelect.append('<option value="">Select Reff</option>');
+
+            $.each(list, function (i, item) {
+                newSelect.append(`<option value="${item.id}">${item.nama}</option>`);
+            });
+
+            // hapus select/input lama dan ganti dengan elemen baru
+            const targetCell = row.find('.reff_doc').closest('td');
+            row.find('.reff_doc').remove(); 
+            targetCell.append(newSelect);
+
+            // tunggu 50ms biar DOM siap, lalu aktifkan selectpicker
+            setTimeout(() => {
+                newSelect.selectpicker({
+                    container: 'body'
+                }).selectpicker('refresh');
+            }, 50);
+
+        },
+        error: function (xhr, status, error) {
+            console.error('Error:', error);
+        }
+    });
+}
+
 
 
    // Initialize external plugins
@@ -730,10 +814,10 @@ function updateCostCenter(profCtr, noCoa, row) {
     </select>
     </td>
     <td>
-    <input style="font-size: 12px;width: 150px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off">
+    <input style="font-size: 12px;width: 150px;" type="text" class="form-control reff_doc" name="reff_doc[]" placeholder="" autocomplete="off">
     </td>
     <td>
-    <input type="text" style="font-size: 12px;width: 150px;" name="tgl_active" id="tgl_active" class="form-control tanggal" autocomplete="off" placeholder="dd-mm-yyyy">
+    <input type="text" style="font-size: 12px;width: 150px;" name="tgl_active" id="tgl_active" class="form-control tanggal reff_date" autocomplete="off" placeholder="dd-mm-yyyy">
     </td>
     <td>
     <input style="font-size: 12px;width: 150px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off">
@@ -817,10 +901,10 @@ function InsertRow2(tableID)
                 </select>
                 </td>
                 <td>
-                <input style="font-size: 12px;width: 150px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off">
+                <input style="font-size: 12px;width: 150px;" type="text" class="form-control reff_doc" name="reff_doc[]" placeholder="" autocomplete="off">
                 </td>
                 <td>
-                <input type="text" style="font-size: 12px;width: 150px;" name="tgl_active" id="tgl_active" class="form-control tanggal" autocomplete="off" placeholder="dd-mm-yyyy">
+                <input type="text" style="font-size: 12px;width: 150px;" name="tgl_active" id="tgl_active" class="form-control tanggal reff_date" autocomplete="off" placeholder="dd-mm-yyyy">
                 </td>
                 <td>
                 <input style="font-size: 12px;width: 150px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off">
@@ -858,9 +942,9 @@ function InsertRow2(tableID)
 }
 
 async function hapus(){
- await deleteRow();
- console.log("hasil");
- hitungulang();
+   await deleteRow();
+   console.log("hasil");
+   hitungulang();
 }
 
 
@@ -1201,11 +1285,11 @@ function addListener(elm,index){
   elm.setAttribute('min', 1);  // set the min attribute on each field
   
   elm.addEventListener('keypress', function(e){  // add listener to each field 
-   var key = !isNaN(e.charCode) ? e.charCode : e.keyCode;
-   str = String.fromCharCode(key); 
-   if (str.localeCompare('-') === 0){
-     event.preventDefault();
- }
+     var key = !isNaN(e.charCode) ? e.charCode : e.keyCode;
+     str = String.fromCharCode(key); 
+     if (str.localeCompare('-') === 0){
+       event.preventDefault();
+   }
 
 });
   
@@ -1246,7 +1330,7 @@ function addListener(elm,index){
             var no_coa = $(this).closest('#mytable2 tr').find('td:eq(1)').find('select[name=nomor_coa] option').filter(':selected').val(); 
             var prof_ctr = $(this).closest('#mytable2 tr').find('td:eq(2)').find('select[id=nomor_profit] option').filter(':selected').val();
             var no_coc = $(this).closest('#mytable2 tr').find('td:eq(3)').find('select[id=nomor_coc] option').filter(':selected').val();    
-            var reff_doc = $(this).closest('#mytable2 tr').find('td:eq(4) input').val();
+            var reff_doc = $(this).closest('#mytable2 tr').find('td:eq(4) input').val() || $(this).closest('#mytable2 tr').find('td:eq(4) select[name="reff_doc"] option:selected').val() || '';
             var reff_date = $(this).closest('#mytable2 tr').find('td:eq(5) input').val();
             var deskripsi = $(this).closest('#mytable2 tr').find('td:eq(6) input').val();
             var debit = $(this).closest('#mytable2 tr').find('td:eq(7) input').val(); 

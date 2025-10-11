@@ -8,7 +8,7 @@
 
             <form id="form-data" action="petty-cashin.php" method="post">        
                 <div class="form-row">
-                   <div class="col-md-3">
+                 <div class="col-md-3">
                     <label for="nama_supp"><b>Refference</b></label>            
                     <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true" >
                         <option value="ALL" selected="true">ALL</option>                                                
@@ -39,48 +39,48 @@
                         $doc_num = isset($_POST['doc_num']) ? $_POST['doc_num']: null;
                     }
                     if(!empty($_POST['doc_num'])) {
-                       echo $_POST['doc_num'];
-                   }
-                   else{
-                       echo '';
-                   } ?>" autocomplete="off">
-               </div>
+                     echo $_POST['doc_num'];
+                 }
+                 else{
+                     echo '';
+                 } ?>" autocomplete="off">
+             </div>
 
 
-               <div class="col-md-2 mb-3"> 
+             <div class="col-md-2 mb-3"> 
                 <label for="start_date"><b>From</b></label>          
                 <input type="text" style="font-size: 12px;" class="form-control tanggal" id="start_date" name="start_date" 
                 value="<?php
                 $start_date ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                   $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-               }
-               if(!empty($_POST['start_date'])) {
-                   echo $_POST['start_date'];
-               }
-               else{
-                   echo date("d-m-Y");
-               } ?>" 
-               placeholder="Tanggal Awal" >
-           </div>
+                 $start_date = date("Y-m-d",strtotime($_POST['start_date']));
+             }
+             if(!empty($_POST['start_date'])) {
+                 echo $_POST['start_date'];
+             }
+             else{
+                 echo date("d-m-Y");
+             } ?>" 
+             placeholder="Tanggal Awal" >
+         </div>
 
-           <div class="col-md-2 mb-3"> 
+         <div class="col-md-2 mb-3"> 
             <label for="end_date"><b>To</b></label>          
             <input type="text" style="font-size: 12px;" class="form-control tanggal" id="end_date" name="end_date" 
             value="<?php
             $end_date ='';
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-               $end_date = date("Y-m-d",strtotime($_POST['end_date']));
-           }
-           if(!empty($_POST['end_date'])) {
-               echo $_POST['end_date'];
-           }
-           else{
-               echo date("d-m-Y");
-           } ?>" 
-           placeholder="Tanggal Awal" >
-       </div>
-       <div class="input-group-append col">                                   
+             $end_date = date("Y-m-d",strtotime($_POST['end_date']));
+         }
+         if(!empty($_POST['end_date'])) {
+             echo $_POST['end_date'];
+         }
+         else{
+             echo date("d-m-Y");
+         } ?>" 
+         placeholder="Tanggal Awal" >
+     </div>
+     <div class="input-group-append col">                                   
         <button type="submit" id="submit" value=" Search " style="margin-top: 30px; margin-bottom: 15px;margin-right: 15px;border: 0;
         line-height: 1;
         padding: -2px 8px;
@@ -107,20 +107,20 @@
         $end_date = date("Y-m-d",strtotime($_POST['end_date']));
 
         if($reference == 'ALL' and empty($doc_num) and empty($start_date) and empty($end_date)){
-         $where = "";
-     }elseif($reference == 'ALL' and empty($doc_num) and !empty($start_date) and !empty($end_date)){
-         $where = "where a.tgl_pci between '$start_date' and '$end_date'";
-     }elseif($reference != 'ALL' and empty($doc_num)){
-         $where = "where a.reff = '$reference' and a.tgl_pci between '$start_date' and '$end_date'";
-     }elseif($reference == 'ALL' and !empty($doc_num)){
-         $where = "where a.no_pci like '%$doc_num%' and a.tgl_pci between '$start_date' and '$end_date'";
-     }else{
-         $where = "where a.reff = '$reference' and a.no_pci like '%$doc_num%' and a.tgl_pci between '$start_date' and '$end_date'";  
-     }
+           $where = "";
+       }elseif($reference == 'ALL' and empty($doc_num) and !empty($start_date) and !empty($end_date)){
+           $where = "where a.tgl_pci between '$start_date' and '$end_date'";
+       }elseif($reference != 'ALL' and empty($doc_num)){
+           $where = "where a.reff = '$reference' and a.tgl_pci between '$start_date' and '$end_date'";
+       }elseif($reference == 'ALL' and !empty($doc_num)){
+           $where = "where a.no_pci like '%$doc_num%' and a.tgl_pci between '$start_date' and '$end_date'";
+       }else{
+           $where = "where a.reff = '$reference' and a.no_pci like '%$doc_num%' and a.tgl_pci between '$start_date' and '$end_date'";  
+       }
 
-     echo '<a target="_blank" href="ekspor_petty_cash_in.php?reference='.$reference.'&&doc_num='.$doc_num.'&&start_date='.$start_date.'&&end_date='.$end_date.'&&where='.$where.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;line-height: 1;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 18px;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
-     ?>
- </div>                                                            
+       echo '<a target="_blank" href="ekspor_petty_cash_in.php?reference='.$reference.'&&doc_num='.$doc_num.'&&start_date='.$start_date.'&&end_date='.$end_date.'&&where='.$where.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;line-height: 1;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 14px;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
+       ?>
+   </div>                                                            
 </div>
 <br/>
 </div>
@@ -173,20 +173,20 @@ if($id == '39'){
                         $end_date = date("Y-m-d",strtotime($_POST['end_date']));               
                     }
                     if($reference == 'ALL' and empty($doc_num) and empty($start_date) and empty($end_date)){
-                     $where = "";
-                 }elseif($reference == 'ALL' and empty($doc_num) and !empty($start_date) and !empty($end_date)){
-                     $where = "where a.tgl_pci between '$start_date' and '$end_date'";
-                 }elseif($reference != 'ALL' and empty($doc_num)){
-                     $where = "where a.reff = '$reference' and a.tgl_pci between '$start_date' and '$end_date'";
-                 }elseif($reference == 'ALL' and !empty($doc_num)){
-                     $where = "where a.no_pci like '%$doc_num%' and a.tgl_pci between '$start_date' and '$end_date'";
-                 }else{
-                     $where = "where a.reff = '$reference' and a.no_pci like '%$doc_num%' and a.tgl_pci between '$start_date' and '$end_date'";  
-                 }
+                       $where = "";
+                   }elseif($reference == 'ALL' and empty($doc_num) and !empty($start_date) and !empty($end_date)){
+                       $where = "where a.tgl_pci between '$start_date' and '$end_date'";
+                   }elseif($reference != 'ALL' and empty($doc_num)){
+                       $where = "where a.reff = '$reference' and a.tgl_pci between '$start_date' and '$end_date'";
+                   }elseif($reference == 'ALL' and !empty($doc_num)){
+                       $where = "where a.no_pci like '%$doc_num%' and a.tgl_pci between '$start_date' and '$end_date'";
+                   }else{
+                       $where = "where a.reff = '$reference' and a.no_pci like '%$doc_num%' and a.tgl_pci between '$start_date' and '$end_date'";  
+                   }
 
-                 $sql = mysql_query("select a.no_pci,a.tgl_pci,a.reff,if(a.reff_doc = '','-',a.reff_doc) as reff_doc,if(a.oth_doc = '','-',a.oth_doc) as oth_doc,b.nama_coa,a.amount,if(a.deskripsi = '','-',a.deskripsi) as deskripsi,a.status from c_petty_cashin_h a left join mastercoa_v2 b on b.no_coa = a.coa_akun $where group by a.no_pci",$conn1);
+                   $sql = mysql_query("select a.no_pci,a.tgl_pci,a.reff,if(a.reff_doc = '','-',a.reff_doc) as reff_doc,if(a.oth_doc = '','-',a.oth_doc) as oth_doc,b.nama_coa,a.amount,if(a.deskripsi = '','-',a.deskripsi) as deskripsi,a.status from c_petty_cashin_h a left join mastercoa_v2 b on b.no_coa = a.coa_akun $where group by a.no_pci",$conn1);
 
-                 while($row = mysqli_fetch_array($sql)){
+                   while($row = mysqli_fetch_array($sql)){
                     $reff =$row['reff'];
                     $oth = $row['oth_doc'];
 
@@ -215,15 +215,34 @@ if($id == '39'){
                     if ($row['status'] == 'Cancel') {
                         echo '<td style="text-align: center;">-</td>';
                     }else{
-                        echo '<td style="width:50px;text-align : center" ><a href="pdf_petty_cashin.php?no_pci='.$row['no_pci'].'" target="_blank"><button style="border-radius: 6px" type="button" class="btn-xs btn-success"><i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Pdf</i></button></a></td>';
-                    }
-                    echo '</tr>';
-                }?>
-            </tbody>                    
-        </table>
+                        echo '<td style="width:50px; text-align:center; white-space:nowrap;">';
 
+                        if ($row['status'] == 'Draft' && $reff == 'None') {
+                            echo '<button 
+                            type="button" 
+                            class="btn-xs btn-warning edit-none" 
+                            data-pettycash="'.$row['no_pci'].'" 
+                            style="border-radius: 6px; margin-right: 3px;">
+                            <i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit
+                            </button>';
+                        }
+
+                        echo '<a href="pdf_petty_cashin.php?no_pci='.$row['no_pci'].'" target="_blank">
+                        <button type="button" class="btn-xs btn-success" style="border-radius: 6px;">
+                        <i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 5px; padding-left: 3px;"></i> Pdf
+                        </button>
+                        </a>';
+
+                        echo '</td>';
+                    }
+
+                        echo '</tr>';
+                    }?>
+                </tbody>                    
+            </table>
+
+        </div>
     </div>
-</div>
 </div>
 </div><!-- body-row END -->
 </div>
@@ -264,6 +283,8 @@ if($id == '39'){
 <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/select2.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
 <script>
   // Hide submenus
   $('#body-row .collapse').collapse('hide'); 
@@ -316,6 +337,39 @@ function SidebarCollapse () {
     $(function() {
         $('.selectpicker').selectpicker();
     });
+
+    $(document).on("click", ".edit-none", function() {
+        let doc_num = $(this).data("pettycash");
+        // var closing = $(this).closest('tr').find('td:eq(13)').attr('value');
+        var closing = 'Open';
+    // alert(no_kbon + ' ' + closing);
+    let encodedDocNum = btoa(doc_num); // sama dengan base64_encode di PHP
+
+    if (closing == 'Open') {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You are about to edit this document.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, edit it!",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // window.location.href = "form_edit_bank_in_none.php?doc_num=" + encodedDocNum;
+                window.open("form_edit_pettycash_in_none.php?no_pci=" + encodedDocNum, "_blank");
+            }
+        });
+    }else{
+        Swal.fire({
+            icon: "error",
+            title: "Sorry!",
+            text: "The Bank period has already been closed.",
+            confirmButtonText: "OK"
+        });
+
+    }
+
+});
 </script>
 
 <script type="text/javascript">
@@ -336,9 +390,9 @@ function SidebarCollapse () {
                 // alert("Active");                                              
             },
             error:  function (xhr, ajaxOptions, thrownError) {
-               alert(xhr);
-           }
-       });
+             alert(xhr);
+         }
+     });
     });
 </script>
 
@@ -360,9 +414,9 @@ function SidebarCollapse () {
                 // alert("Deactive");                                              
             },
             error:  function (xhr, ajaxOptions, thrownError) {
-               alert(xhr);
-           }
-       });
+             alert(xhr);
+         }
+     });
     });
 </script>
 
