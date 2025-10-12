@@ -41,7 +41,7 @@ $row = mysqli_fetch_array($sql);                         ;
       <div class="d-flex align-items-center justify-content-start">
         <img src="../../images/note.png" alt="Bank Logo" 
         style="width:25px; height:auto; margin-right:10px;">
-        <h5 class="mb-0 text-white">FORM EDIT PETTY CASH IN</h5>
+        <h5 class="mb-0 text-white">FORM PETTY CASH IN</h5>
     </div>
 </div>
 
@@ -81,9 +81,9 @@ $row = mysqli_fetch_array($sql);                         ;
 
                 <div class="col-md-3 mb-3">            
                     <label for="reff_doc" style="width: 150px;"><b>Reff Document</b></label>            
-                    <input type="text" style="font-size: 13px;" class="form-control form-control-sm" id="reff_doc" name="reff_doc" value="<?php 
+                    <input type="text" readonly style="font-size: 13px;" class="form-control form-control-sm" id="reff_doc" name="reff_doc" value="<?php 
                     if(!empty($doc_num)) {
-                        echo $row['reff_doc'];
+                        echo $row['oth_doc'];
                     }
                     else{
                         echo '';
@@ -419,6 +419,7 @@ $row = mysqli_fetch_array($sql);                         ;
                             let ttl_idr = amount.value * rate.value;  
                             $("#eqv_idr").val(formatMoney(ttl_idr));
                             modal_input_amt();
+                            modal_input_cre();
                             const el = e.target;
                             const origLen = el.value.length;
                             const selStart = el.selectionStart;
@@ -950,7 +951,7 @@ if (headerPC) {
             if (result.isConfirmed) {
                 $.ajax({
                     type: "POST",
-                    url: "pupdate_pci_none.php",
+                    url: "update_pci_settle.php",
                     data: {
                         doc_num: doc_num,
                         date: date,

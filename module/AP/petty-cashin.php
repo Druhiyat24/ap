@@ -225,6 +225,14 @@ if($id == '39'){
                             style="border-radius: 6px; margin-right: 3px;">
                             <i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit
                             </button>';
+                        }elseif ($row['status'] == 'Draft' && $reff == 'Settlement') {
+                            echo '<button 
+                            type="button" 
+                            class="btn-xs btn-warning edit-settle" 
+                            data-pettycash="'.$row['no_pci'].'" 
+                            style="border-radius: 6px; margin-right: 3px;">
+                            <i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit
+                            </button>';
                         }
 
                         echo '<a href="pdf_petty_cashin.php?no_pci='.$row['no_pci'].'" target="_blank">
@@ -355,8 +363,42 @@ function SidebarCollapse () {
             cancelButtonText: "Cancel"
         }).then((result) => {
             if (result.isConfirmed) {
-                // window.location.href = "form_edit_bank_in_none.php?doc_num=" + encodedDocNum;
-                window.open("form_edit_pettycash_in_none.php?no_pci=" + encodedDocNum, "_blank");
+                window.location.href = "form_edit_pettycash_in_none.php?doc_num=" + encodedDocNum;
+                // window.open("form_edit_pettycash_in_none.php?doc_num=" + encodedDocNum, "_blank");
+            }
+        });
+    }else{
+        Swal.fire({
+            icon: "error",
+            title: "Sorry!",
+            text: "The Bank period has already been closed.",
+            confirmButtonText: "OK"
+        });
+
+    }
+
+});
+
+
+    $(document).on("click", ".edit-settle", function() {
+        let doc_num = $(this).data("pettycash");
+        // var closing = $(this).closest('tr').find('td:eq(13)').attr('value');
+        var closing = 'Open';
+    // alert(no_kbon + ' ' + closing);
+    let encodedDocNum = btoa(doc_num); // sama dengan base64_encode di PHP
+
+    if (closing == 'Open') {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You are about to edit this document.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, edit it!",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "form_edit_pettycash_in_settle.php?doc_num=" + encodedDocNum;
+                // window.open("form_edit_pettycash_in_settle.php?doc_num=" + encodedDocNum, "_blank");
             }
         });
     }else{

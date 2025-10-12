@@ -118,7 +118,7 @@
          $where = "where a.reff = '$reference' and a.no_pco like '%$doc_num%' and a.tgl_pco between '$start_date' and '$end_date'";  
      }
 
-     echo '<a target="_blank" href="ekspor_petty_cash_out.php?reference='.$reference.'&&doc_num='.$doc_num.'&&start_date='.$start_date.'&&end_date='.$end_date.'&&where='.$where.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;line-height: 1;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 18px;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
+     echo '<a target="_blank" href="ekspor_petty_cash_out.php?reference='.$reference.'&&doc_num='.$doc_num.'&&start_date='.$start_date.'&&end_date='.$end_date.'&&where='.$where.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;line-height: 1;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 15px;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
      ?>
  </div>                                                            
 </div>
@@ -199,7 +199,43 @@ if($id == '39'){
                     if ($row['status'] == 'Cancel') {
                         echo '<td style="text-align: center;">-</td>';
                     }else{
-                        echo '<td style="width:50px;text-align : center" ><a href="pdf_petty_cashout.php?no_pco='.$row['no_pco'].'" target="_blank"><button style="border-radius: 6px" type="button" class="btn-xs btn-success"><i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Pdf</i></button></a></td>';
+                        // echo '<td style="width:50px;text-align : center" ><a href="pdf_petty_cashout.php?no_pco='.$row['no_pco'].'" target="_blank"><button style="border-radius: 6px" type="button" class="btn-xs btn-success"><i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Pdf</i></button></a></td>';
+
+                        echo '<td style="width:50px; text-align:center; white-space:nowrap;">';
+
+                        if ($row['status'] == 'Draft' && $row['reff'] == 'None' || $row['status'] == 'Draft' && $row['reff'] == 'Advance') {
+                            echo '<button 
+                            type="button" 
+                            class="btn-xs btn-warning edit-none" 
+                            data-pettycash="'.$row['no_pco'].'" 
+                            style="border-radius: 6px; margin-right: 3px;">
+                            <i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit
+                            </button>';
+                        }elseif ($row['status'] == 'Draft' && $row['reff'] == 'Settlement') {
+                            echo '<button 
+                            type="button" 
+                            class="btn-xs btn-warning edit-settle" 
+                            data-pettycash="'.$row['no_pco'].'" 
+                            style="border-radius: 6px; margin-right: 3px;">
+                            <i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit
+                            </button>';
+                        }elseif ($row['status'] == 'Draft' && $row['reff'] == 'List Payment') {
+                            echo '<button 
+                            type="button" 
+                            class="btn-xs btn-warning edit-lp" 
+                            data-pettycash="'.$row['no_pco'].'" 
+                            style="border-radius: 6px; margin-right: 3px;">
+                            <i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit
+                            </button>';
+                        }
+
+                        echo '<a href="pdf_petty_cashout.php?no_pco='.$row['no_pco'].'" target="_blank">
+                        <button type="button" class="btn-xs btn-success" style="border-radius: 6px;">
+                        <i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 5px; padding-left: 3px;"></i> Pdf
+                        </button>
+                        </a>';
+
+                        echo '</td>';
                     }
                     echo '
                     <td style="display: none;" value = "'.$row['status'].'">'.$row['status'].'</td>
@@ -251,6 +287,8 @@ if($id == '39'){
 <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/select2.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
 <script>
   // Hide submenus
   $('#body-row .collapse').collapse('hide'); 
@@ -288,6 +326,107 @@ function SidebarCollapse () {
         $("[data-toggle=tooltip]").tooltip();
 
     } );
+
+    $(document).on("click", ".edit-none", function() {
+        let doc_num = $(this).data("pettycash");
+        // var closing = $(this).closest('tr').find('td:eq(13)').attr('value');
+        var closing = 'Open';
+    // alert(no_kbon + ' ' + closing);
+    let encodedDocNum = btoa(doc_num); // sama dengan base64_encode di PHP
+
+    if (closing == 'Open') {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You are about to edit this document.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, edit it!",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "form_edit_pettycash_out_none.php?doc_num=" + encodedDocNum;
+                // window.open("form_edit_pettycash_out_none.php?doc_num=" + encodedDocNum, "_blank");
+            }
+        });
+    }else{
+        Swal.fire({
+            icon: "error",
+            title: "Sorry!",
+            text: "The Bank period has already been closed.",
+            confirmButtonText: "OK"
+        });
+
+    }
+
+});
+
+
+    $(document).on("click", ".edit-settle", function() {
+        let doc_num = $(this).data("pettycash");
+        // var closing = $(this).closest('tr').find('td:eq(13)').attr('value');
+        var closing = 'Open';
+    // alert(no_kbon + ' ' + closing);
+    let encodedDocNum = btoa(doc_num); // sama dengan base64_encode di PHP
+
+    if (closing == 'Open') {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You are about to edit this document.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, edit it!",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "form_edit_pettycash_out_settle.php?doc_num=" + encodedDocNum;
+                // window.open("form_edit_pettycash_out_settle.php?doc_num=" + encodedDocNum, "_blank");
+            }
+        });
+    }else{
+        Swal.fire({
+            icon: "error",
+            title: "Sorry!",
+            text: "The Bank period has already been closed.",
+            confirmButtonText: "OK"
+        });
+
+    }
+
+});
+
+
+    $(document).on("click", ".edit-lp", function() {
+        let doc_num = $(this).data("pettycash");
+        // var closing = $(this).closest('tr').find('td:eq(13)').attr('value');
+        var closing = 'Open';
+    // alert(no_kbon + ' ' + closing);
+    let encodedDocNum = btoa(doc_num); // sama dengan base64_encode di PHP
+
+    if (closing == 'Open') {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You are about to edit this document.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, edit it!",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "form_edit_pettycash_out_lp.php?doc_num=" + encodedDocNum;
+                // window.open("form_edit_pettycash_out_lp.php?doc_num=" + encodedDocNum, "_blank");
+            }
+        });
+    }else{
+        Swal.fire({
+            icon: "error",
+            title: "Sorry!",
+            text: "The Bank period has already been closed.",
+            confirmButtonText: "OK"
+        });
+
+    }
+
+});
 </script>
 
 <script type="text/javascript">

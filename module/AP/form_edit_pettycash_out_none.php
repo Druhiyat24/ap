@@ -30,8 +30,8 @@
 <?php 
 $doc_num = base64_decode($_GET['doc_num']); 
 
-$sql = mysqli_query($conn2,"select a.*, CONCAT(a.coa_akun,' ',nama_coa) nama_akun from c_petty_cashin_h a INNER JOIN mastercoa_v2 b on b.no_coa = a.coa_akun where no_pci = '$doc_num'");
-$row = mysqli_fetch_array($sql);                         ;
+$sql = mysqli_query($conn2,"select a.*, CONCAT(a.coa_akun,' ',nama_coa) nama_akun from c_petty_cashout_h a INNER JOIN mastercoa_v2 b on b.no_coa = a.coa_akun where no_pco = '$doc_num'");
+$row = mysqli_fetch_array($sql);                      
 ?>
 
 <!-- MAIN -->
@@ -41,7 +41,7 @@ $row = mysqli_fetch_array($sql);                         ;
       <div class="d-flex align-items-center justify-content-start">
         <img src="../../images/note.png" alt="Bank Logo" 
         style="width:25px; height:auto; margin-right:10px;">
-        <h5 class="mb-0 text-white">FORM EDIT PETTY CASH IN</h5>
+        <h5 class="mb-0 text-white">FORM EDIT PETTY CASH OUT</h5>
     </div>
 </div>
 
@@ -52,14 +52,14 @@ $row = mysqli_fetch_array($sql);                         ;
 
                 <div class="col-md-3 mb-3">            
                     <label for="pajak" style="width: 150px;"><b>Doc Number</b></label>
-                    <input type="text" readonly style="font-size: 13px;" class="form-control form-control-sm" id="no_pettycash" name="no_pettycash" value="<?= $doc_num; ?>">
+                    <input type="text" readonly style="font-size: 13px;" class="form-control form-control-sm" id="no_pco" name="no_pco" value="<?= $doc_num; ?>">
                 </div>
 
                 <div class="col-md-2 mb-3">            
                     <label for="total" style="width: 150px;"><b>Date</b></label>
-                    <input type="text" style="font-size: 13px;" name="tgl_pettycash" id="tgl_pettycash" class="form-control form-control-sm tanggal" 
+                    <input type="text" style="font-size: 13px;" name="tgl_pco" id="tgl_pco" class="form-control form-control-sm tanggal" 
                     value="<?php if(!empty($doc_num)) {
-                        echo date("d-m-Y",strtotime($row['tgl_pci']));
+                        echo date("d-m-Y",strtotime($row['tgl_pco']));
                     }
                     else{
                         echo date("d-m-Y");
@@ -68,7 +68,7 @@ $row = mysqli_fetch_array($sql);                         ;
 
                 <div class="col-md-3 mb-3">            
                     <label for="nama_supp" style="width: 150px;"><b>Reference</b></label>            
-                    <input type="text" readonly style="font-size: 13px;" class="form-control form-control-sm" id="ref_data" name="ref_data" value="<?php 
+                    <input type="text" readonly style="font-size: 13px;" class="form-control form-control-sm" id="reff_doc" name="reff_doc" value="<?php 
                     if(!empty($doc_num)) {
                         echo $row['reff'];
                     }
@@ -80,20 +80,35 @@ $row = mysqli_fetch_array($sql);                         ;
                 <div class="col-md-4 mb-3"></div>
 
                 <div class="col-md-3 mb-3">            
-                    <label for="reff_doc" style="width: 150px;"><b>Reff Document</b></label>            
-                    <input type="text" style="font-size: 13px;" class="form-control form-control-sm" id="reff_doc" name="reff_doc" value="<?php 
-                    if(!empty($doc_num)) {
-                        echo $row['reff_doc'];
-                    }
-                    else{
-                        echo '';
-                    } 
-                    ?>">
-                </div> 
+                    <label for="nama_supp"><b>Supplier</b></label>            
+                    <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true">                                   
+                        <?php
+                        $customer = $row['nama_supp'];  
+                        $isSelected = ' selected="selected"';                      
+                        if(!empty($doc_num)) {
+                            echo '<option value="'.$customer.'"'.$isSelected.'">'. $customer .'</option>'; 
+                        }
+                        else{
+                            echo '<option value="Unrealize"  selected="true">Unrealize</option>'; 
+                        }
+
+                        $sql_supp = mysqli_query($conn1,"select * from (select * from (select distinct(Supplier) from mastersupplier where tipe_sup = 'S' order by Supplier ASC) a UNION select cc_name as cost_name from b_master_cc where status = 'Active') a where Supplier != '' and Supplier != '$customer' order by Supplier ASC");
+                        while ($row_supp = mysqli_fetch_array($sql_supp)) {
+                            $data = $row_supp['Supplier'];
+                            if($row_supp['Supplier'] == $_POST['nama_supp']){
+                                $isSelected = ' selected="selected"';
+                            }else{
+                                $isSelected = '';
+
+                            }
+                            echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';   
+                        }?>
+                    </select>  
+                </div>
 
                 <div class="col-md-2 mb-3">            
-                   <label for="profit_center" style="width: 150px;"><b>Profit Center</b></label>            
-                   <select class="form-control selectpicker" name="profit_center" id="profit_center" data-dropup-auto="false" data-live-search="true" onChange="UbahCostArc(this.value)">                                   
+                 <label for="profit_center" style="width: 150px;"><b>Profit Center</b></label>            
+                 <select class="form-control selectpicker" name="profit_center" id="profit_center" data-dropup-auto="false" data-live-search="true" onChange="UbahCostArc(this.value)">                                   
                     <?php
                     $profit_center = $row['profit_center'];  
                     $isSelected = ' selected="selected"';  
@@ -168,15 +183,15 @@ $row = mysqli_fetch_array($sql);                         ;
         </div>
         <div class="col-md-4 mb-3"></div>
 
-    <div class="col-md-5 mb-3"> 
-        <label for="nama_supp"><b>Descriptions</b></label>         
-        <div class="d-flex">
-            <textarea 
-            class="form-control me-2"
-            style="font-size: 13px; text-align: left;" 
-            cols="30" rows="3"
-            name="pesan" id="pesan"
-            placeholder="descriptions..." required><?php echo !empty($doc_num) ? $row['deskripsi'] : ''; ?></textarea>   
+        <div class="col-md-5 mb-3"> 
+            <label for="nama_supp"><b>Descriptions</b></label>         
+            <div class="d-flex">
+                <textarea 
+                class="form-control me-2"
+                style="font-size: 13px; text-align: left;" 
+                cols="30" rows="3"
+                name="pesan" id="pesan"
+                placeholder="descriptions..." required><?php echo !empty($doc_num) ? $row['deskripsi'] : ''; ?></textarea>   
 
         <!-- <button 
         type="button"
@@ -218,7 +233,7 @@ $row = mysqli_fetch_array($sql);                         ;
                             <tbody id="tbody2">
                                 <?php
                                 $doc_num = base64_decode($_GET['doc_num']); 
-                                $sql_none = mysql_query("select no_pci no_doc, a.no_coa id_coa, no_costcenter id_cost_center, buyer, no_ws, curr, debit t_debit, credit t_credit, a.deskripsi keterangan, a.profit_center, concat(b.no_coa,' ', b.nama_coa) as nama_coa,CONCAT(a.no_costcenter,' - ',d.cc_name) cc_name, CONCAT(mp.id_pc,' - ',nama_pc) nama_pc from c_petty_cashin_none a left join mastercoa_v2 b on b.no_coa = a.no_coa left join b_master_cc d on d.no_cc = a.no_costcenter LEFT JOIN master_pc mp on mp.kode_pc = a.profit_center where no_pci = '$doc_num'",$conn1);
+                                $sql_none = mysql_query("select no_pco no_doc, a.no_coa id_coa, no_costcntr id_cost_center, buyer, no_ws, curr, debit t_debit, credit t_credit, a.deskripsi keterangan, a.profit_center, concat(b.no_coa,' ', b.nama_coa) as nama_coa,CONCAT(a.no_costcntr,' - ',d.cc_name) cc_name, CONCAT(mp.id_pc,' - ',nama_pc) nama_pc from c_petty_cashout_none a left join mastercoa_v2 b on b.no_coa = a.no_coa left join b_master_cc d on d.no_cc = a.no_costcntr LEFT JOIN master_pc mp on mp.kode_pc = a.profit_center where no_pco = '$doc_num'",$conn1);
 
                                 while($row = mysql_fetch_array($sql_none)){
                                     $id_coa = $row['id_coa'];
@@ -235,18 +250,18 @@ $row = mysqli_fetch_array($sql);                         ;
                                     <option value="-" > - </option>'; 
                                     $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2 where no_coa != '$id_coa'"); 
                                     foreach ($sql as $cc) : 
-                                       echo'<option value="'.$cc["id_coa"].'"> '.$cc["coa"].' </option>'; 
-                                   endforeach; ?>
-                                   <?php
-                                   echo '
-                                   </select>
-                                   </td>';
-                                   echo '
-                                   <td style="width: 200px;">
-                                   <select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" style="width: 250px"> 
-                                   <option value="'.$row['profit_center'].'" >'.$row['nama_pc'].'</option>';
-                                   $sql3 = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active' and kode_pc != '$profit_center'"); 
-                                   foreach ($sql3 as $fc) : 
+                                     echo'<option value="'.$cc["id_coa"].'"> '.$cc["coa"].' </option>'; 
+                                 endforeach; ?>
+                                 <?php
+                                 echo '
+                                 </select>
+                                 </td>';
+                                 echo '
+                                 <td style="width: 200px;">
+                                 <select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" style="width: 250px"> 
+                                 <option value="'.$row['profit_center'].'" >'.$row['nama_pc'].'</option>';
+                                 $sql3 = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active' and kode_pc != '$profit_center'"); 
+                                 foreach ($sql3 as $fc) : 
                                     echo'<option value="'.$fc["kode_pc"].'"> '.$fc["tampil"].' </option>'; 
                                 endforeach; 
                                 echo'</select>
@@ -276,7 +291,11 @@ $row = mysqli_fetch_array($sql);                         ;
                                 <td>
                                 <select class="form-control selectpicker" name="currenc" id="currenc" data-live-search="true">
                                 <option value="'.$row['curr'].'" >'.$row['curr'].'</option>';
-                                
+                                if ($row['curr'] == 'IDR') {
+                                    echo '<option value="USD">USD</option>';
+                                }else{
+                                    echo '<option value="IDR">IDR</option> ';
+                                }
                                 echo '</div>
                                 </td>';
                                 if ($t_debit == '0') {
@@ -327,7 +346,7 @@ $row = mysqli_fetch_array($sql);                         ;
                     <label for="subtotal" class="col-form-label" style="width: 150px; font-size: 13px;;"><b>Total Debit</b></label>
                     <div class="col-md-2 mb-3"> 
                         <?php
-                        $sql = mysqli_query($conn2,"select amount eqv_idr from c_petty_cashin_h where no_pci = '$doc_num'");
+                        $sql = mysqli_query($conn2,"select amount eqv_idr from c_petty_cashout_h where no_pco = '$doc_num'");
                         $row = mysqli_fetch_array($sql);                         
                         $eqv_idr = $row['eqv_idr'];
                         ?>                                
@@ -358,7 +377,7 @@ $row = mysqli_fetch_array($sql);                         ;
                         <i class="fas fa-save"></i> Save
                     </button>
 
-                    <button type="button" style="border-radius: 6px" class="btn-danger btn-sm" name="batal" id="batal" onclick="location.href='petty-cashin.php'"><span class="fa fa-angle-double-left"></span> Back</button>
+                    <button type="button" style="border-radius: 6px" class="btn-danger btn-sm" name="batal" id="batal" onclick="location.href='petty-cashout.php'"><span class="fa fa-angle-double-left"></span> Back</button>
                 </div>
             </div>
         </div>
@@ -418,7 +437,7 @@ $row = mysqli_fetch_array($sql);                         ;
                             rate.value = rate.value.replace(/,/g, '');
                             let ttl_idr = amount.value * rate.value;  
                             $("#eqv_idr").val(formatMoney(ttl_idr));
-                            modal_input_amt();
+                            modal_input_cre();
                             const el = e.target;
                             const origLen = el.value.length;
                             const selStart = el.selectionStart;
@@ -602,8 +621,8 @@ function initializePlugins() {
       //Initialize Select2 Elements
       var selectcoba = rowCount;
       $('.rowCount').select2({
-         theme: 'bootstrap4'
-     })
+       theme: 'bootstrap4'
+   })
       //Initialize Select2 Elements
       $('.select2add').select2({
         theme: 'bootstrap4'
@@ -641,6 +660,7 @@ foreach ($sql3 as $fc) : ?>
 <td>
 <select class="form-control selectpicker" name="currenc" id="currenc" data-live-search="true">
 <option value="IDR">IDR</option>
+<option value="USD">USD</option>
 </select>
 </td>
 <td><input style="text-align: right;width: 150px;" type="number" min="1" class="form-control" id="txt_amount" name="txt_amount" oninput="modal_input_amt(value)" autocomplete="off"></td>
@@ -746,6 +766,7 @@ if (headerPC) {
                         <td>
                         <select class="form-control selectpicker" name="currenc" id="currenc" data-live-search="true">
                         <option value="IDR">IDR</option>
+                        <option value="USD">USD</option>
                         </select>
                         </td>
                         <td><input style="text-align: right;width: 150px;" type="number" min="1" class="form-control" id="txt_amount" name="txt_amount" oninput="modal_input_amt(value)" autocomplete="off"></td>
@@ -778,14 +799,13 @@ if (headerPC) {
 
 <script type="text/javascript">
   function modal_input_amt() { 
-    let deb  = $("#eqv_idr").val().replace(/,/g, '') || 0;   
     let rate = $("#rate").val().replace(/,/g, '') || 1;
 
     var table = document.getElementById("tbody2");
     var tota = 0;
 
     for (var i = 0; i < table.rows.length; i++) {
-        var $row  = $(table.rows[i]);
+        var $row = $(table.rows[i]);
         var curr  = $row.find("select[name='currenc']").val();
         var price = parseFloat($row.find("input[name='txt_amount']").val()) || 0;
         var price2 = $row.find("input[name='txt_credit']");
@@ -805,23 +825,22 @@ if (headerPC) {
         tota += harga;
     }
 
-    let tot_deb = parseFloat(tota) + parseFloat(deb);
-
-    document.getElementsByName("tot_debit")[0].value = formatMoney(tot_deb.toFixed(2));
-    document.getElementsByName("h_tot_debit")[0].value = tot_deb.toFixed(2);
+    document.getElementsByName("tot_debit")[0].value = formatMoney(tota.toFixed(2));
+    document.getElementsByName("h_tot_debit")[0].value = tota.toFixed(2);
 }
 
 </script>
 
 <script type="text/javascript">
   function modal_input_cre() { 
+    let deb  = $("#eqv_idr").val().replace(/,/g, '') || 0;   
     let rate = $("#rate").val().replace(/,/g, '') || 1;
 
     var table = document.getElementById("tbody2");
     var tota = 0;
 
     for (var i = 0; i < table.rows.length; i++) {
-        var $row = $(table.rows[i]);
+        var $row  = $(table.rows[i]);
         var curr  = $row.find("select[name='currenc']").val();
         var price = parseFloat($row.find("input[name='txt_credit']").val()) || 0;
         var price2 = $row.find("input[name='txt_amount']");
@@ -841,8 +860,10 @@ if (headerPC) {
         tota += harga;
     }
 
-    document.getElementsByName("tot_credit")[0].value = formatMoney(tota.toFixed(2));
-    document.getElementsByName("h_tot_credit")[0].value = tota.toFixed(2);
+    let tot_deb = parseFloat(tota) + parseFloat(deb);
+
+    document.getElementsByName("tot_credit")[0].value = formatMoney(tot_deb.toFixed(2));
+    document.getElementsByName("h_tot_credit")[0].value = tot_deb.toFixed(2);
 }
 
 </script>
@@ -850,10 +871,10 @@ if (headerPC) {
 <script type="text/javascript">
     $(document).on("click", "#edit_data", function () {
         // alert(1);
-        let doc_num         = $("#no_pettycash").val();
-        let date            = $("#tgl_pettycash").val();
-        let ref_data        = $("#ref_data").val();
-        let reff_doc        = $("#reff_doc").val();
+        let doc_num         = $("#no_pco").val();
+        let date            = $("#tgl_pco").val();
+        let ref_data        = $("#reff_doc").val();
+        let customer        = $("#nama_supp").val();
         let profit_center   = $("#profit_center").val();
         let akun            = $("#accountid_h").val();
         let curr            = $("#valuta").val();
@@ -868,7 +889,7 @@ if (headerPC) {
         console.log ("doc_num : " + doc_num);
         console.log ("date : " + date);
         console.log ("ref_data : " + ref_data);
-        console.log ("reff_doc : " + reff_doc);
+        console.log ("customer : " + customer);
         console.log ("profit_center : " + profit_center);
         console.log ("akun : " + akun);
         console.log ("curr : " + curr);
@@ -904,9 +925,9 @@ if (headerPC) {
             let keterangan  = $(this).find("input[name='keterangan']").val();
 
             if (prof_ctr === "NAK") {
-                total_nak += (credit - debit);
+                total_nak += (debit - credit);
             } else if (prof_ctr === "NAG") {
-                total_nag += (credit - debit);
+                total_nag += (debit - credit);
             }
 
             console.log ("det_coa : " + coa);
@@ -950,12 +971,12 @@ if (headerPC) {
             if (result.isConfirmed) {
                 $.ajax({
                     type: "POST",
-                    url: "pupdate_pci_none.php",
+                    url: "update_pco_none.php",
                     data: {
                         doc_num: doc_num,
                         date: date,
                         ref_data: ref_data,
-                        reff_doc: reff_doc,
+                        customer: customer,
                         profit_center: profit_center,
                         akun: akun,
                         curr: curr,
@@ -977,8 +998,8 @@ if (headerPC) {
                                 title: "Success",
                                 text: "Data has been successfully updated!"
                             }).then(() => {
-                                window.location.href = "petty-cashin.php";
-                                /*window.location.reload();*/
+                                window.location.href = "petty-cashout.php";
+                                // window.location.reload();
                             });
                         } else {
                             Swal.fire("Error", res, "error");
