@@ -236,13 +236,23 @@ if($id1 == '79'){
                                 if ($file_name == '-') {
                                     echo '<button style="border-radius: 6px" type="button" class="btn-xs btn-warning" id="btnupdate" name="btnupdate"><i class="fa fa-cloud-upload" aria-hidden="true" style="padding-right: 5px; padding-left: 5px;"></i></button>
                                     <a href="pdf_req_dn.php?no_req='.$row['no_req'].'" target="_blank"><button style="border-radius: 6px" type="button" class="btn-xs btn-success"><i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Pdf</i></button></a>
-                                    <a  style="margin-right: 5px" id="delete" href=""><button style="border-radius: 6px"  type="button" class="btn-xs btn-danger"><i style="color: white" class="fa fa-trash fa-lg" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Cancel</i></button</a>';
+                                    <a id="delete" href="#" style="margin-right: 5px;">
+  <button type="button" class="btn-xs btn-danger" style="border-radius: 4px; padding: 5px 6px; font-size: 11px; line-height: 1;">
+    <i class="fa fa-trash" aria-hidden="true" style="color: white; margin-right: 3px;"></i>Cancel
+  </button>
+</a>
+';
                                 }else{
                                     echo'<a href="file_pdf/'.$row['file_name'].'" target="_blank" style="padding-left:2px;"><button style="border-radius: 6px" type="button" class="btn-xs btn-warning"><i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 5px; padding-left: 5px;"></i></button></a>
                                     <a style="padding-right:2px;" id="delete_pdf" href=""><button style="border-radius: 6px" type="button" class="btn-xs btn-danger"><i class="fa fa-ban" aria-hidden="true" style="padding-right: 5px; padding-left: 5px;"></i></button></a>
                                     <button style="border-radius: 6px;padding-left:2px;" type="button" class="btn-xs btn-info" id="btnshow" name="btnshow"><i class="fa fa-eye" aria-hidden="true" style="padding-right: 5px; padding-left: 5px;"></i></button>
                                     <a href="pdf_req_dn.php?no_req='.$row['no_req'].'" target="_blank"><button style="border-radius: 6px" type="button" class="btn-xs btn-success"><i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Pdf</i></button></a>
-                                    <a  style="margin-right: 5px" id="delete" href=""><button style="border-radius: 6px"  type="button" class="btn-xs btn-danger"><i style="color: white" class="fa fa-trash fa-lg" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Cancel</i></button</a>';
+                                    <a id="delete" href="#" style="margin-right: 5px;">
+  <button type="button" class="btn-xs btn-danger" style="border-radius: 4px; padding: 5px 6px; font-size: 11px; line-height: 1;">
+    <i class="fa fa-trash" aria-hidden="true" style="color: white; margin-right: 3px;"></i>Cancel
+  </button>
+</a>
+';
                                 }
 
                             }else{
