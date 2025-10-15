@@ -1424,7 +1424,7 @@ echo'</ul>
          </a>';
      }if(strpos($id, '104') !== false){ 
          echo'<a href="../AP/trial_balance.php" class="dropdown-item bg-dark text-white">
-         <span class="fas fa-chart-line fa-list"></span>
+         <span class="fas fa-chart-line"></span>
          <span class="menu-collapsed">Trial Balance</span>
          </a>';
      }
