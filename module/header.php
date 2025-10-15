@@ -1425,7 +1425,7 @@ echo'</ul>
      }if(strpos($id, '104') !== false){ 
          echo'<a href="../AP/trial_balance.php" class="dropdown-item bg-dark text-white">
          <span class="fa fa-print fa-list"></span>
-         <span class="menu-collapsed">General Ledger</span>
+         <span class="menu-collapsed">Trial Balance</span>
          </a>';
      }
 
