@@ -236,38 +236,6 @@ table.dataTable {
             jnl on jnl.coa_no = coa.no_coa order by no_coa asc");
     }
 
-    $sqldelete = "DELETE from tbl_saldo_tb_temp";
-    $execute5 = mysqli_query($conn2, $sqldelete);
-
-    if(!$execute5){ 
-
-    }else{
-
-        $queryss2 = "insert into tbl_saldo_tb_temp select '', nocoa, saldo, debit_idr, credit_idr, ((saldo + debit_idr) - credit_idr) end_balance, '','','' from (select nocoa,COALESCE(saldo,0) saldo,COALESCE(debit_idr,0) debit_idr,COALESCE(credit_idr,0) credit_idr from 
-        (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from saldo_awal_tb order by no_coa asc) saldo
-        left join
-        (select no_coa,nama_coa,'' beg_balance,ind_categori1,ind_categori2,ind_categori3,ind_categori4 from mastercoa_v2 order by no_coa asc) coa
-        on coa.no_coa = saldo.nocoa
-        left join
-        (select no_coa coa_no, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') group by no_coa) 
-        jnl on jnl.coa_no = coa.no_coa order by no_coa asc) a order by a.nocoa asc";
-
-        $executess2 = mysqli_query($conn2, $queryss2);
-
-        if(!$executess2){ 
-
-        }else{
-            ini_set('date.timezone', 'Asia/Jakarta');
-            $sqlx = mysqli_query($conn1,"SELECT to_saldo FROM tbl_bln_tb where from_saldo = '$kata_filter2'");
-            $rowx = mysqli_fetch_array($sqlx);
-            $saldo_to = isset($rowx['to_saldo']) ? $rowx['to_saldo'] : null;
-            $copy_date = date("Y-m-d H:i:s");
-
-            $sqlupdate = "UPDATE tbl_saldo_tb_temp set copy_user = '$user',copy_date = '$copy_date',to_saldo = '$saldo_to'";
-
-            $execute = mysqli_query($conn2, $sqlupdate);
-        }
-    }
 
     echo '<input type="hidden" style="font-size: 12px;" class="form-control" id="to_saldo" name="to_saldo" 
     value="'.$kata_filter2.'">';
