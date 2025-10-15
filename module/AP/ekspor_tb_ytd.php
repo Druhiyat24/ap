@@ -50,9 +50,7 @@
 
     ?>
 
-    <center>
-        <h4>TRIAL BALANCE YEAR TO DATE <br/> PERIODE <?php echo $kata_filter; ?> - <?php echo $end_date; ?></h4>
-    </center>
+        <h4>TRIAL BALANCE YEAR TO DATE <br/> PERIODE <?php echo $start_date; ?> - <?php echo $end_date; ?></h4>
   <!--   STATUS: <?php echo $status; ?> -->
  
     <table style="width:100%;font-size:10px;" border="1" >

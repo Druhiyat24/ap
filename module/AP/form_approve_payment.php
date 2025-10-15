@@ -174,13 +174,13 @@
           style="width:100%">
           <thead class="table-gradient text-white">
             <tr>
+              <th style="width:5%; text-align: center;"><input type="checkbox" id="select_all"></th>
               <th style="width: 15%;">No Payment</th>
               <th style="width: 15%;">Payment Date</th>
               <th style="width: 22%;">Profit Center</th>
               <th style="width: 22%;">Supplier</th>
               <th style="width: 8%;">Currency</th>
               <th style="width: 13%;">Total</th>
-              <th style="width:5%; text-align: center;"><input type="checkbox" id="select_all"></th>
           </tr>
       </thead>
       <tbody>
@@ -214,13 +214,13 @@
               $tgl_payment = '-';  
           }                                    
           echo'<tr style="text-align:center;">                    
+          <td style="width:10px; text-align: center;"><input type="checkbox" name="select[]" data-id="'.$row['payment_ftr_id'].'"></td>                      
           <td style="" value = "'.$row['payment_ftr_id'].'">'.$row['payment_ftr_id'].'</td>
           <td style="" value = "'.$row['tgl_pelunasan'].'">'.date("d-M-Y",strtotime($row['tgl_pelunasan'])).'</td>
           <td style="" value = "'.$row['nama_pc'].'">'.$row['nama_pc'].'</td>
           <td style="" value = "'.$row['nama_supp'].'">'.$row['nama_supp'].'</td>
           <td style="" value = "'.$row['curr'].'">'.$row['curr'].'</td>
           <td style="text-align:right;" value = "'.$row['total'].'">'.number_format($row['total'],2).'</td>
-          <td style="width:10px; text-align: center;"><input type="checkbox" name="select[]" data-id="'.$row['payment_ftr_id'].'"></td>                      
           </tr>';                
 
       } ?>
@@ -298,7 +298,7 @@
             let row = $(this).closest('tr');
 
             let data = {
-                no_payment  : row.find('td:eq(0)').attr('value'),
+                no_payment  : row.find('td:eq(1)').attr('value'),
                 approve_user: approve_user
             };
 
@@ -340,12 +340,12 @@
 </script>
 
 <script type="text/javascript">     
-    $('table tbody tr').on('click', 'td:eq(0)', function(){                
+    $('table tbody tr').on('click', 'td:eq(1)', function(){                
         $('#mymodal').modal('show');
-        var payment_ftr_id = $(this).closest('tr').find('td:eq(0)').text();
-        var tgl_pelunasan = $(this).closest('tr').find('td:eq(1)').text();
-        var profit_center = $(this).closest('tr').find('td:eq(2)').text();
-        var nama_supp = $(this).closest('tr').find('td:eq(3)').text();
+        var payment_ftr_id = $(this).closest('tr').find('td:eq(1)').text();
+        var tgl_pelunasan = $(this).closest('tr').find('td:eq(2)').text();
+        var profit_center = $(this).closest('tr').find('td:eq(3)').text();
+        var nama_supp = $(this).closest('tr').find('td:eq(4)').text();
         $.ajax({
             type : 'post',
             url : 'ajax_payment2.php',

@@ -1104,7 +1104,7 @@ if($id == '78'){
         </a> ';
     }elseif($id == '43'){
         echo '
-        <a href="AP/approve-outbank.php" class="dropdown-item bg-dark text-white">
+        <a href="AP/approve_bank_out.php" class="dropdown-item bg-dark text-white">
         <span class="fa fa-thumbs-up fa-fw "></span>
         <span class="menu-collapsed">Outgoing bank</span>
         </a> ';
@@ -1124,7 +1124,7 @@ if($id == '78'){
         <span class="fa fa-thumbs-up fa-fw "></span>
         <span class="menu-collapsed">Payment Voucher</span>
         </a>
-        <a href="AP/approve-outbank.php" class="dropdown-item bg-dark text-white">
+        <a href="AP/approve_bank_out.php" class="dropdown-item bg-dark text-white">
         <span class="fa fa-thumbs-up fa-fw "></span>
         <span class="menu-collapsed">Outgoing bank</span>
         </a> ';
@@ -1134,7 +1134,7 @@ if($id == '78'){
         <span class="fa fa-thumbs-up fa-fw "></span>
         <span class="menu-collapsed">Incoming Bank</span>
         </a>
-        <a href="AP/approve-outbank.php" class="dropdown-item bg-dark text-white">
+        <a href="AP/approve_bank_out.php" class="dropdown-item bg-dark text-white">
         <span class="fa fa-thumbs-up fa-fw "></span>
         <span class="menu-collapsed">Outgoing bank</span>
         </a>';
@@ -1148,7 +1148,7 @@ if($id == '78'){
         <span class="fa fa-thumbs-up fa-fw "></span>
         <span class="menu-collapsed">Incoming Bank</span>
         </a>
-        <a href="AP/approve-outbank.php" class="dropdown-item bg-dark text-white">
+        <a href="AP/approve_bank_out.php" class="dropdown-item bg-dark text-white">
         <span class="fa fa-thumbs-up fa-fw "></span>
         <span class="menu-collapsed">Outgoing bank</span>
         </a> ';
@@ -1419,6 +1419,11 @@ if($id == '78'){
          </a>';
      }if(strpos($id, '52') !== false){ 
          echo'<a href="AP/general-ledger.php" class="dropdown-item bg-dark text-white">
+         <span class="fa fa-print fa-list"></span>
+         <span class="menu-collapsed">General Ledger</span>
+         </a>';
+     }if(strpos($id, '104') !== false){ 
+         echo'<a href="AP/trial_balance.php" class="dropdown-item bg-dark text-white">
          <span class="fa fa-print fa-list"></span>
          <span class="menu-collapsed">General Ledger</span>
          </a>';

@@ -529,41 +529,7 @@ function SidebarCollapse () {
         });
     });
 </script>
-<!-- 
-<script type="text/javascript">     
-    $('table tbody tr').on('click', 'td:eq(0)', function(){                
-    $('#mymodal').modal('show');
-    var no_bpb = $(this).closest('tr').find('td:eq(0)').attr('value');
-    var tgl_bpb = $(this).closest('tr').find('td:eq(2)').text();
-    var no_po = $(this).closest('tr').find('td:eq(1)').attr('value');
-    var supp = $(this).closest('tr').find('td:eq(3)').attr('value');
-    var top = $(this).closest('tr').find('td:eq(10)').attr('value');
-    var curr = $(this).closest('tr').find('td:eq(8)').attr('value');
-    var confirm = $(this).closest('tr').find('td:eq(5)').attr('value');
-    var confirm2 = $(this).closest('tr').find('td:eq(6)').attr('value');
-    var tgl_po = $(this).closest('tr').find('td:eq(11)').text();        
 
-    $.ajax({
-    type : 'post',
-    url : 'ajaxbpb.php',
-    data : {'no_bpb': no_bpb},
-    success : function(data){
-    $('#details').html(data); //menampilkan data ke dalam modal
-        }
-    });         
-        //make your ajax call populate items or what even you need
-    $('#txt_bpb').html(no_bpb);
-    $('#txt_tglbpb').html('Tgl BPB : ' + tgl_bpb + '');
-    $('#txt_no_po').html('No PO : ' + no_po + '');
-    $('#txt_supp').html('Supplier : ' + supp + '');
-    $('#txt_top').html('TOP : ' + top + ' Days');
-    $('#txt_curr').html('Currency : ' + curr + '');        
-    $('#txt_confirm').html('Confirm By (GMF) : ' + confirm + '');
-    $('#txt_confirm2').html('Confirm By (PCH) : ' + confirm2 + '');
-    $('#txt_tgl_po').html('Tgl PO : ' + tgl_po + '');                         
-});
-
-</script> -->
 
 <script type="text/javascript">
     document.getElementById('btncreate').onclick = function () {
