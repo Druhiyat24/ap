@@ -41,6 +41,21 @@
   padding: 10px 0;
 }
 
+@media print {
+  @page {
+    margin: 0;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  .laporan-table {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+}
+
+
 </style>
 
 <!-- MAIN -->
@@ -216,6 +231,12 @@ div.dataTables_wrapper .dataTables_info {
 <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>  
 <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
+
 
 <script>
   // Hide submenus
@@ -280,6 +301,134 @@ function SidebarCollapse () {
 });
 
 </script>
+
+<script>
+  // EXPORT EXCEL
+document.getElementById('btnExcel').addEventListener('click', function () {
+  // Ambil tabel utama
+  const table = document.querySelector('.laporan-container').outerHTML;
+
+  // Ambil semua CSS dari halaman agar gaya ikut
+  const styles = `
+  body {
+    font-family: Calibri, sans-serif !important;
+    font-size: 11pt !important;
+    color: #000 !important;
+  }
+
+  .laporan-table {
+    font-family: Calibri, sans-serif !important;
+    font-size: 11pt !important;
+    margin: auto;
+    width: 95%;
+    border-collapse: collapse;
+    color: #000 !important;
+  }
+
+  td, th {
+    font-family: Calibri, sans-serif !important;
+    font-size: 11pt !important;
+    vertical-align: middle;
+    padding: 3px 6px;
+  }
+
+  /* === Alignment === */
+  .judul-left, .subjudul-left, .tanggal-left, 
+  .desc-left, .section-left, .subsection-left, 
+  .item-left, .total-left, .grand-left {
+    text-align: left !important;
+  }
+
+  .judul-right, .subjudul-right, .tanggal-right,
+  .desc-right, .section-right, .subsection-right,
+  .item-right, .total-right, .grand-right,
+  .item-italic, .total-italic, .grand-italic {
+    text-align: right !important;
+  }
+
+  /* === Border garis total === */
+  .total-line td {
+    border-bottom: 2px solid #000 !important;
+  }
+
+  .grand-total td {
+    border-bottom: 3px double #000 !important;
+    font-weight: bold;
+    background: #f5f5f5;
+  }
+
+  /* === Bersihkan border Excel bawaan === */
+  table, th, td {
+    border: none !important;
+    outline: none !important;
+    mso-border-alt: none !important;
+  }
+
+  tr, td {
+    mso-style-parent: "";
+    mso-border-alt: none;
+  }
+`;
+
+
+  // Bangun HTML khusus Excel
+  const html = `
+  <html xmlns:x="urn:schemas-microsoft-com:office:excel">
+  <head>
+    <meta charset="UTF-8">
+    <style>${styles}</style>
+    <!--[if gte mso 9]>
+    <xml>
+      <x:ExcelWorkbook>
+        <x:ExcelWorksheets>
+          <x:ExcelWorksheet>
+            <x:Name>Laporan Keuangan</x:Name>
+            <x:WorksheetOptions>
+              <x:DisplayGridlines>false</x:DisplayGridlines>
+            </x:WorksheetOptions>
+          </x:ExcelWorksheet>
+        </x:ExcelWorksheets>
+      </x:ExcelWorkbook>
+    </xml>
+    <![endif]-->
+  </head>
+  <body>${table}</body>
+  </html>`;
+
+  // Buat blob dan trigger download
+  const blob = new Blob([html], { type: "application/vnd.ms-excel" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "laporan_keuangan.xls";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+});
+
+  // PRINT PDF
+  document.getElementById('btnPDF').addEventListener('click', function() {
+    let element = document.querySelector('.laporan-table');
+    let opt = {
+      margin:       [0, 0, 0, 0], // ⬅️ Hapus semua margin PDF
+      filename:     'laporan_keuangan.pdf',
+      image:        { type: 'jpeg', quality: 1 },
+      html2canvas:  {
+        scale: 2,
+        scrollY: 0, // ⬅️ Pastikan tidak ikut offset scroll
+      },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+    };
+
+    // Hapus margin bawaan browser sebelum render
+    document.body.style.margin = '0';
+    document.body.style.padding = '0';
+    element.style.marginTop = '5';
+    element.style.paddingTop = '0';
+
+    html2pdf().set(opt).from(element).save();
+  });
+</script>
+
 
 <script type="text/javascript">
     $(document).ready(function () {
