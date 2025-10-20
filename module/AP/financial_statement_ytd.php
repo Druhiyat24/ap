@@ -151,9 +151,9 @@
 
    <div class="tab">
   <button class="tablinks" onclick="openTab(event, 'trial-balance')">Trial Balance</button>
-  <button class="tablinks" onclick="openTab(event, 'sfp')" id="defaultOpen">SFP</button>
+  <button class="tablinks" onclick="openTab(event, 'sfp')">SFP</button>
   <button class="tablinks" onclick="openTab(event, 'spl')">SPL</button>
-  <button class="tablinks" onclick="openTab(event, 'cf-direct')">CF Direct</button>
+  <button class="tablinks" onclick="openTab(event, 'cf-direct')" id="defaultOpen">CF Direct</button>
   <button class="tablinks" onclick="openTab(event, 'cf-indirect')">CF Indirect</button>
 </div>
 
@@ -165,10 +165,11 @@
   <?php include 'fs_ytd/statement_financial_position.php'; ?>
 </div>
 <div id="spl" class="tabcontent">
-  <h6>Isi tab SPL</h6>
+  <?php include 'fs_ytd/statement_profit_loss.php'; ?>
 </div>
 <div id="cf-direct" class="tabcontent">
-  <h6>Isi tab CF Direct</h6>
+  <!-- <h6>Isi tab CF Direct</h6> -->
+  <?php include 'fs_ytd/cashflow_direct.php'; ?>
 </div>
 <div id="cf-indirect" class="tabcontent">
   <h6>Isi tab CF Indirect</h6>
@@ -237,6 +238,8 @@ div.dataTables_wrapper .dataTables_info {
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 
 
+<script language="JavaScript" src="../css/4.1.1/select2.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
 
 <script>
   // Hide submenus
@@ -564,6 +567,189 @@ document.getElementById("defaultOpen").click();
 
 <!--<script src="//netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
     <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>-->
+
+<script type="text/javascript">
+document.getElementById('btnPDF-spl').addEventListener('click', function () {
+  const element = document.getElementById('laporan-spl-ytd');
+
+  // 🔹 CSS sementara untuk PDF (perkecil font dan jarak baris)
+  const style = document.createElement('style');
+  style.innerHTML = `
+    #laporan-spl-ytd, 
+    #laporan-spl-ytd table, 
+    #laporan-spl-ytd th, 
+    #laporan-spl-ytd td {
+      font-size: 11pt !important;
+      line-height: 1.2 !important;
+    }
+    #laporan-spl-ytd {
+      transform: scale(0.9);
+      transform-origin: top left;
+      width: 110%;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // 🔹 Tampilkan Swal loading
+  Swal.fire({
+    title: 'Sedang membuat PDF...',
+    text: 'Mohon tunggu sebentar',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  // 🔹 Opsi PDF — tingkatkan kualitas hasil render
+  const opt = {
+    margin: [5, 5, 5, 5],
+    filename: 'laporan.pdf',
+    image: { type: 'jpeg', quality: 1 },
+    html2canvas: {
+      scale: 4,
+      useCORS: true,
+      letterRendering: true,
+      scrollY: 0
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+  };
+
+  // 🔹 Proses PDF
+  html2pdf()
+    .set(opt)
+    .from(element)
+    .save()
+    .then(() => {
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: 'PDF berhasil dibuat dan diunduh.',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    })
+    .catch(() => {
+      Swal.fire({
+        icon: 'error',
+        title: 'Gagal!',
+        text: 'Terjadi kesalahan saat membuat PDF.',
+      });
+    })
+    .finally(() => {
+      document.head.removeChild(style);
+    });
+});
+
+</script>
+<script>
+document.getElementById('btnExcel-spl').addEventListener('click', function () {
+  // Ambil tabel utama
+  const table = document.querySelector('.laporan-container-spl').outerHTML;
+
+  // Tambahkan CSS ke dalam Excel
+  const styles = `
+    <style>
+      body {
+        font-family: Calibri, Arial, sans-serif;
+        font-size: 11pt;
+        color: #2c3e50;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      th, td {
+        padding: 2px 4px;
+        vertical-align: middle;
+        mso-number-format:"\\@";
+        border: none;
+      }
+
+      /* ==== ALIGNMENT KHUSUS EXCEL ==== */
+      .item-left, .section-left, .total-left, .grand-left,
+      .judul-left, .subjudul-left, .grand-left, .desc-left {
+        text-align: left !important;
+        mso-justify: left;
+        mso-number-format:"\\@";
+      }
+
+      .item-right, .section-right, .total-right, .grand-right,
+      .judul-right, .subjudul-right, .item-italic, .grand-italic, .total-italic, .desc-right {
+        text-align: right !important;
+        mso-justify: right;
+        mso-number-format:"\\@";
+      }
+
+      /* ==== JUDUL DAN SUBJUDUL ==== */
+      .judul-left, .judul-right {
+        font-weight: bold;
+        font-size: 11pt;
+      }
+
+      .subjudul-left, .subjudul-right {
+        font-weight: bold;
+        font-size: 10pt;
+      }
+
+      /* ==== PERIODE ==== */
+      .periode, .isi-periode, .persentage, .isi-persentage {
+        border-bottom: 2px solid #000;
+        font-weight: bold;
+        text-align: center;
+      }
+
+      /* ==== TOTAL ==== */
+      .total-line td, .total-line th{
+        border-top: 2px solid #000 !important;
+        border-bottom: none !important;
+        font-weight: bold;
+        background: #ffffff !important;
+      }
+
+      /* ==== GRAND TOTAL ==== */
+      .grand-total th {
+        border-top: 3px double #000 !important;
+        border-bottom: none !important;
+        font-weight: bold;
+        background: #f2f2f2 !important;
+      }
+
+      /* ==== SECTION ==== */
+      .section-left, .section-right {
+        font-weight: bold;
+      }
+
+      /* ==== SPASER ==== */
+      .spacer { height: 10px; }
+    </style>
+  `;
+
+  const html = `
+    <html xmlns:x="urn:schemas-microsoft-com:office:excel">
+      <head>
+        <meta charset="UTF-8">
+        ${styles}
+      </head>
+      <body>
+        ${table}
+      </body>
+    </html>
+  `;
+
+  const blob = new Blob([html], { type: "application/vnd.ms-excel" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "Laporan_Keuangan_SPL.xls";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+</script>
+
 
 </body>
 
