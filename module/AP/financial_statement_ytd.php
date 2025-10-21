@@ -233,10 +233,15 @@ div.dataTables_wrapper .dataTables_info {
 <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>  
 <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script> -->
+
+<script language="JavaScript" src="../css/4.1.1/xlsx.full.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/html2pdf.bundle.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/exceljs.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/FileSaver.min.js"></script>
 
 
 <script language="JavaScript" src="../css/4.1.1/select2.min.js"></script>
