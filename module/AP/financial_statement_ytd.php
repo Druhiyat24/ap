@@ -150,10 +150,10 @@
   <div class="card-body p-4">
 
    <div class="tab">
-  <button class="tablinks" onclick="openTab(event, 'trial-balance')">Trial Balance</button>
+  <button class="tablinks" onclick="openTab(event, 'trial-balance')" id="defaultOpen">Trial Balance</button>
   <button class="tablinks" onclick="openTab(event, 'sfp')">SFP</button>
   <button class="tablinks" onclick="openTab(event, 'spl')">SPL</button>
-  <button class="tablinks" onclick="openTab(event, 'cf-direct')" id="defaultOpen">CF Direct</button>
+  <button class="tablinks" onclick="openTab(event, 'cf-direct')">CF Direct</button>
   <button class="tablinks" onclick="openTab(event, 'cf-indirect')">CF Indirect</button>
 </div>
 
@@ -172,7 +172,8 @@
   <?php include 'fs_ytd/cashflow_direct.php'; ?>
 </div>
 <div id="cf-indirect" class="tabcontent">
-  <h6>Isi tab CF Indirect</h6>
+  <!-- <h6>Isi tab CF Indirect</h6> -->
+  <?php include 'fs_ytd/cashflow_indirect.php'; ?>
 </div>
 
   </div>
@@ -402,7 +403,7 @@ document.getElementById('btnExcel').addEventListener('click', function () {
   const blob = new Blob([html], { type: "application/vnd.ms-excel" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = "laporan_keuangan.xls";
+  link.download = "Statement_Financial_Position_YTD.xls";
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -413,7 +414,7 @@ document.getElementById('btnExcel').addEventListener('click', function () {
     let element = document.querySelector('.laporan-table');
     let opt = {
       margin:       [0, 0, 0, 0], // ⬅️ Hapus semua margin PDF
-      filename:     'laporan_keuangan.pdf',
+      filename:     'Statement_Financial_Position_YTD.pdf',
       image:        { type: 'jpeg', quality: 1 },
       html2canvas:  {
         scale: 2,
@@ -436,45 +437,66 @@ document.getElementById('btnExcel').addEventListener('click', function () {
 <script type="text/javascript">
     $(document).ready(function () {
         $('.tanggal').datepicker({
-            format: "dd-mm-yyyy",
-            startDate : "01-01-2022",
+            format: "M yyyy",
             autoclose:true
         });
     });
 </script>
 
   <script type="text/javascript">
-    $(document).on("click", "#co_sal", function(){ 
+$(document).on("click", "#co_sal", function(){ 
+  // ambil data dari baris tabel
   var no_coa = $(this).closest('tr').find('td:eq(1)').attr('value');
   var beg_balance = $(this).closest('tr').find('td:eq(7)').attr('value');
   var debit = $(this).closest('tr').find('td:eq(8)').attr('value');
   var credit = $(this).closest('tr').find('td:eq(9)').attr('value');
   var end_balance = $(this).closest('tr').find('td:eq(10)').attr('value');
   var copy_user = '<?php echo $user ?>';
-  var to_saldo = document.getElementById('to_saldo').value;
+  var to_saldo_el = document.getElementById('to_saldo');
+  var to_saldo = to_saldo_el ? to_saldo_el.value : null;
 
+  // tampilkan semua di console
+  console.log("=== DEBUG COPY SALDO ===");
+  console.log("no_coa:", no_coa);
+  console.log("beg_balance:", beg_balance);
+  console.log("debit:", debit);
+  console.log("credit:", credit);
+  console.log("end_balance:", end_balance);
+  console.log("copy_user:", copy_user);
+  console.log("to_saldo:", to_saldo);
+  console.log("========================");
+
+  // jika elemen 'to_saldo' tidak ditemukan, tampilkan peringatan
+  if (!to_saldo_el) {
+    console.error("Elemen #to_saldo tidak ditemukan di halaman!");
+    return;
+  }
+
+  // jalankan ajax
   $.ajax({
-      type:'POST',
-      url:'fs_ytd/copy_saldo_tb_new.php',
-      data:{
-        no_coa:no_coa,
-        beg_balance:beg_balance,
-        debit:debit,
-        credit:credit,
-        end_balance:end_balance,
-        copy_user:copy_user,
-        to_saldo:to_saldo
-      },
-      success: function(response){
-          alert("Copy Saldo successfully");
-      },
-      error: function(xhr, ajaxOptions, thrownError) {
-          alert("Error: " + xhr.responseText);
-      }
+    type:'POST',
+    url:'fs_ytd/copy_saldo_tb_new.php',
+    data:{
+      no_coa:no_coa,
+      beg_balance:beg_balance,
+      debit:debit,
+      credit:credit,
+      end_balance:end_balance,
+      copy_user:copy_user,
+      to_saldo:to_saldo
+    },
+    success: function(response){
+      console.log("Response:", response);
+      alert("Copy Saldo successfully");
+    },
+    error: function(xhr, ajaxOptions, thrownError) {
+      console.error("AJAX Error:", xhr.responseText);
+      alert("Error: " + xhr.responseText);
+    }
   });
 });
-
 </script>
+
 
 <script>
     $(function() {
@@ -603,7 +625,7 @@ document.getElementById('btnPDF-spl').addEventListener('click', function () {
   // 🔹 Opsi PDF — tingkatkan kualitas hasil render
   const opt = {
     margin: [5, 5, 5, 5],
-    filename: 'laporan.pdf',
+    filename: 'Statement_Profit_or_Loss_YTD.pdf',
     image: { type: 'jpeg', quality: 1 },
     html2canvas: {
       scale: 4,
@@ -669,14 +691,14 @@ document.getElementById('btnExcel-spl').addEventListener('click', function () {
 
       /* ==== ALIGNMENT KHUSUS EXCEL ==== */
       .item-left, .section-left, .total-left, .grand-left,
-      .judul-left, .subjudul-left, .grand-left, .desc-left {
+      .judul-left, .subjudul-left, .grand-left, .desc-left, .subsection-left {
         text-align: left !important;
         mso-justify: left;
         mso-number-format:"\\@";
       }
 
       .item-right, .section-right, .total-right, .grand-right,
-      .judul-right, .subjudul-right, .item-italic, .grand-italic, .total-italic, .desc-right {
+      .judul-right, .subjudul-right, .item-italic, .grand-italic, .total-italic, .desc-right, .subsection-right {
         text-align: right !important;
         mso-justify: right;
         mso-number-format:"\\@";
@@ -717,7 +739,7 @@ document.getElementById('btnExcel-spl').addEventListener('click', function () {
       }
 
       /* ==== SECTION ==== */
-      .section-left, .section-right {
+      .section-left, .section-right, .subsection-left, .subsection-right {
         font-weight: bold;
       }
 
@@ -742,7 +764,373 @@ document.getElementById('btnExcel-spl').addEventListener('click', function () {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "Laporan_Keuangan_SPL.xls";
+  a.download = "Statement_Profit_or_Loss_YTD.xls";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+</script>
+
+
+<script type="text/javascript">
+document.getElementById('btnPDF-cfdirect').addEventListener('click', function () {
+  const element = document.getElementById('laporan-cfdirect-ytd');
+
+  // 🔹 CSS sementara untuk PDF (perkecil font dan jarak baris)
+  const style = document.createElement('style');
+  style.innerHTML = `
+    #laporan-cfdirect-ytd, 
+    #laporan-cfdirect-ytd table, 
+    #laporan-cfdirect-ytd th, 
+    #laporan-cfdirect-ytd td {
+      font-size: 11pt !important;
+      line-height: 1.2 !important;
+    }
+    #laporan-cfdirect-ytd {
+      transform: scale(0.9);
+      transform-origin: top left;
+      width: 110%;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // 🔹 Tampilkan Swal loading
+  Swal.fire({
+    title: 'Sedang membuat PDF...',
+    text: 'Mohon tunggu sebentar',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  // 🔹 Opsi PDF — tingkatkan kualitas hasil render
+  const opt = {
+    margin: [5, 5, 5, 5],
+    filename: 'CashFlow_Direct_YTD.pdf',
+    image: { type: 'jpeg', quality: 1 },
+    html2canvas: {
+      scale: 4,
+      useCORS: true,
+      letterRendering: true,
+      scrollY: 0
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+  };
+
+  // 🔹 Proses PDF
+  html2pdf()
+    .set(opt)
+    .from(element)
+    .save()
+    .then(() => {
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: 'PDF berhasil dibuat dan diunduh.',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    })
+    .catch(() => {
+      Swal.fire({
+        icon: 'error',
+        title: 'Gagal!',
+        text: 'Terjadi kesalahan saat membuat PDF.',
+      });
+    })
+    .finally(() => {
+      document.head.removeChild(style);
+    });
+});
+
+</script>
+<script>
+document.getElementById('btnExcel-cfdirect').addEventListener('click', function () {
+  // Ambil tabel utama
+  const table = document.querySelector('.laporan-container-cfdirect').outerHTML;
+
+  // Tambahkan CSS ke dalam Excel
+  const styles = `
+    <style>
+      body {
+        font-family: Calibri, Arial, sans-serif;
+        font-size: 11pt;
+        color: #2c3e50;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      th, td {
+        padding: 2px 4px;
+        vertical-align: middle;
+        mso-number-format:"\\@";
+        border: none;
+      }
+
+      /* ==== ALIGNMENT KHUSUS EXCEL ==== */
+      .item-left, .section-left, .total-left, .grand-left,
+      .judul-left, .subjudul-left, .grand-left, .desc-left, .subsection-left {
+        text-align: left !important;
+        mso-justify: left;
+        mso-number-format:"\\@";
+      }
+
+      .item-right, .section-right, .total-right, .grand-right,
+      .judul-right, .subjudul-right, .item-italic, .grand-italic, .total-italic, .desc-right, .subsection-right {
+        text-align: right !important;
+        mso-justify: right;
+        mso-number-format:"\\@";
+      }
+
+      /* ==== JUDUL DAN SUBJUDUL ==== */
+      .judul-left, .judul-right {
+        font-weight: bold;
+        font-size: 11pt;
+      }
+
+      .subjudul-left, .subjudul-right {
+        font-weight: bold;
+        font-size: 10pt;
+      }
+
+      /* ==== PERIODE ==== */
+      .periode, .isi-periode, .persentage, .isi-persentage {
+        border-bottom: 2px solid #000;
+        font-weight: bold;
+        text-align: center;
+      }
+
+      /* ==== TOTAL ==== */
+      .total-line td, .total-line th{
+        border-top: 2px solid #000 !important;
+        border-bottom: none !important;
+        font-weight: bold;
+        background: #ffffff !important;
+      }
+
+      /* ==== GRAND TOTAL ==== */
+      .grand-total th {
+        border-top: 3px double #000 !important;
+        border-bottom: none !important;
+        font-weight: bold;
+        background: #f2f2f2 !important;
+      }
+
+      /* ==== SECTION ==== */
+      .section-left, .section-right, .subsection-left, .subsection-right {
+        font-weight: bold;
+      }
+
+      /* ==== SPASER ==== */
+      .spacer { height: 10px; }
+    </style>
+  `;
+
+  const html = `
+    <html xmlns:x="urn:schemas-microsoft-com:office:excel">
+      <head>
+        <meta charset="UTF-8">
+        ${styles}
+      </head>
+      <body>
+        ${table}
+      </body>
+    </html>
+  `;
+
+  const blob = new Blob([html], { type: "application/vnd.ms-excel" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "CashFlow_Direct_YTD.xls";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+</script>
+
+
+<script type="text/javascript">
+document.getElementById('btnPDF-cfindirect').addEventListener('click', function () {
+  const element = document.getElementById('laporan-cfindirect-ytd');
+
+  // 🔹 CSS sementara untuk PDF (perkecil font dan jarak baris)
+  const style = document.createElement('style');
+  style.innerHTML = `
+    #laporan-cfindirect-ytd, 
+    #laporan-cfindirect-ytd table, 
+    #laporan-cfindirect-ytd th, 
+    #laporan-cfindirect-ytd td {
+      font-size: 11pt !important;
+      line-height: 1.2 !important;
+    }
+    #laporan-cfindirect-ytd {
+      transform: scale(0.9);
+      transform-origin: top left;
+      width: 110%;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // 🔹 Tampilkan Swal loading
+  Swal.fire({
+    title: 'Sedang membuat PDF...',
+    text: 'Mohon tunggu sebentar',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  // 🔹 Opsi PDF — tingkatkan kualitas hasil render
+  const opt = {
+    margin: [5, 5, 5, 5],
+    filename: 'CashFlow_Indirect_YTD.pdf',
+    image: { type: 'jpeg', quality: 1 },
+    html2canvas: {
+      scale: 4,
+      useCORS: true,
+      letterRendering: true,
+      scrollY: 0
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+  };
+
+  // 🔹 Proses PDF
+  html2pdf()
+    .set(opt)
+    .from(element)
+    .save()
+    .then(() => {
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: 'PDF berhasil dibuat dan diunduh.',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    })
+    .catch(() => {
+      Swal.fire({
+        icon: 'error',
+        title: 'Gagal!',
+        text: 'Terjadi kesalahan saat membuat PDF.',
+      });
+    })
+    .finally(() => {
+      document.head.removeChild(style);
+    });
+});
+
+</script>
+<script>
+document.getElementById('btnExcel-cfindirect').addEventListener('click', function () {
+  // Ambil tabel utama
+  const table = document.querySelector('.laporan-container-cfindirect').outerHTML;
+
+  // Tambahkan CSS ke dalam Excel
+  const styles = `
+    <style>
+      body {
+        font-family: Calibri, Arial, sans-serif;
+        font-size: 11pt;
+        color: #2c3e50;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      th, td {
+        padding: 2px 4px;
+        vertical-align: middle;
+        mso-number-format:"\\@";
+        border: none;
+      }
+
+      /* ==== ALIGNMENT KHUSUS EXCEL ==== */
+      .item-left, .section-left, .total-left, .grand-left,
+      .judul-left, .subjudul-left, .grand-left, .desc-left, .subsection-left {
+        text-align: left !important;
+        mso-justify: left;
+        mso-number-format:"\\@";
+      }
+
+      .item-right, .section-right, .total-right, .grand-right,
+      .judul-right, .subjudul-right, .item-italic, .grand-italic, .total-italic, .desc-right, .subsection-right {
+        text-align: right !important;
+        mso-justify: right;
+        mso-number-format:"\\@";
+      }
+
+      /* ==== JUDUL DAN SUBJUDUL ==== */
+      .judul-left, .judul-right {
+        font-weight: bold;
+        font-size: 11pt;
+      }
+
+      .subjudul-left, .subjudul-right {
+        font-weight: bold;
+        font-size: 10pt;
+      }
+
+      /* ==== PERIODE ==== */
+      .periode, .isi-periode, .persentage, .isi-persentage {
+        border-bottom: 2px solid #000;
+        font-weight: bold;
+        text-align: center;
+      }
+
+      /* ==== TOTAL ==== */
+      .total-line td, .total-line th{
+        border-top: 2px solid #000 !important;
+        border-bottom: none !important;
+        font-weight: bold;
+        background: #ffffff !important;
+      }
+
+      /* ==== GRAND TOTAL ==== */
+      .grand-total th {
+        border-top: 3px double #000 !important;
+        border-bottom: none !important;
+        font-weight: bold;
+        background: #f2f2f2 !important;
+      }
+
+      /* ==== SECTION ==== */
+      .section-left, .section-right, .subsection-left, .subsection-right {
+        font-weight: bold;
+      }
+
+      /* ==== SPASER ==== */
+      .spacer { height: 10px; }
+    </style>
+  `;
+
+  const html = `
+    <html xmlns:x="urn:schemas-microsoft-com:office:excel">
+      <head>
+        <meta charset="UTF-8">
+        ${styles}
+      </head>
+      <body>
+        ${table}
+      </body>
+    </html>
+  `;
+
+  const blob = new Blob([html], { type: "application/vnd.ms-excel" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "CashFlow_Indirect_YTD.xls";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

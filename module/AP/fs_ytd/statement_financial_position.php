@@ -294,11 +294,11 @@ table th, table td {
 
 
     <!-- HEADER -->
-<div class="export-buttons mt-1 ml-4">
-  <button id="btnExcel" class="btn-export excel">
+<div class="export-buttons mt-2 ml-4">
+  <button id="btnExcel" class=" btn-export excel">
     📊 Export Excel
   </button>
-  <button id="btnPDF" class="btn-export pdf">
+  <button id="btnPDF" class=" btn-export pdf">
     🖨️ Print PDF
   </button>
 </div>

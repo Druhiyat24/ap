@@ -82,6 +82,51 @@ table.dataTable {
     <div class="tb-header mt-2">
       <div>
         <?php
+        $nama_type ='';
+        $Status = '';
+        $start_date ='';
+        $end_date ='';
+        $where ='';
+        $date_now = date("Y-m-d");
+        $tanggal_awal = date("Y-m-d",strtotime($date_now ));
+        $tanggal_akhir = date("Y-m-d",strtotime($date_now ));
+        $bulan_awal = date("m",strtotime($date_now));
+        $bulan_akhir = date("m",strtotime($date_now));  
+        $tahun_awal = date("Y",strtotime($date_now));
+        $tahun_akhir = date("Y",strtotime($date_now));
+        $kata_awal = date("M",strtotime($date_now));
+        $tengah = '_';
+        $kata_akhir = date("Y",strtotime($date_now));
+        $kata_filter = $kata_awal . $tengah . $kata_akhir;
+        $kata_filter2 = $kata_awal . $tengah . $kata_akhir;                 
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $profit_center = isset($_POST['h_profit_center']) ? $_POST['h_profit_center']: null; 
+            $start_date = date("d-m-Y",strtotime($_POST['start_date']));
+            $end_date = date("d-m-Y",strtotime($_POST['end_date'])); 
+
+            $tanggal_awal = date("Y-m-d",strtotime($_POST['start_date']));
+            $tanggal_akhir = date("Y-m-d",strtotime($_POST['end_date'])); 
+
+            $bulan_awal = date("m",strtotime($_POST['start_date']));
+            $bulan_akhir = date("m",strtotime($_POST['end_date']));  
+            $tahun_awal = date("Y",strtotime($_POST['start_date']));
+            $tahun_akhir = date("Y",strtotime($_POST['end_date']));
+
+            $kata_awal = date("M",strtotime($_POST['start_date']));
+            $tengah = '_';
+            $kata_akhir = date("Y",strtotime($_POST['start_date']));
+            $kata_filter = $kata_awal . $tengah . $kata_akhir;
+
+            $kata_awal2 = date("M",strtotime($_POST['end_date']));
+            $tengah2 = '_';
+            $kata_akhir2 = date("Y",strtotime($_POST['end_date']));
+            $kata_filter2 = $kata_awal2 . $tengah2 . $kata_akhir2;
+            
+        }
+echo '<input type="hidden" style="font-size: 12px;" class="form-control" id="to_saldo" name="to_saldo" 
+    value="'.$kata_filter2.'">';
+    ?>
+        <?php
           $start_date = isset($_POST['start_date']) ? $_POST['start_date'] : null;
           $end_date = isset($_POST['end_date']) ? $_POST['end_date'] : null;
           $profit_center = isset($_POST['h_profit_center']) ? $_POST['h_profit_center']: null;
