@@ -1474,6 +1474,20 @@ echo'</ul>
    </li>';
 }
 
+if($user == 'indro' || $user == 'willy'){ 
+   echo'<li class="dropdown-submenu ">
+   <a class="dropdown-item bg-dark text-white" href="#">
+   <span class="fa fa-balance-scale fa-fw"></span>
+   <span class="menu-collapsed">Financial Statement 2</span>
+   </a>
+   <ul class="dropdown-menu bg-dark text-white" role="menu">
+   <a href="../AP/financial_statement_ytd.php" class="dropdown-item bg-dark text-white">
+   <span class="fa fa-calendar fa-fw mr-3"></span>
+   <span class="menu-collapsed">Year To Date</span>
+   </a>
+   </ul>
+   </li>';
+}
 
 }
 
