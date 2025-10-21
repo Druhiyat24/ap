@@ -9,29 +9,21 @@ $eqv_idr = 0;
 $no_ib = isset($_POST['no_ib']) ? $_POST['no_ib']: null;
 $refdoc = isset($_POST['refdoc']) ? $_POST['refdoc']: null;
 if ($refdoc == 'Bank Keluar') {
-    $sql = mysqli_query($conn1,"select b.id_coa,b.coa_name,'-' reff_doc,'-' reff_date, a.curr,if(a.deskripsi = '', '-',a.deskripsi) as deskripsi,a.amount t_debit, '0' t_credit from tbl_bankin_arcollection a left join b_masterbank b on b.bank_account = a.akun  where a.doc_num = '$no_ib'
-union
-select b.no_coa,b.nama_coa, IF(a.no_reff = '', '-', a.no_reff) as reff_doc,IF(a.reff_date = '1970-01-01', '-', DATE_FORMAT(a.reff_date, '%d-%m-%Y')) as reff_date,d.curr, if(a.deskripsi = '', '-',a.deskripsi) as deskripsi, a.t_debit, a.t_credit from b_bankin_none a left join mastercoa_v2 b on b.no_coa = a.id_coa INNER JOIN tbl_bankin_arcollection d on d.doc_num = a.no_bankin where no_bankin = '$no_ib'"); 
+    $sql = mysqli_query($conn1,"select no_coa id_coa,nama_coa coa_name, CONCAT(id_pc,' - ' ,nama_pc) profit_center,IF(no_costcenter = '-', '-', CONCAT(no_costcenter, ' - ', nama_costcenter)) cc_name, IF(a.reff_doc = '', '-', a.reff_doc) as reff_doc,IF(a.reff_date = '1970-01-01', '-', DATE_FORMAT(a.reff_date, '%d-%m-%Y')) as reff_date,buyer,no_ws,curr,debit t_debit,credit t_credit,debit_idr,credit_idr,a.keterangan from tbl_list_journal a left join master_pc b on b.kode_pc = a.profit_center where no_journal = '$no_ib'"); 
     $sql3 = mysqli_query($conn1,"select amount,rate,eqv_idr from tbl_bankin_arcollection where doc_num = '$no_ib'");
     $row3 = mysqli_fetch_assoc($sql3);
     $amount = $row3['amount'];
     $rate = $row3['rate'];
     $eqv_idr = $row3['eqv_idr'];
 }if ($refdoc == 'AR Collection') {
-    $sql = mysqli_query($conn1,"select b.id_coa,b.coa_name,a.id_cost_center,c.cc_name,a.curr,a.amount debit, '0' credit,a.eqv_idr
-     debit_idr,'0' credit_idr from tbl_bankin_arcollection a left join b_masterbank b on b.bank_account = a.akun left join b_master_cc c on c. no_cc = a.id_cost_center where a.doc_num = '$no_ib'
-union
-select a.id_coa,b.nama_coa,a.id_cost_center,c.cc_name,a.curr,'0' debit, a.amount as credit, '0' debit_idr,a.eqv_idr
- credit_idr from tbl_bankin_arcollection a left join mastercoa_v2 b on b.no_coa = a.id_coa left join b_master_cc c on c. no_cc = a.id_cost_center where a.doc_num = '$no_ib'");
+    $sql = mysqli_query($conn1,"select no_coa id_coa,nama_coa coa_name, CONCAT(id_pc,' - ' ,nama_pc) profit_center,IF(no_costcenter = '-', '-', CONCAT(no_costcenter, ' - ', nama_costcenter)) cc_name,buyer,no_ws,curr,debit,credit,debit_idr,credit_idr,a.keterangan from tbl_list_journal a left join master_pc b on b.kode_pc = a.profit_center where no_journal = '$no_ib'");
     $sql3 = mysqli_query($conn1,"select amount,rate,eqv_idr from tbl_bankin_arcollection where doc_num = '$no_ib'");
     $row3 = mysqli_fetch_assoc($sql3);
     $amount = $row3['amount'];
     $rate = $row3['rate'];
     $eqv_idr = $row3['eqv_idr'];
 }if ($refdoc == 'None') {
-    $sql = mysqli_query($conn1,"select b.id_coa,b.coa_name,'-' cost_center,'-' buyer,'-' no_ws,a.curr,a.amount t_debit, '0' t_credit from tbl_bankin_arcollection a left join b_masterbank b on b.bank_account = a.akun left join b_master_cc c on c. no_cc = a.id_cost_center where a.doc_num = '$no_ib'
-union
-select b.no_coa,b.nama_coa,if(a.id_cost_center = '-','-',c.cc_name) as cost_center,if(a.buyer = '','-',a.buyer) as buyer ,if(a.no_ws = '','-',a.no_ws) as no_ws,a.curr,a.t_debit,a.t_credit from tbl_bankin a left join mastercoa_v2 b on b.no_coa = a.id_coa left join b_master_cc c on c.no_cc = a.id_cost_center where a.no_doc = '$no_ib'");
+    $sql = mysqli_query($conn1,"select no_coa id_coa,nama_coa coa_name, CONCAT(id_pc,' - ' ,nama_pc) profit_center,IF(no_costcenter = '-', '-', CONCAT(no_costcenter, ' - ', nama_costcenter)) cost_center,buyer,no_ws,curr,debit,credit,a.keterangan from tbl_list_journal a left join master_pc b on b.kode_pc = a.profit_center where no_journal = '$no_ib'");
     $sql3 = mysqli_query($conn1,"select amount,rate,eqv_idr from tbl_bankin_arcollection where doc_num = '$no_ib'");
     $row3 = mysqli_fetch_assoc($sql3);
     $amount = $row3['amount'];
@@ -48,6 +40,7 @@ if($refdoc == 'None'){
                         <tr>                       
                             <th style="width:10%;">No Coa</th>
                             <th style="width:19%;">Coa Name</th>
+                            <th style="width:14%;">Profit Center</th>
                             <th style="width:14%;">Cost Center</th>
                             <th style="width:14%;">Buyer</th>                                                                              
                             <th style="width:13%;">WS</th>
@@ -62,12 +55,13 @@ if($refdoc == 'None'){
             $table .= '<tr>                       
                             <td style="" value="'.$row['id_coa'].'">'.$row['id_coa'].'</td>
                             <td style="" value="'.$row['coa_name'].'">'.$row['coa_name'].'</td>
+                            <td style="" value="'.$row['profit_center'].'">'.$row['profit_center'].'</td>
                             <td style="" value="'.$row['cost_center'].'">'.$row['cost_center'].'</td>
                             <td style="" value="'.$row['buyer'].'">'.$row['buyer'].'</td>
                             <td style="" value="'.$row['no_ws'].'">'.$row['no_ws'].'</td>
                             <td style="" value="'.$row['curr'].'">'.$row['curr'].'</td>                                                                       
-                            <td style="text-align: right;" value="'.$row['t_debit'].'">'.number_format($row['t_debit'],2).'</td>
-                            <td style="text-align: right;" value="'.$row['t_credit'].'">'.number_format($row['t_credit'],2).'</td> 
+                            <td style="text-align: right;" value="'.$row['debit'].'">'.number_format($row['debit'],2).'</td>
+                            <td style="text-align: right;" value="'.$row['credit'].'">'.number_format($row['credit'],2).'</td> 
                        </tr>';
             $table .= '</tbody>';
         }
@@ -79,6 +73,7 @@ if($refdoc == 'None'){
                         <tr>                       
                             <th style="width:13%;">No Coa</th>
                             <th style="width:18%;">Coa Name</th>
+                            <th style="width:15%;">Profit Center</th>
                             <th style="width:15%;">Cost Center</th>
                             <th style="width:8%;">Curr</th>
                             <th style="width:11%;">Credit</th>                                                                                    
@@ -93,6 +88,7 @@ if($refdoc == 'None'){
             $table .= '<tr>                       
                             <td style="" value="'.$row['id_coa'].'">'.$row['id_coa'].'</td>
                             <td style="" value="'.$row['coa_name'].'">'.$row['coa_name'].'</td>
+                            <td style="" value="'.$row['profit_center'].'">'.$row['profit_center'].'</td>
                             <td style="" value="'.$row['cc_name'].'">'.$row['cc_name'].'</td>
                             <td style="" value="'.$row['curr'].'">'.$row['curr'].'</td> 
                             <td style="text-align: right;" value="'.$row['credit'].'">'.number_format($row['credit'],2).'</td>                                                                     
@@ -110,8 +106,10 @@ if($refdoc == 'None'){
                     <thead>
                         <tr>                       
                             <th style="width:10%;">No Coa</th>
-                            <th style="width:20%;">Coa Name</th>
-                            <th style="width:20%;">Reff Doc</th>                                                                         
+                            <th style="width:15%;">Coa Name</th>
+                            <th style="width:15%;">Profit Center</th>
+                            <th style="width:15%;">Cost Center</th>
+                            <th style="width:15%;">Reff Doc</th>                                                                         
                             <th style="width:13%;">Reff Date</th>
                             <th style="width:9%;">Curr</th>
                             <th style="width:13%;">Debit</th> 
@@ -123,7 +121,9 @@ if($refdoc == 'None'){
             while ($row = mysqli_fetch_assoc($sql)) {
             $table .= '<tr>                       
                             <td style="" value="'.$row['id_coa'].'">'.$row['id_coa'].'</td>
-                            <td style="" value="'.$row['coa_name'].'">'.$row['coa_name'].'</td>                                                                       
+                            <td style="" value="'.$row['coa_name'].'">'.$row['coa_name'].'</td>       
+                            <td style="" value="'.$row['profit_center'].'">'.$row['profit_center'].'</td>
+                            <td style="" value="'.$row['cc_name'].'">'.$row['cc_name'].'</td>                                                                
                             <td style="" value="'.$row['reff_doc'].'">'.$row['reff_doc'].'</td>
                             <td style="" value="'.$row['reff_date'].'">'.$row['reff_date'].'</td>
                             <td style="" value="'.$row['curr'].'">'.$row['curr'].'</td>

@@ -29,7 +29,7 @@ function run_php_remote($url, $nama_file)
     flush();
 }
 
-$base_url = 'http://localhost/ap_dev/module/ap/';
+$base_url = 'http://localhost/ap/module/ap/';
 
 run_php_remote($base_url . 'dashboard-bpb.php', 'dashboard-bpb.php');
 run_php_remote($base_url . 'dashboard-kbon.php', 'dashboard-kbon.php');

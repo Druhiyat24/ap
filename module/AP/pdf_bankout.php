@@ -15,7 +15,7 @@ if ($no_bankout == 'BK/BCA1979/NAG/0525/00339') {
     select no_coa,nama_coa,nama_costcenter,b.profit_center,reff_doc,reff_date,curr, debit, credit, keterangan from tbl_list_journal a left join b_master_cc b on b.no_cc = a.no_costcenter where no_journal = '$no_bankout' AND ( debit > 0 OR credit > 0) and no_coa != '1.10.01'";
 }else{
 
-    $sqlys = "select no_coa,nama_coa,nama_costcenter,c.nama_pc profit_center,reff_doc,reff_date,curr,debit,credit, a.keterangan from tbl_list_journal a left join b_master_cc b on b.no_cc = a.no_costcenter left join master_pc c on c.kode_pc = a.profit_center where debit > 0 and no_journal = '$no_bankout' || credit > 0 and no_journal = '$no_bankout'";
+    $sqlys = "select no_coa,nama_coa,nama_costcenter,c.nama_pc profit_center,reff_doc,reff_date,curr,debit,credit, a.keterangan from tbl_list_journal a left join b_master_cc b on b.no_cc = a.no_costcenter left join master_pc c on c.kode_pc = a.profit_center where a.status != 'Updated' AND (debit > 0 and no_journal = '$no_bankout' || credit > 0 and no_journal = '$no_bankout')";
 }
 
 ob_start();

@@ -121,7 +121,7 @@ if ($dup_kbon != null && $dup_bpb == $no_bpb) {
 		$nama_coa_ftr = $rowcoa_ftr['nama_coa'];
 
 		if ($curr_ftr != 'IDR') {
-			$sqlftr = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where tanggal = '$bankout_ftr' and v_codecurr = 'PAJAK' and curr = '$curr_ftr'");
+			$sqlftr = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where tanggal = '$bankoutdate_ftr' and v_codecurr = 'PAJAK' and curr = '$curr_ftr'");
 			$rowftr = mysqli_fetch_array($sqlftr);
 			$rate_ftr = isset($rowftr['rate']) ? $rowftr['rate'] : 1;
 		}else{

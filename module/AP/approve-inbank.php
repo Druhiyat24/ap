@@ -40,6 +40,10 @@
     margin-right: 5px;
   }
 
+   #mymodal .modal-dialog.modal-lg {
+  max-width: 75% !important;
+}
+
 </style>
 
 <!-- MAIN -->    
@@ -108,29 +112,38 @@
 </div>
 
 
-<div class="modal fade" id="mymodal" data-target="#mymodal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-dark text-white">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                <h4 class="modal-title" id="txt_bpb"></h4>
-            </div>
-            <div class="container">
-                <div class="row">
-                  <div id="txt_tglbpb" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                  <div id="txt_no_po" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                  <div id="txt_supp" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                  <div id="txt_top" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>         
-                  <div id="txt_curr" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                  <div id="txt_confirm" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>          
-                  <div id="details" class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;"></div>          
-              </div>
-          </div>
+<!-- Modal -->
+<div class="modal fade" id="mymodal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+
+      <!-- Header -->
+      <div class="modal-header bg-dark text-white">
+        <h4 class="modal-title mb-0" id="txt_bpb"></h4>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
-      <!-- /.modal-content --> 
+
+      <!-- Body -->
+      <div class="modal-body">
+        <div class="container-fluid">
+          <div class="row">
+            <div id="txt_tglbpb" class="col-6 py-2" style="font-size: 12px;"></div>
+            <div id="txt_no_po" class="col-6 py-2" style="font-size: 12px;"></div>
+            <div id="txt_supp" class="col-6 py-2" style="font-size: 12px;"></div>
+            <div id="txt_top" class="col-6 py-2" style="font-size: 12px;"></div>
+            <div id="txt_curr" class="col-6 py-2" style="font-size: 12px;"></div>
+            <div id="txt_confirm" class="col-6 py-2" style="font-size: 12px;"></div>
+            <div id="details" class="col-12 py-2" style="font-size: 12px;"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div>
-  <!-- /.modal-dialog --> 
-</div> 
+</div>
+
 
 <!-- Bootstrap core JavaScript -->
 <script src="../vendor/jquery/jquery.min.js"></script>

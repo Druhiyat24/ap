@@ -49,6 +49,11 @@
       padding: 4px 8px; /* biar rapat */
   }
 
+  #modal-show .modal-dialog.modal-lg {
+  max-width: 75% !important;
+}
+
+
 </style>
 
 <!-- MAIN -->
@@ -284,28 +289,36 @@ elseif (isset($_GET['nama_supplier']) && isset($_GET['reff_doc'])) {
 </div>
 
 <!-- Modal Detail -->
-<div class="modal fade" id="modal-show" data-target="#modal-show" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header text-white" style="background-color: #2563EB;">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                <h4 class="modal-title" id="txt_bpb"></h4>
-            </div>
-            <div class="container">
-                <div class="row">
-                  <div id="txt_tglbpb" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-          <div id="txt_no_po" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-          <div id="txt_supp" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-          <div id="txt_top" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div> 
-          <div id="txt_tgl_po" class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;"></div>                     
-                 <!--  <div id="txt_create_user" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                  <div id="txt_status" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                  <div id="txt_keterangan" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div> -->                                                    
-                  <div id="details" class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;"></div>          
-              </div>
+<div class="modal fade" id="modal-show" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+
+      <!-- Header -->
+      <div class="modal-header text-white" style="background-color: #2563EB;">
+        <h4 class="modal-title mb-0" id="txt_bpb"></h4>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body">
+        <div class="container-fluid">
+          <div class="row">
+            <div id="txt_tglbpb" class="col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+            <div id="txt_no_po" class="col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+            <div id="txt_supp" class="col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+            <div id="txt_top" class="col-6" style="font-size: 12px; padding: 0.5rem;"></div>
+            <div id="txt_tgl_po" class="col-12" style="font-size: 12px; padding: 0.5rem;"></div>
+            <div id="details" class="col-12" style="font-size: 12px; padding: 0.5rem;"></div>
+          </div>
+        </div>
+      </div>
+
     </div>
+  </div>
 </div>
-</div>      
+    
 
 
 

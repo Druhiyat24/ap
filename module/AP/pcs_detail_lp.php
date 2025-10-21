@@ -227,7 +227,7 @@ select no_lp,total_bayar, kode, '0' as pph from ap_payment where no_lp = '$no_pa
         $kurang_h = $rowlp['ttl_bayar'];
         
        if ($no_lp2 != null) {
-         $kurang = $kurang_h + $pph_h;
+         $kurang = $kurang_h;
         }else{
 
         $kurang = $kurang_h + $pph_h;
