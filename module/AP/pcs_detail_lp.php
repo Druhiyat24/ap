@@ -130,10 +130,13 @@ union
 select no_pay no_journal, no_coa,nama_coa from saldo_awal where no_coa != '') a) b on b.no_journal = a.no_payment");
     }
     else{
-        $data = mysqli_query($conn1,"select * from(select * from(
+        $data = mysqli_query($conn1,"select * from(select * from (select * from(
         (select '' as abc,a.nama_supp, a.no_payment, a.tgl_payment, DATE_FORMAT(a.create_date, '%Y-%m-%d') as create_date,a.top,a.tgl_tempo,curr, sum(a.amount + a.pph_value) as total from list_payment a left join saldo_awal b on b.no_pay = a.no_payment where a.status != 'Cancel' and DATE_FORMAT(a.create_date, '%Y-%m-%d') between '2022-04-14' and '$start_date' GROUP BY no_payment order by create_date asc) union 
         (select '' as abc,a.nama_supp, a.no_payment, a.tgl_payment, DATE_FORMAT(a.create_date, '%Y-%m-%d') as create_date,a.top,a.tgl_tempo,curr, sum(a.amount + a.pph_value) as total from list_payment a left join saldo_awal b on b.no_pay = a.no_payment where a.status != 'Cancel' and DATE_FORMAT(a.create_date, '%Y-%m-%d') between '$start_date' and '$end_date' GROUP BY no_payment order by create_date asc) union 
-        (select '1' as abc, nama_supp, no_payment, tgl_payment, DATE_FORMAT(create_date, '%Y-%m-%d') as create_dat,DATEDIFF(duedate,tgl_payment) as top, duedate, curr, total from saldo_lp_ap GROUP BY no_payment order by tgl_payment asc)) as b order by b.nama_supp asc) a where a.nama_supp = '$nama_supp'");
+        (select '1' as abc, nama_supp, no_payment, tgl_payment, DATE_FORMAT(create_date, '%Y-%m-%d') as create_dat,DATEDIFF(duedate,tgl_payment) as top, duedate, curr, total from saldo_lp_ap GROUP BY no_payment order by tgl_payment asc)) as b order by b.nama_supp asc) a left join 
+                (select * from (select no_payment no_journal, no_coa,nama_coa from list_payment where no_coa != '' GROUP BY no_payment
+union
+select no_pay no_journal, no_coa,nama_coa from saldo_awal where no_coa != '') a) b on b.no_journal = a.no_payment) a where a.nama_supp = '$nama_supp'");
     }
 
         $no = 1;
