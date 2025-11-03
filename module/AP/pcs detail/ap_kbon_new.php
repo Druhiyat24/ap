@@ -199,7 +199,7 @@
             $total_gm2 = isset($rowlp2['total_gm']) ? $rowlp2['total_gm'] : null;
 
 
-            $sql_rvs = mysqli_query($conn1,"select no_kbon,created_date, sum(total) total, sum(total_new) total_new from (select a.no_kbon, created_date, (total_before - coalesce(total_ftr,0)) total, total_new from (SELECT 
+            $sql_rvs = mysqli_query($conn1,"select no_kbon,created_date, sum(total) total, sum(total_new) total_new from (select a.no_kbon, created_date, (COALESCE(total_before,0) - coalesce(total_ftr,0) + coalesce(c.total,0)) total, total_new from (SELECT 
                 q2.no_kbon,
                 q2.created_date,
                 SUM(CASE WHEN q1.no_bpb IS NOT NULL THEN q2.total ELSE 0 END) AS total_before,
@@ -228,14 +228,14 @@
                 ) q1 
                 ON q1.no_bpb = q2.no_bpb 
                 AND q1.no_kbon = q2.no_kbon
-                GROUP BY q2.no_kbon, q2.created_date) a left JOIN (select no_kbon, sum(total_ftr) total_ftr from kontrabon_ftr where status != 'Cancel' GROUP BY no_kbon) b on b.no_kbon = a.no_kbon where created_date between '$start_date' and '$end_date' GROUP BY no_kbon
+                GROUP BY q2.no_kbon, q2.created_date) a left JOIN (select no_kbon, sum(total_ftr) total_ftr from kontrabon_ftr where status != 'Cancel' GROUP BY no_kbon) b on b.no_kbon = a.no_kbon left JOIN rpt_reverse_kbn c on c.no_kbon = a.no_kbon where created_date between '$start_date' and '$end_date' GROUP BY no_kbon
                 UNION
-                select a.no_kbon, DATE_FORMAT(a.created_date,'%Y-%m-%d'), - (b.subtotal + b.tax) total, '0' total_new  from ap_edit_kontrabon_log a INNER JOIN kontrabon_h b on b.no_kbon = a.no_kbon where b.status = 'Updated' and DATE_FORMAT(a.created_date,'%Y-%m-%d') between '$start_date' and '$end_date' GROUP BY no_kbon) a where no_kbon = '$no_kbon' GROUP BY no_kbon");
+                select a.no_kbon, DATE_FORMAT(a.created_date,'%Y-%m-%d'), - (COALESCE(b.subtotal,0) + COALESCE(b.tax,0) - COALESCE(c.total_ftr,0) + COALESCE(d.total,0)) total, '0' total_new  from ap_edit_kontrabon_log a INNER JOIN kontrabon_h b on b.no_kbon = a.no_kbon left JOIN (select no_kbon, sum(total_ftr) total_ftr from kontrabon_ftr where status != 'Cancel' GROUP BY no_kbon) c on c.no_kbon = a.no_kbon left JOIN rpt_reverse_kbn d on d.no_kbon = a.no_kbon where b.status = 'Updated' and DATE_FORMAT(a.created_date,'%Y-%m-%d') between '$start_date' and '$end_date' GROUP BY no_kbon) a where no_kbon = '$no_kbon' GROUP BY no_kbon");
             $row_rvs = mysqli_fetch_array($sql_rvs);
             $total_rvs = isset($row_rvs['total']) ? $row_rvs['total'] : 0;
             $total_add = isset($row_rvs['total_new']) ? $row_rvs['total_new'] : 0;
 
-            $sql_rvs_bfr = mysqli_query($conn1,"select no_kbon,created_date, sum(total) total, sum(total_new) total_new from (select a.no_kbon, created_date, (total_before - coalesce(total_ftr,0)) total, total_new from (SELECT 
+            $sql_rvs_bfr = mysqli_query($conn1,"select no_kbon,created_date, sum(total) total, sum(total_new) total_new from (select a.no_kbon, created_date, (COALESCE(total_before,0) - coalesce(total_ftr,0) + coalesce(c.total,0)) total, total_new from (SELECT 
                 q2.no_kbon,
                 q2.created_date,
                 SUM(CASE WHEN q1.no_bpb IS NOT NULL THEN q2.total ELSE 0 END) AS total_before,
@@ -264,9 +264,9 @@
                 ) q1 
                 ON q1.no_bpb = q2.no_bpb 
                 AND q1.no_kbon = q2.no_kbon
-                GROUP BY q2.no_kbon, q2.created_date) a left JOIN (select no_kbon, sum(total_ftr) total_ftr from kontrabon_ftr where status != 'Cancel' GROUP BY no_kbon) b on b.no_kbon = a.no_kbon where created_date < '$start_date' GROUP BY no_kbon
+                GROUP BY q2.no_kbon, q2.created_date) a left JOIN (select no_kbon, sum(total_ftr) total_ftr from kontrabon_ftr where status != 'Cancel' GROUP BY no_kbon) b on b.no_kbon = a.no_kbon left JOIN rpt_reverse_kbn c on c.no_kbon = a.no_kbon where created_date < '$start_date' GROUP BY no_kbon
                 UNION
-                select a.no_kbon, DATE_FORMAT(a.created_date,'%Y-%m-%d'), - (b.subtotal + b.tax) total, '0' total_new from ap_edit_kontrabon_log a INNER JOIN kontrabon_h b on b.no_kbon = a.no_kbon where b.status = 'Updated' and DATE_FORMAT(a.created_date,'%Y-%m-%d') < '$start_date' GROUP BY no_kbon) a where no_kbon = '$no_kbon' GROUP BY no_kbon");
+                select a.no_kbon, DATE_FORMAT(a.created_date,'%Y-%m-%d'), - (COALESCE(b.subtotal,0) + COALESCE(b.tax,0) - COALESCE(c.total_ftr,0) + COALESCE(d.total,0)) total, '0' total_new  from ap_edit_kontrabon_log a INNER JOIN kontrabon_h b on b.no_kbon = a.no_kbon left JOIN (select no_kbon, sum(total_ftr) total_ftr from kontrabon_ftr where status != 'Cancel' GROUP BY no_kbon) c on c.no_kbon = a.no_kbon left JOIN rpt_reverse_kbn d on d.no_kbon = a.no_kbon where b.status = 'Updated' and DATE_FORMAT(a.created_date,'%Y-%m-%d') < '$start_date' GROUP BY no_kbon) a where no_kbon = '$no_kbon' GROUP BY no_kbon");
             $row_rvs_bfr = mysqli_fetch_array($sql_rvs_bfr);
             $total_rvs_bfr = isset($row_rvs_bfr['total']) ? $row_rvs_bfr['total'] : 0;
             $total_add_bfr = isset($row_rvs_bfr['total_new']) ? $row_rvs_bfr['total_new'] : 0;
@@ -346,7 +346,7 @@ $tambahan_ += $tambahan;
 $reverse += $total_rvs;
 
 if ($total_rvs <= 0) {
-        $input_reverse = 0;
+        $input_reverse = $total_rvs;
     }else{
         $input_reverse = $total_rvs;
     }

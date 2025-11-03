@@ -318,7 +318,7 @@
                 ?>
                 >ALL</option>               
                 <?php 
-                $sql = mysqli_query($conn1,"select distinct(Supplier) from mastersupplier where tipe_sup = 'S' order by Supplier ASC");
+                $sql = mysqli_query($conn1,"select distinct(Supplier) from mastersupplier where tipe_sup = 'C' order by Supplier ASC");
                 while ($row = mysqli_fetch_array($sql)) {
                     $data = $row['Supplier'];
                     if($row['Supplier'] == $_POST['nama_supp']){

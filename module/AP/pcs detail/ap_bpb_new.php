@@ -368,6 +368,7 @@
         $ttl_pro_due4 += $pro_due4;
         $ttl_pro_due5 += $pro_due5;
         $ttl_tot_produe += $tot_produe;
+        $pengurang = $kurang - $total_reverse;
 
 
         echo '<tr style="font-size:12px;text-align:center;">
@@ -412,7 +413,7 @@
 
         $queryin = "INSERT INTO rpt_ap_bpb (nama_supp,no_bpb,tgl_bpb,due_date,curr,beg_balance,addition,deduction,end_balance,end_balance_idr,create_date,due_0,due_1,due_2,due_3,due_4,due_5,due_6,due_7,due_total,produe_0,produe_1,produe_2,produe_3,produe_4,produe_5,produe_6,produe_total,filter_awal,filter_akhir,no_coa,item_type1,item_type2,relasi,user_create) 
         VALUES 
-        ('$suppin', '$bpbin', '$tgl_bpbin', '$due_date_h', '$currin', '$sa_awal', '$tambah', '$kurang', '$sa_akhir', '$saldo_akhir_idr', '$insert_date', '$due_current', '$due_1', '$due_2', '$due_3', '$due_4', '$due_5', '$due_6', '$due_7', '$tot_due', '$pro_due', '$pro_due0', '$pro_due1', '$pro_due2', '$pro_due3', '$pro_due4', '$pro_due5', '$tot_produe', '$start_date', '$end_date', '$no_coa', '$item_type1', '$item_type2', '$relasi','$user')";
+        ('$suppin', '$bpbin', '$tgl_bpbin', '$due_date_h', '$currin', '$sa_awal', '$tambah', '$pengurang', '$sa_akhir', '$saldo_akhir_idr', '$insert_date', '$due_current', '$due_1', '$due_2', '$due_3', '$due_4', '$due_5', '$due_6', '$due_7', '$tot_due', '$pro_due', '$pro_due0', '$pro_due1', '$pro_due2', '$pro_due3', '$pro_due4', '$pro_due5', '$tot_produe', '$start_date', '$end_date', '$no_coa', '$item_type1', '$item_type2', '$relasi','$user')";
 
         $executein = mysqli_query($conn1,$queryin);
 

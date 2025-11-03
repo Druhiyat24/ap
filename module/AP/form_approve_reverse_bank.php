@@ -102,47 +102,33 @@
                 echo $isSelected;
                 ?>                
                 >ALL</option>                                                    
-                <option value="PAYMENT REGULAR" <?php
-                $type_doc = '';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                    $type_doc = isset($_POST['type_doc']) ? $_POST['type_doc']: null;
-                }                 
-                if($type_doc == 'PAYMENT REGULAR'){
-                    $isSelected = ' selected="selected"';
-                }else{
-                    $isSelected = '';
-                }
-                echo $isSelected;
-                ?>
-                >PAYMENT REGULAR</option>
+                <option value="BANK IN" <?php
+            $type_doc = '';
+            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                $type_doc = isset($_POST['type_doc']) ? $_POST['type_doc']: null;
+            }                 
+            if($type_doc == 'BANK IN'){
+                $isSelected = ' selected="selected"';
+            }else{
+                $isSelected = '';
+            }
+            echo $isSelected;
+            ?>
+            >BANK IN</option>
 
-                <option value="PAYMENT CBD" <?php
-                $type_doc = '';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                    $type_doc = isset($_POST['type_doc']) ? $_POST['type_doc']: null;
-                }                 
-                if($type_doc == 'PAYMENT CBD'){
-                    $isSelected = ' selected="selected"';
-                }else{
-                    $isSelected = '';
-                }
-                echo $isSelected;
-                ?>
-                >PAYMENT CBD</option>
-
-                <option value="PAYMENT DP" <?php
-                $type_doc = '';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                    $type_doc = isset($_POST['type_doc']) ? $_POST['type_doc']: null;
-                }                 
-                if($type_doc == 'PAYMENT DP'){
-                    $isSelected = ' selected="selected"';
-                }else{
-                    $isSelected = '';
-                }
-                echo $isSelected;
-                ?>
-                >PAYMENT DP</option>
+            <option value="BANK OUT" <?php
+            $type_doc = '';
+            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                $type_doc = isset($_POST['type_doc']) ? $_POST['type_doc']: null;
+            }                 
+            if($type_doc == 'BANK OUT'){
+                $isSelected = ' selected="selected"';
+            }else{
+                $isSelected = '';
+            }
+            echo $isSelected;
+            ?>
+            >BANK OUT</option>
 
             </select>
         </div>

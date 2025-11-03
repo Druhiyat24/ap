@@ -9,7 +9,7 @@ $doc_num=$_GET['doc_num'];
 $sql= "select doc_num,date,customer,akun,ref_data,bank,deskripsi,curr,create_by,approve_by FROM tbl_bankin_arcollection where doc_num = '$doc_num'";
 $rs=mysqli_fetch_array(mysqli_query($conn2,$sql));
 
-$sqlys = "select no_coa,nama_coa,nama_costcenter,b.profit_center,reff_doc,reff_date,curr,debit,credit, keterangan from tbl_list_journal a left join b_master_cc b on b.no_cc = a.no_costcenter where debit > 0 and no_journal = '$doc_num' || credit > 0 and no_journal = '$doc_num'";
+$sqlys = "select no_coa,nama_coa,nama_costcenter,b.profit_center,reff_doc,reff_date,curr,debit,credit, keterangan from tbl_list_journal a left join b_master_cc b on b.no_cc = a.no_costcenter where debit > 0 and no_journal = '$doc_num' and a.status != 'Updated' || credit > 0 and no_journal = '$doc_num' and a.status != 'Updated'";
 
 
 ob_start();
