@@ -1012,9 +1012,7 @@ table th, table td {
               $total_ekuitas_nag += $ekuitas_nag;
               $total_ekuitas_nak += $ekuitas_nak;
               $total_ekuitas_all += $ekuitas_all;
-              $total_ekt_nag = $total_ekuitas_nag > 0 ? number_format($total_ekuitas_nag,2) : '(' . number_format(abs($total_ekuitas_nag),2) . ')';
-              $total_ekt_nak = $total_ekuitas_nak > 0 ? number_format($total_ekuitas_nak,2) : '(' . number_format(abs($total_ekuitas_nak),2) . ')';
-              $total_ekt_all = $total_ekuitas_all > 0 ? number_format($total_ekuitas_all,2) : '(' . number_format(abs($total_ekuitas_all),2) . ')';
+              
               echo "
                 <tr>
                   <td class='item-left'>{$row5['sub_kategori']}</td>";
@@ -1033,9 +1031,53 @@ table th, table td {
           }
           ?>
 
+          <?php
+          $sql6 = mysqli_query($conn2,"select 'Laba Tahun Berjalan' sub_kategori, 'Profit of the year' sub_kategori_eng, sum(COALESCE(saldo_akhir_nag,0)) as total_nag, sum(COALESCE(saldo_akhir_nak,0)) as total_nak, sum(COALESCE(saldo_akhir_all,0)) as total_all from (select a.*,sum(b.saldo_akhir) saldo_akhir_nag, sum(c.saldo_akhir) saldo_akhir_nak, sum(b.saldo_akhir + c.saldo_akhir) saldo_akhir_all from 
+            (select no_coa, nama_coa, id_ctg2, id_ctg4, ind_categori4 from mastercoa_v2 a left join (select a.id_ctg5 as id_ctg5A,a.ind_name as indname5,a.eng_name as engname5, b.ind_name as indname4,b.eng_name as engname4, c.ind_name as indname3,c.eng_name as engname3, d.ind_name as indname2,d.eng_name as engname2, e.ind_name as indname1,e.eng_name as engname1 from master_coa_ctg5 a INNER JOIN master_coa_ctg4 b on b.id_ctg4 = a.id_ctg4 INNER JOIN master_coa_ctg3 c on c.id_ctg3 = a.id_ctg3 INNER JOIN master_coa_ctg2 d on d.id_ctg2 = a.id_ctg2 INNER JOIN master_coa_ctg1 e on e.id_ctg1 = a.id_ctg1 GROUP BY a.id_ctg5) b on b.id_ctg5A =a.id_ctg5 GROUP BY no_coa) a 
+            left join 
+            (select no_coa, saldo saldo_awal, debit_idr, credit_idr, (saldo + debit_idr - credit_idr) saldo_akhir from (select a.no_coa, saldo, COALESCE(credit_idr,0) credit_idr, COALESCE(debit_idr,0) debit_idr from (select no_coa ,jan_2025 as saldo from fs_saldo_awal_tb where profit_center = 'NAG' order by no_coa asc) a LEFT JOIN (select profit_center, no_coa, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') and profit_center = 'NAG' group by no_coa) e on e.no_coa = a.no_coa) a where no_coa >= '3.40.01' order by no_coa asc) b on b.no_coa = a.no_coa
+            left join 
+            (select no_coa, saldo saldo_awal, debit_idr, credit_idr, (saldo + debit_idr - credit_idr) saldo_akhir from (select a.no_coa, saldo, COALESCE(credit_idr,0) credit_idr, COALESCE(debit_idr,0) debit_idr from (select no_coa ,jan_2025 as saldo from fs_saldo_awal_tb where profit_center = 'NAK' order by no_coa asc) a LEFT JOIN (select profit_center, no_coa, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') and profit_center = 'NAK' group by no_coa) e on e.no_coa = a.no_coa) a where no_coa >= '3.40.01' order by no_coa asc) c on c.no_coa = a.no_coa GROUP BY id_ctg4) a");
+          $total_laba_tahun_berjalan_nag = 0;
+          $total_laba_tahun_berjalan_nak = 0;
+          $total_laba_tahun_berjalan_all = 0;
+          while($row6 = mysqli_fetch_array($sql6)){
+              $laba_tahun_berjalan_nag = $row6['total_nag'] ?? 0;
+              $laba_tahun_berjalan_nak = $row6['total_nak'] ?? 0;
+              $laba_tahun_berjalan_all = $row6['total_all'] ?? 0;
+              $ltb_nag = $laba_tahun_berjalan_nag > 0 ? number_format($laba_tahun_berjalan_nag,2) : '(' . number_format(abs($laba_tahun_berjalan_nag),2) . ')';
+              $ltb_nak = $laba_tahun_berjalan_nak > 0 ? number_format($laba_tahun_berjalan_nak,2) : '(' . number_format(abs($laba_tahun_berjalan_nak),2) . ')';
+              $ltb_all = $laba_tahun_berjalan_all > 0 ? number_format($laba_tahun_berjalan_all,2) : '(' . number_format(abs($laba_tahun_berjalan_all),2) . ')';
+              $total_laba_tahun_berjalan_nag += $laba_tahun_berjalan_nag;
+              $total_laba_tahun_berjalan_nak += $laba_tahun_berjalan_nak;
+              $total_laba_tahun_berjalan_all += $laba_tahun_berjalan_all;
+              $total_ltb_nag = $total_laba_tahun_berjalan_nag > 0 ? number_format($total_laba_tahun_berjalan_nag,2) : '(' . number_format(abs($total_laba_tahun_berjalan_nag),2) . ')';
+              $total_ltb_nak = $total_laba_tahun_berjalan_nak > 0 ? number_format($total_laba_tahun_berjalan_nak,2) : '(' . number_format(abs($total_laba_tahun_berjalan_nak),2) . ')';
+              $total_ltb_all = $total_laba_tahun_berjalan_all > 0 ? number_format($total_laba_tahun_berjalan_all,2) : '(' . number_format(abs($total_laba_tahun_berjalan_all),2) . ')';
+              echo "
+                <tr>
+                  <td class='item-left'>{$row6['sub_kategori']}</td>";
+                  if ($profit_center == 'ALL') {
+                    echo "<td class='item-right'>{$ltb_nag}</td>";
+                    echo "<td class='item-right'>{$ltb_nak}</td>";
+                    echo "<td class='item-right'>{$ltb_all}</td>";
+                  }elseif ($profit_center == 'NAG') {
+                    echo "<td class='item-right'>{$ltb_nag}</td>";
+                  }else{
+                    echo "<td class='item-right'>{$ltb_nak}</td>";
+                  }
+                  echo "<td class='item-italic'>{$row6['sub_kategori_eng']}</td>
+                </tr>
+              ";
+          }
+          ?>
+
           <tr class="total-line">
             <th class="total-left">Jumlah Ekuitas </th>
             <?php 
+              $total_ekt_nag = ($total_ekuitas_nag + $total_laba_tahun_berjalan_nag) > 0 ? number_format(($total_ekuitas_nag + $total_laba_tahun_berjalan_nag),2) : '(' . number_format(abs(($total_ekuitas_nag + $total_laba_tahun_berjalan_nag)),2) . ')';
+              $total_ekt_nak = ($total_ekuitas_nak + $total_laba_tahun_berjalan_nak) > 0 ? number_format(($total_ekuitas_nak + $total_laba_tahun_berjalan_nak),2) : '(' . number_format(abs(($total_ekuitas_nak + $total_laba_tahun_berjalan_nak)),2) . ')';
+              $total_ekt_all = ($total_ekuitas_all + $total_laba_tahun_berjalan_all) > 0 ? number_format(($total_ekuitas_all + $total_laba_tahun_berjalan_all),2) : '(' . number_format(abs(($total_ekuitas_all + $total_laba_tahun_berjalan_all)),2) . ')';
                   if ($profit_center == 'ALL') {
                     echo "<td class='total-right'>{$total_ekt_nag}</td>";
                     echo "<td class='total-right'>{$total_ekt_nak}</td>";
@@ -1072,9 +1114,9 @@ table th, table td {
           <tr class="grand-total">
             <th class="grand-left">JUMLAH LIABILITAS DAN EKUITAS</th>
             <?php
-            $total_liabilitas_ekuitas_nag = $total_liabilitas_pendek_nag + $total_liabilitas_panjang_nag + $total_ekuitas_nag;
-            $total_liabilitas_ekuitas_nak = $total_liabilitas_pendek_nak + $total_liabilitas_panjang_nak + $total_ekuitas_nak;
-            $total_liabilitas_ekuitas_all = $total_liabilitas_pendek_all + $total_liabilitas_panjang_all + $total_ekuitas_all;
+            $total_liabilitas_ekuitas_nag = $total_liabilitas_pendek_nag + $total_liabilitas_panjang_nag + $total_ekuitas_nag + $total_laba_tahun_berjalan_nag;
+            $total_liabilitas_ekuitas_nak = $total_liabilitas_pendek_nak + $total_liabilitas_panjang_nak + $total_ekuitas_nak + $total_laba_tahun_berjalan_nak;
+            $total_liabilitas_ekuitas_all = $total_liabilitas_pendek_all + $total_liabilitas_panjang_all + $total_ekuitas_all + $total_laba_tahun_berjalan_all;
 
             $total_liek_nag = $total_liabilitas_ekuitas_nag > 0 ? number_format($total_liabilitas_ekuitas_nag,2) : '(' . number_format(abs($total_liabilitas_ekuitas_nag),2) . ')';
             $total_liek_nak = $total_liabilitas_ekuitas_nak > 0 ? number_format($total_liabilitas_ekuitas_nak,2) : '(' . number_format(abs($total_liabilitas_ekuitas_nak),2) . ')';
