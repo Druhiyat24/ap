@@ -80,6 +80,7 @@ $nama_cc = $rowcc['cc_name'];
 // $rowy = mysqli_fetch_array($sqly);
 // $balance = $rowy['balance'];
 // $balance2 = $balance + $total;
+if ($no_coa != '' && $no_coa != null) {
 
 $query = "INSERT INTO tbl_memorial_journal (no_mj, mj_date, id_cmj, no_coa, no_costcenter, no_reff, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, keterangan, status, create_by, create_date, profit_center) 
 VALUES 
@@ -94,6 +95,7 @@ VALUES
 
 $executess = mysqli_query($conn2,$queryss);
 
+}
 
 if(!$execute){	
    die('Error: ' . mysqli_error());	

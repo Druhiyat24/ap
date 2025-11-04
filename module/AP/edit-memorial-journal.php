@@ -459,10 +459,10 @@ while($row = mysql_fetch_array($sqlpv)){
     echo '</select>
     </td>
     <td>
-    <input type="text" style="width: 150px;" class="form-control" name="keterangan[]" placeholder="" value="'.$row['no_reff'].'" autocomplete="off">
+    <input type="text" style="font-size: 13px;width: 150px;" class="form-control" name="keterangan[]" placeholder="" value="'.$row['no_reff'].'" autocomplete="off">
     </td>
     <td>
-    <input type="text" style="font-size: 15px;width: 150px;" name="tgl_active" id="tgl_active" value="'.$reffdate.'" class="form-control tanggal" 
+    <input type="text" style="font-size: 13px;width: 150px;" name="tgl_active" id="tgl_active" value="'.$reffdate.'" class="form-control tanggal" 
     value="" autocomplete="off" placeholder="dd-mm-yyyy">
     </td>
     <td>
@@ -509,7 +509,7 @@ while($row = mysql_fetch_array($sqlpv)){
         </td>';
     }
     echo '
-    <td><input type="text" style="width: 150px;" value="'.$row['keterangan'].'" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td>
+    <td><input type="text" style="font-size: 13px;width: 150px;" value="'.$row['keterangan'].'" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td>
     <td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td>
     </tr>';
 }
