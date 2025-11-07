@@ -111,7 +111,7 @@
     if(empty($nama_supp) and empty($start_date) and empty($end_date)){
                 echo '';
             }
-            elseif ($nama_supp == 'ALL') {
+            elseif ($nama_supp == 'ALL' and !empty($start_date) and !empty($end_date)) {
                $data = mysqli_query($conn1,"select * from(((select b.Supplier,a.bpbno_int,bpbdate,c.jml_pterms as top, DATE_ADD(a.bpbdate, INTERVAL c.jml_pterms DAY) as due_date,a.curr,round(sum((((IF(a.qty_reject IS NULL,(a.qty), (a.qty - a.qty_reject))) * a.price) + (((IF(a.qty_reject IS NULL,(a.qty), (a.qty - a.qty_reject))) * a.price) * (c.tax /100)))),2) as total from bpb a INNER JOIN po_header c on c.pono = a.pono INNER JOIN mastersupplier b on b.Id_Supplier = a.id_supplier left JOIN po_header_draft d on d.id = c.id_draft where a.r_ap is null and a.confirm = 'y' and c.app = 'A' and a.price != '0' and cancel = 'N' and d.tipe_com is null and bpbdate between '2022-04-14' and '$start_date' and b.tipe_sup != 'D' || a.r_ap is null and a.confirm = 'y' and c.app = 'A' and a.price != '0' and cancel = 'N' and d.tipe_com IN ('REGULAR','') and bpbdate between '2022-04-14' and '$start_date' and b.tipe_sup != 'D' || a.r_ap is null and a.confirm = 'y' and c.app = 'A' and a.price != '0' and cancel = 'N' and d.tipe_com = 'BUYER' and bpbdate between '2022-04-14' and '$start_date' and b.tipe_sup != 'D' group by a.bpbno_int order by bpbdate asc)union (
                 select c.Supplier,a.bppbno_int,a.bppbdate, '0' as top, '0000-00-00' as due_date,a.curr,ROUND(- SUM((a.qty * a.price)),2) as total from bppb a inner join mastersupplier c on c.Id_Supplier = a.id_supplier  where a.cancel != 'Y' and a.bpbno_ro != '' and a.confirm = 'Y' and a.bppbdate between '2022-04-14' and '$start_date' and c.tipe_sup != 'D' group by bppbno_int))
                 union
@@ -158,152 +158,155 @@
 
         $start_date = date("Y-m-d",strtotime($_GET['start_date']));
         $tgl_bpb = $row['bpbdate'];
-        $no_bpb = $row['bpbno_int'];
-        $bbayar = $row['total'];
-        $currin = $row['curr'];
+            $no_bpb = $row['bpbno_int'];
+            $bbayar = $row['total'];
+            $suppin = $row['Supplier'];
+            $bpbin = $row['bpbno_int'];
+            $tgl_bpbin = $row['bpbdate'];
+            $currin = $row['curr'];
 
-        $sqlcoa = mysqli_query($conn1,"select * from (select a.no_journal,a.no_coa,a.nama_coa,b.item_type1,b.item_type2,b.relasi from (select no_journal,no_coa,nama_coa from tbl_list_journal where credit != '' and type_journal = 'AP - BPB' and no_coa != '1.52.07' and no_journal = '$no_bpb' union select no_journal,no_coa,nama_coa from tbl_list_journal where debit != '' and type_journal = 'AP - BPB RETURN' and no_coa != '1.52.07' and no_journal = '$no_bpb') a left join mastercoa_v2 b on b.no_coa = a.no_coa) a where item_type1 is not null");
-        $rowcoa = mysqli_fetch_array($sqlcoa);
-        $no_coa = isset($rowcoa['no_coa']) ? $rowcoa['no_coa'] : null;
-        $nama_coa = isset($rowcoa['nama_coa']) ? $rowcoa['nama_coa'] : null;
-        $item_type1 = isset($rowcoa['item_type1']) ? $rowcoa['item_type1'] : null;
-        $item_type2 = isset($rowcoa['item_type2']) ? $rowcoa['item_type2'] : null;
-        $relasi = isset($rowcoa['relasi']) ? $rowcoa['relasi'] : null;
+            $sqlcoa = mysqli_query($conn1,"select * from (select a.no_journal,a.no_coa,a.nama_coa,b.item_type1,b.item_type2,b.relasi from (select no_journal,no_coa,nama_coa from tbl_list_journal where credit != '' and type_journal = 'AP - BPB' and no_coa != '1.52.07' and no_journal = '$no_bpb' union select no_journal,no_coa,nama_coa from tbl_list_journal where debit != '' and type_journal = 'AP - BPB RETURN' and no_coa != '1.52.07' and no_journal = '$no_bpb') a left join mastercoa_v2 b on b.no_coa = a.no_coa) a where item_type1 is not null");
+            $rowcoa = mysqli_fetch_array($sqlcoa);
+            $no_coa = isset($rowcoa['no_coa']) ? $rowcoa['no_coa'] : null;
+            $nama_coa = isset($rowcoa['nama_coa']) ? $rowcoa['nama_coa'] : null;
+            $item_type1 = isset($rowcoa['item_type1']) ? $rowcoa['item_type1'] : null;
+            $item_type2 = isset($rowcoa['item_type2']) ? $rowcoa['item_type2'] : null;
+            $relasi = isset($rowcoa['relasi']) ? $rowcoa['relasi'] : null;
 
-        $sqldate = mysqli_query($conn1,"select a.bppbno_int,b.jml_pterms as top,DATE_ADD(a.bppbdate, INTERVAL b.jml_pterms DAY) as due_date from bppb a left join bpb d on d.bpbno = a.bpbno_ro left JOIN po_header b on b.pono = d.pono inner join mastersupplier c on c.Id_Supplier = a.id_supplier  where a.bppbno_int = '$no_bpb' and a.bpbno_ro != '' group by bppbno_int");
-        $rowdate = mysqli_fetch_array($sqldate);
-        $bppbno_int = isset($rowdate['bppbno_int']) ? $rowdate['bppbno_int'] : null;
-        $due_date = isset($rowdate['due_date']) ? $rowdate['due_date'] : null;
-        $jml_pterms = isset($rowdate['jml_pterms']) ? $rowdate['jml_pterms'] : null;
+            $sqldate = mysqli_query($conn1,"select a.bppbno_int,b.jml_pterms as top,DATE_ADD(a.bppbdate, INTERVAL b.jml_pterms DAY) as due_date from bppb a left join bpb d on d.bpbno = a.bpbno_ro left JOIN po_header b on b.pono = d.pono inner join mastersupplier c on c.Id_Supplier = a.id_supplier  where a.bppbno_int = '$no_bpb' and a.bpbno_ro != '' group by bppbno_int");
+            $rowdate = mysqli_fetch_array($sqldate);
+            $bppbno_int = isset($rowdate['bppbno_int']) ? $rowdate['bppbno_int'] : null;
+            $due_date = isset($rowdate['due_date']) ? $rowdate['due_date'] : null;
+            $jml_pterms = isset($rowdate['jml_pterms']) ? $rowdate['jml_pterms'] : null;
 
-        if ($bbayar > 0) {
-            if ($no_bpb == 'WIP/IN/0522/01805') {
-             $jml_tax = 11;
-         }else{
-            $jml_tax = 0;
+            if ($bbayar > 0) {
+                if ($no_bpb == 'WIP/IN/0522/01805') {
+                 $jml_tax = 11;
+             }else{
+                $jml_tax = 0;
+            }
+            $sqllp = mysqli_query($conn1,"select a.no_bpb,a.tgl_bpb, COUNT(a.id) jml_kali from kontrabon a inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.no_bpb = '$no_bpb' and DATE_FORMAT(d.create_date, '%Y-%m-%d') between '$start_date' and '$end_date' and a.status != 'Cancel' GROUP BY a.no_bpb
+                union
+                select no_doc, tgl_doc, '1' jml_kali from tbl_tamb_ap where no_doc = '$no_bpb' and tgl_pay between '$start_date' and '$end_date' GROUP BY no_doc
+                UNION
+                select reff_doc,reff_date, '1' jml_kali from tbl_list_journal where reff_doc = '$no_bpb' and no_journal like '%GM/NAG%' and no_coa = '$no_coa' and type_journal = 'ACCOUNT PAYABLE' and (debit != 0 OR credit != 0) and tgl_journal >= '2024-09-01' and tgl_journal between '$start_date' and '$end_date' GROUP BY reff_doc");
+            $rowlp = mysqli_fetch_array($sqllp);
+            $no_lp = isset($rowlp['no_bpb']) ? $rowlp['no_bpb'] : null;
+            $jml_kali = isset($rowlp['jml_kali']) ? $rowlp['jml_kali'] : 1;
+
+
+            $sqllp2 = mysqli_query($conn1,"select a.no_bpb,a.tgl_bpb,d.tgl_kbon2 , COUNT(a.id) jml_kali from kontrabon a inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.no_bpb = '$no_bpb' and DATE_FORMAT(d.create_date, '%Y-%m-%d') < '$start_date' and a.status != 'Cancel' GROUP BY a.no_bpb
+                union
+                select no_doc, tgl_doc, tgl_doc tgl_doc2, '1' jml_kali from tbl_tamb_ap where no_doc = '$no_bpb' and tgl_pay < '$start_date' GROUP BY no_doc
+                UNION
+                select reff_doc,reff_date,reff_date, '1' jml_kali from tbl_list_journal where reff_doc = '$no_bpb' and no_journal like '%GM/NAG%' and no_coa = '$no_coa' and type_journal = 'ACCOUNT PAYABLE' and (debit != 0 OR credit != 0) and tgl_journal >= '2024-09-01' and tgl_journal < '$start_date' GROUP BY reff_doc");
+            $rowlp2 = mysqli_fetch_array($sqllp2);
+            $no_lp2 = isset($rowlp2['no_bpb']) ? $rowlp2['no_bpb'] : null;
+            $jml_kali2 = isset($rowlp2['jml_kali']) ? $rowlp2['jml_kali'] : 1;
+            $tgl = isset($rowlp2['tgl_kbon2']) ? $rowlp2['tgl_kbon2'] : null;
+        }else{
+            if ($no_bpb == 'GEN/RO/0722/00606' || $no_bpb == 'GEN/RO/0722/00623') {
+               $jml_tax = 0;  
+           }elseif($no_bpb == 'GK/RO/0525/00590'){
+            $jml_tax = 10;
+        }else{
+            $sqltax = mysqli_query($conn1,"select a.bppbno_int, IF(po_header.tax is null,0,po_header.tax) as tax from bppb a inner join mastersupplier c on c.Id_Supplier = a.id_supplier INNER JOIN masteritem on masteritem.id_item = a.id_item right join bpb on bpb.bpbno = a.bpbno_ro left JOIN po_header on po_header.pono = bpb.pono where a.bppbno_int = '$no_bpb' GROUP BY a.bppbno_int");
+            $rowtax = mysqli_fetch_array($sqltax);
+            $jml_tax = isset($rowtax['tax']) ? $rowtax['tax'] : 0;
         }
-        $sqllp = mysqli_query($conn1,"select a.no_bpb,a.tgl_bpb, COUNT(a.id) jml_kali from kontrabon a inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.no_bpb = '$no_bpb' and DATE_FORMAT(d.create_date, '%Y-%m-%d') between '$start_date' and '$end_date' and a.status != 'Cancel' GROUP BY a.no_bpb
+
+        $sqllp = mysqli_query($conn1,"select a.no_bppb,a.tgl_bppb, '1' jml_kali from bppb_new a inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.no_bppb = '$no_bpb' and DATE_FORMAT(d.create_date, '%Y-%m-%d') between '$start_date' and '$end_date' and a.status != 'Cancel' GROUP BY a.no_bppb
             union
             select no_doc, tgl_doc, '1' jml_kali from tbl_tamb_ap where no_doc = '$no_bpb' and tgl_pay between '$start_date' and '$end_date' GROUP BY no_doc
             UNION
-            select reff_doc,reff_date, '1' jml_kali from tbl_list_journal where reff_doc = '$no_bpb' and no_journal like '%GM/NAG%' and no_coa = '$no_coa' and type_journal = 'ACCOUNT PAYABLE' and (debit != 0 OR credit != 0) and tgl_journal >= '2024-09-01' and tgl_journal between '$start_date' and '$end_date' GROUP BY reff_doc");
+            select reff_doc,reff_date, '1' jml_kali from tbl_list_journal where reff_doc = '$no_bpb' and tgl_journal >= '2024-09-01' and tgl_journal between '$start_date' and '$end_date' and no_journal like '%GM/NAG%' and (debit != 0 OR credit != 0) and type_journal = 'ACCOUNT PAYABLE' GROUP BY reff_doc");
         $rowlp = mysqli_fetch_array($sqllp);
-        $no_lp = isset($rowlp['no_bpb']) ? $rowlp['no_bpb'] : null;
+        $no_lp = isset($rowlp['no_bppb']) ? $rowlp['no_bppb'] : null;
         $jml_kali = isset($rowlp['jml_kali']) ? $rowlp['jml_kali'] : 1;
 
-
-        $sqllp2 = mysqli_query($conn1,"select a.no_bpb,a.tgl_bpb,d.tgl_kbon2 , COUNT(a.id) jml_kali from kontrabon a inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.no_bpb = '$no_bpb' and DATE_FORMAT(d.create_date, '%Y-%m-%d') < '$start_date' and a.status != 'Cancel' GROUP BY a.no_bpb
+        $sqllp2 = mysqli_query($conn1,"select a.no_bppb,a.tgl_bppb,d.tgl_kbon2, '1' jml_kali from bppb_new a inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.no_bppb = '$no_bpb' and DATE_FORMAT(d.create_date, '%Y-%m-%d') < '$start_date' and a.status != 'Cancel' GROUP BY a.no_bppb
             union
             select no_doc, tgl_doc, tgl_doc tgl_doc2, '1' jml_kali from tbl_tamb_ap where no_doc = '$no_bpb' and tgl_pay < '$start_date' GROUP BY no_doc
             UNION
-            select reff_doc,reff_date,reff_date, '1' jml_kali from tbl_list_journal where reff_doc = '$no_bpb' and no_journal like '%GM/NAG%' and no_coa = '$no_coa' and type_journal = 'ACCOUNT PAYABLE' and (debit != 0 OR credit != 0) and tgl_journal >= '2024-09-01' and tgl_journal < '$start_date' GROUP BY reff_doc");
+            select reff_doc,reff_date,reff_date, '1' jml_kali from tbl_list_journal where reff_doc = '$no_bpb' and no_journal like '%GM/NAG%' and (debit != 0 OR credit != 0) and tgl_journal >= '2024-09-01' and tgl_journal < '$start_date' and type_journal = 'ACCOUNT PAYABLE' GROUP BY reff_doc");
         $rowlp2 = mysqli_fetch_array($sqllp2);
-        $no_lp2 = isset($rowlp2['no_bpb']) ? $rowlp2['no_bpb'] : null;
+        $no_lp2 = isset($rowlp2['no_bppb']) ? $rowlp2['no_bppb'] : null;
         $jml_kali2 = isset($rowlp2['jml_kali']) ? $rowlp2['jml_kali'] : 1;
         $tgl = isset($rowlp2['tgl_kbon2']) ? $rowlp2['tgl_kbon2'] : null;
-    }else{
-        if ($no_bpb == 'GEN/RO/0722/00606' || $no_bpb == 'GEN/RO/0722/00623') {
-         $jml_tax = 0;  
-     }elseif($no_bpb == 'GK/RO/0525/00590'){
-        $jml_tax = 10;
-    }else{
-        $sqltax = mysqli_query($conn1,"select a.bppbno_int, IF(po_header.tax is null,0,po_header.tax) as tax from bppb a inner join mastersupplier c on c.Id_Supplier = a.id_supplier INNER JOIN masteritem on masteritem.id_item = a.id_item right join bpb on bpb.bpbno = a.bpbno_ro left JOIN po_header on po_header.pono = bpb.pono where a.bppbno_int = '$no_bpb' GROUP BY a.bppbno_int");
-        $rowtax = mysqli_fetch_array($sqltax);
-        $jml_tax = isset($rowtax['tax']) ? $rowtax['tax'] : 0;
     }
 
-    $sqllp = mysqli_query($conn1,"select a.no_bppb,a.tgl_bppb, '1' jml_kali from bppb_new a inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.no_bppb = '$no_bpb' and DATE_FORMAT(d.create_date, '%Y-%m-%d') between '$start_date' and '$end_date' and a.status != 'Cancel' GROUP BY a.no_bppb
-        union
-        select no_doc, tgl_doc, '1' jml_kali from tbl_tamb_ap where no_doc = '$no_bpb' and tgl_pay between '$start_date' and '$end_date' GROUP BY no_doc
-        UNION
-        select reff_doc,reff_date, '1' jml_kali from tbl_list_journal where reff_doc = '$no_bpb' and tgl_journal >= '2024-09-01' and tgl_journal between '$start_date' and '$end_date' and no_journal like '%GM/NAG%' and (debit != 0 OR credit != 0) and type_journal = 'ACCOUNT PAYABLE' GROUP BY reff_doc");
-    $rowlp = mysqli_fetch_array($sqllp);
-    $no_lp = isset($rowlp['no_bppb']) ? $rowlp['no_bppb'] : null;
-    $jml_kali = isset($rowlp['jml_kali']) ? $rowlp['jml_kali'] : 1;
 
-    $sqllp2 = mysqli_query($conn1,"select a.no_bppb,a.tgl_bppb,d.tgl_kbon2, '1' jml_kali from bppb_new a inner join kontrabon_h d on d.no_kbon = a.no_kbon where a.no_bppb = '$no_bpb' and DATE_FORMAT(d.create_date, '%Y-%m-%d') < '$start_date' and a.status != 'Cancel' GROUP BY a.no_bppb
-        union
-        select no_doc, tgl_doc, tgl_doc tgl_doc2, '1' jml_kali from tbl_tamb_ap where no_doc = '$no_bpb' and tgl_pay < '$start_date' GROUP BY no_doc
-        UNION
-        select reff_doc,reff_date,reff_date, '1' jml_kali from tbl_list_journal where reff_doc = '$no_bpb' and no_journal like '%GM/NAG%' and (debit != 0 OR credit != 0) and tgl_journal >= '2024-09-01' and tgl_journal < '$start_date' and type_journal = 'ACCOUNT PAYABLE' GROUP BY reff_doc");
-    $rowlp2 = mysqli_fetch_array($sqllp2);
-    $no_lp2 = isset($rowlp2['no_bppb']) ? $rowlp2['no_bppb'] : null;
-    $jml_kali2 = isset($rowlp2['jml_kali']) ? $rowlp2['jml_kali'] : 1;
-    $tgl = isset($rowlp2['tgl_kbon2']) ? $rowlp2['tgl_kbon2'] : null;
-}
+    $sql_rvs = mysqli_query($conn1,"select a.no_bpb, a.total, sum(a.total + COALESCE(b.total,0)) total_reverse from (select no_kbon, no_bpb, (subtotal + tax) total from kontrabon where status = 'Updated' and DATE_FORMAT(create_date,'%Y-%m-%d') BETWEEN '$start_date' and '$end_date' ) a left join (select no_kbon, no_bpb, '0' total from kontrabon where status != 'Cancel' and status != 'Updated') b on b.no_bpb = a.no_bpb WHERE a.no_bpb = '$no_bpb'");
+    $row_rvs = mysqli_fetch_array($sql_rvs);
+    $total_reverse = isset($row_rvs['total_reverse']) ? $row_rvs['total_reverse'] : 0;
 
+    $sql_rvs_bfr = mysqli_query($conn1,"select a.no_bpb, a.total, sum(a.total + COALESCE(b.total,0)) total_reverse from (select no_kbon, no_bpb, (subtotal + tax) total from kontrabon where status = 'Updated' and DATE_FORMAT(create_date,'%Y-%m-%d') < '$start_date') a left join (select no_kbon, no_bpb, '0' total from kontrabon where status != 'Cancel' and status != 'Updated') b on b.no_bpb = a.no_bpb WHERE a.no_bpb = '$no_bpb'");
+    $row_rvs_bfr = mysqli_fetch_array($sql_rvs_bfr);
+    $total_reverse_bfr = isset($row_rvs_bfr['total_reverse']) ? $row_rvs_bfr['total_reverse'] : 0;
 
-$sql_rvs = mysqli_query($conn1,"select a.no_bpb, a.total, sum(a.total + COALESCE(b.total,0)) total_reverse from (select no_kbon, no_bpb, (subtotal + tax) total from kontrabon where status = 'Updated' and DATE_FORMAT(create_date,'%Y-%m-%d') BETWEEN '$start_date' and '$end_date' ) a left join (select no_kbon, no_bpb, '0' total from kontrabon where status != 'Cancel' and status != 'Updated') b on b.no_bpb = a.no_bpb WHERE a.no_bpb = '$no_bpb'");
-$row_rvs = mysqli_fetch_array($sql_rvs);
-$total_reverse = isset($row_rvs['total_reverse']) ? $row_rvs['total_reverse'] : 0;
+    if($bppbno_int != null){
+        $due_date_h = $due_date;
+        $top_h = $jml_pterms;
+    }else{
+        $due_date_h = $row['due_date'];
+        $top_h = $row['top'];
+    }
 
-$sql_rvs_bfr = mysqli_query($conn1,"select a.no_bpb, a.total, sum(a.total + COALESCE(b.total,0)) total_reverse from (select no_kbon, no_bpb, (subtotal + tax) total from kontrabon where status = 'Updated' and DATE_FORMAT(create_date,'%Y-%m-%d') < '$start_date') a left join (select no_kbon, no_bpb, '0' total from kontrabon where status != 'Cancel' and status != 'Updated') b on b.no_bpb = a.no_bpb WHERE a.no_bpb = '$no_bpb'");
-$row_rvs_bfr = mysqli_fetch_array($sql_rvs_bfr);
-$total_reverse_bfr = isset($row_rvs_bfr['total_reverse']) ? $row_rvs_bfr['total_reverse'] : 0;
+    if($no_lp != null){
+        $kurang = ($row['total'] + ($row['total'] * $jml_tax/100)) * $jml_kali;
+    }else{
+        $kurang = 0;
+    }
 
-if($bppbno_int != null){
-    $due_date_h = $due_date;
-    $top_h = $jml_pterms;
-}else{
-    $due_date_h = $row['due_date'];
-    $top_h = $row['top'];
-}
+    if($no_lp2 != null){
+        $bayar = ($row['total'] + ($row['total'] * $jml_tax/100)) * $jml_kali2;
+    }else{
+        $bayar = 0;
+    }
 
-if($no_lp != null){
-    $kurang = ($row['total'] + ($row['total'] * $jml_tax/100)) * $jml_kali;
-}else{
-    $kurang = 0;
-}
-
-if($no_lp2 != null){
-    $bayar = ($row['total'] + ($row['total'] * $jml_tax/100)) * $jml_kali2;
-}else{
-    $bayar = 0;
-}
-
-if($tgl_bpb < $start_date){
-    $sa_awal = ($row['total'] + ($row['total'] * $jml_tax/100)) - $bayar + $total_reverse_bfr;
-}
-else{
-    $sa_awal = 0;
-}
+    if($tgl_bpb < $start_date){
+        $sa_awal = ($row['total'] + ($row['total'] * $jml_tax/100)) - $bayar + $total_reverse_bfr;
+    }
+    else{
+        $sa_awal = 0;
+    }
 
 
-if($tgl_bpb >= $start_date and $tgl < $start_date){
-    $tambah = ($row['total'] + ($row['total'] * $jml_tax/100)) - $bayar;
-}elseif($tgl_bpb >= $start_date){
-    $tambah = ($row['total'] + ($row['total'] * $jml_tax/100));
-}else{
-    $tambah = 0;
-}
+    if($tgl_bpb >= $start_date and $tgl < $start_date){
+        $tambah = ($row['total'] + ($row['total'] * $jml_tax/100)) - $bayar;
+    }elseif($tgl_bpb >= $start_date){
+        $tambah = ($row['total'] + ($row['total'] * $jml_tax/100));
+    }else{
+        $tambah = 0;
+    }
 
-if ($currin == 'IDR') {
-    $rate = 1;
-}elseif ($currin == 'CNY') {
-    $rate = 2234.01;
-}else{
-    $rate = $jml_rate;
-}
+    if ($currin == 'IDR') {
+        $rate = 1;
+    }elseif ($currin == 'CNY') {
+        $rate = 2234.01;
+    }else{
+        $rate = $jml_rate;
+    }
 
 
-$sa_akhir = $sa_awal + $tambah - $kurang + $total_reverse; 
-$saldo_akhir_idr = $sa_akhir * $rate;
-$saldo_akhir_idr_ += $saldo_akhir_idr;
-$sa_akhir_ += $sa_akhir;
-$kurang_ += $kurang;
-$sa_awal_ += $sa_awal;
-$tambah_ += $tambah;
-$reverse += $total_reverse;
+    $sa_akhir = $sa_awal + $tambah - $kurang + $total_reverse; 
+    $saldo_akhir_idr = $sa_akhir * $rate;
+    $saldo_akhir_idr_ += $saldo_akhir_idr;
+    $sa_akhir_ += $sa_akhir;
+    $kurang_ += $kurang;
+    $sa_awal_ += $sa_awal;
+    $tambah_ += $tambah;
+    $reverse += $total_reverse;
 if($sa_awal == '0' and $tambah == '0' and $kurang == '0' and $sa_akhir == '0'){
     echo '';
 }else{
 
     if ($due_date_h > $end_date) {
-        $due_current = $saldo_akhir_idr; 
-    }else{
-        $due_current = 0; 
-    }
-    $diff = (strtotime($end_date) - strtotime($due_date_h));
+            $due_current = $saldo_akhir_idr; 
+        }else{
+            $due_current = 0; 
+        }
+        $diff = (strtotime($end_date) - strtotime($due_date_h));
     $aging_days = floor($diff/ (60*60*24));
     if ($aging_days >= 0 && $aging_days < 31) { $due_1 = $saldo_akhir_idr; }else{ $due_1 = 0; }
     if ($aging_days > 30 && $aging_days < 61) { $due_2 = $saldo_akhir_idr; }else{ $due_2 = 0; }
