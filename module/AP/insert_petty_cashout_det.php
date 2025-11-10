@@ -81,9 +81,15 @@ VALUES
 
 $execute2 = mysqli_query($conn2,$query2);
 
-$queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
+$sql_getLP = mysqli_query($conn1,"select no_payment, no_coa, nama_coa, profit_center from list_payment where no_payment = '$no_pay'");
+$row_getLP = mysqli_fetch_array($sql_getLP);
+$lp_no_coa = $row_getLP['no_coa'];
+$lp_nama_coa = $row_getLP['nama_coa'];
+$lp_profit_center = $row_getLP['profit_center'];
+
+$queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
 VALUES 
-   ('$kode', '$tgl_pco', '$type_co', '-', '-', '-', '-', '$no_pay', '$pay_date', '-', '-', '$curr', '$rate', '$amount_fgn', '0', '$amount_lp', '0', 'Draft', '$pesan', '$create_by', '$create_date', '', '', '', '')";
+   ('$kode', '$tgl_pco', '$type_co', '$lp_no_coa', '$lp_nama_coa', '-', '-', '$no_pay', '$pay_date', '-', '-', '$curr', '$rate', '$amount_fgn', '0', '$amount_lp', '0', 'Draft', '$pesan', '$create_by', '$create_date', '', '', '', '','$lp_profit_center')";
 
 $executess2 = mysqli_query($conn2,$queryss2);
 
