@@ -123,10 +123,17 @@
      $rowswl2 = mysqli_fetch_array($sqlswl2);
      $saldoswal = isset($rowswl2['saldoawal']) ? $rowswl2['saldoawal'] : 0;
 
+     $sqlswl4 = mysqli_query($conn1,"select nomor,saldo_akhir saldoawal from (SELECT (@runnum :=@runnum + 1) AS nomor,q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
+        FROM
+        (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '$accountid' and transaksi_date < '$start_date' and status != 'Cancel') AS q1 JOIN
+        (SELECT @runtot:= $swl ,@runnum:= 0) runtot) a ORDER BY a.nomor desc limit 1");
+     $rowswl4 = mysqli_fetch_array($sqlswl4);
+     $saldoswal2 = isset($rowswl4['saldoawal']) ? $rowswl4['saldoawal'] : 0;
+
      $sql6 = mysqli_query($conn1, "select nomor,date,saldo_akhir from (SELECT (@runnum :=@runnum + 1) AS nomor,q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
         FROM
-        (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '$accountid' and transaksi_date between '$start_date' and '$end_date') AS q1 JOIN
-        (SELECT @runtot:= $saldoswal,@runnum:=0) runtot) a ORDER BY a.nomor desc limit 1");
+        (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '$accountid' and transaksi_date between '$start_date' and '$end_date' and status != 'Cancel') AS q1 JOIN
+        (SELECT @runtot:= $saldoswal2,@runnum:=0) runtot) a ORDER BY a.nomor desc limit 1");
      $rows6 = mysqli_fetch_array($sql6);
      $saldoakhir = isset($rows6['saldo_akhir']) ? $rows6['saldo_akhir'] : 0;
      $dateakhir = isset($rows6['date']) ? $rows6['date'] : 0;

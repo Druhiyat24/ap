@@ -551,15 +551,17 @@ while($row2 = mysqli_fetch_array($sql)){
     $total_out_price = $total_out_nilai / $total_outqty;
 
     $total_end_qty = $total_sal_qty + $total_in_qty - $total_out_qty + $qty_adj;
-    $nilai_all = $total_sal_nilai + $total_in_nilai - $total_out_nilai + $total_adj;
-    $qty_all = $total_sal_qty + $total_in_qty - $total_out_qty;
-    if ($qty_all == 0) {
-        $qtyall = 1;
-    }else{
-        $qtyall = $qty_all;
-    }
-    $total_end_price = round($nilai_all,2) / round($qtyall,2);
-    $total_end_nilai = $total_end_qty * $total_end_price;
+    $nilai_all = floatval($total_sal_nilai) + floatval($total_in_nilai) - floatval($total_out_nilai) + floatval($total_adj);
+$qty_all   = floatval($total_sal_qty) + floatval($total_in_qty) - floatval($total_out_qty);
+
+// kalau qty nol atau bukan angka, ganti jadi 1 agar tidak error
+$qtyall = ($qty_all != 0 && !is_nan($qty_all)) ? $qty_all : 1;
+
+// pastikan pembagian valid
+$total_end_price = round($nilai_all / $qtyall, 2);
+$total_end_price__ = $nilai_all / $qtyall;
+
+    $total_end_nilai = $total_end_qty * $total_end_price__;
     if (round($total_end_nilai,2) == 0 && round($total_end_nilai,2) == 0) {
         $total_end_price = 0;
     }else{
