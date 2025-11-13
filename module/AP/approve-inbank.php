@@ -135,6 +135,7 @@
             <div id="txt_top" class="col-6 py-2" style="font-size: 12px;"></div>
             <div id="txt_curr" class="col-6 py-2" style="font-size: 12px;"></div>
             <div id="txt_confirm" class="col-6 py-2" style="font-size: 12px;"></div>
+            <div id="txt_desk" class="col-12 py-2" style="font-size: 12px;"></div>
             <div id="details" class="col-12 py-2" style="font-size: 12px;"></div>
           </div>
         </div>
@@ -270,7 +271,7 @@ function SidebarCollapse () {
         $('#txt_top').html('Bank : ' + bank + '');
         $('#txt_curr').html('Currency : ' + curr + '');        
         $('#txt_confirm').html('Status : ' + status + '');
-        $('#txt_tgl_po').html('Description : ' + desk + '');                    
+        $('#txt_desk').html('Description : ' + desk + '');                    
     });
 
 </script>
