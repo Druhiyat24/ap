@@ -1545,6 +1545,10 @@ echo'</ul>
       <span class="fa fa-cart-arrow-down fa-fw "></span>
       <span class="menu-collapsed">Trx In</span>
       </a>
+      <a href="../AP/ca_fabric_trx_in_new.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-cart-arrow-down fa-fw "></span>
+      <span class="menu-collapsed">Trx In New</span>
+      </a>
       <a href="../AP/ca_fabric_trx_out.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-paper-plane fa-fw "></span>
       <span class="menu-collapsed">Trx Out</span>
