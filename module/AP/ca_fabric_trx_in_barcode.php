@@ -17,11 +17,11 @@
   <div class="card shadow border-0">
     <div class="card-header text-white py-2 px-3" 
     style="background: linear-gradient(90deg, #191970, #1e90ff);">
-    <h5 class="mb-0"><i class="fa fa-sign-in" aria-hidden="true"></i> FABRIC TRANSACTION ITEM IN</h5>
+    <h5 class="mb-0"><i class="fa fa-sign-in" aria-hidden="true"></i> FABRIC TRANSACTION BARCODE IN</h5>
 </div>
 
 <div class="card-body p-3">
-  <form id="form-data" action="ca_fabric_trx_in_new.php" method="post">
+  <form id="form-data" action="ca_fabric_trx_in_barcode.php" method="post">
     <div class="row g-3">
 
         <!-- Start Date -->
@@ -71,7 +71,7 @@
     $start_date = isset($_POST['start_date']) ? $_POST['start_date'] : null;
     $end_date = isset($_POST['end_date']) ? $_POST['end_date'] : null;
 
-    echo '<a style="padding-right: 10px;" target="_blank" href="ekspor_ca_fabric_trx_in_new.php?start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success ml-2" style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
+    echo '<a style="padding-right: 10px;" target="_blank" href="ekspor_ca_fabric_trx_in_barcode.php?start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success ml-2" style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
 
     ?>     
 
@@ -93,6 +93,10 @@
             <tr >
                 <th rowspan="2" style="text-align: center;vertical-align: middle;">No Trans</th>
                 <th rowspan="2" style="text-align: center;vertical-align: middle;">Tgl Trans</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">No Barcode</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">No Roll</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">No Lot</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Lokasi</th>
                 <th rowspan="2" style="text-align: center;vertical-align: middle;">Id Item</th>
                 <th rowspan="2" style="text-align: center;vertical-align: middle;">Nama Barang</th>
                 <th rowspan="2" style="text-align: center;vertical-align: middle;">Warna</th>
@@ -151,9 +155,9 @@
             $sql = mysqli_query($conn2,"WITH
                 out_h as (select a.no_dok, a.tgl_dok, b.id_jo, b.id_item, c.itemdesc, c.color, c.size, IFNULL(type_bc,'-') type_bc, IFNULL(no_invoice,'-') no_invoice, IFNULL(no_aju,'-') no_aju, tgl_aju, IFNULL(no_daftar,'-') no_daftar, tgl_daftar, a.supplier, IFNULL(a.no_po,'-') no_po, IFNULL(tipe_com,'-') tipe_com, IFNULL(no_invoice,'-') no_sj, IFNULL(a.deskripsi,'-') deskripsi, CONCAT(a.created_by,' (',a.created_at, ') ') username, kpno, styleno, a.type_pch, b.price from whs_inmaterial_fabric a INNER JOIN whs_inmaterial_fabric_det b on b.no_dok = a.no_dok INNER JOIN masteritem c on c.id_item = b.id_item INNER JOIN (select id_jo,kpno,styleno from act_costing ac inner join so on ac.id=so.id_cost inner join jo_det jod on so.id=jod.id_so group by id_jo) d on d.id_jo=b.id_jo LEFT join po_header po on po.pono = a.no_po LEFT join po_header_draft pod on pod.id = po.id_draft where a.tgl_dok BETWEEN '$start_date' and '$end_date' and a.status != 'Cancel' and b.status != 'N' GROUP BY b.id_item, b.id_jo, b.no_dok),
 
-                out_det as (select no_dok, id_jo, id_item, no_barcode, no_roll, no_lot, kode_lok, sum(qty_aktual) qty_in, satuan, np_curr, np_tgl_in, IFNULL(np_price,0) np_price, IF(np_curr = 'IDR',1,IFNULL(rate,1)) rate from (select a.no_dok, b.id_jo, b.id_item, b.no_barcode, b.no_roll, b.no_lot, b.kode_lok, b.qty_aktual, satuan, IFNULL(np_curr_rev,np_curr) np_curr, np_tgl_in, IFNULL(np_price_rev,np_price) np_price from whs_inmaterial_fabric a INNER JOIN whs_lokasi_inmaterial b on b.no_dok = a.no_dok where a.tgl_dok BETWEEN '$start_date' and '$end_date' and a.status != 'Cancel' and b.status != 'N') a left join (select tanggal, curr, rate from masterrate where v_codecurr = 'PAJAK' and tanggal BETWEEN '$start_date' and '$end_date' GROUP BY tanggal, curr ) cr on cr.tanggal = a.np_tgl_in and cr.curr = np_curr GROUP BY a.id_item, a.id_jo, a.no_dok,np_curr)
+                out_det as (select no_dok, id_jo, id_item, no_barcode, no_roll, no_lot, kode_lok, sum(qty_aktual) qty_in, satuan, np_curr, np_tgl_in, IFNULL(np_price,0) np_price, IF(np_curr = 'IDR',1,IFNULL(rate,1)) rate from (select b.id, a.no_dok, b.id_jo, b.id_item, b.no_barcode, b.no_roll, b.no_lot, b.kode_lok, b.qty_aktual, satuan, IFNULL(np_curr_rev,np_curr) np_curr, np_tgl_in, IFNULL(np_price_rev,np_price) np_price from whs_inmaterial_fabric a INNER JOIN whs_lokasi_inmaterial b on b.no_dok = a.no_dok where a.tgl_dok BETWEEN '$start_date' and '$end_date' and a.status != 'Cancel' and b.status != 'N') a left join (select tanggal, curr, rate from masterrate where v_codecurr = 'PAJAK' and tanggal BETWEEN '$start_date' and '$end_date' GROUP BY tanggal, curr ) cr on cr.tanggal = a.np_tgl_in and cr.curr = np_curr GROUP BY a.id)
 
-                select a.no_dok, a.tgl_dok, a.id_item, itemdesc, color, size, no_invoice, type_bc, no_aju, tgl_aju, no_daftar, tgl_daftar, supplier, no_po, tipe_com, no_sj, b.qty_in, b.satuan, 0 berat_bersih, deskripsi, username, kpno, styleno, np_curr, price, np_price, type_pch, np_price price_unit, 0 jasa, np_price total_price, (np_price * qty_in) total_in, 0 jasa_in, (np_price * qty_in) jumlah_in, rate, ((np_price * qty_in) * rate) total_in_idr, 0 jasa_in_idr, ((np_price * qty_in) * rate) jumlah_in_idr from out_h a INNER JOIN out_det b on b.no_dok = a.no_dok and b.id_item = a.id_item and b.id_jo = a.id_jo");
+                select a.no_dok, a.tgl_dok, no_barcode, no_roll, no_lot, CONCAT(kode_lok,' FABRIC WAREHOUSE RACK') kode_lok, a.id_item, itemdesc, color, size, no_invoice, type_bc, no_aju, tgl_aju, no_daftar, tgl_daftar, supplier, no_po, tipe_com, no_sj, b.qty_in, b.satuan, 0 berat_bersih, deskripsi, username, kpno, styleno, np_curr, price, np_price, type_pch, np_price price_unit, 0 jasa, np_price total_price, (np_price * qty_in) total_in, 0 jasa_in, (np_price * qty_in) jumlah_in, rate, ((np_price * qty_in) * rate) total_in_idr, 0 jasa_in_idr, ((np_price * qty_in) * rate) jumlah_in_idr from out_h a INNER JOIN out_det b on b.no_dok = a.no_dok and b.id_item = a.id_item and b.id_jo = a.id_jo");
 
 
             function formatDateOrDash($date) {
@@ -185,6 +189,10 @@
                 echo ' <tr style="font-size:12px;text-align:center;">
                 <td style="text-align : left;" value = "'.$row2['no_dok'].'">'.$row2['no_dok'].'</td>
                 <td style="width: 100px;" value = "'.$row2['tgl_dok'].'">'.date("d-M-Y",strtotime($row2['tgl_dok'])).'</td>
+                <td style="text-align : left;" value = "'.$row2['no_barcode'].'">'.$row2['no_barcode'].'</td>
+                <td style="text-align : left;" value = "'.$row2['no_roll'].'">'.$row2['no_roll'].'</td>
+                <td style="text-align : left;" value = "'.$row2['no_lot'].'">'.$row2['no_lot'].'</td>
+                <td style="text-align : left;" value = "'.$row2['kode_lok'].'">'.$row2['kode_lok'].'</td>
                 <td style="text-align : left;" value = "'.$row2['id_item'].'">'.$row2['id_item'].'</td>
                 <td style="text-align : left;" value = "'.$row2['itemdesc'].'">'.$row2['itemdesc'].'</td>
                 <td style="text-align : left;" value = "'.$row2['color'].'">'.$row2['color'].'</td>
@@ -227,7 +235,7 @@
         </tbody>
         <?php
             echo ' <tfoot> <tr >
-            <th colspan="16" style="text-align : center;" value = "Total">Total</th>
+            <th colspan="20" style="text-align : center;" value = "Total">Total</th>
             <th style="text-align : right;" value = "'.$total_qty.'">'.number_format($total_qty,2).'</th>
             <th colspan="13" style="text-align : center;" value = ""></th>
             <th style="text-align : right;" value = "'.$total_in.'">'.number_format($total_in,2).'</th>
@@ -410,13 +418,13 @@ function SidebarCollapse () {
 
 <script type="text/javascript">
     document.getElementById('btncreate').onclick = function () {
-        location.href = "ca_fabric_trx_in_new.php";
+        location.href = "ca_fabric_trx_in_barcode.php";
     };
 </script>
 
 <script type="text/javascript">
     document.getElementById('reset').onclick = function () {
-        location.href = "ca_fabric_trx_in_new.php";
+        location.href = "ca_fabric_trx_in_barcode.php";
     };
 </script>
 

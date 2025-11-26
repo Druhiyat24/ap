@@ -1545,13 +1545,25 @@ echo'</ul>
       <span class="fa fa-cart-arrow-down fa-fw "></span>
       <span class="menu-collapsed">Trx In</span>
       </a>
-      <a href="../AP/ca_fabric_trx_in_new.php" class="dropdown-item bg-dark text-white">
+    <a href="../AP/ca_fabric_trx_in_new.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-cart-arrow-down fa-fw "></span>
-      <span class="menu-collapsed">Trx In New</span>
+      <span class="menu-collapsed">Trx Item In</span>
+      </a>
+      <a href="../AP/ca_fabric_trx_in_barcode.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-cart-arrow-down fa-fw "></span>
+      <span class="menu-collapsed">Trx Barcode In</span>
       </a>
       <a href="../AP/ca_fabric_trx_out.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-paper-plane fa-fw "></span>
       <span class="menu-collapsed">Trx Out</span>
+      </a>
+      <a href="../AP/ca_fabric_trx_out_item.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-paper-plane fa-fw "></span>
+      <span class="menu-collapsed">Trx Item Out</span>
+      </a>
+      <a href="../AP/ca_fabric_trx_out_barcode.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-paper-plane fa-fw "></span>
+      <span class="menu-collapsed">Trx Barcode Out</span>
       </a>
       <a href="../AP/ca_fabric_summary.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-calculator fa-fw "></span>
