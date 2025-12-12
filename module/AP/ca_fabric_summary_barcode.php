@@ -287,7 +287,7 @@ function SidebarCollapse () {
             autoWidth: false,
             scrollX: false,
         ajax: {
-            url: 'http://localhost:8081/nds_wip/public/index.php/api/mutasi-barcode-fabric/mutasi-material/mutasi-barcode-fabric',
+            url: 'http://10.10.5.62:8000/nds_wip/public/index.php/api/mutasi-barcode-fabric/mutasi-material/mutasi-barcode-fabric',
             dataType: 'json',
             dataSrc: 'data',
             method: 'POST',
