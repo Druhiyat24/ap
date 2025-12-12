@@ -296,7 +296,12 @@ select no_lp,total_bayar, kode, '0' as pph from ap_payment where no_lp = '$no_pa
     $sa_awal_ += $sa_awal;
     $tambah_ += $tambah;
 
-    if($sa_awal <= '0' and $tambah <= '0' and $kurang <= '0' and $sa_akhir <= '0'){
+    if (
+    round((float)$sa_awal, 2)  <= 0 &&
+    round((float)$tambah, 2)   <= 0 &&
+    round((float)$kurang, 2)   <= 0 &&
+    round((float)$sa_akhir, 2) <= 0
+) {
         echo '';
     }else{
 

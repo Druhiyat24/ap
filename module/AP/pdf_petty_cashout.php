@@ -14,7 +14,7 @@ $sql2= "select nama_coa from mastercoa_v2 where no_coa = '$no_coa'";
 $rs2=mysqli_fetch_array(mysqli_query($conn2,$sql2));
 $akun = $rs2['nama_coa'];
 
-$sqlys = "select no_coa,nama_coa,IF(nama_costcenter is null OR nama_costcenter = '','-',nama_costcenter) nama_costcenter,c.nama_pc profit_center,reff_doc,reff_date,curr,debit,credit, a.keterangan from tbl_list_journal a left join b_master_cc b on b.no_cc = a.no_costcenter LEFT JOIN master_pc c on c.kode_pc = a.profit_center where debit > 0 and no_journal = '$no_pco' || credit > 0 and no_journal = '$no_pco'";
+$sqlys = "select no_coa,nama_coa,IF(nama_costcenter is null OR nama_costcenter = '','-',nama_costcenter) nama_costcenter,c.nama_pc profit_center,reff_doc,reff_date,curr,debit,credit, a.keterangan from tbl_list_journal a left join b_master_cc b on b.no_cc = a.no_costcenter LEFT JOIN master_pc c on c.kode_pc = a.profit_center where debit > 0 and no_journal = '$no_pco' and a.status != 'Updated' || credit > 0 and no_journal = '$no_pco' and a.status != 'Updated'";
 
 
 ob_start();
@@ -353,6 +353,8 @@ $query = mysqli_query($conn2,$sqlys)or die(mysqli_error());
 
 while($data=mysqli_fetch_array($query)){
             $reffdate = $data['reff_date'];
+            $value_attr = htmlspecialchars($data['keterangan'], ENT_QUOTES);
+            $text_html  = htmlspecialchars($data['keterangan'], ENT_NOQUOTES);
             
             if ($reffdate == '' || $reffdate == '1970-01-01' || $reffdate == '0000-00-00') { 
              $reff_date = '-';
@@ -369,7 +371,7 @@ while($data=mysqli_fetch_array($query)){
         <td style="text-align: left" value="'.$data['curr'].'">'.$data['curr'].'</td> 
         <td style="text-align: right" value="'.$data['debit'].'">'.number_format($data['debit'],2).'</td>
         <td style="text-align: right" value="'.$data['credit'].'">'.number_format($data['credit'],2).'</td>                            
-        <td style="text-align: left" value="'.$data['keterangan'].'">'.$data['keterangan'].'</td>
+        <td style="text-align: left" value="'.$value_attr.'">'.$text_html.'</td>
         <td style="display: none;"></td>  
     </tr>'; 
 };  

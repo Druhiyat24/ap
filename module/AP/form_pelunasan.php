@@ -705,10 +705,11 @@ function updateCostCenter(profCtr, noCoa, row) {
 
 function updateReffDoc(selectedCoa, row) {
     // alert(selectedCoa);
+    var nama_supp = $('select[name=nama_supp] option').filter(':selected').val();  
     $.ajax({
         url: 'ajax_get_reff_doc.php',
         type: 'POST',
-        data: { no_coa: selectedCoa },
+        data: { no_coa: selectedCoa, nama_supp:nama_supp },
         dataType: 'json',
         success: function (list) {
             // buat ulang elemen <select>
