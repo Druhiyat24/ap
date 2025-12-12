@@ -739,7 +739,7 @@ if (headerPC) {
                     for(var i=0; i<rowCount; i++)
                     {
                         var row = table.rows[i];
-                        var chkbox = row.cells[10].childNodes[0];
+                        var chkbox = row.cells[9].childNodes[0];
                         if (null != chkbox && true == chkbox.checked)
                         {
                             if (rowCount <= 1)
