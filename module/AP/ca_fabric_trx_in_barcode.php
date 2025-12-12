@@ -9,6 +9,22 @@
         font-size: 14px;;
     }
 
+.table-gradient th {
+    background: #1E3A8A;
+    color: #fff;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+div.dataTables_wrapper .dataTables_paginate {
+    float: right;
+    margin-top: 10px;
+}
+div.dataTables_wrapper .dataTables_info {
+    float: left;
+    margin-top: 10px;
+}
+
 </style>
 
 <!-- MAIN -->
@@ -60,20 +76,18 @@
 
    <!-- Tombol -->
    <div class="col-md-3 d-flex align-items-end">
-      <button type="submit" class="btn btn-info btn-sm me-2">
+      <button type="button" onclick="dataTableReload()" class="btn btn-info btn-sm me-2">
         <i class="fa fa-search"></i> Search
     </button>
     <button type="button" id="reset" class="btn btn-danger btn-sm ml-2">
         <i class="fa fa-undo"></i> Reset
     </button>
 
-    <?php
-    $start_date = isset($_POST['start_date']) ? $_POST['start_date'] : null;
-    $end_date = isset($_POST['end_date']) ? $_POST['end_date'] : null;
-
-    echo '<a style="padding-right: 10px;" target="_blank" href="ekspor_ca_fabric_trx_in_barcode.php?start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success ml-2" style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
-
-    ?>     
+    <a id="btnExportExcel" target="_blank">
+    <button type="button" class="btn btn-success ml-2" style="margin-top: 30px;">
+        <i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i>
+    </button>
+</a>    
 
 </div>
 
@@ -85,10 +99,9 @@
 <!-- Card Table -->
 <div class="card shadow border-0 mt-4">
     <div class="card-body p-4">
-      <div class="table-responsive">
+         <div class="table-responsive">
           <table id="mytable" 
-          class="table table-striped table-bordered table-hover table-sm nowrap" 
-          style="width:100%">
+          class="table table-striped table-bordered table-hover table-sm nowrap" style="width:100%">
           <thead class="table-gradient text-white">
             <tr >
                 <th rowspan="2" style="text-align: center;vertical-align: middle;">No Trans</th>
@@ -140,140 +153,12 @@
             </tr>
         </thead>
         <tbody>
-            <?php
-            $nama_supp ='';
-            $status = '';
-            $filter = '';
-            $start_date ='';
-            $end_date ='';
-            $date_now = date("Y-m-d");                    
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-                $end_date = date("Y-m-d",strtotime($_POST['end_date']));                
-            }
-
-            $sql = mysqli_query($conn2,"WITH
-                out_h as (select a.no_dok, a.tgl_dok, b.id_jo, b.id_item, c.itemdesc, c.color, c.size, IFNULL(type_bc,'-') type_bc, IFNULL(no_invoice,'-') no_invoice, IFNULL(no_aju,'-') no_aju, tgl_aju, IFNULL(no_daftar,'-') no_daftar, tgl_daftar, a.supplier, IFNULL(a.no_po,'-') no_po, IFNULL(tipe_com,'-') tipe_com, IFNULL(no_invoice,'-') no_sj, IFNULL(a.deskripsi,'-') deskripsi, CONCAT(a.created_by,' (',a.created_at, ') ') username, kpno, styleno, a.type_pch, b.price from whs_inmaterial_fabric a INNER JOIN whs_inmaterial_fabric_det b on b.no_dok = a.no_dok INNER JOIN masteritem c on c.id_item = b.id_item INNER JOIN (select id_jo,kpno,styleno from act_costing ac inner join so on ac.id=so.id_cost inner join jo_det jod on so.id=jod.id_so group by id_jo) d on d.id_jo=b.id_jo LEFT join po_header po on po.pono = a.no_po LEFT join po_header_draft pod on pod.id = po.id_draft where a.tgl_dok BETWEEN '$start_date' and '$end_date' and a.status != 'Cancel' and b.status != 'N' GROUP BY b.id_item, b.id_jo, b.no_dok),
-
-                out_det as (select no_dok, id_jo, id_item, no_barcode, no_roll, no_lot, kode_lok, sum(qty_aktual) qty_in, satuan, np_curr, np_tgl_in, IFNULL(np_price,0) np_price, IF(np_curr = 'IDR',1,IFNULL(rate,1)) rate from (select b.id, a.no_dok, b.id_jo, b.id_item, b.no_barcode, b.no_roll, b.no_lot, b.kode_lok, b.qty_aktual, satuan, IFNULL(np_curr_rev,np_curr) np_curr, np_tgl_in, IFNULL(np_price_rev,np_price) np_price from whs_inmaterial_fabric a INNER JOIN whs_lokasi_inmaterial b on b.no_dok = a.no_dok where a.tgl_dok BETWEEN '$start_date' and '$end_date' and a.status != 'Cancel' and b.status != 'N') a left join (select tanggal, curr, rate from masterrate where v_codecurr = 'PAJAK' and tanggal BETWEEN '$start_date' and '$end_date' GROUP BY tanggal, curr ) cr on cr.tanggal = a.np_tgl_in and cr.curr = np_curr GROUP BY a.id)
-
-                select a.no_dok, a.tgl_dok, no_barcode, no_roll, no_lot, CONCAT(kode_lok,' FABRIC WAREHOUSE RACK') kode_lok, a.id_item, itemdesc, color, size, no_invoice, type_bc, no_aju, tgl_aju, no_daftar, tgl_daftar, supplier, no_po, tipe_com, no_sj, b.qty_in, b.satuan, 0 berat_bersih, deskripsi, username, kpno, styleno, np_curr, price, np_price, type_pch, np_price price_unit, 0 jasa, np_price total_price, (np_price * qty_in) total_in, 0 jasa_in, (np_price * qty_in) jumlah_in, rate, ((np_price * qty_in) * rate) total_in_idr, 0 jasa_in_idr, ((np_price * qty_in) * rate) jumlah_in_idr from out_h a INNER JOIN out_det b on b.no_dok = a.no_dok and b.id_item = a.id_item and b.id_jo = a.id_jo");
-
-
-            function formatDateOrDash($date) {
-                return (!empty($date) && $date != '0000-00-00')
-                ? date("d-M-Y", strtotime($date))
-                : '-';
-            }
-
-            function valueOrDash($value) {
-                return !empty($value) ? $value : '-';
-            }
-
-            $total_qty =0;
-            $total_in =0;
-            $jasa_in =0;
-            $jumlah_in =0;
-            $total_in_idr =0;
-            $jasa_in_idr =0;
-            $jumlah_in_idr =0;
-            while($row2 = mysqli_fetch_array($sql)){
-                $total_qty += $row2['qty_in'];
-                $total_in += $row2['total_in'];
-                $jasa_in += $row2['jasa_in'];
-                $jumlah_in += $row2['jumlah_in'];
-                $total_in_idr += $row2['total_in_idr'];
-                $jasa_in_idr += $row2['jasa_in_idr'];
-                $jumlah_in_idr += $row2['jumlah_in_idr'];
-
-                echo ' <tr style="font-size:12px;text-align:center;">
-                <td style="text-align : left;" value = "'.$row2['no_dok'].'">'.$row2['no_dok'].'</td>
-                <td style="width: 100px;" value = "'.$row2['tgl_dok'].'">'.date("d-M-Y",strtotime($row2['tgl_dok'])).'</td>
-                <td style="text-align : left;" value = "'.$row2['no_barcode'].'">'.$row2['no_barcode'].'</td>
-                <td style="text-align : left;" value = "'.$row2['no_roll'].'">'.$row2['no_roll'].'</td>
-                <td style="text-align : left;" value = "'.$row2['no_lot'].'">'.$row2['no_lot'].'</td>
-                <td style="text-align : left;" value = "'.$row2['kode_lok'].'">'.$row2['kode_lok'].'</td>
-                <td style="text-align : left;" value = "'.$row2['id_item'].'">'.$row2['id_item'].'</td>
-                <td style="text-align : left;" value = "'.$row2['itemdesc'].'">'.$row2['itemdesc'].'</td>
-                <td style="text-align : left;" value = "'.$row2['color'].'">'.$row2['color'].'</td>
-                <td style="text-align : left;" value = "'.$row2['size'].'">'.$row2['size'].'</td>
-                <td style="text-align : left;" value = "'.$row2['no_invoice'].'">'.$row2['no_invoice'].'</td>
-                <td style="text-align : left;" value = "'.$row2['type_bc'].'">'.$row2['type_bc'].'</td>
-                <td style="text-align : left;" value = "'.$row2['no_aju'].'">'.$row2['no_aju'].'</td>
-                <td style="width: 100px;" value = "'.$row2['tgl_aju'].'">'.date("Y-m-d",strtotime($row2['tgl_aju'])).'</td>
-                <td style="text-align : left;" value = "'.$row2['no_daftar'].'">'.$row2['no_daftar'].'</td>
-                <td style="width: 100px;" value = "'.$row2['tgl_daftar'].'">'.date("Y-m-d",strtotime($row2['tgl_daftar'])).'</td>
-                <td style="text-align : left;" value = "'.$row2['supplier'].'">'.$row2['supplier'].'</td>
-                <td style="text-align : left;" value = "'.$row2['no_po'].'">'.$row2['no_po'].'</td>
-                <td style="text-align : left;" value = "'.$row2['tipe_com'].'">'.$row2['tipe_com'].'</td>
-                <td style="text-align : left;" value = "'.$row2['no_sj'].'">'.$row2['no_sj'].'</td>
-                <td style="text-align : right;" value = "'.$row2['qty_in'].'">'.number_format($row2['qty_in'],2).'</td>
-                <td style="text-align : left;" value = "'.$row2['satuan'].'">'.$row2['satuan'].'</td>
-                <td style="text-align : right;" value = "'.$row2['berat_bersih'].'">'.number_format($row2['berat_bersih'],2).'</td>
-                <td style="text-align : left;" value = "'.$row2['deskripsi'].'">'.$row2['deskripsi'].'</td>
-                <td style="text-align : left;" value = "'.$row2['username'].'">'.$row2['username'].'</td>
-                <td style="text-align : left;" value = "'.$row2['kpno'].'">'.$row2['kpno'].'</td>
-                <td style="text-align : left;" value = "'.$row2['styleno'].'">'.$row2['styleno'].'</td>
-                <td style="text-align : left;" value = "'.$row2['np_curr'].'">'.$row2['np_curr'].'</td>
-                <td style="text-align : right;" value = "'.$row2['price'].'">'.number_format($row2['price'],2).'</td>
-                <td style="text-align : right;" value = "'.$row2['np_price'].'">'.number_format($row2['np_price'],2).'</td>
-                <td style="text-align : left;" value = "'.$row2['type_pch'].'">'.$row2['type_pch'].'</td>
-                <td style="text-align : right;" value = "'.$row2['price_unit'].'">'.number_format($row2['price_unit'],2).'</td>
-                <td style="text-align : right;" value = "'.$row2['jasa'].'">'.number_format($row2['jasa'],2).'</td>
-                <td style="text-align : right;" value = "'.$row2['total_price'].'">'.number_format($row2['total_price'],2).'</td>
-                <td style="text-align : right;" value = "'.$row2['total_in'].'">'.number_format($row2['total_in'],2).'</td>
-                <td style="text-align : right;" value = "'.$row2['jasa_in'].'">'.number_format($row2['jasa_in'],2).'</td>
-                <td style="text-align : right;" value = "'.$row2['jumlah_in'].'">'.number_format($row2['jumlah_in'],2).'</td>
-                <td style="text-align : right;" value = "'.$row2['rate'].'">'.number_format($row2['rate'],2).'</td>
-                <td style="text-align : right;" value = "'.$row2['total_in_idr'].'">'.number_format($row2['total_in_idr'],2).'</td>
-                <td style="text-align : right;" value = "'.$row2['jasa_in_idr'].'">'.number_format($row2['jasa_in_idr'],2).'</td>
-                <td style="text-align : right;" value = "'.$row2['jumlah_in_idr'].'">'.number_format($row2['jumlah_in_idr'],2).'</td>
-                </tr>
-                ';
-            }
-            ?>
-        </tbody>
-        <?php
-            echo ' <tfoot> <tr >
-            <th colspan="20" style="text-align : center;" value = "Total">Total</th>
-            <th style="text-align : right;" value = "'.$total_qty.'">'.number_format($total_qty,2).'</th>
-            <th colspan="13" style="text-align : center;" value = ""></th>
-            <th style="text-align : right;" value = "'.$total_in.'">'.number_format($total_in,2).'</th>
-            <th style="text-align : right;" value = "'.$jasa_in.'">'.number_format($jasa_in,2).'</th>
-            <th style="text-align : right;" value = "'.$jumlah_in.'">'.number_format($jumlah_in,2).'</th>
-            <th style="text-align : center;" value = ""></th>
-            <th style="text-align : right;" value = "'.$total_in_idr.'">'.number_format($total_in_idr,2).'</th>
-            <th style="text-align : right;" value = "'.$jasa_in_idr.'">'.number_format($jasa_in_idr,2).'</th>
-            <th style="text-align : right;" value = "'.$jumlah_in_idr.'">'.number_format($jumlah_in_idr,2).'</th>
-            </tr></tfoot>
-            ';
-            ?>
     </table>
-</div>
 </div>
 </div>
 </div>
 
 <!-- CSS -->
-<style>
-  .table-gradient th {
-    background: #1E3A8A;
-    color: #fff;
-    text-align: center;
-    vertical-align: middle;
-    white-space: nowrap;
-}
-div.dataTables_wrapper .dataTables_paginate {
-    float: right;
-    margin-top: 10px;
-}
-div.dataTables_wrapper .dataTables_info {
-    float: left;
-    margin-top: 10px;
-}
-
-
-</style>
 
 <!-- Modal Detail -->
 <div class="modal fade" id="mymodal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -340,17 +225,183 @@ function SidebarCollapse () {
 }
 </script>
 <script>
-    $(document).ready(function() {
-        $('#mytable').DataTable({
-            paging: true,
+    function toYmd(dmy) {
+    if (!dmy) return '';
+    let p = dmy.split('-'); // [dd, mm, yyyy]
+    return `${p[2]}-${p[1]}-${p[0]}`;
+}
+
+         let datatable = $("#mytable").DataTable({
+            ordering: false,
+            processing: true,
+            serverSide: true,
+            pageLength: 10,
             searching: true,
             info: true,
             autoWidth: false,
-            scrollX: false 
-        });
+            scrollX: false,
+        ajax: {
+            url: 'http://localhost:8081/nds_wip/public/index.php/api/in-barcode-fabric/in-material/in-barcode-fabric',
+            dataType: 'json',
+            dataSrc: 'data',
+            method: 'POST',
+            data: function(d) {
+                d.start_date = toYmd($('#start_date').val());
+                d.end_date   = toYmd($('#end_date').val());
+
+            },
+        },
+        columns: [{
+                data: 'no_dok'
+            },
+            {
+                data: 'tgl_dok'
+            },
+            {
+                data: 'no_barcode'
+            },
+            {
+                data: 'no_roll'
+            },
+            {
+                data: 'no_lot'
+            },
+            {
+                data: 'kode_lok'
+            },
+            {
+                data: 'id_item'
+            },
+            {
+                data: 'itemdesc'
+            },
+            {
+                data: 'color'
+            },
+            {
+                data: 'size'
+            },
+            {
+                data: 'no_invoice'
+            },
+            {
+                data: 'type_bc'
+            },
+            {
+                data: 'no_aju'
+            },
+            {
+                data: 'tgl_aju'
+            },
+            {
+                data: 'no_daftar'
+            },
+            {
+                data: 'tgl_daftar'
+            },
+            {
+                data: 'supplier'
+            },
+            {
+                data: 'no_po'
+            },
+            {
+                data: 'tipe_com'
+            },
+            {
+                data: 'no_sj'
+            },
+            {
+                data: 'qty_in'
+            },
+            {
+                data: 'satuan'
+            },
+            {
+                data: 'berat_bersih'
+            },
+            {
+                data: 'deskripsi'
+            },
+            {
+                data: 'username'
+            },
+            {
+                data: 'kpno'
+            },
+            {
+                data: 'styleno'
+            },
+            {
+                data: 'np_curr'
+            },
+            {
+                data: 'price'
+            },
+            {
+                data: 'np_price'
+            },
+            {
+                data: 'type_pch'
+            },
+            {
+                data: 'price_unit'
+            },
+            {
+                data: 'jasa'
+            },
+            {
+                data: 'total_price'
+            },
+            {
+                data: 'total_in'
+            },
+            {
+                data: 'jasa_in'
+            },
+            {
+                data: 'jumlah_in'
+            },
+            {
+                data: 'rate'
+            },
+            {
+                data: 'total_in_idr'
+            },
+            {
+                data: 'jasa_in_idr'
+            },
+            {
+                data: 'jumlah_in_idr'
+            }
+
+        ],
+        columnDefs: [],
+        initComplete: function() {
+        this.api().columns.adjust();
+    }
+    });
+
+         $('#mytable').on('draw.dt', function () {
+    datatable.columns.adjust();
+});
+
 
         $("[data-toggle=tooltip]").tooltip();
-    });
+
+function dataTableReload() {
+                datatable.ajax.reload(()=>{
+                    datatable.columns.adjust();
+                });
+            }
+
+document.getElementById('btnExportExcel').addEventListener('click', function(e) {
+    let sd = toYmd(document.getElementById('start_date').value);
+    let ed = toYmd(document.getElementById('end_date').value);
+
+    // set dynamic href
+    this.href = `ekspor_ca_fabric_trx_in_barcode.php?start_date=${sd}&end_date=${ed}`;
+});
 
 </script>
 
@@ -380,41 +431,7 @@ function SidebarCollapse () {
         });
     });
 </script>
-<!-- 
-<script type="text/javascript">     
-    $('table tbody tr').on('click', 'td:eq(0)', function(){                
-    $('#mymodal').modal('show');
-    var no_bpb = $(this).closest('tr').find('td:eq(0)').attr('value');
-    var tgl_bpb = $(this).closest('tr').find('td:eq(2)').text();
-    var no_po = $(this).closest('tr').find('td:eq(1)').attr('value');
-    var supp = $(this).closest('tr').find('td:eq(3)').attr('value');
-    var top = $(this).closest('tr').find('td:eq(10)').attr('value');
-    var curr = $(this).closest('tr').find('td:eq(8)').attr('value');
-    var confirm = $(this).closest('tr').find('td:eq(5)').attr('value');
-    var confirm2 = $(this).closest('tr').find('td:eq(6)').attr('value');
-    var tgl_po = $(this).closest('tr').find('td:eq(11)').text();        
 
-    $.ajax({
-    type : 'post',
-    url : 'ajaxbpb.php',
-    data : {'no_bpb': no_bpb},
-    success : function(data){
-    $('#details').html(data); //menampilkan data ke dalam modal
-        }
-    });         
-        //make your ajax call populate items or what even you need
-    $('#txt_bpb').html(no_bpb);
-    $('#txt_tglbpb').html('Tgl BPB : ' + tgl_bpb + '');
-    $('#txt_no_po').html('No PO : ' + no_po + '');
-    $('#txt_supp').html('Supplier : ' + supp + '');
-    $('#txt_top').html('TOP : ' + top + ' Days');
-    $('#txt_curr').html('Currency : ' + curr + '');        
-    $('#txt_confirm').html('Confirm By (GMF) : ' + confirm + '');
-    $('#txt_confirm2').html('Confirm By (PCH) : ' + confirm2 + '');
-    $('#txt_tgl_po').html('Tgl PO : ' + tgl_po + '');                         
-});
-
-</script> -->
 
 <script type="text/javascript">
     document.getElementById('btncreate').onclick = function () {

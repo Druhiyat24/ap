@@ -1545,7 +1545,7 @@ echo'</ul>
       <span class="fa fa-cart-arrow-down fa-fw "></span>
       <span class="menu-collapsed">Trx In</span>
       </a>
-    <a href="../AP/ca_fabric_trx_in_new.php" class="dropdown-item bg-dark text-white">
+      <a href="../AP/ca_fabric_trx_in_new.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-cart-arrow-down fa-fw "></span>
       <span class="menu-collapsed">Trx Item In</span>
       </a>
@@ -1568,6 +1568,10 @@ echo'</ul>
       <a href="../AP/ca_fabric_summary.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-calculator fa-fw "></span>
       <span class="menu-collapsed">Summary</span>
+      </a>
+      <a href="../AP/ca_fabric_summary_barcode.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-calculator fa-fw "></span>
+      <span class="menu-collapsed">Summary Barcode</span>
       </a>
       <a href="../AP/ca_fabric_summary_sc.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-calculator fa-fw "></span>
