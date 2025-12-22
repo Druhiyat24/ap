@@ -271,20 +271,21 @@ if ($no_pay == '') {
 
 	$execute2 = mysqli_query($conn2,$query2);
 
-	$sql1lp = mysqli_query($conn2,"select DISTINCT * from (select no_coa,nama_coa,sum(amount) amount,if(memo = '',null,memo) memo from list_payment where no_payment = '$no_pay' GROUP BY no_coa
+	$sql1lp = mysqli_query($conn2,"select DISTINCT * from (select no_coa,nama_coa,sum(amount) amount,if(memo = '',null,memo) memo, profit_center from list_payment where no_payment = '$no_pay' GROUP BY no_coa
 		union
-		select no_coa,nama_coa,sum(total) amount,if(keterangan = '',null,keterangan) keterangan from saldo_awal where no_pay = '$no_pay' GROUP BY no_coa) a");
+		select no_coa,nama_coa,sum(total) amount,if(keterangan = '',null,keterangan) keterangan, 'NAG' profit_center from saldo_awal where no_pay = '$no_pay' GROUP BY no_coa) a");
 	while($rowlp = mysqli_fetch_array($sql1lp)){
 		$no_coalp = $rowlp['no_coa'];
 		$nama_coalp = $rowlp['nama_coa'];
 		$amountlp = $rowlp['amount'];
 		$memolp = $rowlp['memo'];
 		$lp_total_idr = $amountlp * $rates;
+		$profit_center_lp = $rowlp['profit_center'];
 
 
-		$queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
+		$queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
 		VALUES 
-		('$kode', '$bankout_date', '$type_ob', '$no_coalp', '$nama_coalp', '-', '-', '$no_pay', '$pay_date', '-', '-', '$curr', '$rates', '$balance2', '0', '$balanceidr2', '0', 'Draft', '$pesan_ob', '$create_by', '$create_date', '', '', '', '')";
+		('$kode', '$bankout_date', '$type_ob', '$no_coalp', '$nama_coalp', '-', '-', '$no_pay', '$pay_date', '-', '-', '$curr', '$rates', '$balance2', '0', '$balanceidr2', '0', 'Draft', '$pesan_ob', '$create_by', '$create_date', '', '', '', '', '$profit_center_lp')";
 
 		$executess2 = mysqli_query($conn2,$queryss2);
 
@@ -297,9 +298,9 @@ if ($no_pay == '') {
 			$nama_coa_pph = $rowpph['nama_coa'];
 
 
-			$querys_pph = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
+			$querys_pph = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
 			VALUES 
-			('$kode', '$bankout_date', '$type_ob', '$no_coa_pph', '$nama_coa_pph', '-', '-', '$no_pay', '$pay_date', '-', '-', '$curr', '$rates', '0', '$pph2', '0', '$pphidr2', 'Draft', '$pesan_ob','$create_by', '$create_date', '', '', '', '')";
+			('$kode', '$bankout_date', '$type_ob', '$no_coa_pph', '$nama_coa_pph', '-', '-', '$no_pay', '$pay_date', '-', '-', '$curr', '$rates', '0', '$pph2', '0', '$pphidr2', 'Draft', '$pesan_ob','$create_by', '$create_date', '', '', '', '', '$profit_center_lp')";
 
 			$executes_pph = mysqli_query($conn2,$querys_pph);
 		}else{
