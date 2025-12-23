@@ -13,7 +13,7 @@ $total_credit_idr = 0;
 $no_ob = isset($_POST['no_ob']) ? $_POST['no_ob']: null;
 $refdoc = isset($_POST['refdoc']) ? $_POST['refdoc']: null;
 if ($refdoc == 'Payment Voucher' || $refdoc == 'List Payment') {
-    $sql = mysqli_query($conn1,"select no_coa id_coa,nama_coa coa_name,reff_doc,IF(reff_date = '0000-00-00','-',reff_date) reff_date, CONCAT(id_pc,' - ' ,nama_pc) profit_center,IF(no_costcenter = '-', '-', CONCAT(no_costcenter, ' - ', nama_costcenter)) cost_center,buyer,no_ws,curr,debit,credit, (debit * rate) debit_idr, (credit * rate) credit_idr,a.keterangan from tbl_list_journal a left join master_pc b on b.kode_pc = a.profit_center where no_journal = '$no_ob'");
+    $sql = mysqli_query($conn1,"select no_coa id_coa,nama_coa coa_name,reff_doc,IF(reff_date = '0000-00-00','-',reff_date) reff_date, CONCAT(id_pc,' - ' ,nama_pc) profit_center,IF(no_costcenter = '-', '-', CONCAT(no_costcenter, ' - ', nama_costcenter)) cost_center,buyer,no_ws,curr,debit,credit, (debit * rate) debit_idr, (credit * rate) credit_idr,a.keterangan from tbl_list_journal a left join master_pc b on b.kode_pc = a.profit_center where no_journal = '$no_ob' and a.status != 'Updated'");
     $sql2 = mysqli_query($conn1,"select CONCAT(b.no_coa,' ',b.nama_coa) as coa, IF(a.reff_doc = '', '-', a.reff_doc) as reff_doc,IF(a.reff_date = '1970-01-01', '-', DATE_FORMAT(a.reff_date, '%d-%m-%Y')) as reff_date, a.deskripsi, a.t_debit, a.t_credit from b_bankout_adj_det a left join mastercoa_v2 b on b.no_coa = a.id_coa where no_bankout = '$no_ob'"); 
     $sql3 = mysqli_query($conn1,"select amount,rate,eqv_idr from b_bankout_h where no_bankout = '$no_ob'");
     $row3 = mysqli_fetch_assoc($sql3);
@@ -21,7 +21,7 @@ if ($refdoc == 'Payment Voucher' || $refdoc == 'List Payment') {
     $rate = $row3['rate'];
     $eqv_idr = $row3['eqv_idr'];
 }if ($refdoc == 'None') {
-    $sql = mysqli_query($conn1,"select no_coa id_coa,nama_coa coa_name, CONCAT(id_pc,' - ' ,nama_pc) profit_center,IF(no_costcenter = '-', '-', CONCAT(no_costcenter, ' - ', nama_costcenter)) cost_center,buyer,no_ws,curr,debit,credit,a.keterangan from tbl_list_journal a left join master_pc b on b.kode_pc = a.profit_center where no_journal = '$no_ob'");
+    $sql = mysqli_query($conn1,"select no_coa id_coa,nama_coa coa_name, CONCAT(id_pc,' - ' ,nama_pc) profit_center,IF(no_costcenter = '-', '-', CONCAT(no_costcenter, ' - ', nama_costcenter)) cost_center,buyer,no_ws,curr,debit,credit,a.keterangan from tbl_list_journal a left join master_pc b on b.kode_pc = a.profit_center where no_journal = '$no_ob' and a.status != 'Updated'");
     $sql3 = mysqli_query($conn1,"select amount,rate,eqv_idr from b_bankout_h where no_bankout = '$no_ob'");
     $row3 = mysqli_fetch_assoc($sql3);
     $amount = $row3['amount'];

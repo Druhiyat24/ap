@@ -166,7 +166,7 @@ if(!$execute){
 	die('Error: ' . mysqli_error());	
 }else{
 	if(strpos($list_payment_id, 'LP/NAG/') !== false) {
-		$sql = "update list_payment set status_int = '$status_int' where no_payment= '$list_payment_id'";
+		$sql = "update list_payment set status_int = '$status_int', status = 'Paid' where no_payment= '$list_payment_id'";
 		$exec = mysqli_query($conn2,$sql);
 
 		$sqlac = "update status set no_pay ='$payment_ftr_id', tgl_pay = '$tgl_pelunasan' where no_lp = '$list_payment_id'";

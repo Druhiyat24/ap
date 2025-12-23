@@ -1,5 +1,6 @@
 # Abaikan semua isi folder conn/
 conn/*
+module/AP/file_pdf/*
 
 # Kecualikan file .gitkeep agar folder tetap ada di Git
 !conn/.gitkeep

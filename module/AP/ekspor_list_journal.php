@@ -128,7 +128,7 @@ left JOIN
 
 (select id,ind_name as idndircredit, eng_name as engdircredit from tbl_master_cashflow) dircredit on dircredit.id = b.id_direct_credit left join
 
-(select id,ind_name as idnindir, eng_name as engindir from tbl_master_cashflow) indir on indir.id = b.id_indirect left join (select no_cc, profit_center from b_master_cc where status = 'Active') cc on cc.no_cc = a.no_costcenter left join (select kode_pc, CONCAT(id_pc,' - ',nama_pc) nama_pc from master_pc where status = 'Active') mp on mp.kode_pc = a.profit_center
+(select id,ind_name as idnindir, eng_name as engindir from tbl_master_cashflow) indir on indir.id = b.id_indirect left join (select no_cc, profit_center from b_master_cc where status = 'Active') cc on cc.no_cc = a.no_costcenter left join (select kode_pc, CONCAT(id_pc,' - ',nama_pc) nama_pc from master_pc where status = 'Active') mp on mp.kode_pc = a.profit_center order by tgl_journal, no_journal ASC
 ");
 
         $no = 1;

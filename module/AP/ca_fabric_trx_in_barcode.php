@@ -1,0 +1,453 @@
+<?php include '../header.php' ?>
+
+<style type="text/css">
+    label {
+        font-size: 14px;;
+    }
+
+    input {
+        font-size: 14px;;
+    }
+
+.table-gradient th {
+    background: #1E3A8A;
+    color: #fff;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+div.dataTables_wrapper .dataTables_paginate {
+    float: right;
+    margin-top: 10px;
+}
+div.dataTables_wrapper .dataTables_info {
+    float: left;
+    margin-top: 10px;
+}
+
+</style>
+
+<!-- MAIN -->
+<div class="container-fluid mt-4 p-4">
+  <!-- Card Filter -->
+  <div class="card shadow border-0">
+    <div class="card-header text-white py-2 px-3" 
+    style="background: linear-gradient(90deg, #191970, #1e90ff);">
+    <h5 class="mb-0"><i class="fa fa-sign-in" aria-hidden="true"></i> FABRIC TRANSACTION BARCODE IN</h5>
+</div>
+
+<div class="card-body p-3">
+  <form id="form-data" action="ca_fabric_trx_in_barcode.php" method="post">
+    <div class="row g-3">
+
+        <!-- Start Date -->
+        <div class="col-md-2">
+            <label for="start_date" class="form-label"><b>From</b></label>
+            <input type="text" class="form-control form-control-sm tanggal" id="start_date" name="start_date"
+            value="<?php
+            $start_date ='';
+            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+               $start_date = date("Y-m-d",strtotime($_POST['start_date']));
+           }
+           if(!empty($_POST['start_date'])) {
+               echo $_POST['start_date'];
+           }
+           else{
+               echo date("d-m-Y");
+           } ?>" placeholder="Start Date" autocomplete="off">
+       </div>
+
+       <!-- End Date -->
+       <div class="col-md-2">
+        <label for="end_date" class="form-label"><b>To</b></label>
+        <input type="text" class="form-control form-control-sm tanggal" id="end_date" name="end_date"
+        value="<?php
+        $end_date ='';
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+           $end_date = date("Y-m-d",strtotime($_POST['end_date']));
+       }
+       if(!empty($_POST['end_date'])) {
+           echo $_POST['end_date'];
+       }
+       else{
+           echo date("d-m-Y");
+       } ?>"  placeholder="End Date" autocomplete="off">
+   </div>
+
+   <!-- Tombol -->
+   <div class="col-md-3 d-flex align-items-end">
+      <button type="button" onclick="dataTableReload()" class="btn btn-info btn-sm me-2">
+        <i class="fa fa-search"></i> Search
+    </button>
+    <button type="button" id="reset" class="btn btn-danger btn-sm ml-2">
+        <i class="fa fa-undo"></i> Reset
+    </button>
+
+    <a id="btnExportExcel" target="_blank">
+    <button type="button" class="btn btn-success ml-2" style="margin-top: 30px;">
+        <i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i>
+    </button>
+</a>    
+
+</div>
+
+</div>
+</form>
+</div>
+</div>
+
+<!-- Card Table -->
+<div class="card shadow border-0 mt-4">
+    <div class="card-body p-4">
+         <div class="table-responsive">
+          <table id="mytable" 
+          class="table table-striped table-bordered table-hover table-sm nowrap" style="width:100%">
+          <thead class="table-gradient text-white">
+            <tr >
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">No Trans</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Tgl Trans</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">No Barcode</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">No Roll</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">No Lot</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Lokasi</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Id Item</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Nama Barang</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Warna</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Ukuran</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">No Inv</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Jenis Dok</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Nomor Aju</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Tgl Aju</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Nomor Daftar</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Tgl Daftar</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Supplier</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;;">PO</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Type</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Inv/SJ</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Jumlah</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Satuan</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Berat Bersih</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Keterangan</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Nama User</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;;">WS</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Style</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Curr</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Price</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Price Acct</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Status</th>
+                <th colspan="3" style="text-align: center;vertical-align: middle;">Nilai Barang / Unit Dalam Mata Uang Asal</th>
+                <th colspan="3" style="text-align: center;vertical-align: middle;">Nilai Barang Dalam Mata Uang Asal</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;">Rate</th>
+                <th colspan="3" style="text-align: center;vertical-align: middle;">Nilai Barang Ekuivalen IDR</th>
+            </tr>
+            <tr >
+                <th style="text-align: center;vertical-align: middle;">Nilai Barang</th>
+                <th style="text-align: center;vertical-align: middle;">Jasa Subcont</th>
+                <th style="text-align: center;vertical-align: middle;">Total</th>
+                <th style="text-align: center;vertical-align: middle;">Nilai Barang</th>
+                <th style="text-align: center;vertical-align: middle;">Jasa Subcont</th>
+                <th style="text-align: center;vertical-align: middle;">Total</th>
+                <th style="text-align: center;vertical-align: middle;">Nilai Barang</th>
+                <th style="text-align: center;vertical-align: middle;">Jasa Subcont</th>
+                <th style="text-align: center;vertical-align: middle;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+    </table>
+</div>
+</div>
+</div>
+
+<!-- CSS -->
+
+<!-- Modal Detail -->
+<div class="modal fade" id="mymodal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title" id="txt_bpb"></h5>
+        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+    </div>
+    <div class="modal-body">
+        <div class="row">
+          <div id="txt_tglbpb" class="col-md-6 mb-2"></div>
+          <div id="txt_no_po" class="col-md-6 mb-2"></div>
+          <div id="txt_supp" class="col-md-6 mb-2"></div>
+          <div id="txt_top" class="col-md-6 mb-2"></div>
+          <div id="txt_curr" class="col-md-6 mb-2"></div>
+          <div id="txt_confirm" class="col-md-6 mb-2"></div>
+          <div id="txt_confirm2" class="col-md-6 mb-2"></div>
+          <div id="txt_tgl_po" class="col-md-6 mb-2"></div>
+          <div id="details" class="col-12 mt-2"></div>
+      </div>
+  </div>
+</div>
+</div>
+</div>
+
+
+
+<!-- Bootstrap core JavaScript -->
+<script src="../vendor/jquery/jquery.min.js"></script>
+<script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>  
+<script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
+
+<script>
+  // Hide submenus
+  $('#body-row .collapse').collapse('hide'); 
+
+// Collapse/Expand icon
+$('#collapse-icon').addClass('fa-angle-double-left'); 
+
+// Collapse click
+$('[data-toggle=sidebar-colapse]').click(function() {
+    SidebarCollapse();
+});
+
+function SidebarCollapse () {
+    $('.menu-collapsed').toggleClass('d-none');
+    $('.sidebar-submenu').toggleClass('d-none');
+    $('.submenu-icon').toggleClass('d-none');
+    $('#sidebar-container').toggleClass('sidebar-expanded sidebar-collapsed');
+    
+    // Treating d-flex/d-none on separators with title
+    var SeparatorTitle = $('.sidebar-separator-title');
+    if ( SeparatorTitle.hasClass('d-flex') ) {
+        SeparatorTitle.removeClass('d-flex');
+    } else {
+        SeparatorTitle.addClass('d-flex');
+    }
+    
+    // Collapse/Expand icon
+    $('#collapse-icon').toggleClass('fa-angle-double-left fa-angle-double-right');
+}
+</script>
+<script>
+    function toYmd(dmy) {
+    if (!dmy) return '';
+    let p = dmy.split('-'); // [dd, mm, yyyy]
+    return `${p[2]}-${p[1]}-${p[0]}`;
+}
+
+         let datatable = $("#mytable").DataTable({
+            ordering: false,
+            processing: true,
+            serverSide: true,
+            pageLength: 10,
+            searching: true,
+            info: true,
+            autoWidth: false,
+            scrollX: false,
+        ajax: {
+            url: 'http://10.10.5.62:8000/nds_wip/public/index.php/api/in-barcode-fabric/in-material/in-barcode-fabric',
+            dataType: 'json',
+            dataSrc: 'data',
+            method: 'POST',
+            data: function(d) {
+                d.start_date = toYmd($('#start_date').val());
+                d.end_date   = toYmd($('#end_date').val());
+
+            },
+        },
+        columns: [{
+                data: 'no_dok'
+            },
+            {
+                data: 'tgl_dok'
+            },
+            {
+                data: 'no_barcode'
+            },
+            {
+                data: 'no_roll'
+            },
+            {
+                data: 'no_lot'
+            },
+            {
+                data: 'kode_lok'
+            },
+            {
+                data: 'id_item'
+            },
+            {
+                data: 'itemdesc'
+            },
+            {
+                data: 'color'
+            },
+            {
+                data: 'size'
+            },
+            {
+                data: 'no_invoice'
+            },
+            {
+                data: 'type_bc'
+            },
+            {
+                data: 'no_aju'
+            },
+            {
+                data: 'tgl_aju'
+            },
+            {
+                data: 'no_daftar'
+            },
+            {
+                data: 'tgl_daftar'
+            },
+            {
+                data: 'supplier'
+            },
+            {
+                data: 'no_po'
+            },
+            {
+                data: 'tipe_com'
+            },
+            {
+                data: 'no_sj'
+            },
+            {
+                data: 'qty_in'
+            },
+            {
+                data: 'satuan'
+            },
+            {
+                data: 'berat_bersih'
+            },
+            {
+                data: 'deskripsi'
+            },
+            {
+                data: 'username'
+            },
+            {
+                data: 'kpno'
+            },
+            {
+                data: 'styleno'
+            },
+            {
+                data: 'np_curr'
+            },
+            {
+                data: 'price'
+            },
+            {
+                data: 'np_price'
+            },
+            {
+                data: 'type_pch'
+            },
+            {
+                data: 'price_unit'
+            },
+            {
+                data: 'jasa'
+            },
+            {
+                data: 'total_price'
+            },
+            {
+                data: 'total_in'
+            },
+            {
+                data: 'jasa_in'
+            },
+            {
+                data: 'jumlah_in'
+            },
+            {
+                data: 'rate'
+            },
+            {
+                data: 'total_in_idr'
+            },
+            {
+                data: 'jasa_in_idr'
+            },
+            {
+                data: 'jumlah_in_idr'
+            }
+
+        ],
+        columnDefs: [],
+        initComplete: function() {
+        this.api().columns.adjust();
+    }
+    });
+
+         $('#mytable').on('draw.dt', function () {
+    datatable.columns.adjust();
+});
+
+
+        $("[data-toggle=tooltip]").tooltip();
+
+function dataTableReload() {
+                datatable.ajax.reload(()=>{
+                    datatable.columns.adjust();
+                });
+            }
+
+document.getElementById('btnExportExcel').addEventListener('click', function(e) {
+    let sd = toYmd(document.getElementById('start_date').value);
+    let ed = toYmd(document.getElementById('end_date').value);
+
+    // set dynamic href
+    this.href = `ekspor_ca_fabric_trx_in_barcode.php?start_date=${sd}&end_date=${ed}`;
+});
+
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.tanggal').datepicker({
+            format: "dd-mm-yyyy",
+            startDate : "01-01-2022",
+            autoclose:true
+        });
+    });
+</script>
+
+<script>
+    $(function() {
+        $('.selectpicker').selectpicker();
+    });
+</script>
+
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.tanggal').datepicker({
+            format: "dd-mm-yyyy",
+            autoclose:true
+        });
+    });
+</script>
+
+
+<script type="text/javascript">
+    document.getElementById('btncreate').onclick = function () {
+        location.href = "ca_fabric_trx_in_barcode.php";
+    };
+</script>
+
+<script type="text/javascript">
+    document.getElementById('reset').onclick = function () {
+        location.href = "ca_fabric_trx_in_barcode.php";
+    };
+</script>
+
+<!--<script src="//netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>-->
+
+</body>
+
+</html>
