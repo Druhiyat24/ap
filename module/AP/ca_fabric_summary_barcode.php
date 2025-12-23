@@ -98,6 +98,7 @@
           <thead class="table-gradient text-white">
             <tr>
                         <th rowspan="2" style="text-align: center;vertical-align: middle;">No Barcode</th>
+                        <th rowspan="2" style="text-align: center;vertical-align: middle;">No Barcode Mapping</th>
                         <th rowspan="2" style="text-align: center;vertical-align: middle;">Id Item</th>
                         <th rowspan="2" style="text-align: center;vertical-align: middle;">Item Code</th>
                         <th rowspan="2" style="text-align: center;vertical-align: middle;">Item Name</th>
@@ -299,6 +300,7 @@ function SidebarCollapse () {
         },
         columns: [
     { data: 'no_barcode' },
+    { data: 'barcode_mapping' },
     { data: 'id_item' },
     { data: 'goods_code' },
     { data: 'itemdesc' },
@@ -393,7 +395,7 @@ function SidebarCollapse () {
 
         columnDefs: [
         {
-            targets: [...Array(57).keys()].slice(6),
+            targets: [...Array(58).keys()].slice(6),
             className: "text-right",
             render: function (data) {
                 let val = parseFloat(data);
