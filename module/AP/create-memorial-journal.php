@@ -776,7 +776,8 @@ function SidebarCollapse () {
             paging: false,          // Menambahkan paging
             searching: false,       // Menambahkan pencarian
             scrollCollapse: true,  // Mengatasi jika data tidak cukup
-            fixedHeader: true,     // Menjaga header tetap terlihat
+            fixedHeader: true, 
+            ordering: false,    // Menjaga header tetap terlihat
             language: {
             info: "", // Menghilangkan teks "Showing 1 to 1 of 1 entries"
             infoEmpty: "", // Untuk keadaan ketika tidak ada data
@@ -1655,13 +1656,21 @@ function addListener(elm,index){
  
 </script> -->
 
+<script>
+let coaWajibCC = [];
+
+// Load sekali saat halaman dibuka
+$.getJSON('get_coa_wajib_cc.php', function(data){
+    coaWajibCC = data;
+    console.log("COA wajib CC:", coaWajibCC);
+});
+</script>
+
+
 <script type="text/javascript">
 
-    $("#form-simpan").on("click", "#simpan", function (e) {
-    e.preventDefault(); // cegah submit otomatis
-
-    var isValid = true;
-    var errMsg = "";
+   $("#form-simpan").on("click", "#simpan", function (e) {
+    e.preventDefault();
 
     var fil_cmj   = $('select[name=filter_cmj] option:selected').val();
     var cek_sb1   = $("#fil_sb1").val();
@@ -1673,36 +1682,74 @@ function addListener(elm,index){
     var id_cmj    = $('select[name=nama_type] option:selected').val();
     var tgl_hris  = (fil_cmj == 'HRIS') ? $("#tgl_hris").val() : "";
 
-    // === Validasi global sebelum loop ===
-    if (id_cmj == '' || id_cmj == '-') {
-        alert("Please Select Type Journal");
-        return;
-    }
-    if ((t_credit == '' && t_debit == '') || (t_credit == '0' && t_debit == '0')) {
-        alert("Please Enter Amount");
-        return;
-    }
-    if (t_credit < 0 || t_debit < 0) {
-        alert("Amount Can't be minus");
-        return;
-    }
-    if (t_credit != t_debit) {
-        alert("Debit and Credit can't Balance");
-        return;
-    }
+    // ===== VALIDASI GLOBAL =====
+    if (!id_cmj || id_cmj == "-") return alert("Please Select Type Journal");
+    if ((t_credit == '' && t_debit == '') || (t_credit == '0' && t_debit == '0')) return alert("Please Enter Amount");
+    if (t_credit < 0 || t_debit < 0) return alert("Amount Can't be minus");
+    if (t_credit != t_debit) return alert("Debit and Credit can't Balance");
 
     var rows = $("#mytable input[type=checkbox][id='select']:checked");
-    if (rows.length === 0) {
-        alert("Pilih minimal satu baris data!");
+    if (rows.length === 0) return alert("Pilih minimal satu baris data!");
+
+    var isValid = true;
+    var errMsg  = "";
+
+    // =====================================
+    // 1️⃣ LOOP PERTAMA → VALIDASI SAJA
+    // =====================================
+    rows.each(function () {
+
+        var row = $(this).closest('tr');
+        var no_coa, prof_ctr, no_costcenter;
+
+        if (fil_cmj == 'HRIS') {
+            no_coa        = row.find('td:eq(1)').attr('value');
+            prof_ctr      = row.find('td:eq(3)').attr('value');
+            no_costcenter = row.find('td:eq(4)').attr('value');
+        } else {
+            no_coa        = row.find('td:eq(1) select[name=nomor_coa]').val();
+            prof_ctr      = row.find('td:eq(2) select[id=prof_ctr]').val();
+            no_costcenter = row.find('td:eq(3) select[id=nomor_cc]').val();
+        }
+
+        if (!no_coa || no_coa === "-") {
+            isValid = false;
+            errMsg = "Nomor COA wajib diisi di semua baris.";
+            return false;
+        }
+
+        if (!prof_ctr || prof_ctr === "-") {
+            isValid = false;
+            errMsg = "Profit Center wajib diisi di semua baris.";
+            return false;
+        }
+
+        // ==== INI VALIDASI PENTINGNYA ====
+        if (coaWajibCC.includes(no_coa)) {
+            if (!no_costcenter || no_costcenter === "-") {
+                isValid = false;
+                errMsg = "Cost Center wajib diisi untuk COA " + no_coa;
+                return false;
+            }
+        }
+
+    });
+
+    // ❌ Jika ada yang salah → STOP TOTAL
+    if (!isValid) {
+        alert(errMsg);
         return;
     }
 
+    // =====================================
+    // 2️⃣ LOOP KEDUA → BARU KIRIM DATA
+    // =====================================
     var totalRows = rows.length;
     var completed = 0;
     var hasError  = false;
 
-    // === Loop baris checkbox yang dipilih ===
     rows.each(function () {
+
         var row = $(this).closest('tr');
 
         var no_coa, prof_ctr, no_costcenter, no_reff, reff_date,
@@ -1717,7 +1764,7 @@ function addListener(elm,index){
             buyer        = row.find('td:eq(8)').attr('value');
             no_ws        = row.find('td:eq(9)').attr('value');
             curr         = row.find('td:eq(10)').attr('value');
-            rate         = '1';
+            rate         = 1;
             debit        = row.find('td:eq(11)').attr('value') || 0;
             credit       = row.find('td:eq(12)').attr('value') || 0;
             keterangan   = row.find('td:eq(13)').attr('value');
@@ -1734,61 +1781,41 @@ function addListener(elm,index){
             debit        = row.find('td:eq(10) input').val() || 0;
             credit       = row.find('td:eq(11) input').val() || 0;
             keterangan   = row.find('td:eq(12) input').val();
-
-            // validasi COA & Profit Center
-            if (!no_coa || no_coa === "-") {
-                isValid = false;
-                errMsg  = "Harap isi Nomor COA di semua baris yang dipilih.";
-                return false; // break loop
-            }
-            if (!prof_ctr || prof_ctr === "-") {
-                isValid = false;
-                errMsg  = "Harap isi Profit Center di semua baris yang dipilih.";
-                return false; // break loop
-            }
         }
 
-        if (!isValid) {
-            return false; // stop looping jika ada error
-        }
-
-        // === AJAX per baris ===
         $.ajax({
             type: 'POST',
             url: 'insert_memorial_journal.php',
             data: {
-                'cek_sb1': cek_sb1,
-                'no_mj_sb1': no_mj_sb1,
-                'no_mj': no_mj,
-                'mj_date': mj_date,
-                'tgl_hris': tgl_hris,
-                'id_cmj': id_cmj,
-                'no_coa': no_coa,
-                'no_costcenter': no_costcenter,
-                'no_reff': no_reff,
-                'reff_date': reff_date,
-                'buyer': buyer,
-                'no_ws': no_ws,
-                'curr': curr,
-                'rate': rate,
-                'debit': debit,
-                'credit': credit,
-                'keterangan': keterangan,
-                'create_user': '<?php echo $user; ?>',
-                'prof_ctr': prof_ctr
+                cek_sb1,
+                no_mj_sb1,
+                no_mj,
+                mj_date,
+                tgl_hris,
+                id_cmj,
+                no_coa,
+                no_costcenter,
+                no_reff,
+                reff_date,
+                buyer,
+                no_ws,
+                curr,
+                rate,
+                debit,
+                credit,
+                keterangan,
+                create_user: '<?php echo $user; ?>',
+                prof_ctr
             },
-            cache: false,
-            success: function (response) {
-                console.log(response);
+            success: function (res) {
+                console.log(res);
             },
             error: function (xhr) {
-                console.log(xhr);
                 hasError = true;
                 alert("Error: " + xhr.responseText);
             },
             complete: function () {
                 completed++;
-                // cek apakah semua request selesai
                 if (completed === totalRows && !hasError) {
                     alert("Data berhasil disimpan");
                     window.location = 'memorial-journal.php';
@@ -1798,12 +1825,8 @@ function addListener(elm,index){
 
     });
 
-    if (!isValid) {
-        alert(errMsg);
-        return;
-    }
-
 });
+
 
 //     $("#form-simpan").on("click", "#simpan", function(){
 //         $("#mytable input[type=checkbox][id='select']:checked").each(function () {

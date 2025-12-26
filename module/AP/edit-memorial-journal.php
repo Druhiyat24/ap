@@ -454,7 +454,7 @@ while($row = mysql_fetch_array($sqlpv)){
     echo '</select>
     </td>
     <td >
-    <select class="form-control selectpicker nomor_cc" name="nomor_cc" id="nomor_cc" data-width="200px" data-live-search="true"><option value="'.$row['no_costcenter'].'" >'.$row['cc_name'].'</option><option value="-" > - </option>'; $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name as cost_name from b_master_cc where no_cc != '$no_cc'"); foreach ($sql2 as $cc) : echo'<option value="'. $cc["code_combine"].'">'.$cc["cost_name"].'</option>'; endforeach; ?>
+    <select class="form-control selectpicker nomor_cc" name="nomor_cc" id="nomor_cc" data-width="200px" data-live-search="true"><option value="'.$row['no_costcenter'].'" >'.$row['no_costcenter'].' - '.$row['cc_name'].'</option><option value="-" > - </option>'; $sql2 = mysqli_query($conn1,"select no_cc as code_combine,CONCAT(no_cc,' - ',cc_name) as cost_name from b_master_cc where no_cc != '$no_cc' and id_pc = '$profit_center' AND status = 'Active'"); foreach ($sql2 as $cc) : echo'<option value="'. $cc["code_combine"].'">'.$cc["cost_name"].'</option>'; endforeach; ?>
     <?php
     echo '</select>
     </td>
@@ -1620,7 +1620,149 @@ function addListener(elm,index){
  
 </script> -->
 
+<script>
+let coaWajibCC = [];
+
+// Load sekali saat halaman dibuka
+$.getJSON('get_coa_wajib_cc.php', function(data){
+    coaWajibCC = data;
+    console.log("COA wajib CC:", coaWajibCC);
+});
+</script>
+
 <script type="text/javascript">
+$("#form-simpan").on("click", "#simpan", function(e){
+    e.preventDefault();
+
+    var no_mj = $('#no_doc').val();
+    var create_user = '<?php echo $user; ?>';
+    var nama_type = $('select[name=nama_type]').val();
+    var credit = $('#txt_credit_h').val();
+    var debit  = $('#txt_debit_h').val();
+
+    // =========================
+    // VALIDASI GLOBAL
+    // =========================
+    if (!nama_type) return alert("Please Select Type Journal");
+    if ((credit=='' && debit=='') || (credit=='0' && debit=='0')) return alert("Please Enter Amount");
+    if (credit < 0 || debit < 0) return alert("Amount Can't be minus");
+    if (credit != debit) return alert("Debit and Credit can't Balance");
+
+    var checkedRows = $("input[type=checkbox]:checked");
+    if (checkedRows.length == 0) return alert("Pilih minimal satu baris data!");
+
+    var isValid = true;
+    var errMsg  = "";
+
+    // ==================================================
+    // 1️⃣ LOOP PERTAMA — CEK FIELD DULU (TANPA AJAX)
+    // ==================================================
+    checkedRows.each(function(){
+
+        var tr = $(this).closest('tr');
+
+        var no_coa        = tr.find('td:eq(1) select[name=nomor_coa]').val();
+        var prof_ctr      = tr.find('td:eq(2) select[id=prof_ctr]').val();
+        var no_costcenter = tr.find('td:eq(3) select[name=nomor_cc]').val();
+
+        if (!no_coa || no_coa=="-") {
+            isValid = false;
+            errMsg = "Nomor COA wajib diisi di semua baris yang dipilih.";
+            return false;
+        }
+
+        if (!prof_ctr || prof_ctr=="-") {
+            isValid = false;
+            errMsg = "Profit Center wajib diisi di semua baris yang dipilih.";
+            return false;
+        }
+
+        // === VALIDASI COA WAJIB COST CENTER ===
+        if (coaWajibCC.includes(no_coa)) {
+            if (!no_costcenter || no_costcenter=="-") {
+                isValid = false;
+                errMsg = "Cost Center wajib diisi untuk COA " + no_coa;
+                return false;
+            }
+        }
+    });
+
+    // ❌ STOP TOTAL kalau ada error
+    if (!isValid){
+        alert(errMsg);
+        return;
+    }
+
+    // ==================================================
+    // 2️⃣ KALAU SUDAH VALID SEMUA → LANJUT AJAX COPY
+    // ==================================================
+    $.ajax({
+        type: 'POST',
+        url: 'copy_data_mj.php',
+        data: {no_mj:no_mj, create_user:create_user},
+        success:function(response){
+
+            if(response=='Post'){
+
+                var total = checkedRows.length;
+                var done = 0;
+                var hasError = false;
+
+                checkedRows.each(function(){
+
+                    var tr = $(this).closest('tr');
+
+                    $.ajax({
+                        type:'POST',
+                        url:'insert_memorial_journal_edit.php',
+                        data:{
+                            no_mj      : $('#no_doc').val(),
+                            mj_date    : $('#tgl_doc').val(),
+                            id_cmj     : $('select[name=nama_type]').val(),
+                            no_coa     : tr.find('td:eq(1) select[name=nomor_coa]').val(),
+                            prof_ctr   : tr.find('td:eq(2) select[id=prof_ctr]').val(),
+                            no_costcenter: tr.find('td:eq(3) select[name=nomor_cc]').val(),
+                            no_reff    : tr.find('td:eq(4) input').val(),
+                            reff_date  : tr.find('td:eq(5) input').val(),
+                            buyer      : tr.find('td:eq(6) select[name=buyer]').val(),
+                            no_ws      : tr.find('td:eq(7) select[name=no_ws]').val(),
+                            curr       : tr.find('td:eq(8) select[name=currenc]').val(),
+                            rate       : tr.find('td:eq(9) input').val(),
+                            debit      : tr.find('td:eq(10) input').val() || 0,
+                            credit     : tr.find('td:eq(11) input').val() || 0,
+                            keterangan : tr.find('td:eq(12) input').val(),
+                            create_user: '<?php echo $user; ?>'
+                        },
+                        error:function(xhr){
+                            hasError = true;
+                            alert("Error insert: "+xhr.responseText);
+                        },
+                        complete:function(){
+                            done++;
+                            if(done===total && !hasError){
+                                alert("Memorial Journal Changed successfully");
+                                window.location='memorial-journal.php';
+                            }
+                        }
+                    });
+
+                });
+
+            }else{
+                alert("Memorial Journal Can't be Changed");
+            }
+
+        },
+        error:function(xhr){
+            alert("Error copy: "+xhr.responseText);
+        }
+    });
+
+});
+</script>
+
+
+<!-- <script type="text/javascript">
     $("#form-simpan").on("click", "#simpan", function(){
     var no_mj = document.getElementById('no_doc').value;  
     var create_user = '<?php echo $user; ?>';
@@ -1628,16 +1770,7 @@ function addListener(elm,index){
     var credit = document.getElementById('txt_credit_h').value;
     var debit = document.getElementById('txt_debit_h').value;
 
-    // 🔴 Cek apakah ada prof_ctr yang kosong sebelum proses copy_data_mj.php
     var valid = true;
-    // $("input[type=checkbox]:checked").each(function () {
-    //     var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val();
-    //     if (!prof_ctr) {
-    //         alert("Ada baris dengan Profit Center kosong! Mohon lengkapi sebelum menyimpan.");
-    //         valid = false;
-    //         return false; // Hentikan iterasi jika ada yang kosong
-    //     }
-    // });
 
     if (!valid) {
         return; // Hentikan semua proses jika validasi gagal
@@ -1711,7 +1844,7 @@ function addListener(elm,index){
     }
 });
 
-</script>
+</script> -->
 
 
 <script type="text/javascript">
