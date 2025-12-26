@@ -1541,10 +1541,7 @@ echo'</ul>
       </a>
       <ul class="dropdown-menu bg-dark text-white" role="menu">
 
-      <a href="../AP/ca_fabric_trx_in.php" class="dropdown-item bg-dark text-white">
-      <span class="fa fa-cart-arrow-down fa-fw "></span>
-      <span class="menu-collapsed">Trx In</span>
-      </a>
+      
       <a href="../AP/ca_fabric_trx_in_new.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-cart-arrow-down fa-fw "></span>
       <span class="menu-collapsed">Trx Item In</span>
@@ -1553,10 +1550,7 @@ echo'</ul>
       <span class="fa fa-cart-arrow-down fa-fw "></span>
       <span class="menu-collapsed">Trx Barcode In</span>
       </a>
-      <a href="../AP/ca_fabric_trx_out.php" class="dropdown-item bg-dark text-white">
-      <span class="fa fa-paper-plane fa-fw "></span>
-      <span class="menu-collapsed">Trx Out</span>
-      </a>
+      
       <a href="../AP/ca_fabric_trx_out_item.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-paper-plane fa-fw "></span>
       <span class="menu-collapsed">Trx Item Out</span>
@@ -1565,10 +1559,7 @@ echo'</ul>
       <span class="fa fa-paper-plane fa-fw "></span>
       <span class="menu-collapsed">Trx Barcode Out</span>
       </a>
-      <a href="../AP/ca_fabric_summary.php" class="dropdown-item bg-dark text-white">
-      <span class="fa fa-calculator fa-fw "></span>
-      <span class="menu-collapsed">Summary</span>
-      </a>
+      
       <a href="../AP/ca_fabric_summary_item.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-calculator fa-fw "></span>
       <span class="menu-collapsed">Summary Item</span>
@@ -1595,6 +1586,19 @@ echo'</ul>
   }
 
   ?>
+
+<!--   <a href="../AP/ca_fabric_trx_in.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-cart-arrow-down fa-fw "></span>
+      <span class="menu-collapsed">Trx In</span>
+      </a>
+<a href="../AP/ca_fabric_trx_out.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-paper-plane fa-fw "></span>
+      <span class="menu-collapsed">Trx Out</span>
+      </a>
+<a href="../AP/ca_fabric_summary.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-calculator fa-fw "></span>
+      <span class="menu-collapsed">Summary</span>
+      </a> -->
 </ul>
 </li>
 <!-- END Menu Cost Accounting -->
