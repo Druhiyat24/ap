@@ -1569,7 +1569,7 @@ echo'</ul>
       <span class="fa fa-calculator fa-fw "></span>
       <span class="menu-collapsed">Summary</span>
       </a>
-      <a href="../AP/ca_fabric_summary_item.php" class="dropdown-item bg-dark text-white">
+      <a href="AP/ca_fabric_summary_item.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-calculator fa-fw "></span>
       <span class="menu-collapsed">Summary Item</span>
       </a>
