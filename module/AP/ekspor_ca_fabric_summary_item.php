@@ -35,7 +35,7 @@
 
     ?>
 
-    <h4> FABRIC MUTASI BARCODE<br/> PERIODE: <?php echo $start_date; ?> - <?php echo $end_date; ?></h4>
+    <h4> FABRIC MUTASI ITEM<br/> PERIODE: <?php echo $start_date; ?> - <?php echo $end_date; ?></h4>
 
     <table style="width:100%;font-size:10px;" border="1" width="100%">
         <tr>
