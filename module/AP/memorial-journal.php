@@ -318,9 +318,9 @@
             }elseif($status == 'Post' and $fin == '1' and $app == '1'){
                 echo '<a id="delete" href=""><button style="border-radius: 6px" type="button" class="btn-xs btn-danger"><i class="fa fa-trash"aria-hidden="true" style="padding-right: 10px; padding-left: 5px;" onclick="alert_cancel();"> Cancel</i></button></a>
                 ';
-                if ($row['id_cmj'] != 'CMJ001') {
+                // if ($row['id_cmj'] != 'CMJ001') {
                     echo '<a href="edit-memorial-journal.php?no_mj='.base64_encode($row['no_mj']).' "><button style="border-radius: 6px" type="button" class="btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Edit</i></button></a>';
-                }
+                // }
             }elseif($status == 'Cancel' and $fin == '1') {
                 echo ' <p style="font-size: 13px;margin-bottom: -1px"><i class="fa fa-ban fa-lg" style="padding-right: 3px; padding-left: 5px; color: red" ></i><b>Canceled</b></p>';                    
             }else{
