@@ -209,13 +209,7 @@ echo $rate;
     </thead>
     
     <tbody id="tbody2">
-        <tr style="display: none;">
-            <td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>
-            <td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td>
-            <td><input type="text" style="font-size: 12px;" name="tgl_active" id="tgl_active" class="form-control tanggal" autocomplete="off" placeholder="dd-mm-yyyy"></td>
-            <td><input style="font-size: 12px;text-align:right;" type="text" class="form-control" name="amount" oninput="modal_input_amt(value)" placeholder="" autocomplete="off"></td>
-            <td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""/></td>
-        </tr>
+
     </tbody>
     <tfoot>
           <tr>
@@ -769,113 +763,178 @@ function addListener(elm,index){
 
 </script>
 
-<!-- <script type="text/javascript">
-    $("#form-data").on("click", "#btn2", function(){
-        $("input[type=checkbox]:checked").each(function () {
-        var doc_number = document.getElementById('no_doc').value;        
-         
-             
-        $.ajax({
-            type:'POST',
-            url:'hapusdoc.php',
-            data: {'doc_number':doc_number},
-            cache: 'false',
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){
-                console.log(response);
-                // $('#modal-form2').modal('toggle');
-
-                // return false; 
-                },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                alert(xhr);
-            }
-        });             
-        });
- 
-    });
-
-
-</script> -->
-
 <script type="text/javascript">
     $("#form-simpan").on("click", "#simpan", function(){
-        var doc_num = document.getElementById('no_doc').value;  
-        var tgl_penerimaan = document.getElementById('tgl_doc').value; 
-        var unik_code = document.getElementById('unik_code').value;       
-        var nama_supp = $('select[name=nama_supp] option').filter(':selected').val();
-        var deskripsi = document.getElementById('pesan').value;
-        var no_reff = document.getElementById('no_reff').value;
-        var total_amount = document.getElementById('total_value_h').value;
-        var create_user = '<?php echo $user; ?>';
 
-        if (total_amount >= '1' && nama_supp != ''  && no_reff != '') {
-        $.ajax({
-            type:'POST',
-            url:'insert_invoice_supp_h.php',
-            data: {'doc_num':doc_num, 'tgl_penerimaan':tgl_penerimaan, 'unik_code':unik_code, 'nama_supp':nama_supp, 'deskripsi':deskripsi, 'no_reff':no_reff, 'total_amount':total_amount, 'create_user':create_user},
-            cache: 'false',
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){
-                console.log(response);
-                 $("input[type=checkbox]:checked").each(function () {
-                    var unik_code = document.getElementById('unik_code').value;  
-                    var no_inv = $(this).closest('tr').find('td:eq(1) input').val();                               
-                    var tgl_inv = $(this).closest('tr').find('td:eq(2) input').val();
-                    var amount = $(this).closest('tr').find('td:eq(3) input').val();
-                    var create_user = '<?php echo $user; ?>';
-        
+    var arrInv = [];
+    var invalid = [];
 
-                if (amount >= '1' && no_inv != '') { 
-                    $.ajax({
-                    type:'POST',
-                    url:'insert_invoice_supp.php',
-                    data: {'unik_code':unik_code, 'no_inv':no_inv, 'tgl_inv':tgl_inv, 'amount':amount, 'create_user':create_user},
-                    cache: 'false',
-                    close: function(e){
-                        e.preventDefault();
-                    },
-                    success: function(response){
-                        console.log(response);
-                        // alert(response);
-                
-                        window.location = 'invoice_received.php';
-                    },
-                    error: function (xhr, ajaxOptions, thrownError) {
-                        console.log(xhr);
-                        alert(xhr);
-                    }
-                    });
-                }
-    
-        });
-                alert(response);
-                // window.location = 'cash-in.php';
-                },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                alert(xhr);
+    $("input[type=checkbox]:checked").each(function () {
+
+        var no_inv = $(this).closest('tr').find('td:eq(1) input').val();
+        var amount = $(this).closest('tr').find('td:eq(3) input').val();
+
+
+        if(no_inv == '' || no_inv == null){
+            invalid.push("NO INV kosong pada baris: " + ($(this).closest('tr').index() + 1));
+        }
+
+        if(amount == '' || parseFloat(amount) < 1){
+            invalid.push("Amount tidak valid pada NO INV: " + (no_inv || '(kosong)'));
+        }
+
+        arrInv.push(no_inv);
+    });
+
+    if(invalid.length > 0){
+        alert(invalid.join("\n"));
+        return false;
+    }
+
+    if(arrInv.length == 0){
+        alert("Tidak ada invoice yang dipilih");
+        return false;
+    }
+
+    $.ajax({
+        type:'POST',
+        url:'cek_no_inv.php',
+        data:{no_inv:arrInv},
+        dataType:'json',
+        success:function(res){
+
+            if(res.length > 0){
+
+                alert("NO INV SUDAH ADA : \n" + res.join("\n"));
+                return false;   // ❌ STOP — JANGAN SIMPAN
+
+            }else{
+
+                // ✔ LANJUT SIMPAN KARENA SEMUA AMAN
+                simpanData();
+
             }
-        });
-        } 
-                         
-       if($('select[name=nama_supp] option').filter(':selected').val() == '' ){
-        alert("Please Select Supplier");
-        }else if(document.getElementById('no_reff').value == ''){
-        alert("Please Input Reff");
-        }else if(document.getElementById('total_value_h').value == ''){
-        alert("Please Input Amount");
-        }else if(document.getElementById('total_value_h').value <= '0'){
-        alert("Amount can't be Minus");
-        }else if(document.getElementById('total_value_h').value == '0.00'){
-        alert("Total Amount can't be Zero");
         }
     });
+
+});
+
+
+function simpanData(){
+
+    var doc_num = $('#no_doc').val();
+    var tgl_penerimaan = $('#tgl_doc').val();
+    var unik_code = $('#unik_code').val();
+    var nama_supp = $('select[name=nama_supp]').val();
+    var deskripsi = $('#pesan').val();
+    var no_reff = $('#no_reff').val();
+    var total_amount = $('#total_value_h').val();
+    var create_user = '<?= $user ?>';
+
+    $.ajax({
+        type:'POST',
+        url:'insert_invoice_supp_h.php',
+        data:{
+            doc_num,tgl_penerimaan,unik_code,nama_supp,
+            deskripsi,no_reff,total_amount,create_user
+        },
+        success:function(response){
+
+            $("input[type=checkbox]:checked").each(function () {
+
+                var no_inv = $(this).closest('tr').find('td:eq(1) input').val();
+                var tgl_inv = $(this).closest('tr').find('td:eq(2) input').val();
+                var amount  = $(this).closest('tr').find('td:eq(3) input').val();
+                if (amount >= '1' && no_inv != '') {     
+                    $.post('insert_invoice_supp.php',{
+                        unik_code,no_inv,tgl_inv,amount,create_user
+                    });
+                }
+            });
+
+            alert("Berhasil disimpan");
+            window.location = 'invoice_received.php';
+        }
+    });
+}
+
+</script>
+
+<script type="text/javascript">
+    // $("#form-simpan").on("click", "#simpan", function(){
+    //     var doc_num = document.getElementById('no_doc').value;  
+    //     var tgl_penerimaan = document.getElementById('tgl_doc').value; 
+    //     var unik_code = document.getElementById('unik_code').value;       
+    //     var nama_supp = $('select[name=nama_supp] option').filter(':selected').val();
+    //     var deskripsi = document.getElementById('pesan').value;
+    //     var no_reff = document.getElementById('no_reff').value;
+    //     var total_amount = document.getElementById('total_value_h').value;
+    //     var create_user = '<?php echo $user; ?>';
+
+    //     if (total_amount >= '1' && nama_supp != ''  && no_reff != '') {
+    //     $.ajax({
+    //         type:'POST',
+    //         url:'insert_invoice_supp_h.php',
+    //         data: {'doc_num':doc_num, 'tgl_penerimaan':tgl_penerimaan, 'unik_code':unik_code, 'nama_supp':nama_supp, 'deskripsi':deskripsi, 'no_reff':no_reff, 'total_amount':total_amount, 'create_user':create_user},
+    //         cache: 'false',
+    //         close: function(e){
+    //             e.preventDefault();
+    //         },
+    //         success: function(response){
+    //             console.log(response);
+    //              $("input[type=checkbox]:checked").each(function () {
+    //                 var unik_code = document.getElementById('unik_code').value;  
+    //                 var no_inv = $(this).closest('tr').find('td:eq(1) input').val();                               
+    //                 var tgl_inv = $(this).closest('tr').find('td:eq(2) input').val();
+    //                 var amount = $(this).closest('tr').find('td:eq(3) input').val();
+    //                 var create_user = '<?php echo $user; ?>';
+        
+
+    //             if (amount >= '1' && no_inv != '') { 
+    //                 $.ajax({
+    //                 type:'POST',
+    //                 url:'insert_invoice_supp.php',
+    //                 data: {'unik_code':unik_code, 'no_inv':no_inv, 'tgl_inv':tgl_inv, 'amount':amount, 'create_user':create_user},
+    //                 cache: 'false',
+    //                 close: function(e){
+    //                     e.preventDefault();
+    //                 },
+    //                 success: function(response){
+    //                     console.log(response);
+    //                     // alert(response);
+                
+    //                     window.location = 'invoice_received.php';
+    //                 },
+    //                 error: function (xhr, ajaxOptions, thrownError) {
+    //                     console.log(xhr);
+    //                     alert(xhr);
+    //                 }
+    //                 });
+    //             }
+    
+    //     });
+    //             alert(response);
+    //             // window.location = 'cash-in.php';
+    //             },
+    //         error: function (xhr, ajaxOptions, thrownError) {
+    //             console.log(xhr);
+    //             alert(xhr);
+    //         }
+    //     });
+    //     } 
+                         
+    //    if($('select[name=nama_supp] option').filter(':selected').val() == '' ){
+    //     alert("Please Select Supplier");
+    //     }else if(document.getElementById('no_reff').value == ''){
+    //     alert("Please Input Reff");
+    //     }else if(document.getElementById('total_value_h').value == ''){
+    //     alert("Please Input Amount");
+    //     }else if(document.getElementById('total_value_h').value <= '0'){
+    //     alert("Amount can't be Minus");
+    //     }else if(document.getElementById('total_value_h').value == '0.00'){
+    //     alert("Total Amount can't be Zero");
+    //     }
+    // });
 </script>
 
 <script type="text/javascript">
