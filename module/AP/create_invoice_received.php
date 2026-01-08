@@ -531,7 +531,7 @@ async function hapusbaris(){
     var tota_ppn = 0;
     var harga = 0;
     var totall = 0;
-            for (var i = 1; i < (table.rows.length); i++) {
+            for (var i = 0; i < (table.rows.length); i++) {
 
     var price = document.getElementById("tbody2").rows[i].cells[3].children[0].value;
     if (price == '') {
@@ -845,7 +845,7 @@ function simpanData(){
                 var no_inv = $(this).closest('tr').find('td:eq(1) input').val();
                 var tgl_inv = $(this).closest('tr').find('td:eq(2) input').val();
                 var amount  = $(this).closest('tr').find('td:eq(3) input').val();
-                if (amount >= '1' && no_inv != '') {     
+                if (amount >= 1 && no_inv != '') {     
                     $.post('insert_invoice_supp.php',{
                         unik_code,no_inv,tgl_inv,amount,create_user
                     });
