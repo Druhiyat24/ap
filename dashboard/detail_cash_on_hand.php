@@ -9,7 +9,7 @@ $eqv_idr = 0;
 $tahun = date("Y"); 
 $filter = isset($_POST['filter']) ? $_POST['filter']: null;
 
-$sql = mysqli_query($conn1,"select nama_coa,sum($filter) total from b_trial_balance_$tahun where no_coa IN ('1.01.01','1.01.02','1.01.03') GROUP BY no_coa order by nama_coa asc"); 
+$sql = mysqli_query($conn1,"select nama_coa,sum($filter) total from b_trial_balance_$tahun where no_coa IN ('1.10.11','1.10.21','1.10.81','1.10.82','1.10.31','1.10.83','1.10.84','1.10.41','1.10.42') GROUP BY no_coa order by nama_coa asc"); 
 
 
 $table = '<table id="mytdmodal" class="table table-striped" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">';
