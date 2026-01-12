@@ -120,7 +120,7 @@
                 <div class="col-md-3 mb-3">            
                     <label for="total" class="col-form-label" style="width: 150px;"><b>Date</b></label>
                     <input type="text" style="font-size: 15px;" name="tgl_active" id="tgl_active" class="form-control tanggal" 
-                    value="<?php echo date("d-m-Y"); ?>" autocomplete='off'>
+                    value="<?php echo date("d-m-Y"); ?>" autocomplete='off' onchange="refreshRate()">
                 </div>
 
                 <div class="col-md-3 mb-3">            
@@ -2075,104 +2075,185 @@ if (headerPC) {
 });
 </script>
 
-<script type="text/javascript"> 
-    <?php echo $jsArray; ?>
-    var nom = 0;
-    var nom2 = 0;
-    function changeValueACC(id){
-        var select_rate = document.getElementById('rate');  
-        var nominal = parseFloat(document.getElementById('nominal_h1').value,10) || 0;  
-        document.getElementById('nama_bank').value = prdName[id].nama_bank;
-        document.getElementById('valuta').value = prdName[id].valuta;
-        document.getElementById('kode').value = prdName[id].kode;
-        var valuta_bk = document.getElementById('curr_bk').value;
-        var kmk_rate = parseFloat(document.getElementById('rat').value,10) || 0;
-        nom = nominal;
-        nom2 = nominal * kmk_rate;
-        if (prdName[id].valuta == 'IDR') {
-            if (nominal != '') {
-                select_rate.disabled = true;
-                document.getElementById('rate').value = '1';
-                document.getElementById('rate_h').value = '1';
-                $("#nomrate").val(formatMoney(nom));
-                $("#nomrate_h").val(nom.toFixed(2));
+<script type="text/javascript">
+<?php echo $jsArray; ?>
+var nom = 0;
+var nom2 = 0;
 
-            }else{
-                select_rate.disabled = true;
-                document.getElementById('rate').value = '1';
-                document.getElementById('rate_h').value = '1';
+function changeValueACC(id){
 
+    var select_rate = document.getElementById('rate');  
+    var nominal = parseFloat(document.getElementById('nominal_h1').value) || 0;  
+
+    document.getElementById('nama_bank').value = prdName[id].nama_bank;
+    document.getElementById('valuta').value    = prdName[id].valuta;
+    document.getElementById('kode').value      = prdName[id].kode;
+
+    var doc_date = document.getElementById('tgl_active').value;
+
+    nom = nominal;
+
+    if (prdName[id].valuta == 'IDR') {
+
+        select_rate.disabled = true;
+        document.getElementById('rate').value   = '1';
+        document.getElementById('rate_h').value = '1';
+
+        $("#nomrate").val(formatMoney(nom));
+        $("#nomrate_h").val(nom.toFixed(2));
+
+    } else {
+
+        select_rate.disabled = false;
+
+        // === AJAX ambil rate dari database ===
+        $.ajax({
+            url: "get_rate.php",
+            type: "POST",
+            dataType: "json",
+            data: {
+                valuta: prdName[id].valuta,
+                doc_date: doc_date
+            },
+            success: function(res){
+
+                if(res.status == 'ok'){
+
+                    var kmk_rate = parseFloat(res.rate) || 0;
+                    nom2 = nom * kmk_rate;
+
+                    $("#rate").val(kmk_rate);
+                    $("#rate_h").val(formatMoney(kmk_rate));
+
+                    $("#nomrate").val(formatMoney(nom2));
+                    $("#nomrate_h").val(nom2.toFixed(2));
+
+                }else{
+                    alert("Rate tidak ditemukan");
+                    $("#rate").val(0);
+                    $("#rate_h").val(0);
+                    $("#nomrate").val(0);
+                    $("#nomrate_h").val(0);
+                }
+            },
+            error: function(){
+                alert("Gagal mengambil rate dari server");
             }
-        }else{
-            select_rate.disabled = false;
-            $("#rate").val(kmk_rate);
-            $("#rate_h").val(formatMoney(kmk_rate));
-            $("#nomrate").val(formatMoney(nom2));
-            $("#nomrate_h").val(nom2.toFixed(2));
-        }
-    };
+        });
+    }
+}
 </script>
 
-<script type="text/javascript"> 
-    <?php echo $jsArray; ?>
-    var nom = 0;
-    function changeValueACC3(id){
-        var select_rate = document.getElementById('rate');  
-        var nominal = parseFloat(document.getElementById('nominal_h1').value,10) || 0;  
-        document.getElementById('nama_bank').value = prdName[id].nama_bank;
-        document.getElementById('valuta').value = prdName[id].valuta;
-        document.getElementById('kode').value = prdName[id].kode;
-        var kmk_rate = parseFloat(document.getElementById('rat').value,10) || 0;
-        nom = nominal;
-        if (prdName[id].valuta == 'IDR') {
-            if (nominal != '') {
-                select_rate.disabled = true;
-                document.getElementById('rate').value = '1';
-                document.getElementById('rate_h').value = '1';
-                $("#nomrate").val(formatMoney(nom));
 
-            }else{
-                select_rate.disabled = true;
-                document.getElementById('rate').value = '1';
-                document.getElementById('rate_h').value = '1';
+<script type="text/javascript">
+<?php echo $jsArray; ?>
+var nom = 0;
 
+function changeValueACC3(id){
+
+    var select_rate = document.getElementById('rate');  
+    var nominal = parseFloat(document.getElementById('nominal_h1').value) || 0;  
+
+    document.getElementById('nama_bank').value = prdName[id].nama_bank;
+    document.getElementById('valuta').value    = prdName[id].valuta;
+    document.getElementById('kode').value      = prdName[id].kode;
+
+    var doc_date = document.getElementById('tgl_active').value;
+
+    nom = nominal;
+
+    if (prdName[id].valuta == 'IDR') {
+
+        select_rate.disabled = true;
+        document.getElementById('rate').value   = '1';
+        document.getElementById('rate_h').value = '1';
+
+        $("#nomrate").val(formatMoney(nom));
+
+    } else {
+
+        select_rate.disabled = false;
+
+        // === AJAX ambil rate dari database ===
+        $.ajax({
+            url: "get_rate.php",
+            type: "POST",
+            dataType: "json",
+            data: {
+                valuta: prdName[id].valuta,
+                doc_date: doc_date
+            },
+            success: function(res){
+
+                if(res.status === 'ok'){
+                    $("#rate").val(res.rate);
+                    $("#rate_h").val(res.rate);
+                }else{
+                    alert("Rate tidak ditemukan");
+                    $("#rate").val(0);
+                    $("#rate_h").val(0);
+                }
+            },
+            error: function(){
+                alert("Gagal mengambil rate dari server");
             }
-        }else{
-            select_rate.disabled = false;
-            $("#rate").val(kmk_rate);
-        }
-    };
+        });
+    }
+}
 </script>
 
-<script type="text/javascript"> 
-    <?php echo $jsArray; ?>
-    var nom = 0;
-    function changeValueACC2(id){
-        var select_rate = document.getElementById('rate1'); 
-        var nominal = parseFloat(document.getElementById('nominal_h').value,10) || 0;  
-        document.getElementById('nama_bank').value = prdName[id].nama_bank;
-        document.getElementById('valuta').value = prdName[id].valuta;
-        document.getElementById('kode').value = prdName[id].kode;
-        var kmk_rate = parseFloat(document.getElementById('rat').value,10) || 0;
-        nom = nominal;
-        if (prdName[id].valuta == 'IDR') {
-            if (nominal != '') {
-                select_rate.disabled = true;
-                document.getElementById('rate1').value = '1';
-                document.getElementById('rate_h1').value = '1';
-                $("#nomrate").val(formatMoney(nom));
-                $("#nomrate_h").val(nom.toFixed(2));
-            }else{
-                select_rate.disabled = true;
-                document.getElementById('rate1').value = '1';
-                document.getElementById('rate_h1').value = '1';
+
+<script type="text/javascript">
+<?php echo $jsArray; ?>
+var nom = 0;
+
+function changeValueACC2(id){
+    var select_rate = document.getElementById('rate1'); 
+    var nominal = parseFloat(document.getElementById('nominal_h').value) || 0;  
+
+    document.getElementById('nama_bank').value = prdName[id].nama_bank;
+    document.getElementById('valuta').value    = prdName[id].valuta;
+    document.getElementById('kode').value      = prdName[id].kode;
+    var doc_date = document.getElementById('tgl_active').value;
+
+    nom = nominal;
+
+    if (prdName[id].valuta == 'IDR') {
+
+        select_rate.disabled = true;
+        document.getElementById('rate1').value   = '1';
+        document.getElementById('rate_h1').value = '1';
+
+        $("#nomrate").val(formatMoney(nom));
+        $("#nomrate_h").val(nom.toFixed(2));
+
+    } else {
+
+        select_rate.disabled = false;
+
+        // === AJAX ambil rate dari database ===
+        $.ajax({
+            url: "get_rate.php", // ganti sesuai route/controller
+            type: "POST",
+            dataType: "json",
+            data: {
+                valuta: prdName[id].valuta,
+                doc_date: doc_date
+            },
+            success: function(res){
+                if(res.status == 'ok'){
+                    $("#rate1").val(res.rate);
+                    $("#rate_h1").val(res.rate);
+                }else{
+                    alert("Rate tidak ditemukan");
+                    $("#rate1").val(0);
+                }
             }
-        }else{
-            select_rate.disabled = false;
-            $("#rate1").val(kmk_rate);
-        }
-    };
+        });
+    }
+}
 </script>
+
 
 <script type="text/javascript">
     var refer = $('select[name=ref_num] option').filter(':selected').val();
@@ -2580,6 +2661,45 @@ function addListener(elm,index){
       $(':checkbox').prop('checked', c);
   });  
 </script>
+
+<script type="text/javascript">
+
+function refreshRate(){
+    var valuta = document.getElementById('valuta').value;
+    var doc_date = document.getElementById('tgl_active').value;
+
+    if(valuta == '' || valuta == 'IDR'){
+        return;
+    }
+
+    // convert DD-MM-YYYY → YYYY-MM-DD
+    var parts = doc_date.split('-');
+    if(parts.length == 3){
+        doc_date = parts[2] + '-' + parts[1] + '-' + parts[0];
+    }
+
+    $.ajax({
+        url: "get_rate.php",
+        type: "POST",
+        dataType: "json",
+        data: {
+            valuta: valuta,
+            doc_date: doc_date
+        },
+        success: function(res){
+            if(res.status === 'ok'){
+                $("#rate").val(res.rate);
+                $("#rate_h").val(res.rate);
+                $("#rate1").val(res.rate);
+                $("#rate_h1").val(res.rate);
+            }else{
+                alert("Rate tidak ditemukan untuk tanggal tersebut");
+            }
+        }
+    });
+}
+</script>
+
 
 <!-- <script type="text/javascript">     
     $('table tbody tr').on('click', 'td:eq(1)', function(){                
