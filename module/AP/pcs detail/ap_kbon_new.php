@@ -3,7 +3,7 @@
     $start_date = isset($_POST['start_date']) ? $_POST['start_date'] : null;
     $end_date = isset($_POST['end_date']) ? $_POST['end_date'] : null;
     $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null; 
-        echo '<a target="_blank" href="pcs_detail_kbon_all_new.php?nama_supp='.$nama_supp.'&& start_date='.$start_date.'&&end_date='.$end_date.'"><button type="button" class="btn btn-success"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size:11px"> EXCEL AP - KONTRABON </i></button></a>';
+    echo '<a target="_blank" href="pcs_detail_kbon_all_new.php?nama_supp='.$nama_supp.'&& start_date='.$start_date.'&&end_date='.$end_date.'"><button type="button" class="btn btn-success"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size:11px"> EXCEL AP - KONTRABON </i></button></a>';
 
     ?>
 </div> 
@@ -102,7 +102,7 @@
                 echo '';
             }
             elseif ($nama_supp == 'ALL' and !empty($start_date) and !empty($end_date)) {
-             $sql = mysqli_query($conn1,"select * from (select * from(
+               $sql = mysqli_query($conn1,"select * from (select * from(
                 (select a.nama_supp, a.no_kbon, a.tgl_kbon2 as tgl_kbon, DATE_FORMAT(a.create_date, '%Y-%m-%d') as create_date,DATEDIFF(a.tgl_tempo,a.tgl_kbon) as top, a.tgl_tempo,a.curr, if(a.balance != a.total,if(a.curr = 'USD', ((a.total - a.balance) + a.pph_fgn),((a.total - a.balance) + a.pph_idr)),0) as bayar, if(a.curr = 'USD', (a.total + a.pph_fgn - b.jml_potong + a.dp_value),(a.total + a.pph_idr - b.jml_potong + a.dp_value)) as totalori,if(a.total > 0,(b.jml_potong - a.dp_value),(b.jml_potong - a.dp_value - a.pph_idr)) as jml_potong from kontrabon_h a inner join potongan b on b.no_kbon = a.no_kbon where a.status !='CANCEL' and DATE_FORMAT(a.create_date, '%Y-%m-%d') between '2022-04-14' and '$start_date' GROUP BY a.no_kbon order by DATE_FORMAT(a.create_date, '%Y-%m-%d')  asc) 
 
                 union (select a.nama_supp, a.no_kbon, a.tgl_kbon2 as tgl_kbon, DATE_FORMAT(a.create_date, '%Y-%m-%d') as create_date,DATEDIFF(a.tgl_tempo,a.tgl_kbon) as top, a.tgl_tempo,a.curr, if(a.balance != a.total,if(a.curr = 'USD', ((a.total - a.balance) + a.pph_fgn),((a.total - a.balance) + a.pph_idr)),0) as bayar, if(a.curr = 'USD', (a.total + a.pph_fgn - b.jml_potong + a.dp_value),(a.total + a.pph_idr - b.jml_potong + a.dp_value)) as totalori,if(a.total > 0,(b.jml_potong - a.dp_value),(b.jml_potong - a.dp_value - a.pph_idr)) as jml_potong from kontrabon_h a inner join potongan b on b.no_kbon = a.no_kbon where a.status !='CANCEL' and DATE_FORMAT(a.create_date, '%Y-%m-%d') between '$start_date' and '$end_date' GROUP BY a.no_kbon order by DATE_FORMAT(a.create_date, '%Y-%m-%d') asc)
@@ -112,9 +112,9 @@
                 union (select a.nama_supp,a.no_kbon,c.tgl_kbon2 as tgl_kbon, DATE_FORMAT(c.create_date, '%Y-%m-%d') as create_date,DATEDIFF(c.tgl_tempo,c.tgl_kbon) as top, c.tgl_tempo,a.curr,(a.amount + a.pph_value) as bayar,(a.total_kbon + a.pph_value - b.jml_potong + c.dp_value) as totalori,if(c.total > 0,(b.jml_potong - c.dp_value),(b.jml_potong - c.dp_value - c.pph_idr)) as jml_potong  from list_payment a inner join potongan b on b.no_kbon = a.no_kbon left join kontrabon_h c on c.no_kbon = a.no_kbon where DATE_FORMAT(c.create_date, '%Y-%m-%d') < '$start_date' and DATE_FORMAT(a.create_date, '%Y-%m-%d') between '$start_date' and '$end_date' and c.status !='CANCEL')
                 ) as b GROUP BY no_kbon order by b.nama_supp asc) a left join 
                 (select no_kbon no_journal, no_coa,nama_coa from kontrabon_h where no_coa != '') b on b.no_journal = a.no_kbon");
-         }
+           }
 
-         else {
+           else {
             $sql = mysqli_query($conn1,"select * from (select * from(
                 (select a.nama_supp, a.no_kbon, a.tgl_kbon2 as tgl_kbon, DATE_FORMAT(a.create_date, '%Y-%m-%d') as create_date,DATEDIFF(a.tgl_tempo,a.tgl_kbon) as top, a.tgl_tempo,a.curr, if(a.balance != a.total,if(a.curr = 'USD', ((a.total - a.balance) + a.pph_fgn),((a.total - a.balance) + a.pph_idr)),0) as bayar, if(a.curr = 'USD', (a.total + a.pph_fgn - b.jml_potong + a.dp_value),(a.total + a.pph_idr - b.jml_potong + a.dp_value)) as totalori,if(a.total > 0,(b.jml_potong - a.dp_value),(b.jml_potong - a.dp_value - a.pph_idr)) as jml_potong from kontrabon_h a inner join potongan b on b.no_kbon = a.no_kbon where a.status !='CANCEL' and DATE_FORMAT(a.create_date, '%Y-%m-%d') between '2022-04-14' and '$start_date' GROUP BY a.no_kbon order by DATE_FORMAT(a.create_date, '%Y-%m-%d')  asc) 
 
@@ -271,9 +271,20 @@
             $total_rvs_bfr = isset($row_rvs_bfr['total']) ? $row_rvs_bfr['total'] : 0;
             $total_add_bfr = isset($row_rvs_bfr['total_new']) ? $row_rvs_bfr['total_new'] : 0;
 
+            $query_adj = mysqli_query($conn1,"SELECT no_kbon, SUM(COALESCE(saldo_awal,0)) saldo_awal, SUM(COALESCE(ttl_bpb,0)) ttl_bpb, SUM(COALESCE(ttl_adjust,0)) ttl_adjust, SUM(COALESCE(ttl_deduction,0)) ttl_deduction, SUM(COALESCE(ttl_reverse,0)) ttl_reverse from (SELECT no_kbon, 0 saldo_awal, ttl_bpb, ttl_adjust, ttl_deduction, ttl_reverse from kontrabon_adjust where tgl_kbon BETWEEN '$start_date' and '$end_date' and no_kbon = '$no_kbon'
+                UNION
+                SELECT no_kbon, saldo_awal, 0 ttl_bpb, 0 ttl_adjust, 0 ttl_deduction, 0 ttl_reverse from kontrabon_adjust where tgl_kbon < '$start_date' and no_kbon = '$no_kbon') a GROUP BY no_kbon");
+            $data_adj = mysqli_fetch_array($query_adj);
+            $adj_saldo_awal = isset($data_adj['saldo_awal']) ? $data_adj['saldo_awal'] : 0;
+            $adj_bpb = isset($data_adj['ttl_bpb']) ? $data_adj['ttl_bpb'] : 0;
+            $adj_adjust = isset($data_adj['ttl_adjust']) ? $data_adj['ttl_adjust'] : 0;
+            $adj_deduction = isset($data_adj['ttl_deduction']) ? $data_adj['ttl_deduction'] : 0;
+            $adj_reverse = isset($data_adj['ttl_reverse']) ? $data_adj['ttl_reverse'] : 0;
+            $total_adj = $adj_saldo_awal + $adj_bpb - $adj_adjust - $adj_deduction + $adj_reverse;
+
 
             if($no_lp != null){
-                $kurang = $row['bayar'] + $total_gm;
+                $kurang = $row['bayar'] + $total_gm - $adj_deduction;
             }else{
                 $kurang = 0;
             }
@@ -285,10 +296,10 @@
             }
 
             if($bbayar == '0' and $tgl_kbon < $start_date){
-             $sa_awal = $row['totalori'] + $row['jml_potong'] - $bayar + $total_rvs_bfr;
-         }
-         elseif($tgl_kbon < $start_date){
-            $sa_awal = $row['bayar'] - $bayar + $total_rvs_bfr;
+                $sa_awal = $row['totalori'] + $row['jml_potong'] - $bayar + ($total_rvs_bfr - $adj_reverse) - $adj_saldo_awal;
+           }
+           elseif($tgl_kbon < $start_date){
+            $sa_awal = $row['bayar'] - $bayar + ($total_rvs_bfr - $adj_reverse) - $adj_saldo_awal;
         }
         else{
             $sa_awal = 0;
@@ -306,25 +317,25 @@
         if($tgl_kbon >= $start_date){
             if(strpos($no_kbon, 'REV_') !== false ) {
                 if ($total_add != 0) {
-                    $tambah = $total_add;
+                    $tambah = $total_add -  $adj_bpb;
                 }else{
-                   $tambah = 0; 
-               }
-           }else{
-            $tambah = $row['totalori'];
+                 $tambah = 0 -  $adj_bpb; 
+             }
+         }else{
+            $tambah = $row['totalori'] -  $adj_bpb;
         }
     }else{
-        $tambah = 0;
+        $tambah = 0 -  $adj_bpb;
     }
 
     if($tgl_kbon >= $start_date){
         if(strpos($no_kbon, 'REV_') !== false) {
-           $tambahan = 0; 
-       }else{
-        $tambahan = $row['jml_potong'];
+         $tambahan = 0  - $adj_adjust; 
+     }else{
+        $tambahan = $row['jml_potong'] - $adj_adjust;
     }
 }else{
-    $tambahan = 0;
+    $tambahan = 0  - $adj_adjust;
 }
 
 if ($currin2 == 'IDR') {
@@ -335,7 +346,8 @@ if ($currin2 == 'IDR') {
     $rate = $jml_rate;
 }
 
-$sa_akhir = $sa_awal + ($tambah + $tambahan) - $kurang + $total_rvs; 
+
+$sa_akhir = $sa_awal + ($tambah + $tambahan) - $kurang + ($total_rvs - $adj_reverse); 
 $saldo_akhir_idr = $sa_akhir * $rate;
 $saldo_akhir_idr_ += $saldo_akhir_idr;
 $sa_akhir_ += $sa_akhir;
@@ -343,13 +355,13 @@ $kurang_ += $kurang;
 $sa_awal_ += $sa_awal;
 $tambah_ += $tambah;
 $tambahan_ += $tambahan;
-$reverse += $total_rvs;
+$reverse += ($total_rvs - $adj_reverse);
 
-if ($total_rvs <= 0) {
-        $input_reverse = $total_rvs;
-    }else{
-        $input_reverse = $total_rvs;
-    }
+if (($total_rvs - $adj_reverse) <= 0) {
+    $input_reverse = ($total_rvs - $adj_reverse);
+}else{
+    $input_reverse = ($total_rvs - $adj_reverse);
+}
 
 if($sa_awal == '0' and $tambah == '0' and $tambahan == '0' and $kurang == '0' and $sa_akhir == '0'){
     echo '';
@@ -443,7 +455,7 @@ if($sa_awal == '0' and $tambah == '0' and $tambahan == '0' and $kurang == '0' an
     <td style="text-align:right;" value = "'.$tambah.'">'.number_format($tambah,2).'</td> 
     <td style="text-align:right;" value = "'.$tambah.'">'.number_format($tambahan,2).'</td>         
     <td style="text-align:right;" value = "'.$kurang.'">'.number_format($kurang,2).'</td>
-    <td style="text-align:right;" value = "'.$total_rvs.'">'.number_format($total_rvs,2).'</td>
+    <td style="text-align:right;" value = "'.($total_rvs - $adj_reverse).'">'.number_format(($total_rvs - $adj_reverse),2).'</td>
     <td style="text-align:right;" value = "'.$sa_akhir.'">'.number_format($sa_akhir,2).'</td>
     <td style="text-align:right;" value="'.$rate.'">'.number_format($rate,2).'</td>
     <td style="text-align:right;" value="'.$saldo_akhir_idr.'">'.number_format($saldo_akhir_idr,2).'</td>
