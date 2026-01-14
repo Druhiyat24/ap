@@ -260,6 +260,7 @@
         ELSE 0
         END AS out_salnongroup_price,
         SUM(CASE WHEN type_pch='Sales Nongroup' THEN ROUND(total_price * rate,4) ELSE 0 END) AS out_salnongroup_total,
+
         -- Sales Group
         SUM(CASE WHEN type_pch='Sales Group' THEN qty_sj ELSE 0 END) AS out_salgroup_qty,
         CASE 
@@ -268,7 +269,8 @@
            / COUNT(CASE WHEN type_pch='Sales Group' THEN 1 END),4)
         ELSE 0
         END AS out_salgroup_price,
-        SUM(CASE WHEN type_pch='Sales Nongroup' THEN ROUND(total_price * rate,4) ELSE 0 END) AS out_salgroup_total,
+        SUM(CASE WHEN type_pch='Sales Group' THEN ROUND(total_price * rate,4) ELSE 0 END) AS out_salgroup_total,
+        
         -- Other
         SUM(CASE WHEN type_pch NOT IN ('Pengiriman ke Subkontraktor CMT', 'Pengiriman ke Subkontraktor Jasa', 
             'Retur Pembelian Lokal', 'Pemakaian Produksi', 'Retur Pembelian Impor', 'Pemakaian Sample Room','Sales Nongroup', 'Sales Group') THEN qty_sj ELSE 0 END) AS out_other_qty,
