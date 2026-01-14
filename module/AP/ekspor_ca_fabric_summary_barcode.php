@@ -265,7 +265,7 @@
         CASE 
         WHEN SUM(CASE WHEN type_pch='Sales Group' THEN qty_sj ELSE 0 END) > 0
         THEN ROUND(SUM(CASE WHEN type_pch='Sales Group' THEN (price * rate) ELSE 0 END)
-           / COUNT(CASE WHEN type_pch='Sales Nongroup' THEN 1 END),4)
+           / COUNT(CASE WHEN type_pch='Sales Group' THEN 1 END),4)
         ELSE 0
         END AS out_salgroup_price,
         SUM(CASE WHEN type_pch='Sales Nongroup' THEN ROUND(total_price * rate,4) ELSE 0 END) AS out_salgroup_total,
