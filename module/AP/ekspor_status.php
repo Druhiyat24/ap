@@ -47,6 +47,7 @@
             <th style="text-align: center; vertical-align: middle;">BPB Verified Date</th>
             <th style="text-align: center; vertical-align: middle;">No SJ</th>
             <th style="text-align: center; vertical-align: middle;">No WS</th>
+            <th style="text-align: center; vertical-align: middle;">Style</th>
             <th style="text-align: center; vertical-align: middle;">No Kontrabon</th>
             <th style="text-align: center; vertical-align: middle;">Kontrabon Date</th>
             <th style="text-align: center; vertical-align: middle;">Kontrabon Approved Date</th>
@@ -103,6 +104,7 @@
             echo '<td value="'.$tgl_verif_bpb.'">'.$tgl_verif_bpb.'</td>';
             echo '<td style="text-align: left;" value="'.$row['no_sj'].'">'.$row['no_sj'].'</td>';
             echo '<td style="text-align: left;" value="'.$row['no_ws'].'">'.$row['no_ws'].'</td>';
+            echo '<td style="text-align: left;" value="'.$row['style'].'">'.$row['style'].'</td>';
             echo '<td value="'.$kbon.'">'.$kbon.'</td>';
             echo '<td value="'.$tgl_kbon.'">'.$tgl_kbon.'</td>';
             echo '<td value="'.$tgl_approve_kbon.'">'.$tgl_approve_kbon.'</td>';
