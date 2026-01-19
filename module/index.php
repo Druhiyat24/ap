@@ -1572,6 +1572,10 @@ echo'</ul>
       <span class="fa fa-calculator fa-fw "></span>
       <span class="menu-collapsed">Summary Subcont</span>
       </a>
+      <a href="AP/ca_fabric_summary_subcont.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-calculator fa-fw "></span>
+      <span class="menu-collapsed">Summary Subcont New</span>
+      </a>
       <a href="AP/update_bpb_fabric.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-pencil-square fa-fw "></span>
       <span class="menu-collapsed">Update Trx In</span>
