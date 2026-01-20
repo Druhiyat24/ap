@@ -1,39 +1,59 @@
 <?php
 include '../conn/conn.php';
-$sub = 0;
-$tax = 0;
-$total = 0; 
-$amount = 0;
-$rate = 0;
-$eqv_idr = 0;
+
+$total = 0;
 $tahun = date("Y"); 
-$filter = isset($_POST['filter']) ? $_POST['filter']: null;
+$filter = isset($_POST['filter']) ? $_POST['filter'] : null;
 
-$sql = mysqli_query($conn1,"select nama_coa,sum($filter) total from b_trial_balance_$tahun where no_coa IN ('1.10.11','1.10.21','1.10.81','1.10.82','1.10.31','1.10.83','1.10.84','1.10.41','1.10.42') GROUP BY no_coa order by nama_coa asc"); 
+function acc_format($angka){
+    if ($angka < 0) {
+        return '<span style="color:red;">(Rp. '.number_format(abs($angka),2).')</span>';
+    } else {
+        return 'Rp. '.number_format($angka,2);
+    }
+}
 
+$sql = mysqli_query($conn1,"
+    SELECT a.nama_coa, SUM($filter) total 
+    FROM b_trial_balance_$tahun a 
+    INNER JOIN mastercoa_v2 b ON b.no_coa = a.no_coa 
+    WHERE ind_categori5 = 'KAS'  and $filter > 0
+    GROUP BY a.no_coa 
+    ORDER BY a.nama_coa ASC
+"); 
 
-$table = '<table id="mytdmodal" class="table table-striped" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">';
+$table = '
+<table id="mytdmodal" class="table table-striped table-bordered" width="100%" style="font-size:12px;">
+<thead style="background-color:#1E90FF; color:white;">
+<tr>
+    <th width="5%">#</th>
+    <th style="text-align:left;">Nama COA</th>
+    <th style="text-align:right;">Amount</th>
+</tr>
+</thead>
+<tbody>
+';
 
 while ($row = mysqli_fetch_assoc($sql)) {
+
     $total += $row['total'];
-    $table .= '<tr>
-    <td><i class="fa fa-dot-circle-o" aria-hidden="true"></i></td>                       
-    <td style="text-align: left" value="'.$row['nama_coa'].'">'.$row['nama_coa'].'</td>
-    <td style="text-align: right;" value="'.$row['total'].'">Rp. '.number_format($row['total'],2).'</td> 
+
+    $table .= '
+    <tr>
+        <td><i class="fa fa-dot-circle-o"></i></td>
+        <td style="text-align:left;">'.$row['nama_coa'].'</td>
+        <td style="text-align:right;">'.acc_format($row['total']).'</td>
     </tr>';
 }
- $table .= '<tr>
-    <th colspan = "2">TOTAL</th>      
-    <th style="text-align: right;" value="'.$total.'">Rp. '.number_format($total,2).'</th> 
-    </tr>';
-$table .= '</table>';
 
-
+$table .= '
+<tr style="background:#f2f2f2; font-weight:bold;">
+    <td colspan="2" style="text-align:center">TOTAL</td>
+    <td style="text-align:right;">'.acc_format($total).'</td>
+</tr>
+</tbody>
+</table>
+';
 
 echo $table;
-
-
-// echo '<div id="txt_sub" class="modal-body col-6" style="padding: 0.5rem; margin-left: 65%;"><h7>Subtotal: '.number_format($sub,2).'</h7></div>';
-// echo '<div id="txt_tax" class="modal-body col-6" style="padding: 0.5rem; margin-left: 65%;"><h7>Tax: '.number_format($tax,2).'</h7></div>';
-// echo '<div id="txt_total" class="modal-body col-6" style="padding: 0.5rem; margin-left: 65%;"><h6>Total: '.number_format($total,2).'</h6></div>';
 ?>
