@@ -205,7 +205,7 @@
             $jml_kali2 = isset($rowlp2['jml_kali']) ? $rowlp2['jml_kali'] : 1;
             $tgl = isset($rowlp2['tgl_kbon2']) ? $rowlp2['tgl_kbon2'] : null;
         }else{
-            if ($no_bpb == 'GEN/RO/0722/00606' || $no_bpb == 'GEN/RO/0722/00623'  || $no_bpb == 'GEN/RO/1225/00921') {
+            if ($no_bpb == 'GEN/RO/0722/00606' || $no_bpb == 'GEN/RO/0722/00623'  || $no_bpb == 'GEN/RO/1225/00921'|| $no_bpb == 'GEN/RO/1225/00891' || $no_bpb == 'GEN/RO/1225/00951') {
                $jml_tax = 0;  
            }elseif($no_bpb == 'GK/RO/0525/00590'){
             $jml_tax = 10;
