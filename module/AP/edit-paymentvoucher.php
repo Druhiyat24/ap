@@ -1262,53 +1262,47 @@ function SidebarCollapse () {
 
 <script type="text/javascript">
 
+$(document).on('change', '.prof_ctr', function () {
+        const selectedProfCtr = $(this).val();
+        const row = $(this).closest('tr'); 
+        const selectedCoa = row.find('select.no_coa').val() || '-';
+    // console.log("row:", row.html());
+    // console.log("no_coa element:", row.find('.no_coa'));
+    // console.log("selectedCoa:", selectedCoa);
+    updateCostCenter(selectedProfCtr, selectedCoa, row);
+});
 
+    $(document).on('change', '.no_coa', function () {
+        const selectedCoa = $(this).val();
+        const row = $(this).closest('tr'); 
+        const selectedProfCtr = row.find('select.prof_ctr').val() || '-';
+    // console.log("row:", row.html());
+    // console.log("no_coa element:", row.find('.no_coa'));
+    // console.log("selectedCoa:", selectedCoa);
+    updateCostCenter(selectedProfCtr, selectedCoa, row);
+});
 
    // JavaScript Document
    function addRow(tableID) {
 
     $(document).on('change', '.prof_ctr', function () {
-    const selectedProfCtr = $(this).val();  // Ambil nilai prof_ctr yang dipilih
-    const costCtrDropdown = $(this).closest('tr').find('.nomor_cc');  // Temukan dropdown cost_ctr dalam baris yang sama
+        const selectedProfCtr = $(this).val();
+        const row = $(this).closest('tr'); 
+        const selectedCoa = row.find('select.no_coa').val() || '-';
+    // console.log("row:", row.html());
+    // console.log("no_coa element:", row.find('.no_coa'));
+    // console.log("selectedCoa:", selectedCoa);
+    updateCostCenter(selectedProfCtr, selectedCoa, row);
+});
 
-    // Kosongkan dropdown cost_ctr sebelum diisi
-    costCtrDropdown.selectpicker('destroy');  // Hancurkan selectpicker lama
-    costCtrDropdown.empty();  // Kosongkan semua opsi yang ada
-    costCtrDropdown.append('<option value="-"> - </option>');  // Tambahkan opsi default
-    costCtrDropdown.selectpicker();  // Inisialisasi ulang selectpicker
-
-    if (selectedProfCtr && selectedProfCtr !== '-') {
-        // Lakukan AJAX ke server untuk mengambil data cost_ctr
-        $.ajax({
-            url: 'getCostCenter.php',  // Ganti dengan URL endpoint server Anda
-            type: 'POST',
-            data: { prof_ctr: selectedProfCtr },  // Kirim data prof_ctr ke server
-            dataType: 'json',
-            success: function (response) {
-                // Periksa apakah respons valid
-                if (response && response.length > 0) {
-                    $.each(response, function (index, costCtr) {
-                        console.log(costCtr);  // Debug data yang diterima
-                        costCtrDropdown.append(`<option value="${costCtr.value}">${costCtr.text}</option>`);
-                    });
-
-                    // Re-inisialisasi selectpicker setelah menambah opsi
-                    costCtrDropdown.selectpicker('refresh');
-                } else {
-                    console.error('Tidak ada data yang diterima dari server.');
-                    // alert('Tidak ada data cost center yang tersedia.');
-                }
-            },
-            error: function (xhr, status, error) {
-                console.error('AJAX Error:', status, error);
-                alert('Gagal mengambil data cost center.');
-            }
-        });
-    } else {
-        // Jika tidak ada pilihan valid, tambahkan opsi default dan refresh selectpicker
-        // costCtrDropdown.append('<option value="-"> - </option>');
-        costCtrDropdown.selectpicker('refresh');
-    }
+    $(document).on('change', '.no_coa', function () {
+        const selectedCoa = $(this).val();
+        const row = $(this).closest('tr'); 
+        const selectedProfCtr = row.find('select.prof_ctr').val() || '-';
+    // console.log("row:", row.html());
+    // console.log("no_coa element:", row.find('.no_coa'));
+    // console.log("selectedCoa:", selectedCoa);
+    updateCostCenter(selectedProfCtr, selectedCoa, row);
 });
 
         if($('select[name=nama_supp] option').filter(':selected').val() == '' || $('select[name=nama_supp] option').filter(':selected').val() == '-'){
@@ -1464,6 +1458,47 @@ var element1 = `
  row.innerHTML = element1;             
         }
     }
+
+
+    function updateCostCenter(profCtr, noCoa, row) {
+    const costCtrDropdown = $(row).find('.nomor_cc'); // dropdown cost center pada baris tsb
+
+    // Kosongkan dropdown cost_ctr sebelum diisi
+    costCtrDropdown.selectpicker('destroy');  // Hancurkan selectpicker lama
+    costCtrDropdown.empty();  // Kosongkan semua opsi yang ada
+    costCtrDropdown.append('<option value="-"> - </option>');  // Tambahkan opsi default
+    costCtrDropdown.selectpicker();  // Inisialisasi ulang selectpicker
+
+    if (profCtr && profCtr !== '-') {
+        // console.log(profCtr + ' ' + noCoa)
+        // Lakukan AJAX ke server untuk mengambil data cost_ctr
+        $.ajax({
+            url: 'getCostCenter.php',  // Ganti dengan URL endpoint server Anda
+            type: 'POST',
+            data: { prof_ctr: profCtr , no_coa: noCoa },  // Kirim data prof_ctr ke server
+            dataType: 'json',
+            success: function (response) {
+                if (response && response.length > 0) {
+                    $.each(response, function (index, costCtr) {
+                        costCtrDropdown.append(
+                            `<option value="${costCtr.value}">${costCtr.text}</option>`
+                            );
+                    });
+
+                    costCtrDropdown.selectpicker('refresh');
+                } else {
+                    console.warn('Tidak ada data cost center dari server.');
+                    costCtrDropdown.selectpicker('refresh');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('AJAX Error:', status, error);
+            }
+        });
+    } else {
+        costCtrDropdown.selectpicker('refresh');
+    }
+}
 
 function deleteRow(tableID)
 {
@@ -2108,6 +2143,45 @@ function addListener(elm,index){
 
         <script type="text/javascript">
             $("#form-simpan").on("click", "#simpan", function(){
+
+                var valid_detail = true;
+
+$("input[type=checkbox]:checked").each(function () {
+
+    // SKIP ROW TEMPLATE / HIDDEN
+    if ($(this).closest('tr').is(':hidden')) {
+        return true;
+    }
+
+    var prof_ctr = $(this).closest('tr')
+        .find('td:eq(2)')
+        .find('select[id=prof_ctr] option:selected')
+        .val();
+
+    var no_coa = $(this).closest('tr')
+        .find('td:eq(1)')
+        .find('select[id=nomor_coa] option:selected')
+        .val();
+
+    if (no_coa === '' || no_coa === '-') {
+        alert('Please select COA');
+        $(this).closest('tr').find('td:eq(1) select[id=nomor_coa]').focus();
+        valid_detail = false;
+        return false;
+    }
+
+    if (prof_ctr === '' || prof_ctr === '-') {
+        alert('Please select Profit Center');
+        $(this).closest('tr').find('td:eq(2) select[id=prof_ctr]').focus();
+        valid_detail = false;
+        return false;
+    }
+});
+
+if (!valid_detail) {
+    return false;
+}
+
                 var no_pv = document.getElementById('no_doc').value;  
                 var create_user = '<?php echo $user; ?>';
                 var nama_supp = $('select[name=nama_supp] option').filter(':selected').val();
@@ -2178,6 +2252,7 @@ function addListener(elm,index){
                         },
                         success: function(response){
                             console.log(response);
+                            
                 // alert(response);
                 // window.location = 'payment-voucher.php';
             },
@@ -2190,9 +2265,9 @@ function addListener(elm,index){
 
                 $("input[type=checkbox]:checked").each(function () {
                     var doc_number = document.getElementById('no_doc').value;        
-                    var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[name=nomor_coa] option').filter(':selected').val(); 
                     var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val(); 
-                    var no_cc = $(this).closest('tr').find('td:eq(3)').find('select[name=nomor_cc] option').filter(':selected').val();      
+                    var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[id=nomor_coa] option').filter(':selected').val(); 
+                    var no_cc = $(this).closest('tr').find('td:eq(3)').find('select[id=nomor_cc] option').filter(':selected').val();      
                     var no_ref = $(this).closest('tr').find('td:eq(4) input').val();                               
                     var ref_date = $(this).closest('tr').find('td:eq(5) input').val();
                     var deskripsi = $(this).closest('tr').find('td:eq(6) input').val();                               

@@ -1994,6 +1994,44 @@ function addListener(elm,index){
 
 <script type="text/javascript">
     $("#form-simpan").on("click", "#simpan", function(){
+        var valid_detail = true;
+
+$("input[type=checkbox]:checked").each(function () {
+
+    // SKIP ROW TEMPLATE / HIDDEN
+    if ($(this).closest('tr').is(':hidden')) {
+        return true;
+    }
+
+    var prof_ctr = $(this).closest('tr')
+        .find('td:eq(2)')
+        .find('select[id=prof_ctr] option:selected')
+        .val();
+
+    var no_coa = $(this).closest('tr')
+        .find('td:eq(1)')
+        .find('select[id=nomor_coa] option:selected')
+        .val();
+
+    if (no_coa === '' || no_coa === '-') {
+        alert('Please select COA');
+        $(this).closest('tr').find('td:eq(1) select[id=nomor_coa]').focus();
+        valid_detail = false;
+        return false;
+    }
+
+    if (prof_ctr === '' || prof_ctr === '-') {
+        alert('Please select Profit Center');
+        $(this).closest('tr').find('td:eq(2) select[id=prof_ctr]').focus();
+        valid_detail = false;
+        return false;
+    }
+});
+
+if (!valid_detail) {
+    return false;
+}
+
         var no_pv = document.getElementById('no_doc').value;  
         var rat_pv = document.getElementById('rat_pv').value;        
         var pv_date = document.getElementById('tgl_active').value;
@@ -2060,8 +2098,10 @@ function addListener(elm,index){
         var ded_add = $(this).closest('tr').find('td:eq(8) input').val() || 0;
         var pph = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').val() || 0;
         var idtax = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').attr('data-idtax');
-        var ppn = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').val() || document.getElementById('pilih_ppn').value;
-        var id_ppn = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').attr('data-idtax') || document.getElementById('idtax').value;
+        var ppn_val = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').val() || document.getElementById('pilih_ppn').value;
+        var ppn = (ppn_val === '0' || ppn_val === '' || ppn_val === null) ? document.getElementById('pilih_ppn').value : ppn_val;
+        var idppn_val = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').attr('data-idtax') || document.getElementById('idtax').value;
+        var id_ppn = (ppn_val === '0' || ppn_val === '' || ppn_val === null) ? document.getElementById('idtax').value : idppn_val;
         var total_h = document.getElementById('total_h').value || 0;
         var curr = document.getElementById('curre').value; 
         var for_pay = $('select[name=forpay] option').filter(':selected').val();
