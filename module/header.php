@@ -213,6 +213,9 @@ if ($user == '') {
 <link href="../css/4.1.1/select2-bootstrap4.min.css" rel="stylesheet">
 <link href="../css/4.1.1/responsive.bootstrap4.min.css" rel="stylesheet">
 <link href="../css/4.1.1/sweetalert2.min" rel="stylesheet">
+<link rel="stylesheet"
+      href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedColumns.dataTables.min.css">
+
 <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/css/select2.min.css" />
   <link rel="stylesheet" href="https://select2.github.io/select2-bootstrap-theme/css/select2-bootstrap.css" /> -->
 </head>
@@ -887,9 +890,9 @@ echo'</ul>
                     <span class="fa fa-tags fa-fw "></span>
                     <span class="menu-collapsed">AP Report</span>
                     </a>
-                    <a href="../AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
+                    <a href="../AP/Payable_card_statement.php" class="dropdown-item bg-dark text-white">
                     <span class="fa fa-tags fa-fw "></span>
-                    <span class="menu-collapsed">PCS Detail Dev</span>
+                    <span class="menu-collapsed">AP Report New</span>
                     </a>
                     <a href="../AP/rekap-pelunasan.php" class="dropdown-item bg-dark text-white">
                     <span class="fa fa-tags fa-fw "></span>
