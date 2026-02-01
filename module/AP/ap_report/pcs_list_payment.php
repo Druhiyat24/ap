@@ -61,8 +61,31 @@
         </tbody>
         <tfoot>
         <tr>
-            <th colspan="6" style="text-align:right">TOTAL</th>
-            <!-- sisanya kosong -->
+            <th></th><th></th><th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th><th></th><th></th>
+            <th></th>
+            <th></th><th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th><th></th>
+            <th></th>
+            <th></th><th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th>
+        </tr>
+        <tr>
+            <th></th><th></th><th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th><th></th><th></th>
+            <th></th>
+            <th></th><th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th><th></th>
+            <th></th>
+            <th></th><th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th>
+        </tr>
+        <tr>
+            <th></th><th></th><th></th><th></th><th></th><th></th>
             <th></th><th></th><th></th><th></th>
             <th></th><th></th><th></th><th></th>
             <th></th><th></th><th></th><th></th><th></th>

@@ -118,61 +118,61 @@ mutasi as (select supplier, no_bpb, tgl_bpb, duedate, curr, saldo_awal, in_bpb, 
 
 laporan_mutasi as (SELECT supplier, no_bpb, tgl_bpb, duedate, curr, saldo_awal, in_bpb, reverse_bpb, ded_kontrabon, reverse_kontrabon, gm, saldo_akhir, rate, (saldo_akhir * rate) saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi,
 CASE
-        WHEN duedate < '$end_date' THEN (saldo_akhir * rate)
+        WHEN duedate > '$end_date' THEN (saldo_akhir * rate)
         ELSE 0
     END AS due_current,
         
         CASE
-        WHEN DATEDIFF(duedate, '$end_date') BETWEEN 0 AND 30
+        WHEN DATEDIFF('$end_date', duedate) BETWEEN 0 AND 30
         THEN (saldo_akhir * rate)
         ELSE 0
     END AS due_1_30,
 
     CASE
-        WHEN DATEDIFF(duedate, '$end_date') BETWEEN 31 AND 60
+        WHEN DATEDIFF('$end_date', duedate) BETWEEN 31 AND 60
         THEN (saldo_akhir * rate)
         ELSE 0
     END AS due_31_60,
 
     CASE
-        WHEN DATEDIFF(duedate, '$end_date') BETWEEN 61 AND 90
+        WHEN DATEDIFF('$end_date', duedate) BETWEEN 61 AND 90
         THEN (saldo_akhir * rate)
         ELSE 0
     END AS due_61_90,
 
     CASE
-        WHEN DATEDIFF(duedate, '$end_date') BETWEEN 91 AND 120
+        WHEN DATEDIFF('$end_date', duedate) BETWEEN 91 AND 120
         THEN (saldo_akhir * rate)
         ELSE 0
     END AS due_91_120,
 
     CASE
-        WHEN DATEDIFF(duedate, '$end_date') BETWEEN 121 AND 180
+        WHEN DATEDIFF('$end_date', duedate) BETWEEN 121 AND 180
         THEN (saldo_akhir * rate)
         ELSE 0
     END AS due_121_180,
 
     CASE
-        WHEN DATEDIFF(duedate, '$end_date') BETWEEN 181 AND 360
+        WHEN DATEDIFF('$end_date', duedate) BETWEEN 181 AND 360
         THEN (saldo_akhir * rate)
         ELSE 0
     END AS due_181_360,
 
     CASE
-        WHEN DATEDIFF(duedate, '$end_date') > 360
+        WHEN DATEDIFF('$end_date', duedate) > 360
         THEN (saldo_akhir * rate)
         ELSE 0
     END AS due_gt_360,
 
     (
         CASE WHEN duedate < '$end_date' THEN (saldo_akhir * rate) ELSE 0 END +
-        CASE WHEN DATEDIFF(duedate, '$end_date') BETWEEN 0 AND 30 THEN (saldo_akhir * rate) ELSE 0 END +
-        CASE WHEN DATEDIFF(duedate, '$end_date') BETWEEN 31 AND 60 THEN (saldo_akhir * rate) ELSE 0 END +
-        CASE WHEN DATEDIFF(duedate, '$end_date') BETWEEN 61 AND 90 THEN (saldo_akhir * rate) ELSE 0 END +
-        CASE WHEN DATEDIFF(duedate, '$end_date') BETWEEN 91 AND 120 THEN (saldo_akhir * rate) ELSE 0 END +
-        CASE WHEN DATEDIFF(duedate, '$end_date') BETWEEN 121 AND 180 THEN (saldo_akhir * rate) ELSE 0 END +
-        CASE WHEN DATEDIFF(duedate, '$end_date') BETWEEN 181 AND 360 THEN (saldo_akhir * rate) ELSE 0 END +
-        CASE WHEN DATEDIFF(duedate, '$end_date') > 360 THEN (saldo_akhir * rate) ELSE 0 END
+        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 0 AND 30 THEN (saldo_akhir * rate) ELSE 0 END +
+        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 31 AND 60 THEN (saldo_akhir * rate) ELSE 0 END +
+        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 61 AND 90 THEN (saldo_akhir * rate) ELSE 0 END +
+        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 91 AND 120 THEN (saldo_akhir * rate) ELSE 0 END +
+        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 121 AND 180 THEN (saldo_akhir * rate) ELSE 0 END +
+        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 181 AND 360 THEN (saldo_akhir * rate) ELSE 0 END +
+        CASE WHEN DATEDIFF('$end_date', duedate) > 360 THEN (saldo_akhir * rate) ELSE 0 END
     ) AS total_due,
         
         CASE

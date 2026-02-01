@@ -240,13 +240,13 @@ CASE
 
     (
         CASE WHEN duedate < '$end_date' THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN DATEDIFF(duedate, '$end_date') BETWEEN 0 AND 30 THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN DATEDIFF(duedate, '$end_date') BETWEEN 31 AND 60 THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN DATEDIFF(duedate, '$end_date') BETWEEN 61 AND 90 THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN DATEDIFF(duedate, '$end_date') BETWEEN 91 AND 120 THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN DATEDIFF(duedate, '$end_date') BETWEEN 121 AND 180 THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN DATEDIFF(duedate, '$end_date') BETWEEN 181 AND 360 THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN DATEDIFF(duedate, '$end_date') > 360 THEN saldo_akhir_idr ELSE 0 END
+        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 0 AND 30 THEN saldo_akhir_idr ELSE 0 END +
+        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 31 AND 60 THEN saldo_akhir_idr ELSE 0 END +
+        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 61 AND 90 THEN saldo_akhir_idr ELSE 0 END +
+        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 91 AND 120 THEN saldo_akhir_idr ELSE 0 END +
+        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 121 AND 180 THEN saldo_akhir_idr ELSE 0 END +
+        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 181 AND 360 THEN saldo_akhir_idr ELSE 0 END +
+        CASE WHEN DATEDIFF('$end_date', duedate) > 360 THEN saldo_akhir_idr ELSE 0 END
     ) AS total_due,
         
         CASE

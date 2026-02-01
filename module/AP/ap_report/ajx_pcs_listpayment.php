@@ -175,13 +175,13 @@ CASE
 
     (
         CASE WHEN duedate < '$end_date' THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN DATEDIFF(duedate, '$end_date') BETWEEN 0 AND 30 THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN DATEDIFF(duedate, '$end_date') BETWEEN 31 AND 60 THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN DATEDIFF(duedate, '$end_date') BETWEEN 61 AND 90 THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN DATEDIFF(duedate, '$end_date') BETWEEN 91 AND 120 THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN DATEDIFF(duedate, '$end_date') BETWEEN 121 AND 180 THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN DATEDIFF(duedate, '$end_date') BETWEEN 181 AND 360 THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN DATEDIFF(duedate, '$end_date') > 360 THEN saldo_akhir_idr ELSE 0 END
+        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 0 AND 30 THEN saldo_akhir_idr ELSE 0 END +
+        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 31 AND 60 THEN saldo_akhir_idr ELSE 0 END +
+        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 61 AND 90 THEN saldo_akhir_idr ELSE 0 END +
+        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 91 AND 120 THEN saldo_akhir_idr ELSE 0 END +
+        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 121 AND 180 THEN saldo_akhir_idr ELSE 0 END +
+        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 181 AND 360 THEN saldo_akhir_idr ELSE 0 END +
+        CASE WHEN DATEDIFF('$end_date', duedate) > 360 THEN saldo_akhir_idr ELSE 0 END
     ) AS total_due,
         
         CASE
@@ -302,11 +302,117 @@ FROM (
 $q_total = mysqli_query($conn2, $sql_total);
 $footer = mysqli_fetch_assoc($q_total);
 
+
+$sql_total_idr = "
+SELECT
+SUM(saldo_awal) saldo_awal,
+    SUM(total_in) total_in,
+    SUM(pay_bank) pay_bank,
+    SUM(pay_non_bank) pay_non_bank,
+    SUM(pay_cash) pay_cash,
+    SUM(saldo_akhir) saldo_akhir,
+    SUM(saldo_akhir_idr) saldo_akhir_idr,
+    SUM(due_current) due_current,
+    SUM(due_1_30) due_1_30,
+    SUM(due_31_60) due_31_60,
+    SUM(due_61_90) due_61_90,
+    SUM(due_91_120) due_91_120,
+    SUM(due_121_180) due_121_180,
+    SUM(due_181_360) due_181_360,
+    SUM(due_gt_360) due_gt_360,
+    SUM(total_due) total_due,
+    SUM(pro_due) pro_due,
+    SUM(pro_due0) pro_due0,
+    SUM(pro_due1) pro_due1,
+    SUM(pro_due2) pro_due2,
+    SUM(pro_due3) pro_due3,
+    SUM(pro_due4) pro_due4,
+    SUM(pro_due5) pro_due5,
+    SUM(tot_produe) tot_produe
+FROM (
+$sql
+) x where curr = 'IDR'
+";
+
+$q_total_idr = mysqli_query($conn2, $sql_total_idr);
+$footer_idr = mysqli_fetch_assoc($q_total_idr);
+
+
+$sql_total_usd = "
+SELECT
+SUM(saldo_awal) saldo_awal,
+    SUM(total_in) total_in,
+    SUM(pay_bank) pay_bank,
+    SUM(pay_non_bank) pay_non_bank,
+    SUM(pay_cash) pay_cash,
+    SUM(saldo_akhir) saldo_akhir,
+    SUM(saldo_akhir_idr) saldo_akhir_idr,
+    SUM(due_current) due_current,
+    SUM(due_1_30) due_1_30,
+    SUM(due_31_60) due_31_60,
+    SUM(due_61_90) due_61_90,
+    SUM(due_91_120) due_91_120,
+    SUM(due_121_180) due_121_180,
+    SUM(due_181_360) due_181_360,
+    SUM(due_gt_360) due_gt_360,
+    SUM(total_due) total_due,
+    SUM(pro_due) pro_due,
+    SUM(pro_due0) pro_due0,
+    SUM(pro_due1) pro_due1,
+    SUM(pro_due2) pro_due2,
+    SUM(pro_due3) pro_due3,
+    SUM(pro_due4) pro_due4,
+    SUM(pro_due5) pro_due5,
+    SUM(tot_produe) tot_produe
+FROM (
+$sql
+) x where curr != 'IDR'
+";
+
+$q_total_usd = mysqli_query($conn2, $sql_total_usd);
+$footer_usd = mysqli_fetch_assoc($q_total_usd);
+
+$sql_total_all = "
+SELECT
+SUM(saldo_awal) saldo_awal,
+    SUM(total_in) total_in,
+    SUM(pay_bank) pay_bank,
+    SUM(pay_non_bank) pay_non_bank,
+    SUM(pay_cash) pay_cash,
+    SUM(saldo_akhir) saldo_akhir,
+    SUM(saldo_akhir_idr) saldo_akhir_idr,
+    SUM(due_current) due_current,
+    SUM(due_1_30) due_1_30,
+    SUM(due_31_60) due_31_60,
+    SUM(due_61_90) due_61_90,
+    SUM(due_91_120) due_91_120,
+    SUM(due_121_180) due_121_180,
+    SUM(due_181_360) due_181_360,
+    SUM(due_gt_360) due_gt_360,
+    SUM(total_due) total_due,
+    SUM(pro_due) pro_due,
+    SUM(pro_due0) pro_due0,
+    SUM(pro_due1) pro_due1,
+    SUM(pro_due2) pro_due2,
+    SUM(pro_due3) pro_due3,
+    SUM(pro_due4) pro_due4,
+    SUM(pro_due5) pro_due5,
+    SUM(tot_produe) tot_produe
+FROM (
+$sql
+) x 
+";
+
+$q_total_all = mysqli_query($conn2, $sql_total_all);
+$footer_all = mysqli_fetch_assoc($q_total_all);
+
 /* ================= RESPONSE ================= */
 echo json_encode([
     "draw" => $draw,
     "recordsTotal" => $recordsTotal,
     "recordsFiltered" => $recordsFiltered,
     "data" => $data,
-    "footer" => $footer
+    "footer_idr" => $footer_idr,
+    "footer_usd" => $footer_usd,
+    "footer_all" => $footer_all
 ]);

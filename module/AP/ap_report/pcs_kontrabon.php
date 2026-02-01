@@ -20,8 +20,8 @@
                 <th rowspan="2" style="text-align: center;vertical-align: middle;background-color: #FFE4E1;">Currency</th>
                 <th rowspan="2" style="text-align: center;vertical-align: middle;background-color: #FFE4E1;">Begining Balance</th>
                 <th rowspan="2" style="text-align: center;vertical-align: middle;background-color: #FFE4E1;">Addition</th>
-                <th rowspan="2" style="text-align: center;vertical-align: middle;background-color: #FFE4E1;">Advance</th>
-                <th rowspan="2" style="text-align: center;vertical-align: middle;background-color: #FFE4E1;">Others</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;background-color: #FFE4E1;">Deduction Advance</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;background-color: #FFE4E1;">Deduction Others</th>
                 <th rowspan="2" style="text-align: center;vertical-align: middle;background-color: #FFE4E1;">Deduction LP</th>
                 <th rowspan="2" style="text-align: center;vertical-align: middle;background-color: #FFE4E1;">Deduction GM</th>
                 <th rowspan="2" style="text-align: center;vertical-align: middle;background-color: #FFE4E1;">Reverse</th>
@@ -62,8 +62,33 @@
         </tbody>
         <tfoot>
         <tr>
-            <th colspan="5" style="text-align:right">TOTAL</th>
-            <!-- sisanya kosong -->
+            <th></th><th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th><th></th>
+            <th></th><th></th>
+            <th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th><th></th><th></th>
+            <th></th>
+            <th></th><th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th><th></th>
+            <th></th>
+            <th></th><th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th>
+        </tr>
+        <tr>
+            <th></th><th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th><th></th>
+            <th></th><th></th>
+            <th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th><th></th><th></th>
+            <th></th>
+            <th></th><th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th><th></th>
+            <th></th>
+            <th></th><th></th><th></th><th></th><th></th>
+            <th></th><th></th><th></th>
+        </tr>
+        <tr>
+            <th></th><th></th><th></th><th></th><th></th>
             <th></th><th></th><th></th><th></th>
             <th></th><th></th>
             <th></th><th></th><th></th><th></th>
