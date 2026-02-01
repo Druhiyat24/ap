@@ -779,7 +779,7 @@ function addListener(elm,index){
             invalid.push("NO INV kosong pada baris: " + ($(this).closest('tr').index() + 1));
         }
 
-        if(amount == '' || parseFloat(amount) < 1){
+        if(amount == '' || parseFloat(amount) <= 0){
             invalid.push("Amount tidak valid pada NO INV: " + (no_inv || '(kosong)'));
         }
 
@@ -845,7 +845,7 @@ function simpanData(){
                 var no_inv = $(this).closest('tr').find('td:eq(1) input').val();
                 var tgl_inv = $(this).closest('tr').find('td:eq(2) input').val();
                 var amount  = $(this).closest('tr').find('td:eq(3) input').val();
-                if (amount >= 1 && no_inv != '') {     
+                if (amount > 0 && no_inv != '') {     
                     $.post('insert_invoice_supp.php',{
                         unik_code,no_inv,tgl_inv,amount,create_user
                     });

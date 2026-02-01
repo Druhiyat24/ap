@@ -329,7 +329,7 @@ while($data=mysqli_fetch_array($query)){
 		</td>
 			
 		<td>
-			Ppn 10% 
+			Ppn 11% 
 		</td>
 <td style="width:1%">:</td>
 		<td style="text-align:right">
