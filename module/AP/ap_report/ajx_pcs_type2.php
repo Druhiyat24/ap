@@ -711,7 +711,7 @@ CASE
     ) AS tot_produe from mutasi  $where $supplier)
 
         SELECT supplier,
-    item_type1,
+    item_type2,
     relasi,
 
     ROUND(SUM(saldo_akhir), 2) AS saldo_akhir,
@@ -736,11 +736,11 @@ CASE
     ROUND(SUM(pro_due3),2) pro_due3,
     ROUND(SUM(pro_due4),2) pro_due4,
     ROUND(SUM(pro_due5),2) pro_due5,
-    ROUND(SUM(tot_produe),2) tot_produe FROM (select supplier, item_type1, relasi, saldo_akhir, due_current, due_1_30, due_31_60, due_61_90, due_gt_360, due_91_120, due_121_180, due_181_360, total_due, pro_due2, pro_due, pro_due0, pro_due1, pro_due3, pro_due4, pro_due5, tot_produe from bpb
+    ROUND(SUM(tot_produe),2) tot_produe FROM (select supplier, item_type2, relasi, saldo_akhir, due_current, due_1_30, due_31_60, due_61_90, due_gt_360, due_91_120, due_121_180, due_181_360, total_due, pro_due2, pro_due, pro_due0, pro_due1, pro_due3, pro_due4, pro_due5, tot_produe from bpb
         UNION ALL
-        select supplier, item_type1, relasi, saldo_akhir, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from kontrabon
+        select supplier, item_type2, relasi, saldo_akhir, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from kontrabon
         UNION ALL
-        select supplier, item_type1, relasi, saldo_akhir, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from list_payment) a  GROUP BY supplier,item_type1,relasi order by supplier,item_type1 asc
+        select supplier, item_type2, relasi, saldo_akhir, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from list_payment) a  GROUP BY supplier,item_type2,relasi order by supplier,item_type2 asc
         
 ";
 

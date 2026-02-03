@@ -171,9 +171,9 @@
     <button class="tablinks active" onclick="openTab(event, 'pcs_bpb')">BPB</button>
     <button class="tablinks" onclick="openTab(event, 'pcs_kontrabon')">Kontrabon</button>
     <button class="tablinks" onclick="openTab(event, 'pcs_list_payment')">List Payment</button>
-    <button class="tablinks" onclick="openTab(event, 'cf-direct')">Summary Supplier</button>
+    <button class="tablinks" onclick="openTab(event, 'pcs_summary_supplier')">Summary Supplier</button>
     <button class="tablinks" onclick="openTab(event, 'pcs_type1')">Item Type 1</button>
-    <button class="tablinks" onclick="openTab(event, 'cf-indirect')">Item Type 2</button>
+    <button class="tablinks" onclick="openTab(event, 'pcs_type2')">Item Type 2</button>
     <button class="tablinks" onclick="openTab(event, 'summary')">Summary</button>
   </div>
 
@@ -188,9 +188,18 @@
 
   <div id="pcs_list_payment" class="tabcontent">
     <?php include 'ap_report/pcs_list_payment.php'; ?>
+  </div>
+
+  <div id="pcs_summary_supplier" class="tabcontent">
+    <?php include 'ap_report/pcs_summary_supplier.php'; ?>
+  </div>
 
   </div> <div id="pcs_type1" class="tabcontent">
     <?php include 'ap_report/pcs_type1.php'; ?>
+  </div>
+
+</div> <div id="pcs_type2" class="tabcontent">
+    <?php include 'ap_report/pcs_type2.php'; ?>
   </div>
 
 
@@ -368,6 +377,7 @@ document.addEventListener("DOMContentLoaded", function () {
           $('#proj-month-kbon-'+(i+1)).text(res[i] ?? '-');
           $('#proj-month-lp-'+(i+1)).text(res[i] ?? '-');
           $('#proj-month-type1-'+(i+1)).text(res[i] ?? '-');
+          $('#proj-month-type2-'+(i+1)).text(res[i] ?? '-');
         }
 
         datatable.columns.adjust();
@@ -1154,7 +1164,7 @@ let datatable5 = $("#table-pcs-type1").DataTable({
   { data: 'supplier' },
   { data: 'item_type1' },
   { data: 'relasi' },
-  { data: 'saldo_akhir_idr' },
+  { data: 'saldo_akhir' },
   { data: 'saldo_akhir_persen' },
   { data: null, defaultContent: '' },
   { data: 'due_current' },
@@ -1194,28 +1204,23 @@ let datatable5 = $("#table-pcs-type1").DataTable({
   }
   ],
 
-  footerCallback: function () {
-              let api  = this.api();
-              let json = api.ajax.json();
 
-              if (!json) return;
+footerCallback: function () {
+    let api = this.api();
+    let json = api.ajax.json();
 
-              let footer = $(api.table().footer());
-              let rowIDR = footer.find('tr:eq(0)');
-              let rowUSD = footer.find('tr:eq(1)');
-              let rowALL = footer.find('tr:eq(2)');
+    if (!json || !json.footer) return;
 
-              function fmt(val) {
-                val = parseFloat(val) || 0;
-                return val.toLocaleString('en-US', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2
-                });
-              }
+    function fmt(val) {
+        val = parseFloat(val) || 0;
+        return val.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
 
-    // mapping kolom DataTable -> field backend
     const map = {
-      3:'saldo_akhir_idr',
+    3:'saldo_akhir_idr',
       6:'due_current',
       7:'due_1_30',
       8:'due_31_60',
@@ -1233,33 +1238,17 @@ let datatable5 = $("#table-pcs-type1").DataTable({
       21:'pro_due4',
       22:'pro_due5',
       23:'tot_produe'
-    };
+};
 
 
-    // ================= SUMMARY TOTAL =================
     Object.keys(map).forEach(function (colIdx) {
-      let key = map[colIdx];
-      let val = json.footer_all[key] || 0;
-      rowALL.find('th:eq(' + (colIdx) + ')').html(fmt(val));
+        let key = map[colIdx];
+        let val = json.footer[key];
+
+        $(api.column(colIdx).footer()).html(fmt(val));
     });
 
-    rowALL.find('th:eq(0)')
-    .html('<b> TOTAL</b>')
-    .attr('colspan', 3)
-    .css({
-      'text-align': 'center',
-      'font-weight': 'bold'
-    });
-
-// ================= SEMBUNYIKAN KOLOM 1–4 =================
-for (let i = 1; i <= 3; i++) {
-  rowALL.find('th:eq(' + i + ')').css('display', 'none');
-}
-
-
-
-// ================= RATA KANAN ANGKA =================
-rowALL.find('th:not(:eq(0))').css('text-align', 'right');
+    $(api.column(0).footer()).html('<b>TOTAL</b>');
 },
 
   initComplete: function () {
@@ -1273,6 +1262,133 @@ $('#table-pcs-type1').on('draw.dt', function () {
   datatable5.columns.adjust();
 });
 
+
+
+// ITEM TYPE 2
+let datatable6 = $("#table-pcs-type2").DataTable({
+  ordering: false,
+  processing: true,
+  serverSide: true,
+  searching: true,
+  info: true,
+  autoWidth: false,
+  scrollX: false,
+  fixedColumns: {
+    leftColumns: 6
+  },
+  paging: true,
+
+  ajax: {
+    url: 'ap_report/ajx_pcs_type2.php',
+    type: 'POST',
+    data: function (d) {
+      d.start_date = $('#start_date').val();
+      d.end_date   = $('#end_date').val();
+      d.nama_supp   = $('#nama_supp').val();
+    }
+  },
+
+  columns: [
+  { data: 'supplier' },
+  { data: 'item_type2' },
+  { data: 'relasi' },
+  { data: 'saldo_akhir' },
+  { data: 'saldo_akhir_persen' },
+  { data: null, defaultContent: '' },
+  { data: 'due_current' },
+  { data: 'due_1_30' },
+  { data: 'due_31_60' },
+  { data: 'due_61_90' },
+  { data: 'due_91_120' },
+  { data: 'due_121_180' },
+  { data: 'due_181_360' },
+  { data: 'due_gt_360' },
+  { data: 'total_due' },
+  { data: null, defaultContent: '' },
+  { data: 'pro_due' },
+  { data: 'pro_due0' },
+  { data: 'pro_due1' },
+  { data: 'pro_due2' },
+  { data: 'pro_due3' },
+  { data: 'pro_due4' },
+  { data: 'pro_due5' },
+  { data: 'tot_produe' }
+  ],
+
+  columnDefs: [
+
+  {
+    targets: [3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19, 20, 21, 22, 23],
+    className: "text-right",
+    render: function (data) {
+      let val = parseFloat(data);
+      if (isNaN(val)) return data;
+
+      return val.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+  }
+  ],
+
+
+footerCallback: function () {
+    let api = this.api();
+    let json = api.ajax.json();
+
+    if (!json || !json.footer) return;
+
+    function fmt(val) {
+        val = parseFloat(val) || 0;
+        return val.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    const map = {
+    3:'saldo_akhir_idr',
+      6:'due_current',
+      7:'due_1_30',
+      8:'due_31_60',
+      9:'due_61_90',
+      10:'due_91_120',
+      11:'due_121_180',
+      12:'due_181_360',
+      13:'due_gt_360',
+      14:'total_due',
+      16:'pro_due',
+      17:'pro_due0',
+      18:'pro_due1',
+      19:'pro_due2',
+      20:'pro_due3',
+      21:'pro_due4',
+      22:'pro_due5',
+      23:'tot_produe'
+};
+
+
+    Object.keys(map).forEach(function (colIdx) {
+        let key = map[colIdx];
+        let val = json.footer[key];
+
+        $(api.column(colIdx).footer()).html(fmt(val));
+    });
+
+    $(api.column(0).footer()).html('<b>TOTAL</b>');
+},
+
+  initComplete: function () {
+    this.api().columns.adjust();
+  }
+});
+
+
+
+$('#table-pcs-type2').on('draw.dt', function () {
+  datatable6.columns.adjust();
+});
 
 $("[data-toggle=tooltip]").tooltip();
 
@@ -1290,7 +1406,11 @@ function dataTableReload() {
   });
 
   datatable5.ajax.reload(()=>{
-    datatable3.columns.adjust();
+    datatable5.columns.adjust();
+  });
+
+  datatable6.ajax.reload(()=>{
+    datatable6.columns.adjust();
   });
 }
 
