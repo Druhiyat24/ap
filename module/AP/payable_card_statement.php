@@ -378,6 +378,7 @@ document.addEventListener("DOMContentLoaded", function () {
           $('#proj-month-lp-'+(i+1)).text(res[i] ?? '-');
           $('#proj-month-type1-'+(i+1)).text(res[i] ?? '-');
           $('#proj-month-type2-'+(i+1)).text(res[i] ?? '-');
+          $('#proj-month-sum-supp-'+(i+1)).text(res[i] ?? '-');
         }
 
         datatable.columns.adjust();
@@ -1136,6 +1137,204 @@ $('#table-pcs-listpayment').on('draw.dt', function () {
   datatable3.columns.adjust();
 });
 
+
+//SUMMARY SUPPLIER
+let datatable4 = $("#table-pcs-sum-supp").DataTable({
+    ordering: false,
+    processing: true,
+    serverSide: true,
+    searching: true,
+    info: true,
+    autoWidth: false,
+    scrollX: false,
+    fixedColumns: {
+        leftColumns: 2 // sampai kolom curr
+      },
+      paging: true,
+
+      ajax: {
+        url: 'ap_report/ajx_pcs_summary_supplier.php',
+        type: 'POST',
+        data: function (d) {
+          d.start_date = $('#start_date').val();
+          d.end_date   = $('#end_date').val();
+          d.nama_supp   = $('#nama_supp').val();
+        }
+      },
+
+      columns: [
+      { data: 'supplier' },
+      { data: 'curr' },
+      { data: 'saldo_awal' },
+      { data: 'addition' },
+      { data: 'deduction_advance' },
+      { data: 'deduction_other' },
+      { data: 'deduction_lp' },
+      { data: 'adjust' },
+      { data: 'saldo_akhir' },
+      { data: 'rate' },
+      { data: 'saldo_akhir_idr' },
+      { data: null, defaultContent: '' },
+      { data: 'due_current' },
+      { data: 'due_1_30' },
+      { data: 'due_31_60' },
+      { data: 'due_61_90' },
+      { data: 'due_91_120' },
+      { data: 'due_121_180' },
+      { data: 'due_181_360' },
+      { data: 'due_gt_360' },
+      { data: 'total_due' },
+      { data: null, defaultContent: '' },
+      { data: 'pro_due' },
+      { data: 'pro_due0' },
+      { data: 'pro_due1' },
+      { data: 'pro_due2' },
+      { data: 'pro_due3' },
+      { data: 'pro_due4' },
+      { data: 'pro_due5' },
+      { data: 'tot_produe' }
+      ],
+
+      columnDefs: [
+
+            {
+              targets: [2, 3, 4, 5, 6, 7, 8, 9, 10 ,12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 23, 24, 25, 26, 27, 28, 29],
+              className: "text-right",
+              render: function (data) {
+                let val = parseFloat(data);
+                if (isNaN(val)) return data;
+
+                return val.toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                });
+              }
+            }
+            ],
+
+            footerCallback: function () {
+              let api  = this.api();
+              let json = api.ajax.json();
+
+              if (!json) return;
+
+              let footer = $(api.table().footer());
+              let rowIDR = footer.find('tr:eq(0)');
+              let rowUSD = footer.find('tr:eq(1)');
+              let rowALL = footer.find('tr:eq(2)');
+
+              function fmt(val) {
+                val = parseFloat(val) || 0;
+                return val.toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                });
+              }
+
+    // mapping kolom DataTable -> field backend
+    const map = {
+      2:  'saldo_awal',
+      3:  'addition',
+      4:  'deduction_advance',
+      5:  'deduction_other',
+      6:  'deduction_lp',
+      7:  'adjust',
+      8:  'saldo_akhir',
+      10: 'saldo_akhir_idr',
+      12: 'due_current',
+      13: 'due_1_30',
+      14: 'due_31_60',
+      15: 'due_61_90',
+      16: 'due_91_120',
+      17: 'due_121_180',
+      18: 'due_181_360',
+      19: 'due_gt_360',
+      20: 'total_due',
+      22: 'pro_due',
+      23: 'pro_due0',
+      24: 'pro_due1',
+      25: 'pro_due2',
+      26: 'pro_due3',
+      27: 'pro_due4',
+      28: 'pro_due5',
+      29: 'tot_produe'
+    };
+
+    // ================= TOTAL IDR =================
+    Object.keys(map).forEach(function (colIdx) {
+      let key = map[colIdx];
+      let val = json.footer_idr[key] || 0;
+      rowIDR.find('th:eq(' + (colIdx) + ')').html(fmt(val));
+    });
+
+    // ================= TOTAL USD =================
+    Object.keys(map).forEach(function (colIdx) {
+      let key = map[colIdx];
+      let val = json.footer_usd[key] || 0;
+      rowUSD.find('th:eq(' + (colIdx) + ')').html(fmt(val));
+    });
+
+    // ================= SUMMARY TOTAL =================
+    Object.keys(map).forEach(function (colIdx) {
+      let key = map[colIdx];
+      let val = json.footer_all[key] || 0;
+      rowALL.find('th:eq(' + (colIdx) + ')').html(fmt(val));
+    });
+
+    // ================= LABEL KIRI + COLSPAN =================
+    rowIDR.find('th:eq(0)')
+    .html('<b>TOTAL IDR</b>')
+    .attr('colspan', 2)
+    .css({
+      'text-align': 'center',
+      'font-weight': 'bold'
+    });
+
+    rowUSD.find('th:eq(0)')
+    .html('<b>TOTAL USD</b>')
+    .attr('colspan', 2)
+    .css({
+      'text-align': 'center',
+      'font-weight': 'bold'
+    });
+
+    rowALL.find('th:eq(0)')
+    .html('<b>SUMMARY TOTAL</b>')
+    .attr('colspan', 10)
+    .css({
+      'text-align': 'center',
+      'font-weight': 'bold'
+    });
+
+// ================= SEMBUNYIKAN KOLOM 1–4 =================
+for (let i = 1; i <= 1; i++) {
+  rowIDR.find('th:eq(' + i + ')').css('display', 'none');
+  rowUSD.find('th:eq(' + i + ')').css('display', 'none');
+}
+
+for (let i = 1; i <= 9; i++) {
+  rowALL.find('th:eq(' + i + ')').css('display', 'none');
+}
+
+
+// ================= RATA KANAN ANGKA =================
+rowIDR.find('th:not(:eq(0))').css('text-align', 'right');
+rowUSD.find('th:not(:eq(0))').css('text-align', 'right');
+rowALL.find('th:not(:eq(0))').css('text-align', 'right');
+}
+,
+
+initComplete: function () {
+  this.api().columns.adjust();
+}
+});
+
+
+
+$('#table-pcs-sum-supp').on('draw.dt', function () {
+  datatable4.columns.adjust();
+});
+
 // ITEM TYPE 1
 let datatable5 = $("#table-pcs-type1").DataTable({
   ordering: false,
@@ -1403,6 +1602,10 @@ function dataTableReload() {
 
   datatable3.ajax.reload(()=>{
     datatable3.columns.adjust();
+  });
+
+  datatable4.ajax.reload(()=>{
+    datatable4.columns.adjust();
   });
 
   datatable5.ajax.reload(()=>{
