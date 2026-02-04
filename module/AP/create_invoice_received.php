@@ -769,6 +769,13 @@ function addListener(elm,index){
     var arrInv = [];
     var invalid = [];
 
+    var nama_supp = $('select[name=nama_supp]').val();
+
+    if(nama_supp == '-' || nama_supp == '' || nama_supp == null){
+            alert("Supplier tidak boleh kosong");
+            return false;
+        }
+
     $("input[type=checkbox]:checked").each(function () {
 
         var no_inv = $(this).closest('tr').find('td:eq(1) input').val();
