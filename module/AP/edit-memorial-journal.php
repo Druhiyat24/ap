@@ -1661,10 +1661,14 @@ $("#form-simpan").on("click", "#simpan", function(e){
 
         var tr = $(this).closest('tr');
 
-        var no_coa        = tr.find('td:eq(1) select[name=nomor_coa]').val();
-        var prof_ctr      = tr.find('td:eq(2) select[id=prof_ctr]').val();
-        // var no_costcenter = tr.find('td:eq(3) select[name=nomor_cc]').val();
-        var no_costcenter = tr.find('td:eq(3) select[name="nomor_cc[]"]').val();
+            no_coa        = tr.find('td:eq(1) select[name=nomor_coa]').val();
+            prof_ctr      = tr.find('td:eq(2) select[id=prof_ctr]').val();
+            no_costcenter = tr.find('td:eq(3) select[id=nomor_cc]').val();
+
+        // var no_coa        = tr.find('td:eq(1) select[name=nomor_coa]').val();
+        // var prof_ctr      = tr.find('td:eq(2) select[id=prof_ctr]').val();
+        // // var no_costcenter = tr.find('td:eq(3) select[name=nomor_cc]').val();
+        // var no_costcenter = tr.find('td:eq(3) select[name="nomor_cc[]"]').val();
 
         if (!no_coa || no_coa=="-") {
             isValid = false;
