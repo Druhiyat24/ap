@@ -174,7 +174,7 @@
     <button class="tablinks" onclick="openTab(event, 'pcs_summary_supplier')">Summary Supplier</button>
     <button class="tablinks" onclick="openTab(event, 'pcs_type1')">Item Type 1</button>
     <button class="tablinks" onclick="openTab(event, 'pcs_type2')">Item Type 2</button>
-    <button class="tablinks" onclick="openTab(event, 'summary')">Summary</button>
+    <button class="tablinks" onclick="openTab(event, 'pcs_summary_grup')">Summary</button>
   </div>
 
 
@@ -198,8 +198,12 @@
     <?php include 'ap_report/pcs_type1.php'; ?>
   </div>
 
-</div> <div id="pcs_type2" class="tabcontent">
+  </div> <div id="pcs_type2" class="tabcontent">
     <?php include 'ap_report/pcs_type2.php'; ?>
+  </div>
+
+  </div> <div id="pcs_summary_grup" class="tabcontent">
+    <?php include 'ap_report/pcs_summary_grup.php'; ?>
   </div>
 
 
@@ -379,6 +383,7 @@ document.addEventListener("DOMContentLoaded", function () {
           $('#proj-month-type1-'+(i+1)).text(res[i] ?? '-');
           $('#proj-month-type2-'+(i+1)).text(res[i] ?? '-');
           $('#proj-month-sum-supp-'+(i+1)).text(res[i] ?? '-');
+          $('#proj-month-sum-grup-'+(i+1)).text(res[i] ?? '-');
         }
 
         datatable.columns.adjust();
@@ -1583,10 +1588,352 @@ footerCallback: function () {
   }
 });
 
-
-
 $('#table-pcs-type2').on('draw.dt', function () {
   datatable6.columns.adjust();
+});
+
+
+
+//SUMMARY GROUP
+let datatable7 = $("#table-pcs-sum-grup").DataTable({
+    ordering: false,
+    processing: true,
+    serverSide: true,
+    searching: true,
+    info: true,
+    autoWidth: false,
+    scrollX: false,
+    fixedColumns: {
+        leftColumns: 2 // sampai kolom curr
+      },
+      paging: true,
+
+      ajax: {
+        url: 'ap_report/ajx_pcs_summary_grup.php',
+        type: 'POST',
+        data: function (d) {
+          d.start_date = $('#start_date').val();
+          d.end_date   = $('#end_date').val();
+          d.nama_supp   = $('#nama_supp').val();
+        }
+      },
+
+      columns: [
+      { data: 'supplier' },
+      { data: 'curr' },
+      { data: 'saldo_akhir' },
+      { data: 'saldo_akhir_idr' },
+      { data: null, defaultContent: '' },
+      { data: 'due_current' },
+      { data: 'due_1_30' },
+      { data: 'due_31_60' },
+      { data: 'due_61_90' },
+      { data: 'due_91_120' },
+      { data: 'due_121_180' },
+      { data: 'due_181_360' },
+      { data: 'due_gt_360' },
+      { data: 'total_due' },
+      { data: null, defaultContent: '' },
+      { data: 'pro_due' },
+      { data: 'pro_due0' },
+      { data: 'pro_due1' },
+      { data: 'pro_due2' },
+      { data: 'pro_due3' },
+      { data: 'pro_due4' },
+      { data: 'pro_due5' },
+      { data: 'tot_produe' }
+      ],
+
+      columnDefs: [
+
+            {
+              targets: [2, 3, 5, 6, 7, 8, 9, 10, 11 ,12, 13, 15, 16, 17, 18, 19, 20, 21, 22],
+              className: "text-right",
+              render: function (data) {
+                let val = parseFloat(data);
+                if (isNaN(val)) return data;
+
+                return val.toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                });
+              }
+            }
+            ],
+
+            footerCallback: function () {
+              let api  = this.api();
+              let json = api.ajax.json();
+
+              if (!json) return;
+
+              let footer = $(api.table().footer());
+              let rowIDR = footer.find('tr:eq(0)');
+              let rowUSD = footer.find('tr:eq(1)');
+              let rowALL = footer.find('tr:eq(2)');
+
+              function fmt(val) {
+                val = parseFloat(val) || 0;
+                return val.toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                });
+              }
+
+    // mapping kolom DataTable -> field backend
+    const map = {
+      2:  'saldo_akhir',
+      3: 'saldo_akhir_idr',
+      5: 'due_current',
+      6: 'due_1_30',
+      7: 'due_31_60',
+      8: 'due_61_90',
+      9: 'due_91_120',
+      10: 'due_121_180',
+      11: 'due_181_360',
+      12: 'due_gt_360',
+      13: 'total_due',
+      15: 'pro_due',
+      16: 'pro_due0',
+      17: 'pro_due1',
+      18: 'pro_due2',
+      19: 'pro_due3',
+      20: 'pro_due4',
+      21: 'pro_due5',
+      22: 'tot_produe'
+    };
+
+    // ================= TOTAL IDR =================
+    Object.keys(map).forEach(function (colIdx) {
+      let key = map[colIdx];
+      let val = json.footer_idr[key] || 0;
+      rowIDR.find('th:eq(' + (colIdx) + ')').html(fmt(val));
+    });
+
+    // ================= TOTAL USD =================
+    Object.keys(map).forEach(function (colIdx) {
+      let key = map[colIdx];
+      let val = json.footer_usd[key] || 0;
+      rowUSD.find('th:eq(' + (colIdx) + ')').html(fmt(val));
+    });
+
+    // ================= SUMMARY TOTAL =================
+    Object.keys(map).forEach(function (colIdx) {
+      let key = map[colIdx];
+      let val = json.footer_all[key] || 0;
+      rowALL.find('th:eq(' + (colIdx) + ')').html(fmt(val));
+    });
+
+    // ================= LABEL KIRI + COLSPAN =================
+    rowIDR.find('th:eq(0)')
+    .html('<b>TOTAL IDR</b>')
+    .attr('colspan', 2)
+    .css({
+      'text-align': 'center',
+      'font-weight': 'bold'
+    });
+
+    rowUSD.find('th:eq(0)')
+    .html('<b>TOTAL USD</b>')
+    .attr('colspan', 2)
+    .css({
+      'text-align': 'center',
+      'font-weight': 'bold'
+    });
+
+    rowALL.find('th:eq(0)')
+    .html('<b>SUMMARY TOTAL</b>')
+    .attr('colspan', 4)
+    .css({
+      'text-align': 'center',
+      'font-weight': 'bold'
+    });
+
+// ================= SEMBUNYIKAN KOLOM 1–4 =================
+for (let i = 1; i <= 1; i++) {
+  rowIDR.find('th:eq(' + i + ')').css('display', 'none');
+  rowUSD.find('th:eq(' + i + ')').css('display', 'none');
+}
+
+for (let i = 1; i <= 3; i++) {
+  rowALL.find('th:eq(' + i + ')').css('display', 'none');
+}
+
+
+// ================= RATA KANAN ANGKA =================
+rowIDR.find('th:not(:eq(0))').css('text-align', 'right');
+rowUSD.find('th:not(:eq(0))').css('text-align', 'right');
+rowALL.find('th:not(:eq(0))').css('text-align', 'right');
+}
+,
+
+ajax: {
+        url: 'ap_report/ajx_pcs_summary_grup.php',
+        type: 'POST',
+        data: function (d) {
+          d.start_date = $('#start_date').val();
+          d.end_date   = $('#end_date').val();
+          d.nama_supp   = $('#nama_supp').val();
+        }
+      },
+
+      columns: [
+      { data: 'supplier' },
+      { data: 'curr' },
+      { data: 'saldo_akhir' },
+      { data: 'saldo_akhir_idr' },
+      { data: null, defaultContent: '' },
+      { data: 'due_current' },
+      { data: 'due_1_30' },
+      { data: 'due_31_60' },
+      { data: 'due_61_90' },
+      { data: 'due_91_120' },
+      { data: 'due_121_180' },
+      { data: 'due_181_360' },
+      { data: 'due_gt_360' },
+      { data: 'total_due' },
+      { data: null, defaultContent: '' },
+      { data: 'pro_due' },
+      { data: 'pro_due0' },
+      { data: 'pro_due1' },
+      { data: 'pro_due2' },
+      { data: 'pro_due3' },
+      { data: 'pro_due4' },
+      { data: 'pro_due5' },
+      { data: 'tot_produe' }
+      ],
+
+      columnDefs: [
+
+            {
+              targets: [2, 3, 5, 6, 7, 8, 9, 10, 11 ,12, 13, 15, 16, 17, 18, 19, 20, 21, 22],
+              className: "text-right",
+              render: function (data) {
+                let val = parseFloat(data);
+                if (isNaN(val)) return data;
+
+                return val.toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                });
+              }
+            }
+            ],
+
+            footerCallback: function () {
+              let api  = this.api();
+              let json = api.ajax.json();
+
+              if (!json) return;
+
+              let footer = $(api.table().footer());
+              let rowIDR = footer.find('tr:eq(0)');
+              let rowUSD = footer.find('tr:eq(1)');
+              let rowALL = footer.find('tr:eq(2)');
+
+              function fmt(val) {
+                val = parseFloat(val) || 0;
+                return val.toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                });
+              }
+
+    // mapping kolom DataTable -> field backend
+    const map = {
+      2:  'saldo_akhir',
+      3: 'saldo_akhir_idr',
+      5: 'due_current',
+      6: 'due_1_30',
+      7: 'due_31_60',
+      8: 'due_61_90',
+      9: 'due_91_120',
+      10: 'due_121_180',
+      11: 'due_181_360',
+      12: 'due_gt_360',
+      13: 'total_due',
+      15: 'pro_due',
+      16: 'pro_due0',
+      17: 'pro_due1',
+      18: 'pro_due2',
+      19: 'pro_due3',
+      20: 'pro_due4',
+      21: 'pro_due5',
+      22: 'tot_produe'
+    };
+
+    // ================= TOTAL IDR =================
+    Object.keys(map).forEach(function (colIdx) {
+      let key = map[colIdx];
+      let val = json.footer_idr[key] || 0;
+      rowIDR.find('th:eq(' + (colIdx) + ')').html(fmt(val));
+    });
+
+    // ================= TOTAL USD =================
+    Object.keys(map).forEach(function (colIdx) {
+      let key = map[colIdx];
+      let val = json.footer_usd[key] || 0;
+      rowUSD.find('th:eq(' + (colIdx) + ')').html(fmt(val));
+    });
+
+    // ================= SUMMARY TOTAL =================
+    Object.keys(map).forEach(function (colIdx) {
+      let key = map[colIdx];
+      let val = json.footer_all[key] || 0;
+      rowALL.find('th:eq(' + (colIdx) + ')').html(fmt(val));
+    });
+
+    // ================= LABEL KIRI + COLSPAN =================
+    rowIDR.find('th:eq(0)')
+    .html('<b>TOTAL IDR</b>')
+    .attr('colspan', 2)
+    .css({
+      'text-align': 'center',
+      'font-weight': 'bold'
+    });
+
+    rowUSD.find('th:eq(0)')
+    .html('<b>TOTAL USD</b>')
+    .attr('colspan', 2)
+    .css({
+      'text-align': 'center',
+      'font-weight': 'bold'
+    });
+
+    rowALL.find('th:eq(0)')
+    .html('<b>SUMMARY TOTAL</b>')
+    .attr('colspan', 4)
+    .css({
+      'text-align': 'center',
+      'font-weight': 'bold'
+    });
+
+// ================= SEMBUNYIKAN KOLOM 1–4 =================
+for (let i = 1; i <= 1; i++) {
+  rowIDR.find('th:eq(' + i + ')').css('display', 'none');
+  rowUSD.find('th:eq(' + i + ')').css('display', 'none');
+}
+
+for (let i = 1; i <= 3; i++) {
+  rowALL.find('th:eq(' + i + ')').css('display', 'none');
+}
+
+
+// ================= RATA KANAN ANGKA =================
+rowIDR.find('th:not(:eq(0))').css('text-align', 'right');
+rowUSD.find('th:not(:eq(0))').css('text-align', 'right');
+rowALL.find('th:not(:eq(0))').css('text-align', 'right');
+},
+
+initComplete: function () {
+  this.api().columns.adjust();
+}
+});
+
+
+
+$('#table-pcs-sum-grup').on('draw.dt', function () {
+  datatable7.columns.adjust();
 });
 
 $("[data-toggle=tooltip]").tooltip();
@@ -1614,6 +1961,10 @@ function dataTableReload() {
 
   datatable6.ajax.reload(()=>{
     datatable6.columns.adjust();
+  });
+
+  datatable7.ajax.reload(()=>{
+    datatable7.columns.adjust();
   });
 }
 
