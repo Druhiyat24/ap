@@ -1726,7 +1726,7 @@ $("#form-simpan").on("click", "#simpan", function(e){
                             id_cmj     : $('select[name=nama_type]').val(),
                             no_coa     : tr.find('td:eq(1) select[name=nomor_coa]').val(),
                             prof_ctr   : tr.find('td:eq(2) select[id=prof_ctr]').val(),
-                            no_costcenter: tr.find('td:eq(3) select[name=nomor_cc]').val(),
+                            no_costcenter: tr.find('td:eq(3) select[id=nomor_cc]').val(),
                             no_reff    : tr.find('td:eq(4) input').val(),
                             reff_date  : tr.find('td:eq(5) input').val(),
                             buyer      : tr.find('td:eq(6) select[name=buyer]').val(),
