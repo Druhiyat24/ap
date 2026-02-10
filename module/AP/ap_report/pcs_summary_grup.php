@@ -1,6 +1,6 @@
 <div class="col-md-3 d-flex align-items-end">
 
-    <a id="btnExportExcel_bpb" target="_blank">
+    <a id="btnExportExcel_sum_grup" target="_blank">
     <button type="button" class="btn btn-success btn-xs ml-2" style="margin-top: 30px;">
         <i class="fa fa-file-excel-o" aria-hidden="true" > Excel</i>
     </button>

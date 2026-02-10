@@ -890,9 +890,9 @@ if($id2 == '35'){
     <span class="fa fa-tags fa-fw "></span>
     <span class="menu-collapsed">AP Report</span>
     </a>
-    <a href="AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
+   <a href="AP/Payable_card_statement.php" class="dropdown-item bg-dark text-white">
     <span class="fa fa-tags fa-fw "></span>
-    <span class="menu-collapsed">PCS Detail Dev</span>
+    <span class="menu-collapsed">AP Report New</span>
     </a>
     <a href="AP/rekap-pelunasan.php" class="dropdown-item bg-dark text-white">
     <span class="fa fa-tags fa-fw "></span>
@@ -902,6 +902,10 @@ if($id2 == '35'){
     echo '<a href="AP/pcs_detail.php" class="dropdown-item bg-dark text-white">
     <span class="fa fa-tags fa-fw "></span>
     <span class="menu-collapsed">AP Report</span>
+    </a>
+    <a href="AP/Payable_card_statement.php" class="dropdown-item bg-dark text-white">
+    <span class="fa fa-tags fa-fw "></span>
+    <span class="menu-collapsed">AP Report New</span>
     </a>';
 }elseif($id == '0' && $id3 == '57'){
     echo '<a href="AP/rekap-pelunasan.php" class="dropdown-item bg-dark text-white">
@@ -912,6 +916,10 @@ if($id2 == '35'){
     echo '<a href="AP/pcs_detail.php" class="dropdown-item bg-dark text-white">
     <span class="fa fa-tags fa-fw "></span>
     <span class="menu-collapsed">AP Report</span>
+    </a>
+    <a href="AP/Payable_card_statement.php" class="dropdown-item bg-dark text-white">
+    <span class="fa fa-tags fa-fw "></span>
+    <span class="menu-collapsed">AP Report New</span>
     </a>
     <a href="AP/rekap-pelunasan.php" class="dropdown-item bg-dark text-white">
     <span class="fa fa-tags fa-fw "></span>
