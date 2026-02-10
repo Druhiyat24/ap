@@ -17,7 +17,7 @@ $tgl_po = $_POST['tgl_po'];
 $pterms = $_POST['pterms'];
 
 
-$sql = mysqli_query($conn1,"select no_bpb, no_po, '-' no_ws, tgl_bpb, '' tgl_po, c.id_supplier, a.supplier, nama_barang, '-' color, '-' size, jumlah_bpb qty,satuan uom, price, round(ppn/dpp * 100,0) tax, curr, '-' create_user, 'ibrahim' confirm1, b.id_item from bpb_knitting a inner join masteritem b on b.goods_code = a.id_item INNER JOIN (select DISTINCT id_supplier, supplier from mastersupplier where tipe_sup = 'S' GROUP BY supplier) c on c.supplier = a.supplier where a.no_bpb = '$no_bpb'");	
+$sql = mysqli_query($conn2,"select no_bpb, no_po, '-' no_ws, tgl_bpb, '' tgl_po, c.id_supplier, a.supplier, nama_barang, '-' color, '-' size, jumlah_bpb qty,satuan uom, price, round(ppn/dpp * 100,0) tax, curr, '-' create_user, 'ibrahim' confirm1, b.id_item from bpb_knitting a inner join masteritem b on b.goods_code = a.id_item INNER JOIN (select DISTINCT id_supplier, supplier from mastersupplier where tipe_sup = 'S' GROUP BY supplier) c on c.supplier = a.supplier where a.no_bpb = '$no_bpb'");	
 
 
 while($row= mysqli_fetch_assoc($sql)) { 
@@ -48,19 +48,22 @@ VALUES
 	('$no_bpb', '$no_bpb_asal') ");
 
 $sqla = "update bpb set ap_inv='1' where bpbno_int='$no_bpb'";
-$querya = mysqli_query($conn1,$sqla);
+$querya = mysqli_query($conn2,$sqla);
 
 if(!$query){
-    die('Error: ' . mysqli_error());	
+    die('Error insert bpb_new: ' . mysqli_error($conn2));
 }
+
+if(!$query23){
+    die('Error insert bpb_ri: ' . mysqli_error($conn2));
 }
-//echo 'Data Berhasil Di Simpan';	
+
+if(!$querya){
+    die('Error update bpb: ' . mysqli_error($conn2));
+}
+
+}
 
 mysqli_close($conn2);
 
-//if($query){
-//	echo '<script type="text/javascript">alert("Data has been submitted");</script>';
-//}else {
-//	echo '<script type="text/javascript">alert("Error");</script>';
-//}	
 ?>

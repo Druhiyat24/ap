@@ -441,7 +441,7 @@ $(document).ready(function(){
                     e.preventDefault();
                 },
                 success: function(response){                
-                    console.log(response);
+                    alert(response);
                     window.location = 'verifikasibpb_knitting.php';
 
                 },

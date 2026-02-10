@@ -1992,6 +1992,39 @@ document.getElementById('btnExportExcel_listpayment').addEventListener('click', 
   this.href = `ap_report/ekspor_pcs_listpayment.php?start_date=${sd}&end_date=${ed}&nama_supp=${supp}`;
 });
 
+document.getElementById('btnExportExcel_sum_supp').addEventListener('click', function(e) {
+  let sd = toYmd(document.getElementById('start_date').value);
+  let ed = toYmd(document.getElementById('end_date').value);
+  let supp = document.getElementById('nama_supp').value;
+
+  this.href = `ap_report/ekspor_pcs_sum_supp.php?start_date=${sd}&end_date=${ed}&nama_supp=${supp}`;
+});
+
+
+document.getElementById('btnExportExcel_type1').addEventListener('click', function(e) {
+  let sd = toYmd(document.getElementById('start_date').value);
+  let ed = toYmd(document.getElementById('end_date').value);
+  let supp = document.getElementById('nama_supp').value;
+
+  this.href = `ap_report/ekspor_pcs_type1.php?start_date=${sd}&end_date=${ed}&nama_supp=${supp}`;
+});
+
+document.getElementById('btnExportExcel_type2').addEventListener('click', function(e) {
+  let sd = toYmd(document.getElementById('start_date').value);
+  let ed = toYmd(document.getElementById('end_date').value);
+  let supp = document.getElementById('nama_supp').value;
+
+  this.href = `ap_report/ekspor_pcs_type2.php?start_date=${sd}&end_date=${ed}&nama_supp=${supp}`;
+});
+
+document.getElementById('btnExportExcel_sum_grup').addEventListener('click', function(e) {
+  let sd = toYmd(document.getElementById('start_date').value);
+  let ed = toYmd(document.getElementById('end_date').value);
+  let supp = document.getElementById('nama_supp').value;
+
+  this.href = `ap_report/ekspor_pcs_sum_grup.php?start_date=${sd}&end_date=${ed}&nama_supp=${supp}`;
+});
+
 </script>
 
 
