@@ -890,10 +890,7 @@ echo'</ul>
                     <span class="fa fa-tags fa-fw "></span>
                     <span class="menu-collapsed">AP Report</span>
                     </a>
-                    <a href="../AP/Payable_card_statement.php" class="dropdown-item bg-dark text-white">
-                    <span class="fa fa-tags fa-fw "></span>
-                    <span class="menu-collapsed">AP Report New</span>
-                    </a>
+                    
                     <a href="../AP/rekap-pelunasan.php" class="dropdown-item bg-dark text-white">
                     <span class="fa fa-tags fa-fw "></span>
                     <span class="menu-collapsed">Rekap Pelunasan</span>
