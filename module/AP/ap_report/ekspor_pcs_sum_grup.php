@@ -71,6 +71,13 @@
         ?>
                 <th style="text-align: center;vertical-align: middle;background-color: #87CEFA;">Total</th>
             </tr>
+            <tr>
+    <th colspan="4" style="background:white;text-align:left;">GROUP</th>
+    <th style="border:none;background:white;"></th>
+    <th colspan="9" style="background:white;"></th>
+    <th style="border:none;background:white;"></th>
+    <th colspan="8" style="background:white;"></th>
+</tr>
         <?php 
         // koneksi database
         $start_date = date("Y-m-d",strtotime($_GET['start_date']));
@@ -83,8 +90,7 @@
             $supplier = "";
         }
 
-
-        $sql = mysqli_query($conn2,"WITH
+        $query = "WITH
 bpb as (
 WITH
 po_bpb as (select a.bpbno_int, b.supplier, a.pono, c.jml_pterms as top from bpb a INNER JOIN mastersupplier b on b.Id_Supplier = a.id_supplier LEFT JOIN po_header c on c.pono = a.pono LEFT JOIN po_header_draft d on d.id = c.id_draft where a.bpbdate > '2025-12-31' and confirm = 'Y' and cancel = 'N' GROUP BY bpbno_int
@@ -791,72 +797,16 @@ CASE
         select supplier, curr, IF(CURR = 'usd', saldo_akhir, 0) saldo_akhir, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from kontrabon where relasi = 'GROUP'
         UNION ALL
         select supplier, curr, IF(CURR = 'usd', saldo_akhir, 0) saldo_akhir, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from list_payment where relasi = 'GROUP') a  GROUP BY supplier,curr order by supplier,curr asc
-");
+";
+
+
+        $sql = mysqli_query($conn2,$query);
 
 
 
 $no = 0;
-$ttl_type = 0;
-    $ttl_type_idr = 0;
-    $ttl_due_0 = 0;
-    $ttl_due_1 = 0;
-    $ttl_due_2 = 0;
-    $ttl_due_3 = 0;
-    $ttl_due_4 = 0;
-    $ttl_due_5 = 0;
-    $ttl_due_6 = 0;
-    $ttl_due_7 = 0;
-    $ttl_due_total = 0;
-    $ttl_produe_0 = 0;
-    $ttl_produe_1 = 0;
-    $ttl_produe_2 = 0;
-    $ttl_produe_3 = 0;
-    $ttl_produe_4 = 0;
-    $ttl_produe_5 = 0;
-    $ttl_produe_6 = 0;
-    $ttl_produe_total = 0;
 while($row = mysqli_fetch_array($sql)){
     $no++;
-
-        $total_type = isset($row['saldo_akhir']) ? $row['saldo_akhir'] : 0;
-        $total_type_idr = isset($row['saldo_akhir_idr']) ? $row['saldo_akhir_idr'] : 0;
-        $jml_due_0 = isset($row['due_current']) ? $row['due_current'] : 0;
-        $jml_due_1 = isset($row['due_1_30']) ? $row['due_1_30'] : 0;
-        $jml_due_2 = isset($row['due_31_60']) ? $row['due_31_60'] : 0;
-        $jml_due_3 = isset($row['due_61_90']) ? $row['due_61_90'] : 0;
-        $jml_due_4 = isset($row['due_91_120']) ? $row['due_91_120'] : 0;
-        $jml_due_5 = isset($row['due_121_180']) ? $row['due_121_180'] : 0;
-        $jml_due_6 = isset($row['due_181_360']) ? $row['due_181_360'] : 0;
-        $jml_due_7 = isset($row['due_gt_360']) ? $row['due_gt_360'] : 0;
-        $jml_due_total = isset($row['total_due']) ? $row['total_due'] : 0;
-        $jml_produe_0 = isset($row['pro_due']) ? $row['pro_due'] : 0;
-        $jml_produe_1 = isset($row['pro_due0']) ? $row['pro_due0'] : 0;
-        $jml_produe_2 = isset($row['pro_due1']) ? $row['pro_due1'] : 0;
-        $jml_produe_3 = isset($row['pro_due2']) ? $row['pro_due2'] : 0;
-        $jml_produe_4 = isset($row['pro_due3']) ? $row['pro_due3'] : 0;
-        $jml_produe_5 = isset($row['pro_due4']) ? $row['pro_due4'] : 0;
-        $jml_produe_6 = isset($row['pro_due5']) ? $row['pro_due5'] : 0;
-        $jml_produe_total = isset($row['tot_produe']) ? $row['tot_produe'] : 0;
-
-        $ttl_type += $total_type;
-        $ttl_type_idr += $total_type_idr;
-        $ttl_due_0 += $jml_due_0;
-        $ttl_due_1 += $jml_due_1;
-        $ttl_due_2 += $jml_due_2;
-        $ttl_due_3 += $jml_due_3;
-        $ttl_due_4 += $jml_due_4;
-        $ttl_due_5 += $jml_due_5;
-        $ttl_due_6 += $jml_due_6;
-        $ttl_due_7 += $jml_due_7;
-        $ttl_due_total += $jml_due_total;
-        $ttl_produe_0 += $jml_produe_0;
-        $ttl_produe_1 += $jml_produe_1;
-        $ttl_produe_2 += $jml_produe_2;
-        $ttl_produe_3 += $jml_produe_3;
-        $ttl_produe_4 += $jml_produe_4;
-        $ttl_produe_5 += $jml_produe_5;
-        $ttl_produe_6 += $jml_produe_6;
-        $ttl_produe_total += $jml_produe_total;
 
     echo ' <tr style="font-size:12px;text-align:left;">
     <td style="text-align:center;">'.$no++.'</td>                          
@@ -883,38 +833,74 @@ while($row = mysqli_fetch_array($sql)){
     <td style="text-align:right;" value="'.$row['pro_due4'].'">'.number_format($row['pro_due4'],2).'</td>
     <td style="text-align:right;" value="'.$row['pro_due5'].'">'.number_format($row['pro_due5'],2).'</td>
     <td style="text-align:right;" value="'.$row['tot_produe'].'">'.number_format($row['tot_produe'],2).'</td>
+    </tr>
+    ';
+
+}
+
+
+    $sql_idr_grup = mysqli_query($conn2,"
+SELECT
+    SUM(saldo_akhir) saldo_akhir,
+    SUM(saldo_akhir_idr) saldo_akhir_idr,
+    SUM(due_current) due_current,
+    SUM(due_1_30) due_1_30,
+    SUM(due_31_60) due_31_60,
+    SUM(due_61_90) due_61_90,
+    SUM(due_91_120) due_91_120,
+    SUM(due_121_180) due_121_180,
+    SUM(due_181_360) due_181_360,
+    SUM(due_gt_360) due_gt_360,
+    SUM(total_due) total_due,
+    SUM(pro_due) pro_due,
+    SUM(pro_due0) pro_due0,
+    SUM(pro_due1) pro_due1,
+    SUM(pro_due2) pro_due2,
+    SUM(pro_due3) pro_due3,
+    SUM(pro_due4) pro_due4,
+    SUM(pro_due5) pro_due5,
+    SUM(tot_produe) tot_produe
+FROM (
+    $query
+) x where curr = 'IDR'
+");
+
+
+
+$no = 0;
+while($row = mysqli_fetch_array($sql)){
+    $no++;
+
+    echo '<tr style="font-size:12px;">
+            <th colspan = "3" style="text-align: center;vertical-align: middle;">Total IDR</th> 
+            <th style="text-align:right;" value="'.$row['saldo_akhir'].'">'.number_format($row['saldo_akhir'],2).'</th>
+            <th style="text-align:right;" value="'.$row['saldo_akhir_idr'].'">'.number_format($row['saldo_akhir_idr'],2).'</th
+            <th style="width:50px;background-color: white;border:none" value="">&nbsp;&nbsp;&nbsp;</th>
+            <th style="text-align:right;" value="'.$row['due_current'].'">'.number_format($row['due_current'],2).'</th>
+            <th style="text-align:right;" value="'.$row['due_1_30'].'">'.number_format($row['due_1_30'],2).'</th>
+            <th style="text-align:right;" value="'.$row['due_31_60'].'">'.number_format($row['due_31_60'],2).'</th>
+            <th style="text-align:right;" value="'.$row['due_61_90'].'">'.number_format($row['due_61_90'],2).'</th>
+            <th style="text-align:right;" value="'.$row['due_91_120'].'">'.number_format($row['due_91_120'],2).'</th>
+            <th style="text-align:right;" value="'.$row['due_121_180'].'">'.number_format($row['due_121_180'],2).'</th>
+            <th style="text-align:right;" value="'.$row['due_181_360'].'">'.number_format($row['due_181_360'],2).'</th>
+            <th style="text-align:right;" value="'.$row['due_gt_360'].'">'.number_format($row['due_gt_360'],2).'</th>
+            <th style="text-align:right;" value="'.$row['total_due'].'">'.number_format($row['total_due'],2).'</th>      
+            <th style="width:50px;background-color: white;border:none" value="">&nbsp;&nbsp;&nbsp;</th>
+            <th style="text-align:right;" value="'.$row['pro_due'].'">'.number_format($row['pro_due'],2).'</th>
+            <th style="text-align:right;" value="'.$row['pro_due0'].'">'.number_format($row['pro_due0'],2).'</th>
+            <th style="text-align:right;" value="'.$row['pro_due1'].'">'.number_format($row['pro_due1'],2).'</th>
+            <th style="text-align:right;" value="'.$row['pro_due2'].'">'.number_format($row['pro_due2'],2).'</th>
+            <th style="text-align:right;" value="'.$row['pro_due3'].'">'.number_format($row['pro_due3'],2).'</th>
+            <th style="text-align:right;" value="'.$row['pro_due4'].'">'.number_format($row['pro_due4'],2).'</th>
+            <th style="text-align:right;" value="'.$row['pro_due5'].'">'.number_format($row['pro_due5'],2).'</th>
+            <th style="text-align:right;" value="'.$row['tot_produe'].'">'.number_format($row['tot_produe'],2).'</th>                                                             
+        </tr>
     ';
 
     ?>
     <?php 
-
 }
 
-echo '
-            <tr style="font-size:12px;">
-            <th colspan = "3" style="text-align: center;vertical-align: middle;">Total Group</th> 
-            <th style="text-align: right;">'.number_format($ttl_type,2).'</th>             
-            <th style="text-align: right;">'.number_format($ttl_type_idr,2).'</th> 
-            <td style="width:50px;background-color: white;border:none" value="">&nbsp;&nbsp;&nbsp;</td>
-            <th style="text-align: right;">'.number_format($ttl_due_0,2).'</th>
-            <th style="text-align: right;">'.number_format($ttl_due_1,2).'</th>
-            <th style="text-align: right;">'.number_format($ttl_due_2,2).'</th>
-            <th style="text-align: right;">'.number_format($ttl_due_3,2).'</th>
-            <th style="text-align: right;">'.number_format($ttl_due_4,2).'</th>
-            <th style="text-align: right;">'.number_format($ttl_due_5,2).'</th>
-            <th style="text-align: right;">'.number_format($ttl_due_6,2).'</th>
-            <th style="text-align: right;">'.number_format($ttl_due_7,2).'</th>
-            <th style="text-align: right;">'.number_format($ttl_due_total,2).'</th>       
-            <td style="width:50px;background-color: white;border:none" value="">&nbsp;&nbsp;&nbsp;</td>
-            <th style="text-align: right;">'.number_format($ttl_produe_0,2).'</th>
-            <th style="text-align: right;">'.number_format($ttl_produe_1,2).'</th>
-            <th style="text-align: right;">'.number_format($ttl_produe_2,2).'</th>
-            <th style="text-align: right;">'.number_format($ttl_produe_3,2).'</th>
-            <th style="text-align: right;">'.number_format($ttl_produe_4,2).'</th>
-            <th style="text-align: right;">'.number_format($ttl_produe_5,2).'</th>
-            <th style="text-align: right;">'.number_format($ttl_produe_6,2).'</th>
-            <th style="text-align: right;">'.number_format($ttl_produe_total,2).'</th>                                                              
-        </tr>';
 ?>
 </table>
 
