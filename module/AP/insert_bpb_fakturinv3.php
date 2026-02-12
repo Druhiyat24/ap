@@ -15,28 +15,16 @@ $create_user = $_POST['create_user'];
 $status = 'POST';
 $create_date = date("Y-m-d H:i:s");
 $unik_code = $_POST['unik_code'];
+$user = $_SESSION['username'];
 
-// echo $noftrcbd;
-// echo $tglftrcbd;
-// echo $nama_supp;
-// echo $no_pi;
-// echo $curr;
-// echo $create_date;
-// echo $status;
-// echo $create_user;
-// echo $no_po;
-// echo $tgl_po;
-// echo $sum_sub;
-// echo $sum_tax;
+
 // echo $sum_total;
 
  $sqlnkb = mysqli_query($conn2,"select no_doc from log_bpb_faktur_inv where unik_code = '$unik_code'");
  $rownkb = mysqli_fetch_array($sqlnkb);
  $kode = $rownkb['no_doc'];
 	
-$query = "INSERT INTO bpb_faktur_inv (no_dok, tgl_dok, no_inv, tgl_inv, no_faktur, tgl_faktur, no_bpb, tgl_bpb, nama_supp, status, created_by, created_date, jenis) 
-VALUES 
-	('$kode', '$tgl_dok', '$no_inv', '$tgl_inv', '$no_faktur', '$tgl_faktur', '$no_bpb', '$tgl_bpb', '$supplier', '$status', '$create_user', '$create_date', 'INV')";
+$query = "INSERT INTO bpb_faktur_inv select '','$kode', '$tgl_dok', no_inv, tgl_inv, no_faktur, tgl_faktur, no_bpb, tgl_bpb, nama_supp, '$status', '$create_user', '$create_date', 'INV', '', '' from tbl_bpb_temp where user_input = '$create_user' and (CHAR_LENGTH(no_inv) > 0 OR CHAR_LENGTH(no_faktur) > 0)";
 $execute = mysqli_query($conn2,$query);
 
 $sql_temp_h = "insert into bpb_scan_faktur_h select * from bpb_scan_faktur_temp_h where created_by = '$create_user' GROUP BY kd_no_faktur";
@@ -45,16 +33,31 @@ $sql_temp_h = "insert into bpb_scan_faktur_h select * from bpb_scan_faktur_temp_
 $sql_temp = "insert into bpb_scan_faktur select * from bpb_scan_faktur_temp where created_by = '$create_user'";
 	$query_temp = mysqli_query($conn2,$sql_temp);
 
-if ($no_bpb != '') {
-	$sql = "update bpb_new set upt_dok_inv='$kode',upt_no_inv='$no_inv', upt_tgl_inv='$tgl_inv',upt_no_faktur='$no_faktur', upt_tgl_faktur='$tgl_faktur' where no_bpb='$no_bpb'";
+	$sql = "update bpb_new a
+INNER JOIN (select no_inv, tgl_inv, no_faktur, tgl_faktur, no_bpb from tbl_bpb_temp where user_input = '$create_user' and (CHAR_LENGTH(no_inv) > 0 OR CHAR_LENGTH(no_faktur) > 0)) b ON b.no_bpb = a.no_bpb
+SET a.upt_dok_inv='$kode',
+		a.upt_no_inv = b.no_inv,
+		a.upt_tgl_inv = b.tgl_inv,
+		a.upt_no_faktur = b.no_faktur,
+		a.upt_tgl_faktur = b.tgl_faktur";
 	$query = mysqli_query($conn2,$sql);
-}
 
 if(!$execute){	
    die('Error: ' . mysqli_error());	
 }else{
+		$sql = "update bpb_new a
+INNER JOIN (select no_inv, tgl_inv, no_faktur, tgl_faktur, no_bpb from tbl_bpb_temp where user_input = '$create_user' and (CHAR_LENGTH(no_inv) > 0 OR CHAR_LENGTH(no_faktur) > 0)) b ON b.no_bpb = a.no_bpb
+SET a.upt_dok_inv='$kode',
+		a.upt_no_inv = b.no_inv,
+		a.upt_tgl_inv = b.tgl_inv,
+		a.upt_no_faktur = b.no_faktur,
+		a.upt_tgl_faktur = b.tgl_faktur";
+	$queryupdate = mysqli_query($conn2,$sql);
+
+	if($queryupdate){
 	$sql3 = "Delete from tbl_bpb_temp where user_input='$create_user'";
 	$query3 = mysqli_query($conn2,$sql3); 
+}
 }
 
 if($sql_temp_h){	
