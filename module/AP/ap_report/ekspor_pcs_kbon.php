@@ -168,134 +168,134 @@ data_detail as (select supplier, no_kbon, tgl_kbon, duedate, curr, COALESCE(roun
 
 mutasi as (select supplier, no_kbon, tgl_kbon, duedate, curr, (saldo_awal + reverse_kontrabon_before + uang_muka_before + pph_before + potongan_before - (ded_lp_before + ded_gm_before)) saldo_awal, total_in, pph, uang_muka, potongan, ded_lp, ded_gm, reverse_kontrabon, rate, no_coa, nama_coa, item_type1, item_type2, relasi from data_detail),
 
-report_mutasi as (select supplier, no_kbon, tgl_kbon, duedate, curr, saldo_awal, total_in, pph, uang_muka, potongan, ded_lp, ded_gm, reverse_kontrabon, (saldo_awal + total_in + reverse_kontrabon + pph + uang_muka + potongan - (ded_lp - ded_gm)) saldo_akhir, rate, ((saldo_awal + total_in + pph + uang_muka + potongan - (ded_lp - ded_gm)) * rate) saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi from mutasi)
+report_mutasi as (select supplier, no_kbon, tgl_kbon, duedate, a.curr, saldo_awal, total_in, pph, uang_muka, potongan, ded_lp, ded_gm, reverse_kontrabon, (saldo_awal + total_in + reverse_kontrabon + pph + uang_muka + potongan - (ded_lp - ded_gm)) saldo_akhir, IFNULL(b.rate,1) rate, ((saldo_awal + total_in + pph + uang_muka + potongan - (ded_lp - ded_gm)) * IFNULL(b.rate,1)) saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi from mutasi a LEFT JOIN (select * from ap_masterrate where tanggal = '$end_date' and v_codecurr = CASE  WHEN tanggal = LAST_DAY(tanggal) THEN 'HARIAN' ELSE 'PAJAK' END GROUP BY  curr, rate) b on b.curr = a.curr)
 
 select supplier, no_kbon, tgl_kbon, duedate, curr, saldo_awal, total_in, pph, uang_muka, potongan, ded_lp, ded_gm, reverse_kontrabon, saldo_akhir, rate, saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi,
 CASE
-        WHEN duedate < '$end_date' THEN saldo_akhir_idr
-        ELSE 0
-    END AS due_current,
-        
-        CASE
-        WHEN DATEDIFF('$end_date', duedate) BETWEEN 0 AND 30
-        THEN saldo_akhir_idr
-        ELSE 0
-    END AS due_1_30,
+WHEN duedate > '$end_date' THEN saldo_akhir_idr
+ELSE 0
+END AS due_current,
 
-    CASE
-        WHEN DATEDIFF('$end_date', duedate) BETWEEN 31 AND 60
-        THEN saldo_akhir_idr
-        ELSE 0
-    END AS due_31_60,
+CASE
+WHEN DATEDIFF('$end_date', duedate) BETWEEN 0 AND 30
+THEN saldo_akhir_idr
+ELSE 0
+END AS due_1_30,
 
-    CASE
-        WHEN DATEDIFF('$end_date', duedate) BETWEEN 61 AND 90
-        THEN saldo_akhir_idr
-        ELSE 0
-    END AS due_61_90,
+CASE
+WHEN DATEDIFF('$end_date', duedate) BETWEEN 31 AND 60
+THEN saldo_akhir_idr
+ELSE 0
+END AS due_31_60,
 
-    CASE
-        WHEN DATEDIFF('$end_date', duedate) BETWEEN 91 AND 120
-        THEN saldo_akhir_idr
-        ELSE 0
-    END AS due_91_120,
+CASE
+WHEN DATEDIFF('$end_date', duedate) BETWEEN 61 AND 90
+THEN saldo_akhir_idr
+ELSE 0
+END AS due_61_90,
 
-    CASE
-        WHEN DATEDIFF('$end_date', duedate) BETWEEN 121 AND 180
-        THEN saldo_akhir_idr
-        ELSE 0
-    END AS due_121_180,
+CASE
+WHEN DATEDIFF('$end_date', duedate) BETWEEN 91 AND 120
+THEN saldo_akhir_idr
+ELSE 0
+END AS due_91_120,
 
-    CASE
-        WHEN DATEDIFF('$end_date', duedate) BETWEEN 181 AND 360
-        THEN saldo_akhir_idr
-        ELSE 0
-    END AS due_181_360,
+CASE
+WHEN DATEDIFF('$end_date', duedate) BETWEEN 121 AND 180
+THEN saldo_akhir_idr
+ELSE 0
+END AS due_121_180,
 
-    CASE
-        WHEN DATEDIFF('$end_date', duedate) > 360
-        THEN saldo_akhir_idr
-        ELSE 0
-    END AS due_gt_360,
+CASE
+WHEN DATEDIFF('$end_date', duedate) BETWEEN 181 AND 360
+THEN saldo_akhir_idr
+ELSE 0
+END AS due_181_360,
 
-    (
-        CASE WHEN duedate < '$end_date' THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 0 AND 30 THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 31 AND 60 THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 61 AND 90 THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 91 AND 120 THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 121 AND 180 THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 181 AND 360 THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN DATEDIFF('$end_date', duedate) > 360 THEN saldo_akhir_idr ELSE 0 END
-    ) AS total_due,
-        
-        CASE
-        WHEN duedate <= '$end_date'
-        THEN saldo_akhir_idr
-        ELSE 0
-    END AS pro_due,
+CASE
+WHEN DATEDIFF('$end_date', duedate) > 360
+THEN saldo_akhir_idr
+ELSE 0
+END AS due_gt_360,
 
-    CASE
-        WHEN duedate > '$end_date'
-         AND duedate < DATE_ADD(LAST_DAY('$end_date'), INTERVAL 1 DAY)
-        THEN saldo_akhir_idr
-        ELSE 0
-    END AS pro_due0,
+(
+CASE WHEN duedate < '$end_date' THEN saldo_akhir_idr ELSE 0 END +
+CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 0 AND 30 THEN saldo_akhir_idr ELSE 0 END +
+CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 31 AND 60 THEN saldo_akhir_idr ELSE 0 END +
+CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 61 AND 90 THEN saldo_akhir_idr ELSE 0 END +
+CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 91 AND 120 THEN saldo_akhir_idr ELSE 0 END +
+CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 121 AND 180 THEN saldo_akhir_idr ELSE 0 END +
+CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 181 AND 360 THEN saldo_akhir_idr ELSE 0 END +
+CASE WHEN DATEDIFF('$end_date', duedate) > 360 THEN saldo_akhir_idr ELSE 0 END
+) AS total_due,
 
-    CASE
-        WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 1 DAY)
-         AND duedate <  DATE_ADD(LAST_DAY('$end_date'), INTERVAL 2 MONTH)
-        THEN saldo_akhir_idr
-        ELSE 0
-    END AS pro_due1,
+CASE
+WHEN duedate <= '$end_date'
+THEN saldo_akhir_idr
+ELSE 0
+END AS pro_due,
 
-    CASE
-        WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 2 MONTH)
-         AND duedate <  DATE_ADD(LAST_DAY('$end_date'), INTERVAL 3 MONTH)
-        THEN saldo_akhir_idr
-        ELSE 0
-    END AS pro_due2,
+CASE
+WHEN duedate > '$end_date'
+AND duedate < DATE_ADD(LAST_DAY('$end_date'), INTERVAL 1 DAY)
+THEN saldo_akhir_idr
+ELSE 0
+END AS pro_due0,
 
-    CASE
-        WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 3 MONTH)
-         AND duedate <  DATE_ADD(LAST_DAY('$end_date'), INTERVAL 4 MONTH)
-        THEN saldo_akhir_idr
-        ELSE 0
-    END AS pro_due3,
+CASE
+WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 1 DAY)
+AND duedate <  DATE_ADD(LAST_DAY('$end_date'), INTERVAL 2 MONTH)
+THEN saldo_akhir_idr
+ELSE 0
+END AS pro_due1,
 
-    CASE
-        WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 4 MONTH)
-         AND duedate <  DATE_ADD(LAST_DAY('$end_date'), INTERVAL 5 MONTH)
-        THEN saldo_akhir_idr
-        ELSE 0
-    END AS pro_due4,
+CASE
+WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 2 MONTH)
+AND duedate <  DATE_ADD(LAST_DAY('$end_date'), INTERVAL 3 MONTH)
+THEN saldo_akhir_idr
+ELSE 0
+END AS pro_due2,
 
-    CASE
-        WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 5 MONTH)
-        THEN saldo_akhir_idr
-        ELSE 0
-    END AS pro_due5,
+CASE
+WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 3 MONTH)
+AND duedate <  DATE_ADD(LAST_DAY('$end_date'), INTERVAL 4 MONTH)
+THEN saldo_akhir_idr
+ELSE 0
+END AS pro_due3,
 
-    (
-        CASE WHEN duedate <= '$end_date' THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN duedate > '$end_date'
-              AND duedate < DATE_ADD(LAST_DAY('$end_date'), INTERVAL 1 DAY)
-             THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 1 DAY)
-              AND duedate < DATE_ADD(LAST_DAY('$end_date'), INTERVAL 2 MONTH)
-             THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 2 MONTH)
-              AND duedate < DATE_ADD(LAST_DAY('$end_date'), INTERVAL 3 MONTH)
-             THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 3 MONTH)
-              AND duedate < DATE_ADD(LAST_DAY('$end_date'), INTERVAL 4 MONTH)
-             THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 4 MONTH)
-              AND duedate < DATE_ADD(LAST_DAY('$end_date'), INTERVAL 5 MONTH)
-             THEN saldo_akhir_idr ELSE 0 END +
-        CASE WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 5 MONTH)
-             THEN saldo_akhir_idr ELSE 0 END
-    ) AS tot_produe from report_mutasi $supplier
+CASE
+WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 4 MONTH)
+AND duedate <  DATE_ADD(LAST_DAY('$end_date'), INTERVAL 5 MONTH)
+THEN saldo_akhir_idr
+ELSE 0
+END AS pro_due4,
+
+CASE
+WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 5 MONTH)
+THEN saldo_akhir_idr
+ELSE 0
+END AS pro_due5,
+
+(
+CASE WHEN duedate <= '$end_date' THEN saldo_akhir_idr ELSE 0 END +
+CASE WHEN duedate > '$end_date'
+AND duedate < DATE_ADD(LAST_DAY('$end_date'), INTERVAL 1 DAY)
+THEN saldo_akhir_idr ELSE 0 END +
+CASE WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 1 DAY)
+AND duedate < DATE_ADD(LAST_DAY('$end_date'), INTERVAL 2 MONTH)
+THEN saldo_akhir_idr ELSE 0 END +
+CASE WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 2 MONTH)
+AND duedate < DATE_ADD(LAST_DAY('$end_date'), INTERVAL 3 MONTH)
+THEN saldo_akhir_idr ELSE 0 END +
+CASE WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 3 MONTH)
+AND duedate < DATE_ADD(LAST_DAY('$end_date'), INTERVAL 4 MONTH)
+THEN saldo_akhir_idr ELSE 0 END +
+CASE WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 4 MONTH)
+AND duedate < DATE_ADD(LAST_DAY('$end_date'), INTERVAL 5 MONTH)
+THEN saldo_akhir_idr ELSE 0 END +
+CASE WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 5 MONTH)
+THEN saldo_akhir_idr ELSE 0 END
+) AS tot_produe from report_mutasi $supplier
 ");
 
 

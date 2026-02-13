@@ -112,7 +112,7 @@ data_mutasi as (select a.supplier, a.no_bpb, a.tgl_bpb, a.duedate, a.curr, a.rat
 
 mutasi_det as (select supplier, no_bpb, tgl_bpb, duedate, curr, rate, (COALESCE(saldo_awal,0) - COALESCE(reverse_bpb_before,0) - COALESCE(gm_before,0) - COALESCE(kontrabon_before,0) - COALESCE(kontrabon_revisi_before,0) + COALESCE(reverse_kontrabon_before,0) + COALESCE(reverse_kontrabon_revisi_before,0)) saldo_awal, COALESCE(total_in,0) in_bpb, COALESCE(reverse_bpb,0) reverse_bpb, (COALESCE(kontrabon,0) + COALESCE(kontrabon_revisi,0)) ded_kontrabon, (COALESCE(reverse_kontrabon,0) + COALESCE(reverse_kontrabon_revisi,0)) reverse_kontrabon, COALESCE(gm,0) gm, no_coa, nama_coa, item_type1, item_type2, relasi from data_mutasi),
 
-mutasi as (select supplier, no_bpb, tgl_bpb, duedate, curr, saldo_awal, in_bpb, reverse_bpb, ded_kontrabon, reverse_kontrabon, gm, (saldo_awal + in_bpb - reverse_bpb - ded_kontrabon + reverse_kontrabon - gm) saldo_akhir, rate, no_coa, nama_coa, item_type1, item_type2, relasi from mutasi_det),
+mutasi as (select supplier, no_bpb, tgl_bpb, duedate, a.curr, saldo_awal, in_bpb, reverse_bpb, ded_kontrabon, reverse_kontrabon, gm, (saldo_awal + in_bpb - reverse_bpb - ded_kontrabon + reverse_kontrabon - gm) saldo_akhir, IFNULL(b.rate,1) rate, no_coa, nama_coa, item_type1, item_type2, relasi from mutasi_det a LEFT JOIN (select * from ap_masterrate where tanggal = '$end_date' and v_codecurr = CASE  WHEN tanggal = LAST_DAY(tanggal) THEN 'HARIAN' ELSE 'PAJAK' END GROUP BY  curr, rate) b on b.curr = a.curr),
 
 laporan_mutasi as (SELECT supplier, no_bpb, tgl_bpb, duedate, curr, saldo_awal, in_bpb, reverse_bpb, ded_kontrabon, reverse_kontrabon, gm, saldo_akhir, rate, (saldo_akhir * rate) saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi,
 CASE
@@ -247,7 +247,7 @@ CASE
             ELSE 1
         END AS f
         
-    from mutasi  $where $supplier)
+    from mutasi)
         
         SELECT
     supplier,
@@ -289,7 +289,7 @@ CASE
     pro_due3 * f AS pro_due3,
     pro_due4 * f AS pro_due4,
     pro_due5 * f AS pro_due5,
-    tot_produe * f AS tot_produe from laporan_mutasi),
+    tot_produe * f AS tot_produe from laporan_mutasi $where $supplier ),
         
         kontrabon as (
         WITH
@@ -361,7 +361,7 @@ data_detail as (select supplier, no_kbon, tgl_kbon, duedate, curr, COALESCE(roun
 
 mutasi as (select supplier, no_kbon, tgl_kbon, duedate, curr, (saldo_awal + reverse_kontrabon_before + uang_muka_before + pph_before + potongan_before - (ded_lp_before + ded_gm_before)) saldo_awal, total_in, pph, uang_muka, potongan, ded_lp, ded_gm, reverse_kontrabon, rate, no_coa, nama_coa, item_type1, item_type2, relasi from data_detail),
 
-report_mutasi as (select supplier, no_kbon, tgl_kbon, duedate, curr, saldo_awal, total_in, pph, uang_muka, potongan, ded_lp, ded_gm, reverse_kontrabon, (saldo_awal + total_in + reverse_kontrabon + pph + uang_muka + potongan - (ded_lp - ded_gm)) saldo_akhir, rate, ((saldo_awal + total_in + pph + uang_muka + potongan - (ded_lp - ded_gm)) * rate) saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi from mutasi)
+report_mutasi as (select supplier, no_kbon, tgl_kbon, duedate, a.curr, saldo_awal, total_in, pph, uang_muka, potongan, ded_lp, ded_gm, reverse_kontrabon, (saldo_awal + total_in + reverse_kontrabon + pph + uang_muka + potongan - (ded_lp - ded_gm)) saldo_akhir, IFNULL(b.rate,1) rate, ((saldo_awal + total_in + pph + uang_muka + potongan - (ded_lp - ded_gm)) * IFNULL(b.rate,1)) saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi from mutasi a LEFT JOIN (select * from ap_masterrate where tanggal = '$end_date' and v_codecurr = CASE  WHEN tanggal = LAST_DAY(tanggal) THEN 'HARIAN' ELSE 'PAJAK' END GROUP BY  curr, rate) b on b.curr = a.curr)
 
 select supplier, no_kbon, tgl_kbon, duedate, curr, saldo_awal, total_in, pph, uang_muka, potongan, ded_lp, ded_gm, reverse_kontrabon, saldo_akhir, rate, saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi,
 CASE
@@ -488,7 +488,7 @@ AND duedate < DATE_ADD(LAST_DAY('$end_date'), INTERVAL 5 MONTH)
 THEN saldo_akhir_idr ELSE 0 END +
 CASE WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 5 MONTH)
 THEN saldo_akhir_idr ELSE 0 END
-) AS tot_produe from report_mutasi  $where $supplier),
+) AS tot_produe from report_mutasi $where $supplier  ),
 
 list_payment as (
 WITH
@@ -580,7 +580,7 @@ select no_payment, 0 pay_bank_before, 0 pay_bank, 0 pay_non_bank_before, 0 pay_n
 
 data_det as (select supplier, no_payment, tgl_payment, duedate, create_user, curr, ROUND(COALESCE(saldo_awal,0) - COALESCE(pay_bank_before,0) - COALESCE(pay_non_bank_before,0) - COALESCE(pay_cash_before,0),2) saldo_awal, COALESCE(total_in,0) total_in, coalesce(pay_bank,0) pay_bank, coalesce(pay_non_bank,0) pay_non_bank, coalesce(pay_cash,0) pay_cash, no_coa, nama_coa, item_type1, item_type2, relasi, rate from saldo_in a LEFT JOIN saldo_out b on b.no_reff = a.no_payment),
 
-mutasi as (select supplier, no_payment, tgl_payment, duedate, create_user, curr, saldo_awal, total_in, pay_bank, pay_non_bank, pay_cash, ROUND(saldo_awal + total_in - (pay_bank + pay_non_bank + pay_cash),2) saldo_akhir, rate, ROUND((saldo_awal + total_in - (pay_bank + pay_non_bank + pay_cash)) * rate,2) saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi from data_det)
+mutasi as (select supplier, no_payment, tgl_payment, duedate, create_user, a.curr, saldo_awal, total_in, pay_bank, pay_non_bank, pay_cash, ROUND(saldo_awal + total_in - (pay_bank + pay_non_bank + pay_cash),2) saldo_akhir, IFNULL(b.rate,1) rate, ROUND((saldo_awal + total_in - (pay_bank + pay_non_bank + pay_cash)) * IFNULL(b.rate,1),2) saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi from data_det a LEFT JOIN (select * from ap_masterrate where tanggal = '$end_date' and v_codecurr = CASE  WHEN tanggal = LAST_DAY(tanggal) THEN 'HARIAN' ELSE 'PAJAK' END GROUP BY  curr, rate) b on b.curr = a.curr)
 
 
 select supplier, no_payment, tgl_payment, duedate, create_user, curr, saldo_awal, total_in, pay_bank, pay_non_bank, pay_cash, saldo_akhir, rate, saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi,
@@ -708,7 +708,7 @@ CASE
              THEN saldo_akhir_idr ELSE 0 END +
         CASE WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 5 MONTH)
              THEN saldo_akhir_idr ELSE 0 END
-    ) AS tot_produe from mutasi  $where $supplier)
+    ) AS tot_produe from mutasi $where $supplier  )
 
         SELECT supplier,
     item_type2,
@@ -736,11 +736,11 @@ CASE
     ROUND(SUM(pro_due3),2) pro_due3,
     ROUND(SUM(pro_due4),2) pro_due4,
     ROUND(SUM(pro_due5),2) pro_due5,
-    ROUND(SUM(tot_produe),2) tot_produe FROM (select supplier, item_type2, relasi, saldo_akhir, due_current, due_1_30, due_31_60, due_61_90, due_gt_360, due_91_120, due_121_180, due_181_360, total_due, pro_due2, pro_due, pro_due0, pro_due1, pro_due3, pro_due4, pro_due5, tot_produe from bpb
+    ROUND(SUM(tot_produe),2) tot_produe FROM (select supplier, item_type2, relasi, saldo_akhir_idr saldo_akhir, due_current, due_1_30, due_31_60, due_61_90, due_gt_360, due_91_120, due_121_180, due_181_360, total_due, pro_due2, pro_due, pro_due0, pro_due1, pro_due3, pro_due4, pro_due5, tot_produe from bpb
         UNION ALL
-        select supplier, item_type2, relasi, saldo_akhir, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from kontrabon
+        select supplier, item_type2, relasi, saldo_akhir_idr saldo_akhir, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from kontrabon
         UNION ALL
-        select supplier, item_type2, relasi, saldo_akhir, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from list_payment) a  GROUP BY supplier,item_type2,relasi order by supplier,item_type2 asc
+        select supplier, item_type2, relasi, saldo_akhir_idr saldo_akhir, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from list_payment) a  GROUP BY supplier,item_type2,relasi order by supplier,item_type2 asc
         
 ";
 
