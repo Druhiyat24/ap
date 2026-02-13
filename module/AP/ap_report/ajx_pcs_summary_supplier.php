@@ -720,7 +720,7 @@ CASE
         ((ROUND(SUM(add_lp),2) - ROUND(SUM(ded_lp),2)) + (ROUND(SUM(add_kbon),2) - ROUND(SUM(ded_bpb),2))) adjust,
         ROUND(SUM(saldo_akhir),2) saldo_akhir,
         ROUND(SUM(saldo_akhir_idr),2) saldo_akhir_idr,
-        (ROUND(SUM(saldo_akhir_idr),2) / ROUND(SUM(saldo_akhir),2)) rate,
+        (ROUND(SUM(saldo_akhir_idr),2) / ROUND(if(SUM(saldo_akhir) = 0,1,SUM(saldo_akhir)),2)) rate,
 
     ROUND(SUM(due_current),2) due_current,
     ROUND(SUM(due_1_30),2) due_1_30,
