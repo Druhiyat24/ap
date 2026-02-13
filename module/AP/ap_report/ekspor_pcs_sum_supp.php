@@ -581,27 +581,30 @@ ranked_payment as (
     SELECT p.*, ROW_NUMBER() OVER (PARTITION BY no_payment ORDER BY create_date, no_pay) as rn, COUNT(*) OVER (PARTITION BY no_payment) as cnt FROM payment_all p
 ),
 
-all_payment as (SELECT
-    r.no_payment, lp.total_payment, lp.total_pph, r.no_pay, r.total_bayar,
-    CasE
-        WHEN r.rn = r.cnt
-         AND tp.total_bayar_lp + lp.total_pph >= lp.total_payment
-         AND lp.total_pph > 0
+all_payment as (
+SELECT
+    r.no_payment,
+    lp.total_payment,
+    lp.total_pph,
+    r.no_pay,
+    r.total_bayar,
+
+    CASE
+        WHEN r.rn = 1 AND lp.total_pph > 0
         THEN 'Y'
         ELSE 'N'
-    END as pph_flag,
-    CasE
-        WHEN r.rn = r.cnt
-         AND tp.total_bayar_lp + lp.total_pph >= lp.total_payment
+    END AS pph_flag,
+
+    CASE
+        WHEN r.rn = 1
         THEN lp.total_pph
         ELSE 0
-    END as pph_value
+    END AS pph_value
 
 FROM ranked_payment r
 JOIN lp ON lp.no_payment = r.no_payment
-JOIN total_paid tp ON tp.no_payment = r.no_payment
-
-ORDER BY r.no_payment),
+ORDER BY r.no_payment
+),
 
 pay_non_bank as (select list_payment_id, SUM(ttl_bayar + coalesce(pph_value,0)) ttl_bayar from payment_ftr a left join all_payment b on b.no_payment = a.list_payment_id and b.no_pay = a.payment_ftr_id where status != 'Cancel' and DATE_FORMAT(create_date, '%Y-%m-%d') > '2025-12-31' and DATE_FORMAT(create_date, '%Y-%m-%d') BETWEEN '$start_date' and '$end_date' GROUP BY list_payment_id),
 
