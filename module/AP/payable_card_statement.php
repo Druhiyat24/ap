@@ -2062,7 +2062,7 @@ document.getElementById('btnExportExcel_bpb').addEventListener('click', function
   let ed = toYmd(document.getElementById('end_date').value);
   let supp = document.getElementById('nama_supp').value;
 
-  this.href = `ap_report/ekspor_pcs_bpb_new.php?start_date=${sd}&end_date=${ed}&nama_supp=${supp}`;
+  this.href = `ap_report/ekspor_pcs_bpb.php?start_date=${sd}&end_date=${ed}&nama_supp=${supp}`;
 });
 
 document.getElementById('btnExportExcel_kontrabon').addEventListener('click', function(e) {
