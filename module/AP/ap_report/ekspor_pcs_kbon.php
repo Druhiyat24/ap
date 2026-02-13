@@ -302,7 +302,6 @@ THEN saldo_akhir_idr ELSE 0 END
 
 $no = 0;
 while($row = mysqli_fetch_array($sql)){
-    $no++;
 
     echo ' <tr style="font-size:12px;text-align:left;">
     <td style="text-align:center;">'.$no++.'</td>

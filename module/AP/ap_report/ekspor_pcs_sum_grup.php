@@ -806,7 +806,6 @@ CASE
 
 $no = 0;
 while($row = mysqli_fetch_array($sql)){
-    $no++;
 
     echo ' <tr style="font-size:12px;text-align:left;">
     <td style="text-align:center;">'.$no++.'</td>                          
@@ -867,9 +866,7 @@ FROM (
 
 
 
-$no = 0;
 while($row = mysqli_fetch_array($sql)){
-    $no++;
 
     echo '<tr style="font-size:12px;">
             <th colspan = "3" style="text-align: center;vertical-align: middle;">Total IDR</th> 
