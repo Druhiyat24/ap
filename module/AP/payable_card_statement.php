@@ -1598,15 +1598,15 @@ $('#table-pcs-type2').on('draw.dt', function () {
 let datatable7 = $("#table-pcs-sum-grup").DataTable({
     ordering: false,
     processing: true,
-    serverSide: true,
-    searching: true,
-    info: true,
+    serverSide: false,
+    searching: false,
+    info: false,
     autoWidth: false,
     scrollX: false,
     fixedColumns: {
         leftColumns: 2 // sampai kolom curr
       },
-      paging: true,
+      paging: false,
 
       ajax: {
         url: 'ap_report/ajx_pcs_summary_grup.php',
@@ -1742,7 +1742,7 @@ let datatable7 = $("#table-pcs-sum-grup").DataTable({
     });
 
     rowALL.find('th:eq(0)')
-    .html('<b>SUMMARY TOTAL</b>')
+    .html('<b>SUMMARY GROUP</b>')
     .attr('colspan', 4)
     .css({
       'text-align': 'center',
@@ -1767,8 +1767,35 @@ rowALL.find('th:not(:eq(0))').css('text-align', 'right');
 }
 ,
 
-ajax: {
-        url: 'ap_report/ajx_pcs_summary_grup.php',
+initComplete: function () {
+  this.api().columns.adjust();
+}
+});
+
+
+
+$('#table-pcs-sum-grup').on('draw.dt', function () {
+  datatable7.columns.adjust();
+});
+
+
+
+//SUMMARY NON GROUP
+let datatable8 = $("#table-pcs-sum-non-grup").DataTable({
+    ordering: false,
+    processing: true,
+    serverSide: false,
+    searching: false,
+    info: false,
+    autoWidth: false,
+    scrollX: false,
+    fixedColumns: {
+        leftColumns: 2 // sampai kolom curr
+      },
+      paging: false,
+
+      ajax: {
+        url: 'ap_report/ajx_pcs_summary_non_grup.php',
         type: 'POST',
         data: function (d) {
           d.start_date = $('#start_date').val();
@@ -1778,7 +1805,7 @@ ajax: {
       },
 
       columns: [
-      { data: 'supplier' },
+      { data: 'item_type2' },
       { data: 'curr' },
       { data: 'saldo_akhir' },
       { data: 'saldo_akhir_idr' },
@@ -1830,6 +1857,9 @@ ajax: {
               let rowIDR = footer.find('tr:eq(0)');
               let rowUSD = footer.find('tr:eq(1)');
               let rowALL = footer.find('tr:eq(2)');
+              let row_sumIDR = footer.find('tr:eq(4)');
+              let row_sumUSD = footer.find('tr:eq(5)');
+              let row_sumALL = footer.find('tr:eq(6)');
 
               function fmt(val) {
                 val = parseFloat(val) || 0;
@@ -1883,6 +1913,27 @@ ajax: {
       rowALL.find('th:eq(' + (colIdx) + ')').html(fmt(val));
     });
 
+    // ================= TOTAL IDR =================
+    Object.keys(map).forEach(function (colIdx) {
+      let key = map[colIdx];
+      let val = json.footer_sum_idr[key] || 0;
+      row_sumIDR.find('th:eq(' + (colIdx) + ')').html(fmt(val));
+    });
+
+    // ================= TOTAL USD =================
+    Object.keys(map).forEach(function (colIdx) {
+      let key = map[colIdx];
+      let val = json.footer_sum_usd[key] || 0;
+      row_sumUSD.find('th:eq(' + (colIdx) + ')').html(fmt(val));
+    });
+
+    // ================= SUMMARY TOTAL =================
+    Object.keys(map).forEach(function (colIdx) {
+      let key = map[colIdx];
+      let val = json.footer_sum_all[key] || 0;
+      row_sumALL.find('th:eq(' + (colIdx) + ')').html(fmt(val));
+    });
+
     // ================= LABEL KIRI + COLSPAN =================
     rowIDR.find('th:eq(0)')
     .html('<b>TOTAL IDR</b>')
@@ -1901,6 +1952,30 @@ ajax: {
     });
 
     rowALL.find('th:eq(0)')
+    .html('<b>SUMMARY NON GROUP</b>')
+    .attr('colspan', 4)
+    .css({
+      'text-align': 'center',
+      'font-weight': 'bold'
+    });
+
+    row_sumIDR.find('th:eq(0)')
+    .html('<b>SUMMARY TOTAL IDR</b>')
+    .attr('colspan', 2)
+    .css({
+      'text-align': 'center',
+      'font-weight': 'bold'
+    });
+
+    row_sumUSD.find('th:eq(0)')
+    .html('<b>SUMMARY TOTAL USD</b>')
+    .attr('colspan', 2)
+    .css({
+      'text-align': 'center',
+      'font-weight': 'bold'
+    });
+
+    row_sumALL.find('th:eq(0)')
     .html('<b>SUMMARY TOTAL</b>')
     .attr('colspan', 4)
     .css({
@@ -1912,10 +1987,13 @@ ajax: {
 for (let i = 1; i <= 1; i++) {
   rowIDR.find('th:eq(' + i + ')').css('display', 'none');
   rowUSD.find('th:eq(' + i + ')').css('display', 'none');
+  row_sumIDR.find('th:eq(' + i + ')').css('display', 'none');
+  row_sumUSD.find('th:eq(' + i + ')').css('display', 'none');
 }
 
 for (let i = 1; i <= 3; i++) {
   rowALL.find('th:eq(' + i + ')').css('display', 'none');
+  row_sumALL.find('th:eq(' + i + ')').css('display', 'none');
 }
 
 
@@ -1923,7 +2001,11 @@ for (let i = 1; i <= 3; i++) {
 rowIDR.find('th:not(:eq(0))').css('text-align', 'right');
 rowUSD.find('th:not(:eq(0))').css('text-align', 'right');
 rowALL.find('th:not(:eq(0))').css('text-align', 'right');
-},
+row_sumIDR.find('th:not(:eq(0))').css('text-align', 'right');
+row_sumUSD.find('th:not(:eq(0))').css('text-align', 'right');
+row_sumALL.find('th:not(:eq(0))').css('text-align', 'right');
+}
+,
 
 initComplete: function () {
   this.api().columns.adjust();
@@ -1932,9 +2014,12 @@ initComplete: function () {
 
 
 
-$('#table-pcs-sum-grup').on('draw.dt', function () {
-  datatable7.columns.adjust();
+$('#table-pcs-sum-non-grup').on('draw.dt', function () {
+  datatable8.columns.adjust();
 });
+
+
+
 
 $("[data-toggle=tooltip]").tooltip();
 
@@ -1965,6 +2050,10 @@ function dataTableReload() {
 
   datatable7.ajax.reload(()=>{
     datatable7.columns.adjust();
+  });
+
+  datatable8.ajax.reload(()=>{
+    datatable8.columns.adjust();
   });
 }
 
