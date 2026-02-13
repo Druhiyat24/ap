@@ -300,7 +300,7 @@ THEN saldo_akhir_idr ELSE 0 END
 
 
 
-$no = 0;
+$no = 1;
 while($row = mysqli_fetch_array($sql)){
 
     echo ' <tr style="font-size:12px;text-align:left;">
