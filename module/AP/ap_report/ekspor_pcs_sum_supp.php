@@ -135,9 +135,9 @@ trx_out_reverse_kb_revisi as (select reff_doc, no_journal, tgl_journal, curr, to
 trx_out_reverse_kb_revisi_before as (select reff_doc, no_journal, tgl_journal, curr, total, rate, total_idr, no_coa, nama_coa, item_type1, item_type2, relasi from (select reff_doc, no_journal, tgl_journal, a.curr, IF(reff_doc like '%/RO/%' OR reff_doc like '%/OUT/%',sum(debit),sum(credit)) total, a.rate, IF(reff_doc like '%/RO/%' OR reff_doc like '%/OUT/%',sum(debit * a.rate),sum(credit * a.rate)) total_idr, a.no_coa, a.nama_coa, c.item_type1,c.item_type2,c.relasi from (select *  from tbl_list_journal where tgl_journal < '$start_date' and tgl_journal > '2025-12-31' and type_journal IN ('Reverse AP - Kontrabon') and nama_coa like '%GR/IR%' and no_journal like '%-REV_%') a INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa INNER JOIN kontrabon_h d on d.no_kbon = a.no_journal where d.status != 'Cancel' GROUP BY reff_doc) a where total != 0
 ),
 
-trx_out_gm as (select reff_doc, no_journal, tgl_journal, curr, total, rate, total_idr, no_coa, nama_coa, item_type1, item_type2, relasi from (select reff_doc, no_journal, tgl_journal, COALESCE(top,0) top, DATE_ADD(tgl_journal, INTERVAL COALESCE(top,0) DAY) as due_date, curr, IF(reff_doc like '%/RO/%' OR reff_doc like '%/OUT/%',sum(credit),sum(debit)) total, a.rate, IF(reff_doc like '%/RO/%' OR reff_doc like '%/OUT/%',sum(credit * rate),sum(debit * rate)) total_idr, a.no_coa, a.nama_coa, c.item_type1,c.item_type2,c.relasi from (select no_journal, tgl_journal, type_journal, no_coa, nama_coa, reff_doc, curr, rate, debit, credit from tbl_list_journal where tgl_journal BETWEEN '$start_date' and '$end_date' and tgl_journal > '2025-12-31' and type_journal IN ('ACCOUNT PAYABLE') and nama_coa like '%GR/IR%') a LEFT JOIN po_bpb b on b.bpbno_int = a.reff_doc INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa GROUP BY reff_doc, no_coa) a where total != 0),
+trx_out_gm as (select reff_doc, no_journal, tgl_journal, curr, total, rate, total_idr, no_coa, nama_coa, item_type1, item_type2, relasi from (select reff_doc, no_journal, tgl_journal, COALESCE(top,0) top, DATE_ADD(tgl_journal, INTERVAL COALESCE(top,0) DAY) as due_date, curr, IF(reff_doc like '%/RO/%' OR reff_doc like '%/OUT/%',sum(credit),sum(debit)) total, a.rate, IF(reff_doc like '%/RO/%' OR reff_doc like '%/OUT/%',sum(credit * rate),sum(debit * rate)) total_idr, a.no_coa, a.nama_coa, c.item_type1,c.item_type2,c.relasi from (select no_journal, tgl_journal, type_journal, no_coa, nama_coa, reff_doc, curr, rate, debit, credit from tbl_list_journal where tgl_journal BETWEEN '$start_date' and '$end_date' and tgl_journal > '2025-12-31' and type_journal IN ('ACCOUNT PAYABLE') and nama_coa like '%GR/IR%') a INNER JOIN po_bpb b on b.bpbno_int = a.reff_doc INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa GROUP BY reff_doc, no_coa) a where total != 0),
 
-trx_out_gm_before as (select reff_doc, no_journal, tgl_journal, curr, total, rate, total_idr, no_coa, nama_coa, item_type1, item_type2, relasi from (select reff_doc, no_journal, tgl_journal, COALESCE(top,0) top, DATE_ADD(tgl_journal, INTERVAL COALESCE(top,0) DAY) as due_date, curr, IF(reff_doc like '%/RO/%' OR reff_doc like '%/OUT/%',sum(credit),sum(debit)) total, a.rate, IF(reff_doc like '%/RO/%' OR reff_doc like '%/OUT/%',sum(credit * rate),sum(debit * rate)) total_idr, a.no_coa, a.nama_coa, c.item_type1,c.item_type2,c.relasi from (select no_journal, tgl_journal, type_journal, no_coa, nama_coa, reff_doc, curr, rate, debit, credit from tbl_list_journal where tgl_journal < '$start_date' and tgl_journal > '2025-12-31' and type_journal IN ('ACCOUNT PAYABLE') and nama_coa like '%GR/IR%') a LEFT JOIN po_bpb b on b.bpbno_int = a.reff_doc INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa GROUP BY reff_doc, no_coa) a where total != 0),
+trx_out_gm_before as (select reff_doc, no_journal, tgl_journal, curr, total, rate, total_idr, no_coa, nama_coa, item_type1, item_type2, relasi from (select reff_doc, no_journal, tgl_journal, COALESCE(top,0) top, DATE_ADD(tgl_journal, INTERVAL COALESCE(top,0) DAY) as due_date, curr, IF(reff_doc like '%/RO/%' OR reff_doc like '%/OUT/%',sum(credit),sum(debit)) total, a.rate, IF(reff_doc like '%/RO/%' OR reff_doc like '%/OUT/%',sum(credit * rate),sum(debit * rate)) total_idr, a.no_coa, a.nama_coa, c.item_type1,c.item_type2,c.relasi from (select no_journal, tgl_journal, type_journal, no_coa, nama_coa, reff_doc, curr, rate, debit, credit from tbl_list_journal where tgl_journal < '$start_date' and tgl_journal > '2025-12-31' and type_journal IN ('ACCOUNT PAYABLE') and nama_coa like '%GR/IR%') a INNER JOIN po_bpb b on b.bpbno_int = a.reff_doc INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa GROUP BY reff_doc, no_coa) a where total != 0),
 
 saldo_in as (select supplier, no_bpb, tgl_bpb, top, duedate, curr, sum(COALESCE(saldo_awal,0)) saldo_awal, sum(COALESCE(total_in,0)) total_in, rate, no_coa, nama_coa, item_type1, item_type2, relasi from (select supplier, no_bpb, tgl_bpb, top, duedate, curr, total saldo_awal, 0 total_in, rate, no_coa, nama_coa, item_type1, item_type2, relasi from saldo_awal
 UNION ALL
@@ -769,11 +769,11 @@ CASE
              THEN saldo_akhir_idr ELSE 0 END +
         CASE WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 5 MONTH)
              THEN saldo_akhir_idr ELSE 0 END
-    ) AS tot_produe from mutasi  $supplier  )
+    ) AS tot_produe from mutasi   $supplier )
 
         SELECT 
         supplier,
-    curr,
+    a.curr,
         ROUND(SUM(saldo_awal),2) saldo_awal,
         ROUND(SUM(in_bpb),2) addition,
         ROUND(SUM(uang_muka),2) deduction_advance,
@@ -781,8 +781,8 @@ CASE
         ROUND(SUM(ded_lp),2) deduction_lp,
         ((ROUND(SUM(add_lp),2) - ROUND(SUM(ded_lp),2)) + (ROUND(SUM(add_kbon),2) - ROUND(SUM(ded_bpb),2))) adjust,
         ROUND(SUM(saldo_akhir),2) saldo_akhir,
-        ROUND(SUM(saldo_akhir_idr),2) saldo_akhir_idr,
-        (ROUND(SUM(saldo_akhir_idr),2) / ROUND(if(SUM(saldo_akhir) = 0,1,SUM(saldo_akhir)),2)) rate,
+        ROUND(SUM(saldo_akhir * IFNULL(b.rate,1)),2) saldo_akhir_idr,
+        IFNULL(b.rate,1) rate,
 
     ROUND(SUM(due_current),2) due_current,
     ROUND(SUM(due_1_30),2) due_1_30,
@@ -804,7 +804,7 @@ CASE
         UNION ALL
         select supplier, curr, saldo_awal, 0 in_bpb, uang_muka, potongan, ded_lp, 0 ded_bpb, total_in add_kbon, 0 add_lp, saldo_akhir, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from kontrabon
         UNION ALL
-        select supplier, curr, saldo_awal, 0 in_bpb, 0 uang_muka, 0 potongan, 0 ded_lp, 0 ded_bpb, 0 add_kbon, total_in add_lp, saldo_akhir, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from list_payment) a  GROUP BY supplier,curr order by supplier,curr asc
+        select supplier, curr, saldo_awal, 0 in_bpb, 0 uang_muka, 0 potongan, 0 ded_lp, 0 ded_bpb, 0 add_kbon, total_in add_lp, saldo_akhir, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from list_payment) a LEFT JOIN (select * from ap_masterrate where tanggal = '$end_date' and v_codecurr = CASE  WHEN tanggal = LAST_DAY(tanggal) THEN 'HARIAN' ELSE 'PAJAK' END GROUP BY  curr, rate) b on b.curr = a.curr GROUP BY supplier,a.curr order by supplier,a.curr asc
 ");
 
 
