@@ -87,6 +87,8 @@
         $sql = mysqli_query($conn2,"WITH
 bpb as (
 WITH
+rate as (select * from ap_masterrate where tanggal = '$end_date' and v_codecurr = CASE  WHEN tanggal = LAST_DAY(tanggal) THEN 'HARIAN' ELSE 'PAJAK' END GROUP BY  curr, rate),
+
 po_bpb as (select a.bpbno_int, b.supplier, a.pono, c.jml_pterms as top from bpb a INNER JOIN mastersupplier b on b.Id_Supplier = a.id_supplier LEFT JOIN po_header c on c.pono = a.pono LEFT JOIN po_header_draft d on d.id = c.id_draft where a.bpbdate > '2025-12-31' and confirm = 'Y' and cancel = 'N' GROUP BY bpbno_int
 UNION
 select a.bppbno_int, b.supplier, '' pono, 0 top from bppb a INNER JOIN mastersupplier b on b.Id_Supplier = a.id_supplier where a.bppbdate > '2025-12-31' and confirm = 'Y' and cancel = 'N' GROUP BY bppbno_int),
@@ -167,7 +169,7 @@ data_mutasi as (select a.supplier, a.no_bpb, a.tgl_bpb, a.duedate, a.curr, a.rat
 
 mutasi_det as (select supplier, no_bpb, tgl_bpb, duedate, curr, rate, (COALESCE(saldo_awal,0) - COALESCE(reverse_bpb_before,0) - COALESCE(gm_before,0) - COALESCE(kontrabon_before,0) - COALESCE(kontrabon_revisi_before,0) + COALESCE(reverse_kontrabon_before,0) + COALESCE(reverse_kontrabon_revisi_before,0)) saldo_awal, COALESCE(total_in,0) in_bpb, COALESCE(reverse_bpb,0) reverse_bpb, (COALESCE(kontrabon,0) + COALESCE(kontrabon_revisi,0)) ded_kontrabon, (COALESCE(reverse_kontrabon,0) + COALESCE(reverse_kontrabon_revisi,0)) reverse_kontrabon, COALESCE(gm,0) gm, no_coa, nama_coa, item_type1, item_type2, relasi from data_mutasi),
 
-mutasi as (select supplier, no_bpb, tgl_bpb, duedate, a.curr, saldo_awal, in_bpb, reverse_bpb, ded_kontrabon, reverse_kontrabon, gm, (saldo_awal + in_bpb - reverse_bpb - ded_kontrabon + reverse_kontrabon - gm) saldo_akhir, IFNULL(b.rate,1) rate, no_coa, nama_coa, item_type1, item_type2, relasi from mutasi_det a LEFT JOIN (select * from ap_masterrate where tanggal = '$end_date' and v_codecurr = CASE  WHEN tanggal = LAST_DAY(tanggal) THEN 'HARIAN' ELSE 'PAJAK' END GROUP BY  curr, rate) b on b.curr = a.curr),
+mutasi as (select supplier, no_bpb, tgl_bpb, duedate, a.curr, saldo_awal, in_bpb, reverse_bpb, ded_kontrabon, reverse_kontrabon, gm, (saldo_awal + in_bpb - reverse_bpb - ded_kontrabon + reverse_kontrabon - gm) saldo_akhir, IFNULL(b.rate,1) rate, no_coa, nama_coa, item_type1, item_type2, relasi from mutasi_det a LEFT JOIN rate b on b.curr = a.curr),
 
 laporan_mutasi as (SELECT supplier, no_bpb, tgl_bpb, duedate, curr, saldo_awal, in_bpb, reverse_bpb, ded_kontrabon, reverse_kontrabon, gm, saldo_akhir, rate, (saldo_akhir * rate) saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi,
 CASE
@@ -218,7 +220,7 @@ CASE
     END AS due_gt_360,
 
     (
-        CASE WHEN duedate < '$end_date' THEN (saldo_akhir * rate) ELSE 0 END +
+        CASE WHEN duedate > '$end_date' THEN (saldo_akhir * rate) ELSE 0 END +
         CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 0 AND 30 THEN (saldo_akhir * rate) ELSE 0 END +
         CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 31 AND 60 THEN (saldo_akhir * rate) ELSE 0 END +
         CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 61 AND 90 THEN (saldo_akhir * rate) ELSE 0 END +
@@ -348,12 +350,14 @@ CASE
         
         kontrabon as (
         WITH
+rate as (select * from ap_masterrate where tanggal = '$end_date' and v_codecurr = CASE  WHEN tanggal = LAST_DAY(tanggal) THEN 'HARIAN' ELSE 'PAJAK' END GROUP BY  curr, rate),
+
 saldo_awal as (select supplier, no_kbon, tgl_kbon, duedate, curr, total, rate, a.no_coa, nama_coa, item_type1, item_type2, relasi from ap_saldo_awal_kontrabon a INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa),
 
-in_kontrabon as (select b.nama_supp, a.no_journal, a.tgl_journal, tgl_tempo, a.curr, sum(debit - credit) total, a.rate, a.no_coa, a.nama_coa, item_type1, item_type2, relasi from tbl_list_journal a INNER JOIN kontrabon_h b on b.no_kbon = a.no_journal INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa where tgl_journal > '2025-12-31' and tgl_journal BETWEEN '$start_date' and '$end_date' and type_journal = 'AP - Kontrabon' and a.nama_coa like '%GR/IR%' and b.status != 'Cancel' GROUP BY no_journal
+in_kontrabon as (select b.nama_supp, a.no_journal, a.tgl_journal, tgl_tempo, a.curr, sum(debit - credit) total, a.rate, d.no_coa, d.nama_coa, item_type1, item_type2, relasi from tbl_list_journal a INNER JOIN kontrabon_h b on b.no_kbon = a.no_journal INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa INNER JOIN (select no_kbon, no_coa, nama_coa from kontrabon_h where status != 'cancel' and no_coa is not null GROUP BY no_kbon) d on d.no_kbon = a.no_journal where tgl_journal > '2025-12-31' and tgl_journal BETWEEN '$start_date' and '$end_date' and type_journal = 'AP - Kontrabon' and a.nama_coa like '%GR/IR%' and b.status != 'Cancel' GROUP BY no_journal
 ),
 
-in_kontrabon_before as (select b.nama_supp, a.no_journal, a.tgl_journal, tgl_tempo, a.curr, sum(debit - credit) total, a.rate, a.no_coa, a.nama_coa, item_type1, item_type2, relasi from tbl_list_journal a INNER JOIN kontrabon_h b on b.no_kbon = a.no_journal INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa where tgl_journal > '2025-12-31' and tgl_journal < '$start_date' and type_journal = 'AP - Kontrabon' and a.nama_coa like '%GR/IR%' and b.status != 'Cancel' GROUP BY no_journal
+in_kontrabon_before as (select b.nama_supp, a.no_journal, a.tgl_journal, tgl_tempo, a.curr, sum(debit - credit) total, a.rate, d.no_coa, d.nama_coa, item_type1, item_type2, relasi from tbl_list_journal a INNER JOIN kontrabon_h b on b.no_kbon = a.no_journal INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa INNER JOIN (select no_kbon, no_coa, nama_coa from kontrabon_h where status != 'cancel' and no_coa is not null GROUP BY no_kbon) d on d.no_kbon = a.no_journal where tgl_journal > '2025-12-31' and tgl_journal < '$start_date' and type_journal = 'AP - Kontrabon' and a.nama_coa like '%GR/IR%' and b.status != 'Cancel' GROUP BY no_journal
 ),
 
 reverse_kontrabon as (select a.no_journal, sum(credit - debit) total from tbl_list_journal a INNER JOIN kontrabon_h b on b.no_kbon = a.no_journal where tgl_journal > '2025-12-31' and tgl_journal BETWEEN '$start_date' and '$end_date' and type_journal = 'Reverse AP - Kontrabon' and a.nama_coa like '%UTANG USAHA%' and b.status != 'Cancel' GROUP BY no_journal),
@@ -416,7 +420,7 @@ data_detail as (select supplier, no_kbon, tgl_kbon, duedate, curr, COALESCE(roun
 
 mutasi as (select supplier, no_kbon, tgl_kbon, duedate, curr, (saldo_awal + reverse_kontrabon_before + uang_muka_before + pph_before + potongan_before - (ded_lp_before + ded_gm_before)) saldo_awal, total_in, pph, uang_muka, potongan, ded_lp, ded_gm, reverse_kontrabon, rate, no_coa, nama_coa, item_type1, item_type2, relasi from data_detail),
 
-report_mutasi as (select supplier, no_kbon, tgl_kbon, duedate, a.curr, saldo_awal, total_in, pph, uang_muka, potongan, ded_lp, ded_gm, reverse_kontrabon, (saldo_awal + total_in + reverse_kontrabon + pph + uang_muka + potongan - (ded_lp - ded_gm)) saldo_akhir, IFNULL(b.rate,1) rate, ((saldo_awal + total_in + pph + uang_muka + potongan - (ded_lp - ded_gm)) * IFNULL(b.rate,1)) saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi from mutasi a LEFT JOIN (select * from ap_masterrate where tanggal = '$end_date' and v_codecurr = CASE  WHEN tanggal = LAST_DAY(tanggal) THEN 'HARIAN' ELSE 'PAJAK' END GROUP BY  curr, rate) b on b.curr = a.curr)
+report_mutasi as (select supplier, no_kbon, tgl_kbon, duedate, a.curr, saldo_awal, total_in, pph, uang_muka, potongan, ded_lp, ded_gm, reverse_kontrabon, (saldo_awal + total_in + reverse_kontrabon + pph + uang_muka + potongan - (ded_lp - ded_gm)) saldo_akhir, IFNULL(b.rate,1) rate, ((saldo_awal + total_in + pph + uang_muka + potongan - (ded_lp - ded_gm)) * IFNULL(b.rate,1)) saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi from mutasi a LEFT JOIN rate b on b.curr = a.curr)
 
 select supplier, no_kbon, tgl_kbon, duedate, curr, saldo_awal, total_in, pph, uang_muka, potongan, ded_lp, ded_gm, reverse_kontrabon, saldo_akhir, rate, saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi,
 CASE
@@ -467,7 +471,7 @@ ELSE 0
 END AS due_gt_360,
 
 (
-CASE WHEN duedate < '$end_date' THEN saldo_akhir_idr ELSE 0 END +
+CASE WHEN duedate > '$end_date' THEN saldo_akhir_idr ELSE 0 END +
 CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 0 AND 30 THEN saldo_akhir_idr ELSE 0 END +
 CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 31 AND 60 THEN saldo_akhir_idr ELSE 0 END +
 CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 61 AND 90 THEN saldo_akhir_idr ELSE 0 END +
@@ -543,10 +547,12 @@ AND duedate < DATE_ADD(LAST_DAY('$end_date'), INTERVAL 5 MONTH)
 THEN saldo_akhir_idr ELSE 0 END +
 CASE WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 5 MONTH)
 THEN saldo_akhir_idr ELSE 0 END
-) AS tot_produe from report_mutasi  $supplier  ),
+) AS tot_produe from report_mutasi  $supplier ),
 
 list_payment as (
 WITH
+rate as (select * from ap_masterrate where tanggal = '$end_date' and v_codecurr = CASE  WHEN tanggal = LAST_DAY(tanggal) THEN 'HARIAN' ELSE 'PAJAK' END GROUP BY  curr, rate),
+
 saldo_awal as (select supplier, no_payment, tgl_payment, duedate, create_user, curr, total, rate, a.no_coa, nama_coa, item_type1, item_type2, relasi from ap_saldo_awal_listpayment a INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa),
 
 in_lp as (select nama_supp, no_payment, tgl_payment, tgl_tempo, create_user, a.curr, sum(amount + pph_value) total, pph_value pph, IFNULL(rate,1) rate, a.no_coa, a.nama_coa, item_type1, item_type2, relasi from list_payment a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa LEFT JOIN (select tanggal, curr, rate from masterrate where v_codecurr = 'PAJAK' GROUP BY tanggal, curr) c on c.curr = a.curr and c.tanggal = DATE_FORMAT(a.create_date, '%Y-%m-%d') where a.status != 'Cancel' and DATE_FORMAT(a.create_date, '%Y-%m-%d') > '2025-12-31' and DATE_FORMAT(a.create_date, '%Y-%m-%d') BETWEEN '$start_date' and '$end_date' GROUP BY no_payment
@@ -638,7 +644,7 @@ select no_payment, 0 pay_bank_before, 0 pay_bank, 0 pay_non_bank_before, 0 pay_n
 
 data_det as (select supplier, no_payment, tgl_payment, duedate, create_user, curr, ROUND(COALESCE(saldo_awal,0) - COALESCE(pay_bank_before,0) - COALESCE(pay_non_bank_before,0) - COALESCE(pay_cash_before,0),2) saldo_awal, COALESCE(total_in,0) total_in, coalesce(pay_bank,0) pay_bank, coalesce(pay_non_bank,0) pay_non_bank, coalesce(pay_cash,0) pay_cash, no_coa, nama_coa, item_type1, item_type2, relasi, rate from saldo_in a LEFT JOIN saldo_out b on b.no_reff = a.no_payment),
 
-mutasi as (select supplier, no_payment, tgl_payment, duedate, create_user, a.curr, saldo_awal, total_in, pay_bank, pay_non_bank, pay_cash, ROUND(saldo_awal + total_in - (pay_bank + pay_non_bank + pay_cash),2) saldo_akhir, IFNULL(b.rate,1) rate, ROUND((saldo_awal + total_in - (pay_bank + pay_non_bank + pay_cash)) * IFNULL(b.rate,1),2) saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi from data_det a LEFT JOIN (select * from ap_masterrate where tanggal = '$end_date' and v_codecurr = CASE  WHEN tanggal = LAST_DAY(tanggal) THEN 'HARIAN' ELSE 'PAJAK' END GROUP BY  curr, rate) b on b.curr = a.curr)
+mutasi as (select supplier, no_payment, tgl_payment, duedate, create_user, a.curr, saldo_awal, total_in, pay_bank, pay_non_bank, pay_cash, ROUND(saldo_awal + total_in - (pay_bank + pay_non_bank + pay_cash),2) saldo_akhir, IFNULL(b.rate,1) rate, ROUND((saldo_awal + total_in - (pay_bank + pay_non_bank + pay_cash)) * IFNULL(b.rate,1),2) saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi from data_det a LEFT JOIN rate b on b.curr = a.curr)
 
 
 select supplier, no_payment, tgl_payment, duedate, create_user, curr, saldo_awal, total_in, pay_bank, pay_non_bank, pay_cash, saldo_akhir, rate, saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi,
@@ -690,7 +696,7 @@ CASE
     END AS due_gt_360,
 
     (
-        CASE WHEN duedate < '$end_date' THEN saldo_akhir_idr ELSE 0 END +
+        CASE WHEN duedate > '$end_date' THEN saldo_akhir_idr ELSE 0 END +
         CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 0 AND 30 THEN saldo_akhir_idr ELSE 0 END +
         CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 31 AND 60 THEN saldo_akhir_idr ELSE 0 END +
         CASE WHEN DATEDIFF('$end_date', duedate) BETWEEN 61 AND 90 THEN saldo_akhir_idr ELSE 0 END +
@@ -766,7 +772,7 @@ CASE
              THEN saldo_akhir_idr ELSE 0 END +
         CASE WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 5 MONTH)
              THEN saldo_akhir_idr ELSE 0 END
-    ) AS tot_produe from mutasi  $supplier  )
+    ) AS tot_produe from mutasi  $supplier )
 
         SELECT supplier,
     item_type2,
