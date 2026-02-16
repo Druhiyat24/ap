@@ -1048,7 +1048,7 @@ let datatable3 = $("#table-pcs-listpayment").DataTable({
       9: 'pay_non_bank',
       10:'pay_cash',
       11:'saldo_akhir',
-      13:'saldo_akhir',
+      13:'saldo_akhir_idr',
       20:'due_current',
       21:'due_1_30',
       22:'due_31_60',
@@ -1172,9 +1172,11 @@ let datatable4 = $("#table-pcs-sum-supp").DataTable({
       { data: 'curr' },
       { data: 'saldo_awal' },
       { data: 'addition' },
+      { data: 'reverse' },
       { data: 'deduction_advance' },
       { data: 'deduction_other' },
       { data: 'deduction_lp' },
+      { data: 'deduction_gm' },
       { data: 'adjust' },
       { data: 'saldo_akhir' },
       { data: 'rate' },
@@ -1203,7 +1205,7 @@ let datatable4 = $("#table-pcs-sum-supp").DataTable({
       columnDefs: [
 
             {
-              targets: [2, 3, 4, 5, 6, 7, 8, 9, 10 ,12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 23, 24, 25, 26, 27, 28, 29],
+              targets: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11 ,12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 25, 26, 27, 28, 29, 30, 31],
               className: "text-right",
               render: function (data) {
                 let val = parseFloat(data);
@@ -1240,29 +1242,31 @@ let datatable4 = $("#table-pcs-sum-supp").DataTable({
     const map = {
       2:  'saldo_awal',
       3:  'addition',
-      4:  'deduction_advance',
-      5:  'deduction_other',
-      6:  'deduction_lp',
-      7:  'adjust',
-      8:  'saldo_akhir',
-      10: 'saldo_akhir_idr',
-      12: 'due_current',
-      13: 'due_1_30',
-      14: 'due_31_60',
-      15: 'due_61_90',
-      16: 'due_91_120',
-      17: 'due_121_180',
-      18: 'due_181_360',
-      19: 'due_gt_360',
-      20: 'total_due',
-      22: 'pro_due',
-      23: 'pro_due0',
-      24: 'pro_due1',
-      25: 'pro_due2',
-      26: 'pro_due3',
-      27: 'pro_due4',
-      28: 'pro_due5',
-      29: 'tot_produe'
+      4:  'reverse',
+      5:  'deduction_advance',
+      6:  'deduction_other',
+      7:  'deduction_lp',
+      8:  'deduction_gm',
+      9:  'adjust',
+      10:  'saldo_akhir',
+      12: 'saldo_akhir_idr',
+      14: 'due_current',
+      15: 'due_1_30',
+      16: 'due_31_60',
+      17: 'due_61_90',
+      18: 'due_91_120',
+      19: 'due_121_180',
+      20: 'due_181_360',
+      21: 'due_gt_360',
+      22: 'total_due',
+      24: 'pro_due',
+      25: 'pro_due0',
+      26: 'pro_due1',
+      27: 'pro_due2',
+      28: 'pro_due3',
+      29: 'pro_due4',
+      30: 'pro_due5',
+      31: 'tot_produe'
     };
 
     // ================= TOTAL IDR =================
@@ -1305,7 +1309,7 @@ let datatable4 = $("#table-pcs-sum-supp").DataTable({
 
     rowALL.find('th:eq(0)')
     .html('<b>SUMMARY TOTAL</b>')
-    .attr('colspan', 10)
+    .attr('colspan', 12)
     .css({
       'text-align': 'center',
       'font-weight': 'bold'
@@ -1317,7 +1321,7 @@ for (let i = 1; i <= 1; i++) {
   rowUSD.find('th:eq(' + i + ')').css('display', 'none');
 }
 
-for (let i = 1; i <= 9; i++) {
+for (let i = 1; i <= 11; i++) {
   rowALL.find('th:eq(' + i + ')').css('display', 'none');
 }
 
@@ -1743,7 +1747,7 @@ let datatable7 = $("#table-pcs-sum-grup").DataTable({
 
     rowALL.find('th:eq(0)')
     .html('<b>SUMMARY GROUP</b>')
-    .attr('colspan', 4)
+    .attr('colspan', 3)
     .css({
       'text-align': 'center',
       'font-weight': 'bold'
@@ -1755,7 +1759,7 @@ for (let i = 1; i <= 1; i++) {
   rowUSD.find('th:eq(' + i + ')').css('display', 'none');
 }
 
-for (let i = 1; i <= 3; i++) {
+for (let i = 1; i <= 2; i++) {
   rowALL.find('th:eq(' + i + ')').css('display', 'none');
 }
 
@@ -1953,7 +1957,7 @@ let datatable8 = $("#table-pcs-sum-non-grup").DataTable({
 
     rowALL.find('th:eq(0)')
     .html('<b>SUMMARY NON GROUP</b>')
-    .attr('colspan', 4)
+    .attr('colspan', 3)
     .css({
       'text-align': 'center',
       'font-weight': 'bold'
@@ -1977,7 +1981,7 @@ let datatable8 = $("#table-pcs-sum-non-grup").DataTable({
 
     row_sumALL.find('th:eq(0)')
     .html('<b>SUMMARY TOTAL</b>')
-    .attr('colspan', 4)
+    .attr('colspan', 3)
     .css({
       'text-align': 'center',
       'font-weight': 'bold'
@@ -1991,7 +1995,7 @@ for (let i = 1; i <= 1; i++) {
   row_sumUSD.find('th:eq(' + i + ')').css('display', 'none');
 }
 
-for (let i = 1; i <= 3; i++) {
+for (let i = 1; i <= 2; i++) {
   rowALL.find('th:eq(' + i + ')').css('display', 'none');
   row_sumALL.find('th:eq(' + i + ')').css('display', 'none');
 }

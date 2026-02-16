@@ -17,9 +17,11 @@
                 <th rowspan="2" style="text-align: center;vertical-align: middle;background-color: #FFE4E1;">Currency</th>
                 <th rowspan="2" style="text-align: center;vertical-align: middle;background-color: #FFE4E1;">Begining Balance</th>
                 <th rowspan="2" style="text-align: center;vertical-align: middle;background-color: #FFE4E1;">Addition</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;background-color: #FFE4E1;">Reverse</th>
                 <th rowspan="2" style="text-align: center;vertical-align: middle;background-color: #FFE4E1;">Deduction Advance</th>
                 <th rowspan="2" style="text-align: center;vertical-align: middle;background-color: #FFE4E1;">Deduction Other</th>
                 <th rowspan="2" style="text-align: center;vertical-align: middle;background-color: #FFE4E1;">Deduction LP</th>
+                <th rowspan="2" style="text-align: center;vertical-align: middle;background-color: #FFE4E1;">Deduction GM</th>
                 <th rowspan="2" style="text-align: center;vertical-align: middle;background-color: #FFE4E1;">Adjustment</th>
                 <th rowspan="2" style="text-align: center;vertical-align: middle;background-color: #FFE4E1;">Ending Balance</th>
                 <th rowspan="2" style="text-align: center;vertical-align: middle;background-color: #FFE4E1;">Rate</th>
@@ -53,7 +55,7 @@
         </tbody>
         <tfoot>
         <tr>
-            <th></th><th></th>
+            <th></th><th></th><th></th><th></th>
             <th></th><th></th><th></th><th></th>
             <th></th><th></th><th></th><th></th><th></th>
             <th></th>
@@ -64,7 +66,7 @@
             <th></th><th></th><th></th>
         </tr>
         <tr>
-            <th></th><th></th>
+            <th></th><th></th><th></th><th></th>
             <th></th><th></th><th></th><th></th>
             <th></th><th></th><th></th><th></th><th></th>
             <th></th>
@@ -75,7 +77,7 @@
             <th></th><th></th><th></th>
         </tr>
         <tr>
-            <th></th><th></th>
+            <th></th><th></th><th></th><th></th>
             <th></th><th></th><th></th><th></th>
             <th></th><th></th><th></th><th></th><th></th>
             <th></th>
