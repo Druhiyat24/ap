@@ -890,7 +890,10 @@ echo'</ul>
                     <span class="fa fa-tags fa-fw "></span>
                     <span class="menu-collapsed">AP Report</span>
                     </a>
-                    
+                    <a href="../AP/Payable_card_statement.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-tags fa-fw "></span>
+                    <span class="menu-collapsed">AP Report New</span>
+                    </a>
                     <a href="../AP/rekap-pelunasan.php" class="dropdown-item bg-dark text-white">
                     <span class="fa fa-tags fa-fw "></span>
                     <span class="menu-collapsed">Rekap Pelunasan</span>
@@ -1443,6 +1446,7 @@ echo'</ul>
      <span class="menu-collapsed">Sub Ledger</span>
      </a>
      <ul class="dropdown-menu bg-dark text-white" role="menu">';
+
      if(strpos($id, '64') !== false){
       echo'<a href="../AP/other_receivable_report.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-fax fa-fw"></span>
@@ -1461,6 +1465,13 @@ echo'</ul>
       <span class="menu-collapsed">Purchase Advance</span>
       </a>';
   }
+  if(strpos($id, '82') !== false){
+      echo'<a href="../AP/prepaid_tax_report.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-fax fa-fw"></span>
+      <span class="menu-collapsed">Prepaid Tax</span>
+      </a>';
+  }
+
   echo'</ul>
   </li>';
   if(strpos($id, '53') !== false){ 
