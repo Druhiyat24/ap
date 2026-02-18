@@ -109,12 +109,14 @@
 
 <!-- Tombol -->
 <div class="col-md-2 d-flex align-items-end">
-  <button type="submit" class="btn btn-info btn-sm me-2">
-    <i class="fa fa-search"></i> Search
-</button>
-<button type="button" id="reset" class="btn btn-danger btn-sm ml-2">
-    <i class="fa fa-undo"></i> Reset
-</button>
+  <button type="button" class="btn btn-info btn-sm me-2" onclick="dataTableReload()">
+        <i class="fa fa-search"></i> Search
+      </button>
+<a id="btnExportPrepaidTax" target="_blank">
+    <button type="button" class="btn btn-success btn-xs ml-2" style="margin-top: 30px;">
+        <i class="fa fa-file-excel-o" aria-hidden="true" > Excel</i>
+    </button>
+</a>
   
 
 </div>
@@ -317,34 +319,35 @@ function SidebarCollapse () {
       paging: true,
 
       ajax: {
-        url: 'ap_report/ajx_pcs_bpb.php',
+        url: 'ajx_prepaid_tax.php',
         type: 'POST',
         data: function (d) {
-          d.start_date = $('#start_date').val();
-          d.end_date   = $('#end_date').val();
-          d.nama_supp   = $('#nama_supp').val();
+          d.profit_center   = $('#profit_center').val();
+          d.no_coa          = $('#no_coa').val();
+          d.start_date      = $('#start_date').val();
+          d.end_date        = $('#end_date').val();
         }
       },
 
       columns: [
+      { data: 'tgl_journal' },
+      { data: 'no_journal' },
+      { data: 'no_kbon' },
+      { data: 'deskripsi' },
       { data: 'supplier' },
-      { data: 'no_bpb' },
-      { data: 'tgl_bpb' },
-      { data: 'duedate' },
-      { data: 'curr' },
-      { data: 'curr' },
+      { data: 'profit_center' },
       { data: 'saldo_awal' },
-      { data: 'in_bpb' },
-      { data: 'reverse_bpb' },
-      { data: 'ded_kontrabon' },
-      { data: 'reverse_kontrabon' },
-      { data: 'curr' },
+      { data: 'total_in' },
+      { data: 'total_out' },
+      { data: 'total_gm' },
+      { data: 'saldo_akhir' },
+      { data: 'remark' },
       ],
 
       columnDefs: [
 
             {
-              targets: [6, 7, 8, 9, 10],
+              targets: [6, 7],
               className: "text-right",
               render: function (data) {
                 let val = parseFloat(data);
@@ -355,7 +358,26 @@ function SidebarCollapse () {
                   maximumFractionDigits: 2
                 });
               }
-            }
+            },
+            {
+    targets: [8, 9, 10],
+    className: "text-right",
+    render: function (data) {
+      let val = parseFloat(data);
+      if (isNaN(val)) return data;
+
+      let formatted = Math.abs(val).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+
+      if (val < 0) {
+        return '<span style="color:red;">(' + formatted + ')</span>';
+      }
+
+      return formatted;
+    }
+  }
             ],
 
             footerCallback: function () {
@@ -364,32 +386,38 @@ function SidebarCollapse () {
 
     if (!json || !json.footer) return;
 
-    function fmt(val) {
+    function fmtAccounting(val) {
         val = parseFloat(val) || 0;
-        return val.toLocaleString('en-US', {
+
+        let formatted = Math.abs(val).toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
+
+        if (val < 0) {
+            return '<span style="color:red;">(' + formatted + ')</span>';
+        }
+        return formatted;
     }
 
     const map = {
-    6: 'total_in',
-    7: 'uang_muka',
-    8: 'potongan',
-    9: 'ded_lp',
-    10:'ded_gm',
-};
-
+        6: 'saldo_awal',
+        7: 'total_in',
+        8: 'total_out',
+        9: 'total_gm',
+        10: 'saldo_akhir',
+    };
 
     Object.keys(map).forEach(function (colIdx) {
         let key = map[colIdx];
         let val = json.footer[key];
 
-        $(api.column(colIdx).footer()).html(fmt(val));
+        $(api.column(colIdx).footer()).html(fmtAccounting(val));
     });
 
     $(api.column(0).footer()).html('<b>TOTAL</b>');
 }
+
 ,
 
 initComplete: function () {
@@ -410,12 +438,14 @@ function dataTableReload() {
   });
 }
 
-document.getElementById('btnExportExcel_bpb').addEventListener('click', function(e) {
-  let sd = toYmd(document.getElementById('start_date').value);
-  let ed = toYmd(document.getElementById('end_date').value);
-  let supp = document.getElementById('nama_supp').value;
+document.getElementById('btnExportPrepaidTax').addEventListener('click', function(e) {
+  let start_date = toYmd(document.getElementById('start_date').value);
+  let end_date = toYmd(document.getElementById('end_date').value);
+  let profit_center = document.getElementById('profit_center').value;
+  let no_coa = document.getElementById('no_coa').value;
+  // alert(profit_center + '|' + no_coa + '|' + start_date + '|' + end_date);
 
-  this.href = `ap_report/ekspor_pcs_bpb.php?start_date=${sd}&end_date=${ed}&nama_supp=${supp}`;
+  this.href = `ekspor_prepaid_tax.php?profit_center=${profit_center}&no_coa=${no_coa}&start_date=${start_date}&end_date=${end_date}`;
 });
 
 </script>

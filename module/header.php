@@ -1465,7 +1465,7 @@ echo'</ul>
       <span class="menu-collapsed">Purchase Advance</span>
       </a>';
   }
-  if(strpos($id, '82') !== false){
+  if(strpos($id, '105') !== false){
       echo'<a href="../AP/prepaid_tax_report.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-fax fa-fw"></span>
       <span class="menu-collapsed">Prepaid Tax</span>
