@@ -57,7 +57,7 @@
   <div class="card shadow border-0">
     <div class="card-header text-white py-2 px-3" 
     style="background: linear-gradient(90deg, #191970, #1e90ff);">
-    <h5 class="mb-0"><i class="fas fa-thumbs-up"></i> APPROVAL REVERSE PAYMENT <span class="badge bg-danger ms-2">
+    <h5 class="mb-0"><i class="fas fa-thumbs-up"></i> APPROVAL REVERSE KONTRABON <span class="badge bg-danger ms-2">
         <i class="fas fa-bell"></i> 
         <?php
         $type_doc ='ALL';
