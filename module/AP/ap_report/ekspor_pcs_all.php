@@ -2092,7 +2092,7 @@ while($data = mysqli_fetch_assoc($sql)){
 
 $highestColumn = Coordinate::stringFromColumnIndex($lastColIndex);
 
-$sheet4->getStyle('G6:'.$highestColumn.$rowNum)
+$sheet4->getStyle('D6:'.$highestColumn.$rowNum)
       ->getNumberFormat()->setFormatCode('#,##0.00');
 
 $sheet4->getStyle('A4:'.$highestColumn.($rowNum-1))
@@ -2966,7 +2966,7 @@ while($data = mysqli_fetch_assoc($sql)){
 
 $highestColumn = Coordinate::stringFromColumnIndex($lastColIndex);
 
-$sheet5->getStyle('G6:'.$highestColumn.$rowNum)
+$sheet5->getStyle('E6:'.$highestColumn.$rowNum)
       ->getNumberFormat()->setFormatCode('#,##0.00');
 
 $sheet5->getStyle('A4:'.$highestColumn.($rowNum-1))
@@ -3841,7 +3841,7 @@ while($data = mysqli_fetch_assoc($sql)){
 
 $highestColumn = Coordinate::stringFromColumnIndex($lastColIndex);
 
-$sheet6->getStyle('G6:'.$highestColumn.$rowNum)
+$sheet6->getStyle('E6:'.$highestColumn.$rowNum)
       ->getNumberFormat()->setFormatCode('#,##0.00');
 
 $sheet6->getStyle('A4:'.$highestColumn.($rowNum-1))
