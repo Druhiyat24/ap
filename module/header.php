@@ -316,7 +316,7 @@ if ($user == '') {
         $pur = $rs['purchasing'];
         $app_po = $rs['approve_po'];
 
-        $queryss = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%BPB%' and useraccess.menu != 'Transfer BPB' and useraccess.menu != 'Accept BPB Whs-Acc' and useraccess.menu != 'Maintain BPB' and useraccess.menu not like '%create%' and profit_center != 'NAK' group by username");
+        $queryss = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%BPB%' and useraccess.menu != 'Transfer BPB' and useraccess.menu != 'Accept BPB Whs-Acc' and useraccess.menu != 'Maintain BPB' and useraccess.menu != 'Acct - Rekonsiliasi Jurnal-BPB' and useraccess.menu != 'Acct - Repost Jurnal BPB' and useraccess.menu not like '%create%' and profit_center != 'NAK' group by username");
         while($rss = mysqli_fetch_array($queryss)){
           $menu = isset($rss['ket']) ? $rss['ket'] :0;
           $id = isset($rss['id']) ? $rss['id'] :0;
@@ -1533,6 +1533,11 @@ if(strpos($id, '90') !== false){
   <span class="fas fa-landmark"></span>
   <span class="menu-collapsed">Bank Out</span>
   </a>';
+
+  // echo'<a href="../AP/repost-bpb.php" class="dropdown-item bg-dark text-white">
+  // <span class="fas fa-archive"></span>
+  // <span class="menu-collapsed">BPB</span>
+  // </a>';
 }
 echo'</ul>
 </li>';
