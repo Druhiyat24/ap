@@ -155,6 +155,15 @@
       <button type="button" class="btn btn-info btn-sm me-2" onclick="dataTableReload()">
         <i class="fa fa-search"></i> Search
       </button>
+      <button id="btnExportAll"
+        type="button"
+        class="btn btn-success btn-xs ml-2"
+        style="margin-top: 30px;">
+    <i class="fa fa-file-excel-o"></i>
+    <span id="btnText"> Excel</span>
+</button>
+
+
 
     </div>
 
@@ -2060,6 +2069,37 @@ function dataTableReload() {
     datatable8.columns.adjust();
   });
 }
+
+document.getElementById('btnExportAll').addEventListener('click', function() {
+
+    let btn = this;
+    let text = document.getElementById('btnText');
+
+    btn.style.opacity = "0.6";
+    btn.style.pointerEvents = "none";
+    text.innerHTML = " Loading...";
+
+    let sd = toYmd(document.getElementById('start_date').value);
+    let ed = toYmd(document.getElementById('end_date').value);
+    let supp = document.getElementById('nama_supp').value;
+
+    let url = `ap_report/ekspor_pcs_all.php?start_date=${sd}&end_date=${ed}&nama_supp=${supp}`;
+
+    let iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+    iframe.src = url;
+    document.body.appendChild(iframe);
+
+    // Aktifkan kembali tombol setelah 2 detik
+    setTimeout(() => {
+        btn.style.opacity = "1";
+        btn.style.pointerEvents = "auto";
+        text.innerHTML = " Export All";
+    }, 30000);
+
+});
+
+
 
 document.getElementById('btnExportExcel_bpb').addEventListener('click', function(e) {
   let sd = toYmd(document.getElementById('start_date').value);

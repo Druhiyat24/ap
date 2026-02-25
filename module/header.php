@@ -293,6 +293,10 @@ if ($user == '') {
               <span class="fa fa-paperclip fa-fw "></span>
               <span class="menu-collapsed">Mapping Memo</span>
               </a>
+              <a href="../AP/master-rate.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-paperclip fa-fw "></span>
+              <span class="menu-collapsed">Rate</span>
+              </a>
               ';
           }else{
               echo '';
@@ -1532,6 +1536,12 @@ if(strpos($id, '90') !== false){
 }
 echo'</ul>
 </li>';
+if(strpos($id, '106') !== false){ 
+         echo'<a href="../AP/rekonsiliasi_jurnal_bpb.php" class="dropdown-item bg-dark text-white">
+         <span class="fas fa-file-contract"></span>
+         <span class="menu-collapsed">Rekonsiliasi Jurnal-BPB</span>
+         </a>';
+     }
 
 ?>
 </ul>
@@ -1894,7 +1904,7 @@ if(strpos($id, '95') !== false){
     echo '<a href="../AP/form_approve_reverse_kontrabon.php" class="dropdown-item bg-dark text-white">
     <span class="fas fa-angle-right fa-fw "></span>
     <span class="menu-collapsed">Kontrabon</span>
-    '.$notif_rvspay.'
+    '.$notif_rvskbon.'
     </a>';
 }
 
@@ -1902,7 +1912,7 @@ if(strpos($id, '93') !== false){
     echo '<a href="../AP/form_approve_reverse_payment.php" class="dropdown-item bg-dark text-white">
     <span class="fa fa-angle-right fa-fw "></span>
     <span class="menu-collapsed">Payment</span>
-    '.$notif_rvskbon.'
+    '.$notif_rvspay.'
     </a>';
 }
 

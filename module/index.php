@@ -294,6 +294,10 @@ if ($user == '') {
             <span class="fa fa-paperclip fa-fw "></span>
             <span class="menu-collapsed">Mapping Memo</span>
             </a>
+            <a href="AP/master-rate.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-paperclip fa-fw "></span>
+              <span class="menu-collapsed">Rate</span>
+              </a>
             ';
         }else{
             echo '';
@@ -1527,6 +1531,13 @@ if(strpos($id, '90') !== false){
 }
 echo'</ul>
 </li>';
+
+if(strpos($id, '106') !== false){ 
+         echo'<a href="AP/rekonsiliasi_jurnal_bpb.php" class="dropdown-item bg-dark text-white">
+         <span class="fas fa-file-contract"></span>
+         <span class="menu-collapsed">Rekonsiliasi Jurnal-BPB</span>
+         </a>';
+     }
 
 ?>
 </ul>
