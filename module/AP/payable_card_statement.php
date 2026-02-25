@@ -2070,14 +2070,10 @@ function dataTableReload() {
   });
 }
 
-document.getElementById('btnExportAll').addEventListener('click', function() {
+document.getElementById('btnExportAll').addEventListener('click', async function() {
 
     let btn = this;
     let text = document.getElementById('btnText');
-
-    btn.style.opacity = "0.6";
-    btn.style.pointerEvents = "none";
-    text.innerHTML = " Loading...";
 
     let sd = toYmd(document.getElementById('start_date').value);
     let ed = toYmd(document.getElementById('end_date').value);
@@ -2085,19 +2081,59 @@ document.getElementById('btnExportAll').addEventListener('click', function() {
 
     let url = `ap_report/ekspor_pcs_all.php?start_date=${sd}&end_date=${ed}&nama_supp=${supp}`;
 
-    let iframe = document.createElement("iframe");
-    iframe.style.display = "none";
-    iframe.src = url;
-    document.body.appendChild(iframe);
+    // Disable tombol
+    btn.style.opacity = "0.6";
+    btn.style.pointerEvents = "none";
+    text.innerHTML = " Loading...";
 
-    // Aktifkan kembali tombol setelah 2 detik
-    setTimeout(() => {
-        btn.style.opacity = "1";
-        btn.style.pointerEvents = "auto";
-        text.innerHTML = " Export All";
-    }, 30000);
+    Swal.fire({
+        title: 'Exporting...',
+        text: 'Sedang generate file Excel',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    try {
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error("Gagal export");
+        }
+
+        const blob = await response.blob();
+
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = "Payable_Card_Statement.xlsx";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: 'File berhasil di export',
+            timer: 1500,
+            showConfirmButton: false
+        });
+
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal!',
+            text: error.message
+        });
+    }
+
+    // Aktifkan tombol kembali
+    btn.style.opacity = "1";
+    btn.style.pointerEvents = "auto";
+    text.innerHTML = " Export All";
 
 });
+
 
 
 

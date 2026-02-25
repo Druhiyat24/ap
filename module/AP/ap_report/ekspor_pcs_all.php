@@ -6000,5 +6000,4 @@ header('Content-Disposition: attachment;filename="Payable_Card_Statement.xlsx"')
 header('Cache-Control: max-age=0');
 
 $writer->save('php://output');
-setcookie("export_done", "1", time() + 60, "/");
 exit;
