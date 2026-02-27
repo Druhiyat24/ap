@@ -1497,7 +1497,7 @@ echo'</ul>
    </li>';
 }
 
-if($user == 'indro' || $user == 'willy'){ 
+if($user == 'indro' || $user == 'willy' || $user == 'steven'){ 
    echo'<li class="dropdown-submenu ">
    <a class="dropdown-item bg-dark text-white" href="#">
    <span class="fa fa-balance-scale fa-fw"></span>
