@@ -261,7 +261,7 @@ function SidebarCollapse () {
     autoWidth: false,
 
     scrollX: true,
-    scrollY: "500px",
+    scrollY: "350px",
     scrollCollapse: true,
     paging: false,
 
