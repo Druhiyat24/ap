@@ -281,7 +281,7 @@ function SidebarCollapse () {
       { data: 'supplier' },
       { data: 'pono' },
       { data: 'tipe_com' },
-      { data: 'status' },
+      { data: 'curr' },
       { data: 'total' },
       { data: 'total_jurnal' },
       { data: 'diff_total' },
