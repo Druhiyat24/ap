@@ -1533,11 +1533,12 @@ if(strpos($id, '90') !== false){
   <span class="fas fa-landmark"></span>
   <span class="menu-collapsed">Bank Out</span>
   </a>';
-
-  // echo'<a href="../AP/repost-bpb.php" class="dropdown-item bg-dark text-white">
-  // <span class="fas fa-archive"></span>
-  // <span class="menu-collapsed">BPB</span>
-  // </a>';
+}
+if(strpos($id, '107') !== false){
+  echo'<a href="../AP/repost-bpb.php" class="dropdown-item bg-dark text-white">
+  <span class="fas fa-archive"></span>
+  <span class="menu-collapsed">BPB</span>
+  </a>';
 }
 echo'</ul>
 </li>';
