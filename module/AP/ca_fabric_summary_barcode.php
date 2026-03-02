@@ -120,9 +120,13 @@
                         <th colspan="3" style="text-align: center;vertical-align: middle;">Sales Group</th>
                         <th colspan="3" style="text-align: center;vertical-align: middle;">Others</th>
                         <th colspan="3" style="text-align: center;vertical-align: middle;">Total Out</th>
+                        <th colspan="3" style="text-align: center;vertical-align: middle;">Adjusment</th>
                         <th colspan="3" style="text-align: center;vertical-align: middle;">Ending Balance</th>
                     </tr>
                     <tr>
+                        <th style="text-align: center;vertical-align: middle;">Qty</th>
+                        <th style="text-align: center;vertical-align: middle;">Cost/Unit</th>
+                        <th style="text-align: center;vertical-align: middle;">Amount</th>
                         <th style="text-align: center;vertical-align: middle;">Qty</th>
                         <th style="text-align: center;vertical-align: middle;">Cost/Unit</th>
                         <th style="text-align: center;vertical-align: middle;">Amount</th>
@@ -387,6 +391,11 @@ function SidebarCollapse () {
     { data: 'jumlah_out_price' },
     { data: 'jumlah_out_total' },
 
+    // --- Adjustment ---
+    { data: 'qty_adjust' },
+    { data: 'price_adjust' },
+    { data: 'total_adjust' },
+
     // --- Saldo Akhir ---
     { data: 'saldo_akhir_qty' },
     { data: 'saldo_akhir_price' },
@@ -395,7 +404,7 @@ function SidebarCollapse () {
 
         columnDefs: [
         {
-            targets: [...Array(58).keys()].slice(6),
+            targets: [...Array(61).keys()].slice(6),
             className: "text-right",
             render: function (data) {
                 let val = parseFloat(data);

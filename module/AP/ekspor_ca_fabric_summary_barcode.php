@@ -63,9 +63,13 @@
             <th colspan="3" style="text-align: center;vertical-align: middle;">Sales Group</th>
             <th colspan="3" style="text-align: center;vertical-align: middle;">Others</th>
             <th colspan="3" style="text-align: center;vertical-align: middle;">Total Out</th>
+            <th colspan="3" style="text-align: center;vertical-align: middle;">Adjustment</th>
             <th colspan="3" style="text-align: center;vertical-align: middle;">Ending Balance</th>
         </tr>
         <tr>
+            <th style="text-align: center;vertical-align: middle;">Qty</th>
+            <th style="text-align: center;vertical-align: middle;">Cost/Unit</th>
+            <th style="text-align: center;vertical-align: middle;">Amount</th>
             <th style="text-align: center;vertical-align: middle;">Qty</th>
             <th style="text-align: center;vertical-align: middle;">Cost/Unit</th>
             <th style="text-align: center;vertical-align: middle;">Amount</th>
@@ -406,10 +410,12 @@ pengeluaran_fix as (SELECT
 
     FROM trx_out_fix
     GROUP BY id_roll),
+        
+        adjustment as (select no_barcode_mapping, qty, price, total from whs_adjust_nilai_persediaan where tgl_periode BETWEEN '$start_date' and '$end_date'),
 
-mutasi as (select a.*, COALESCE(out_prod_qty,0) out_prod_qty,   COALESCE(out_prod_total,0) out_prod_total,   COALESCE(out_prod_price,0) out_prod_price,   COALESCE(out_subcont_qty,0) out_subcont_qty,   COALESCE(out_subcont_total,0) out_subcont_total,   COALESCE(out_subcont_price,0) out_subcont_price,   COALESCE(out_lokal_qty,0) out_lokal_qty,   COALESCE(out_lokal_total,0) out_lokal_total,   COALESCE(out_lokal_price,0) out_lokal_price,   COALESCE(out_impor_qty,0) out_impor_qty,   COALESCE(out_impor_total,0) out_impor_total,   COALESCE(out_impor_price,0) out_impor_price,   COALESCE(out_sample_qty,0) out_sample_qty,   COALESCE(out_sample_total,0) out_sample_total,   COALESCE(out_sample_price,0) out_sample_price,   COALESCE(out_salnongroup_qty,0) out_salnongroup_qty,   COALESCE(out_salnongroup_total,0) out_salnongroup_total,   COALESCE(out_salnongroup_price,0) out_salnongroup_price,   COALESCE(out_salgroup_qty,0) out_salgroup_qty,   COALESCE(out_salgroup_total,0) out_salgroup_total,   COALESCE(out_salgroup_price,0) out_salgroup_price,   COALESCE(out_other_qty,0) out_other_qty,   COALESCE(out_other_total,0) out_other_total,   COALESCE(out_other_price,0) out_other_price,   COALESCE(jumlah_out_qty,0) jumlah_out_qty,   COALESCE(jumlah_out_total,0) jumlah_out_total,   COALESCE(jumlah_out_price,0) jumlah_out_price from pemasukan_fix a left join pengeluaran_fix b on b.id_roll = a.barcode_mapping)
+mutasi as (select a.*, COALESCE(out_prod_qty,0) out_prod_qty,   COALESCE(out_prod_total,0) out_prod_total,   COALESCE(out_prod_price,0) out_prod_price,   COALESCE(out_subcont_qty,0) out_subcont_qty,   COALESCE(out_subcont_total,0) out_subcont_total,   COALESCE(out_subcont_price,0) out_subcont_price,   COALESCE(out_lokal_qty,0) out_lokal_qty,   COALESCE(out_lokal_total,0) out_lokal_total,   COALESCE(out_lokal_price,0) out_lokal_price,   COALESCE(out_impor_qty,0) out_impor_qty,   COALESCE(out_impor_total,0) out_impor_total,   COALESCE(out_impor_price,0) out_impor_price,   COALESCE(out_sample_qty,0) out_sample_qty,   COALESCE(out_sample_total,0) out_sample_total,   COALESCE(out_sample_price,0) out_sample_price,   COALESCE(out_salnongroup_qty,0) out_salnongroup_qty,   COALESCE(out_salnongroup_total,0) out_salnongroup_total,   COALESCE(out_salnongroup_price,0) out_salnongroup_price,   COALESCE(out_salgroup_qty,0) out_salgroup_qty,   COALESCE(out_salgroup_total,0) out_salgroup_total,   COALESCE(out_salgroup_price,0) out_salgroup_price,   COALESCE(out_other_qty,0) out_other_qty,   COALESCE(out_other_total,0) out_other_total,   COALESCE(out_other_price,0) out_other_price,   COALESCE(jumlah_out_qty,0) jumlah_out_qty,   COALESCE(jumlah_out_total,0) jumlah_out_total,   COALESCE(jumlah_out_price,0) jumlah_out_price, COALESCE(qty,0) qty_adjust, COALESCE(total,0) total_adjust, COALESCE(price,0) price_adjust from pemasukan_fix a left join pengeluaran_fix b on b.id_roll = a.barcode_mapping left join adjustment c on c.no_barcode_mapping = a.barcode_mapping)
 
-select *, (saldo_awal_qty + jumlah_in_qty - jumlah_out_qty) saldo_akhir_qty, (saldo_awal_total + jumlah_in_total - jumlah_out_total) saldo_akhir_total, ((saldo_awal_total + jumlah_in_total - jumlah_out_total) / (saldo_awal_qty + jumlah_in_qty - jumlah_out_qty)) saldo_akhir_price from mutasi");
+select *, (saldo_awal_qty + jumlah_in_qty - jumlah_out_qty - qty_adjust) saldo_akhir_qty, (saldo_awal_total + jumlah_in_total - jumlah_out_total - total_adjust) saldo_akhir_total, ((saldo_awal_total + jumlah_in_total - jumlah_out_total - total_adjust) / (saldo_awal_qty + jumlah_in_qty - jumlah_out_qty - qty_adjust)) saldo_akhir_price from mutasi");
 
 
 $total_qty =0;
@@ -477,6 +483,9 @@ while($row2 = mysqli_fetch_array($sql)){
     <td style="text-align : right;" value = "'.$row2['jumlah_out_qty'].'">'.number_format($row2['jumlah_out_qty'],2).'</td>
     <td style="text-align : right;" value = "'.$row2['jumlah_out_price'].'">'.number_format($row2['jumlah_out_price'],2).'</td>
     <td style="text-align : right;" value = "'.$row2['jumlah_out_total'].'">'.number_format($row2['jumlah_out_total'],2).'</td>
+    <td style="text-align : right;" value = "'.$row2['jumlah_out_qty'].'">'.number_format($row2['qty_adjust'],2).'</td>
+    <td style="text-align : right;" value = "'.$row2['jumlah_out_price'].'">'.number_format($row2['price_adjust'],2).'</td>
+    <td style="text-align : right;" value = "'.$row2['jumlah_out_total'].'">'.number_format($row2['total_adjust'],2).'</td>
     <td style="text-align : right;" value = "'.$row2['saldo_akhir_qty'].'">'.number_format($row2['saldo_akhir_qty'],2).'</td>
     <td style="text-align : right;" value = "'.$row2['saldo_akhir_price'].'">'.number_format($row2['saldo_akhir_price'],2).'</td>
     <td style="text-align : right;" value = "'.$row2['saldo_akhir_total'].'">'.number_format($row2['saldo_akhir_total'],2).'</td>
