@@ -90,7 +90,7 @@
             </div>
             </br>
         </br>
-           <div class="tableFix" style="height: 400px;">
+           <div class="tableFix table-responsive" style="height: 400px;">
             <table id="mytable" class="table table-striped table-head-fixed" cellspacing="0" width="100%" style="font-size: 13px;text-align:center;">
                     <thead class="bg-dark text-white">
                         <tr>
