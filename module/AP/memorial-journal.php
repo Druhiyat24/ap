@@ -294,8 +294,8 @@
             <td style="width: 100px;" value = "'.$row['mj_date'].'">'.date("d-M-Y",strtotime($row['mj_date'])).'</td>
             <td style="" value = "'.$row['nama_cmj'].'">'.$row['nama_cmj'].'</td>
             <td style="" value = "'.$row['curr'].'">'.$row['curr'].'</td>
-            <td style=" text-align : center;" value="'.$row['debit'].'">'.number_format($row['debit'],2).'</td>
-            <td style=" text-align : center;" value="'.$row['credit'].'">'.number_format($row['credit'],2).'</td>
+            <td style=" text-align : right;" value="'.$row['debit'].'">'.number_format($row['debit'],2).'</td>
+            <td style=" text-align : right;" value="'.$row['credit'].'">'.number_format($row['credit'],2).'</td>
             <td style="" value = "'.$row['status'].'">'.$row['status'].'</td>
             <td style="text-align: left" value = "'.$row['keterangan'].'">'.$row['keterangan'].'</td>';
 
@@ -312,9 +312,9 @@
                 <a id="delete" href=""><button style="border-radius: 6px" type="button" class="btn-xs btn-danger"><i class="fa fa-trash"aria-hidden="true" style="padding-right: 10px; padding-left: 5px;" onclick="alert_cancel();"> Cancel</i></button></a>';
             }elseif($status == 'Post' and $fin == '1'and $app != '1'){
                 echo '<p style="font-size: 13px;margin-bottom: -1px"><i class="fa fa-paper-plane" style="padding-right: 3px; padding-left: 5px; color: green" ></i><b>Post</b></p>';
-                if ($row['id_cmj'] != 'CMJ001') {
+                // if ($row['id_cmj'] != 'CMJ001' && $row['id_cmj'] != 'CMJ003') {
                     echo '<a href="edit-memorial-journal.php?no_mj='.base64_encode($row['no_mj']).' "><button style="border-radius: 6px" type="button" class="btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Edit</i></button></a>';
-                }
+                // }
             }elseif($status == 'Post' and $fin == '1' and $app == '1'){
                 echo '<a id="delete" href=""><button style="border-radius: 6px" type="button" class="btn-xs btn-danger"><i class="fa fa-trash"aria-hidden="true" style="padding-right: 10px; padding-left: 5px;" onclick="alert_cancel();"> Cancel</i></button></a>
                 ';
@@ -488,6 +488,7 @@ $(function() {
             // },
             success: function(data){                
                 console.log(data);
+                // alert(data);
                 window.location.reload();
                 // alert(data);
                                                                             
