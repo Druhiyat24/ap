@@ -685,9 +685,7 @@ select * from bpjs_jpn) a GROUP BY status_staff, id_pc ORDER BY id_pc, status_st
 
 total_bpjs_ks as (select tgl_jurnal, status_staff, '-' no_cc, '-' cc_name, '2.51.31' no_coa, 'BIAYA YANG MASIH HARUS DIBAYAR - BPJS' nama_coa, id_pc, profit_center, 0 debit, ROUND(sum(debit),2) credit, CONCAT('AKRUAL BPJS KS (', status_staff, ') ', UPPER(DATE_FORMAT('$tgl_hris', '%M %Y')), ' (', IF(id_pc = 'NAG','GARMENT','KNITTING'), ')') keterangan from (select * from bpjs_ks) a GROUP BY status_staff, id_pc ORDER BY id_pc, status_staff ASC)
 
-
-
-select * from bpjs_jkk
+select '' no_journal, id_pc, profit_center, no_coa, nama_coa, no_cc, cc_name, '-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr, debit, credit, keterangan deskripsi from (select * from bpjs_jkk
 UNION ALL
 select * from bpjs_jkm
 UNION ALL
@@ -699,7 +697,7 @@ select * from bpjs_ks
 UNION ALL
 select * from total_bpjs_tk
 UNION
-select * from total_bpjs_ks
+select * from total_bpjs_ks) a
 ");
 }else{
     '';
