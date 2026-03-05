@@ -96,13 +96,7 @@ if ($curr_ob == 'IDR') {
 	if($rats != '0'){
 		$rates = $rats;
 	}else{
-		$sqlxss = mysqli_query($conn1,"select max(id) as id FROM masterrate where v_codecurr = 'PAJAK'");
-		$rowxss = mysqli_fetch_array($sqlxss);
-		$maxidss = $rowxss['id'];
-
-		$sqlyss = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where id = '$maxidss' and v_codecurr = 'PAJAK'");
-		$rowyss = mysqli_fetch_array($sqlyss);
-		$rates = $rowyss['rate'];
+		$rates = 1;
 	}
 
 	$t_debit = $debit * $rates;
@@ -169,8 +163,8 @@ if ($no_pay == '') {
 
 	$execute2 = mysqli_query($conn2,$query2);
 
-	$sqlpv = mysqli_query($conn1, "select *, ((total + t_ppn - total_pph) / total_pv * 100) per_total, (total/total_*100) per_dpp, (total_ppn/total_*100) per_ppn_, (total_pph/total_*100) per_pph_ from (select b.id,a.no_pv,a.pv_date,a.curr,b.coa,c.nama_coa,b.no_cc,IF(e.cc_name is null,'-',e.cc_name) cc_name,b.reff_doc,b.reff_date,b.deskripsi,b.amount total,((if(a.per_ppn = 0,b.ppn,a.per_ppn)/100) * b.amount) total_ppn,if(a.per_ppn = 0,b.ppn,a.per_ppn) per_ppn,((b.pph/100) * b.amount) as total_pph, b.pph, (b.amount + ((if(a.per_ppn = 0,b.ppn,a.per_ppn)/100) * b.amount) - ((b.pph/100) * b.amount)) as total_,d.no_coa coa_pph,d.nama_coa coa_name_pph, b.profit_center  from tbl_pv_h a inner join tbl_pv b on b.no_pv = a.no_pv left join mastercoa_v2 c on c.no_coa = b.coa left join mtax d on d.idtax = b.id_pph left join b_master_cc e on e.no_cc = b.no_cc where a.no_pv = '$no_pay') a left join
-		(select b.id id_,((IF(b.ppn = 0, a.per_ppn, b.ppn)/100) * b.amount) as t_ppn, IF(b.ppn = 0, a.per_ppn, b.ppn) ppn,d.no_coa coa_ppn,d.nama_coa coa_name_ppn from tbl_pv_h a inner join tbl_pv b on b.no_pv = a.no_pv left join mastercoa_v2 c on c.no_coa = b.coa left join mtax d on d.idtax = b.id_ppn left join b_master_cc e on e.no_cc = b.no_cc where a.no_pv = '$no_pay') b on b.id_ = a.id INNER JOIN (select no_pv pv, total total_pv, pph pph_pv, ppn ppn_pv from tbl_pv_h where no_pv= '$no_pay') c on c.pv = a.no_pv order by id asc");
+	$sqlpv = mysqli_query($conn1, "select *, ((total + t_ppn - total_pph) / total_pv * 100) per_total, (total/total_*100) per_dpp, (total_ppn/total_*100) per_ppn_, (total_pph/total_*100) per_pph_ from (select b.id,a.no_pv,a.pv_date,a.curr,b.coa,c.nama_coa,b.no_cc,IF(e.cc_name is null,'-',e.cc_name) cc_name,b.reff_doc,b.reff_date,b.deskripsi,IF(b.amount != 0, b.amount, (b.ded_add * -1)) total,((if(a.per_ppn = 0,b.ppn,a.per_ppn)/100) * IF(b.amount != 0, b.amount, (b.ded_add * -1))) total_ppn,if(a.per_ppn = 0,b.ppn,a.per_ppn) per_ppn,((b.pph/100) * IF(b.amount != 0, b.amount, (b.ded_add * -1))) as total_pph, b.pph, (IF(b.amount != 0, b.amount, (b.ded_add * -1)) + ((if(a.per_ppn = 0,b.ppn,a.per_ppn)/100) * IF(b.amount != 0, b.amount, (b.ded_add * -1))) - ((b.pph/100) * IF(b.amount != 0, b.amount, (b.ded_add * -1)))) as total_,d.no_coa coa_pph,d.nama_coa coa_name_pph, b.profit_center  from tbl_pv_h a inner join tbl_pv b on b.no_pv = a.no_pv left join mastercoa_v2 c on c.no_coa = b.coa left join mtax d on d.idtax = b.id_pph left join b_master_cc e on e.no_cc = b.no_cc where a.no_pv = '$no_pay') a left join
+		(select b.id id_,((IF(b.ppn = 0, a.per_ppn, b.ppn)/100) * IF(b.amount != 0, b.amount, (b.ded_add * -1))) as t_ppn, IF(b.ppn = 0, a.per_ppn, b.ppn) ppn,d.no_coa coa_ppn,d.nama_coa coa_name_ppn from tbl_pv_h a inner join tbl_pv b on b.no_pv = a.no_pv left join mastercoa_v2 c on c.no_coa = b.coa left join mtax d on d.idtax = b.id_ppn left join b_master_cc e on e.no_cc = b.no_cc where a.no_pv = '$no_pay') b on b.id_ = a.id INNER JOIN (select no_pv pv, total total_pv, pph pph_pv, ppn ppn_pv from tbl_pv_h where no_pv= '$no_pay') c on c.pv = a.no_pv order by id asc");
 
 	// select *, round((total + t_ppn - total_pph) / total_pv * 100,2) per_total, (100 - COALESCE(ppn,0) - COALESCE(pph,0)) per_dpp from (select b.id,a.no_pv,a.pv_date,a.curr,b.coa,c.nama_coa,b.no_cc,IF(e.cc_name is null,'-',e.cc_name) cc_name,b.reff_doc,b.reff_date,b.deskripsi,b.amount total,((a.per_ppn/100) * b.amount) total_ppn,a.per_ppn,((b.pph/100) * b.amount) as total_pph, b.pph, (b.amount + ((a.per_ppn/100) * b.amount) - ((b.pph/100) * b.amount)) as total_,d.no_coa coa_pph,d.nama_coa coa_name_pph from tbl_pv_h a inner join tbl_pv b on b.no_pv = a.no_pv left join mastercoa_v2 c on c.no_coa = b.coa left join mtax d on d.idtax = b.id_pph left join b_master_cc e on e.no_cc = b.no_cc where a.no_pv = '$no_pay') a left join
 	// 	(select b.id id_,((IF(b.ppn = 0, a.per_ppn, b.ppn)/100) * b.amount) as t_ppn, IF(b.ppn = 0, a.per_ppn, b.ppn) ppn,d.no_coa coa_ppn,d.nama_coa coa_name_ppn from tbl_pv_h a inner join tbl_pv b on b.no_pv = a.no_pv left join mastercoa_v2 c on c.no_coa = b.coa left join mtax d on d.idtax = b.id_ppn left join b_master_cc e on e.no_cc = b.no_cc where a.no_pv = '$no_pay') b on b.id_ = a.id INNER JOIN (select no_pv pv, total total_pv, pph pph_pv, ppn ppn_pv from tbl_pv_h where no_pv= '$no_pay') c on c.pv = a.no_pv order by id asc
@@ -215,6 +209,20 @@ if ($no_pay == '') {
 		$ttl_pph_per_row = $pv_per_pph_ / 100 * $ttl_per_row;
 		$ttl_ppn_per_row = $pv_per_ppn_ / 100 * $ttl_per_row;
 		$total_dppnya = $ttl_dpp_per_row;
+		if ($total_dppnya > 0) {
+			$debit_pv = $total_dppnya;
+		}else{
+			$debit_pv = 0;
+		}
+
+		if ($total_dppnya < 0) {
+			$credit_pv = $total_dppnya * -1;
+		}else{
+			$credit_pv = 0;
+		}
+
+		$debit_idr_pv = $debit_pv * $rates;
+		$credit_idr_pv = $credit_pv * $rates;
 
 		$pv_total_idr = $total_dppnya * $rates;
 		$pv_pph_idr = $ttl_pph_per_row * $rates;
@@ -228,7 +236,7 @@ if ($no_pay == '') {
 
 		$queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
 		VALUES
-		('$kode', '$bankout_date', '$type_ob', '$pv_coa', '$pv_nama_coa', '$pv_no_cc', '$pv_cc_name', '$pv_no_pv', '$pv_pv_date', '-', '-', '$pv_curr', '$rates','$total_dppnya', '0', '$pv_total_idr', '0', 'Draft', '$pv_deskripsi', '$create_by', '$create_date', '', '', '', '', '$pv_profit_center')";
+		('$kode', '$bankout_date', '$type_ob', '$pv_coa', '$pv_nama_coa', '$pv_no_cc', '$pv_cc_name', '$pv_no_pv', '$pv_pv_date', '-', '-', '$pv_curr', '$rates','$debit_pv', '$credit_pv', '$debit_idr_pv', '$credit_idr_pv', 'Draft', '$pv_deskripsi', '$create_by', '$create_date', '', '', '', '', '$pv_profit_center')";
 
 		$executess2 = mysqli_query($conn2, $queryss2);
 
@@ -245,8 +253,22 @@ if ($no_pay == '') {
 			('$kode', '$bankout_date', '$type_ob', '$pv_coa_ppn', '$pv_coa_name_ppn', '$pv_no_cc', '$pv_cc_name', '$pv_no_pv', '$pv_pv_date', '-', '-', '$curr', '$rates', '$ttl_ppn_per_row', '0', '$pv_ppn_idr', '0', 'Draft', '$pv_deskripsi','$create_by', '$create_date', '', '', '', '',  '$pv_profit_center')";
 
 			$executes_ppn = mysqli_query($conn2,$querys_ppn);
-		}else{
+		}
 
+		if ($pv_per_ppn < 0) {
+			$sqlcoa3 = mysqli_query($conn1,"SELECT no_coa, nama_coa from mastercoa_v2 where inv_type like '%PPN KBN%' Limit 1");
+			$rowcoa3 = mysqli_fetch_array($sqlcoa3);
+			$no_coa_ppn = $rowcoa3['no_coa'];
+			$nama_coa_ppn = $rowcoa3['nama_coa'];
+			$credit_ppn     = $ttl_ppn_per_row * -1;
+			$credit_ppn_idr = $pv_ppn_idr * -1;
+
+
+			$querys_ppn = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+			VALUES 
+			('$kode', '$bankout_date', '$type_ob', '$pv_coa_ppn', '$pv_coa_name_ppn', '$pv_no_cc', '$pv_cc_name', '$pv_no_pv', '$pv_pv_date', '-', '-', '$curr', '$rates', '0', '$credit_ppn', '0', '$credit_ppn_idr', 'Draft', '$pv_deskripsi','$create_by', '$create_date', '', '', '', '',  '$pv_profit_center')";
+
+			$executes_ppn = mysqli_query($conn2,$querys_ppn);
 		}
 
 		if ($pv_pph > 0) {
@@ -257,8 +279,17 @@ if ($no_pay == '') {
 			('$kode', '$bankout_date', '$type_ob', '$pv_coa_pph', '$pv_coa_name_pph', '$pv_no_cc', '$pv_cc_name', '$pv_no_pv', '$pv_pv_date', '-', '-', '$curr', '$rates', '0', '$ttl_pph_per_row', '0', '$pv_pph_idr', 'Draft', '$pv_deskripsi','$create_by', '$create_date', '', '', '', '', '$pv_profit_center')";
 
 			$executes_ppn = mysqli_query($conn2,$querys_ppn);
-		}else{
+		}
 
+		if ($pv_pph < 0) {
+			$debit_pph     = $ttl_pph_per_row * -1;
+			$debit_pph_idr = $pv_pph_idr * -1;
+
+			$querys_ppn = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+			VALUES 
+			('$kode', '$bankout_date', '$type_ob', '$pv_coa_pph', '$pv_coa_name_pph', '$pv_no_cc', '$pv_cc_name', '$pv_no_pv', '$pv_pv_date', '-', '-', '$curr', '$rates', '$debit_pph', '0', '$debit_pph_idr', '0', 'Draft', '$pv_deskripsi','$create_by', '$create_date', '', '', '', '', '$pv_profit_center')";
+
+			$executes_ppn = mysqli_query($conn2,$querys_ppn);
 		}
 
 
@@ -273,7 +304,7 @@ if ($no_pay == '') {
 
 	$sql1lp = mysqli_query($conn2,"select DISTINCT * from (select no_coa,nama_coa,sum(amount) amount,if(memo = '',null,memo) memo, profit_center from list_payment where no_payment = '$no_pay' GROUP BY no_coa
 		union
-		select no_coa,nama_coa,sum(total) amount,if(keterangan = '',null,keterangan) keterangan, 'NAG' profit_center from saldo_awal where no_pay = '$no_pay' GROUP BY no_coa) a");
+		select no_coa,nama_coa,sum(total) amount,if(keterangan = '',null,keterangan) keterangan, 'NAG' profit_center from saldo_awal where no_pay = '$no_pay' GROUP BY no_coa) a limit 1");
 	while($rowlp = mysqli_fetch_array($sql1lp)){
 		$no_coalp = $rowlp['no_coa'];
 		$nama_coalp = $rowlp['nama_coa'];

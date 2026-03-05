@@ -197,16 +197,18 @@
                     <?php 
                     $sqlacc = mysqli_query($conn1,"select no_bankout from b_bankout_h where status = 'Approved' and stat_bi != 'Y' and nama_supp = 'PT. NIRWANA ALABARE GARMENT'");
 
-                        // $sqlacc = mysqli_query($conn1,"select a.no_bankout from b_bankout_h a inner join b_bankout_none b on b.no_bankout = a.no_bankout inner join mastercoa_v2 c on c.no_coa = b.no_coa where a.status = 'Approved' and a.outstanding != '0' and nama_supp = 'PT. NIRWANA ALABARE GARMENT' and b.no_coa = '1.90.01'");
-
                     while ($row = mysqli_fetch_array($sqlacc)) {
                         $data = $row['no_bankout'];
+                        $sql_get_pc = mysqli_query($conn1,"select profit_center from tbl_list_journal where no_journal = '$data' and no_coa like '1.%' limit 1");
+                        $rowget_pc = mysqli_fetch_array($sql_get_pc);
+                        $profit_center_bk = $rowget_pc['profit_center'];
+
                         if($row['no_bankout'] == $_POST['no_bk']){
                             $isSelected  = ' selected="selected"';
                         }else{
                             $isSelected = '';
                         }
-                        echo '<option name="no_bk" value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
+                        echo '<option name="no_bk" data-pc="'.$profit_center_bk.'" value="'.$data.'" '.$isSelected.'">'. $data .'</option>';    
                     }
                     ?>
                     <?php echo'</select>
@@ -2583,7 +2585,7 @@ function addListener(elm,index){
         var eqv_idr = document.getElementById('nomrate_h').value;
         var pesan = document.getElementById('pesan').value;
         var create_user = '<?php echo $user; ?>';
-        var prof_ctr = '';
+        var prof_ctr = $('#no_bk option:selected').data('pc');
 
         if(akun != '' && nominal != ''){
             $.ajax({
@@ -2596,7 +2598,8 @@ function addListener(elm,index){
                 },
                 success: function(response){
                  $("input[type=checkbox]:checked").each(function () {
-                    var no_bankin = document.getElementById('no_doc').value;                        
+                    var no_bankin = document.getElementById('no_doc').value;    
+                    var no_bk = document.getElementById('no_bk').value;                        
                     var prof_ctr = $(this).closest('tr').find('td:eq(1) input').attr('data');
                     var id_coa = $(this).closest('tr').find('td:eq(2) input').attr('data');
                     var no_reff = $(this).closest('tr').find('td:eq(3) input').val();                  
@@ -2611,7 +2614,7 @@ function addListener(elm,index){
                         $.ajax({
                             type:'POST',
                             url:'insert_bankin_none.php',
-                            data: {'no_bankin':no_bankin, 'prof_ctr':prof_ctr, 'id_coa':id_coa, 'no_reff':no_reff, 'reff_date':reff_date, 'deskripsi':deskripsi, 't_debit':t_debit, 't_credit':t_credit},
+                            data: {'no_bankin':no_bankin, 'no_bk':no_bk, 'prof_ctr':prof_ctr, 'id_coa':id_coa, 'no_reff':no_reff, 'reff_date':reff_date, 'deskripsi':deskripsi, 't_debit':t_debit, 't_credit':t_credit},
                             cache: 'false',
                             close: function(e){
                                 e.preventDefault();

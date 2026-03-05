@@ -2715,6 +2715,24 @@ if($('select[name=nama_supp] option').filter(':selected').val() == '' || $('sele
 
 </script>
 
+<script>
+function updateRatePajak(){
+    var tgl = document.getElementById('tgl_active').value;
+    alert (tgl);
+
+    // fetch('get_rate_pajak.php', {
+    //     method: 'POST',
+    //     headers: {'Content-Type':'application/x-www-form-urlencoded'},
+    //     body: 'tgl=' + encodeURIComponent(tgl)
+    // })
+    // .then(res => res.text())
+    // .then(rate => {
+    //     document.getElementById('txt_rate').value = rate;
+    // });
+}
+</script>
+
+
 <!--<script>
     $(document).ready(){
         $('#mybpb').click(function){
