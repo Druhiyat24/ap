@@ -64,35 +64,50 @@
                     <div class="col-md-4 mb-3" style="padding-top: 8px;">
                         <label for="nama_supp"><b>Supplier</b></label>            
                         <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true" onchange="this.form.submit()">
-                            <?php 
-                            $no_pv = base64_decode($_GET['no_pv']);
-                            $sql = mysqli_query($conn2,"select nama_supp from tbl_pv_h where no_pv = '$no_pv'");
-                            $row = mysqli_fetch_array($sql);  
-                            $namasupp = $row['nama_supp'];  
-                            $isSelected = ' selected="selected"';                      
-                            if(!empty($no_pv)) {
-                                echo '<option value="'.$namasupp.'"'.$isSelected.'">'. $namasupp .'</option>'; 
-                            }
-                            else{
-                                echo '<option value="-">Select Supplier</option>'; 
-                            }  ?>
-                            <?php
-                            $nama_supp ='';
-                            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
-                            }                 
-                            $sql = mysqli_query($conn1,"select distinct(Supplier) from mastersupplier where tipe_sup = 'S' and Supplier != '$namasupp' order by Supplier ASC");
-                            while ($row = mysqli_fetch_array($sql)) {
-                                $data = $row['Supplier'];
-                                if($row['Supplier'] == $_POST['nama_supp']){
-                                    $isSelected = ' selected="selected"';
-                                }else{
-                                    $isSelected = '';
 
-                                }
-                                echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
-                            }?>
-                        </select>
+<?php
+
+$no_pv = isset($_GET['no_pv']) ? base64_decode($_GET['no_pv']) : '';
+
+$selected_supplier = '';
+
+// ambil supplier dari PV jika ada
+if(!empty($no_pv)){
+    $sql = mysqli_query($conn2,"SELECT nama_supp FROM tbl_pv_h WHERE no_pv = '$no_pv'");
+    $row = mysqli_fetch_assoc($sql);
+    $selected_supplier = $row['nama_supp'] ?? '';
+}
+
+// jika POST override
+if(isset($_POST['nama_supp'])){
+    $selected_supplier = $_POST['nama_supp'];
+}
+
+// default option
+if(empty($selected_supplier)){
+    echo '<option value="">Select Supplier</option>';
+}
+
+// ambil semua supplier
+$sql = mysqli_query($conn1,"
+    SELECT DISTINCT Supplier 
+    FROM mastersupplier 
+    WHERE tipe_sup = 'S'
+    ORDER BY Supplier ASC
+");
+
+while ($row = mysqli_fetch_assoc($sql)) {
+
+    $supplier = $row['Supplier'];
+
+    $isSelected = ($supplier == $selected_supplier) ? 'selected' : '';
+
+    echo '<option value="'.$supplier.'" '.$isSelected.'>'.$supplier.'</option>';
+}
+?>
+
+</select>
+
 
                     </div>
 
@@ -1500,103 +1515,86 @@ var element1 = `
     }
 }
 
-function deleteRow(tableID)
-{
-    try
-    {
+function deleteRow(tableID) {
+    try {
+
         var table = document.getElementById(tableID);
         var rowCount = table.rows.length;
-        for(var i=0; i<rowCount; i++)
-        {
-            var row = table.rows[i];
-            var chkbox = row.cells[12].childNodes[0];
-            if (null != chkbox && true == chkbox.checked)
-            {
-                if (rowCount <= 1)
-                {
+
+        for (var r = 0; r < rowCount; r++) {
+
+            var row = table.rows[r];
+            var chkbox = row.cells[12].querySelector('input[type="checkbox"]');
+
+            if (chkbox && chkbox.checked) {
+
+                if (rowCount <= 1) {
                     alert("Tidak dapat menghapus semua baris.");
-                    break;
+                    return;
                 }
-                table.deleteRow(i);
+
+                table.deleteRow(r);
                 rowCount--;
-                i--;
-
-                var table = document.getElementById("tbody2");
-                var tota = 0;
-                var tota_ppn = 0;
-                var t_ppn = 0;
-                var tota_amt = 0;
-                var tota_ded = 0;
-                var harga = 0;
-                var totall = 0;
-                var tot_price= 0;
-                var total_ppn= 0;
-                var harga = 0;
-                var harga2 = 0;
-                var total_pv = parseFloat(document.getElementById('nomrate_h').value,10) || 0;
-                var ppn_h = parseFloat(document.getElementById('ppn_h').value,10) || 0;
-                var h_ppn = 0;
-                var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0;
-                for (var i = 1; i < (table.rows.length); i++) {
-
-                    var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
-                    var price2 = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
-                    var pph = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
-                    var ppn = document.getElementById("tbody2").rows[i].cells[11].children[0].value || 0;
-
-                    if(price == ''){
-                        tot_price = - price2;
-                    }else{
-                        tot_price = price;
-                    }
-
-                    if (price == '') {
-                        harga = 0;
-                    }else{
-                        harga = price;
-                    }
-
-                    if (price2 == '') {
-                        harga2 = 0;
-                    }else{
-                        harga2 = price2;
-                    }
-
-
-                    tota += tot_price * (pph/100);
-                    tota_ppn += tot_price * (ppn/100);
-                    tota_amt += parseFloat(harga);
-                    tota_ded += parseFloat(- harga2);
-                    total_ppn = tota_amt * (h_ppn /100);
-
-                    if (tota_ppn == 0) {
-                        t_ppn = total_ppn;
-                    }else{
-                        t_ppn = tota_ppn;
-                    }
-
-                    var total_h = tota_amt + t_ppn - tota + tota_ded;
-
-
-                    document.getElementsByName("ppn_h")[0].value = (t_ppn).toFixed(2);
-                    document.getElementsByName("ppn")[0].value = formatMoney(t_ppn.toFixed(2));   
-                    document.getElementsByName("pph_h")[0].value = (- tota).toFixed(2);
-                    document.getElementsByName("pph")[0].value = formatMoney(- tota.toFixed(2));
-                    document.getElementsByName("total_h")[0].value = (total_h).toFixed(2);
-                    document.getElementsByName("total")[0].value = formatMoney(total_h.toFixed(2));
-                    document.getElementsByName("total_h2")[0].value = formatMoney(total_h.toFixed(2));
-                    document.getElementsByName("nomrate_h")[0].value = (tota_amt).toFixed(2);
-                    document.getElementsByName("nomrate1")[0].value = formatMoney(tota_amt.toFixed(2));
-                    document.getElementsByName("ded_ad")[0].value = (tota_ded).toFixed(2);
-                    document.getElementsByName("ded_ad_h")[0].value = formatMoney(tota_ded.toFixed(2));
-                }
+                r--;
             }
         }
-    } catch(e)
-    {
+
+        // ==============================
+        // HITUNG ULANG TOTAL
+        // ==============================
+
+        var table2 = document.getElementById("tbody2");
+
+        var tota = 0;
+        var tota_ppn = 0;
+        var tota_amt = 0;
+        var tota_ded = 0;
+
+        var h_ppn = 0;
+
+        for (var i = 1; i < table2.rows.length; i++) {
+
+            var price = parseFloat(table2.rows[i].cells[7].children[0].value) || 0;
+            var price2 = parseFloat(table2.rows[i].cells[8].children[0].value) || 0;
+
+            var pph = parseFloat(table2.rows[i].cells[10].querySelector('select').value) || 0;
+            var ppn = parseFloat(table2.rows[i].cells[11].querySelector('select').value) || 0;
+
+            var tot_price = price === 0 ? -price2 : price;
+
+            tota += tot_price * (pph / 100);
+            tota_ppn += tot_price * (ppn / 100);
+
+            tota_amt += price;
+            tota_ded += -price2;
+        }
+
+        var total_ppn = tota_amt * (h_ppn / 100);
+        var t_ppn = tota_ppn === 0 ? total_ppn : tota_ppn;
+
+        var total_h = tota_amt + t_ppn - tota + tota_ded;
+
+        document.getElementsByName("ppn_h")[0].value = t_ppn.toFixed(2);
+        document.getElementsByName("ppn")[0].value = formatMoney(t_ppn.toFixed(2));
+
+        document.getElementsByName("pph_h")[0].value = (-tota).toFixed(2);
+        document.getElementsByName("pph")[0].value = formatMoney((-tota).toFixed(2));
+
+        document.getElementsByName("total_h")[0].value = total_h.toFixed(2);
+        document.getElementsByName("total")[0].value = formatMoney(total_h.toFixed(2));
+        document.getElementsByName("total_h2")[0].value = formatMoney(total_h.toFixed(2));
+
+        document.getElementsByName("nomrate_h")[0].value = tota_amt.toFixed(2);
+        document.getElementsByName("nomrate1")[0].value = formatMoney(tota_amt.toFixed(2));
+
+        document.getElementsByName("ded_ad")[0].value = tota_ded.toFixed(2);
+        document.getElementsByName("ded_ad_h")[0].value = formatMoney(tota_ded.toFixed(2));
+
+    } catch (e) {
         alert(e);
     }
 }
+
 
 function InsertRow(tableID)
 {
@@ -1651,46 +1649,52 @@ function hitungRow(){
 <script type="text/javascript">
 
     function input_pph(){
-     var table = document.getElementById("tbody2");
-     var tota = 0;
-     var harga = 0;
-     var totall = 0;
-     var tot_price= 0;
-     var tot_min= 0;
-     var tot_plus= 0;
-     var ppn_h = 0;
-     var total_pv = parseFloat(document.getElementById('nomrate_h').value,10) || 0;
-    // var ppn_h = parseFloat(document.getElementById('ppn_h').value,10) || 0;
-    var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0;
-    for (var i = 1; i < (table.rows.length); i++) {
 
-        var price = parseFloat(document.getElementById("tbody2").rows[i].cells[7].children[0].value);
-        var price2 = parseFloat(document.getElementById("tbody2").rows[i].cells[8].children[0].value);
-        var pph = parseFloat(document.getElementById("tbody2").rows[i].cells[10].querySelector('select').value) || 0;
-        var ppn = parseFloat(document.getElementById("tbody2").rows[i].cells[11].querySelector('select').value) || 0;
+    var table = document.getElementById("tbody2");
+    var tota = 0;
+    var tot_price = 0;
+    var tot_min = 0;
+    var tot_plus = 0;
+    var ppn_h = 0;
+
+    var total_pv = parseFloat(document.getElementById('nomrate_h').value) || 0;
+    var ded_ad   = parseFloat(document.getElementById('ded_ad').value) || 0;
+
+    for (var i = 1; i < table.rows.length; i++) {
+
+        var price = parseFloat(table.rows[i].cells[7].children[0].value) || 0;
+        var price2 = parseFloat(table.rows[i].cells[8].children[0].value) || 0;
+
+        var pph = parseFloat(table.rows[i].cells[10].querySelector('select').value) || 0;
+        var ppn = parseFloat(table.rows[i].cells[11].querySelector('select').value) || 0;
+
         console.log(pph + ' ' + ppn);
-        if(price == ''){
-            tot_price = - price2;
+
+        if(price == 0){
+            tot_price = -price2;
             tot_min += tot_price * (pph/100);
-            document.getElementsByName("pph_min")[0].value = (- tot_min).toFixed(2);
+            document.getElementsByName("pph_min")[0].value = (-tot_min).toFixed(2);
         }else{
             tot_price = price;
             tot_plus += tot_price * (pph/100);
-            document.getElementsByName("pph_plus")[0].value = (- tot_plus).toFixed(2);
+            document.getElementsByName("pph_plus")[0].value = (-tot_plus).toFixed(2);
         }
 
         tota += tot_price * (pph/100);
         ppn_h += tot_price * (ppn/100);
-        var total_h = total_pv + ppn_h - tota + ded_ad;
-
-        document.getElementsByName("pph_h")[0].value = (- tota).toFixed(2);
-        document.getElementsByName("pph")[0].value = formatMoney(- tota.toFixed(2));
-        document.getElementsByName("ppn_h")[0].value = (ppn_h).toFixed(2);
-        document.getElementsByName("ppn")[0].value = formatMoney(ppn_h.toFixed(2));
-        document.getElementsByName("total_h")[0].value = (total_h).toFixed(2);
-        document.getElementsByName("total_h2")[0].value = formatMoney(total_h.toFixed(2));
-        document.getElementsByName("total")[0].value = formatMoney(total_h.toFixed(2));
     }
+
+    var total_h = total_pv + ppn_h - tota + ded_ad;
+
+    document.getElementsByName("pph_h")[0].value = (-tota).toFixed(2);
+    document.getElementsByName("pph")[0].value = formatMoney((-tota).toFixed(2));
+
+    document.getElementsByName("ppn_h")[0].value = (ppn_h).toFixed(2);
+    document.getElementsByName("ppn")[0].value = formatMoney(ppn_h.toFixed(2));
+
+    document.getElementsByName("total_h")[0].value = (total_h).toFixed(2);
+    document.getElementsByName("total_h2")[0].value = formatMoney(total_h.toFixed(2));
+    document.getElementsByName("total")[0].value = formatMoney(total_h.toFixed(2));
 }
 
 
@@ -1775,104 +1779,98 @@ function getdate() {
 
 <script type="text/javascript">
   function modal_input_amt(){ 
-    var pph_h = parseFloat(document.getElementById('pph_h').value,10) || 0;
-    var pph_ded = parseFloat(document.getElementById('pph_min').value,10) || 0;
-    var ppn_h = parseFloat(document.getElementById('ppn_h').value,10) || 0;
-    var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0; 
-    // var ppn = parseFloat(document.getElementById('pilih_ppn').value,10) || 0;    
+
+    var pph_ded = parseFloat(document.getElementById('pph_min').value) || 0;
+    var ded_ad  = parseFloat(document.getElementById('ded_ad').value) || 0;
+
     var table = document.getElementById("tbody2");
+
     var tota = 0;
     var tota_pph = 0;
-    var total_pph = 0;
     var tota_ppn = 0;
-    var harga = 0;
-    var totall = 0;
-    for (var i = 1; i < (table.rows.length); i++) {
 
-       var price = parseFloat(document.getElementById("tbody2").rows[i].cells[7].children[0].value);
-       var price2 = document.getElementById("tbody2").rows[i].cells[8].children[0];
-       var pph = parseFloat(document.getElementById("tbody2").rows[i].cells[10].querySelector('select').value) || 0;
-       var ppn = parseFloat(document.getElementById("tbody2").rows[i].cells[11].querySelector('select').value) || 0;
+    for (var i = 1; i < table.rows.length; i++) {
 
-       console.log(price + ' ' + price2 + ' ' + pph + ' ' + ppn);
+        var price = parseFloat(table.rows[i].cells[7].children[0].value) || 0;
+        var price2 = table.rows[i].cells[8].children[0];
 
-       if (price == '') {
-        harga = 0;
-        price2.readOnly = false;
-    }else{
-        harga = price;
-        price2.readOnly = true;
+        var pph = parseFloat(table.rows[i].cells[10].querySelector('select').value) || 0;
+        var ppn = parseFloat(table.rows[i].cells[11].querySelector('select').value) || 0;
+
+        if(price == 0){
+            price2.readOnly = false;
+        }else{
+            price2.readOnly = true;
+        }
+
+        tota += price;
+        tota_pph += (price - price2.value) * (pph/100);
+        tota_ppn += (price - price2.value) * (ppn/100);
     }
-    tota += parseFloat(harga);
-    tota_pph += parseFloat(harga) * (pph/100);
-    total_pph = tota_pph - pph_ded;
-    // console.log(ppn);
-    tota_ppn += parseFloat(harga) * (ppn/100);
-    totall = tota + ded_ad + tota_ppn - total_pph;
 
+    var total_pph = tota_pph - pph_ded;
+    var totall = tota + ded_ad + tota_ppn - total_pph;
 
     document.getElementsByName("nomrate_h")[0].value = tota.toFixed(2);
     document.getElementsByName("nomrate1")[0].value = formatMoney(tota.toFixed(2));
+
     document.getElementsByName("total_h")[0].value = totall.toFixed(2);
     document.getElementsByName("total_h2")[0].value = formatMoney(totall.toFixed(2));
     document.getElementsByName("total")[0].value = formatMoney(totall.toFixed(2));
-    document.getElementsByName("pph_h")[0].value = (- total_pph).toFixed(2);
-    document.getElementsByName("pph")[0].value = formatMoney(- total_pph.toFixed(2));
-    document.getElementsByName("ppn_h")[0].value = (tota_ppn).toFixed(2);
+
+    document.getElementsByName("pph_h")[0].value = (-total_pph).toFixed(2);
+    document.getElementsByName("pph")[0].value = formatMoney((-total_pph).toFixed(2));
+
+    document.getElementsByName("ppn_h")[0].value = tota_ppn.toFixed(2);
     document.getElementsByName("ppn")[0].value = formatMoney(tota_ppn.toFixed(2));
-    document.getElementsByName("pph_plus")[0].value = (- tota_pph).toFixed(2);
-}
+
+    document.getElementsByName("pph_plus")[0].value = (-tota_pph).toFixed(2);
 }
 
 function modal_input_dedadd(){ 
-    var total_pv = parseFloat(document.getElementById('nomrate_h').value,10) || 0; 
-    var pph_h = parseFloat(document.getElementById('pph_h').value,10) || 0;
-    var pph_amt = parseFloat(document.getElementById('pph_plus').value,10) || 0;
-    var ppn_h = parseFloat(document.getElementById('ppn_h').value,10) || 0;
-    var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0;   
+
+    var total_pv = parseFloat(document.getElementById('nomrate_h').value) || 0;
+    var pph_amt  = parseFloat(document.getElementById('pph_plus').value) || 0;
+    var ppn_h    = parseFloat(document.getElementById('ppn_h').value) || 0;
+
     var table = document.getElementById("tbody2");
+
     var tota = 0;
-    var total = 0;
-    var harga = 0;
-    var harga2 = 0;
-    var totall = 0;
     var tota_pph = 0;
     var tota_ppn = 0;
-    var total_pph = 0;
-    for (var i = 1; i < (table.rows.length); i++) {
 
-        var price = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
-        var price_amt = document.getElementById("tbody2").rows[i].cells[7].children[0];
-        var pph = parseFloat(document.getElementById("tbody2").rows[i].cells[10].querySelector('select').value) || 0;
-        var ppn = parseFloat(document.getElementById("tbody2").rows[i].cells[11].querySelector('select').value) || 0;
+    for (var i = 1; i < table.rows.length; i++) {
 
-        if (price == '') {
-            harga = 0;
-            harga2 = price_amt;
+        var price = parseFloat(table.rows[i].cells[8].children[0].value) || 0;
+        var price_amt = table.rows[i].cells[7].children[0];
+
+        var pph = parseFloat(table.rows[i].cells[10].querySelector('select').value) || 0;
+        var ppn = parseFloat(table.rows[i].cells[11].querySelector('select').value) || 0;
+
+        if(price == 0){
             price_amt.readOnly = false;
         }else{
-            harga = price;
-            harga2 = 0;
             price_amt.readOnly = true;
         }
-        tota += parseFloat(- harga);
-        tota_pph += parseFloat(harga) * (pph/100);
-        tota_ppn += parseFloat(harga) * (ppn/100);
-        total_pph = pph_amt + tota_pph - tota_ppn;
-        total = total_pv + tota + ppn_h + total_pph;
 
+        tota += -price;
+        tota_pph += (price - price_amt.value) * (pph/100);
+        tota_ppn += (price - price_amt.value) * (ppn/100);
+    }
 
+    var total_pph = pph_amt + tota_pph - tota_ppn;
+    var total = total_pv + tota + ppn_h + total_pph;
 
-        document.getElementsByName("ded_ad")[0].value = tota.toFixed(2);
-        document.getElementsByName("ded_ad_h")[0].value = formatMoney(tota.toFixed(2));
-        document.getElementsByName("total_h")[0].value = total.toFixed(2);
-        document.getElementsByName("total_h2")[0].value = formatMoney(total.toFixed(2));
-        document.getElementsByName("total")[0].value = formatMoney(total.toFixed(2));
-    // document.getElementsByName("pph_h")[0].value = (total_pph).toFixed(2);
-    // document.getElementsByName("pph")[0].value = formatMoney(total_pph.toFixed(2));
-    document.getElementsByName("pph_min")[0].value = (tota_pph).toFixed(2);
+    document.getElementsByName("ded_ad")[0].value = tota.toFixed(2);
+    document.getElementsByName("ded_ad_h")[0].value = formatMoney(tota.toFixed(2));
+
+    document.getElementsByName("total_h")[0].value = total.toFixed(2);
+    document.getElementsByName("total_h2")[0].value = formatMoney(total.toFixed(2));
+    document.getElementsByName("total")[0].value = formatMoney(total.toFixed(2));
+
+    document.getElementsByName("pph_min")[0].value = tota_pph.toFixed(2);
 }
-}
+
 
 
 
