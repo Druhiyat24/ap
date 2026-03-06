@@ -31,19 +31,38 @@ if(!$execute4){
 	$execute = mysqli_query($conn2, $sqlupdate);
 
 
-$sql_nak = mysqli_query($conn1,"SELECT sum(end_balance) sld_akhir from fs_saldo_tb_temp where profit_center = 'NAK' and (no_coa >= '4' || no_coa = '3.40.01') ORDER BY no_coa asc");
+$sql_nak = mysqli_query($conn1,"SELECT sum(end_balance) sld_akhir from fs_saldo_tb_temp where profit_center = 'NAK' and (no_coa >= '4' || no_coa in ('3.30.01','3.40.01')) ORDER BY no_coa asc");
 $row_nak = mysqli_fetch_array($sql_nak);
 $sld_akhir_nak = isset($row_nak['sld_akhir']) ? $row_nak['sld_akhir'] : 0;
 
-$sqlupdate_nak = "UPDATE fs_saldo_awal_tb SET fs_saldo_awal_tb.$saldo_to = $sld_akhir_nak where fs_saldo_awal_tb.no_coa = '3.40.01' and profit_center = 'NAK'";
+$sqlupdate_nak = "UPDATE fs_saldo_awal_tb SET fs_saldo_awal_tb.$saldo_to = $sld_akhir_nak where fs_saldo_awal_tb.no_coa = '3.30.01' and profit_center = 'NAK'";
 $execute_nak = mysqli_query($conn2, $sqlupdate_nak);
 
-$sql_nag = mysqli_query($conn1,"SELECT sum(end_balance) sld_akhir from fs_saldo_tb_temp where profit_center = 'NAG' and (no_coa >= '4' || no_coa = '3.40.01') ORDER BY no_coa asc");
+$sql_nag = mysqli_query($conn1,"SELECT sum(end_balance) sld_akhir from fs_saldo_tb_temp where profit_center = 'NAG' and (no_coa >= '4' || no_coa in ('3.30.01','3.40.01')) ORDER BY no_coa asc");
 $row_nag = mysqli_fetch_array($sql_nag);
 $sld_akhir_nag = isset($row_nag['sld_akhir']) ? $row_nag['sld_akhir'] : 0;
 
-$sqlupdate_nag = "UPDATE fs_saldo_awal_tb SET fs_saldo_awal_tb.$saldo_to = $sld_akhir_nag where fs_saldo_awal_tb.no_coa = '3.40.01' and profit_center = 'NAG'";
+$sqlupdate_nag = "UPDATE fs_saldo_awal_tb SET fs_saldo_awal_tb.$saldo_to = $sld_akhir_nag where fs_saldo_awal_tb.no_coa = '3.30.01' and profit_center = 'NAG'";
 $execute_nag = mysqli_query($conn2, $sqlupdate_nag);
+
+
+// if ($execute_nak) {
+// 	$sql_nak2 = mysqli_query($conn1,"SELECT sum($saldo_to) sld_akhir from fs_saldo_awal_tb where profit_center = 'NAK' and no_coa in ('3.30.01','3.40.01') ORDER BY no_coa asc");
+// 	$row_nak2 = mysqli_fetch_array($sql_nak2);
+// 	$sld_akhir_nak2 = isset($row_nak2['sld_akhir']) ? $row_nak2['sld_akhir'] : 0;
+
+// 	$sqlupdate_nak2 = "UPDATE fs_saldo_awal_tb SET fs_saldo_awal_tb.$saldo_to = $sld_akhir_nak2 where fs_saldo_awal_tb.no_coa = '3.30.01' and profit_center = 'NAK'";
+// 	$execute_nak2 = mysqli_query($conn2, $sqlupdate_nak2);
+// }
+
+// if ($execute_nag) {
+// 	$sql_nag2 = mysqli_query($conn1,"SELECT sum($saldo_to) sld_akhir from fs_saldo_awal_tb where profit_center = 'NAG' and no_coa in ('3.30.01','3.40.01') ORDER BY no_coa asc");
+// 	$row_nag2 = mysqli_fetch_array($sql_nag2);
+// 	$sld_akhir_nag2 = isset($row_nag2['sld_akhir']) ? $row_nag2['sld_akhir'] : 0;
+
+// 	$sqlupdate_nag2 = "UPDATE fs_saldo_awal_tb SET fs_saldo_awal_tb.$saldo_to = $sld_akhir_nag2 where fs_saldo_awal_tb.no_coa = '3.30.01' and profit_center = 'NAG'";
+// 	$execute_nag2 = mysqli_query($conn2, $sqlupdate_nag2);
+// }
 
 
 	$queryss3 = "INSERT INTO tbl_log_copsal_tb (copy_user,copy_date,to_saldo)
