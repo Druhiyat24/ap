@@ -529,139 +529,130 @@
                                     $sql = mysqli_query($conn3,"WITH
 log_jurnal as (select DATE_FORMAT(tgl_journal, '%Y-%m') tgl_journal, no_journal from log_jurnal_bpjs where DATE_FORMAT(tgl_journal, '%Y-%m') = DATE_FORMAT('$tgl_hris', '%Y-%m') and status = 'POST' limit 1),
 
-bpjs as (SELECT
-    -- ===============================
-    -- IDENTITAS
-    -- ===============================
-    employee_bpjs.uuid,
-    employee_bpjs.kode_bpjs,
-    CONCAT(SUBSTR(employee_bpjs.kode_bpjs, 1, 4), '-', 
-           SUBSTR(employee_bpjs.kode_bpjs, 5, 2)) AS bpjs_kehadiran,
+bpjs as (SELECT 
+    eb.uuid,
+    eb.kode_bpjs,
+    CONCAT(SUBSTR(eb.kode_bpjs,1,4),'-',SUBSTR(eb.kode_bpjs,5,2)) AS bpjs_kehadiran,
 
-    employee_atribut.enroll_id,
-    employee_atribut.nik,
-    employee_atribut.employee_name,
+    ea.enroll_id,
+    ea.nik,
+    ea.employee_name,
 
-    department_all.site_nirwana_id,
-    department_all.site_nirwana_name,
-    department_all.department_id,
-    department_all.department_name,
-    department_all.sub_dept_id,
-    department_all.sub_dept_name,
+    da.site_nirwana_id,
+    da.site_nirwana_name,
+    da.department_id,
+    da.department_name,
+    da.sub_dept_id,
+    da.sub_dept_name,
 
-    employee_atribut.join_date,
-    employee_atribut.tanggal_resign,
+    ea.join_date,
+    ea.tanggal_resign,
 
-    employee_atribut.status_aktif_bpjs_tk,
-    employee_atribut.tanggal_bpjs_ketenagakerjaan,
-    employee_atribut.nomor_bpjs_ketenagakerjaan,
+    ea.status_aktif_bpjs_tk,
+    ea.tanggal_bpjs_ketenagakerjaan,
+    ea.nomor_bpjs_ketenagakerjaan,
 
-    employee_atribut.status_aktif_bpjs_ks,
-    employee_atribut.tanggal_bpjs_kesehatan,
-    employee_atribut.nomor_bpjs_kesehatan,
+    ea.status_aktif_bpjs_ks,
+    ea.tanggal_bpjs_kesehatan,
+    ea.nomor_bpjs_kesehatan,
 
-    employee_atribut.status_aktif,
-    employee_atribut.status_staff,
+    ea.status_aktif,
+    ea.status_staff,
 
-    -- ===============================
+    -- =============================
     -- DASAR POTONGAN
-    -- ===============================
-    employee_bpjs.dasar_pot_bpjs_rupiah AS dasar_pot_bpjs_rupiah,
+    -- =============================
+    eb.dasar_pot_bpjs_rupiah,
 
-    -- ===============================
-    -- TOTAL PER JENIS (GABUNGAN)
-    -- ===============================
-    (employee_bpjs.bpjs_tk_jht_bruto_rupiah +
-     employee_bpjs.bpjs_tk_jht_neto_rupiah) AS bpjs_tk_jht_rupiah,
-
-    (employee_bpjs.bpjs_tk_jpn_bruto_rupiah +
-     employee_bpjs.bpjs_tk_jpn_neto_rupiah) AS bpjs_tk_jpn_rupiah,
-
-    (employee_bpjs.bpjs_ks_jkn_bruto_rupiah +
-     employee_bpjs.bpjs_ks_jkn_neto_rupiah) AS bpjs_ks_jkn_rupiah,
+    (eb.bpjs_tk_jht_bruto_rupiah + eb.bpjs_tk_jht_neto_rupiah) AS bpjs_tk_jht_rupiah,
+    (eb.bpjs_tk_jpn_bruto_rupiah + eb.bpjs_tk_jpn_neto_rupiah) AS bpjs_tk_jpn_rupiah,
+    (eb.bpjs_ks_jkn_bruto_rupiah + eb.bpjs_ks_jkn_neto_rupiah) AS bpjs_ks_jkn_rupiah,
 
     (
-        employee_bpjs.bpjs_tk_jkk_bruto_rupiah +
-        employee_bpjs.bpjs_tk_jkm_bruto_rupiah +
-        employee_bpjs.bpjs_tk_jht_bruto_rupiah +
-        employee_bpjs.bpjs_tk_jht_neto_rupiah +
-        employee_bpjs.bpjs_tk_jpn_bruto_rupiah +
-        employee_bpjs.bpjs_tk_jpn_neto_rupiah +
-        employee_bpjs.bpjs_ks_jkn_bruto_rupiah +
-        employee_bpjs.bpjs_ks_jkn_neto_rupiah
+        eb.bpjs_tk_jkk_bruto_rupiah +
+        eb.bpjs_tk_jkm_bruto_rupiah +
+        eb.bpjs_tk_jht_bruto_rupiah +
+        eb.bpjs_tk_jht_neto_rupiah +
+        eb.bpjs_tk_jpn_bruto_rupiah +
+        eb.bpjs_tk_jpn_neto_rupiah +
+        eb.bpjs_ks_jkn_bruto_rupiah +
+        eb.bpjs_ks_jkn_neto_rupiah
     ) AS total_iuran,
 
-    -- ===============================
+    -- =============================
     -- JKM
-    -- ===============================
-    employee_bpjs.bpjs_tk_jkm_persen,
-    employee_bpjs.bpjs_tk_jkm_bruto_persen AS bpjs_tk_jkm_perusahaan_persen,
-    employee_bpjs.bpjs_tk_jkm_neto_persen  AS bpjs_tk_jkm_karyawan_persen,
+    -- =============================
+    eb.bpjs_tk_jkm_persen,
+    eb.bpjs_tk_jkm_bruto_persen AS bpjs_tk_jkm_perusahaan_persen,
+    eb.bpjs_tk_jkm_neto_persen AS bpjs_tk_jkm_karyawan_persen,
 
-    (employee_bpjs.bpjs_tk_jkm_bruto_rupiah +
-     employee_bpjs.bpjs_tk_jkm_neto_rupiah) AS bpjs_tk_jkm_rupiah,
+    (eb.bpjs_tk_jkm_bruto_rupiah + eb.bpjs_tk_jkm_neto_rupiah) AS bpjs_tk_jkm_rupiah,
+    eb.bpjs_tk_jkm_bruto_rupiah AS bpjs_tk_jkm_perusahaan_rupiah,
+    eb.bpjs_tk_jkm_neto_rupiah AS bpjs_tk_jkm_karyawan_rupiah,
 
-    employee_bpjs.bpjs_tk_jkm_bruto_rupiah AS bpjs_tk_jkm_perusahaan_rupiah,
-    employee_bpjs.bpjs_tk_jkm_neto_rupiah  AS bpjs_tk_jkm_karyawan_rupiah,
-
-    -- ===============================
+    -- =============================
     -- JKK
-    -- ===============================
-    employee_bpjs.bpjs_tk_jkk_persen,
-    employee_bpjs.bpjs_tk_jkk_bruto_persen AS bpjs_tk_jkk_perusahaan_persen,
-    employee_bpjs.bpjs_tk_jkk_neto_persen  AS bpjs_tk_jkk_karyawan_persen,
+    -- =============================
+    eb.bpjs_tk_jkk_persen,
+    eb.bpjs_tk_jkk_bruto_persen AS bpjs_tk_jkk_perusahaan_persen,
+    eb.bpjs_tk_jkk_neto_persen AS bpjs_tk_jkk_karyawan_persen,
 
-    (employee_bpjs.bpjs_tk_jkk_bruto_rupiah +
-     employee_bpjs.bpjs_tk_jkk_neto_rupiah) AS bpjs_tk_jkk_rupiah,
+    (eb.bpjs_tk_jkk_bruto_rupiah + eb.bpjs_tk_jkk_neto_rupiah) AS bpjs_tk_jkk_rupiah,
+    eb.bpjs_tk_jkk_bruto_rupiah AS bpjs_tk_jkk_perusahaan_rupiah,
+    eb.bpjs_tk_jkk_neto_rupiah AS bpjs_tk_jkk_karyawan_rupiah,
 
-    employee_bpjs.bpjs_tk_jkk_bruto_rupiah AS bpjs_tk_jkk_perusahaan_rupiah,
-    employee_bpjs.bpjs_tk_jkk_neto_rupiah  AS bpjs_tk_jkk_karyawan_rupiah,
-
-    -- ===============================
+    -- =============================
     -- JHT
-    -- ===============================
-    employee_bpjs.bpjs_tk_jht_persen,
-    employee_bpjs.bpjs_tk_jht_bruto_persen AS bpjs_tk_jht_perusahaan_persen,
-    employee_bpjs.bpjs_tk_jht_neto_persen  AS bpjs_tk_jht_karyawan_persen,
+    -- =============================
+    eb.bpjs_tk_jht_persen,
+    eb.bpjs_tk_jht_bruto_persen AS bpjs_tk_jht_perusahaan_persen,
+    eb.bpjs_tk_jht_neto_persen AS bpjs_tk_jht_karyawan_persen,
 
-    employee_bpjs.bpjs_tk_jht_bruto_rupiah AS bpjs_tk_jht_perusahaan_rupiah,
-    employee_bpjs.bpjs_tk_jht_neto_rupiah  AS bpjs_tk_jht_karyawan_rupiah,
+    eb.bpjs_tk_jht_bruto_rupiah AS bpjs_tk_jht_perusahaan_rupiah,
+    eb.bpjs_tk_jht_neto_rupiah AS bpjs_tk_jht_karyawan_rupiah,
 
-    -- ===============================
+    -- =============================
     -- JPN
-    -- ===============================
-    employee_bpjs.bpjs_tk_jpn_persen,
-    employee_bpjs.bpjs_tk_jpn_bruto_persen AS bpjs_tk_jpn_perusahaan_persen,
-    employee_bpjs.bpjs_tk_jpn_neto_persen  AS bpjs_tk_jpn_karyawan_persen,
+    -- =============================
+    eb.bpjs_tk_jpn_persen,
+    eb.bpjs_tk_jpn_bruto_persen AS bpjs_tk_jpn_perusahaan_persen,
+    eb.bpjs_tk_jpn_neto_persen AS bpjs_tk_jpn_karyawan_persen,
 
-    employee_bpjs.bpjs_tk_jpn_bruto_rupiah AS bpjs_tk_jpn_perusahaan_rupiah,
-    employee_bpjs.bpjs_tk_jpn_neto_rupiah  AS bpjs_tk_jpn_karyawan_rupiah,
+    eb.bpjs_tk_jpn_bruto_rupiah AS bpjs_tk_jpn_perusahaan_rupiah,
+    eb.bpjs_tk_jpn_neto_rupiah AS bpjs_tk_jpn_karyawan_rupiah,
 
-    -- ===============================
-    -- JKN (KESEHATAN)
-    -- ===============================
-    employee_bpjs.bpjs_ks_jkn_persen,
-    employee_bpjs.bpjs_ks_jkn_bruto_persen AS bpjs_ks_jkn_perusahaan_persen,
-    employee_bpjs.bpjs_ks_jkn_neto_persen  AS bpjs_ks_jkn_karyawan_persen,
+    -- =============================
+    -- JKN
+    -- =============================
+    eb.bpjs_ks_jkn_persen,
+    eb.bpjs_ks_jkn_bruto_persen AS bpjs_ks_jkn_perusahaan_persen,
+    eb.bpjs_ks_jkn_neto_persen AS bpjs_ks_jkn_karyawan_persen,
 
-    employee_bpjs.bpjs_ks_jkn_bruto_rupiah AS bpjs_ks_jkn_perusahaan_rupiah,
-    employee_bpjs.bpjs_ks_jkn_neto_rupiah  AS bpjs_ks_jkn_karyawan_rupiah,
+    eb.bpjs_ks_jkn_bruto_rupiah AS bpjs_ks_jkn_perusahaan_rupiah,
+    eb.bpjs_ks_jkn_neto_rupiah AS bpjs_ks_jkn_karyawan_rupiah,
 
+    eb.operator,
+    SUBSTR(eb.created_at,1,19) AS created_at,
+    SUBSTR(eb.updated_at,1,19) AS updated_at,
+    SUBSTR(eb.deleted_at,1,19) AS deleted_at
 
-    employee_bpjs.operator,
-    SUBSTR(employee_bpjs.created_at, 1, 19) AS created_at,
-    SUBSTR(employee_bpjs.updated_at, 1, 19) AS updated_at,
-    SUBSTR(employee_bpjs.deleted_at, 1, 19) AS deleted_at
+FROM employee_bpjs eb
 
-FROM employee_bpjs
-INNER JOIN employee_atribut 
-    ON employee_bpjs.enroll_id = employee_atribut.enroll_id
-INNER JOIN department_all 
-    ON employee_atribut.sub_dept_id = department_all.sub_dept_id
+INNER JOIN employee_atribut ea 
+    ON eb.enroll_id = ea.enroll_id
 
-WHERE CONCAT(SUBSTR(employee_bpjs.kode_bpjs, 1, 4), '-', 
-             SUBSTR(employee_bpjs.kode_bpjs, 5, 2)) = DATE_FORMAT('$tgl_hris', '%Y-%m')
-ORDER BY employee_atribut.employee_name ASC),
+INNER JOIN employee_atribut_histories eah 
+    ON eb.enroll_id = eah.enroll_id
+
+INNER JOIN department_all da 
+    ON eah.sub_dept_id = da.sub_dept_id
+
+WHERE
+    CONCAT(SUBSTR(eb.kode_bpjs,1,4),'-',SUBSTR(eb.kode_bpjs,5,2)) = DATE_FORMAT('$tgl_hris','%Y-%m')
+    AND DATE_FORMAT(SUBSTRING_INDEX(periode_payroll,' s/d ',-1),'%Y-%m') = DATE_FORMAT('$tgl_hris','%Y-%m')
+
+ORDER BY ea.employee_name ASC
+),
 
 data_bpjs as (select * from bpjs a LEFT JOIN log_jurnal b on b.tgl_journal = a.bpjs_kehadiran where no_journal is null),
 
@@ -697,8 +688,7 @@ select * from bpjs_ks
 UNION ALL
 select * from total_bpjs_tk
 UNION
-select * from total_bpjs_ks) a
-");
+select * from total_bpjs_ks) a");
 }else{
     '';
 } ?>
