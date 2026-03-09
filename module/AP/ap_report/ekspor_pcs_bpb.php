@@ -101,9 +101,9 @@
         $sql = mysqli_query($conn2,"WITH
 rate as (select * from ap_masterrate where tanggal = '$end_date' and v_codecurr = CASE  WHEN tanggal = LAST_DAY(tanggal) THEN 'HARIAN' ELSE 'PAJAK' END GROUP BY  curr, rate),
 
-po_bpb as (select a.bpbno_int, b.supplier, a.pono, c.jml_pterms as top from bpb a INNER JOIN mastersupplier b on b.Id_Supplier = a.id_supplier LEFT JOIN po_header c on c.pono = a.pono LEFT JOIN po_header_draft d on d.id = c.id_draft where a.bpbdate > '2025-12-31' and confirm = 'Y' and cancel = 'N' GROUP BY bpbno_int
+po_bpb as (select a.bpbno_int, b.supplier, a.pono, c.jml_pterms as top from bpb a INNER JOIN mastersupplier b on b.Id_Supplier = a.id_supplier LEFT JOIN po_header c on c.pono = a.pono LEFT JOIN po_header_draft d on d.id = c.id_draft where a.bpbdate > '2024-12-31' and confirm = 'Y' and cancel = 'N' GROUP BY bpbno_int
 UNION
-select a.bppbno_int, b.supplier, '' pono, 0 top from bppb a INNER JOIN mastersupplier b on b.Id_Supplier = a.id_supplier where a.bppbdate > '2025-12-31' and confirm = 'Y' and cancel = 'N' GROUP BY bppbno_int),
+select a.bppbno_int, b.supplier, '' pono, 0 top from bppb a INNER JOIN mastersupplier b on b.Id_Supplier = a.id_supplier where a.bppbdate > '2024-12-31' and confirm = 'Y' and cancel = 'N' GROUP BY bppbno_int),
 
 saldo_awal as (select supplier, no_bpb, tgl_bpb, 0 top, duedate, curr, total, rate, total_idr, a.no_coa, nama_coa, item_type1, item_type2, relasi from ap_saldo_awal_bpb a INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa),
 
