@@ -1545,6 +1545,13 @@ if(strpos($id, '106') !== false){
          </a>';
      }
 
+if(strpos($id, '108') !== false){ 
+  echo'<a href="AP/edit-journal.php" class="dropdown-item bg-dark text-white">
+  <span class="fas fa-pencil-alt"></span>
+  <span class="menu-collapsed">Edit Jurnal</span>
+  </a>';
+}
+
 ?>
 </ul>
 </li>
