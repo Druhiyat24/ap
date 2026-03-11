@@ -1543,11 +1543,18 @@ if(strpos($id, '107') !== false){
 echo'</ul>
 </li>';
 if(strpos($id, '106') !== false){ 
-         echo'<a href="../AP/rekonsiliasi_jurnal_bpb.php" class="dropdown-item bg-dark text-white">
-         <span class="fas fa-file-contract"></span>
-         <span class="menu-collapsed">Rekonsiliasi Jurnal-BPB</span>
-         </a>';
-     }
+  echo'<a href="../AP/rekonsiliasi_jurnal_bpb.php" class="dropdown-item bg-dark text-white">
+  <span class="fas fa-file-contract"></span>
+  <span class="menu-collapsed">Rekonsiliasi Jurnal-BPB</span>
+  </a>';
+}
+
+if(strpos($id, '108') !== false){ 
+  echo'<a href="../AP/edit-journal.php" class="dropdown-item bg-dark text-white">
+  <span class="fas fa-pencil-alt"></span>
+  <span class="menu-collapsed">Edit Jurnal</span>
+  </a>';
+}
 
 ?>
 </ul>
