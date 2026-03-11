@@ -708,7 +708,18 @@ CSS HEADER
         <td></td>
     </tr>
     <tr>
-        <td style="font-size: 11px; text-align: center; font-weight: bold;">Putrie</td>
+        <td style="font-size: 11px; text-align: center; font-weight: bold;">
+            <?php
+$sql_user = mysqli_query($conn2,"select DISTINCT CONCAT(UPPER(LEFT(if(create_by = 'mandy1','Mandy', create_by),1)),LOWER(SUBSTRING(if(create_by = 'mandy1','Mandy', create_by),2))) create_by from tbl_pv_h WHERE no_pv = '$no_pv'
+");
+
+$rows_user = mysqli_fetch_array($sql_user);
+$user = $rows_user['create_by'];
+
+echo $user;
+?>
+ 
+     </td>
         <td style="font-size: 11px; text-align: center; font-weight: bold;">Mandy</td>
         <td style="font-size: 11px; text-align: center; font-weight: bold;">Willy</td>
     </tr>
