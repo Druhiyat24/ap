@@ -9,7 +9,7 @@ $start_date = date("Y-m-d", strtotime($_POST['start_date']));
 $end_date   = date("Y-m-d", strtotime($_POST['end_date']));
 $search     = $_POST['search']['value'] ?? '';
 
-$where = "WHERE 1=1 ";
+$where = "AND 1=1 ";
 
 
 if ($search != '') {
@@ -26,7 +26,7 @@ if ($search != '') {
 }
 
 
-$sql = "select no_journal, tgl_journal, type_journal, curr, sum(debit) debit, sum(credit) credit, ROUND(sum(debit * rate),2) debit_idr, ROUND(sum(credit * rate),2) credit_idr, keterangan from tbl_list_journal where tgl_journal BETWEEN '$start_date' and '$end_date' GROUP BY no_journal ";
+$sql = "select no_journal, tgl_journal, type_journal, curr, sum(debit) debit, sum(credit) credit, ROUND(sum(debit * rate),2) debit_idr, ROUND(sum(credit * rate),2) credit_idr, keterangan from tbl_list_journal where tgl_journal BETWEEN '$start_date' and '$end_date' $where GROUP BY no_journal ";
 
 $sql_count = "SELECT COUNT(*) total FROM ($sql) x";
 $q_count = mysqli_query($conn2, $sql_count);
