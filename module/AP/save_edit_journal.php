@@ -96,9 +96,9 @@ VALUES
 
     }
 
-    if($total_debit != $total_credit){
-        throw new Exception("Debit dan Credit tidak balance");
-    }
+    if(round($total_debit,2) != round($total_credit,2)){
+    throw new Exception("Debit dan Credit tidak balance");
+}
 
     /* =============================
        INSERT DATA BARU

@@ -385,7 +385,7 @@ Loading...
           Close
         </button>
 
-        <button type="button" class="btn btn-success btnSaveEdit" id="btnSaveEdit" onclick="SaveEdit()">
+        <button type="button" class="btn btn-success" onclick="SaveEdit()">
           <i class="fa fa-save"></i> Save Changes
         </button>
       </div>
@@ -1118,51 +1118,6 @@ function validasiPeriodeNew() {
 
 
 
-
-function cancelData(id) {
-  var username = '<?php echo $user; ?>';
-alert(id);
-  Swal.fire({
-    title: 'Yakin?',
-    text: "Data akan dicancel!",
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#3085d6',
-    confirmButtonText: 'Ya, Cancel!',
-    cancelButtonText: 'Batal'
-  }).then((result) => {
-
-    if (result.isConfirmed) {
-
-      Swal.fire({
-        title: 'Processing...',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
-      });
-
-      $.post('cancel_master_rate.php', { id:id, username:username }, function(res){
-
-        Swal.fire({
-          icon: 'success',
-          title: 'Berhasil',
-          text: 'Data berhasil dicancel',
-          timer: 1500,
-          showConfirmButton: false
-        });
-
-        datatable.ajax.reload(null, false);
-
-      });
-
-    }
-
-  });
-}
-
-
 let coaWajibCC = [];
 
 // Load sekali saat halaman dibuka
@@ -1174,18 +1129,27 @@ $.getJSON('get_coa_wajib_cc.php', function(data){
 
 function SaveEdit(){
 
+  console.clear(); // DEBUG
+  console.log("===== SAVE EDIT START ====="); // DEBUG
+
   let btn = $("#btnSaveEdit");
 
   btn.prop("disabled", true)
      .html('<i class="fa fa-spinner fa-spin"></i> Processing...');
 
+     Swal.fire({
+    title: 'Saving Journal...',
+    html: 'Data sedang diproses, mohon tunggu',
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    didOpen: () => {
+        Swal.showLoading();
+    }
+});
+
   function resetButton(){
       btn.prop("disabled", false)
          .html('<i class="fa fa-save"></i> Save Changes');
-
-      setTimeout(function(){
-          $('#modalEdit').focus();
-      },200);
   }
 
   function toNumber(val){
@@ -1202,12 +1166,21 @@ function SaveEdit(){
   let type_journal = $("#nama_type").val();
   let create_user = '<?php echo $user; ?>';
 
+  console.log("HEADER DATA", { // DEBUG
+      no_journal,
+      tgl_journal,
+      type_journal,
+      create_user
+  });
+
   let rows = [];
   let totalPC = {};
-
   let rowIndex = 0;
+  let hasError = false;
 
   $("#tbody2 tr").each(function(){
+
+      if(hasError) return false;
 
       rowIndex++;
 
@@ -1218,59 +1191,35 @@ function SaveEdit(){
 
       let profit_center = tr.find("select[name='profit_center[]']").val();
       let coa = tr.find("select[name='nomor_coa[]']").val();
-      // alert(coa);
-
       let costcenter = tr.find("select[name='nomor_cc[]']").val();
 
       let curr = tr.find("select[name='currenc[]']").val();
-      let rate = toNumber(tr.find("input[name='rate[]']").val());
+      let rate = round2(toNumber(tr.find("input[name='rate[]']").val()));
 
-      let debit  = toNumber(tr.find("input[name='debit[]']").val());
-      let credit = toNumber(tr.find("input[name='credit[]']").val());
+      let debit  = round2(toNumber(tr.find("input[name='debit[]']").val()));
+      let credit = round2(toNumber(tr.find("input[name='credit[]']").val()));
 
-      debit  = round2(debit);
-      credit = round2(credit);
+      console.log("ROW "+rowIndex,{ // DEBUG
+          profit_center,
+          coa,
+          costcenter,
+          curr,
+          rate,
+          debit,
+          credit
+      });
 
-      /* ==============================
-         SKIP ROW JIKA BENAR BENAR KOSONG
-      ============================== */
+      /* =====================
+         SKIP ROW KOSONG
+      ===================== */
 
       if(!profit_center && !coa && debit === 0 && credit === 0){
           return;
       }
 
-
-/* ==============================
-   VALIDASI COST CENTER WAJIB
-============================== */
-
-let coaClean = (coa || "").toString().trim();
-let ccClean  = (costcenter || "").toString().trim();
-
-if(
-    coaWajibCC.includes(coaClean) &&
-    (ccClean === "" || ccClean === "-" || ccClean === "null")
-){
-
-    tr.addClass("row-error");
-    tr.find("select[name='nomor_cc[]']").addClass("input-error");
-
-    Swal.fire({
-        icon:'warning',
-        title:'Cost Center wajib',
-        text:'COA '+coaClean+' wajib menggunakan Cost Center (baris '+rowIndex+')'
-    });
-
-    resetButton();
-    return false;
-}
-
-
-
-
-      /* ==============================
+      /* =====================
          VALIDASI PROFIT CENTER
-      ============================== */
+      ===================== */
 
       if(!profit_center){
 
@@ -1280,16 +1229,17 @@ if(
           Swal.fire({
               icon:'warning',
               title:'Profit Center kosong',
-              text:'Profit Center belum dipilih di baris ke '+rowIndex
+              text:'Profit Center belum dipilih di baris '+rowIndex
           });
 
+          hasError = true;
           resetButton();
           return false;
       }
 
-      /* ==============================
+      /* =====================
          VALIDASI COA
-      ============================== */
+      ===================== */
 
       if(!coa){
 
@@ -1299,16 +1249,43 @@ if(
           Swal.fire({
               icon:'warning',
               title:'COA kosong',
-              text:'COA belum dipilih di baris ke '+rowIndex
+              text:'COA belum dipilih di baris '+rowIndex
           });
 
+          hasError = true;
           resetButton();
           return false;
       }
 
-      /* ==============================
-         VALIDASI RATE CURRENCY
-      ============================== */
+      /* =====================
+         VALIDASI COST CENTER
+      ===================== */
+
+      let coaClean = (coa || "").toString().trim();
+      let ccClean  = (costcenter || "").toString().trim();
+
+      if(
+          coaWajibCC.includes(coaClean) &&
+          (ccClean === "" || ccClean === "-" || ccClean === "null")
+      ){
+
+          tr.addClass("row-error");
+          tr.find("select[name='nomor_cc[]']").addClass("input-error");
+
+          Swal.fire({
+              icon:'warning',
+              title:'Cost Center wajib',
+              text:'COA '+coaClean+' wajib menggunakan Cost Center (baris '+rowIndex+')'
+          });
+
+          hasError = true;
+          resetButton();
+          return false;
+      }
+
+      /* =====================
+         VALIDASI RATE
+      ===================== */
 
       if(curr && curr !== "IDR" && rate === 1){
 
@@ -1318,9 +1295,10 @@ if(
           Swal.fire({
               icon:'error',
               title:'Rate Tidak Valid',
-              text:'Currency '+curr+' tidak boleh menggunakan rate = 1 (baris '+rowIndex+')'
+              text:'Currency '+curr+' tidak boleh rate = 1 (baris '+rowIndex+')'
           });
 
+          hasError = true;
           resetButton();
           return false;
       }
@@ -1329,18 +1307,28 @@ if(
           return;
       }
 
+      /* =====================
+         HITUNG TOTAL PER PC
+      ===================== */
+
       if(!totalPC[profit_center]){
           totalPC[profit_center] = {debit:0,credit:0};
       }
 
-      totalPC[profit_center].debit  += debit;
-      totalPC[profit_center].credit += credit;
+      totalPC[profit_center].debit  = round2(totalPC[profit_center].debit + debit);
+      totalPC[profit_center].credit = round2(totalPC[profit_center].credit + credit);
+
+      console.log("TOTAL PC UPDATE",profit_center,totalPC[profit_center]); // DEBUG
+
+      /* =====================
+         PUSH DATA
+      ===================== */
 
       rows.push({
 
           no_coa: coa,
           profit_center: profit_center,
-          no_costcenter: tr.find("select[name='nomor_cc[]']").val(),
+          no_costcenter: costcenter,
 
           reff_doc: tr.find("input[name='ref_no[]']").val(),
           reff_date: tr.find("input[name='tgl_active[]']").val(),
@@ -1360,9 +1348,10 @@ if(
 
   });
 
-  /* ==============================
-     VALIDASI DATA ADA
-  ============================== */
+  console.log("TOTAL PER PROFIT CENTER",totalPC); // DEBUG
+  console.table(rows); // DEBUG
+
+  if(hasError) return;
 
   if(rows.length === 0){
 
@@ -1376,16 +1365,11 @@ if(
       return;
   }
 
-  /* ==============================
-     VALIDASI PER PROFIT CENTER
-  ============================== */
-
   for(let pc in totalPC){
 
-      let debit  = round2(totalPC[pc].debit);
-      let credit = round2(totalPC[pc].credit);
+      console.log("CHECK BALANCE PC",pc,totalPC[pc]); // DEBUG
 
-      if(Math.abs(debit - credit) > 0.01){
+      if(round2(totalPC[pc].debit) !== round2(totalPC[pc].credit)){
 
           Swal.fire({
               icon:'error',
@@ -1398,11 +1382,21 @@ if(
       }
   }
 
-  let totalDebit = rows.reduce((a,b)=>a+b.debit,0);
-  let totalCredit = rows.reduce((a,b)=>a+b.credit,0);
+  let totalDebit = 0;
+  let totalCredit = 0;
 
-  totalDebit  = round2(totalDebit);
-  totalCredit = round2(totalCredit);
+  rows.forEach(function(r){
+
+      totalDebit  = round2(totalDebit + r.debit);
+      totalCredit = round2(totalCredit + r.credit);
+
+  });
+
+  console.log("GRAND TOTAL", { // DEBUG
+      totalDebit,
+      totalCredit,
+      selisih: totalDebit-totalCredit
+  });
 
   if(totalDebit === 0 && totalCredit === 0){
 
@@ -1416,7 +1410,7 @@ if(
       return;
   }
 
-  if(Math.abs(totalDebit - totalCredit) > 0.01){
+  if(round2(totalDebit) !== round2(totalCredit)){
 
       Swal.fire({
           icon:'error',
@@ -1429,12 +1423,16 @@ if(
   }
 
   let dataPost = {
+
       no_journal:no_journal,
       tgl_journal:tgl_journal,
       type_journal:type_journal,
       create_user:create_user,
       rows:JSON.stringify(rows)
+
   };
+
+  console.log("DATA POST",dataPost); // DEBUG
 
   $.ajax({
 
@@ -1444,15 +1442,24 @@ if(
 
       success:function(res){
 
+          console.log("SERVER RESPONSE",res); // DEBUG
+
           if(res === "success"){
 
               Swal.fire({
-                  icon:'success',
-                  title:'Berhasil',
-                  text:'Journal berhasil diupdate'
-              }).then(()=>{
-                  location.reload();
-              });
+    icon:'success',
+    title:'Berhasil',
+    text:'Journal berhasil diupdate'
+}).then(()=>{
+
+    // tutup modal
+    $("#modalEdit").modal("hide");
+
+    // reload datatable tanpa refresh halaman
+    $('#table-data').DataTable().ajax.reload(null,false);
+
+});
+
 
           }else{
 
@@ -1467,7 +1474,9 @@ if(
 
       },
 
-      error:function(){
+      error:function(err){
+
+          console.log("AJAX ERROR",err); // DEBUG
 
           Swal.fire({
               icon:'error',
@@ -1485,96 +1494,6 @@ if(
 
 
 
-
-
-
-
-function SaveNew() {
-
-    if(!validasiPeriodeNew()){
-        return false;
-    }
-
-    var curr        = $('#new_curr').val();
-    var tgl_awal    = $('#new_tgl_awal').val();
-    var tgl_akhir   = $('#new_tgl_akhir').val();
-    var rate        = $('#new_rate').val();
-    var rate_jual   = $('#new_rate_jual').val();
-    var rate_beli   = $('#new_rate_beli').val();
-    var v_codecurr  = $('#v_codecurr_new').val();
-
-    // =========================
-    // VALIDASI WAJIB ISI
-    // =========================
-    if(!curr || !v_codecurr || !tgl_awal || !tgl_akhir || !rate){
-
-        Swal.fire({
-            icon: 'warning',
-            title: 'Peringatan',
-            text: 'Currency, Type, Periode dan Rate wajib diisi'
-        });
-
-        return false;
-    }
-
-    var data = {
-        curr: curr,
-        tgl_awal: tgl_awal,
-        tgl_akhir: tgl_akhir,
-        rate: rate,
-        rate_jual: rate_jual,
-        rate_beli: rate_beli,
-        v_codecurr: v_codecurr,
-        create_user : '<?php echo $user; ?>'
-    };
-
-    console.log(data);
-
-    $.ajax({
-        url: 'insert_master_rate.php',
-        type: 'POST',
-        data: data,
-        dataType: 'json',
-        beforeSend: function(){
-            $('#btnSaveNew').prop('disabled', true);
-        },
-        success: function(result){
-
-            if(result && result.status === 'success'){
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil',
-                    text: result.message
-                }).then(function(){
-                    $('#modalNew').modal('hide');
-                    datatable.ajax.reload(null, false);
-                });
-
-            }else{
-
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: result.message || 'Terjadi kesalahan'
-                });
-
-            }
-        },
-        error: function(xhr){
-            console.log(xhr.responseText);
-
-            Swal.fire({
-                icon: 'error',
-                title: 'AJAX Error',
-                text: 'Server tidak merespon dengan benar'
-            });
-        },
-        complete: function(){
-            $('#btnSaveNew').prop('disabled', false);
-        }
-    });
-}
 
 
 
