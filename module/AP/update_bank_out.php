@@ -22,7 +22,7 @@ $query = mysqli_query($conn2, $sql);
 if ($query) {
     $sql2 = "UPDATE tbl_list_journal 
              SET approve_by='$approve_user', approve_date='$approve_date', status='$status'
-             WHERE no_journal='$no_bi'";
+             WHERE no_journal='$no_bi' and status != 'Updated'";
 
     // Jalankan tanpa menunggu hasil (gunakan @ untuk abaikan error)
     @mysqli_query($conn2, $sql2);

@@ -493,13 +493,13 @@ $end_date = date("Y-m-d",strtotime($enddate));
                 </div>                  
 
                 <div class="modal fade" id="mymodal" data-target="#mymodal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-                    <div class="modal-dialog">
+                    <div class="modal-dialog modal-dialog-centered" style="max-width:70%;width:70%;">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
                                 <h4 class="modal-title" id="txt_bpb"></h4>
                             </div>
-                            <div class="container">
+                            <div class="container-fluid">
                                 <div class="row">
                                     <div id="txt_tglbpb" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
                                     <div id="txt_no_po" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>

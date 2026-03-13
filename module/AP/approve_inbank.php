@@ -12,7 +12,7 @@ $approve_user = $_POST['approve_user'];
 $sql = "update tbl_bankin_arcollection set approve_by='$approve_user',approve_date='$approve_date', status='$status' where doc_num='$no_bi'";
 $query = mysqli_query($conn2,$sql);
 
-$sql2 = "update tbl_list_journal set approve_by='$approve_user',approve_date='$approve_date', status='$status' where no_journal='$no_bi'";
+$sql2 = "update tbl_list_journal set approve_by='$approve_user',approve_date='$approve_date', status='$status' where no_journal='$no_bi' and status != 'Updated'";
 $query2 = mysqli_query($conn2,$sql2);
 
 

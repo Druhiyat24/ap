@@ -33,7 +33,10 @@ if ($refdoc == 'Payment Voucher' || $refdoc == 'List Payment') {
 
 
 if($refdoc == 'None'){
-    $table = '<table id="mytdmodal" class="table table-responsive table-striped table-bordered text-nowrap" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
+    $table = '<div class="table-responsive">
+    <table id="mytdmodal"
+    class="table table-striped table-bordered text-nowrap"
+    style="font-size:12px;text-align:center;width:100%;">
     <thead>
     <tr>                       
     <th style="">No Coa</th>
@@ -65,11 +68,14 @@ if($refdoc == 'None'){
         </tr>';
         $table .= '</tbody>';
     }
-    $table .= '</table>';
+    $table .= '</table></div>';
 
 }elseif($refdoc == 'Payment Voucher' || $refdoc == 'List Payment'){
 
-    $table = '<table id="mytdmodal" class="table table-responsive table-striped table-bordered text-nowrap" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
+    $table = '<div class="table-responsive">
+    <table id="mytdmodal"
+    class="table table-striped table-bordered text-nowrap"
+    style="font-size:12px;text-align:center;width:100%;">
     <thead>
     <tr>                       
     <th style="width:100px;">No Coa</th>
@@ -119,7 +125,7 @@ if($refdoc == 'None'){
     <th></th>
     </tr>
     ';
-    $table .= '</table>';
+    $table .= '</table></div>';
 
 
 }else{
@@ -136,7 +142,7 @@ if ($refdoc == 'Payment Voucher' || $refdoc == 'List Payment') {
 
  </td>
 
- <td>
+ <td class="text-right">
  Amount
  </td>
  <td style="width:1%">:</td>
@@ -149,7 +155,7 @@ if ($refdoc == 'Payment Voucher' || $refdoc == 'List Payment') {
 
  </td>
 
- <td>
+ <td class="text-right">
  Rate
  </td>
  <td style="width:1%">:</td>
@@ -163,7 +169,7 @@ if ($refdoc == 'Payment Voucher' || $refdoc == 'List Payment') {
 
  </td>
 
- <td style="font-weight:bold;">
+ <td class="text-right" style="font-weight:bold;">
  Equivalent IDR
  </td>
  <td style="width:1%">:</td>
@@ -182,7 +188,7 @@ if ($refdoc == 'Payment Voucher' || $refdoc == 'List Payment') {
 
     </td>
 
-    <td style="font-weight:bold;">
+    <td class="text-right" style="font-weight:bold;">
     Total Amount
     </td>
     <td style="width:1%">:</td>
