@@ -8,8 +8,8 @@ $valuta = $_POST['valuta'];
 $tgl    = date("Y-m-d",strtotime($_POST['doc_date']));
 
 $sql = "
-    SELECT rate 
-    FROM masterrate
+    SELECT TRIM(TRAILING '.' FROM TRIM(TRAILING '0' FROM rate)) rate 
+    FROM ap_masterrate
     WHERE curr = '$valuta'
     AND tanggal = '$tgl'
     LIMIT 1
