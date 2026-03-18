@@ -140,6 +140,15 @@
     border-color:#0056b3;
 }
 
+.btn-sm {
+    transition:0.2s;
+}
+
+.btn-sm:hover {
+    transform:scale(1.05);
+}
+
+
 
 
 
@@ -1873,7 +1882,160 @@ $('#btnUpload').on('click', function () {
 
 });
 
+let datatable3;
 
+    $(document).ready(function() {
+
+      datatable3 = $("#table-upload-mj").DataTable({
+
+    ordering: false,
+    processing: true,
+    serverSide: false,
+    searching: true,
+    info: true,
+
+    paging: true,
+    pageLength: 10,
+    lengthMenu: [10, 25, 50, 100],
+
+    autoWidth: false,
+
+    ajax: {
+        url: 'memorial_journal/ajx_get_data_hris.php',
+        type: 'POST',
+        data: function(d) {
+
+            d.mj_type2 = '1';
+        },
+        dataSrc: function(res){
+            return res.data;
+        }
+    },
+
+    columns: [
+        { data: 'profit_center' },
+        { data: 'nama_coa' },
+        { data: 'cc_name' },
+        { data: 'reff_number' },
+        { data: 'reff_date' },
+        { data: 'buyer' },
+        { data: 'ws' },
+        { data: 'curr' },
+        { data: 'debit' },
+        { data: 'credit' },
+        { data: 'deskripsi' },
+        { data: 'deskripsi' }
+    ],
+
+    columnDefs: [
+        {
+            targets: [8, 9],
+            className: "text-right",
+            render: function(data) {
+                let val = parseFloat(data || 0);
+                return val.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+        }
+    ],
+
+    drawCallback: function () {
+
+        let api = this.api();
+
+        let total_debit_nag = 0;
+        let total_credit_nag = 0;
+
+        let total_debit_nak = 0;
+        let total_credit_nak = 0;
+
+        // 🔥 LOOP SEMUA DATA (BUKAN PER PAGE)
+        api.rows().every(function () {
+
+            let d = this.data();
+            console.log(d); 
+
+            let pc = (d.id_pc  || '').toUpperCase();
+            let debit = parseFloat(d.debit) || 0;
+            let credit = parseFloat(d.credit) || 0;
+
+            if(pc === 'NAG'){
+                total_debit_nag += debit;
+                total_credit_nag += credit;
+            }
+
+            if(pc === 'NAK'){
+                total_debit_nak += debit;
+                total_credit_nak += credit;
+            }
+
+        });
+
+        // 🔥 GRAND TOTAL
+        let grand_debit = total_debit_nag + total_debit_nak;
+        let grand_credit = total_credit_nag + total_credit_nak;
+
+        // 🔥 FORMAT ANGKA
+        function formatAngka(x){
+            return x.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        // 🔥 SET KE INPUT (VISIBLE)
+        $('#tot_debit_nag3').val(formatAngka(total_debit_nag));
+        $('#tot_credit_nag3').val(formatAngka(total_credit_nag));
+
+        $('#tot_debit_nak3').val(formatAngka(total_debit_nak));
+        $('#tot_credit_nak3').val(formatAngka(total_credit_nak));
+
+        $('#tot_debit3').val(formatAngka(grand_debit));
+        $('#tot_credit3').val(formatAngka(grand_credit));
+
+        // 🔥 SET KE HIDDEN (RAW NUMBER)
+        $('#h_tot_debit_nag3').val(total_debit_nag);
+        $('#h_tot_credit_nag3').val(total_credit_nag);
+
+        $('#h_tot_debit_nak3').val(total_debit_nak);
+        $('#h_tot_credit_nak3').val(total_credit_nak);
+
+        $('#h_tot_debit3').val(grand_debit);
+        $('#h_tot_credit3').val(grand_credit);
+
+        // 🔥 VALIDASI BALANCE (WARNA)
+        if (
+    Math.round(grand_debit * 100) / 100 !== 
+    Math.round(grand_credit * 100) / 100
+){
+    $('#tot_debit3, #tot_credit3').css({
+        'color':'red',
+        'font-weight':'bold'
+    });
+} else {
+    $('#tot_debit3, #tot_credit3').css({
+        'color':'green',
+        'font-weight':'bold'
+    });
+}
+
+
+    }
+
+});
+      });
+
+function loadTempData() {
+
+      datatable3.ajax.reload(function() {
+
+        datatable3.columns.adjust().draw();
+
+      }, false);
+
+    }
 
 
   </script>

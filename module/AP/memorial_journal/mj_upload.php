@@ -3,28 +3,12 @@
         <div class="card-body">
             <div class="form-row align-items-end">
 
-    <div class="col-md-2 mb-3">
-        <label><b>Date</b></label>
-        <input type="text" name="mj_date3" id="mj_date3" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off" onchange="getRate3()">
-    </div>
-
-    <div class="col-md-2 mb-3">
-        <div class="mt-2">
-            <a target="_blank" href="format-excel/format_upload.xls?ver=<?= time(); ?>">
-                <button type="button" class="btn btn-warning btn-sm">
-                    <i class="fa fa-file-excel-o"></i> Download Format
-                </button>
-            </a>
-        </div>
-    </div>
-    <div class="col-md-6 mb-3"></div>
-
     <div class="col-md-4 mb-3">
     <label><b>Upload File</b></label>
 
     <div style="position:relative;">
 
-        <!-- BUTTON KECIL DI POJOK -->
+        <!-- BUTTON UPLOAD -->
         <button type="button" id="btnUpload"
             class="btn btn-primary btn-sm"
             style="
@@ -32,18 +16,33 @@
                 top:10px;
                 right:10px;
                 border-radius:8px;
-                padding:5px 10px;
+                padding:5px 12px;
                 z-index:2;
             ">
             <i class="fa fa-upload"></i> Upload
         </button>
+
+        <!-- BUTTON FORMAT -->
+        <a target="_blank" href="format-excel/format_upload.xls?ver=<?= time(); ?>"
+            style="
+                position:absolute;
+                top:45px;
+                right:10px;
+                z-index:2;
+            ">
+            <button type="button"
+                class="btn btn-warning btn-sm"
+                style="border-radius:8px;padding:5px 12px;">
+                <i class="fa fa-file-excel-o"></i> Format
+            </button>
+        </a>
 
         <!-- BOX -->
         <label for="fileUpload" id="uploadBox" style="
             display:block;
             border:2px dashed #007bff;
             border-radius:12px;
-            padding:35px 20px;
+            padding:50px 20px 60px 20px;
             text-align:center;
             cursor:pointer;
             background:#f8f9fa;
@@ -61,8 +60,10 @@
         </label>
 
         <input type="file" id="fileUpload" style="display:none">
+
     </div>
 </div>
+
 
 
 </div>
