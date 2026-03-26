@@ -70,7 +70,7 @@
 
             <div class="card-body p-2">
                 <div class="table-responsive">
-                    <table id="table-upload_mj"
+                    <table id="table-upload-mj"
                         class="table table-striped table-bordered table-hover table-sm">
                         <thead class="table-gradient">
                             <tr>
@@ -93,6 +93,29 @@
                     </table>
                 </div>
             </div>
+
+            <div class="card-body p-2">
+                <div class="table-responsive">
+                    <table id="table-upload-mj-group"
+                        class="table table-striped table-bordered table-hover table-sm">
+                        <thead class="table-gradient">
+                            <tr>
+                                <th style="text-align: center;vertical-align: middle;">No Journal</th>
+                                <th style="text-align: center;vertical-align: middle;">Journal Date</th>
+                                <th style="text-align: center;vertical-align: middle;">Type Journal</th>
+                                <th style="text-align: center;vertical-align: middle;">Curr</th>
+                                <th style="text-align: center;vertical-align: middle;">Debit</th>
+                                <th style="text-align: center;vertical-align: middle;">Credit</th>
+                                <th style="text-align: center;vertical-align: middle;">Description</th>
+                                <th style="text-align: center;vertical-align: middle;">Include SB1</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div class="row mt-1 p-3">
 
                 <!-- NAG -->

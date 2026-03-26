@@ -1813,6 +1813,274 @@ $('#uploadBox').on('drop', function(e){
 
 
 
+let datatable3;
+
+$(document).ready(function () {
+
+    datatable3 = $("#table-upload-mj").DataTable({
+
+        ordering: false,
+        processing: true,
+        serverSide: false,
+        searching: true,
+        info: true,
+        paging: true,
+        pageLength: 10,
+        lengthMenu: [10, 25, 50, 100],
+        autoWidth: false,
+
+        ajax: {
+            url: 'memorial_journal/ajx_get_data_mj_upload.php',
+            type: 'POST',
+            data: function (d) {
+                d.mj_type2 = '1';
+            },
+            dataSrc: function (res) {
+
+                console.log('DATA TABLE RESPONSE:', res);
+
+                if (!res || !res.data) {
+                    return [];
+                }
+
+                // 🔥 SORT: yang filter kosong ke atas
+                res.data.sort(function (a, b) {
+
+                    let fa = (a.filter || '').trim();
+                    let fb = (b.filter || '').trim();
+
+                    let aInvalid = (fa === '' || fa === '-' || fa === null);
+                    let bInvalid = (fb === '' || fb === '-' || fb === null);
+
+                    if (aInvalid && !bInvalid) return -1;
+                    if (!aInvalid && bInvalid) return 1;
+                    return 0;
+                });
+
+                return res.data;
+            }
+        },
+
+        columns: [
+            { data: 'nama_pc' },
+            { data: 'coa' },
+            { data: 'cc_name' },
+            { data: 'no_reff' },
+            { data: 'reff_date' },
+            { data: 'buyer' },
+            { data: 'no_ws' },
+            { data: 'curr' },
+            { data: 'debit' },
+            { data: 'credit' },
+            { data: 'keterangan' },
+            { data: 'status' }
+        ],
+
+        columnDefs: [
+            {
+                targets: [8, 9],
+                className: "text-right",
+                render: function (data) {
+                    let val = parseFloat(data || 0);
+                    return val.toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                }
+            }
+        ],
+
+        // 🔥 ROW MERAH
+        rowCallback: function (row, data) {
+
+            let f = (data.filter || '').trim();
+
+            if (f === '' || f === '-' || f === null) {
+                $(row).css({
+                    'background-color': '#ffcccc'
+                });
+            }
+        },
+
+        drawCallback: function () {
+
+            let api = this.api();
+
+            let total_debit_nag = 0;
+            let total_credit_nag = 0;
+            let total_debit_nak = 0;
+            let total_credit_nak = 0;
+
+            let total_debit_nag_idr = 0;
+            let total_credit_nag_idr = 0;
+            let total_debit_nak_idr = 0;
+            let total_credit_nak_idr = 0;
+
+            api.rows().every(function () {
+
+                let d = this.data();
+
+                let pc = (d.kode_pc || '').toUpperCase();
+
+                let debit = parseFloat(d.debit) || 0;
+                let credit = parseFloat(d.credit) || 0;
+                let debit_idr = parseFloat(d.debit_idr) || 0;
+                let credit_idr = parseFloat(d.credit_idr) || 0;
+
+                if (pc === 'NAG') {
+                    total_debit_nag += debit;
+                    total_credit_nag += credit;
+                    total_debit_nag_idr += debit_idr;
+                    total_credit_nag_idr += credit_idr;
+                }
+
+                if (pc === 'NAK') {
+                    total_debit_nak += debit;
+                    total_credit_nak += credit;
+                    total_debit_nak_idr += debit_idr;
+                    total_credit_nak_idr += credit_idr;
+                }
+
+            });
+
+            let grand_debit = total_debit_nag + total_debit_nak;
+            let grand_credit = total_credit_nag + total_credit_nak;
+            let grand_debit_idr = total_debit_nag_idr + total_debit_nak_idr;
+            let grand_credit_idr = total_credit_nag_idr + total_credit_nak_idr;
+
+            function formatAngka(x) {
+                return x.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+
+            $('#tot_debit_nag3').val(formatAngka(total_debit_nag));
+            $('#tot_credit_nag3').val(formatAngka(total_credit_nag));
+
+            $('#tot_debit_nak3').val(formatAngka(total_debit_nak));
+            $('#tot_credit_nak3').val(formatAngka(total_credit_nak));
+
+            $('#tot_debit3').val(formatAngka(grand_debit));
+            $('#tot_credit3').val(formatAngka(grand_credit));
+
+            $('#h_tot_debit_nag3').val(total_debit_nag);
+            $('#h_tot_credit_nag3').val(total_credit_nag);
+
+            $('#h_tot_debit_nak3').val(total_debit_nak);
+            $('#h_tot_credit_nak3').val(total_credit_nak);
+
+            $('#h_tot_debit3').val(grand_debit);
+            $('#h_tot_credit3').val(grand_credit);
+
+            $('#tot_debit_idr_nag3').val(formatAngka(total_debit_nag_idr));
+            $('#tot_credit_idr_nag3').val(formatAngka(total_credit_nag_idr));
+
+            $('#tot_debit_idr_nak3').val(formatAngka(total_debit_nak_idr));
+            $('#tot_credit_idr_nak3').val(formatAngka(total_credit_nak_idr));
+
+            $('#tot_debit_idr3').val(formatAngka(grand_debit_idr));
+            $('#tot_credit_idr3').val(formatAngka(grand_credit_idr));
+
+            $('#h_tot_debit_idr_nag3').val(total_debit_nag_idr);
+            $('#h_tot_credit_idr_nag3').val(total_credit_nag_idr);
+
+            $('#h_tot_debit_idr_nak3').val(total_debit_nak_idr);
+            $('#h_tot_credit_idr_nak3').val(total_credit_nak_idr);
+
+            $('#h_tot_debit_idr3').val(grand_debit_idr);
+            $('#h_tot_credit_idr3').val(grand_credit_idr);
+
+            // 🔥 VALIDASI BALANCE
+            if (
+                Math.round(grand_debit * 100) / 100 !==
+                Math.round(grand_credit * 100) / 100
+            ) {
+                $('#tot_debit3, #tot_credit3,#tot_debit_idr3, #tot_credit_idr3').css({
+                    'color': 'red',
+                    'font-weight': 'bold'
+                });
+            } else {
+                $('#tot_debit3, #tot_credit3,#tot_debit_idr3, #tot_credit_idr3').css({
+                    'color': 'green',
+                    'font-weight': 'bold'
+                });
+            }
+
+        }
+
+    });
+
+});
+
+
+
+let datatable4;
+
+$(document).ready(function () {
+
+    datatable4 = $("#table-upload-mj-group").DataTable({
+
+        ordering: false,
+        processing: true,
+        serverSide: false,
+        searching: true,
+        info: true,
+        paging: true,
+        pageLength: 10,
+        lengthMenu: [10, 25, 50, 100],
+        autoWidth: false,
+
+        ajax: {
+            url: 'memorial_journal/ajx_get_sum_mj_upload.php',
+            type: 'POST',
+            data: function (d) {
+                d.mj_type2 = '1';
+            },
+            dataSrc: function (res) {
+
+                console.log('DATA TABLE RESPONSE:', res);
+
+                // 🔥 HANDLE kalau response tidak sesuai
+                if (!res || !res.data) {
+                    return [];
+                }
+
+                return res.data;
+            }
+        },
+
+        columns: [
+            { data: 'no_mj' },
+            { data: 'mj_date' },
+            { data: 'nama_cmj' },
+            { data: 'curr' },
+            { data: 'debit' },
+            { data: 'credit' },
+            { data: 'keterangan' },
+            { data: 'status' }
+        ],
+
+        columnDefs: [
+            {
+                targets: [4, 5],
+                className: "text-right",
+                render: function (data) {
+                    let val = parseFloat(data || 0);
+                    return val.toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    });
+                }
+            }
+        ],
+
+    });
+
+});
+
+
+
 $('#btnUpload').on('click', function () {
 
     let file = $('#fileUpload')[0].files[0];
@@ -1829,7 +2097,6 @@ $('#btnUpload').on('click', function () {
     let formData = new FormData();
     formData.append('file', file);
 
-    // ambil tanggal
     let tgl = $('#mj_date3').val();
     formData.append('tanggal', tgl);
 
@@ -1848,14 +2115,16 @@ $('#btnUpload').on('click', function () {
         data: formData,
         processData: false,
         contentType: false,
+
         success: function (res) {
 
             Swal.close();
+            console.log('UPLOAD RESPONSE:', res);
 
             try {
                 let data = JSON.parse(res);
 
-                if (data.status == 'success') {
+                if (data.status === 'success') {
 
                     Swal.fire({
                         icon: 'success',
@@ -1863,10 +2132,18 @@ $('#btnUpload').on('click', function () {
                         text: 'File berhasil diproses'
                     });
 
-                    setTimeout(function(){
-                        loadTempData();
-                    }, 500);
+                    // 🔥 DELAY + RELOAD DATATABLE
+                    setTimeout(function () {
 
+                        if ($.fn.DataTable.isDataTable('#table-upload-mj')) {
+                            $('#table-upload-mj').DataTable().ajax.reload(null, false);
+                        }
+
+                        if ($.fn.DataTable.isDataTable('#table-upload-mj-group')) {
+                            $('#table-upload-mj-group').DataTable().ajax.reload(null, false);
+                        }
+
+                    }, 700);
 
                 } else {
                     Swal.fire('Error', data.message, 'error');
@@ -1874,173 +2151,211 @@ $('#btnUpload').on('click', function () {
 
             } catch (e) {
                 Swal.fire('Error', 'Response tidak valid', 'error');
-                console.log(res);
+                console.log('ERROR PARSE:', res);
             }
 
         },
+
         error: function () {
             Swal.fire('Error', 'Gagal upload file', 'error');
         }
+
     });
 
 });
 
-let datatable3;
+$('#simpan3').on('click', function () {
 
-    $(document).ready(function() {
+    console.log('=== START SAVE PROCESS ===');
 
-      datatable3 = $("#table-upload-mj").DataTable({
+    $('#simpan3').prop('disabled', true);
 
-    ordering: false,
-    processing: true,
-    serverSide: false,
-    searching: true,
-    info: true,
-    paging: true,
-    pageLength: 10,
-    lengthMenu: [10, 25, 50, 100],
-    autoWidth: false,
+    /* =============================
+       1. VALIDASI ROW MERAH
+    ============================= */
+    let invalidRows = [];
 
-    ajax: {
-        url: 'memorial_journal/ajx_get_data_mj_upload.php',
-        type: 'POST',
-        data: function(d) {
+    datatable3.rows().every(function () {
+        let d = this.data();
 
-            d.mj_type2 = '1';
-        },
-        dataSrc: function(res){
-            return res.data;
+        let f = (d.filter || '').trim();
+
+        if (f === '' || f === '-' || f === null) {
+            invalidRows.push(d);
         }
-    },
+    });
 
-    columns: [
-        { data: 'nama_pc' },
-        { data: 'coa' },
-        { data: 'cc_name' },
-        { data: 'no_reff' },
-        { data: 'reff_date' },
-        { data: 'buyer' },
-        { data: 'ws' },
-        { data: 'curr' },
-        { data: 'debit' },
-        { data: 'credit' },
-        { data: 'keterangan' },
-        { data: 'status' }
-    ],
+    console.log('INVALID ROWS:', invalidRows);
 
-    columnDefs: [
-        {
-            targets: [8, 9],
-            className: "text-right",
-            render: function(data) {
-                let val = parseFloat(data || 0);
-                return val.toLocaleString('en-US', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
-            }
-        }
-    ],
+    if (invalidRows.length > 0) {
 
-    drawCallback: function () {
-
-        let api = this.api();
-
-        let total_debit_nag = 0;
-        let total_credit_nag = 0;
-
-        let total_debit_nak = 0;
-        let total_credit_nak = 0;
-
-        // 🔥 LOOP SEMUA DATA (BUKAN PER PAGE)
-        api.rows().every(function () {
-
-            let d = this.data();
-            console.log(d); 
-
-            let pc = (d.id_pc  || '').toUpperCase();
-            let debit = parseFloat(d.debit) || 0;
-            let credit = parseFloat(d.credit) || 0;
-
-            if(pc === 'NAG'){
-                total_debit_nag += debit;
-                total_credit_nag += credit;
-            }
-
-            if(pc === 'NAK'){
-                total_debit_nak += debit;
-                total_credit_nak += credit;
-            }
-
+        Swal.fire({
+            icon: 'error',
+            title: 'Tidak bisa save!',
+            text: 'Masih ada data mapping (filter) yang kosong!'
         });
 
-        // 🔥 GRAND TOTAL
-        let grand_debit = total_debit_nag + total_debit_nak;
-        let grand_credit = total_credit_nag + total_credit_nak;
+        $('#simpan3').prop('disabled', false);
+        return;
+    }
 
-        // 🔥 FORMAT ANGKA
-        function formatAngka(x){
-            return x.toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
+
+    /* =============================
+       2. VALIDASI BALANCE PER MJ
+    ============================= */
+    let tidakBalance = [];
+
+    datatable4.rows().every(function () {
+        let d = this.data();
+
+        let debit  = parseFloat(d.debit) || 0;
+        let credit = parseFloat(d.credit) || 0;
+
+        if (Math.round(debit * 100) / 100 !== Math.round(credit * 100) / 100) {
+            tidakBalance.push(d.no_mj);
+        }
+    });
+
+    console.log('MJ TIDAK BALANCE:', tidakBalance);
+
+    if (tidakBalance.length > 0) {
+
+        Swal.fire({
+            icon: 'error',
+            title: 'Journal Tidak Balance!',
+            html: `
+                Berikut No Journal yang tidak balance:<br><br>
+                <b style="color:red">${tidakBalance.join(', ')}</b>
+            `
+        });
+
+        $('#simpan3').prop('disabled', false);
+        return;
+    }
+
+
+    /* =============================
+       3. AMBIL DATA DETAIL
+    ============================= */
+    let detailData = [];
+
+    datatable3.rows().every(function () {
+        detailData.push(this.data());
+    });
+
+    console.log('DETAIL DATA:', detailData);
+
+
+    /* =============================
+       4. AMBIL DATA HEADER
+    ============================= */
+    let headerData = [];
+
+    datatable4.rows().every(function () {
+        headerData.push(this.data());
+    });
+
+    console.log('HEADER DATA:', headerData);
+
+
+    /* =============================
+       5. FORM DATA
+    ============================= */
+    let formData = new FormData($('#form-data3')[0]);
+
+    formData.append('detail', JSON.stringify(detailData));
+    formData.append('header', JSON.stringify(headerData));
+
+    console.log('FORM DATA READY');
+
+
+    /* =============================
+       6. LOADING SWAL
+    ============================= */
+    Swal.fire({
+        title: 'Menyimpan data...',
+        text: 'Mohon tunggu',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+
+
+    $.ajax({
+        url: 'memorial_journal/save_mj_upload_fix.php',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+
+        beforeSend: function () {
+            console.log('SENDING DATA...');
+        },
+
+        success: function (res) {
+
+            console.log('SAVE RESPONSE RAW:', res);
+
+            try {
+                let r = JSON.parse(res);
+
+                console.log('SAVE RESPONSE JSON:', r);
+
+                if (r.status === 'success') {
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: 'Data berhasil disimpan'
+                    });
+
+                    // reload table
+                    datatable3.ajax.reload(null, false);
+                    datatable4.ajax.reload(null, false);
+
+                } else {
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: r.message || 'Terjadi kesalahan'
+                    });
+
+                }
+
+            } catch (e) {
+
+                console.log('ERROR PARSE:', e);
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Response tidak valid dari server'
+                });
+
+            }
+
+            $('#simpan3').prop('disabled', false);
+        },
+
+        error: function (xhr) {
+
+            console.log('AJAX ERROR:', xhr.responseText);
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Server Error!',
+                text: 'Gagal menghubungi server'
             });
+
+            $('#simpan3').prop('disabled', false);
         }
 
-        // 🔥 SET KE INPUT (VISIBLE)
-        $('#tot_debit_nag3').val(formatAngka(total_debit_nag));
-        $('#tot_credit_nag3').val(formatAngka(total_credit_nag));
-
-        $('#tot_debit_nak3').val(formatAngka(total_debit_nak));
-        $('#tot_credit_nak3').val(formatAngka(total_credit_nak));
-
-        $('#tot_debit3').val(formatAngka(grand_debit));
-        $('#tot_credit3').val(formatAngka(grand_credit));
-
-        // 🔥 SET KE HIDDEN (RAW NUMBER)
-        $('#h_tot_debit_nag3').val(total_debit_nag);
-        $('#h_tot_credit_nag3').val(total_credit_nag);
-
-        $('#h_tot_debit_nak3').val(total_debit_nak);
-        $('#h_tot_credit_nak3').val(total_credit_nak);
-
-        $('#h_tot_debit3').val(grand_debit);
-        $('#h_tot_credit3').val(grand_credit);
-
-        // 🔥 VALIDASI BALANCE (WARNA)
-        if (
-    Math.round(grand_debit * 100) / 100 !== 
-    Math.round(grand_credit * 100) / 100
-){
-    $('#tot_debit3, #tot_credit3').css({
-        'color':'red',
-        'font-weight':'bold'
     });
-} else {
-    $('#tot_debit3, #tot_credit3').css({
-        'color':'green',
-        'font-weight':'bold'
-    });
-}
-
-
-    }
 
 });
-      });
-
-function loadTempData() {
-
-    if ($.fn.DataTable.isDataTable('#table-upload-mj')) {
-
-        let table = $('#table-upload-mj').DataTable();
-
-        table.ajax.reload(null, false);
-
-    } else {
-        console.log('DataTable belum siap');
-    }
-
-}
 
 
 
