@@ -1863,7 +1863,10 @@ $('#btnUpload').on('click', function () {
                         text: 'File berhasil diproses'
                     });
 
-                    loadTempData(); // tampilkan ke table
+                    setTimeout(function(){
+                        loadTempData();
+                    }, 500);
+
 
                 } else {
                     Swal.fire('Error', data.message, 'error');
@@ -1893,15 +1896,13 @@ let datatable3;
     serverSide: false,
     searching: true,
     info: true,
-
     paging: true,
     pageLength: 10,
     lengthMenu: [10, 25, 50, 100],
-
     autoWidth: false,
 
     ajax: {
-        url: 'memorial_journal/ajx_get_data_hris.php',
+        url: 'memorial_journal/ajx_get_data_mj_upload.php',
         type: 'POST',
         data: function(d) {
 
@@ -1913,18 +1914,18 @@ let datatable3;
     },
 
     columns: [
-        { data: 'profit_center' },
-        { data: 'nama_coa' },
+        { data: 'nama_pc' },
+        { data: 'coa' },
         { data: 'cc_name' },
-        { data: 'reff_number' },
+        { data: 'no_reff' },
         { data: 'reff_date' },
         { data: 'buyer' },
         { data: 'ws' },
         { data: 'curr' },
         { data: 'debit' },
         { data: 'credit' },
-        { data: 'deskripsi' },
-        { data: 'deskripsi' }
+        { data: 'keterangan' },
+        { data: 'status' }
     ],
 
     columnDefs: [
@@ -2029,13 +2030,18 @@ let datatable3;
 
 function loadTempData() {
 
-      datatable3.ajax.reload(function() {
+    if ($.fn.DataTable.isDataTable('#table-upload-mj')) {
 
-        datatable3.columns.adjust().draw();
+        let table = $('#table-upload-mj').DataTable();
 
-      }, false);
+        table.ajax.reload(null, false);
 
+    } else {
+        console.log('DataTable belum siap');
     }
+
+}
+
 
 
   </script>
