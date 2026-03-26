@@ -422,7 +422,11 @@ document.getElementById('btnExportExcel').addEventListener('click', function(e) 
     let ed = toYmd(document.getElementById('end_date').value);
 
     // set dynamic href
-    this.href = `ekspor_ca_fabric_summary_item.php?start_date=${sd}&end_date=${ed}`;
+    if (sd >= '2025-11-01') {
+        this.href = `ekspor_ca_fabric_summary_item.php?start_date=${sd}&end_date=${ed}`;
+    }else{
+        this.href = `ekspor_ca_fabric_summary.php?start_date=${sd}&end_date=${ed}`;
+    }
 });
 
 </script>
