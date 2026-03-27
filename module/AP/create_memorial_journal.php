@@ -168,9 +168,9 @@
       <div class="card-body p-4">
 
         <div class="tab-container">
-          <button class="tablinks" onclick="openTab(event, 'mj_input')">Manual Journal Entry</button>
+          <button class="tablinks active" onclick="openTab(event, 'mj_input')">Manual Journal Entry</button>
           <button class="tablinks" onclick="openTab(event, 'mj_hris')">Journal From HRIS</button>
-          <button class="tablinks active" onclick="openTab(event, 'mj_upload')">Upload Journal</button>
+          <button class="tablinks" onclick="openTab(event, 'mj_upload')">Upload Journal</button>
         </div>
 
 
@@ -2305,11 +2305,21 @@ $('#simpan3').on('click', function () {
 
                 if (r.status === 'success') {
 
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: 'Data berhasil disimpan'
-                    });
+                    let listMJ = (r.no_mj || []).join('\n');
+    let listMJ_SB = (r.no_mj_sb || []).join('\n');
+
+    let textAlert = 'Data berhasil disimpan\n\nNo GM:\n' + listMJ;
+
+    if (listMJ_SB) {
+        textAlert += '\n\nNo GM SB:\n' + listMJ_SB;
+    }
+
+    Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: textAlert
+    });
+
 
                     // reload table
                     datatable3.ajax.reload(null, false);

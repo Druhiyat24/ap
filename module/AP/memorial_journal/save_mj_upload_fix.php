@@ -8,47 +8,22 @@ mysqli_begin_transaction($conn2);
 
 try {
 
-    /* ================= INPUT ================= */
-
-    $mj_type = $_POST['mj_type2'];
-    $profit_center = $_POST['profit_center2'];
-    $description = $_POST['pesan2'];
-    $rate = $_POST['rate_mj2'] ?? 1;
-
-    $rate = str_replace(',', '', $rate);
-
-    $bulan = date('m', strtotime($mj_date));
-    $tahun = date('y', strtotime($mj_date));
-
-    $status = "Post";
     $user = $_SESSION['username'] ?? 'system';
     $create_date = date("Y-m-d H:i:s");
+    $status = "Post";
 
-    $tgl_hris = date("Y-m", strtotime($_POST['hris_date']));
-    $tgl_hris_input = date("Y-m-d", strtotime($_POST['hris_date']));
+    /* ================= AMBIL DATA DARI FORM ================= */
 
-    /* ================= GET NAMA CMJ ================= */
+    $header = json_decode($_POST['header'], true);
+    $detail = json_decode($_POST['detail'], true);
 
-    $sqlcmj = mysqli_query($conn2, "SELECT nama_cmj FROM master_category_mj WHERE id_cmj = '$mj_type'");
-    $rowcmj = mysqli_fetch_assoc($sqlcmj);
-    $nama_cmj = $rowcmj['nama_cmj'];
-
-    /* ================= PREFIX ================= */
-
-    $prefix = "GM/NAG/" . $bulan . $tahun;
-
-    /* ================= GET DATA TEMP ================= */
-
-    $data_temp = [];
-    $q = mysqli_query($conn2, "SELECT * FROM tbl_memorial_journal_temp WHERE create_by = '$user'");
-
-    while ($r = mysqli_fetch_assoc($q)) {
-        $data_temp[] = $r;
-    }
-
-    if (count($data_temp) == 0) {
+    if (!$detail || count($detail) == 0) {
         throw new Exception("Data kosong");
     }
+
+    /* ================= SAMAKAN STRUKTUR SEPERTI TEMP ================= */
+
+    $data_temp = $detail; // ⬅️ ini kuncinya (biar logic bawah tetap jalan)
 
     /* ================= GROUP BY NO_MJ ================= */
 
@@ -59,40 +34,54 @@ try {
 
     $jumlah_header = count($grouped);
 
-    /* ================= GET LAST NUMBER ================= */
-
-    $sql = mysqli_query($conn2, "
-        SELECT MAX(CAST(RIGHT(no_mj,5) AS UNSIGNED)) AS max_urut
-        FROM tbl_memorial_journal
-        WHERE no_mj LIKE '$prefix%'
-        FOR UPDATE
-    ");
-    $row = mysqli_fetch_assoc($sql);
-    $start = ($row['max_urut'] ?? 0);
-
-    $sql_sb = mysqli_query($conn2, "
-        SELECT MAX(CAST(RIGHT(no_mj,5) AS UNSIGNED)) AS max_urut
-        FROM sb_memorial_journal
-        WHERE no_mj LIKE '$prefix%'
-        FOR UPDATE
-    ");
-    $row_sb = mysqli_fetch_assoc($sql_sb);
-    $start_sb = ($row_sb['max_urut'] ?? 0);
-
     /* ================= LOOP HEADER ================= */
 
     $i = 1;
+    $list_no_mj = [];
+    $list_no_mj_sb = [];
+
 
     foreach ($grouped as $no_mj_temp => $rows) {
 
-        $mj_date = date('Y-m-d', strtotime($rows[0]['mj_date']));
-        $fil_sb1 = $_POST['fil_sb1'] ?? 'N';
+        /* ================= AMBIL HEADER ================= */
 
-        $urutan = $start + $i;
-        $urutan_sb = $start_sb + $i;
+        // PRIORITAS HEADER FORM, fallback ke detail
+        $mj_date = date('Y-m-d', strtotime($header['mj_date'] ?? $rows[0]['mj_date']));
+        $description = $header['keterangan'] ?? $rows[0]['keterangan'];
+        $fil_sb1 = $header['status'] ?? ($rows[0]['status'] ?? 'N');
 
-        $no_mj = $prefix . "/" . sprintf("%05d", $urutan);
-        $no_mj_sb = $prefix . "/" . sprintf("%05d", $urutan_sb);
+        $bulan = date('m', strtotime($mj_date));
+        $tahun = date('y', strtotime($mj_date));
+
+        $prefix = "GM/NAG/" . $bulan . $tahun;
+
+        $sql = mysqli_query($conn2, "
+            SELECT MAX(CAST(RIGHT(no_mj,5) AS UNSIGNED)) AS max_urut
+            FROM tbl_memorial_journal
+            WHERE no_mj LIKE '$prefix%'
+            FOR UPDATE
+        ");
+        $row = mysqli_fetch_assoc($sql);
+        $start = ($row['max_urut'] ?? 0);
+
+        $sql_sb = mysqli_query($conn2, "
+            SELECT MAX(CAST(RIGHT(no_mj,5) AS UNSIGNED)) AS max_urut
+            FROM sb_memorial_journal
+            WHERE no_mj LIKE '$prefix%'
+            FOR UPDATE
+        ");
+        $row_sb = mysqli_fetch_assoc($sql_sb);
+        $start_sb = ($row_sb['max_urut'] ?? 0);
+
+        $no_mj    = $prefix . "/" . sprintf("%05d", $start + $i);
+        $no_mj_sb = $prefix . "/" . sprintf("%05d", $start_sb + $i);
+
+        $list_no_mj[] = $no_mj;
+
+        if ($fil_sb1 == 'YES') {
+            $list_no_mj_sb[] = $no_mj_sb;
+        }
+
 
         /* ================= HITUNG TOTAL ================= */
 
@@ -104,76 +93,79 @@ try {
             $total_credit += $r['credit'];
         }
 
+        /* ================= INSERT STATUS ================= */
 
-       if ($fil_sb1 == '1') {
-
-    mysqli_query($conn2, " INSERT INTO status_memorial_journal
-(
-no_mj, mj_date, no_mj_sb, status, create_by, create_date
-)
-VALUES
-('$no_mj', '$mj_date', '$no_mj_sb', 'Post', '$user', '$create_date')
-");
-    }
+        if ($fil_sb1 == 'YES') {
+            mysqli_query($conn2, "
+                INSERT INTO status_memorial_journal
+                (no_mj, mj_date, no_mj_sb, status, create_by, create_date)
+                VALUES
+                ('$no_mj', '$mj_date', '$no_mj_sb', 'Post', '$user', '$create_date')
+            ");
+        }
 
         /* ================= INSERT DETAIL ================= */
 
         foreach ($rows as $r) {
 
-            mysqli_query($conn2, "
-                INSERT INTO tbl_memorial_journal_det
-                (no_mj,no_coa,no_costcenter,no_reff,reff_date,buyer,no_ws,curr,rate,debit,credit,debit_idr,credit_idr,keterangan,kode_pc)
-                VALUES
-                ('$no_mj',
-                '".$r['no_coa']."',
-                '".$r['no_costcenter']."',
-                '".$r['no_reff']."',
-                '".$r['reff_date']."',
-                '".$r['buyer']."',
-                '".$r['no_ws']."',
-                '".$r['curr']."',
-                '".$r['rate']."',
-                '".$r['debit']."',
-                '".$r['credit']."',
-                '".$r['debit_idr']."',
-                '".$r['credit_idr']."',
-                '".$r['keterangan']."',
-                '".$r['profit_center']."')
-            ");
-        }
+            $coa_i = $r['no_coa'];
+            $cc_i = $r['no_costcenter'];
+            $reff_i = $r['no_reff'];
+            $reffdate_i = $r['reff_date'];
+            $buyer_i = $r['buyer'];
+            $ws_i = $r['no_ws'];
+            $curr_i = $r['curr'];
+            $rate_det = $r['rate'];
+            $credit_i = $r['credit'];
+            $credit_idr = $r['credit_idr'];
+            $debit_i = $r['debit'];
+            $debit_idr = $r['debit_idr'];
+            $ket_i = $r['keterangan'];
+            $pc_i = $r['kode_pc'];
+            $mj_type = $r['id_cmj'];
+            $nama_cmj = $r['nama_cmj'];
+            $nama_cc = $r['cc_name'];
 
-        /* ================= SB1 ================= */
-
-        if ($fil_sb1 == 'Y') {
+            $sqlcoa = mysqli_query($conn2, "select nama_coa from mastercoa_v2 where no_coa = '$coa_i'");
+            $rowcoa = mysqli_fetch_array($sqlcoa);
+            $nama_coa = isset($rowcoa['nama_coa']) ? $rowcoa['nama_coa'] : null;
 
             mysqli_query($conn2, "
-                INSERT INTO sb_memorial_journal
-                (no_mj, mj_date, id_cmj, nama_cmj, curr, rate, total_debit, total_credit, keterangan, status, create_by, create_date)
-                VALUES
-                ('$no_mj_sb','$mj_date','$mj_type','$nama_cmj','".$rows[0]['curr']."','$rate','$total_debit','$total_credit','$description','$status','$user','$create_date')
+            INSERT INTO tbl_memorial_journal
+            (
+            no_mj, mj_date, id_cmj, no_coa, no_costcenter, no_reff, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, keterangan, status, create_by, create_date, profit_center
+            )
+            VALUES
+            ('$no_mj', '$mj_date', '$mj_type', '$coa_i', '$cc_i', '$reff_i', '$reffdate_i', '$buyer_i', '$ws_i', '$curr_i', '$rate_det', '$debit_i', '$credit_i', '$debit_idr', '$credit_idr', '$ket_i', '$status', '$user', '$create_date', '$pc_i')
             ");
 
-            foreach ($rows as $r) {
+            mysqli_query($conn2, "
+            INSERT INTO tbl_list_journal
+            (
+            no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center
+            )
+            VALUES
+            ('$no_mj', '$mj_date', '$nama_cmj', '$coa_i', '$nama_coa', '$cc_i', '$nama_cc', '$reff_i', '$reffdate_i', '$buyer_i', '$ws_i', '$curr_i', '$rate_det', '$debit_i', '$credit_i', '$debit_idr', '$credit_idr', '$status', '$ket_i', '$user', '$create_date', '', '', '', '', '$pc_i')
+            ");
+
+            if ($fil_sb1 == 'YES') {
 
                 mysqli_query($conn2, "
-                    INSERT INTO sb_memorial_journal_det
-                    (no_mj,no_coa,no_costcenter,no_reff,reff_date,buyer,no_ws,curr,rate,debit,credit,debit_idr,credit_idr,keterangan,kode_pc)
-                    VALUES
-                    ('$no_mj_sb',
-                    '".$r['no_coa']."',
-                    '".$r['no_costcenter']."',
-                    '".$r['no_reff']."',
-                    '".$r['reff_date']."',
-                    '".$r['buyer']."',
-                    '".$r['no_ws']."',
-                    '".$r['curr']."',
-                    '".$r['rate']."',
-                    '".$r['debit']."',
-                    '".$r['credit']."',
-                    '".$r['debit_idr']."',
-                    '".$r['credit_idr']."',
-                    '".$r['keterangan']."',
-                    '".$r['profit_center']."')
+                INSERT INTO sb_memorial_journal
+                (
+                no_mj, mj_date, id_cmj, no_coa, no_costcenter, no_reff, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, keterangan, status, create_by, create_date, asal_data, profit_center
+                )
+                VALUES
+                ('$no_mj_sb', '$mj_date', '$mj_type', '$coa_i', '$cc_i', '$reff_i', '$reffdate_i', '$buyer_i', '$ws_i', '$curr_i', '$rate_det', '$debit_i', '$credit_i', '$debit_idr', '$credit_idr', '$ket_i', '$status', '$user', '$create_date', 'Upload SB2', '$pc_i')
+                ");
+
+                mysqli_query($conn2, "
+                INSERT INTO sb_list_journal
+                (
+                no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center
+                )
+                VALUES
+                ('$no_mj_sb', '$mj_date', '$nama_cmj', '$coa_i', '$nama_coa', '$cc_i', '$nama_cc', '$reff_i', '$reffdate_i', '$buyer_i', '$ws_i', '$curr_i', '$rate_det', '$debit_i', '$credit_i', '$debit_idr', '$credit_idr', '$status', '$ket_i', '$user', '$create_date', '', '', '', '', '$pc_i')
                 ");
             }
         }
@@ -182,16 +174,19 @@ VALUES
     }
 
     /* ================= DELETE TEMP ================= */
-
+    // optional (boleh dipakai atau tidak)
     mysqli_query($conn2, "DELETE FROM tbl_memorial_journal_temp WHERE create_by = '$user'");
 
     mysqli_commit($conn2);
 
     echo json_encode([
-        "status" => "success",
-        "message" => "Data berhasil disimpan",
-        "total_header" => $jumlah_header
-    ]);
+    "status" => "success",
+    "message" => "Data berhasil disimpan",
+    "total_header" => $jumlah_header,
+    "no_mj" => $list_no_mj,
+    "no_mj_sb" => $list_no_mj_sb
+]);
+
 
 } catch (Exception $e) {
 

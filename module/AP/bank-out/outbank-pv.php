@@ -5,7 +5,7 @@
 
                 <div class="col-md-3 mb-2">
                     <label><b>Reference</b></label>
-                    <input type="text" name="ref_num2" id="ref_num2" class="form-control" value="Bank Keluar" readonly>
+                    <input type="text" name="ref_num2" id="ref_num2" class="form-control" value="Payment Voucher" readonly>
                 </div>
 
                 <div class="col-md-2 mb-2">
@@ -14,11 +14,12 @@
                 </div>
 
                 <div class="col-md-3 mb-2">
-                    <label><b>Source</b></label>
+                    <label><b>Supplier</b></label>
                     <select class="form-control select2" name="nama_supp2" id="nama_supp2" data-live-search="true">
+                        <option value="">Select Supplier</option>
                         <?php
                         $nama_supp2 = $_POST['nama_supp2'] ?? '';
-                        $sql = mysqli_query($conn1, "SELECT DISTINCT Supplier FROM mastersupplier WHERE tipe_sup='C' and id_supplier = '799' ORDER BY Supplier ASC");
+                        $sql = mysqli_query($conn1, "SELECT DISTINCT Supplier FROM mastersupplier WHERE tipe_sup='S' and supplier != '' ORDER BY Supplier ASC");
                         while ($row = mysqli_fetch_array($sql)) {
                             $selected = ($row['Supplier'] == $nama_supp2) ? 'selected' : '';
                             echo "<option value='" . $row['Supplier'] . "' " . $selected . ">" . $row['Supplier'] . "</option>";
@@ -29,18 +30,28 @@
                 <div class="col-md-3 mb-2"> </div>
 
                 <div class="col-md-3 mb-2">
+                    <label><b>Profit Center</b></label>
+                    <input type="text" class="form-control angka" id="profit_center_bank_show" name="profit_center_bank_show" readonly>
+                    <input type="hidden" class="form-control" id="profit_center_bank2" name="profit_center_bank2" readonly>
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label><b>Reff Date</b></label>
+                    <input type="text" name="tgl_filawal" id="tgl_filawal" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off">
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label><b>-</b></label>
+                    <input type="text" name="tgl_filakhir" id="tgl_filakhir" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off">
+                </div>
+                <div class="col-md-2 mb-2 d-flex align-items-end">
+                    <button type="button" id="btn_tarik_pv" class="btn btn-primary">
+                     <i class="fas fa-search"></i> Search PV
+                    </button>
+                </div>
+                <div class="col-md-2 mb-2"> </div>
+
+                <div class="col-md-3 mb-2">
                     <label><b>Account</b></label>
-                    <select class="form-control select2" id="account2" name="account2" data-live-search="true">
-                        <option value="">Select Account</option>
-
-                        <?php
-                        $sql = mysqli_query($conn1, "select bank_name as bank,curr,bank_account as account,RIGHT(bank_account,4) as kode, nama_pc, kode_pc, b_code from b_masterbank a INNER JOIN master_pc b on b.kode_pc = a.profit_center_bank where a.status = 'Active'");
-                        while ($row = mysqli_fetch_assoc($sql)) {
-                            echo "<option value='" . $row['account'] . "' data-bank2='" . $row['bank'] . "' data-currency2='" . $row['curr'] . "' data-namapc2='" . $row['nama_pc'] . "' data-kodepc2='" . $row['kode_pc'] . "'  data-kodebank2='" . $row['b_code'] . "'>" . $row['account'] . " </option>";
-                        }
-                        ?>
-
-                    </select>
+                    <input type="text" class="form-control" id="account2" name="account2" readonly>
                 </div>
 
                 <div class="col-md-2 mb-2">
@@ -72,42 +83,27 @@
                 </div>
                 <div class="col-md-5 mb-2"> </div>
 
-                <div class="col-md-3 mb-2">
-                    <label><b>Bank Out</b></label>
-                    <select class="form-control select2" name="no_bk" id="no_bk" data-live-search="true">
-                        <option value="">Select Bank Out</option>
-                        <?php
-                        $no_bk = $_POST['no_bk'] ?? '';
-                        $sql = mysqli_query($conn1, "select no_bankout from b_bankout_h where status = 'Approved' and stat_bi != 'Y' and nama_supp = 'PT. NIRWANA ALABARE GARMENT'");
-                        while ($row = mysqli_fetch_array($sql)) {
-                            $selected = ($row['no_bankout'] == $no_bk) ? 'selected' : '';
-                            echo "<option value='" . $row['no_bankout'] . "' " . $selected . ">" . $row['no_bankout'] . "</option>";
-                        }
-                        ?>
-                    </select>
-                </div>
-
-                <div class="col-md-5 mb-2">
+                <div class="col-md-8 mb-2">
                     <label><b>Description</b></label>
-                    <textarea style="font-size: 15px; text-align: left;height: 40px;" cols="30" type="text" class="form-control " name="pesan2" id="pesan2" value="" placeholder="descriptions..." required></textarea>
+                    <textarea style="font-size: 15px; text-align: left;" cols="30" rows="3" type="text" class="form-control " name="pesan2" id="pesan2" value="" placeholder="descriptions..." required></textarea>
                 </div>
 
             </div>
     <div class="card-body p-2">
       <div class="table-responsive">
-          <table id="table-bank-out" 
+          <table id="table-pv" 
           class="table table-striped table-bordered table-hover table-sm nowrap" >
           <thead class="table-gradient">
             <tr>
-                <th style="text-align: center;vertical-align: middle;">Profit Center</th>
-                <th style="text-align: center;vertical-align: middle;">COA</th>
-                <th style="text-align: center;vertical-align: middle;">Cost Center</th>
-                <th style="text-align: center;vertical-align: middle;">Reff Document</th>
-                <th style="text-align: center;vertical-align: middle;">Reff Date</th>
-                <th style="text-align: center;vertical-align: middle;">Description</th>
+                <th style="text-align: center;vertical-align: middle;">Check</th>
+                <th style="text-align: center;vertical-align: middle;">No PV</th>
+                <th style="text-align: center;vertical-align: middle;">PV Date</th>
+                <th style="text-align: center;vertical-align: middle;">Due Date</th>
+                <th style="text-align: center;vertical-align: middle;">DPP</th>
+                <th style="text-align: center;vertical-align: middle;">PPN</th>
+                <th style="text-align: center;vertical-align: middle;">PPH</th>
                 <th style="text-align: center;vertical-align: middle;">Total</th>
-                <th style="text-align: center;vertical-align: middle;">Rate</th>
-                <th style="text-align: center;vertical-align: middle;">Total IDR</th>
+                <th style="text-align: center;vertical-align: middle;">Amount</th>
             </tr>
         </thead>
         <tbody>
