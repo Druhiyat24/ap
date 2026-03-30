@@ -1,35 +1,50 @@
-<form id="form-data3" method="post">
+<form id="form-data1" method="post">
     <div class="card shadow-sm">
         <div class="card-body">
             <div class="form-row">
 
                 <div class="col-md-3 mb-2">
                     <label><b>Reference</b></label>
-                    <input type="text" name="ref_num3" id="ref_num3" class="form-control" value="None" readonly>
+                    <input type="text" name="ref_num1" id="ref_num1" class="form-control" value="None" readonly>
                 </div>
 
                 <div class="col-md-2 mb-2">
                     <label><b>Date</b></label>
-                    <input type="text" name="tgl_active3" id="tgl_active3" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off">
+                    <input type="text" name="tgl_active1" id="tgl_active1" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off">
                 </div>
 
                 <div class="col-md-3 mb-2">
-                    <label><b>Profit Center</b></label>
-                    <input type="text" class="form-control angka" id="profit_center_kas_show3" name="profit_center_kas_show3" readonly>
-                    <input type="hidden" class="form-control" id="profit_center_kas3" name="profit_center_kas3" readonly>
+                    <label><b>Supplier</b></label>
+                    <select class="form-control select2" name="nama_supp1" id="nama_supp1" data-live-search="true">
+                        <option value="">Select Supplier</option>
+                        <?php
+                        $nama_supp2 = $_POST['nama_supp2'] ?? '';
+                        $sql = mysqli_query($conn1, "SELECT DISTINCT Supplier FROM mastersupplier WHERE tipe_sup='S' and supplier != '' ORDER BY Supplier ASC");
+                        while ($row = mysqli_fetch_array($sql)) {
+                            $selected = ($row['Supplier'] == $nama_supp2) ? 'selected' : '';
+                            echo "<option value='" . $row['Supplier'] . "' " . $selected . ">" . $row['Supplier'] . "</option>";
+                        }
+                        ?>
+                    </select>
                 </div>
+
+          <!--       <div class="col-md-3 mb-2">
+                    <label><b>Profit Center</b></label>
+                    <input type="text" class="form-control angka" id="profit_center_kas_show1" name="profit_center_kas_show1" readonly>
+                    <input type="hidden" class="form-control" id="profit_center_kas1" name="profit_center_kas1" readonly>
+                </div> -->
 
                 <div class="col-md-3 mb-2"> </div>
 
                 <div class="col-md-3 mb-2">
                     <label><b>Account</b></label>
-                    <select class="form-control select2" id="account3" name="account3" data-live-search="true">
+                    <select class="form-control select2" id="account1" name="account1" data-live-search="true">
                         <option value="">Select Account</option>
 
                         <?php
                         $sql = mysqli_query($conn1, "select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa, kode_cash, IF(no_coa = '1.01.11','NAK','NAG') profit_center, IF(no_coa = '1.01.11','PCP002 - NIRWANA ALABARE KNITTING','PCP001 - NIRWANA ALABARE GARMENT') nama_pc from mastercoa_v2 where no_coa like '%1.01%' and nama_coa like '%kas kecil%'");
                         while ($row = mysqli_fetch_assoc($sql)) {
-                            echo "<option value='" . $row['id_coa'] . "' data-kode3='" . $row['kode_cash'] . "' data-pc3='" . $row['profit_center'] . "' data-namapc3='" . $row['nama_pc'] . "'>" . $row['coa'] . " </option>";
+                            echo "<option value='" . $row['id_coa'] . "' data-kode1='" . $row['kode_cash'] . "' data-pc1='" . $row['profit_center'] . "' data-namapc1='" . $row['nama_pc'] . "'>" . $row['coa'] . " </option>";
                         }
                         ?>
 
@@ -38,19 +53,20 @@
 
                 <div class="col-md-2 mb-2">
                     <label><b>Currency</b></label>
-                    <input type="text" class="form-control" id="currency3" name="currency3" readonly>
-                    <input type="hidden" class="form-control" id="kode_kas3" name="kode_kas3" readonly>
+                    <input type="text" class="form-control" id="currency1" name="currency1" readonly>
+                    <input type="hidden" class="form-control" id="kode_kas1" name="kode_kas1" readonly>
+                    <input type="hidden" class="form-control" id="profit_center_kas1" name="profit_center_kas1" readonly>
                 </div>
 
                 <div class="col-md-3 mb-2">
                     <label><b>Amount</b></label>
-                    <input type="text" class="form-control angka" id="amount_kas3" name="amount_kas3">
+                    <input type="text" class="form-control angka" id="amount_kas1" name="amount_kas1">
                 </div>
                 <div class="col-md-5 mb-2"> </div>
 
                 <div class="col-md-8 mb-2">
                     <label><b>Description</b></label>
-                    <textarea style="font-size: 15px; text-align: left;" cols="30" rows="3" type="text" class="form-control " name="pesan3" id="pesan3" value="" placeholder="descriptions..." required></textarea>
+                    <textarea style="font-size: 15px; text-align: left;" cols="30" rows="3" type="text" class="form-control " name="pesan1" id="pesan1" value="" placeholder="descriptions..." required></textarea>
                 </div>
 
             </div>
@@ -75,24 +91,24 @@
                             </tr>
                         </thead>
 
-                        <tbody id="tbody3"></tbody>
+                        <tbody id="tbody1"></tbody>
 
                         <tfoot>
                             <tr>
                                 <td colspan="11" align="center">
 
                                     <button type="button" class="btn btn-primary"
-                                        onclick="addRow('tbody3')">
+                                        onclick="addRow1('tbody1')">
                                         Add Row
                                     </button>
 
                                     <button type="button" class="btn btn-warning"
-                                        onclick="InsertRow('tbody3')">
+                                        onclick="InsertRow1('tbody1')">
                                         Insert Row
                                     </button>
 
                                     <button type="button" class="btn btn-danger"
-                                        onclick="deleteRow('tbody3')">
+                                        onclick="deleteRow1('tbody1')">
                                         Delete Row
                                     </button>
 
@@ -118,9 +134,9 @@
                             </div>
                             <div class="col-8">
                                 <input type="text" style="font-size:14px;text-align:right"
-                                    class="form-control" id="tot_debit_nag" name="tot_debit_nag" readonly>
+                                    class="form-control" id="tot_debit_nag1" name="tot_debit_nag1" readonly>
                                 <input type="hidden" style="font-size:14px;text-align:right"
-                                    class="form-control" id="h_tot_debit_nag" name="h_tot_debit_nag" readonly>
+                                    class="form-control" id="h_tot_debit_nag1" name="h_tot_debit_nag1" readonly>
                             </div>
                         </div>
 
@@ -130,9 +146,9 @@
                             </div>
                             <div class="col-8">
                                 <input type="text" style="font-size:14px;text-align:right"
-                                    class="form-control" id="tot_credit_nag" name="tot_credit_nag" readonly>
+                                    class="form-control" id="tot_credit_nag1" name="tot_credit_nag1" readonly>
                                 <input type="hidden" style="font-size:14px;text-align:right"
-                                    class="form-control" id="h_tot_credit_nag" name="h_tot_credit_nag" readonly>
+                                    class="form-control" id="h_tot_credit_nag1" name="h_tot_credit_nag1" readonly>
                             </div>
                         </div>
 
@@ -152,9 +168,9 @@
                             </div>
                             <div class="col-8">
                                 <input type="text" style="font-size:14px;text-align:right"
-                                    class="form-control" id="tot_debit_nak" name="tot_debit_nak" readonly>
+                                    class="form-control" id="tot_debit_nak1" name="tot_debit_nak1" readonly>
                                 <input type="hidden" style="font-size:14px;text-align:right"
-                                    class="form-control" id="h_tot_debit_nak" name="h_tot_debit_nak" readonly>
+                                    class="form-control" id="h_tot_debit_nak1" name="h_tot_debit_nak1" readonly>
                             </div>
                         </div>
 
@@ -164,9 +180,9 @@
                             </div>
                             <div class="col-8">
                                 <input type="text" style="font-size:14px;text-align:right"
-                                    class="form-control" id="tot_credit_nak" name="tot_credit_nak" readonly>
+                                    class="form-control" id="tot_credit_nak1" name="tot_credit_nak1" readonly>
                                 <input type="hidden" style="font-size:14px;text-align:right"
-                                    class="form-control" id="h_tot_credit_nak" name="h_tot_credit_nak" readonly>
+                                    class="form-control" id="h_tot_credit_nak1" name="h_tot_credit_nak1" readonly>
                             </div>
                         </div>
 
@@ -185,9 +201,9 @@
                             </div>
                             <div class="col-8">
                                 <input type="text" style="font-size:14px;text-align:right"
-                                    class="form-control" id="tot_debit" name="tot_debit" readonly>
+                                    class="form-control" id="tot_debit1" name="tot_debit1" readonly>
                                 <input type="hidden" style="font-size:14px;text-align:right"
-                                    class="form-control" id="h_tot_debit" name="h_tot_debit" readonly>
+                                    class="form-control" id="h_tot_debit1" name="h_tot_debit1" readonly>
                             </div>
                         </div>
 
@@ -197,9 +213,9 @@
                             </div>
                             <div class="col-8">
                                 <input type="text" style="font-size:14px;text-align:right"
-                                    class="form-control" id="tot_credit" name="tot_credit" readonly>
+                                    class="form-control" id="tot_credit1" name="tot_credit1" readonly>
                                 <input type="hidden" style="font-size:14px;text-align:right"
-                                    class="form-control" id="h_tot_credit" name="h_tot_credit" readonly>
+                                    class="form-control" id="h_tot_credit1" name="h_tot_credit1" readonly>
                             </div>
                         </div>
 
@@ -209,7 +225,7 @@
             </div>
             <div class="form-row">
                 <div class="col-md-3 mt-3 mb-2">
-                    <button type="button" style="border-radius: 6px" class="btn-outline-primary btn-sm" name="simpan3" id="simpan3"><span class="fa fa-floppy-o"></span> Save</button>
+                    <button type="button" style="border-radius: 6px" class="btn-outline-primary btn-sm" name="simpan1" id="simpan1"><span class="fa fa-floppy-o"></span> Save</button>
                     <button type="button" style="border-radius: 6px" class="btn-outline-danger btn-sm" name="batal" id="batal" onclick="location.href='bank-in.php'"><span class="fa fa-angle-double-left"></span> Back</button>
                 </div>
             </div>

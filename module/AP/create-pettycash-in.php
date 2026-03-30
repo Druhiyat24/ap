@@ -111,6 +111,14 @@
     width: 100% !important;
   }
 
+    #mytablesettle .form-control {
+    width: 100% !important;
+  }
+
+  #mytablesettle .bootstrap-select {
+    width: 100% !important;
+  }
+
   .total-box{
     border:1px solid #dcdcdc;
     border-radius:6px;
@@ -140,18 +148,18 @@
       <div class="card-body p-4">
 
         <div class="tab-container">
-          <button class="tablinks" onclick="openTab(event, 'pettyin_cashout')">Cash Out</button>
-          <button class="tablinks" onclick="openTab(event, 'pettyin_settle')">Settlement</button>
           <button class="tablinks active" onclick="openTab(event, 'pettyin_none')">None</button>
+          <button class="tablinks" onclick="openTab(event, 'pettyin_settle')">Settlement</button>
+          <button class="tablinks" onclick="openTab(event, 'pettyin_cashout')">Cash Out</button>
         </div>
 
 
         <div id="pettyin_cashout" class="tabcontent">
-          <?php include 'petty-in/inbank_ar_collection.php'; ?>
+          <?php include 'petty-in/pettyin_cashout.php'; ?>
         </div>
 
         <div id="pettyin_settle" class="tabcontent">
-          <?php include 'petty-in/inbank_bank_out.php'; ?>
+          <?php include 'petty-in/pettyin_settle.php'; ?>
         </div>
 
         <div id="pettyin_none" class="tabcontent">
@@ -488,417 +496,896 @@
 
 
 
-    let datatable;
+//ke 2......................................................................................
 
-    $(document).ready(function() {
+ function getdataadvance(val){
+    var no_pco = val;
+    // alert(no_pco);
 
-      $('#no_bk').prop('disabled', true);
-
-      datatable = $("#table-bank-out").DataTable({
-
-        ordering: false,
-        processing: true,
-        serverSide: false,
-        searching: true,
-        info: true,
-        autoWidth: false,
-
-        scrollX: true,
-        scrollY: "350px",
-        scrollCollapse: true,
-        paging: false,
-
-        ajax: {
-          url: 'bank_in/ajx_get_data_bank_out.php',
-          type: 'POST',
-          data: function(d) {
-            d.no_bk = $('#no_bk').val();
-          }
+    $.ajax({
+        type:'POST',
+        url:'petty-in/get_data_settlement.php',
+        data: {'no_pco':no_pco},
+        cache: 'false',
+        close: function(e){
+            e.preventDefault();
+            return false; 
         },
+        success: function(data){
 
-        columns: [{
-            data: 'nama_pc'
-          },
-          {
-            data: 'nama_coa'
-          },
-          {
-            data: 'cc_name'
-          },
-          {
-            data: 'no_journal'
-          },
-          {
-            data: 'tgl_journal'
-          },
-          {
-            data: 'keterangan'
-          },
-          {
-            data: 'debit'
-          },
-          {
-            data: 'rate'
-          },
-          {
-            data: 'debit_idr'
-          }
-        ],
+    $('#tbody2').html(data); // langsung ganti isi
 
-        columnDefs: [{
-          targets: [6, 7, 8],
-          className: "text-right",
-          render: function(data) {
+    $('.selectpicker').selectpicker('refresh');
 
-            let val = parseFloat(data || 0);
-
-            return val.toLocaleString('en-US', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            });
-
-          }
-        }],
-
-        initComplete: function() {
-
-          let api = this.api();
-
-          // paksa hitung ulang width
-          setTimeout(function() {
-
-            api.columns.adjust().draw();
-
-            $(".dataTables_scrollHeadInner").css("width", "100%");
-            $(".dataTables_scrollHeadInner table").css("width", "100%");
-
-          }, 200);
-
+    hitung_total2();
+}
+,
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(xhr);
+            alert(xhr);
         }
+    }); 
+}
 
-      });
+$('#account2').on('change', function() {
 
-
-      $('#no_bk').on('change', function() {
-        dataTableReload();
-        loadAmount();
-      });
-
-    });
-
-
-    function dataTableReload() {
-
-      datatable.ajax.reload(function() {
-
-        datatable.columns.adjust().draw();
-
-      }, false);
-
-    }
-
-    function hitungEqv2() {
-
-      let amount2 = getNumber($('#amount_bank2').val());
-      let rate2 = getNumber($('#rate_bank2').val());
-
-      let total2 = amount2 * rate2;
-
-      $('#eqv_idr_bank2').val(total2);
-
-      formatNumber(document.getElementById('eqv_idr_bank2'));
-
-    }
-
-
-    function loadAmount() {
-
-      let no_bk = $('#no_bk').val();
-      let currency = $('#currency2').val();
-
-      $.ajax({
-        url: 'bank_in/get_amount_bank_out.php',
-        type: 'POST',
-        data: {
-          no_bk: no_bk
-        },
-        dataType: 'json',
-        success: function(res) {
-          let val = 0;
-
-          if (currency == 'IDR') {
-            val = parseFloat(res.debit_idr || 0);
-          } else {
-            val = parseFloat(res.debit || 0);
-          }
-
-
-          $('#amount_bank2').val(
-            val.toLocaleString('en-US', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
-          );
-          hitungEqv2();
-        }
-      });
-
-    }
-
-
-
-    $('#account2').on('change', function() {
-
-      let bank2 = $(this).find(':selected').data('bank2');
-      let currency2 = $(this).find(':selected').data('currency2');
+      let kode2 = $(this).find(':selected').data('kode2');
+      let pc2 = $(this).find(':selected').data('pc2');
       let namapc2 = $(this).find(':selected').data('namapc2');
-      let kodepc2 = $(this).find(':selected').data('kodepc2');
-      let kodebank2 = $(this).find(':selected').data('kodebank2');
 
-      $('#bank2').val(bank2);
-      $('#kode_bank2').val(kodebank2);
-      $('#currency2').val(currency2);
-      $('#profit_center_bank2').val(kodepc2);
+      $('#profit_center_kas_show2').val(namapc2);
+      $('#profit_center_kas2').val(pc2);
+      $('#currency2').val('IDR');
+      $('#kode_kas2').val(kode2);
 
-      let account = $(this).val();
 
-      if (account) {
-        $('#no_bk').prop('disabled', false);
-      } else {
-        $('#no_bk').prop('disabled', true);
-        $('#no_bk').val('').trigger('change');
-      }
 
-      if (currency2 === 'IDR') {
-
-        $('#rate_bank2').val('1');
-        formatNumber(document.getElementById('rate_bank2'));
-
-        $('#rate_bank2').prop('readonly', true);
-
-        // langsung hitung
-        hitungEqv2();
-
-      } else {
-
-        $('#rate_bank2').prop('readonly', false);
-        getRate2(); // nanti setelah ajax selesai juga akan hitung
-
-      }
-
-      loadAmount();
+      hitung_total2();
 
     });
 
+function UbahCostArc2(val) {
+      var profit = val; // Ambil nilai parameter
+      // alert(profit); // Debug: pastikan nilai 'profit' diterima
 
-    function refreshRate2() {
-      let currency2 = $('#currency2').val();
-      getRate2(currency2);
-    }
+      // Pastikan selektor dropdown sesuai dengan nama elemen
+      const costCtrDropdown = $('select[name="cost2"]');
+      const no_coa = $('select[name=coa2] option').filter(':selected').val();
+      console.log(profit + ' ' + no_coa)
 
-    function getRate2() {
-
-      let valuta2 = $('#currency2').val();
-      let doc_date2 = $('#tgl_active2').val();
-
-      if (!valuta2 || !doc_date2) return;
+      // Hapus opsi yang ada terlebih dahulu, kecuali opsi default
+      costCtrDropdown.find('option').not(':first').remove();
 
       $.ajax({
-        url: 'get_rate.php',
+        url: 'getCostCenter.php', // URL endpoint server Anda
         type: 'POST',
-        dataType: 'json',
         data: {
-          valuta: valuta2,
-          doc_date: doc_date2
-        },
-        success: function(res) {
-
-          if (res.status === 'ok') {
-            $('#rate_bank2').val(res.rate);
-          } else {
-            $('#rate_bank2').val('1');
-          }
-
-          formatNumber(document.getElementById('rate_bank2'));
-
-          // TAMBAHKAN INI
-          hitungEqv2();
-
-        }
-      });
-
-    }
-
-    $('#rate_bank2').on('input', function() {
-      hitungEqv2();
-    });
-
-
-    $('#simpan2').on('click', function() {
-
-      let account2 = $('#account2').val();
-      let amount2 = $('#amount_bank2').val();
-      let rate2 = $('#rate_bank2').val().replace(/,/g, '');
-      let currency2 = $('#currency2').val();
-      let no_bk = $('#no_bk').val();
-
-      // VALIDASI
-      if (account2 == '') {
-        Swal.fire('Warning', 'Account tidak boleh kosong', 'warning');
-        $('#account2').focus();
-        return;
-      }
-
-      if (no_bk == '') {
-        Swal.fire('Warning', 'Bank Out tidak boleh kosong', 'warning');
-        $('#no_bk').focus();
-        return;
-      }
-
-      if (amount2 == '' || amount2 == '0') {
-        Swal.fire('Warning', 'Amount tidak boleh kosong', 'warning');
-        $('#amount_bank2').focus();
-        return;
-      }
-
-      if (currency2 != 'IDR' && rate2 == 1) {
-        Swal.fire('Warning', 'Currency non IDR harus memiliki rate selain 1', 'warning');
-        $('#rate_bank2').focus();
-        return;
-      }
-
-      // =====================
-      // FORM DATA
-      // =====================
-
-      let formData = $('#form-data2').serializeArray();
-
-      console.log("===== FORM DATA 2 =====");
-      console.table(formData);
-
-      // =====================
-      // TABLE DATA
-      // =====================
-
-      let tableData = datatable.rows().data().toArray();
-
-      console.log("===== DATA TABLE BANK OUT =====");
-      console.table(tableData);
-
-      if (tableData.length === 0) {
-
-        Swal.fire('Warning', 'Data tabel tidak ditemukan', 'warning');
-        return;
-
-      }
-
-      let row = tableData[0];
-
-      let no_journal = row.no_journal;
-      let tgl_journal = row.tgl_journal;
-      let no_coa = row.no_coa;
-      let profit_center = row.profit_center;
-      let no_cc = row.no_cc;
-      let curr = row.curr;
-      let debit = row.debit;
-      let rate = row.rate;
-      let debit_idr = row.debit_idr;
-
-      // =====================
-      // DATA POST
-      // =====================
-
-      let dataPost = new FormData(document.getElementById('form-data2'));
-
-      dataPost.append('no_journal', no_journal);
-      dataPost.append('tgl_journal', tgl_journal);
-      dataPost.append('no_coa', no_coa);
-      dataPost.append('profit_center', profit_center);
-      dataPost.append('no_cc', no_cc);
-      dataPost.append('curr', curr);
-      dataPost.append('debit', debit);
-      dataPost.append('rate', rate);
-      dataPost.append('debit_idr', debit_idr);
-
-
-      console.log("===== DATA POST =====");
-      console.log(dataPost);
-
-      let btn = $(this);
-      btn.prop('disabled', true);
-
-      $.ajax({
-
-        url: 'bank_in/save_bankin_bankout.php',
-        type: 'POST',
-        data: dataPost,
-        processData: false,
-        contentType: false,
+          prof_ctr: profit,
+          no_coa: no_coa
+        }, // Kirim data prof_ctr ke server
         dataType: 'json',
-
-        success: function(res) {
-
-          if (res.status == 'ok') {
-
-            Swal.fire({
-              icon: 'success',
-              title: 'Success',
-              text: 'Document : ' + res.doc_num
-            }).then(() => {
-
-              // kalau mau tanpa reload
-              // $('#modal2').modal('hide');
-              // datatable.ajax.reload();
-
-              location.href='bank-in.php';
-
+        success: function(response) {
+          // Periksa apakah respons valid
+          if (response && response.length > 0) {
+            $.each(response, function(index, costCtr) {
+              console.log(costCtr);
+              costCtrDropdown.append(`<option value="${costCtr.value}">${costCtr.text}</option>`);
             });
 
+            costCtrDropdown.selectpicker('refresh');
           } else {
+            console.error('Tidak ada data yang diterima dari server.');
+            alert('Tidak ada data cost center yang tersedia.');
+          }
+        },
+        error: function(xhr, status, error) {
+          console.log(xhr.responseText);
+        }
+      });
+    }
 
-            Swal.fire('Error', res.msg, 'error');
-            btn.prop('disabled', false);
+    $(document).on('change', '.prof_ctr2', function() {
+      const selectedProfCtr = $(this).val();
+      const row = $(this).closest('tr');
+      const selectedCoa = row.find('select.no_coa2').val() || '-';
+      // console.log("row:", row.html());
+      // console.log("no_coa element:", row.find('.no_coa'));
+      // console.log("selectedCoa:", selectedCoa);
+      updateCostCenter2(selectedProfCtr, selectedCoa, row);
+    });
+
+    $(document).on('change', '.no_coa2', function() {
+      const selectedCoa = $(this).val();
+      const row = $(this).closest('tr');
+      const selectedProfCtr = row.find('select.prof_ctr2').val() || '-';
+      // console.log("row:", row.html());
+      // console.log("no_coa element:", row.find('.no_coa'));
+      // console.log("selectedCoa:", selectedCoa);
+      updateCostCenter2(selectedProfCtr, selectedCoa, row);
+    });
+
+
+
+    // Fungsi reusable untuk isi dropdown Cost Center berdasarkan Profit Center
+    function updateCostCenter2(profCtr, noCoa, row) {
+      const costCtrDropdown = $(row).find('.cost_ctr2'); // dropdown cost center pada baris tsb
+
+      // Kosongkan dropdown cost_ctr sebelum diisi
+      costCtrDropdown.selectpicker('destroy'); // Hancurkan selectpicker lama
+      costCtrDropdown.empty(); // Kosongkan semua opsi yang ada
+      costCtrDropdown.append('<option value="-"> - </option>'); // Tambahkan opsi default
+      costCtrDropdown.selectpicker(); // Inisialisasi ulang selectpicker
+
+      if (profCtr && profCtr !== '-') {
+        // console.log(profCtr + ' ' + noCoa)
+        // Lakukan AJAX ke server untuk mengambil data cost_ctr
+        $.ajax({
+          url: 'getCostCenter.php', // Ganti dengan URL endpoint server Anda
+          type: 'POST',
+          data: {
+            prof_ctr: profCtr,
+            no_coa: noCoa
+          }, // Kirim data prof_ctr ke server
+          dataType: 'json',
+          success: function(response) {
+            if (response && response.length > 0) {
+              $.each(response, function(index, costCtr) {
+                costCtrDropdown.append(
+                  `<option value="${costCtr.value}">${costCtr.text}</option>`
+                );
+              });
+
+              costCtrDropdown.selectpicker('refresh');
+            } else {
+              console.warn('Tidak ada data cost center dari server.');
+              costCtrDropdown.selectpicker('refresh');
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error('AJAX Error:', status, error);
+          }
+        });
+      } else {
+        costCtrDropdown.selectpicker('refresh');
+      }
+    }
+
+    function initializePlugins() {
+      $(function() {
+        $('.selectpicker').selectpicker();
+        $('.tanggal').datepicker({
+          format: "dd-mm-yyyy",
+          autoclose: true
+        });
+        $('.select2').select2({
+          theme: 'bootstrap4'
+        });
+      });
+    }
+
+    // JavaScript Document
+    function addRow2(tableID) {
+
+      var table = document.getElementById(tableID);
+      var rowCount = table.rows.length;
+      var row = table.insertRow(rowCount);
+
+      var element = `
+<tr>
+<td><input type="checkbox" id="select2" name="select2[]" value="" checked disabled></td>
+
+<td >
+<select class="form-control selectpicker no_coa2" name="nomor_coa2[]" data-live-search="true" data-width="220px" data-size="5">
+<option value="-">-</option>
+<?php
+$sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa,' ',nama_coa) as coa from mastercoa_v2");
+foreach ($sql as $coa) : ?>
+<option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?></option>
+<?php endforeach; ?>
+</select>
+</td>
+
+<td>
+<select class="form-control selectpicker prof_ctr2" name="prof_ctr2[]" data-live-search="true" data-width="200px">
+<option value="-"> - </option>
+<?php
+$sql3 = mysqli_query($conn1, "select kode_pc,id_pc,nama_pc,CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status='Active'");
+foreach ($sql3 as $fc) : ?>
+<option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option>
+<?php endforeach; ?>
+</select>
+</td>
+
+<td>
+<select class="form-control selectpicker cost_ctr2" name="cost_ctr2[]" data-live-search="true" data-width="200px">
+<option value="-"> - </option>
+</select>
+</td>
+
+<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="buyer2[]" autocomplete="off"></td>
+
+<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="no_ws2[]" autocomplete="off"></td>
+
+<td>
+<select class="form-control selectpicker curr_det2" name="currenc2[]">
+<option value="IDR">IDR</option>
+</select>
+</td>
+
+<td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_amount2[]" oninput="modal_input_amt2(this)" autocomplete="off"></td>
+
+<td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_credit2[]" oninput="modal_input_cre2(this)" autocomplete="off"></td>
+
+<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="keterangan2[]" autocomplete="off"></td>
+
+<td><input name="chk_a2[]" type="checkbox" class="checkall_a2"></td>
+
+</tr>
+
+`;
+
+      row.innerHTML = element;
+
+
+      /* refresh selectpicker */
+      $('.selectpicker').selectpicker('refresh');
+
+
+      /* set default profit center dari header */
+
+      var headerPC = $('#profit_center_kas2').val();
+
+      if (headerPC) {
+
+        $(row).find('.prof_ctr2').val(headerPC);
+        $(row).find('.prof_ctr2').selectpicker('refresh');
+
+      }
+
+    }
+
+
+    function deleteRow2(tableID) {
+
+      try {
+
+        var table = document.getElementById(tableID);
+        var rowCount = table.rows.length;
+        var deleted = false;
+
+        for (var i = rowCount - 1; i >= 0; i--) {
+
+          var row = table.rows[i];
+          var chkbox = row.querySelector('input[name="chk_a2[]"]');
+
+          if (chkbox && chkbox.checked) {
+
+            if (rowCount <= 1) {
+
+              Swal.fire({
+                icon: 'warning',
+                title: 'Warning',
+                text: 'Tidak dapat menghapus semua baris'
+              });
+
+              return;
+
+            }
+
+            table.deleteRow(i);
+            deleted = true;
+            rowCount--;
 
           }
 
-        },
+        }
 
-        error: function(xhr, status, error) {
-
-          console.log("XHR :", xhr.responseText);
-          console.log("STATUS :", status);
-          console.log("ERROR :", error);
+        if (!deleted) {
 
           Swal.fire({
-            icon: 'error',
-            title: 'Server Error',
-            text: xhr.responseText
+            icon: 'warning',
+            title: 'Warning',
+            text: 'Silahkan ceklis baris yang ingin dihapus'
           });
-
-          btn.prop('disabled', false);
 
         }
 
+        /* refresh selectpicker jika ada */
+        $('.selectpicker').selectpicker('refresh');
 
-      });
+      } catch (e) {
+
+        console.log(e);
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: e.message
+        });
+
+      }
+
+    }
+
+
+    function InsertRow(tableID) {
+
+      try {
+
+        var table = document.getElementById(tableID);
+        var rowCount = table.rows.length;
+        var inserted = false;
+
+        for (var i = rowCount - 1; i >= 0; i--) {
+
+          var row = table.rows[i];
+          var chkbox = row.querySelector('input[name="chk_a2[]"]');
+
+          if (chkbox && chkbox.checked) {
+
+            var element2 = `
+<tr>
+<td><input type="checkbox" id="select2" name="select2[]" value="" checked disabled></td>
+
+<td >
+<select class="form-control selectpicker no_coa2" name="nomor_coa2[]" data-live-search="true" data-width="220px" data-size="5">
+<option value="-">-</option>
+<?php
+$sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa,' ',nama_coa) as coa from mastercoa_v2");
+foreach ($sql as $coa) : ?>
+<option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?></option>
+<?php endforeach; ?>
+</select>
+</td>
+
+<td>
+<select class="form-control selectpicker prof_ctr2" name="prof_ctr2[]" data-live-search="true" data-width="200px">
+<option value="-"> - </option>
+<?php
+$sql3 = mysqli_query($conn1, "select kode_pc,id_pc,nama_pc,CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status='Active'");
+foreach ($sql3 as $fc) : ?>
+<option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option>
+<?php endforeach; ?>
+</select>
+</td>
+
+<td>
+<select class="form-control selectpicker cost_ctr2" name="cost_ctr2[]" data-live-search="true" data-width="200px">
+<option value="-"> - </option>
+</select>
+</td>
+
+<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="buyer2[]" autocomplete="off"></td>
+
+<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="no_ws2[]" autocomplete="off"></td>
+
+<td>
+<select class="form-control selectpicker curr_det2" name="currenc2[]">
+<option value="IDR">IDR</option>
+</select>
+</td>
+
+<td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_amount2[]" oninput="modal_input_amt2(this)" autocomplete="off"></td>
+
+<td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_credit2[]" oninput="modal_input_cre2(this)" autocomplete="off"></td>
+
+<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="keterangan2[]" autocomplete="off"></td>
+
+<td><input name="chk_a2[]" type="checkbox" class="checkall_a2"></td>
+
+</tr>
+`;
+
+            var newRow = table.insertRow(i + 1);
+            newRow.innerHTML = element2;
+
+            inserted = true;
+
+            /* set profit center default */
+            var headerPC = $('#profit_center_kas2').val();
+            if (headerPC) {
+
+              $(newRow).find('.prof_ctr2').val(headerPC);
+              $(newRow).find('.prof_ctr2').selectpicker('refresh');
+
+            }
+
+          }
+
+        }
+
+        /* jika tidak ada yang dicentang */
+
+        if (!inserted) {
+
+          Swal.fire({
+            icon: 'warning',
+            title: 'Warning',
+            text: 'Silahkan ceklis baris yang ingin disisipkan'
+          });
+
+        }
+
+        /* refresh plugin */
+
+        $('.selectpicker').selectpicker('refresh');
+
+      } catch (e) {
+
+        console.log(e);
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: e.message
+        });
+
+      }
+
+    }
+
+    function formatAngka(x){
+    return new Intl.NumberFormat('en-US').format(x);
+}
+
+
+function modal_input_amt2(el){
+
+let row = $(el).closest('tr');
+
+let debit  = parseFloat($(el).val()) || 0;
+let creditInput = row.find('input[name="txt_credit2[]"]');
+
+if(debit > 0){
+
+creditInput.val(0);
+creditInput.prop('readonly',true);
+
+}else{
+
+creditInput.prop('readonly',false);
+
+}
+
+hitung_total2();
+
+}
+
+
+function modal_input_cre2(el){
+
+let row = $(el).closest('tr');
+
+let credit = parseFloat($(el).val()) || 0;
+let debitInput = row.find('input[name="txt_amount2[]"]');
+
+if(credit > 0){
+
+debitInput.val(0);
+debitInput.prop('readonly',true);
+
+}else{
+
+debitInput.prop('readonly',false);
+
+}
+
+hitung_total2();
+
+}
+
+
+function hitung_total2(){
+  // alert('tes');
+
+let debit_nag = 0;
+let credit_nag = 0;
+
+let debit_nak = 0;
+let credit_nak = 0;
+
+console.log("===== MULAI HITUNG TOTAL =====");
+
+/* ======================
+   RATE HEADER
+====================== */
+
+let rate = 1;
+
+console.log("Rate Header :", rate);
+
+
+/* ======================
+   DETAIL ROW
+====================== */
+
+$('#tbody2 tr').each(function(index){
+
+let pc = $(this).find('select.prof_ctr2').val();
+let curr = $(this).find('select[name="currenc2[]"]').val();
+
+let debitVal  = $(this).find('input[name="txt_amount2[]"]').val();
+let creditVal = $(this).find('input[name="txt_credit2[]"]').val();
+
+let debit  = parseFloat(debitVal)  || 0;
+let credit = parseFloat(creditVal) || 0;
+
+console.log("----- ROW",index,"-----");
+console.log("PC :", pc);
+console.log("Currency :", curr);
+console.log("Debit Raw :", debit);
+console.log("Credit Raw :", credit);
+
+
+/* ======================
+   KONVERSI USD
+====================== */
+
+if(curr === 'USD'){
+
+debit  = debit  * rate;
+credit = credit * rate;
+
+console.log("Debit x Rate :", debit);
+console.log("Credit x Rate :", credit);
+
+}
+
+
+if(pc === 'NAG'){
+debit_nag  += debit;
+credit_nag += credit;
+}
+
+if(pc === 'NAK'){
+debit_nak  += debit;
+credit_nak += credit;
+}
+
+});
+
+
+/* ======================
+   HEADER AMOUNT
+====================== */
+
+let header_pc = $('#profit_center_kas2').val();
+
+let amount = parseFloat($('#amount_kas2').val().replace(/,/g,'')) || 0;
+
+let eqv = amount * rate;
+
+console.log("===== HEADER DATA =====");
+console.log("Header PC :", header_pc);
+console.log("Amount :", amount);
+console.log("Equivalent :", eqv);
+
+
+
+/* tambahkan ke debit */
+
+if(header_pc === 'NAG'){
+debit_nag += eqv;
+}
+
+if(header_pc === 'NAK'){
+debit_nak += eqv;
+}
+
+
+/* ======================
+   GRAND TOTAL
+====================== */
+
+let grand_debit  = debit_nag + debit_nak;
+let grand_credit = credit_nag + credit_nak;
+
+console.log("===== HASIL =====");
+
+console.log("Debit NAG :", debit_nag);
+console.log("Credit NAG :", credit_nag);
+
+console.log("Debit NAK :", debit_nak);
+console.log("Credit NAK :", credit_nak);
+
+console.log("Grand Debit :", grand_debit);
+console.log("Grand Credit :", grand_credit);
+
+
+/* tampil */
+
+$('#tot_debit_nag2').val(formatAngka(debit_nag));
+$('#tot_credit_nag2').val(formatAngka(credit_nag));
+
+$('#tot_debit_nak2').val(formatAngka(debit_nak));
+$('#tot_credit_nak2').val(formatAngka(credit_nak));
+
+$('#tot_debit2').val(formatAngka(grand_debit));
+$('#tot_credit2').val(formatAngka(grand_credit));
+
+
+/* hidden */
+
+$('#h_tot_debit_nag2').val(debit_nag);
+$('#h_tot_credit_nag2').val(credit_nag);
+
+$('#h_tot_debit_nak2').val(debit_nak);
+$('#h_tot_credit_nak2').val(credit_nak);
+
+$('#h_tot_debit2').val(grand_debit);
+$('#h_tot_credit2').val(grand_credit);
+
+}
+
+
+
+
+$(document).on('change','.prof_ctr2,.curr_det2',function(){
+
+hitung_total2();
+
+});
+
+$('#amount_kas2').on('keyup change', function(){
+
+hitung_total2();
+
+});
+
+
+let coaWajibCC = [];
+
+// Load sekali saat halaman dibuka
+$.getJSON('get_coa_wajib_cc.php', function(data){
+    coaWajibCC = data;
+    console.log("COA wajib CC:", coaWajibCC);
+});
+
+$('#simpan2').on('click', function () {
+
+    console.log("===== MULAI SAVE =====");
+
+    let account = $('#account2').val();
+
+    console.log("Account :", account);
+
+
+    if(account == ''){
+        Swal.fire('Warning','Account tidak boleh kosong','warning');
+        return;
+    }
+
+    let debitNAG  = 0;
+    let creditNAG = 0;
+    let debitNAK  = 0;
+    let creditNAK = 0;
+
+    let rowIndex = 0;
+    let error = false;
+
+    console.log("===== LOOP DETAIL =====");
+
+    $("#tbody2 tr").each(function(){
+
+        let tr = $(this);
+
+        let coa = tr.find('select.no_coa2').first().val();
+        let pc  = tr.find('select.prof_ctr2').first().val();
+        let cc  = tr.find('select.cost_ctr2').first().val();
+
+        let debit  = parseFloat(tr.find('[name="txt_amount2[]"]').val()) || 0;
+        let credit = parseFloat(tr.find('[name="txt_credit2[]"]').val()) || 0;
+
+        console.log("----- ROW",rowIndex,"-----");
+        console.log("COA :", coa);
+        console.log("PC :", pc);
+        console.log("Cost Center :", cc);
+        console.log("Debit :", debit);
+        console.log("Credit :", credit);
+
+        /* VALIDASI COST CENTER */
+
+        if(coaWajibCC.includes(coa)){
+
+            console.log("COA WAJIB CC :", coa);
+
+            if(cc == '-' || cc == '' || cc == null){
+
+                console.log("ERROR: Cost Center kosong");
+
+                Swal.fire(
+                    'Warning',
+                    'COA '+coa+' wajib isi Cost Center',
+                    'warning'
+                );
+
+                error = true;
+                return false;
+            }
+        }
+
+        /* HITUNG PER PC */
+
+        if(pc == 'NAG'){
+            debitNAG  += debit;
+            creditNAG += credit;
+        }
+
+        if(pc == 'NAK'){
+            debitNAK  += debit;
+            creditNAK += credit;
+        }
+
+        rowIndex++;
 
     });
 
-    // $(document).ready(function() {
-    //      $('#mytablenone').DataTable({
-    //             paging: false,          // Menambahkan paging
-    //             searching: false,       // Menambahkan pencarian
-    //             scrollCollapse: true,  // Mengatasi jika data tidak cukup
-    //             fixedHeader: true,     // Menjaga header tetap terlihat
-    //             language: {
-    //             info: "", // Menghilangkan teks "Showing 1 to 1 of 1 entries"
-    //             infoEmpty: "", // Untuk keadaan ketika tidak ada data
-    //             infoFiltered: "" // Untuk keadaan filter
-    //         }    // Menjaga header tetap terlihat
-    //     });
-    //      $("[data-toggle=tooltip]").tooltip();
+    if(error) return;
 
-    //  } );
+   /* ======================
+   HEADER BANK
+====================== */
+
+    let header_pc = $('#profit_center_kas2').val();
+
+    let header_debit = parseFloat(
+        $('#amount_kas2').val().replace(/,/g,'')
+    ) || 0;
+
+    console.log("===== HEADER BANK =====");
+    console.log("Header PC :", header_pc);
+    console.log("Debit Bank :", header_debit);
+
+
+    /* ======================
+       HASIL AKUMULASI
+    ====================== */
+
+    console.log("===== HASIL AKUMULASI =====");
+
+    console.log("Debit NAG :", debitNAG);
+    console.log("Credit NAG :", creditNAG);
+
+    console.log("Debit NAK :", debitNAK);
+    console.log("Credit NAK :", creditNAK);
+
+
+    /* ======================
+       VALIDASI PER PC (FIX)
+    ====================== */
+
+    if(header_pc == 'NAG'){
+
+        let totalDebit  = header_debit + debitNAG;
+        let totalCredit = creditNAG;
+
+        console.log("TOTAL DEBIT NAG :", totalDebit);
+        console.log("TOTAL CREDIT NAG :", totalCredit);
+
+        if(totalDebit != totalCredit){
+
+            console.log("ERROR: NAG tidak balance (HEADER + DETAIL)");
+
+            Swal.fire(
+                'Warning',
+                'Journal Nirwana Alabare Garment tidak balance (Header + Detail)',
+                'warning'
+            );
+
+            return;
+        }
+
+    }
+
+    if(header_pc == 'NAK'){
+
+        let totalDebit  = header_debit + debitNAK;
+        let totalCredit = creditNAK;
+
+        console.log("TOTAL DEBIT NAK :", totalDebit);
+        console.log("TOTAL CREDIT NAK :", totalCredit);
+
+        if(totalDebit != totalCredit){
+
+            console.log("ERROR: NAK tidak balance (HEADER + DETAIL)");
+
+            Swal.fire(
+                'Warning',
+                'Journal Nirwana Alabare Knitting tidak balance (Header + Detail)',
+                'warning'
+            );
+
+            return;
+        }
+
+    }
+
+
+    console.log("VALIDASI LOLOS");
+
+    console.log($('#form-data2').serialize());
+
+    Swal.fire({
+        title: "Save Data?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Save",
+        cancelButtonText: "Cancel"
+    }).then((result)=>{
+
+        if(result.isConfirmed){
+
+            console.log("PROSES AJAX SAVE");
+
+            $.ajax({
+
+                url: "petty-in/save_pettyin_settle.php",
+                type: "POST",
+                data: $('#form-data2').serialize(),
+
+                beforeSend:function(){
+
+                    console.log("Sending data...");
+
+                    Swal.fire({
+                        title: 'Saving...',
+                        allowOutsideClick:false,
+                        didOpen:()=>{
+                            Swal.showLoading();
+                        }
+                    });
+
+                },
+
+                success:function(res){
+
+                    console.log("Response Server :", res);
+
+                    let r = JSON.parse(res);
+
+                    if(r.status == 'success'){
+
+                        console.log("SAVE SUCCESS");
+
+                        Swal.fire({
+                            icon:'success',
+                            title:'Success',
+                            text:r.message
+                        }).then(()=>{
+                            // location.href='bank-in.php';
+                        });
+
+                    }else{
+
+                        console.log("SAVE ERROR :", r.message);
+
+                        Swal.fire(
+                            'Error',
+                            r.message,
+                            'error'
+                        );
+
+                    }
+
+                },
+
+                error:function(xhr){
+
+                    console.log("AJAX ERROR");
+                    console.log(xhr.responseText);
+
+                    Swal.fire('Error','Server Error','error');
+                }
+
+            });
+
+        }
+
+    });
+
+});
+
+
 
 //ke 3.....................................................................................
 
@@ -914,9 +1401,7 @@
       $('#currency3').val('IDR');
       $('#kode_kas3').val(kode3);
 
-
-
-      // hitung_total()
+      hitung_total();
 
     });
 
@@ -1111,7 +1596,7 @@ foreach ($sql3 as $fc) : ?>
 
       /* set default profit center dari header */
 
-      var headerPC = $('#profit_center_bank3').val();
+      var headerPC = $('#profit_center_kas3').val();
 
       if (headerPC) {
 
@@ -1260,7 +1745,7 @@ foreach ($sql3 as $fc) : ?>
             inserted = true;
 
             /* set profit center default */
-            var headerPC = $('#profit_center_bank3').val();
+            var headerPC = $('#profit_center_kas3').val();
             if (headerPC) {
 
               $(newRow).find('.prof_ctr').val(headerPC);
@@ -1354,6 +1839,7 @@ hitung_total();
 
 
 function hitung_total(){
+  // alert('tes');
 
 let debit_nag = 0;
 let credit_nag = 0;
@@ -1426,9 +1912,9 @@ credit_nak += credit;
    HEADER AMOUNT
 ====================== */
 
-let header_pc = $('#profit_center_bank3').val();
+let header_pc = $('#profit_center_kas3').val();
 
-let amount = parseFloat($('#amount_bank3').val().replace(/,/g,'')) || 0;
+let amount = parseFloat($('#amount_kas3').val().replace(/,/g,'')) || 0;
 
 let eqv = amount * rate;
 
@@ -1437,10 +1923,6 @@ console.log("Header PC :", header_pc);
 console.log("Amount :", amount);
 console.log("Equivalent :", eqv);
 
-
-/* tampilkan eqv */
-
-$('#eqv_idr_bank3').val(formatAngka(eqv));
 
 
 /* tambahkan ke debit */
@@ -1507,19 +1989,10 @@ hitung_total();
 
 });
 
-$('#amount_bank3, #rate_bank3').on('keyup change', function(){
+$('#amount_kas3').on('keyup change', function(){
 
 hitung_total();
 
-});
-
-
-let coaWajibCC = [];
-
-// Load sekali saat halaman dibuka
-$.getJSON('get_coa_wajib_cc.php', function(data){
-    coaWajibCC = data;
-    console.log("COA wajib CC:", coaWajibCC);
 });
 
 
@@ -1528,16 +2001,10 @@ $('#simpan3').on('click', function () {
 
     console.log("===== MULAI SAVE =====");
 
-    let source  = $('#nama_supp3').val();
     let account = $('#account3').val();
 
-    console.log("Source :", source);
     console.log("Account :", account);
 
-    if(source == ''){
-        Swal.fire('Warning','Source tidak boleh kosong','warning');
-        return;
-    }
 
     if(account == ''){
         Swal.fire('Warning','Account tidak boleh kosong','warning');
@@ -1558,9 +2025,9 @@ $('#simpan3').on('click', function () {
 
         let tr = $(this);
 
-        let coa = tr.find('.no_coa').val();
-        let pc  = tr.find('.prof_ctr').val();
-        let cc  = tr.find('.cost_ctr').val();
+        let coa = tr.find('select.no_coa').first().val();
+        let pc  = tr.find('select.prof_ctr').first().val();
+        let cc  = tr.find('select.cost_ctr').first().val();
 
         let debit  = parseFloat(tr.find('[name="txt_amount[]"]').val()) || 0;
         let credit = parseFloat(tr.find('[name="txt_credit[]"]').val()) || 0;
@@ -1615,10 +2082,10 @@ $('#simpan3').on('click', function () {
    HEADER BANK
 ====================== */
 
-let header_pc = $('#profit_center_bank3').val();
+let header_pc = $('#profit_center_kas3').val();
 
 let header_debit = parseFloat(
-    $('#eqv_idr_bank3').val().replace(/,/g,'')
+    $('#amount_kas3').val().replace(/,/g,'')
 ) || 0;
 
 console.log("===== HEADER BANK =====");
@@ -1651,7 +2118,7 @@ if(header_pc == 'NAG'){
 
         Swal.fire(
             'Warning',
-            'Journal PT Nirwana Alabare Garment tidak balance',
+            'Journal Nirwana Alabare Garment tidak balance',
             'warning'
         );
 
@@ -1668,7 +2135,7 @@ if(header_pc == 'NAK'){
 
         Swal.fire(
             'Warning',
-            'Journal PT Nirwana Alabare Knitting tidak balance',
+            'Journal Nirwana Alabare Knitting tidak balance',
             'warning'
         );
 
@@ -1697,7 +2164,7 @@ if(header_pc == 'NAK'){
 
             $.ajax({
 
-                url: "save_bankin_none.php",
+                url: "petty-in/save_pettyin_none.php",
                 type: "POST",
                 data: $('#form-data3').serialize(),
 
@@ -1730,7 +2197,7 @@ if(header_pc == 'NAK'){
                             title:'Success',
                             text:r.message
                         }).then(()=>{
-                            location.href='bank-in.php';
+                            // location.href='bank-in.php';
                         });
 
                     }else{
