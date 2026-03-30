@@ -905,36 +905,18 @@
 
     $('#account3').on('change', function() {
 
-      let bank3 = $(this).find(':selected').data('bank3');
-      let currency3 = $(this).find(':selected').data('currency3');
+      let kode3 = $(this).find(':selected').data('kode3');
+      let pc3 = $(this).find(':selected').data('pc3');
       let namapc3 = $(this).find(':selected').data('namapc3');
-      let kodepc3 = $(this).find(':selected').data('kodepc3');
-      let kodebank3 = $(this).find(':selected').data('kodebank3');
 
-      $('#bank3').val(bank3);
-      $('#kode_bank3').val(kodebank3);
-      $('#currency3').val(currency3);
-      $('#profit_center_bank3').val(kodepc3);
+      $('#profit_center_kas_show3').val(namapc3);
+      $('#profit_center_kas3').val(pc3);
+      $('#currency3').val('IDR');
+      $('#kode_kas3').val(kode3);
 
 
-      if (currency3 === 'IDR') {
 
-        $('#rate_bank3').val('1');
-        formatNumber(document.getElementById('rate_bank3'));
-
-        $('#rate_bank3').prop('readonly', true);
-
-        // langsung hitung
-        // hitungEqv2();
-
-      } else {
-
-        $('#rate_bank3').prop('readonly', false);
-        getRate3(); // nanti setelah ajax selesai juga akan hitung
-
-      }
-
-      hitung_total()
+      // hitung_total()
 
     });
 

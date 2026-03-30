@@ -27,9 +27,9 @@
                         <option value="">Select Account</option>
 
                         <?php
-                        $sql = mysqli_query($conn1, "select bank_name as bank,curr,bank_account as account,RIGHT(bank_account,4) as kode, nama_pc, kode_pc, b_code from b_masterbank a INNER JOIN master_pc b on b.kode_pc = a.profit_center_bank where a.status = 'Active'");
+                        $sql = mysqli_query($conn1, "select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa, kode_cash, IF(no_coa = '1.01.11','NAK','NAG') profit_center, IF(no_coa = '1.01.11','PCP002 - NIRWANA ALABARE KNITTING','PCP001 - NIRWANA ALABARE GARMENT') nama_pc from mastercoa_v2 where no_coa like '%1.01%' and nama_coa like '%kas kecil%'");
                         while ($row = mysqli_fetch_assoc($sql)) {
-                            echo "<option value='" . $row['account'] . "' data-bank3='" . $row['bank'] . "' data-currency3='" . $row['curr'] . "' data-namapc3='" . $row['nama_pc'] . "' data-kodepc3='" . $row['kode_pc'] . "'  data-kodebank3='" . $row['b_code'] . "'>" . $row['account'] . " </option>";
+                            echo "<option value='" . $row['id_coa'] . "' data-kode3='" . $row['kode_cash'] . "' data-pc3='" . $row['profit_center'] . "' data-namapc3='" . $row['nama_pc'] . "'>" . $row['coa'] . " </option>";
                         }
                         ?>
 
