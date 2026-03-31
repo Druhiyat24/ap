@@ -9,7 +9,7 @@ $list = "'" . implode("','", $no_inv) . "'";
 $q = mysqli_query($conn2,"
     SELECT no_invoice 
     FROM ir_invoice_supp
-    WHERE no_invoice IN ($list)
+    WHERE no_invoice IN ($list) and status = 'Y' and no_invoice != '-'
 ");
 
 $data = [];
