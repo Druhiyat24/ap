@@ -223,6 +223,12 @@
     }
 
     echo '<button id="btnverifikasi" type="button" class="btn-warning btn-xs" style="border-radius: 6%"><span class="fa fa-paper-plane" aria-hidden="true"></span> Verifikasi</button>';
+
+    if($id == '54'){
+    echo '<button id="btncreate_new" type="button" class="btn-info btn-xs ml-2" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create New</button>';
+        }else{
+    echo '';
+    }
 ?>
     </div>
     <div class="box body">
@@ -595,6 +601,12 @@ $(function() {
     document.getElementById('btnverifikasi').onclick = function () {
     location.href = "formverifikasimj.php";
 };
+</script>
+
+<script type="text/javascript">
+    document.getElementById('btncreate_new').onclick = function () {
+        location.href = "create_memorial_journal.php";
+    };
 </script>
 
 <script type="text/javascript">

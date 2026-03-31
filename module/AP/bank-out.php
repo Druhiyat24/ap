@@ -253,6 +253,7 @@ $end_date = date("Y-m-d",strtotime($enddate));
 
                       if($id == '37'){
                         echo '<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>';
+                        echo '<button id="btncreate_new" type="button" class="btn-info btn-xs ml-2" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create New</button>';
                     }else{
                         echo '';
                     }
@@ -1101,6 +1102,12 @@ $(document).ready(function(){
 <script type="text/javascript">
     document.getElementById('btncreate').onclick = function () {
         location.href = "create-bankout.php";
+    };
+</script>
+
+<script type="text/javascript">
+    document.getElementById('btncreate_new').onclick = function () {
+        location.href = "create-out-bank.php";
     };
 </script>
 
