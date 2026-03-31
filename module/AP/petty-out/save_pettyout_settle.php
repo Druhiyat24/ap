@@ -8,16 +8,16 @@ mysqli_begin_transaction($conn2);
 
 try{
 
-$ref_num   = $_POST['ref_num1'];
-$doc_date  = date('Y-m-d',strtotime($_POST['tgl_active1']));
-$pc_kas    = $_POST['profit_center_kas1'];
-$akun      = $_POST['account1'];
-$curr      = $_POST['currency1'];
-$kode_kas  = $_POST['kode_kas1'];
-$desc      = $_POST['pesan1'] ?? '-';
-$nama_supp = $_POST['nama_supp1'] ?? '';
+$ref_num   = $_POST['ref_num2'];
+$doc_date  = date('Y-m-d',strtotime($_POST['tgl_active2']));
+$pc_kas    = $_POST['profit_center_kas2'];
+$akun      = $_POST['account2'];
+$curr      = $_POST['currency2'];
+$kode_kas  = $_POST['kode_kas2'];
+$reff_number = $_POST['reff_number'];
+$desc      = $_POST['pesan2'] ?? '-';
 
-$amount = str_replace(',','',$_POST['amount_kas1']);
+$amount = str_replace(',','',$_POST['amount_kas2']);
 
 $user = $_SESSION['username'] ?? 'system';
 
@@ -60,6 +60,10 @@ $sqlcoa = mysqli_query($conn2,"select nama_coa from mastercoa_v2 where no_coa = 
 $rowcoa = mysqli_fetch_array($sqlcoa);
 $nama_coa = $rowcoa['nama_coa'];
 
+$sqlsupp = mysqli_query($conn2,"select nama_supp from c_petty_cashout_h where no_pco = '$reff_number'");
+$rowsupp = mysqli_fetch_array($sqlsupp);
+$nama_supp = $rowsupp['nama_supp'];
+
 /* =========================
 INSERT HEADER
 ========================= */
@@ -68,7 +72,7 @@ INSERT HEADER
 mysqli_query($conn2,"
 INSERT INTO c_petty_cashout_h (no_pco,tgl_pco,reff,nama_supp,coa_akun,curr,amount,deskripsi,status, create_by,create_date, reff_doc)
 VALUES
-('$doc_num', '$doc_date', '$ref_num', '$nama_supp', '$akun', '$curr', '$amount','$desc', '$status', '$user', '$create_date', '')
+('$doc_num', '$doc_date', '$ref_num', '$nama_supp', '$akun', '$curr', '$amount','$desc', '$status', '$user', '$create_date', '$reff_number')
 ");
 
 
@@ -79,11 +83,14 @@ VALUES
 ");
 
 
+mysqli_query($conn2,"update c_petty_cashout_h set settlement='Y' where no_pco = '$reff_number'");
+
+
 
 mysqli_query($conn2,"
 INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
 VALUES
-('$doc_num', '$doc_date', '$ref_num', '$akun', '$nama_coa', '-', '-', '-', '', '-', '-', 'IDR', '1', '0', '$amount', '0', '$amount', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc_kas')
+('$doc_num', '$doc_date', '$ref_num', '$akun', '$nama_coa', '-', '-', '$reff_number', '', '-', '-', 'IDR', '1', '0', '$amount', '0', '$amount', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc_kas')
 ");
 
 
@@ -91,15 +98,15 @@ VALUES
 INSERT DETAIL TABLE
 ========================= */
 
-$coa    = $_POST['nomor_coa1'];
-$pc     = $_POST['prof_ctr1'];
-$cc     = $_POST['cost_ctr1'];
-$buyer  = $_POST['buyer1'];
-$no_ws  = $_POST['no_ws1'];
-$curr   = $_POST['currenc1'];
-$ket    = $_POST['keterangan1'];
-$debit  = $_POST['txt_amount1'];
-$credit = $_POST['txt_credit1'];
+$coa    = $_POST['nomor_coa2'];
+$pc     = $_POST['prof_ctr2'];
+$cc     = $_POST['cost_ctr2'];
+$buyer  = $_POST['buyer2'];
+$no_ws  = $_POST['no_ws2'];
+$curr   = $_POST['currenc2'];
+$ket    = $_POST['keterangan2'];
+$debit  = $_POST['txt_amount2'];
+$credit = $_POST['txt_credit2'];
 
 for($i=0;$i<count($coa);$i++){
 
@@ -146,7 +153,7 @@ VALUES
 mysqli_query($conn2,"
 INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
 VALUES
-('$doc_num', '$doc_date', '$ref_num', '$no_coa', '$nama_coa', '$cc_i', '$nama_cc', '-', '', '$buyer_i', '$ws_i', '$curr_i', '1', '$d_debit', '$d_credit', '$d_debit', '$d_credit', 'Draft', '$ket_i', '$user', '$create_date', '', '', '', '', '$pc_i')
+('$doc_num', '$doc_date', '$ref_num', '$no_coa', '$nama_coa', '$cc_i', '$nama_cc', '$reff_number', '', '$buyer_i', '$ws_i', '$curr_i', '1', '$d_debit', '$d_credit', '$d_debit', '$d_credit', 'Draft', '$ket_i', '$user', '$create_date', '', '', '', '', '$pc_i')
 ");
 
 

@@ -1297,7 +1297,7 @@ if(result.isConfirmed){
     }
 
 }).then(() => {
-    location.reload();
+    location.href='memorial-journal.php';
 });
 
 
@@ -1731,7 +1731,7 @@ if(val){
     }
 
 }).then(() => {
-    location.reload();
+    location.href='memorial-journal.php';
 });
 
 
@@ -2318,7 +2318,8 @@ $('#simpan3').on('click', function () {
         icon: 'success',
         title: 'Berhasil!',
         text: textAlert
-    });
+    }).then(() => {'memorial-journal.php';
+            });
 
 
                     // reload table

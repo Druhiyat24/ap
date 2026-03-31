@@ -60,6 +60,10 @@ $sqlcoa = mysqli_query($conn2,"select nama_coa from mastercoa_v2 where no_coa = 
 $rowcoa = mysqli_fetch_array($sqlcoa);
 $nama_coa = $rowcoa['nama_coa'];
 
+$sqlsupp = mysqli_query($conn2,"select nama_supp from c_petty_cashout_h where no_pco = '$reff_number'");
+$rowsupp = mysqli_fetch_array($sqlsupp);
+$nama_supp = $rowsupp['nama_supp'];
+
 /* =========================
 INSERT HEADER
 ========================= */

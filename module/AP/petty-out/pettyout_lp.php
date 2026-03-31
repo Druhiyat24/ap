@@ -1,21 +1,21 @@
-<form id="form-data2" method="post">
+<form id="form-data1" method="post">
     <div class="card shadow-sm">
         <div class="card-body">
             <div class="form-row">
 
                 <div class="col-md-3 mb-2">
                     <label><b>Reference</b></label>
-                    <input type="text" name="ref_num2" id="ref_num2" class="form-control" value="Payment Voucher" readonly>
+                    <input type="text" name="ref_num1" id="ref_num1" class="form-control" value="List Payment" readonly>
                 </div>
 
                 <div class="col-md-2 mb-2">
                     <label><b>Date</b></label>
-                    <input type="text" name="tgl_active2" id="tgl_active2" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off" >
+                    <input type="text" name="tgl_active1" id="tgl_active1" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" onchange="getRate1()" autocomplete="off" >
                 </div>
 
                 <div class="col-md-3 mb-2">
                     <label><b>Supplier</b></label>
-                    <select class="form-control select2" name="nama_supp2" id="nama_supp2" data-live-search="true">
+                    <select class="form-control select2" name="nama_supp1" id="nama_supp1" data-live-search="true">
                         <option value="">Select Supplier</option>
                         <?php
                         $nama_supp2 = $_POST['nama_supp2'] ?? '';
@@ -31,74 +31,67 @@
 
                 <div class="col-md-3 mb-2">
                     <label><b>Profit Center</b></label>
-                    <input type="text" class="form-control angka" id="profit_center_bank_show" name="profit_center_bank_show" readonly>
-                    <input type="hidden" class="form-control" id="profit_center_bank2" name="profit_center_bank2" readonly>
+                    <input type="text" class="form-control angka" id="profit_center_kas_show4" name="profit_center_kas_show4" readonly>
                 </div>
                 <div class="col-md-2 mb-2">
                     <label><b>Reff Date</b></label>
-                    <input type="text" name="tgl_filawal" id="tgl_filawal" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off">
+                    <input type="text" name="tgl_filawal1" id="tgl_filawal1" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off">
                 </div>
                 <div class="col-md-2 mb-2">
                     <label><b>-</b></label>
-                    <input type="text" name="tgl_filakhir" id="tgl_filakhir" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off">
+                    <input type="text" name="tgl_filakhir1" id="tgl_filakhir1" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off">
                 </div>
                 <div class="col-md-2 mb-2 d-flex align-items-end">
-                    <button type="button" id="btn_tarik_pv" class="btn btn-primary">
+                    <button type="button" id="btn_tarik_lp" class="btn btn-primary">
                      <i class="fas fa-search"></i> Search
                  </button>
              </div>
              <div class="col-md-2 mb-2"> </div>
 
              <div class="col-md-3 mb-2">
-                <label><b>Account</b></label>
-                <input type="text" class="form-control" id="account2" name="account2" readonly>
-            </div>
+                    <label><b>Account</b></label>
+                    <select class="form-control select2" id="account4" name="account4" data-live-search="true">
+                        <option value="">Select Account</option>
 
-            <div class="col-md-2 mb-2">
-                <label><b>Bank</b></label>
-                <input type="text" class="form-control" id="bank2" name="bank2" readonly>
-            </div>
+                        <?php
+                        $sql = mysqli_query($conn1, "select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa, kode_cash, IF(no_coa = '1.01.11','NAK','NAG') profit_center, IF(no_coa = '1.01.11','PCP002 - NIRWANA ALABARE KNITTING','PCP001 - NIRWANA ALABARE GARMENT') nama_pc from mastercoa_v2 where no_coa like '%1.01%' and nama_coa like '%kas kecil%'");
+                        while ($row = mysqli_fetch_assoc($sql)) {
+                            echo "<option value='" . $row['id_coa'] . "' data-kode4='" . $row['kode_cash'] . "' data-pc4='" . $row['profit_center'] . "' data-namapc4='" . $row['nama_pc'] . "'>" . $row['coa'] . " </option>";
+                        }
+                        ?>
 
-            <div class="col-md-2 mb-2">
-                <label><b>Currency</b></label>
-                <input type="text" class="form-control" id="currency2" name="currency2" readonly>
-                <input type="hidden" class="form-control" id="profit_center_bank2" name="profit_center_bank2" readonly>
-                <input type="hidden" class="form-control" id="kode_bank2" name="kode_bank2" readonly>
-            </div>
-            <div class="col-md-5 mb-2"> </div>
+                    </select>
+                </div>
 
-            <div class="col-md-3 mb-2">
-                <label><b>Amount</b></label>
-                <input type="text" class="form-control angka" id="amount_bank2" name="amount_bank2">
-            </div>
+                <div class="col-md-2 mb-2">
+                    <label><b>Currency</b></label>
+                    <input type="text" class="form-control" id="currency4" name="currency4" readonly>
+                    <input type="hidden" class="form-control" id="kode_kas4" name="kode_kas4" readonly>
+                    <input type="hidden" class="form-control" id="profit_center_kas4" name="profit_center_kas4" readonly>
+                </div>
 
-            <div class="col-md-2 mb-2">
-                <label><b>Rate</b></label>
-                <input type="text" class="form-control angka" id="rate_bank2" name="rate_bank2">
-            </div>
-
-            <div class="col-md-2 mb-2">
-                <label><b>Equivalent IDR</b></label>
-                <input type="text" class="form-control angka" id="eqv_idr_bank2" name="eqv_idr_bank2" readonly>
-            </div>
+                <div class="col-md-3 mb-2">
+                    <label><b>Amount</b></label>
+                    <input type="text" class="form-control angka" id="amount_kas4" name="amount_kas4">
+                </div>
             <div class="col-md-5 mb-2"> </div>
 
             <div class="col-md-8 mb-2">
                 <label><b>Description</b></label>
-                <textarea style="font-size: 15px; text-align: left;" cols="30" rows="3" type="text" class="form-control " name="pesan2" id="pesan2" value="" placeholder="descriptions..." required></textarea>
+                <textarea style="font-size: 15px; text-align: left;" cols="30" rows="3" type="text" class="form-control " name="pesan1" id="pesan1" value="" placeholder="descriptions..." required></textarea>
             </div>
 
         </div>
         <div class="card-body p-2">
           <div class="table-responsive">
-              <table id="table-pv" 
+              <table id="table-lp" 
               class="table table-striped table-bordered table-hover table-sm nowrap" >
               <thead class="table-gradient">
                 <tr>
                     <th style="text-align: center;vertical-align: middle;">Check</th>
                     <th style="text-align: center;vertical-align: middle;">Profit Center</th>
-                    <th style="text-align: center;vertical-align: middle;">No PV</th>
-                    <th style="text-align: center;vertical-align: middle;">PV Date</th>
+                    <th style="text-align: center;vertical-align: middle;">No LP</th>
+                    <th style="text-align: center;vertical-align: middle;">LP Date</th>
                     <th style="text-align: center;vertical-align: middle;">Due Date</th>
                     <th style="text-align: center;vertical-align: middle;">DPP</th>
                     <th style="text-align: center;vertical-align: middle;">PPN</th>
@@ -114,7 +107,7 @@
 </div>
 <div class="card-body p-2">
   <div class="table-responsive">
-    <table id="table-pv_adjust" 
+    <table id="table-lp_adjust" 
     class="table table-striped table-bordered table-hover table-sm nowrap" >
     <thead class="table-gradient2">
         <tr>
@@ -131,24 +124,24 @@
             <th style="width:40px;">Cek</th>
         </tr>
     </thead>
-    <tbody id="tbody2"></tbody>
+    <tbody id="tbody1"></tbody>
 
     <tfoot>
         <tr>
             <td colspan="11" align="center">
 
                 <button type="button" class="btn btn-primary"
-                onclick="addRow2('tbody2')">
+                onclick="addRow1('tbody1')">
                 Add Row
             </button>
 
             <button type="button" class="btn btn-warning"
-            onclick="InsertRow2('tbody2')">
+            onclick="InsertRow1('tbody1')">
             Insert Row
         </button>
 
         <button type="button" class="btn btn-danger"
-        onclick="deleteRow2('tbody2')">
+        onclick="deleteRow1('tbody1')">
         Delete Row
     </button>
 
@@ -172,9 +165,9 @@
                 </div>
                 <div class="col-8">
                     <input type="text" style="font-size:14px;text-align:right"
-                    class="form-control" id="tot_debit_nag_pv" name="tot_debit_nag_pv" readonly>
+                    class="form-control" id="tot_debit_nag_lp" name="tot_debit_nag_lp" readonly>
                     <input type="hidden" style="font-size:14px;text-align:right"
-                    class="form-control" id="h_tot_debit_nag_pv" name="h_tot_debit_nag_pv" readonly>
+                    class="form-control" id="h_tot_debit_nag_lp" name="h_tot_debit_nag_lp" readonly>
                 </div>
             </div>
 
@@ -184,9 +177,9 @@
                 </div>
                 <div class="col-8">
                     <input type="text" style="font-size:14px;text-align:right"
-                    class="form-control" id="tot_credit_nag_pv" name="tot_credit_nag_pv" readonly>
+                    class="form-control" id="tot_credit_nag_lp" name="tot_credit_nag_lp" readonly>
                     <input type="hidden" style="font-size:14px;text-align:right"
-                    class="form-control" id="h_tot_credit_nag_pv" name="h_tot_credit_nag_pv" readonly>
+                    class="form-control" id="h_tot_credit_nag_lp" name="h_tot_credit_nag_lp" readonly>
                 </div>
             </div>
 
@@ -206,9 +199,9 @@
                 </div>
                 <div class="col-8">
                     <input type="text" style="font-size:14px;text-align:right"
-                    class="form-control" id="tot_debit_nak_pv" name="tot_debit_nak_pv" readonly>
+                    class="form-control" id="tot_debit_nak_lp" name="tot_debit_nak_lp" readonly>
                     <input type="hidden" style="font-size:14px;text-align:right"
-                    class="form-control" id="h_tot_debit_nak_pv" name="h_tot_debit_nak_pv" readonly>
+                    class="form-control" id="h_tot_debit_nak_lp" name="h_tot_debit_nak_lp" readonly>
                 </div>
             </div>
 
@@ -218,9 +211,9 @@
                 </div>
                 <div class="col-8">
                     <input type="text" style="font-size:14px;text-align:right"
-                    class="form-control" id="tot_credit_nak_pv" name="tot_credit_nak_pv" readonly>
+                    class="form-control" id="tot_credit_nak_lp" name="tot_credit_nak_lp" readonly>
                     <input type="hidden" style="font-size:14px;text-align:right"
-                    class="form-control" id="h_tot_credit_nak_pv" name="h_tot_credit_nak_pv" readonly>
+                    class="form-control" id="h_tot_credit_nak_lp" name="h_tot_credit_nak_lp" readonly>
                 </div>
             </div>
 
@@ -239,9 +232,9 @@
                 </div>
                 <div class="col-8">
                     <input type="text" style="font-size:14px;text-align:right"
-                    class="form-control" id="tot_debit_pv" name="tot_debit_pv" readonly>
+                    class="form-control" id="tot_debit_lp" name="tot_debit_lp" readonly>
                     <input type="hidden" style="font-size:14px;text-align:right"
-                    class="form-control" id="h_tot_debit_pv" name="h_tot_debit_pv" readonly>
+                    class="form-control" id="h_tot_debit_lp" name="h_tot_debit_lp" readonly>
                 </div>
             </div>
 
@@ -251,9 +244,9 @@
                 </div>
                 <div class="col-8">
                     <input type="text" style="font-size:14px;text-align:right"
-                    class="form-control" id="tot_credit_pv" name="tot_credit_pv" readonly>
+                    class="form-control" id="tot_credit_lp" name="tot_credit_lp" readonly>
                     <input type="hidden" style="font-size:14px;text-align:right"
-                    class="form-control" id="h_tot_credit_pv" name="h_tot_credit_pv" readonly>
+                    class="form-control" id="h_tot_credit_lp" name="h_tot_credit_lp" readonly>
                 </div>
             </div>
 
@@ -263,8 +256,8 @@
 </div>
 <div class="form-row">
     <div class="col-md-3 mt-3 mb-2">                              
-        <button type="button" style="border-radius: 6px" class="btn-outline-primary btn-sm" name="simpan2" id="simpan2"><span class="fa fa-floppy-o"></span> Save</button>                
-        <button type="button" style="border-radius: 6px" class="btn-outline-danger btn-sm" name="batal" id="batal" onclick="location.href='bank-out.php'"><span class="fa fa-angle-double-left"></span> Back</button>           
+        <button type="button" style="border-radius: 6px" class="btn-outline-primary btn-sm" name="simpan1" id="simpan1"><span class="fa fa-floppy-o"></span> Save</button>                
+        <button type="button" style="border-radius: 6px" class="btn-outline-danger btn-sm" name="batal" id="batal" onclick="location.href='petty-cashout.php'"><span class="fa fa-angle-double-left"></span> Back</button>           
     </div>
 </div> 
 </div>

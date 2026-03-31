@@ -475,7 +475,7 @@
               title: 'Success',
               text: 'Document : ' + res.doc_num
             }).then(() => {
-              location.href='bank-in.php';
+              location.href='petty-cashin.php';
             });
 
           } else {
@@ -1352,7 +1352,7 @@ $('#simpan2').on('click', function () {
                             title:'Success',
                             text:r.message
                         }).then(()=>{
-                            // location.href='bank-in.php';
+                            location.href='petty-cashin.php';
                         });
 
                     }else{
@@ -2197,7 +2197,7 @@ if(header_pc == 'NAK'){
                             title:'Success',
                             text:r.message
                         }).then(()=>{
-                            // location.href='bank-in.php';
+                            location.href='petty-cashin.php';
                         });
 
                     }else{

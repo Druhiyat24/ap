@@ -8,16 +8,16 @@ mysqli_begin_transaction($conn2);
 
 try{
 
-$ref_num   = $_POST['ref_num1'];
-$doc_date  = date('Y-m-d',strtotime($_POST['tgl_active1']));
-$pc_kas    = $_POST['profit_center_kas1'];
-$akun      = $_POST['account1'];
-$curr      = $_POST['currency1'];
-$kode_kas  = $_POST['kode_kas1'];
-$desc      = $_POST['pesan1'] ?? '-';
-$nama_supp = $_POST['nama_supp1'] ?? '';
+$ref_num   = $_POST['ref_num3'];
+$doc_date  = date('Y-m-d',strtotime($_POST['tgl_active3']));
+$pc_kas    = $_POST['profit_center_kas3'];
+$akun      = $_POST['account3'];
+$curr      = $_POST['currency3'];
+$kode_kas  = $_POST['kode_kas3'];
+$desc      = $_POST['pesan3'] ?? '-';
+$nama_supp = $_POST['nama_supp3'] ?? '';
 
-$amount = str_replace(',','',$_POST['amount_kas1']);
+$amount = str_replace(',','',$_POST['amount_kas3']);
 
 $user = $_SESSION['username'] ?? 'system';
 
@@ -91,15 +91,15 @@ VALUES
 INSERT DETAIL TABLE
 ========================= */
 
-$coa    = $_POST['nomor_coa1'];
-$pc     = $_POST['prof_ctr1'];
-$cc     = $_POST['cost_ctr1'];
-$buyer  = $_POST['buyer1'];
-$no_ws  = $_POST['no_ws1'];
-$curr   = $_POST['currenc1'];
-$ket    = $_POST['keterangan1'];
-$debit  = $_POST['txt_amount1'];
-$credit = $_POST['txt_credit1'];
+$coa    = $_POST['nomor_coa3'];
+$pc     = $_POST['prof_ctr3'];
+$cc     = $_POST['cost_ctr3'];
+$buyer  = $_POST['buyer3'];
+$no_ws  = $_POST['no_ws3'];
+$curr   = $_POST['currenc3'];
+$ket    = $_POST['keterangan3'];
+$debit  = $_POST['txt_amount3'];
+$credit = $_POST['txt_credit3'];
 
 for($i=0;$i<count($coa);$i++){
 

@@ -1265,7 +1265,7 @@ $(document).on('change', '.no_coa1', function() {
           title: 'Success',
           text: res.message
         }).then(() => {
-          location.reload();
+          location.href='bank-out.php';
         });
       }else{
         Swal.fire('Error', res.message, 'error');
@@ -2216,7 +2216,7 @@ $(document).on('change', '.no_coa2', function() {
           title: 'Success',
           text: res.message
         }).then(() => {
-          location.reload();
+          location.href='bank-out.php';
         });
       }else{
         Swal.fire('Error', res.message, 'error');
@@ -3032,44 +3032,46 @@ $('#simpan3').on('click', function () {
 
         if(result.isConfirmed){
 
-          // $.ajax({
+          $.ajax({
 
-          //   url: "bank-out/save_bankout_none.php",
-          //   type: "POST",
-          //   data: $('#form-data3').serialize(),
+            url: "bank-out/save_bankout_none.php",
+            type: "POST",
+            data: $('#form-data3').serialize(),
 
-          //   beforeSend:function(){
-          //     Swal.fire({
-          //       title: 'Saving...',
-          //       allowOutsideClick:false,
-          //       didOpen:()=>{ Swal.showLoading(); }
-          //     });
-          //   },
+            beforeSend:function(){
+              Swal.fire({
+                title: 'Saving...',
+                allowOutsideClick:false,
+                didOpen:()=>{ Swal.showLoading(); }
+              });
+            },
 
-          //   success:function(res){
+            success:function(res){
 
-          //     let r = JSON.parse(res);
+              let r = JSON.parse(res);
 
-          //     if(r.status == 'success'){
+              if(r.status == 'success'){
 
-          //       Swal.fire({
-          //         icon:'success',
-          //         title:'Success',
-          //         text:r.message
-          //       });
+                Swal.fire({
+                  icon:'success',
+                  title:'Success',
+                  text:r.message
+                }).then(() => {
+              location.href='bank-out.php';
+            });
 
-          //     }else{
+              }else{
 
-          //       Swal.fire('Error', r.message, 'error');
-          //     }
+                Swal.fire('Error', r.message, 'error');
+              }
 
-          //   },
+            },
 
-          //   error:function(xhr){
-          //     Swal.fire('Error','Server Error','error');
-          //   }
+            error:function(xhr){
+              Swal.fire('Error','Server Error','error');
+            }
 
-          // });
+          });
 
         }
 
