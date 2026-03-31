@@ -28,14 +28,14 @@
 
     <?php
     header("Content-type: application/vnd-ms-excel");
-    header("Content-Disposition: attachment; filename=fabric transaction summary.xls");
+    header("Content-Disposition: attachment; filename=fabric transaction summary item.xls");
     include '../../conn/conn.php';
     $start_date = date("d F Y",strtotime($_GET['start_date']));
     $end_date = date("d F Y",strtotime($_GET['end_date']));
 
     ?>
 
-    <h4> FABRIC SUMMARY<br/> PERIODE: <?php echo $start_date; ?> - <?php echo $end_date; ?></h4>
+    <h4> FABRIC MUTASI ITEM<br/> PERIODE: <?php echo $start_date; ?> - <?php echo $end_date; ?></h4>
 
     <table style="width:100%;font-size:10px;" border="1" width="100%">
         <tr>

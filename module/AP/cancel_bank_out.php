@@ -57,11 +57,18 @@ $sql2 = "INSERT INTO tbl_list_journal_cancel
 mysqli_query($conn2, $sql2);
 
 mysqli_query($conn2, "UPDATE b_reportbank SET status='$status' WHERE no_doc='$no_bi'");
+mysqli_query($conn2, "UPDATE b_bankout_det SET for_balance='0' WHERE no_bankout='$no_bi'");
 mysqli_query($conn2, "UPDATE status SET no_pay='', tgl_pay='' WHERE no_pay='$no_bi'");
 mysqli_query($conn2, "
     UPDATE tbl_pv_h 
     INNER JOIN b_bankout_det ON b_bankout_det.no_reff = tbl_pv_h.no_pv
     SET tbl_pv_h.outstanding = tbl_pv_h.total
+    WHERE b_bankout_det.no_bankout = '$no_bi'
+");
+mysqli_query($conn2, "
+    UPDATE list_payment 
+    INNER JOIN b_bankout_det ON b_bankout_det.no_reff = list_payment.no_payment
+    SET list_payment.status = 'Closed'
     WHERE b_bankout_det.no_bankout = '$no_bi'
 ");
 mysqli_query($conn2, "
