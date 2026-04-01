@@ -10,16 +10,16 @@
 
                 <div class="col-md-2 mb-2">
                     <label><b>Date</b></label>
-                    <input type="text" name="tgl_active1" id="tgl_active1" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" onchange="getRate1()" autocomplete="off" >
+                    <input type="text" name="tgl_active4" id="tgl_active4" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" onchange="getRate1()" autocomplete="off" >
                 </div>
 
                 <div class="col-md-3 mb-2">
                     <label><b>Supplier</b></label>
-                    <select class="form-control select2" name="nama_supp1" id="nama_supp1" data-live-search="true">
+                    <select class="form-control select2" name="nama_supp4" id="nama_supp4" data-live-search="true">
                         <option value="">Select Supplier</option>
                         <?php
                         $nama_supp2 = $_POST['nama_supp2'] ?? '';
-                        $sql = mysqli_query($conn1, "SELECT DISTINCT Supplier FROM mastersupplier WHERE tipe_sup='S' and supplier != '' ORDER BY Supplier ASC");
+                        $sql = mysqli_query($conn1, "select * from (select distinct(Supplier) Supplier from mastersupplier where tipe_sup = 'S' order by Supplier ASC) a UNION select cc_name as cost_name from b_master_cc where status = 'Active'");
                         while ($row = mysqli_fetch_array($sql)) {
                             $selected = ($row['Supplier'] == $nama_supp2) ? 'selected' : '';
                             echo "<option value='" . $row['Supplier'] . "' " . $selected . ">" . $row['Supplier'] . "</option>";

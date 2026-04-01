@@ -19,7 +19,7 @@
                         <option value="">Select Supplier</option>
                         <?php
                         $nama_supp2 = $_POST['nama_supp2'] ?? '';
-                        $sql = mysqli_query($conn1, "SELECT DISTINCT Supplier FROM mastersupplier WHERE tipe_sup='S' and supplier != '' ORDER BY Supplier ASC");
+                        $sql = mysqli_query($conn1, "select * from (select distinct(Supplier) Supplier from mastersupplier where tipe_sup = 'S' order by Supplier ASC) a UNION select cc_name as cost_name from b_master_cc where status = 'Active'");
                         while ($row = mysqli_fetch_array($sql)) {
                             $selected = ($row['Supplier'] == $nama_supp2) ? 'selected' : '';
                             echo "<option value='" . $row['Supplier'] . "' " . $selected . ">" . $row['Supplier'] . "</option>";
