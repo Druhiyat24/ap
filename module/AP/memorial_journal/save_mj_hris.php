@@ -23,7 +23,6 @@ try {
     $fil_sb1 = $_POST['fil_sb1'];
     $rate = str_replace(',', '', $rate);
 
-
     $bulan = date('m', strtotime($mj_date));
     $tahun = date('y', strtotime($mj_date));
     $status = "Post";
@@ -32,71 +31,104 @@ try {
     $tgl_hris =  date("Y-m",strtotime($_POST['hris_date']));
     $tgl_hris_input =  date("Y-m-d",strtotime($_POST['hris_date']));
 
+    // ================= CMJ =================
     $sqlcmj = mysqli_query($conn2, "select nama_cmj from master_category_mj where id_cmj = '$mj_type'");
+    if(!$sqlcmj){
+        throw new Exception("ERROR select master_category_mj: ".mysqli_error($conn2));
+    }
+
     $rowcmj = mysqli_fetch_array($sqlcmj);
     $nama_cmj = $rowcmj['nama_cmj'];
 
     $prefix = "GM/NAG/" . $bulan . $tahun;
 
+    // ================= NO MJ =================
     $sql = mysqli_query($conn2, "
-SELECT MAX(CAST(RIGHT(no_mj,5) AS UNSIGNED)) AS max_urut
-FROM tbl_memorial_journal
-WHERE no_mj LIKE '$prefix%'
-FOR UPDATE
-");
+    SELECT MAX(CAST(RIGHT(no_mj,5) AS UNSIGNED)) AS max_urut
+    FROM tbl_memorial_journal
+    WHERE no_mj LIKE '$prefix%'
+    FOR UPDATE
+    ");
+
+    if(!$sql){
+        throw new Exception("ERROR generate no_mj: ".mysqli_error($conn2));
+    }
 
     $row = mysqli_fetch_assoc($sql);
-
     $urutan = ($row['max_urut'] ?? 0) + 1;
-
     $no_mj = $prefix . "/" . sprintf("%05d", $urutan);
 
-
+    // ================= NO MJ SB =================
     $sql_sb = mysqli_query($conn2, "
-SELECT MAX(CAST(RIGHT(no_mj,5) AS UNSIGNED)) AS max_urut
-FROM sb_memorial_journal
-WHERE no_mj LIKE '$prefix%'
-FOR UPDATE
-");
+    SELECT MAX(CAST(RIGHT(no_mj,5) AS UNSIGNED)) AS max_urut
+    FROM sb_memorial_journal
+    WHERE no_mj LIKE '$prefix%'
+    FOR UPDATE
+    ");
+
+    if(!$sql_sb){
+        throw new Exception("ERROR generate no_mj_sb: ".mysqli_error($conn2));
+    }
 
     $row_sb = mysqli_fetch_assoc($sql_sb);
-
     $urutan_sb = ($row_sb['max_urut'] ?? 0) + 1;
-
     $no_mj_sb = $prefix . "/" . sprintf("%05d", $urutan_sb);
 
+    // ================= STATUS =================
     if ($fil_sb1 == '1') {
 
-        mysqli_query($conn2, "
-INSERT INTO status_memorial_journal
-(
-no_mj, mj_date, no_mj_sb, status, create_by, create_date
-)
-VALUES
-('$no_mj', '$mj_date', '$no_mj_sb', 'Post', '$user', '$create_date')
-");
+        $q = mysqli_query($conn2, "
+        INSERT INTO status_memorial_journal
+        (no_mj, mj_date, no_mj_sb, status, create_by, create_date)
+        VALUES
+        ('$no_mj', '$mj_date', '$no_mj_sb', 'Post', '$user', '$create_date')
+        ");
+
+        if(!$q){
+            throw new Exception("ERROR status_memorial_journal: ".mysqli_error($conn2));
+        }
     }
 
+    // ================= CONN3 =================
     if ($mj_type == 'CMJ001') {
-    mysqli_query($conn3, "update jurnal set no_journal = '$no_mj' where periode_payroll = '$tgl_hris'");
+        $q = mysqli_query($conn3, "update jurnal set no_journal = '$no_mj' where periode_payroll = '$tgl_hris'");
+        if(!$q){
+            throw new Exception("ERROR update jurnal (conn3): ".mysqli_error($conn3));
+        }
     }
 
-if ($mj_type == 'CMJ003') {
-    mysqli_query($conn3, "INSERT INTO log_jurnal_bpjs (no_journal, tgl_journal, status, created_by, created_date)
-VALUES
-('$no_mj', '$tgl_hris_input', 'POST', '$user', '$create_date')
-");
+    if ($mj_type == 'CMJ003') {
+        $cek = mysqli_query($conn3, "
+        SELECT 1 FROM log_jurnal_bpjs WHERE no_journal = '$no_mj' LIMIT 1
+    ");
 
+    if(!$cek){
+        throw new Exception("ERROR cek log_jurnal_bpjs: ".mysqli_error($conn3));
+    }
+
+    if(mysqli_num_rows($cek) == 0){
+
+        $q = mysqli_query($conn3, "
+        INSERT INTO log_jurnal_bpjs 
+        (no_journal, tgl_journal, status, created_by, created_date)
+        VALUES
+        ('$no_mj', '$tgl_hris_input', 'POST', '$user', '$create_date')
+        ");
+
+        if(!$q){
+            throw new Exception("DB ERROR: INSERT log_jurnal_bpjs => ".mysqli_error($conn3));
+        }
+    }
 }
 
-
+    // ================= DETAIL =================
     $detail = json_decode($_POST['detail'], true);
 
     if (!$detail) {
         throw new Exception("JSON detail error");
     }
 
-    // 🔥 VALIDASI BALANCE
+    // VALIDASI BALANCE
     $total_d = 0;
     $total_c = 0;
 
@@ -109,8 +141,7 @@ VALUES
         throw new Exception("NOT BALANCE");
     }
 
-
-    // 🔥 INSERT DETAIL
+    // ================= INSERT DETAIL =================
     foreach ($detail as $i => $row) {
 
         $pc_det        = $row['profit_center'];
@@ -126,54 +157,58 @@ VALUES
         $debit         = floatval($row['debit']);
         $credit        = floatval($row['credit']);
         $ket           = $row['deskripsi'];
-    
 
-    mysqli_query($conn2, "
-INSERT INTO tbl_memorial_journal
-(
-no_mj, mj_date, id_cmj, no_coa, no_costcenter, no_reff, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, keterangan, status, create_by, create_date, profit_center
-)
-VALUES
-('$no_mj', '$mj_date', '$mj_type', '$no_coa', '$no_cc', '$reff', '$reff_date', '$buyer', '$ws', '$curr', '1', '$debit', '$credit', '$debit', '$credit', '$ket', '$status', '$user', '$create_date', '$pc_det')
-");
+        // tbl_memorial_journal
+        $q1 = mysqli_query($conn2, "
+        INSERT INTO tbl_memorial_journal
+        (no_mj, mj_date, id_cmj, no_coa, no_costcenter, no_reff, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, keterangan, status, create_by, create_date, profit_center)
+        VALUES
+        ('$no_mj', '$mj_date', '$mj_type', '$no_coa', '$no_cc', '$reff', '$reff_date', '$buyer', '$ws', '$curr', '1', '$debit', '$credit', '$debit', '$credit', '$ket', '$status', '$user', '$create_date', '$pc_det')
+        ");
 
+        if(!$q1){
+            throw new Exception("ERROR tbl_memorial_journal (row $i): ".mysqli_error($conn2));
+        }
 
-        mysqli_query($conn2, "
-INSERT INTO tbl_list_journal
-(
-no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center
-)
-VALUES
-('$no_mj', '$mj_date', '$nama_cmj', '$no_coa', '$nama_coa', '$no_cc', '$cc_name', '$reff', '$reff_date', '$buyer', '$ws', '$curr', '1', '$debit', '$credit', '$debit', '$credit', '$status', '$ket', '$user', '$create_date', '', '', '', '', '$pc_det')
-");
+        // tbl_list_journal
+        $q2 = mysqli_query($conn2, "
+        INSERT INTO tbl_list_journal
+        (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
+        VALUES
+        ('$no_mj', '$mj_date', '$nama_cmj', '$no_coa', '$nama_coa', '$no_cc', '$cc_name', '$reff', '$reff_date', '$buyer', '$ws', '$curr', '1', '$debit', '$credit', '$debit', '$credit', '$status', '$ket', '$user', '$create_date', '', '', '', '', '$pc_det')
+        ");
+
+        if(!$q2){
+            throw new Exception("ERROR tbl_list_journal (row $i): ".mysqli_error($conn2));
+        }
 
         if ($fil_sb1 == '1') {
 
-            mysqli_query($conn2, "
-INSERT INTO sb_memorial_journal
-(
-no_mj, mj_date, id_cmj, no_coa, no_costcenter, no_reff, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, keterangan, status, create_by, create_date, asal_data, profit_center
-)
-VALUES
-('$no_mj_sb', '$mj_date', '$mj_type', '$no_coa', '$no_cc', '$reff', '$reff_date', '$buyer', '$ws', '$curr', '1', '$debit', '$credit', '$debit', '$credit', '$ket', '$status', '$user', '$create_date', 'Input SB2', '$pc_det')
-");
+            $q3 = mysqli_query($conn2, "
+            INSERT INTO sb_memorial_journal
+            (no_mj, mj_date, id_cmj, no_coa, no_costcenter, no_reff, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, keterangan, status, create_by, create_date, asal_data, profit_center)
+            VALUES
+            ('$no_mj_sb', '$mj_date', '$mj_type', '$no_coa', '$no_cc', '$reff', '$reff_date', '$buyer', '$ws', '$curr', '1', '$debit', '$credit', '$debit', '$credit', '$ket', '$status', '$user', '$create_date', 'Input SB2', '$pc_det')
+            ");
 
+            if(!$q3){
+                throw new Exception("ERROR sb_memorial_journal (row $i): ".mysqli_error($conn2));
+            }
 
-   mysqli_query($conn2, "
-INSERT INTO sb_list_journal
-(
-no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center
-)
-VALUES
-('$no_mj_sb', '$mj_date', '$nama_cmj', '$no_coa', '$nama_coa', '$no_cc', '$cc_name', '$reff', '$reff_date', '$buyer', '$ws', '$curr', '1', '$debit', '$credit', '$debit', '$credit', '$status', '$ket', '$user', '$create_date', '', '', '', '', '$pc_det')
-");
+            $q4 = mysqli_query($conn2, "
+            INSERT INTO sb_list_journal
+            (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
+            VALUES
+            ('$no_mj_sb', '$mj_date', '$nama_cmj', '$no_coa', '$nama_coa', '$no_cc', '$cc_name', '$reff', '$reff_date', '$buyer', '$ws', '$curr', '1', '$debit', '$credit', '$debit', '$credit', '$status', '$ket', '$user', '$create_date', '', '', '', '', '$pc_det')
+            ");
 
-
+            if(!$q4){
+                throw new Exception("ERROR sb_list_journal (row $i): ".mysqli_error($conn2));
+            }
         }
     }
 
-    // 🔥 COMMIT (kalau semua sukses)
-    mysqli_commit($conn1);
+    mysqli_commit($conn2);
 
     file_put_contents('debug_log.txt', "\nCOMMIT SUCCESS\n", FILE_APPEND);
 
@@ -181,10 +216,10 @@ VALUES
         'status' => 'success',
         'no_journal' => $no_mj
     ]);
+
 } catch (Exception $e) {
 
-    // 🔥 ROLLBACK kalau ada error
-    mysqli_rollback($conn1);
+    mysqli_rollback($conn2);
 
     file_put_contents('debug_log.txt', "\nROLLBACK\n", FILE_APPEND);
     file_put_contents('debug_log.txt', "\nERROR: " . $e->getMessage(), FILE_APPEND);
