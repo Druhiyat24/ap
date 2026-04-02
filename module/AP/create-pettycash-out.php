@@ -1340,9 +1340,9 @@ $('#simpan1').on('click', function () {
 
 <td >
 <select class="form-control selectpicker no_coa3" name="nomor_coa3[]" data-live-search="true" data-width="220px" data-size="5">
-<option value="-">-</option>
+<option value="1.49.98" >1.49.98 UANG MUKA PEMBELIAN - KAS KECIL</option>
 <?php
-$sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa,' ',nama_coa) as coa from mastercoa_v2");
+$sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa,' ',nama_coa) as coa from mastercoa_v2 where no_coa != '1.49.98'");
 foreach ($sql as $coa) : ?>
 <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?></option>
 <?php endforeach; ?>
@@ -1493,9 +1493,9 @@ foreach ($sql3 as $fc) : ?>
 
 <td >
 <select class="form-control selectpicker no_coa3" name="nomor_coa3[]" data-live-search="true" data-width="220px" data-size="5">
-<option value="-">-</option>
+<option value="1.49.98" >1.49.98 UANG MUKA PEMBELIAN - KAS KECIL</option>
 <?php
-$sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa,' ',nama_coa) as coa from mastercoa_v2");
+$sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa,' ',nama_coa) as coa from mastercoa_v2 where no_coa != '1.49.98'");
 foreach ($sql as $coa) : ?>
 <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?></option>
 <?php endforeach; ?>
