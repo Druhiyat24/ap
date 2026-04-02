@@ -203,13 +203,17 @@
         $rs = mysqli_fetch_array($querys);
         $id = isset($rs['id']) ? $rs['id'] : 0;
 
-        if($id == '54'){
-    echo '<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>&nbsp';
+    //     if($id == '54'){
+    // echo '<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>&nbsp';
+    //     }else{
+    // echo '';
+    // }
+
+    if($id == '54'){
+    echo '<button id="btncreate_new" type="button" class="btn-info btn-xs mr-2" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>';
         }else{
     echo '';
     }
-
-
 
 
     $querys2 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Acct - Upload Memorial Journal'");
@@ -224,11 +228,7 @@
 
     echo '<button id="btnverifikasi" type="button" class="btn-warning btn-xs" style="border-radius: 6%"><span class="fa fa-paper-plane" aria-hidden="true"></span> Verifikasi</button>';
 
-    if($id == '54'){
-    echo '<button id="btncreate_new" type="button" class="btn-info btn-xs ml-2" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create New</button>';
-        }else{
-    echo '';
-    }
+    
 ?>
     </div>
     <div class="box body">
