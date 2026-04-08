@@ -954,10 +954,12 @@ $row2 = mysqli_fetch_assoc($sql2);
 
 <?php
 $html = ob_get_clean();
-require_once __DIR__ . '/../../mpdf8/vendor/autoload.php';
-include("../../mpdf8/vendor/mpdf/mpdf/src/mpdf.php");
 
-$mpdf=new \mPDF\mPDF();
+require_once __DIR__ . '/../../mpdf8/vendor/autoload.php';
+
+$mpdf = new \Mpdf\Mpdf([
+    'tempDir' => __DIR__ . '/../../mpdf8/tmp'
+]);
 
 $mpdf->WriteHTML($html);
 $mpdf->Output();
