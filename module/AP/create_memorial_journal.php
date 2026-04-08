@@ -2177,7 +2177,6 @@ $('#simpan3').on('click', function () {
 
     datatable3.rows().every(function () {
         let d = this.data();
-
         let f = (d.filter || '').trim();
 
         if (f === '' || f === '-' || f === null) {
@@ -2188,7 +2187,6 @@ $('#simpan3').on('click', function () {
     console.log('INVALID ROWS:', invalidRows);
 
     if (invalidRows.length > 0) {
-
         Swal.fire({
             icon: 'error',
             title: 'Tidak bisa save!',
@@ -2198,7 +2196,6 @@ $('#simpan3').on('click', function () {
         $('#simpan3').prop('disabled', false);
         return;
     }
-
 
     /* =============================
        2. VALIDASI BALANCE PER MJ
@@ -2219,79 +2216,71 @@ $('#simpan3').on('click', function () {
     console.log('MJ TIDAK BALANCE:', tidakBalance);
 
     if (tidakBalance.length > 0) {
-
         Swal.fire({
             icon: 'error',
             title: 'Journal Tidak Balance!',
-            html: `
-                Berikut No Journal yang tidak balance:<br><br>
-                <b style="color:red">${tidakBalance.join(', ')}</b>
-            `
+            html: `Berikut No Journal yang tidak balance:<br><br>
+                   <b style="color:red">${tidakBalance.join(', ')}</b>`
         });
 
         $('#simpan3').prop('disabled', false);
         return;
     }
 
-
     /* =============================
-       3. AMBIL DATA DETAIL
+       3. AMBIL DATA
     ============================= */
     let detailData = [];
-
     datatable3.rows().every(function () {
         detailData.push(this.data());
     });
 
-    console.log('DETAIL DATA:', detailData);
-
-
-    /* =============================
-       4. AMBIL DATA HEADER
-    ============================= */
     let headerData = [];
-
     datatable4.rows().every(function () {
         headerData.push(this.data());
     });
 
-    console.log('HEADER DATA:', headerData);
-
+    console.log('DETAIL COUNT:', detailData.length);
+    console.log('HEADER COUNT:', headerData.length);
 
     /* =============================
-       5. FORM DATA
+       4. FORM DATA
     ============================= */
     let formData = new FormData($('#form-data3')[0]);
 
     formData.append('detail', JSON.stringify(detailData));
     formData.append('header', JSON.stringify(headerData));
 
-    console.log('FORM DATA READY');
-
+    console.log('FORM DATA SIZE:', JSON.stringify(detailData).length);
 
     /* =============================
-       6. LOADING SWAL
+       5. LOADING
     ============================= */
     Swal.fire({
         title: 'Menyimpan data...',
         text: 'Mohon tunggu',
         allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
+        didOpen: () => Swal.showLoading()
     });
 
-
-
+    /* =============================
+       6. AJAX
+    ============================= */
     $.ajax({
         url: 'memorial_journal/save_mj_upload_fix.php',
         type: 'POST',
         data: formData,
         processData: false,
         contentType: false,
+        timeout: 30000, // ⬅️ anti hang
 
         beforeSend: function () {
             console.log('SENDING DATA...');
+        },
+
+        complete: function (xhr, status) {
+            console.log('AJAX COMPLETE:', status);
+            console.log('RAW RESPONSE:', xhr.responseText);
         },
 
         success: function (res) {
@@ -2306,38 +2295,34 @@ $('#simpan3').on('click', function () {
                 if (r.status === 'success') {
 
                     let listMJ = (r.no_mj || []).join('\n');
-    let listMJ_SB = (r.no_mj_sb || []).join('\n');
+                    let listMJ_SB = (r.no_mj_sb || []).join('\n');
 
-    let textAlert = 'Data berhasil disimpan\n\nNo GM:\n' + listMJ;
+                    let textAlert = 'Data berhasil disimpan\n\nNo GM:\n' + listMJ;
 
-    if (listMJ_SB) {
-        textAlert += '\n\nNo GM SB:\n' + listMJ_SB;
-    }
+                    if (listMJ_SB) {
+                        textAlert += '\n\nNo GM SB:\n' + listMJ_SB;
+                    }
 
-    Swal.fire({
-        icon: 'success',
-        title: 'Berhasil!',
-        text: textAlert
-    }).then(() => {'memorial-journal.php';
-            });
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: textAlert
+                    }).then(() => {
+                        location.href = 'memorial-journal.php'; // ⬅️ ini fix redirect
+                    });
 
-
-                    // reload table
                     datatable3.ajax.reload(null, false);
                     datatable4.ajax.reload(null, false);
 
                 } else {
-
                     Swal.fire({
                         icon: 'error',
                         title: 'Gagal!',
                         text: r.message || 'Terjadi kesalahan'
                     });
-
                 }
 
             } catch (e) {
-
                 console.log('ERROR PARSE:', e);
 
                 Swal.fire({
@@ -2345,28 +2330,34 @@ $('#simpan3').on('click', function () {
                     title: 'Error!',
                     text: 'Response tidak valid dari server'
                 });
-
             }
 
             $('#simpan3').prop('disabled', false);
         },
 
-        error: function (xhr) {
+        error: function (xhr, status) {
 
-            console.log('AJAX ERROR:', xhr.responseText);
+            console.log('AJAX ERROR:', status);
+            console.log('AJAX ERROR TEXT:', xhr.responseText);
+
+            let msg = 'Gagal menghubungi server';
+
+            if (status === 'timeout') {
+                msg = 'Server terlalu lama merespon (timeout)';
+            }
 
             Swal.fire({
                 icon: 'error',
                 title: 'Server Error!',
-                text: 'Gagal menghubungi server'
+                text: msg
             });
 
             $('#simpan3').prop('disabled', false);
         }
-
     });
 
 });
+
 
 
 
