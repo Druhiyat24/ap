@@ -4,6 +4,14 @@ session_start();
 
 date_default_timezone_set('Asia/Jakarta');
 
+/* ================= DEBUG MODE ================= */
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
+file_put_contents("debug_log.txt", "===== START =====\n", FILE_APPEND);
+
+/* ================= START TRANSACTION ================= */
 mysqli_begin_transaction($conn2);
 
 try {
@@ -12,10 +20,17 @@ try {
     $create_date = date("Y-m-d H:i:s");
     $status = "Post";
 
+    file_put_contents("debug_log.txt", "USER: $user\n", FILE_APPEND);
+
     /* ================= AMBIL DATA DARI FORM ================= */
+
+    file_put_contents("debug_log.txt", "POST RAW: " . json_encode($_POST) . "\n", FILE_APPEND);
 
     $header = json_decode($_POST['header'], true);
     $detail = json_decode($_POST['detail'], true);
+
+    file_put_contents("debug_log.txt", "HEADER: " . json_encode($header) . "\n", FILE_APPEND);
+    file_put_contents("debug_log.txt", "DETAIL COUNT: " . count((array)$detail) . "\n", FILE_APPEND);
 
     if (!$detail || count($detail) == 0) {
         throw new Exception("Data kosong");
@@ -23,7 +38,7 @@ try {
 
     /* ================= SAMAKAN STRUKTUR SEPERTI TEMP ================= */
 
-    $data_temp = $detail; // ⬅️ ini kuncinya (biar logic bawah tetap jalan)
+    $data_temp = $detail;
 
     /* ================= GROUP BY NO_MJ ================= */
 
@@ -34,18 +49,20 @@ try {
 
     $jumlah_header = count($grouped);
 
+    file_put_contents("debug_log.txt", "JUMLAH HEADER: $jumlah_header\n", FILE_APPEND);
+
     /* ================= LOOP HEADER ================= */
 
     $i = 1;
     $list_no_mj = [];
     $list_no_mj_sb = [];
 
-
     foreach ($grouped as $no_mj_temp => $rows) {
+
+        file_put_contents("debug_log.txt", "LOOP NO_MJ TEMP: $no_mj_temp\n", FILE_APPEND);
 
         /* ================= AMBIL HEADER ================= */
 
-        // PRIORITAS HEADER FORM, fallback ke detail
         $mj_date = date('Y-m-d', strtotime($header['mj_date'] ?? $rows[0]['mj_date']));
         $description = $header['keterangan'] ?? $rows[0]['keterangan'];
         $fil_sb1 = $header['status'] ?? ($rows[0]['status'] ?? 'N');
@@ -55,11 +72,14 @@ try {
 
         $prefix = "GM/NAG/" . $bulan . $tahun;
 
+        file_put_contents("debug_log.txt", "PREFIX: $prefix\n", FILE_APPEND);
+
+        /* ================= GET LAST NUMBER ================= */
+
         $sql = mysqli_query($conn2, "
             SELECT MAX(CAST(RIGHT(no_mj,5) AS UNSIGNED)) AS max_urut
             FROM tbl_memorial_journal
             WHERE no_mj LIKE '$prefix%'
-            FOR UPDATE
         ");
         $row = mysqli_fetch_assoc($sql);
         $start = ($row['max_urut'] ?? 0);
@@ -68,7 +88,6 @@ try {
             SELECT MAX(CAST(RIGHT(no_mj,5) AS UNSIGNED)) AS max_urut
             FROM sb_memorial_journal
             WHERE no_mj LIKE '$prefix%'
-            FOR UPDATE
         ");
         $row_sb = mysqli_fetch_assoc($sql_sb);
         $start_sb = ($row_sb['max_urut'] ?? 0);
@@ -76,12 +95,13 @@ try {
         $no_mj    = $prefix . "/" . sprintf("%05d", $start + $i);
         $no_mj_sb = $prefix . "/" . sprintf("%05d", $start_sb + $i);
 
+        file_put_contents("debug_log.txt", "GENERATE NO_MJ: $no_mj\n", FILE_APPEND);
+
         $list_no_mj[] = $no_mj;
 
         if ($fil_sb1 == 'YES') {
             $list_no_mj_sb[] = $no_mj_sb;
         }
-
 
         /* ================= HITUNG TOTAL ================= */
 
@@ -93,6 +113,8 @@ try {
             $total_credit += $r['credit'];
         }
 
+        file_put_contents("debug_log.txt", "TOTAL D:$total_debit C:$total_credit\n", FILE_APPEND);
+
         /* ================= INSERT STATUS ================= */
 
         if ($fil_sb1 == 'YES') {
@@ -102,11 +124,14 @@ try {
                 VALUES
                 ('$no_mj', '$mj_date', '$no_mj_sb', 'Post', '$user', '$create_date')
             ");
+            file_put_contents("debug_log.txt", "INSERT STATUS OK\n", FILE_APPEND);
         }
 
         /* ================= INSERT DETAIL ================= */
 
         foreach ($rows as $r) {
+
+            file_put_contents("debug_log.txt", "INSERT DETAIL ROW\n", FILE_APPEND);
 
             $coa_i = $r['no_coa'];
             $cc_i = $r['no_costcenter'];
@@ -174,23 +199,28 @@ try {
     }
 
     /* ================= DELETE TEMP ================= */
-    // optional (boleh dipakai atau tidak)
+
     mysqli_query($conn2, "DELETE FROM tbl_memorial_journal_temp WHERE create_by = '$user'");
+
+    file_put_contents("debug_log.txt", "DELETE TEMP OK\n", FILE_APPEND);
 
     mysqli_commit($conn2);
 
-    echo json_encode([
-    "status" => "success",
-    "message" => "Data berhasil disimpan",
-    "total_header" => $jumlah_header,
-    "no_mj" => $list_no_mj,
-    "no_mj_sb" => $list_no_mj_sb
-]);
+    file_put_contents("debug_log.txt", "COMMIT SUCCESS\n", FILE_APPEND);
 
+    echo json_encode([
+        "status" => "success",
+        "message" => "Data berhasil disimpan",
+        "total_header" => $jumlah_header,
+        "no_mj" => $list_no_mj,
+        "no_mj_sb" => $list_no_mj_sb
+    ]);
 
 } catch (Exception $e) {
 
     mysqli_rollback($conn2);
+
+    file_put_contents("debug_log.txt", "ERROR: " . $e->getMessage() . "\n", FILE_APPEND);
 
     echo json_encode([
         "status" => "error",

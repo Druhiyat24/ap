@@ -47,7 +47,6 @@ try {
     SELECT MAX(CAST(RIGHT(no_mj,5) AS UNSIGNED)) AS max_urut
     FROM tbl_memorial_journal
     WHERE no_mj LIKE '$prefix%'
-    FOR UPDATE
     ");
 
     if(!$sql){
@@ -63,7 +62,6 @@ try {
     SELECT MAX(CAST(RIGHT(no_mj,5) AS UNSIGNED)) AS max_urut
     FROM sb_memorial_journal
     WHERE no_mj LIKE '$prefix%'
-    FOR UPDATE
     ");
 
     if(!$sql_sb){

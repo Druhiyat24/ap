@@ -42,7 +42,6 @@ try {
 SELECT MAX(CAST(RIGHT(no_mj,5) AS UNSIGNED)) AS max_urut
 FROM tbl_memorial_journal
 WHERE no_mj LIKE '$prefix%'
-FOR UPDATE
 ");
 
     $row = mysqli_fetch_assoc($sql);
@@ -56,7 +55,6 @@ FOR UPDATE
 SELECT MAX(CAST(RIGHT(no_mj,5) AS UNSIGNED)) AS max_urut
 FROM sb_memorial_journal
 WHERE no_mj LIKE '$prefix%'
-FOR UPDATE
 ");
 
     $row_sb = mysqli_fetch_assoc($sql_sb);
