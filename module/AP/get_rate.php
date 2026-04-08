@@ -11,7 +11,7 @@ $sql = "
     SELECT TRIM(TRAILING '.' FROM TRIM(TRAILING '0' FROM rate)) rate 
     FROM ap_masterrate
     WHERE curr = '$valuta'
-    AND tanggal = '$tgl'
+    AND tanggal = '$tgl' and v_codecurr = 'PAJAK'
     LIMIT 1
 ";
 
