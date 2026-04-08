@@ -9,7 +9,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-file_put_contents("debug_log.txt", "===== START =====\n", FILE_APPEND);
+// file_put_contents("debug_log.txt", "===== START =====\n", FILE_APPEND);
 
 /* ================= START TRANSACTION ================= */
 mysqli_begin_transaction($conn2);
@@ -20,17 +20,17 @@ try {
     $create_date = date("Y-m-d H:i:s");
     $status = "Post";
 
-    file_put_contents("debug_log.txt", "USER: $user\n", FILE_APPEND);
+    // file_put_contents("debug_log.txt", "USER: $user\n", FILE_APPEND);
 
     /* ================= AMBIL DATA DARI FORM ================= */
 
-    file_put_contents("debug_log.txt", "POST RAW: " . json_encode($_POST) . "\n", FILE_APPEND);
+    // file_put_contents("debug_log.txt", "POST RAW: " . json_encode($_POST) . "\n", FILE_APPEND);
 
     $header = json_decode($_POST['header'], true);
     $detail = json_decode($_POST['detail'], true);
 
-    file_put_contents("debug_log.txt", "HEADER: " . json_encode($header) . "\n", FILE_APPEND);
-    file_put_contents("debug_log.txt", "DETAIL COUNT: " . count((array)$detail) . "\n", FILE_APPEND);
+    // file_put_contents("debug_log.txt", "HEADER: " . json_encode($header) . "\n", FILE_APPEND);
+    // file_put_contents("debug_log.txt", "DETAIL COUNT: " . count((array)$detail) . "\n", FILE_APPEND);
 
     if (!$detail || count($detail) == 0) {
         throw new Exception("Data kosong");
@@ -49,7 +49,7 @@ try {
 
     $jumlah_header = count($grouped);
 
-    file_put_contents("debug_log.txt", "JUMLAH HEADER: $jumlah_header\n", FILE_APPEND);
+    // file_put_contents("debug_log.txt", "JUMLAH HEADER: $jumlah_header\n", FILE_APPEND);
 
     /* ================= LOOP HEADER ================= */
 
@@ -59,7 +59,7 @@ try {
 
     foreach ($grouped as $no_mj_temp => $rows) {
 
-        file_put_contents("debug_log.txt", "LOOP NO_MJ TEMP: $no_mj_temp\n", FILE_APPEND);
+        // file_put_contents("debug_log.txt", "LOOP NO_MJ TEMP: $no_mj_temp\n", FILE_APPEND);
 
         /* ================= AMBIL HEADER ================= */
 
@@ -72,7 +72,7 @@ try {
 
         $prefix = "GM/NAG/" . $bulan . $tahun;
 
-        file_put_contents("debug_log.txt", "PREFIX: $prefix\n", FILE_APPEND);
+        // file_put_contents("debug_log.txt", "PREFIX: $prefix\n", FILE_APPEND);
 
         /* ================= GET LAST NUMBER ================= */
 
@@ -95,7 +95,7 @@ try {
         $no_mj    = $prefix . "/" . sprintf("%05d", $start + $i);
         $no_mj_sb = $prefix . "/" . sprintf("%05d", $start_sb + $i);
 
-        file_put_contents("debug_log.txt", "GENERATE NO_MJ: $no_mj\n", FILE_APPEND);
+        // file_put_contents("debug_log.txt", "GENERATE NO_MJ: $no_mj\n", FILE_APPEND);
 
         $list_no_mj[] = $no_mj;
 
@@ -113,7 +113,7 @@ try {
             $total_credit += $r['credit'];
         }
 
-        file_put_contents("debug_log.txt", "TOTAL D:$total_debit C:$total_credit\n", FILE_APPEND);
+        // file_put_contents("debug_log.txt", "TOTAL D:$total_debit C:$total_credit\n", FILE_APPEND);
 
         /* ================= INSERT STATUS ================= */
 
@@ -124,14 +124,14 @@ try {
                 VALUES
                 ('$no_mj', '$mj_date', '$no_mj_sb', 'Post', '$user', '$create_date')
             ");
-            file_put_contents("debug_log.txt", "INSERT STATUS OK\n", FILE_APPEND);
+            // file_put_contents("debug_log.txt", "INSERT STATUS OK\n", FILE_APPEND);
         }
 
         /* ================= INSERT DETAIL ================= */
 
         foreach ($rows as $r) {
 
-            file_put_contents("debug_log.txt", "INSERT DETAIL ROW\n", FILE_APPEND);
+            // file_put_contents("debug_log.txt", "INSERT DETAIL ROW\n", FILE_APPEND);
 
             $coa_i = $r['no_coa'];
             $cc_i = $r['no_costcenter'];
@@ -202,11 +202,11 @@ try {
 
     mysqli_query($conn2, "DELETE FROM tbl_memorial_journal_temp WHERE create_by = '$user'");
 
-    file_put_contents("debug_log.txt", "DELETE TEMP OK\n", FILE_APPEND);
+    // file_put_contents("debug_log.txt", "DELETE TEMP OK\n", FILE_APPEND);
 
     mysqli_commit($conn2);
 
-    file_put_contents("debug_log.txt", "COMMIT SUCCESS\n", FILE_APPEND);
+    // file_put_contents("debug_log.txt", "COMMIT SUCCESS\n", FILE_APPEND);
 
     echo json_encode([
         "status" => "success",
@@ -220,7 +220,7 @@ try {
 
     mysqli_rollback($conn2);
 
-    file_put_contents("debug_log.txt", "ERROR: " . $e->getMessage() . "\n", FILE_APPEND);
+    // file_put_contents("debug_log.txt", "ERROR: " . $e->getMessage() . "\n", FILE_APPEND);
 
     echo json_encode([
         "status" => "error",
