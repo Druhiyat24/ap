@@ -761,6 +761,7 @@ $(document).on('click','#btnDelete',function(){
     $("#tbody2 .remove:checked").each(function(){
 
         $(this).closest("tr").remove();
+        hitungTotal();
 
     });
 
