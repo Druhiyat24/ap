@@ -573,6 +573,18 @@ function SidebarCollapse () {
   className: "text-center",
   render: function (data, type, row) {
 
+    if (row.status_closing && row.status_closing.toLowerCase() === 'closed') {
+  return `
+    <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+      <span class="badge badge-danger" style="font-size:11px; padding:5px 8px;">
+        <i class="fa fa-lock"></i> PERIOD LOCKED
+      </span>
+      <small style="color:#888;">Open period to edit</small>
+    </div>
+  `;
+}
+
+
     return `
       <button class="btn btn-xs btn-primary"
         onclick="editData('${row.no_journal}')">
@@ -586,6 +598,7 @@ function SidebarCollapse () {
     `;
   }
 }
+
 
             ],
 

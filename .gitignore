@@ -3,3 +3,5 @@ conn/*
 
 # Kecualikan file .gitkeep agar folder tetap ada di Git
 !conn/.gitkeep
+
+.htaccess
