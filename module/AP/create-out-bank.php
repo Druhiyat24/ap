@@ -488,12 +488,17 @@ $(document).on('change', '.chk_lp', function(){
   let no_lp = tr.find('.no_lp').data('nolp');
 
   let total = parseFloat(tr.find('.total_lp').data('total')) || 0;
+  let rate = parseFloat(tr.find('.rate_lp').data('ratelp')) || 0;
   let input = tr.find('.txt_amount_lp');
+  let input_idr = tr.find('.txt_amount_lp_idr');
+  let total_idr = total * rate;
 
   if($(this).is(':checked')){
 
     input.prop('disabled', false);
     input.val(total.toLocaleString('en-US'));
+    input_idr.prop('disabled', false);
+    input_idr.val(total_idr.toLocaleString('en-US'));
 
         hitungTotalLP();
 
@@ -502,11 +507,13 @@ $(document).on('change', '.chk_lp', function(){
     input.prop('disabled', true);
     input.val('');
 
+    input_idr.prop('disabled', true);
+    input_idr.val('');
+
     if($('.chk_lp:checked').length === 0){
 
       // RESET HEADER
       $('#amount_bank1').val('');
-      $('#rate_bank1').val('');
       $('#eqv_idr_bank1').val('');
 
       resetTotalLP();
@@ -523,22 +530,65 @@ $(document).on('change', '.chk_lp', function(){
 $(document).on('keyup', '.txt_amount_lp', function(){
 
   let tr = $(this).closest('tr');
-  let max = parseFloat(tr.find('.total_lp').data('total')) || 0;
+
+  let max  = parseFloat(tr.find('.total_lp').data('total')) || 0;
+  let rate = parseFloat(tr.find('.rate_lp').data('ratelp')) || 0;
 
   let val = $(this).val().replace(/,/g,'');
   val = parseFloat(val) || 0;
 
+  // 🔥 VALIDASI MAX
   if(val > max){
     Swal.fire('Warning','Amount tidak boleh lebih dari Total','warning');
     val = max;
   }
 
+  // 🔥 FORMAT USD
   $(this).val(val.toLocaleString('en-US'));
+
+  // 🔥 HITUNG IDR
+  let val_idr = val * rate;
+
+  tr.find('.txt_amount_lp_idr').val(val_idr.toLocaleString('en-US'));
 
   hitungTotalLP();
   hitungEqv1();
 
 });
+
+
+$(document).on('keyup', '.txt_amount_lp_idr', function(){
+
+  let tr = $(this).closest('tr');
+
+  let max  = parseFloat(tr.find('.total_lp').data('total')) || 0;
+  let rate = parseFloat(tr.find('.rate_lp').data('ratelp')) || 0;
+
+  let val_idr = $(this).val().replace(/,/g,'');
+  val_idr = parseFloat(val_idr) || 0;
+
+  // 🔥 HITUNG USD
+  let val = rate > 0 ? val_idr / rate : 0;
+
+  // 🔥 VALIDASI MAX (pakai USD)
+  if(val > max){
+    Swal.fire('Warning','Amount tidak boleh lebih dari Total','warning');
+    val = max;
+    val_idr = val * rate;
+  }
+
+  // 🔥 FORMAT
+  tr.find('.txt_amount_lp').val(val.toLocaleString('en-US'));
+  $(this).val(val_idr.toLocaleString('en-US'));
+
+  hitungTotalLP();
+  hitungEqv1();
+
+});
+
+
+
+let isManualAmount = false;
 
 
 // ===============================
@@ -554,6 +604,10 @@ function hitungTotalLP(){
   let nag_credit = 0;
   let nak_credit = 0;
 
+  let curr_h  = $('#currency1').val();
+  let rate_bank  = getNumber($('#rate_bank1').val());
+  let eqv_idr_bank1  = getNumber($('#eqv_idr_bank1').val());
+
   // =========================
   // 🔥 PV (DETAIL ATAS)
   // =========================
@@ -562,30 +616,63 @@ function hitungTotalLP(){
     let tr = $(this).closest('tr');
 
     let val = getNumber(tr.find('.txt_amount_lp').val());
+    let val_idr = getNumber(tr.find('.txt_amount_lp_idr').val());
 
     let pc = (tr.find('.pc_lp').data('pclp') || '').toString().trim().toUpperCase();
 
-    console.log('PV ROW => PC:', pc, 'AMOUNT:', val);
+    console.log('PV ROW => PC:', pc, 'AMOUNT:', val, 'IDR:', val_idr);
 
-    total_lp += val;
+    // 🔥 DISPLAY LOGIC
+    if (curr_h == 'IDR') {
+      total_lp += val_idr;
+    }else{
+      total_lp += val;
+    }
 
+    // 🔥 PERHITUNGAN WAJIB IDR
     if(pc === 'NAG'){
-      nag_debit += val;
+      nag_debit += val_idr;
     }else if(pc === 'NAK'){
-      nak_debit += val;
+      nak_debit += val_idr;
     }
 
   });
 
   // =========================
-  // 🔥 HEADER AMOUNT
+  // 🔥 HEADER AMOUNT (DISPLAY)
   // =========================
-  let header_amount = getNumber($('#amount_bank1').val());
+  let header_amount = 0;
 
-  // 🔥 kalau kosong / 0 → isi dari PV
-  if(header_amount === 0){
+  if(curr_h === 'IDR'){
+    header_amount = total_lp * rate_bank;
+  }else{
     header_amount = total_lp;
+  }
+
+  // 🔥 JANGAN OVERRIDE kalau user manual
+  if(!isManualAmount){
     $('#amount_bank1').val(header_amount.toLocaleString('en-US'));
+  }
+
+  // =========================
+  // 🔥 HEADER AMOUNT (KHUSUS HITUNG → IDR)
+  // =========================
+  let header_amount_idr = 0;
+
+  if(isManualAmount){
+
+    let manual_val = getNumber($('#amount_bank1').val());
+
+    if(curr_h === 'IDR'){
+      header_amount_idr = manual_val;
+    }else{
+      header_amount_idr = manual_val * rate_bank;
+    }
+
+  }else{
+
+    header_amount_idr = total_lp * rate_bank;
+
   }
 
   // =========================
@@ -593,12 +680,12 @@ function hitungTotalLP(){
   // =========================
   let header_pc = ($('#profit_center_bank1').val() || '').trim().toUpperCase();
 
-  console.log('HEADER PC:', header_pc, 'HEADER AMOUNT:', header_amount);
+  console.log('HEADER PC:', header_pc, 'HEADER DISPLAY:', header_amount, 'HEADER IDR:', header_amount_idr, 'MANUAL:', isManualAmount);
 
   if(header_pc === 'NAG'){
-    nag_credit += header_amount;
+    nag_credit += header_amount_idr;
   }else if(header_pc === 'NAK'){
-    nak_credit += header_amount;
+    nak_credit += header_amount_idr;
   }
 
   // =========================
@@ -666,6 +753,8 @@ function hitungTotalLP(){
 
 
 
+
+
 // ===============================
 // RESET TOTAL
 // ===============================
@@ -692,6 +781,7 @@ function hitungEqv1(){
 // EVENT HEADER
 // ===============================
 $('#amount_bank1, #rate_bank1').on('keyup change', function(){
+  isManualAmount = true;
   hitungTotalLP();
 });
 

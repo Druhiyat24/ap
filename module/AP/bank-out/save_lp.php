@@ -108,11 +108,11 @@ try {
     mysqli_query($conn2, "SET @bayar := $amount");
 
     $sql_pv = mysqli_query($conn2,"WITH
-      total_lp as (   select a.no_coa, a.nama_coa, a.profit_center, CONCAT(id_pc,' - ',nama_pc) nama_pc, a.nama_supp,a.no_payment,a.tgl_payment,max(a.tgl_tempo) as due_date,a.curr, (SUM(a.amount) - SUM(c.tax) + SUM(a.pph_value)) subtotal, SUM(c.tax) ppn, SUM(a.pph_value) pph, ((SUM(a.amount) - SUM(c.tax)+ SUM(a.pph_value)) + SUM(c.tax) - SUM(a.pph_value)) total, a.status from list_payment a INNER JOIN master_pc b on b.kode_pc = a.profit_center INNER JOIN kontrabon_h c on c.no_kbon = a.no_kbon where a.no_payment = '$no_lp' and a.profit_center = '$pc' group by a.no_payment, a.profit_center
+      total_lp as (   select a.no_coa, a.nama_coa, a.profit_center, CONCAT(id_pc,' - ',nama_pc) nama_pc, a.nama_supp,a.no_payment,a.tgl_payment,max(a.tgl_tempo) as due_date,a.curr, (SUM(a.amount) - SUM(c.tax) + SUM(a.pph_value)) subtotal, SUM(c.tax) ppn, SUM(a.pph_value) pph, ((SUM(a.amount) - SUM(c.tax)+ SUM(a.pph_value)) + SUM(c.tax) - SUM(a.pph_value)) total, a.status, IFNULL(d.rate,1) rate from list_payment a INNER JOIN master_pc b on b.kode_pc = a.profit_center INNER JOIN kontrabon_h c on c.no_kbon = a.no_kbon LEFT JOIN (SELECT tanggal, curr, rate FROM ap_masterrate where v_codecurr = 'PAJAK' GROUP BY tanggal, curr) d on d.curr = a.curr and d.tanggal = a.tgl_payment where a.no_payment = '$no_lp' and a.profit_center = '$pc' group by a.no_payment, a.profit_center
       ),
       total_bk as (select a.profit_center, no_reff, sum(dpp) dpp_lp, sum(ppn) ppn_lp, sum(pph) pph_lp, sum(total) total_lp from b_bankout_det a inner join b_bankout_h b on b.no_bankout = a.no_bankout where b.status != 'Cancel' and no_reff like '%LP%' GROUP BY no_reff,a.profit_center)
 
-      select a.no_coa, a.nama_coa, a.profit_center, a.nama_pc, a.nama_supp, a.no_payment, a.tgl_payment,a.due_date, a.curr, (a.subtotal - COALESCE(b.dpp_lp,0)) subtotal, (a.ppn - COALESCE(b.ppn_lp,0)) ppn, (a.pph - COALESCE(b.pph_lp,0)) pph ,(a.total - COALESCE(b.total_lp,0)) total, a.status, LEAST(
+      select a.no_coa, a.nama_coa, a.profit_center, a.nama_pc, a.nama_supp, a.no_payment, a.tgl_payment,a.due_date, a.curr, a.rate, (a.subtotal - COALESCE(b.dpp_lp,0)) subtotal, (a.ppn - COALESCE(b.ppn_lp,0)) ppn, (a.pph - COALESCE(b.pph_lp,0)) pph ,(a.total - COALESCE(b.total_lp,0)) total, a.status, LEAST(
       (a.pph - COALESCE(b.pph_lp,0)), 
       @bayar
       ) AS bayar_pph,
@@ -140,10 +140,13 @@ try {
     $pv_sub = $row_pv['bayar_dpp'];
     $pv_ppn = $row_pv['bayar_ppn'];
     $pv_pph = $row_pv['bayar_pph'];
+    $pv_rate = $row_pv['rate'];
+    $pv_pph_idr= $pv_pph * $pv_rate;
     $pv_total = $amount;
     $pv_no_coa = $row_pv['no_coa'];
     $pv_nama_coa = $row_pv['nama_coa'];
     $total_dppnya= $amount + $pv_pph;
+    $total_dppnya_idr= $total_dppnya * $pv_rate;
 
     mysqli_query($conn2,"
       INSERT INTO b_bankout_det (no_bankout,no_reff,reff_date,due_date,dpp,ppn,pph,total,curr, eqv_idr, rates, for_balance, profit_center) 
@@ -155,7 +158,7 @@ try {
     mysqli_query($conn2,"
       INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
       VALUES
-      ('$doc_num', '$doc_date', 'Payment', '$pv_no_coa', '$pv_nama_coa', '-', '-', '$pv_number', '$pv_date', '-', '-', '$pv_curr', '1', '$total_dppnya', '0', '$total_dppnya', '0', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pv_pc')
+      ('$doc_num', '$doc_date', 'Payment', '$pv_no_coa', '$pv_nama_coa', '-', '-', '$pv_number', '$pv_date', '-', '-', '$pv_curr', '$pv_rate', '$total_dppnya', '0', '$total_dppnya_idr', '0', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pv_pc')
       ");
 
    
@@ -169,7 +172,7 @@ try {
       mysqli_query($conn2,"
       INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
       VALUES
-      ('$doc_num', '$doc_date', 'Payment', '$no_coa_pph', '$nama_coa_pph', '-', '-', '$pv_number', '$pv_date', '-', '-', '$pv_curr', '1', '0', '$pv_pph', '0', '$pv_pph', 'Draft', '$desc','$user', '$create_date', '', '', '', '', '$pv_pc')
+      ('$doc_num', '$doc_date', 'Payment', '$no_coa_pph', '$nama_coa_pph', '-', '-', '$pv_number', '$pv_date', '-', '-', '$pv_curr', '$pv_rate', '0', '$pv_pph', '0', '$pv_pph_idr', 'Draft', '$desc','$user', '$create_date', '', '', '', '', '$pv_pc')
       ");
 
     }

@@ -113,7 +113,9 @@
                     <th style="text-align: center;vertical-align: middle;">PPN</th>
                     <th style="text-align: center;vertical-align: middle;">PPH</th>
                     <th style="text-align: center;vertical-align: middle;">Total</th>
+                    <th style="text-align: center;vertical-align: middle;">Rate</th>
                     <th style="text-align: center;vertical-align: middle;">Amount</th>
+                    <th style="text-align: center;vertical-align: middle;">Amount IDR Eqv</th>
                 </tr>
             </thead>
             <tbody>
