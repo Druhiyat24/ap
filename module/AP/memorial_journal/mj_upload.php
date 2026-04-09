@@ -295,6 +295,7 @@
                 <div class="col-md-3 mt-3 mb-3">
                     <button type="button" style="border-radius: 6px" class="btn-outline-primary btn-sm" name="simpan3" id="simpan3"><span class="fa fa-floppy-o"></span> Save</button>
                     <button type="button" style="border-radius: 6px" class="btn-outline-danger btn-sm" name="batal" id="batal" onclick="location.href='memorial-journal.php'"><span class="fa fa-angle-double-left"></span> Back</button>
+                    <button type="button" style="border-radius: 6px" class="btn-outline-warning btn-sm" name="reset" id="reset"><span class="fa fa-repeat"></span> Reset</button>
                 </div>
             </div>
         </div>
