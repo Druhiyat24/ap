@@ -2363,6 +2363,39 @@ $('#simpan3').on('click', function () {
 
   </script>
 
+  <script type="text/javascript">
+    $("#reset").on("click", function(){ 
+        var create_user = '<?php echo $user; ?>';   
+        $.ajax({
+            type:'POST',
+            url:'reset_upload_mj.php',
+            data: {'create_user':create_user},
+            cache: 'false',
+            close: function(e){
+                e.preventDefault();
+            },
+            success: function(response){
+               setTimeout(function () {
+
+                        if ($.fn.DataTable.isDataTable('#table-upload-mj')) {
+                            $('#table-upload-mj').DataTable().ajax.reload(null, false);
+                        }
+
+                        if ($.fn.DataTable.isDataTable('#table-upload-mj-group')) {
+                            $('#table-upload-mj-group').DataTable().ajax.reload(null, false);
+                        }
+
+                    }, 700);
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr);
+                alert(xhr);
+            }
+        }); 
+    });
+
+</script>
+
   </body>
 
   </html>
