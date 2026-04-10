@@ -26,6 +26,7 @@ if ($user == '') {
   .box {
       border-style: outset;
       box-sizing: border-box;
+      
   }
   .body {
       font-size: 12px;     
@@ -894,7 +895,7 @@ if($id2 == '35'){
     <span class="fa fa-tags fa-fw "></span>
     <span class="menu-collapsed">AP Report</span>
     </a>
-   <a href="AP/Payable_card_statement.php" class="dropdown-item bg-dark text-white">
+   <a href="AP/payable_card_statement.php" class="dropdown-item bg-dark text-white">
     <span class="fa fa-tags fa-fw "></span>
     <span class="menu-collapsed">AP Report New</span>
     </a>
@@ -907,7 +908,7 @@ if($id2 == '35'){
     <span class="fa fa-tags fa-fw "></span>
     <span class="menu-collapsed">AP Report</span>
     </a>
-    <a href="AP/Payable_card_statement.php" class="dropdown-item bg-dark text-white">
+    <a href="AP/payable_card_statement.php" class="dropdown-item bg-dark text-white">
     <span class="fa fa-tags fa-fw "></span>
     <span class="menu-collapsed">AP Report New</span>
     </a>';
@@ -921,7 +922,7 @@ if($id2 == '35'){
     <span class="fa fa-tags fa-fw "></span>
     <span class="menu-collapsed">AP Report</span>
     </a>
-    <a href="AP/Payable_card_statement.php" class="dropdown-item bg-dark text-white">
+    <a href="AP/payable_card_statement.php" class="dropdown-item bg-dark text-white">
     <span class="fa fa-tags fa-fw "></span>
     <span class="menu-collapsed">AP Report New</span>
     </a>
