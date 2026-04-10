@@ -29,12 +29,30 @@ if ($search != '') {
 
 /* ================= MAIN QUERY ================= */
 
-$sql = "SELECT * from (SELECT '$profit_center' nama_pc,'-' reff_doc, '-' no_journal, '-' tgl_journal, 'SALDO AWAL' keterangan, '-' credit_idr, '-' debit_idr, $kata_filter saldo_akhir FROM fs_saldo_awal_tb WHERE no_coa = '$coa_number' and profit_center = '$profit_center'
-UNION ALL
-(SELECT profit_center nama_pc, reff_doc, q1.no_journal,q1.tgl_journal,q1.keterangan,q1.credit_idr,q1.debit_idr, (@runtot :=@runtot + q1.debit_idr - q1.credit_idr) AS saldo_akhir
-FROM
-   (select a.profit_center, CONCAT(id_pc,' - ',nama_pc) nama_pc, IFNULL(NULLIF(reff_doc,''),'-') reff_doc, no_journal,tgl_journal,a.keterangan,ROUND(credit * rate,2) credit_idr,ROUND(debit * rate,2) debit_idr from tbl_list_journal a INNER JOIN master_pc b on b.kode_pc = a.profit_center where no_coa = '$coa_number' and tgl_journal BETWEEN '$start_date' and '$end_date' and a.status != 'Cancel' and profit_center = '$profit_center' order by tgl_journal,a.id ASC) AS q1 JOIN
-     (SELECT @runtot:= IFNULL(( SELECT $kata_filter FROM fs_saldo_awal_tb WHERE no_coa = '$coa_number' and profit_center = '$profit_center'),0)) runtot ORDER BY tgl_journal ASC)) a ORDER BY tgl_journal ASC";
+if ($profit_center == 'ALL') {
+    $sql = "SELECT * FROM (
+    SELECT 
+        0 as sort_key, '-' id,  '-' nama_pc, '-' reff_doc,  '-' no_journal,  NULL as tgl_journal, 'SALDO AWAL' keterangan,  0 credit_idr,  0 debit_idr,  SUM($kata_filter) saldo_akhir FROM fs_saldo_awal_tb WHERE no_coa = '$coa_number'
+    UNION ALL
+    SELECT 
+        1 as sort_key, id, profit_center nama_pc, reff_doc, no_journal, tgl_journal, keterangan, credit_idr, debit_idr, (SELECT IFNULL(SUM($kata_filter),0) FROM fs_saldo_awal_tb WHERE no_coa = '$coa_number') + SUM(debit_idr - credit_idr) OVER (ORDER BY tgl_journal ASC, no_journal ASC, CASE WHEN debit_idr > 0 THEN 0 ELSE 1 END, id ASC) AS saldo_akhir
+
+    FROM (SELECT a.id, a.profit_center, CONCAT(id_pc,' - ',nama_pc) nama_pc, IFNULL(NULLIF(reff_doc,''),'-') reff_doc,  no_journal, tgl_journal, a.keterangan, ROUND(credit * rate,2) credit_idr, ROUND(debit * rate,2) debit_idr FROM tbl_list_journal a INNER JOIN master_pc b ON b.kode_pc = a.profit_center WHERE no_coa = '$coa_number' AND tgl_journal BETWEEN '$start_date' and '$end_date' AND a.status != 'Cancel'
+    ) q1
+) a $where ORDER BY sort_key ASC, tgl_journal ASC, no_journal ASC, CASE WHEN debit_idr > 0 THEN 0 ELSE 1 END, id ASC";
+}else{
+    $sql = "SELECT * FROM (
+    SELECT 
+        0 as sort_key, '-' id,  '-' nama_pc, '-' reff_doc,  '-' no_journal,  NULL as tgl_journal, 'SALDO AWAL' keterangan,  0 credit_idr,  0 debit_idr,  SUM($kata_filter) saldo_akhir FROM fs_saldo_awal_tb WHERE no_coa = '$coa_number' and profit_center = '$profit_center'
+    UNION ALL
+    SELECT 
+        1 as sort_key, id, profit_center nama_pc, reff_doc, no_journal, tgl_journal, keterangan, credit_idr, debit_idr, (SELECT IFNULL(SUM($kata_filter),0) FROM fs_saldo_awal_tb WHERE no_coa = '$coa_number') + SUM(debit_idr - credit_idr) OVER (ORDER BY tgl_journal ASC, no_journal ASC, CASE WHEN debit_idr > 0 THEN 0 ELSE 1 END, id ASC) AS saldo_akhir
+
+    FROM (SELECT a.id, a.profit_center, CONCAT(id_pc,' - ',nama_pc) nama_pc, IFNULL(NULLIF(reff_doc,''),'-') reff_doc,  no_journal, tgl_journal, a.keterangan, ROUND(credit * rate,2) credit_idr, ROUND(debit * rate,2) debit_idr FROM tbl_list_journal a INNER JOIN master_pc b ON b.kode_pc = a.profit_center WHERE no_coa = '$coa_number' AND tgl_journal BETWEEN '$start_date' and '$end_date' AND a.status != 'Cancel' and a.profit_center = '$profit_center'
+    ) q1
+) a $where ORDER BY sort_key ASC, tgl_journal ASC, no_journal ASC, CASE WHEN debit_idr > 0 THEN 0 ELSE 1 END, id ASC";
+}
+
 
 /* ================= EXECUTE ================= */
 

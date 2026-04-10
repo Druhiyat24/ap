@@ -158,7 +158,7 @@
       <div class="col-md-2">
         <label for="nama_type"><b>Profit Center</b></label>   
             <select class="form-control select2" name="profit_center" id="profit_center" data-live-search="true">
-                <option value="-">Select Profit Center</option>
+                <option value="ALL">ALL</option>
                 <?php
                 $profit_center = $_POST['profit_center'] ?? '';
                 $sql = mysqli_query($conn1, "select kode_pc, CONCAT(id_pc,' - ',nama_pc) nama_pc from master_pc where status = 'Active'");

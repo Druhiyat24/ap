@@ -42,6 +42,12 @@
     $sql_pc = mysqli_query($conn2," select nama_pc from master_pc where kode_pc = '$profit_center'");
     $row_pc = mysqli_fetch_array($sql_pc);
     $nama_pc = isset($row_pc['nama_pc']) ? $row_pc['nama_pc'] : null;
+
+    if ($profit_center == 'all') {
+        $nama_pc = 'ALL';
+    }else{
+        $nama_pc = $nama_pc;
+    }
      ?>
 
         <h4>COA NUMBER : <?php echo $coa_number ?> <br/> PROFIT CENTER : <?php echo $nama_pc ?> <br/> COA NAME : <?php echo $nama_coa ?> <br/> PERIODE <?php echo $start_date; ?> - <?php echo $end_date; ?></h4>
@@ -67,17 +73,44 @@
         $start_date = date("Y-m-d",strtotime($_GET['start_date']));
         $end_date = date("Y-m-d",strtotime($_GET['end_date']));
 
+
+
+if ($profit_center == 'all') {
+    $sql = "SELECT * FROM (
+    SELECT 
+        0 as sort_key, '-' id,  '-' nama_pc, '-' reff_doc,  '-' no_journal,  NULL as tgl_journal, 'SALDO AWAL' keterangan,  0 credit_idr,  0 debit_idr,  SUM($kata_filter) saldo_akhir FROM fs_saldo_awal_tb WHERE no_coa = '$coa_number'
+    UNION ALL
+    SELECT 
+        1 as sort_key, id, profit_center nama_pc, reff_doc, no_journal, tgl_journal, keterangan, credit_idr, debit_idr, (SELECT IFNULL(SUM($kata_filter),0) FROM fs_saldo_awal_tb WHERE no_coa = '$coa_number') + SUM(debit_idr - credit_idr) OVER (ORDER BY tgl_journal ASC, no_journal ASC, CASE WHEN debit_idr > 0 THEN 0 ELSE 1 END, id ASC) AS saldo_akhir
+
+    FROM (SELECT a.id, a.profit_center, CONCAT(id_pc,' - ',nama_pc) nama_pc, IFNULL(NULLIF(reff_doc,''),'-') reff_doc,  no_journal, tgl_journal, a.keterangan, ROUND(credit * rate,2) credit_idr, ROUND(debit * rate,2) debit_idr FROM tbl_list_journal a INNER JOIN master_pc b ON b.kode_pc = a.profit_center WHERE no_coa = '$coa_number' AND tgl_journal BETWEEN '$start_date' and '$end_date' AND a.status != 'Cancel'
+    ) q1
+) a ORDER BY sort_key ASC, tgl_journal ASC, no_journal ASC, CASE WHEN debit_idr > 0 THEN 0 ELSE 1 END, id ASC";
+}else{
+    $sql = "SELECT * FROM (
+    SELECT 
+        0 as sort_key, '-' id,  '-' nama_pc, '-' reff_doc,  '-' no_journal,  NULL as tgl_journal, 'SALDO AWAL' keterangan,  0 credit_idr,  0 debit_idr,  SUM($kata_filter) saldo_akhir FROM fs_saldo_awal_tb WHERE no_coa = '$coa_number' and profit_center = '$profit_center'
+    UNION ALL
+    SELECT 
+        1 as sort_key, id, profit_center nama_pc, reff_doc, no_journal, tgl_journal, keterangan, credit_idr, debit_idr, (SELECT IFNULL(SUM($kata_filter),0) FROM fs_saldo_awal_tb WHERE no_coa = '$coa_number') + SUM(debit_idr - credit_idr) OVER (ORDER BY tgl_journal ASC, no_journal ASC, CASE WHEN debit_idr > 0 THEN 0 ELSE 1 END, id ASC) AS saldo_akhir
+
+    FROM (SELECT a.id, a.profit_center, CONCAT(id_pc,' - ',nama_pc) nama_pc, IFNULL(NULLIF(reff_doc,''),'-') reff_doc,  no_journal, tgl_journal, a.keterangan, ROUND(credit * rate,2) credit_idr, ROUND(debit * rate,2) debit_idr FROM tbl_list_journal a INNER JOIN master_pc b ON b.kode_pc = a.profit_center WHERE no_coa = '$coa_number' AND tgl_journal BETWEEN '$start_date' and '$end_date' AND a.status != 'Cancel' and a.profit_center = '$profit_center'
+    ) q1
+) a ORDER BY sort_key ASC, tgl_journal ASC, no_journal ASC, CASE WHEN debit_idr > 0 THEN 0 ELSE 1 END, id ASC";
+}
+$query = mysqli_query($conn2,$sql);
+
   
-        $sql = mysqli_query($conn2,"SELECT * from (SELECT UPPER('$profit_center') nama_pc,'-' reff_doc, '-' no_journal, '-' tgl_journal, 'SALDO AWAL' keterangan, '0' credit_idr, '0' debit_idr, $kata_filter saldo_akhir FROM fs_saldo_awal_tb WHERE no_coa = '$coa_number' and profit_center = '$profit_center'
-UNION ALL
-(SELECT profit_center nama_pc, reff_doc, q1.no_journal,q1.tgl_journal,q1.keterangan,q1.credit_idr,q1.debit_idr, (@runtot :=@runtot + q1.debit_idr - q1.credit_idr) AS saldo_akhir
-FROM
-   (select a.profit_center, CONCAT(id_pc,' - ',nama_pc) nama_pc, IFNULL(NULLIF(reff_doc,''),'-') reff_doc, no_journal,tgl_journal,a.keterangan,ROUND(credit * rate,2) credit_idr,ROUND(debit * rate,2) debit_idr from tbl_list_journal a INNER JOIN master_pc b on b.kode_pc = a.profit_center where no_coa = '$coa_number' and tgl_journal BETWEEN '$start_date' and '$end_date' and a.status != 'Cancel' and profit_center = '$profit_center' order by tgl_journal,a.id ASC) AS q1 JOIN
-     (SELECT @runtot:= IFNULL(( SELECT $kata_filter FROM fs_saldo_awal_tb WHERE no_coa = '$coa_number' and profit_center = '$profit_center'),0)) runtot ORDER BY tgl_journal ASC)) a ORDER BY tgl_journal ASC");
+//         $sql = mysqli_query($conn2,"SELECT * from (SELECT UPPER('$profit_center') nama_pc,'-' reff_doc, '-' no_journal, '-' tgl_journal, 'SALDO AWAL' keterangan, '0' credit_idr, '0' debit_idr, $kata_filter saldo_akhir FROM fs_saldo_awal_tb WHERE no_coa = '$coa_number' and profit_center = '$profit_center'
+// UNION ALL
+// (SELECT profit_center nama_pc, reff_doc, q1.no_journal,q1.tgl_journal,q1.keterangan,q1.credit_idr,q1.debit_idr, (@runtot :=@runtot + q1.debit_idr - q1.credit_idr) AS saldo_akhir
+// FROM
+//    (select a.profit_center, CONCAT(id_pc,' - ',nama_pc) nama_pc, IFNULL(NULLIF(reff_doc,''),'-') reff_doc, no_journal,tgl_journal,a.keterangan,ROUND(credit * rate,2) credit_idr,ROUND(debit * rate,2) debit_idr from tbl_list_journal a INNER JOIN master_pc b on b.kode_pc = a.profit_center where no_coa = '$coa_number' and tgl_journal BETWEEN '$start_date' and '$end_date' and a.status != 'Cancel' and profit_center = '$profit_center' order by tgl_journal,a.id ASC) AS q1 JOIN
+//      (SELECT @runtot:= IFNULL(( SELECT $kata_filter FROM fs_saldo_awal_tb WHERE no_coa = '$coa_number' and profit_center = '$profit_center'),0)) runtot ORDER BY tgl_journal ASC)) a ORDER BY tgl_journal ASC");
 
         $limit = 0;
 
-    while($row2 = mysqli_fetch_array($sql)){
+    while($row2 = mysqli_fetch_array($query)){
         $limit++;
 
         echo ' <tr style="font-size:12px;text-align:center;">
