@@ -83,9 +83,9 @@ data_out as (select reff_doc, no_coa, ROUND(sum((debit * rate) - (credit * rate)
 
 data_out_before as (select reff_doc, no_coa, ROUND(sum((debit * rate) - (credit * rate)),2) total from tbl_list_journal where tgl_journal < '$start_date' and tgl_journal > '2025-12-31' and no_coa = '$no_coa' and type_journal like '%AP - Kontrabon%' GROUP BY reff_doc),
 
-data_gm as (select reff_doc, no_coa, ROUND(sum((debit * rate) - (credit * rate)),2) total from tbl_list_journal where tgl_journal BETWEEN '$start_date' and '$end_date' and tgl_journal > '2025-12-31' and no_coa = '$no_coa' and type_journal like '%ACCOUNT PAYABLE%' and no_journal like '%GM%' GROUP BY reff_doc),
+data_gm as (select reff_doc, no_coa, ROUND(sum((debit * rate) - (credit * rate)),2) total from tbl_list_journal where tgl_journal BETWEEN '$start_date' and '$end_date' and tgl_journal > '2025-12-31' and no_coa = '$no_coa' and type_journal like '%OTHERS%' and no_journal like '%GM%' GROUP BY reff_doc),
 
-data_gm_before as (select reff_doc, no_coa, ROUND(sum((debit * rate) - (credit * rate)),2) total from tbl_list_journal where tgl_journal < '$start_date' and tgl_journal > '2025-12-31' and no_coa = '$no_coa' and type_journal like '%ACCOUNT PAYABLE%' and no_journal like '%GM%' GROUP BY reff_doc),
+data_gm_before as (select reff_doc, no_coa, ROUND(sum((debit * rate) - (credit * rate)),2) total from tbl_list_journal where tgl_journal < '$start_date' and tgl_journal > '2025-12-31' and no_coa = '$no_coa' and type_journal like '%OTHERS%' and no_journal like '%GM%' GROUP BY reff_doc),
 
 saldo_in as (select tgl_journal, no_journal, no_kbon, deskripsi, supplier, kode_pc, profit_center, sum(saldo_awal) saldo_awal, sum(total_in) total_in from (select tgl_journal, no_journal, no_kbon, deskripsi, supplier, kode_pc, profit_center, total saldo_awal, 0 total_in from saldo_awal
 UNION ALL
