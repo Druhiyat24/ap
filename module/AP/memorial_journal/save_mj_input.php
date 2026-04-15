@@ -144,8 +144,8 @@ VALUES
             $credit_idr = $credit_i * $rate;
             $rate_det = $rate;
         } else {
-            $debit_idr  = $debit_i * $rate;
-            $credit_idr = $credit_i * $rate;
+            $debit_idr  = $debit_i;
+            $credit_idr = $credit_i;
             $rate_det = 1;
         }
 

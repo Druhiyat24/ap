@@ -18,7 +18,6 @@ if($query_del) {
 		$sql2 = "Delete from tbl_list_journal where no_journal='$no_dok'";
 		$query2 = mysqli_query($conn2,$sql2);
 
-		if($query2) {
 			$sql3 = "insert into tbl_list_journal
 			(select '' id, a.no_bankout, a.bankout_date, 'Payment Voucher' type_journal, id_coa no_coa, coa_name, '-' no_cc, '-' nama_cc, '-' reff_doc, '' reff_date, '-' buyer, '-' no_ws, b.curr, if(a.rate = 0,1,a.rate) rate, '0' debit, amount credit, '0' debit_idr, eqv_idr credit_idr, a.status, a.deskripsi, a.create_by, a.create_date, a.approve_by, a.approve_date, '' cancel_by, '' cancel_date, ''	created_at, '' updated_at, a.profit_center from b_bankout_h a INNER JOIN b_masterbank b on b.bank_account = a.akun where a.no_bankout = '$no_dok')
 			UNION
@@ -32,7 +31,7 @@ if($query_del) {
 			UNION
 			(select '' i, b.no_bankout, bankout_date, 'Payment Voucher' type_journal, c.no_coa, c.nama_coa, d.no_cc, d.cc_name, a.reff_doc, a.reff_date, '-' buyer, '-' no_ws, 'IDR' curr, '1' rate, t_debit, t_credit, t_debit, t_credit, b.status, a.deskripsi, b.create_by, b.create_date, b.approve_by, b.approve_date, '' cancel_by, '' cancel_date, ''	created_at, '' updated_at, a.profit_center from b_bankout_adj_det a inner join b_bankout_h b on b.no_bankout = a.no_bankout INNER JOIN mastercoa_v2 c on c.no_coa = a.id_coa LEFT JOIN b_master_cc d on d.no_cc = a.no_cc where a.no_bankout = '$no_dok')')";
 			$query3 = mysqli_query($conn2,$sql3);
-		}
+		
 	}
 }
 
