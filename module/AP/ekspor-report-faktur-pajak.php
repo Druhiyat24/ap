@@ -71,23 +71,23 @@
 $no = 0;
     while($row2 = mysqli_fetch_array($sql)){
         $no++;
-        echo ' <tr style="font-size:12px;text-align:center;">
-            <td style="text-align : left;" value = "'.$row2['no_faktur'].'">'.$row2['no_faktur'].'</td>
-            <td style="text-align : left;" value = "'.$row2['tgl_faktur'].'">'.date("d-M-Y",strtotime($row2['tgl_faktur'])).'</td>
-            <td style="text-align : left;" value = "'.$row2['no_bpb'].'">'.$row2['no_bpb'].'</td>
-            <td style="text-align : left;" value = "'.$row2['tgl_bpb'].'">'.$row2['tgl_bpb'].'</td>
-            <td style="text-align : left;" value = "'.$row2['nama_supp'].'">'.$row2['nama_supp'].'</td>
-            <td style="text-align : left;" value = "'.$row2['no_referensi'].'">'.$row2['no_referensi'].'</td>
-            <td style="text-align : left;" value = "'.$row2['nama_item'].'">'.$row2['nama_item'].'</td>
-            <td style="text-align : right;" value = "'.$row2['price'].'">'.number_format($row2['price'],2).'</td>
-            <td style="text-align : right;" value = "'.$row2['qty'].'">'.number_format($row2['qty'],2).'</td>
-            <td style="text-align : right;" value = "'.$row2['dpp'].'">'.number_format($row2['dpp'],2).'</td>
-            <td style="text-align : right;" value = "'.$row2['diskon'].'">'.number_format($row2['diskon'],2).'</td>
-            <td style="text-align : right;" value = "'.$row2['ppn'].'">'.number_format($row2['ppn'],2).'</td>
-            <td style="text-align : right;" value = "'.$row2['total'].'">'.number_format($row2['total'],2).'</td>
-            <td style="text-align : left;" value = "'.$row2['sup_doc'].'">'.$row2['sup_doc'].'</td>
-            </tr>
-            ';
+        echo '<tr style="font-size:12px;text-align:center;">
+    <td style="text-align:left;mso-number-format:\'@\';">'.$row2['no_faktur'].'</td>
+    <td style="text-align:left;">'.date("d-M-Y",strtotime($row2['tgl_faktur'])).'</td>
+    <td style="text-align:left;">'.$row2['no_bpb'].'</td>
+    <td style="text-align:left;">'.$row2['tgl_bpb'].'</td>
+    <td style="text-align:left;">'.$row2['nama_supp'].'</td>
+    <td style="text-align:left;">'.$row2['no_referensi'].'</td>
+    <td style="text-align:left;">'.$row2['nama_item'].'</td>
+    <td style="text-align:right;">'.number_format($row2['price'],2).'</td>
+    <td style="text-align:right;">'.number_format($row2['qty'],2).'</td>
+    <td style="text-align:right;">'.number_format($row2['dpp'],2).'</td>
+    <td style="text-align:right;">'.number_format($row2['diskon'],2).'</td>
+    <td style="text-align:right;">'.number_format($row2['ppn'],2).'</td>
+    <td style="text-align:right;">'.number_format($row2['total'],2).'</td>
+    <td style="text-align:left;">'.$row2['sup_doc'].'</td>
+</tr>';
+
          
         ?>
         <?php 
