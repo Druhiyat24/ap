@@ -252,8 +252,8 @@ $end_date = date("Y-m-d",strtotime($enddate));
                       $id = isset($rs['id']) ? $rs['id'] : 0;
 
                       if($id == '37'){
-                        echo '<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>';
-                        echo '<button id="btncreate_new" type="button" class="btn-info btn-xs ml-2" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create New</button>';
+                        // echo '<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>';
+                        echo '<button id="btncreate_new" type="button" class="btn-info btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>';
                     }else{
                         echo '';
                     }
