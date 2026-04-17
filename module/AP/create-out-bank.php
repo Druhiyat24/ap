@@ -1465,12 +1465,17 @@ $(document).on('change', '.chk_pv', function(){
   let no_pv = tr.find('.no_pv').data('nopv');
 
   let total = parseFloat(tr.find('.total_pv').data('total')) || 0;
+  let rate = parseFloat(tr.find('.rate_pv').data('ratepv')) || 0;
   let input = tr.find('.txt_amount_pv');
+  let input_idr = tr.find('.txt_amount_pv_idr');
+  let total_idr = total * rate;
 
   if($(this).is(':checked')){
 
     input.prop('disabled', false);
     input.val(total.toLocaleString('en-US'));
+    input_idr.prop('disabled', false);
+    input_idr.val(total_idr.toLocaleString('en-US'));
 
     $.ajax({
       url: 'bank-out/get_pv_detail.php',
@@ -1528,22 +1533,81 @@ $(document).on('change', '.chk_pv', function(){
 // ===============================
 // EDIT AMOUNT PV
 // ===============================
+// $(document).on('keyup', '.txt_amount_pv', function(){
+
+//   let tr = $(this).closest('tr');
+//   let max = parseFloat(tr.find('.total_pv').data('total')) || 0;
+
+//   let val = $(this).val().replace(/,/g,'');
+//   val = parseFloat(val) || 0;
+
+//   if(val > max){
+//     Swal.fire('Warning','Amount tidak boleh lebih dari Total PV','warning');
+//     val = max;
+//   }
+
+//   $(this).val(val.toLocaleString('en-US'));
+
+//   hitungTotalPV();
+
+// });
+
 $(document).on('keyup', '.txt_amount_pv', function(){
 
   let tr = $(this).closest('tr');
-  let max = parseFloat(tr.find('.total_pv').data('total')) || 0;
+
+  let max  = parseFloat(tr.find('.total_pv').data('total')) || 0;
+  let rate = parseFloat(tr.find('.rate_pv').data('ratepv')) || 0;
 
   let val = $(this).val().replace(/,/g,'');
   val = parseFloat(val) || 0;
 
+  // 🔥 VALIDASI MAX
   if(val > max){
-    Swal.fire('Warning','Amount tidak boleh lebih dari Total PV','warning');
+    Swal.fire('Warning','Amount tidak boleh lebih dari Total','warning');
     val = max;
   }
 
+  // 🔥 FORMAT USD
   $(this).val(val.toLocaleString('en-US'));
 
+  // 🔥 HITUNG IDR
+  let val_idr = val * rate;
+
+  tr.find('.txt_amount_pv_idr').val(val_idr.toLocaleString('en-US'));
+
   hitungTotalPV();
+  hitungEqv2();
+
+});
+
+
+$(document).on('keyup', '.txt_amount_pv_idr', function(){
+
+  let tr = $(this).closest('tr');
+
+  let max  = parseFloat(tr.find('.total_pv').data('total')) || 0;
+  let rate = parseFloat(tr.find('.rate_pv').data('ratepv')) || 0;
+
+  let val_idr = $(this).val().replace(/,/g,'');
+  val_idr = parseFloat(val_idr) || 0;
+
+  // 🔥 HITUNG USD
+  let val = rate > 0 ? val_idr / rate : 0;
+
+  // 🔥 VALIDASI MAX (pakai USD)
+  if(val > max){
+    Swal.fire('Warning','Amount tidak boleh lebih dari Total','warning');
+    val = max;
+    val_idr = val * rate;
+  }
+
+  // 🔥 FORMAT
+  tr.find('.txt_amount_pv').val(val.toLocaleString('en-US'));
+  $(this).val(val_idr.toLocaleString('en-US'));
+
+  hitungTotalPV();
+  hitungEqv2();
 
 });
 
@@ -1551,12 +1615,123 @@ $(document).on('keyup', '.txt_amount_pv', function(){
 // ===============================
 // HITUNG TOTAL PV + ADJUST
 // ===============================
+
+// function hitungTotalPV(){
+
+//   let total_pv = 0;
+
+//   let nag_debit = 0;
+//   let nak_debit = 0;
+
+//   // =========================
+//   // 🔥 PV (DETAIL ATAS)
+//   // =========================
+//   $('.chk_pv:checked').each(function(){
+
+//     let tr = $(this).closest('tr');
+
+//     let val = tr.find('.txt_amount_pv').val().replace(/,/g,'');
+//     val = parseFloat(val) || 0;
+
+//     let pc = tr.find('.pc_pv').data('pcpv');
+
+//     total_pv += val;
+
+//     if(pc === 'NAG'){
+//       nag_debit += val;
+//     }else if(pc === 'NAK'){
+//       nak_debit += val;
+//     }
+
+//   });
+
+//   // =========================
+//   // 🔥 HEADER (CREDIT → PC HEADER)
+//   // =========================
+//   let header_pc = $('#profit_center_bank2').val();
+
+//   let nag_credit = 0;
+//   let nak_credit = 0;
+
+//   if(header_pc === 'NAG'){
+//     nag_credit += total_pv;
+//   }else if(header_pc === 'NAK'){
+//     nak_credit += total_pv;
+//   }
+
+//   // =========================
+//   // 🔥 ADJUST (TABLE BAWAH)
+//   // =========================
+//   $('#tbody2 tr').each(function(){
+
+//     let tr = $(this);
+
+//     let pc = (tr.find('select.prof_ctr2').first().val() || '').trim().toUpperCase();
+//     console.log('ROW:', tr.index());
+//     console.log('PC RAW:', tr.find('select.prof_ctr2').val());
+//     console.log('PC TEXT:', tr.find('select.prof_ctr2 option:selected').text());
+
+
+//     let debit  = getNumber(tr.find('input[name="txt_amount2[]"]').val());
+//     let credit = getNumber(tr.find('input[name="txt_credit2[]"]').val());
+
+//     console.log('PC:', pc, 'Debit:', debit, 'Credit:', credit);
+
+//     if(pc === 'NAG'){
+//       nag_debit  += debit;
+//       nag_credit += credit;
+//     }else if(pc === 'NAK'){
+//       nak_debit  += debit;
+//       nak_credit += credit;
+//     }
+
+//   });
+
+
+//   // =========================
+//   // GRAND TOTAL
+//   // =========================
+//   let grand_debit  = nag_debit + nak_debit;
+//   let grand_credit = nag_credit + nak_credit;
+
+//   // =========================
+//   // HEADER AMOUNT
+//   // =========================
+//   $('#amount_bank2').val(total_pv.toLocaleString('en-US'));
+
+//   // =========================
+//   // UPDATE UI
+//   // =========================
+//   $('#tot_debit_nag_pv').val(nag_debit.toLocaleString('en-US'));
+//   $('#tot_debit_nak_pv').val(nak_debit.toLocaleString('en-US'));
+//   $('#tot_debit_pv').val(grand_debit.toLocaleString('en-US'));
+
+//   $('#tot_credit_nag_pv').val(nag_credit.toLocaleString('en-US'));
+//   $('#tot_credit_nak_pv').val(nak_credit.toLocaleString('en-US'));
+//   $('#tot_credit_pv').val(grand_credit.toLocaleString('en-US'));
+
+//   // =========================
+//   // EQV
+//   // =========================
+//   hitungEqv2();
+
+// }
+
+let isManualAmountPV = false;
+
 function hitungTotalPV(){
 
   let total_pv = 0;
 
   let nag_debit = 0;
   let nak_debit = 0;
+
+  let nag_credit = 0;
+  let nak_credit = 0;
+
+  let curr_h  = $('#currency2').val();
+  let rate_bank  = getNumber($('#rate_bank2').val());
+  let eqv_idr_bank2  = getNumber($('#eqv_idr_bank2').val());
 
   // =========================
   // 🔥 PV (DETAIL ATAS)
@@ -1565,52 +1740,92 @@ function hitungTotalPV(){
 
     let tr = $(this).closest('tr');
 
-    let val = tr.find('.txt_amount_pv').val().replace(/,/g,'');
-    val = parseFloat(val) || 0;
+    let val = getNumber(tr.find('.txt_amount_pv').val());
+    let val_idr = getNumber(tr.find('.txt_amount_pv_idr').val());
 
-    let pc = tr.find('.pc_pv').data('pcpv');
+    let pc = (tr.find('.pc_pv').data('pcpv') || '').toString().trim().toUpperCase();
 
-    total_pv += val;
+    console.log('PV ROW => PC:', pc, 'AMOUNT:', val, 'IDR:', val_idr);
 
+    // 🔥 DISPLAY LOGIC
+    if (curr_h == 'IDR') {
+      total_pv += val_idr;
+    }else{
+      total_pv += val;
+    }
+
+    // 🔥 PERHITUNGAN WAJIB IDR
     if(pc === 'NAG'){
-      nag_debit += val;
+      nag_debit += val_idr;
     }else if(pc === 'NAK'){
-      nak_debit += val;
+      nak_debit += val_idr;
     }
 
   });
 
   // =========================
+  // 🔥 HEADER AMOUNT (DISPLAY)
+  // =========================
+  let header_amount = 0;
+
+  if(curr_h === 'IDR'){
+    header_amount = total_pv * rate_bank;
+  }else{
+    header_amount = total_pv;
+  }
+
+  // 🔥 JANGAN OVERRIDE kalau user manual
+  if(!isManualAmountPV){
+    $('#amount_bank2').val(header_amount.toLocaleString('en-US'));
+  }
+
+  // =========================
+  // 🔥 HEADER AMOUNT (KHUSUS HITUNG → IDR)
+  // =========================
+  let header_amount_idr = 0;
+
+  if(isManualAmountPV){
+
+    let manual_val = getNumber($('#amount_bank2').val());
+
+    if(curr_h === 'IDR'){
+      header_amount_idr = manual_val;
+    }else{
+      header_amount_idr = manual_val * rate_bank;
+    }
+
+  }else{
+
+    header_amount_idr = total_pv * rate_bank;
+
+  }
+
+  // =========================
   // 🔥 HEADER (CREDIT → PC HEADER)
   // =========================
-  let header_pc = $('#profit_center_bank2').val();
+  let header_pc = ($('#profit_center_bank2').val() || '').trim().toUpperCase();
 
-  let nag_credit = 0;
-  let nak_credit = 0;
+  console.log('HEADER PC:', header_pc, 'HEADER DISPLAY:', header_amount, 'HEADER IDR:', header_amount_idr, 'MANUAL:', isManualAmountPV);
 
   if(header_pc === 'NAG'){
-    nag_credit += total_pv;
+    nag_credit += header_amount_idr;
   }else if(header_pc === 'NAK'){
-    nak_credit += total_pv;
+    nak_credit += header_amount_idr;
   }
 
   // =========================
   // 🔥 ADJUST (TABLE BAWAH)
   // =========================
-  $('#tbody2 tr').each(function(){
+  $('#tbody2 tr').each(function(index){
 
     let tr = $(this);
 
     let pc = (tr.find('select.prof_ctr2').first().val() || '').trim().toUpperCase();
-    console.log('ROW:', tr.index());
-    console.log('PC RAW:', tr.find('select.prof_ctr2').val());
-    console.log('PC TEXT:', tr.find('select.prof_ctr2 option:selected').text());
-
 
     let debit  = getNumber(tr.find('input[name="txt_amount2[]"]').val());
     let credit = getNumber(tr.find('input[name="txt_credit2[]"]').val());
 
-    console.log('PC:', pc, 'Debit:', debit, 'Credit:', credit);
+    console.log('ADJUST ROW:', index+2, 'PC:', pc, 'Debit:', debit, 'Credit:', credit);
 
     if(pc === 'NAG'){
       nag_debit  += debit;
@@ -1622,20 +1837,18 @@ function hitungTotalPV(){
 
   });
 
-
   // =========================
-  // GRAND TOTAL
+  // 🔥 GRAND TOTAL
   // =========================
   let grand_debit  = nag_debit + nak_debit;
   let grand_credit = nag_credit + nak_credit;
 
-  // =========================
-  // HEADER AMOUNT
-  // =========================
-  $('#amount_bank2').val(total_pv.toLocaleString('en-US'));
+  console.log('TOTAL NAG:', nag_debit, nag_credit);
+  console.log('TOTAL NAK:', nak_debit, nak_credit);
+  console.log('GRAND:', grand_debit, grand_credit);
 
   // =========================
-  // UPDATE UI
+  // 🔥 UPDATE UI
   // =========================
   $('#tot_debit_nag_pv').val(nag_debit.toLocaleString('en-US'));
   $('#tot_debit_nak_pv').val(nak_debit.toLocaleString('en-US'));
@@ -1646,7 +1859,18 @@ function hitungTotalPV(){
   $('#tot_credit_pv').val(grand_credit.toLocaleString('en-US'));
 
   // =========================
-  // EQV
+  // 🔥 VALIDASI BALANCE
+  // =========================
+  if(grand_debit !== grand_credit){
+    console.log('❌ TIDAK BALANCE');
+    $('#btn_save_pv').prop('disabled', true);
+  }else{
+    console.log('✅ BALANCE');
+    $('#btn_save_pv').prop('disabled', false);
+  }
+
+  // =========================
+  // 🔥 EQV
   // =========================
   hitungEqv2();
 
@@ -1679,12 +1903,15 @@ function hitungEqv2(){
 }
 
 
+
 // ===============================
 // EVENT HEADER
 // ===============================
 $('#amount_bank2, #rate_bank2').on('keyup change', function(){
-  hitungEqv2();
+  isManualAmountPV = true;
+  hitungTotalPV();
 });
+
 
 
 // ===============================
