@@ -1,4 +1,6 @@
 <?php
+ini_set('memory_limit', '4096M');
+
 require '../../../vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
