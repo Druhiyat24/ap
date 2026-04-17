@@ -11,7 +11,7 @@ $sql = mysqli_query($conn2,"WITH
     
     total_bk as (select a.profit_center, no_reff, sum(dpp) dpp_pv, sum(ppn) ppn_pv, sum(pph) pph_pv, sum(total) total_pv from b_bankout_det a inner join b_bankout_h b on b.no_bankout = a.no_bankout where b.status != 'Cancel' and no_reff like '%PV%' GROUP BY no_reff,a.profit_center)
     
-    select a.profit_center, a.nama_pc, a.nama_supp, a.no_pv, a.pv_date,a.due_date, a.curr, (a.subtotal - COALESCE(b.dpp_pv,0)) subtotal, (a.ppn - COALESCE(b.ppn_pv,0)) ppn, (a.pph - COALESCE(b.pph_pv,0)) pph ,(a.total - COALESCE(b.total_pv,0)) total, a.status, a.frm_akun, a.bank_name, a.b_code from total_pv a LEFT JOIN total_bk b on b.no_reff = a.no_pv and b.profit_center = a.profit_center where (a.total - COALESCE(b.total_pv,0)) > 0
+    select a.profit_center, a.nama_pc, a.nama_supp, a.no_pv, a.pv_date,a.due_date, a.curr, (a.subtotal - COALESCE(b.dpp_pv,0)) subtotal, (a.ppn - COALESCE(b.ppn_pv,0)) ppn, (a.pph - COALESCE(b.pph_pv,0)) pph ,(a.total - COALESCE(b.total_pv,0)) total, a.status, a.frm_akun, a.bank_name, a.b_code, IFNULL(c.rate,1) rate from total_pv a LEFT JOIN total_bk b on b.no_reff = a.no_pv and b.profit_center = a.profit_center LEFT JOIN (SELECT tanggal, curr, rate FROM ap_masterrate where v_codecurr = 'PAJAK' GROUP BY tanggal, curr) c on c.curr = a.curr and c.tanggal = a.pv_date where (a.total - COALESCE(b.total_pv,0)) > 0
 ");
 
 while($row = mysqli_fetch_assoc($sql)){
@@ -31,8 +31,12 @@ while($row = mysqli_fetch_assoc($sql)){
         <td>'.number_format($row['ppn'],2).'</td>
         <td>'.number_format($row['pph'],2).'</td>
         <td class="total_pv" data-total="'.$row['total'].'">'.number_format($row['total'],2).'</td>
-        <td>
+        <td class="rate_pv" data-ratepv="'.$row['rate'].'">'.number_format($row['rate'],2).'</td>
+        <td style="width: 170px;">
             <input type="text" class="form-control txt_amount_pv" style="text-align:right" disabled>
+        </td>
+        <td style="width: 170px;">
+            <input type="text" class="form-control txt_amount_pv_idr" style="text-align:right" disabled>
         </td>
     </tr>';
 }

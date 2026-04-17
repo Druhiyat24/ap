@@ -110,7 +110,7 @@ try {
 
             total_bk as (select a.profit_center, no_reff, sum(dpp) dpp_pv, sum(ppn) ppn_pv, sum(pph) pph_pv, sum(total) total_pv from b_bankout_det a inner join b_bankout_h b on b.no_bankout = a.no_bankout where b.status != 'Cancel' and no_reff like '%PV%' GROUP BY no_reff,a.profit_center)
 
-            select a.profit_center, a.nama_pc, a.nama_supp, a.no_pv, a.pv_date,a.due_date, a.curr, (a.subtotal - COALESCE(b.dpp_pv,0)) subtotal, (a.ppn - COALESCE(b.ppn_pv,0)) ppn, (a.pph - COALESCE(b.pph_pv,0)) pph ,(a.total - COALESCE(b.total_pv,0)) total, a.status, a.frm_akun, a.bank_name, a.b_code from total_pv a LEFT JOIN total_bk b on b.no_reff = a.no_pv and b.profit_center = a.profit_center");
+            select a.profit_center, a.nama_pc, a.nama_supp, a.no_pv, a.pv_date,a.due_date, a.curr, (a.subtotal - COALESCE(b.dpp_pv,0)) subtotal, (a.ppn - COALESCE(b.ppn_pv,0)) ppn, (a.pph - COALESCE(b.pph_pv,0)) pph ,(a.total - COALESCE(b.total_pv,0)) total, a.status, a.frm_akun, a.bank_name, a.b_code, IFNULL(c.rate,1) rate from total_pv a LEFT JOIN total_bk b on b.no_reff = a.no_pv and b.profit_center = a.profit_center LEFT JOIN (SELECT tanggal, curr, rate FROM ap_masterrate where v_codecurr = 'PAJAK' GROUP BY tanggal, curr) c on c.curr = a.curr and c.tanggal = a.pv_date");
         $row_pv = mysqli_fetch_array($sql_pv);
         $pv_pc = $row_pv['profit_center'];
         $pv_number = $row_pv['no_pv'];
@@ -121,11 +121,12 @@ try {
         $pv_ppn = $row_pv['ppn'];
         $pv_pph = $row_pv['pph'];
         $pv_total = $row_pv['total'];
+        $pv_rate = $row_pv['rate'];
 
         mysqli_query($conn2,"
             INSERT INTO b_bankout_det (no_bankout,no_reff,reff_date,due_date,dpp,ppn,pph,total,curr, eqv_idr, rates, for_balance, profit_center) 
             VALUES
-            ('$doc_num', '$pv_number', '$pv_date', '$pv_duedate', '$pv_sub', '$pv_ppn', '$pv_pph', '$pv_total', '$pv_curr', '$amount', '1', '$amount', '$pv_pc')
+            ('$doc_num', '$pv_number', '$pv_date', '$pv_duedate', '$pv_sub', '$pv_ppn', '$pv_pph', '$pv_total', '$pv_curr', '$amount', '$pv_rate', '$amount', '$pv_pc')
             ");
 
         mysqli_query($conn2,"insert into tbl_list_journal select '' id, '$doc_num' no_journal, '$doc_date' tgl_journal, type_journal, coa, nama_coa, no_cc, COALESCE(cc_name,'-') cc_name, no_pv no_reff, pv_date reff_date, buyer, no_ws, a.curr, IF(rate is null,1,rate) rate, debit, credit, round(debit * IF(rate is null,1,rate),4) debit_idr, round(credit * IF(rate is null,1,rate),4) credit_idr, 'Draft' status, deskripsi, '$user' create_by, CURRENT_TIMESTAMP() create_date, '' approve_by, '' approve_date, '' cancel_by, '' cancel_date, CURRENT_TIMESTAMP() created_at, CURRENT_TIMESTAMP() updated_at, profit_center from 
@@ -134,7 +135,7 @@ try {
             select a.id, 'Payment Voucher' type_journal, d.no_coa, d.nama_coa, a.no_cc, b.cc_name,h.no_pv, h.pv_date,  '-' buyer, '-' no_ws, h.curr, (ded_add * a.pph/100) debit, (amount * a.pph/100) credit, a.deskripsi, a.profit_center from tbl_pv a INNER JOIN tbl_pv_h h on h.no_pv = a.no_pv left join b_master_cc b on b.no_cc = a.no_cc INNER JOIN mtax d on d.idtax = a.id_pph where a.no_pv = '$pv_number' and a.profit_center = '$pv_pc'
             UNION
             select a.id, 'Payment Voucher' type_journal, d.no_coa, d.nama_coa, a.no_cc, b.cc_name,no_pv, pv_date,  '-' buyer, '-' no_ws, curr, (amount * ppn/100) debit, (ded_add * a.ppn/100) credit, deskripsi, a.profit_center from (select id,no_pv, pv_date, a.profit_center, coa, no_cc, reff_doc, reff_date, deskripsi, curr, ded_add, amount, pph, IF(per_ppn = 0,ppn,per_ppn) ppn, IF(per_ppn = 0,id_ppn,id_per_ppn) id_ppn from (select a.*,b.per_ppn, b.pv_date, b.curr, CASE WHEN b.per_ppn BETWEEN 1.09 AND 1.11 THEN 20 WHEN b.per_ppn = 11 THEN 1 WHEN b.per_ppn BETWEEN 1.19 AND 1.21 THEN 23 ELSE 0 END AS id_per_ppn from tbl_pv a INNER JOIN tbl_pv_h b on b.no_pv = a.no_pv where a.no_pv = '$pv_number' and a.profit_center = '$pv_pc') a) a left join b_master_cc b on b.no_cc = a.no_cc INNER JOIN mtax d on d.idtax = a.id_ppn
-        ) a LEFT JOIN (select tanggal, curr, rate from masterrate where v_codecurr = 'PAJAK' GROUP BY tanggal) b on b.tanggal = a.pv_date and b.curr = a.curr order by a.id, credit asc");
+        ) a LEFT JOIN (select tanggal, curr, rate from ap_masterrate where v_codecurr = 'PAJAK' GROUP BY tanggal) b on b.tanggal = a.pv_date and b.curr = a.curr order by a.id, credit asc");
     }
 
     // =========================
