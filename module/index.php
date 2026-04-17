@@ -1,4 +1,7 @@
 <?php
+ini_set('memory_limit', '4096M');
+set_time_limit(0);
+
 session_start();
 error_reporting(E_ALL & ~E_NOTICE);
 ini_set('display_errors', 1);
@@ -26,7 +29,7 @@ if ($user == '') {
   .box {
       border-style: outset;
       box-sizing: border-box;
-      
+
   }
   .body {
       font-size: 12px;     
