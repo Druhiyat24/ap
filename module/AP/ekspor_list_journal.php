@@ -27,6 +27,7 @@
     </style>
  
     <?php
+    ini_set('memory_limit', '4096M');
     header("Content-type: application/vnd-ms-excel");
     header("Content-Disposition: attachment; filename=list-journal.xls");
     // $nama_supp =$_GET['nama_supp'];
