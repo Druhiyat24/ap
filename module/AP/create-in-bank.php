@@ -1600,8 +1600,19 @@ $('#simpan3').on('click', function () {
     let debitNAK  = 0;
     let creditNAK = 0;
 
+    let totalDebitIDR  = 0;
+    let totalCreditIDR = 0;
+
     let rowIndex = 0;
     let error = false;
+
+    /* ======================
+       RATE HEADER
+    ====================== */
+
+    let rate = parseFloat($('#rate_bank3').val().replace(/,/g,'')) || 0;
+
+    console.log("Rate Header :", rate);
 
     console.log("===== LOOP DETAIL =====");
 
@@ -1609,21 +1620,28 @@ $('#simpan3').on('click', function () {
 
         let tr = $(this);
 
-        let coa = tr.find('.no_coa').val();
-        let pc  = tr.find('.prof_ctr').val();
-        let cc  = tr.find('.cost_ctr').val();
+        let coa  = tr.find('.no_coa').val();
+        let pc   = tr.find('.prof_ctr').val();
+        let cc   = tr.find('.cost_ctr').val();
+        let curr = tr.find('select[name="currenc[]"]').val();
 
-        let debit  = parseFloat(tr.find('[name="txt_amount[]"]').val()) || 0;
-        let credit = parseFloat(tr.find('[name="txt_credit[]"]').val()) || 0;
+        let debitVal  = tr.find('input[name="txt_amount[]"]').val();
+        let creditVal = tr.find('input[name="txt_credit[]"]').val();
+
+        let debit  = parseFloat(debitVal)  || 0;
+        let credit = parseFloat(creditVal) || 0;
 
         console.log("----- ROW",rowIndex,"-----");
         console.log("COA :", coa);
         console.log("PC :", pc);
         console.log("Cost Center :", cc);
-        console.log("Debit :", debit);
-        console.log("Credit :", credit);
+        console.log("Currency :", curr);
+        console.log("Debit Raw :", debit);
+        console.log("Credit Raw :", credit);
 
-        /* VALIDASI COST CENTER */
+        /* =========================
+           VALIDASI COST CENTER
+        ========================= */
 
         if(coaWajibCC.includes(coa)){
 
@@ -1644,17 +1662,40 @@ $('#simpan3').on('click', function () {
             }
         }
 
-        /* HITUNG PER PC */
+        /* ======================
+           KONVERSI KE IDR
+        ====================== */
 
-        if(pc == 'NAG'){
+        if(curr === 'USD'){
+
+            debit  = debit  * rate;
+            credit = credit * rate;
+
+            console.log("Debit x Rate :", debit);
+            console.log("Credit x Rate :", credit);
+
+        }
+
+        /* ======================
+           HITUNG PER PC (SUDAH IDR)
+        ====================== */
+
+        if(pc === 'NAG'){
             debitNAG  += debit;
             creditNAG += credit;
         }
 
-        if(pc == 'NAK'){
+        if(pc === 'NAK'){
             debitNAK  += debit;
             creditNAK += credit;
         }
+
+        /* ======================
+           TOTAL GLOBAL IDR
+        ====================== */
+
+        totalDebitIDR  += debit;
+        totalCreditIDR += credit;
 
         rowIndex++;
 
@@ -1663,72 +1704,94 @@ $('#simpan3').on('click', function () {
     if(error) return;
 
    /* ======================
-   HEADER BANK
-====================== */
+      HEADER BANK
+   ====================== */
 
-let header_pc = $('#profit_center_bank3').val();
+    let header_pc = $('#profit_center_bank3').val();
 
-let header_debit = parseFloat(
-    $('#eqv_idr_bank3').val().replace(/,/g,'')
-) || 0;
+    let header_eqv = parseFloat(
+        $('#eqv_idr_bank3').val().replace(/,/g,'')
+    ) || 0;
 
-console.log("===== HEADER BANK =====");
-console.log("Header PC :", header_pc);
-console.log("Debit Bank :", header_debit);
+    console.log("===== HEADER BANK =====");
+    console.log("Header PC :", header_pc);
+    console.log("Header Eqv IDR :", header_eqv);
 
+    /* ======================
+       HASIL AKUMULASI
+    ====================== */
 
-/* ======================
-   HASIL AKUMULASI
-====================== */
+    console.log("===== HASIL AKUMULASI =====");
 
-console.log("===== HASIL AKUMULASI =====");
+    console.log("Debit NAG :", debitNAG);
+    console.log("Credit NAG :", creditNAG);
 
-console.log("Debit NAG :", debitNAG);
-console.log("Credit NAG :", creditNAG);
+    console.log("Debit NAK :", debitNAK);
+    console.log("Credit NAK :", creditNAK);
 
-console.log("Debit NAK :", debitNAK);
-console.log("Credit NAK :", creditNAK);
+    console.log("Total Debit IDR :", totalDebitIDR);
+    console.log("Total Credit IDR :", totalCreditIDR);
 
+    /* ======================
+       VALIDASI PER PC
+    ====================== */
 
-/* ======================
-   VALIDASI PER PC
-====================== */
+    if(header_pc == 'NAG'){
 
-if(header_pc == 'NAG'){
+        if(header_eqv != creditNAG){
 
-    if(header_debit != creditNAG){
+            console.log("ERROR: NAG tidak balance");
 
-        console.log("ERROR: NAG tidak balance");
+            Swal.fire(
+                'Warning',
+                'Journal PT Nirwana Alabare Garment tidak balance',
+                'warning'
+            );
+
+            return;
+        }
+
+    }
+
+    if(header_pc == 'NAK'){
+
+        if(header_eqv != creditNAK){
+
+            console.log("ERROR: NAK tidak balance");
+
+            Swal.fire(
+                'Warning',
+                'Journal PT Nirwana Alabare Knitting tidak balance',
+                'warning'
+            );
+
+            return;
+        }
+
+    }
+
+    /* ======================
+       VALIDASI FINAL (IDR)
+    ====================== */
+
+    console.log("===== VALIDASI FINAL =====");
+
+    let selisih = (header_eqv + totalDebitIDR) - totalCreditIDR;
+
+    console.log("Selisih :", selisih);
+
+    if(Math.abs(selisih) > 1){
+
+        console.log("ERROR: Tidak balance (IDR)");
 
         Swal.fire(
             'Warning',
-            'Journal PT Nirwana Alabare Garment tidak balance',
+            'Journal tidak balance (Header + Debit ≠ Credit)',
             'warning'
         );
 
         return;
     }
-
-}
-
-if(header_pc == 'NAK'){
-
-    if(header_debit != creditNAK){
-
-        console.log("ERROR: NAK tidak balance");
-
-        Swal.fire(
-            'Warning',
-            'Journal PT Nirwana Alabare Knitting tidak balance',
-            'warning'
-        );
-
-        return;
-    }
-
-}
-
-
 
     console.log("VALIDASI LOLOS");
 
@@ -1813,6 +1876,7 @@ if(header_pc == 'NAK'){
     });
 
 });
+
 
 
 
