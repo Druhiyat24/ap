@@ -229,6 +229,29 @@
 
                         ?>">
                     </div>
+                     <div class="col-md-3 mb-3">            
+                        <label for="ir_number"><b>Invoice Received Number <i style="color: red;">*</i></b></label>            
+                        <select class="form-control selectpicker" name="ir_number" id="ir_number" data-dropup-auto="false" data-size="5" data-live-search="true">
+                            <option value="" disabled selected="true">Select Invoice Received Number</option>                                                 
+                            <?php
+                            $ir_number = isset($_POST['ir_number']) ? $_POST['ir_number']: null; 
+                            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;              
+                            $sql = mysqli_query($conn1,"select doc_number, nama_supp, total_amount from ir_invoice_supp_h where status != 'Cancel' and nama_supp = '$nama_supp'");
+                            while ($row = mysqli_fetch_array($sql)) {
+                                $data = $row['doc_number'];
+                                if($row['doc_number'] == $ir_number ){
+                                    $isSelected = ' selected="selected"';
+                                }else{
+                                    $isSelected = '';
+
+                                }
+                                echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
+                            }?>
+                        </select>  
+
+                        <input type="hidden" readonly style="font-size: 13px;;" class="form-control form-control-sm" id="jurnal" name="jurnal" 
+                        value="0" placeholder="<?php echo "KONTRA BON" ?>">
+                    </div>
 
 
                     <div class="col-md-6 mb-3">
@@ -1855,12 +1878,13 @@ if (!processedPO.includes(po)) {
         var n_code_category = document.getElementById('h_code_ctg').value;
         var cus_ctg = document.getElementById('h_cus_ctg').value;
         var profit_center = $('select[name=profit_center] option').filter(':selected').val();
+        var ir_number = $('select[name=ir_number] option').filter(':selected').val();
         //&& tgl_kbon_h >= tgl_kbon_p 
-        if(total_h != '' && total_h >= 0 ){        
+        if(total_h != '' && total_h >= 0 && ir_number != ''){        
             $.ajax({
                 type:'POST',
                 url:'insertkbon_h.php',
-                data: {'no_kbon_h':no_kbon_h, 'tgl_kbon_h':tgl_kbon_h,'nama_supp_h':nama_supp_h, 'no_faktur_h':no_faktur_h, 'supp_inv_h':supp_inv_h, 'tgl_inv_h':tgl_inv_h, 'tgl_tempo_h':tgl_tempo_h, 'curr_h':curr_h, 'create_user_h':create_user_h, 'sub_h':sub_h, 'tax_h':tax_h, 'dp_h':dp_h, 'pph_h':pph_h, 'total_h':total_h, 'jml_return':jml_return, 'lr_kurs':lr_kurs, 's_qty':s_qty, 's_harga':s_harga, 'materai':materai, 'pot_beli':pot_beli, 'ekspedisi':ekspedisi, 'moq':moq, 'jml_potong':jml_potong, 'no_po_h':no_po_h, 'tgl_kbon_s':tgl_kbon_s, 'unik_code':unik_code, 'mattype':mattype, 'matclass':matclass, 'n_code_category':n_code_category, 'cus_ctg':cus_ctg, 'profit_center':profit_center},
+                data: {'no_kbon_h':no_kbon_h, 'tgl_kbon_h':tgl_kbon_h,'nama_supp_h':nama_supp_h, 'no_faktur_h':no_faktur_h, 'supp_inv_h':supp_inv_h, 'tgl_inv_h':tgl_inv_h, 'tgl_tempo_h':tgl_tempo_h, 'curr_h':curr_h, 'create_user_h':create_user_h, 'sub_h':sub_h, 'tax_h':tax_h, 'dp_h':dp_h, 'pph_h':pph_h, 'total_h':total_h, 'jml_return':jml_return, 'lr_kurs':lr_kurs, 's_qty':s_qty, 's_harga':s_harga, 'materai':materai, 'pot_beli':pot_beli, 'ekspedisi':ekspedisi, 'moq':moq, 'jml_potong':jml_potong, 'no_po_h':no_po_h, 'tgl_kbon_s':tgl_kbon_s, 'unik_code':unik_code, 'mattype':mattype, 'matclass':matclass, 'n_code_category':n_code_category, 'cus_ctg':cus_ctg, 'profit_center':profit_center, 'ir_number':ir_number},
                 cache: 'false',
                 close: function(e){
                     e.preventDefault();
@@ -1978,6 +2002,9 @@ error: function (xhr, ajaxOptions, thrownError) {
         }else if (document.getElementById('total_h').value == ''){
             document.getElementById('calculate').focus();
             alert("Please do the calculation ");
+        }else if ($('select[name=ir_number] option').filter(':selected').val() == ''){
+            document.getElementById('ir_number').focus();
+            alert("Please Input Invoice Received Number ");
         }else if (document.getElementById('total_h').value < 0){
             alert("Contrabon can't be minus ");
         }else{

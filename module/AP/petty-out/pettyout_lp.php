@@ -1,11 +1,11 @@
-<form id="form-data1" method="post">
+<form id="form-data4" method="post">
     <div class="card shadow-sm">
         <div class="card-body">
             <div class="form-row">
 
                 <div class="col-md-3 mb-2">
                     <label><b>Reference</b></label>
-                    <input type="text" name="ref_num1" id="ref_num1" class="form-control" value="List Payment" readonly>
+                    <input type="text" name="ref_num4" id="ref_num4" class="form-control" value="List Payment" readonly>
                 </div>
 
                 <div class="col-md-2 mb-2">
@@ -35,11 +35,11 @@
                 </div>
                 <div class="col-md-2 mb-2">
                     <label><b>Reff Date</b></label>
-                    <input type="text" name="tgl_filawal1" id="tgl_filawal1" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off">
+                    <input type="text" name="tgl_filawal4" id="tgl_filawal4" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off">
                 </div>
                 <div class="col-md-2 mb-2">
                     <label><b>-</b></label>
-                    <input type="text" name="tgl_filakhir1" id="tgl_filakhir1" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off">
+                    <input type="text" name="tgl_filakhir4" id="tgl_filakhir4" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off">
                 </div>
                 <div class="col-md-2 mb-2 d-flex align-items-end">
                     <button type="button" id="btn_tarik_lp" class="btn btn-primary">
@@ -82,7 +82,7 @@
             </div>
 
         </div>
-        <div class="card-body p-2">
+       <div class="card-body p-2">
           <div class="table-responsive">
               <table id="table-lp" 
               class="table table-striped table-bordered table-hover table-sm nowrap" >
@@ -97,7 +97,9 @@
                     <th style="text-align: center;vertical-align: middle;">PPN</th>
                     <th style="text-align: center;vertical-align: middle;">PPH</th>
                     <th style="text-align: center;vertical-align: middle;">Total</th>
+                    <th style="text-align: center;vertical-align: middle;">Rate</th>
                     <th style="text-align: center;vertical-align: middle;">Amount</th>
+                    <th style="text-align: center;vertical-align: middle;">Amount IDR Eqv</th>
                 </tr>
             </thead>
             <tbody>
@@ -124,24 +126,24 @@
             <th style="width:40px;">Cek</th>
         </tr>
     </thead>
-    <tbody id="tbody1"></tbody>
+    <tbody id="tbody4"></tbody>
 
     <tfoot>
         <tr>
             <td colspan="11" align="center">
 
                 <button type="button" class="btn btn-primary"
-                onclick="addRow1('tbody1')">
+                onclick="addRow4('tbody4')">
                 Add Row
             </button>
 
             <button type="button" class="btn btn-warning"
-            onclick="InsertRow1('tbody1')">
+            onclick="InsertRow4('tbody4')">
             Insert Row
         </button>
 
         <button type="button" class="btn btn-danger"
-        onclick="deleteRow1('tbody1')">
+        onclick="deleteRow4('tbody4')">
         Delete Row
     </button>
 
@@ -256,7 +258,7 @@
 </div>
 <div class="form-row">
     <div class="col-md-3 mt-3 mb-2">                              
-        <button type="button" style="border-radius: 6px" class="btn-outline-primary btn-sm" name="simpan1" id="simpan1"><span class="fa fa-floppy-o"></span> Save</button>                
+        <button type="button" style="border-radius: 6px" class="btn-outline-primary btn-sm" name="simpan4" id="simpan4"><span class="fa fa-floppy-o"></span> Save</button>                
         <button type="button" style="border-radius: 6px" class="btn-outline-danger btn-sm" name="batal" id="batal" onclick="location.href='petty-cashout.php'"><span class="fa fa-angle-double-left"></span> Back</button>           
     </div>
 </div> 
