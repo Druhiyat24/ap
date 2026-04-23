@@ -633,6 +633,11 @@ $rs2 = mysqli_fetch_array($querys2);
 $menu2 = isset($rs2['menu']) ? $rs2['menu'] :0;
 $id2 = isset($rs2['id']) ? $rs2['id'] :0;
 
+$querys3 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, GROUP_CONCAT(menurole.id) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Approve Transfer Memo' GROUP BY username");
+$rs3 = mysqli_fetch_array($querys3);
+$menu3 = isset($rs3['menu']) ? $rs3['menu'] :0;
+$id3 = isset($rs3['id']) ? $rs3['id'] :0;
+
 echo '
 <li class="dropdown-submenu ">
 <a class="dropdown-item bg-dark text-white" href="#">
@@ -657,6 +662,15 @@ if(strpos($id, '66') !== false){
     <span class="menu-collapsed">IR Report</span>
     </a>';
 }
+
+if(strpos($id3, '109') !== false){    
+  echo '<a href="AP/approve_transfer_memo.php" class="dropdown-item bg-dark text-white">
+  <span class="fa fa-thumbs-o-up fa-fw "></span>
+  <span class="menu-collapsed">Approve Transfer Memo</span>
+  </a>';
+}
+
+
 echo'</ul>
 </li>';
 ?>
