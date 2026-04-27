@@ -543,7 +543,9 @@ $('#btnApprove').on('click', function(){
     let approveIds = [];
     let cancelIds  = [];
 
-    $('.chk-detail').each(function(){
+    let table = $('#detailTable').DataTable(); // 🔥 FIX paging
+
+    table.$('.chk-detail').each(function(){
         let id = $(this).val();
 
         if($(this).is(':checked')){
@@ -556,13 +558,11 @@ $('#btnApprove').on('click', function(){
     let totalApprove = approveIds.length;
     let totalCancel  = cancelIds.length;
 
-    // VALIDASI
     if(totalApprove === 0 && totalCancel === 0){
         Swal.fire('Warning','Tidak ada data','warning');
         return;
     }
 
-    // KONFIRMASI
     Swal.fire({
         title: 'Konfirmasi Approve',
         html: `
@@ -580,6 +580,7 @@ $('#btnApprove').on('click', function(){
             $.ajax({
                 url: "update_transfer_memo_approve.php",
                 type: "POST",
+                dataType: "json", // 🔥 WAJIB
                 data: {
                     no_trans: currentNoTrans,
                     approve_ids: approveIds,
@@ -597,19 +598,23 @@ $('#btnApprove').on('click', function(){
                     });
                 },
                 success: function(res){
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil',
-                        text: 'Data berhasil diproses'
-                    });
 
-                    $('#modalDetail').modal('hide');
-                    dataTableReload();
+                    if(res.status === 'success'){
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: 'Data berhasil diproses'
+                        });
 
-                    // optional reload
-                    // location.reload();
+                        $('#modalDetail').modal('hide');
+                        dataTableReload();
+                    }else{
+                        Swal.fire('Gagal', res.message || 'Error', 'error');
+                    }
+
                 },
-                error: function(){
+                error: function(xhr){
+                    console.log(xhr.responseText); // 🔥 debug
                     Swal.fire({
                         icon: 'error',
                         title: 'Gagal',
@@ -629,8 +634,9 @@ $('#btnCancelAll').on('click', function(){
 
     let allIds = [];
 
-    // ambil semua ID tanpa peduli checkbox
-    $('.chk-detail').each(function(){
+    let table = $('#detailTable').DataTable(); // 🔥 FIX paging
+
+    table.$('.chk-detail').each(function(){
         allIds.push($(this).val());
     });
 
@@ -641,7 +647,6 @@ $('#btnCancelAll').on('click', function(){
         return;
     }
 
-    // KONFIRMASI
     Swal.fire({
         title: 'Konfirmasi Cancel',
         html: `
@@ -660,6 +665,7 @@ $('#btnCancelAll').on('click', function(){
             $.ajax({
                 url: "update_transfer_memo_cancel.php",
                 type: "POST",
+                dataType: "json", // 🔥 WAJIB
                 data: {
                     no_trans: currentNoTrans,
                     cancel_ids: allIds
@@ -675,19 +681,23 @@ $('#btnCancelAll').on('click', function(){
                     });
                 },
                 success: function(res){
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil',
-                        text: `Semua data (${totalData}) berhasil di-cancel`
-                    });
 
-                    $('#modalDetail').modal('hide');
-                     dataTableReload();
+                    if(res.status === 'success'){
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: `Semua data (${totalData}) berhasil di-cancel`
+                        });
 
-                    // optional reload
-                    // location.reload();
+                        $('#modalDetail').modal('hide');
+                        dataTableReload();
+                    }else{
+                        Swal.fire('Gagal', res.message || 'Error', 'error');
+                    }
+
                 },
-                error: function(){
+                error: function(xhr){
+                    console.log(xhr.responseText);
                     Swal.fire({
                         icon: 'error',
                         title: 'Gagal',
@@ -701,6 +711,7 @@ $('#btnCancelAll').on('click', function(){
     });
 
 });
+
 
 
 
