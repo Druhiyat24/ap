@@ -232,7 +232,7 @@
                      <div class="col-md-3 mb-3">            
                         <label for="ir_number"><b>Invoice Received Number <i style="color: red;">*</i></b></label>            
                         <select class="form-control selectpicker" name="ir_number" id="ir_number" data-dropup-auto="false" data-size="5" data-live-search="true">
-                            <option value="" disabled selected="true">Select Invoice Received Number</option>                                                 
+                            <option value="-" selected="true">-</option>                                                 
                             <?php
                             $ir_number = isset($_POST['ir_number']) ? $_POST['ir_number']: null; 
                             $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;              
