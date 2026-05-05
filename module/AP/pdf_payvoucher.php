@@ -280,7 +280,7 @@ CSS HEADER
     </td>
     <td style="border-left: none;font-size: 12px;width: 38%;border-top: none;border-right: none;">
      <?php
-     $sql3 = mysqli_query($conn2," select frm_akun from tbl_pv_h where no_pv = '$no_pv'");
+     $sql3 = mysqli_query($conn2," select CONCAT(sob,' ',frm_akun) frm_akun from tbl_pv_h a INNER JOIN b_masterbank b on b.bank_account = a.frm_akun where no_pv = '$no_pv'");
      $rows3 = mysqli_fetch_array($sql3);
      $frm_akun = $rows3['frm_akun'];
      if ($frm_akun == '-') {
