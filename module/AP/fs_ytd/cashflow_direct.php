@@ -442,7 +442,99 @@
 
         </tr>
         <?php
-        $sql = mysqli_query($conn2,"select sub_kategori, total_nag, total_nak, (total_nag + total_nak) total_all, sub_kategori_eng from (select a.id, a.nama_pilihan sub_kategori, a.nama_pilihan_eng sub_kategori_eng, sum(COALESCE(b.credit,0) - COALESCE(c.debit,0)) total_nag, sum(COALESCE(d.credit,0) - COALESCE(e.debit,0)) total_nak from (SELECT * FROM tb_master_pilihan where status = 'Y' and type_pilihan = 'Arus Kas dari Aktivitas Operasi') a 
+        $sql = mysqli_query($conn2,"WITH
+accounts AS (
+  SELECT profit_center, no_coa, akun, SUM($kata_filter) AS saldo_awal
+  FROM (
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, s.$kata_filter
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', s.$kata_filter
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', s.$kata_filter
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', s.$kata_filter
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.41', '008-759-5858', s.$kata_filter
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.41') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.42', '008-751-5757', s.$kata_filter
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.42') AND s.profit_center = 'NAK'
+  ) AS a
+  GROUP BY profit_center, no_coa, akun
+),
+
+journal_sums AS (
+  SELECT l.profit_center, l.no_coa,
+         SUM(l.rate * l.debit)  AS debit,
+         SUM(l.rate * l.credit) AS credit
+  FROM tbl_list_journal l
+  WHERE l.tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir')
+    AND (l.no_journal LIKE '%BM%' OR l.no_journal LIKE '%BK%')
+    AND l.profit_center IN ('NAG','NAK')
+  GROUP BY l.profit_center, l.no_coa
+),
+
+reval AS (
+  SELECT l.profit_center, l.no_coa,
+         SUM(l.debit_idr)  AS debit_idr,
+         SUM(l.credit_idr) AS credit_idr
+  FROM tbl_list_journal l
+  WHERE (l.keterangan LIKE '%REVALUASI%' OR l.keterangan LIKE '%REVALUATION%')
+    AND l.tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir')
+    AND l.profit_center IN ('NAG','NAK')
+  GROUP BY l.profit_center, l.no_coa
+),
+
+base AS (
+  SELECT a.profit_center, a.no_coa, a.akun,
+         a.saldo_awal,
+         COALESCE(j.debit, 0)  AS debit,
+         COALESCE(j.credit,0)  AS credit,
+         (a.saldo_awal + COALESCE(j.debit,0) - COALESCE(j.credit,0)) AS saldo_akhir
+  FROM accounts a
+  LEFT JOIN journal_sums j ON j.no_coa = a.no_coa AND j.profit_center = a.profit_center
+),
+
+calc AS (
+  SELECT b.*,
+    CASE
+      WHEN b.saldo_awal > 0 AND b.saldo_akhir < 0 THEN b.credit - b.saldo_awal
+      WHEN b.saldo_awal < 0 AND b.saldo_akhir < 0 THEN b.credit
+      ELSE 0
+    END AS penerimaan_pinjaman,
+    CASE
+      WHEN b.saldo_awal > 0 AND b.saldo_akhir < 0 THEN ABS(b.debit)
+      WHEN b.saldo_awal < 0 AND b.saldo_akhir < 0 THEN ABS(b.debit)
+      WHEN b.saldo_awal < 0 AND b.saldo_akhir > 0 THEN ABS(b.saldo_awal)
+      ELSE 0
+    END AS pembayaran_pinjaman
+  FROM base b
+),
+
+agg AS (
+  SELECT
+    c.profit_center,
+    SUM(COALESCE(c.penerimaan_pinjaman,0)) AS penerimaan_pinjaman,
+    SUM(COALESCE(c.pembayaran_pinjaman,0)) AS pembayaran_pinjaman,
+    SUM(COALESCE(
+        CASE WHEN c.saldo_akhir < 0 THEN 0 ELSE COALESCE(r.debit_idr,0) END
+    ,0)) AS debit_revaluasi,
+    SUM(COALESCE(
+        CASE WHEN c.saldo_akhir < 0 THEN 0 ELSE COALESCE(r.credit_idr,0) END
+    ,0)) AS credit_revaluasi
+  FROM calc c
+  LEFT JOIN reval r
+    ON r.no_coa = c.no_coa AND r.profit_center = c.profit_center
+  GROUP BY c.profit_center
+),
+revaluasi as (select '2' id, if(profit_center = 'NAG',sum(debit_revaluasi - credit_revaluasi),0) revaluasi_nag, if(profit_center = 'NAK',sum(debit_revaluasi - credit_revaluasi),0) revaluasi_nak, sum(debit_revaluasi - credit_revaluasi) revaluasi_all from agg),
+
+pembayaran as (select id, sub_kategori, total_nag, total_nak, (total_nag + total_nak) total_all, sub_kategori_eng from (select a.id, a.nama_pilihan sub_kategori, a.nama_pilihan_eng sub_kategori_eng, sum(COALESCE(b.credit,0) - COALESCE(c.debit,0)) total_nag, sum(COALESCE(d.credit,0) - COALESCE(e.debit,0)) total_nak from (SELECT * FROM tb_master_pilihan where status = 'Y' and type_pilihan = 'Arus Kas dari Aktivitas Operasi') a 
           LEFT JOIN
           (select c.id,c.ind_name, sum(ROUND(credit * rate,2)) credit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_credit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.profit_center = 'NAG' GROUP BY c.id) b on b.ind_name = a.nama_pilihan
           LEFT JOIN
@@ -450,7 +542,9 @@
           LEFT JOIN
           (select c.id,c.ind_name, sum(ROUND(credit * rate,2)) credit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_credit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.profit_center = 'NAK' GROUP BY c.id) d on d.ind_name = a.nama_pilihan
           LEFT JOIN
-          (select c.id,c.ind_name, sum(ROUND(debit * rate,2)) debit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_debit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.profit_center = 'NAK' GROUP BY c.id) e on e.ind_name = a.nama_pilihan GROUP BY a.id) a ORDER BY a.id ASC");
+          (select c.id,c.ind_name, sum(ROUND(debit * rate,2)) debit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_debit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.profit_center = 'NAK' GROUP BY c.id) e on e.ind_name = a.nama_pilihan GROUP BY a.id) a ORDER BY a.id ASC)
+          
+  select '2' id, sub_kategori, sub_kategori_eng, (COALESCE(total_nag,0) + COALESCE(revaluasi_nag,0)) total_nag, (COALESCE(total_nak,0) + COALESCE(revaluasi_nak,0)) total_nak, (COALESCE(total_all,0) + COALESCE(revaluasi_all,0)) total_all from pembayaran a LEFT JOIN revaluasi b on b.id = a.id order by a.id asc");
         $total_aktivitas_operasi_nag = 0;
         $total_aktivitas_operasi_nak = 0;
         $total_aktivitas_operasi_all = 0;
@@ -683,11 +777,12 @@ agg AS (
     SUM(COALESCE(c.penerimaan_pinjaman,0)) AS penerimaan_pinjaman,
     SUM(COALESCE(c.pembayaran_pinjaman,0)) AS pembayaran_pinjaman,
     SUM(COALESCE(
-        CASE WHEN c.saldo_akhir > 0 THEN 0 ELSE COALESCE(r.debit_idr,0) END
+        CASE WHEN c.saldo_akhir < 0 THEN 0 ELSE COALESCE(r.debit_idr,0) END
     ,0)) AS debit_revaluasi,
     SUM(COALESCE(
-        CASE WHEN c.saldo_akhir > 0 THEN 0 ELSE COALESCE(r.credit_idr,0) END
-    ,0)) AS credit_revaluasi
+        CASE WHEN c.saldo_akhir < 0 THEN 0 ELSE COALESCE(r.credit_idr,0) END
+    ,0)) AS credit_revaluasi,
+    SUM(IF(r.no_coa IN ('1.10.02', '1.10.01'),COALESCE(r.debit_idr,0) - COALESCE(r.credit_idr,0),0)) AS revaluasi_nya
   FROM calc c
   LEFT JOIN reval r
     ON r.no_coa = c.no_coa AND r.profit_center = c.profit_center
@@ -700,9 +795,9 @@ pivot AS (
     SUM(CASE WHEN profit_center='NAG' THEN penerimaan_pinjaman - credit_revaluasi ELSE 0 END) AS penerimaan_NAG,
     SUM(CASE WHEN profit_center='NAK' THEN penerimaan_pinjaman - credit_revaluasi ELSE 0 END) AS penerimaan_NAK,
     SUM(penerimaan_pinjaman - credit_revaluasi) AS penerimaan_TOTAL,
-    SUM(CASE WHEN profit_center='NAG' THEN pembayaran_pinjaman - debit_revaluasi ELSE 0 END) AS pembayaran_NAG,
-    SUM(CASE WHEN profit_center='NAK' THEN pembayaran_pinjaman - debit_revaluasi ELSE 0 END) AS pembayaran_NAK,
-    SUM(pembayaran_pinjaman - debit_revaluasi) AS pembayaran_TOTAL
+    SUM(CASE WHEN profit_center='NAG' THEN (pembayaran_pinjaman - debit_revaluasi + revaluasi_nya) ELSE 0 END) AS pembayaran_NAG,
+    SUM(CASE WHEN profit_center='NAK' THEN (pembayaran_pinjaman - debit_revaluasi + revaluasi_nya) ELSE 0 END) AS pembayaran_NAK,
+    SUM(pembayaran_pinjaman - debit_revaluasi + revaluasi_nya) AS pembayaran_TOTAL
   FROM agg
 )
 
