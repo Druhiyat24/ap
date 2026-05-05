@@ -619,6 +619,12 @@ accounts AS (
     UNION ALL
     SELECT 'NAK', '1.10.01', '008-997-1979', s.$kata_filter
     FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.41', '008-759-5858', s.$kata_filter
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.41') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.42', '008-751-5757', s.$kata_filter
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.42') AND s.profit_center = 'NAK'
   ) AS a
   GROUP BY profit_center, no_coa, akun
 ),
@@ -677,10 +683,10 @@ agg AS (
     SUM(COALESCE(c.penerimaan_pinjaman,0)) AS penerimaan_pinjaman,
     SUM(COALESCE(c.pembayaran_pinjaman,0)) AS pembayaran_pinjaman,
     SUM(COALESCE(
-        CASE WHEN c.saldo_awal > 0 AND c.saldo_akhir < 0 THEN 0 ELSE COALESCE(r.debit_idr,0) END
+        CASE WHEN c.saldo_akhir > 0 THEN 0 ELSE COALESCE(r.debit_idr,0) END
     ,0)) AS debit_revaluasi,
     SUM(COALESCE(
-        CASE WHEN c.saldo_awal > 0 AND c.saldo_akhir < 0 THEN 0 ELSE COALESCE(r.credit_idr,0) END
+        CASE WHEN c.saldo_akhir > 0 THEN 0 ELSE COALESCE(r.credit_idr,0) END
     ,0)) AS credit_revaluasi
   FROM calc c
   LEFT JOIN reval r
@@ -749,6 +755,51 @@ FROM pivot
         }
         ?>
 
+
+        <?php
+        $sql = mysqli_query($conn2,"select sub_kategori, total_nag, total_nak, (total_nag + total_nak) total_all, sub_kategori_eng from (select a.id, a.nama_pilihan sub_kategori, a.nama_pilihan_eng sub_kategori_eng, sum(COALESCE(b.credit,0) - COALESCE(c.debit,0)) total_nag, sum(COALESCE(d.credit,0) - COALESCE(e.debit,0)) total_nak from (SELECT * FROM tb_master_pilihan where status = 'Y' and type_pilihan = 'Arus Kas dari Aktivitas Pendanaan') a 
+          LEFT JOIN
+          (select c.id,c.ind_name, sum(ROUND(credit * rate,2)) credit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_credit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.profit_center = 'NAG' GROUP BY c.id) b on b.ind_name = a.nama_pilihan
+          LEFT JOIN
+          (select c.id,c.ind_name, sum(ROUND(debit * rate,2)) debit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_debit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.profit_center = 'NAG' GROUP BY c.id) c on c.ind_name = a.nama_pilihan
+          LEFT JOIN
+          (select c.id,c.ind_name, sum(ROUND(credit * rate,2)) credit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_credit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.profit_center = 'NAK' GROUP BY c.id) d on d.ind_name = a.nama_pilihan
+          LEFT JOIN
+          (select c.id,c.ind_name, sum(ROUND(debit * rate,2)) debit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_debit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.profit_center = 'NAK' GROUP BY c.id) e on e.ind_name = a.nama_pilihan GROUP BY a.id) a ORDER BY a.id ASC");
+        $total_aktivitas_pendanaan_antar_divisi_nag = 0;
+        $total_aktivitas_pendanaan_antar_divisi_nak = 0;
+        $total_aktivitas_pendanaan_antar_divisi_all = 0;
+        while($row = mysqli_fetch_array($sql)){
+          $aktivitas_pendanaan_antar_divisi_nag = $row['total_nag'] ?? 0;
+          $aktivitas_pendanaan_antar_divisi_nak = $row['total_nak'] ?? 0;
+          $aktivitas_pendanaan_antar_divisi_all = $row['total_all'] ?? 0;
+          $akapad_nag = $aktivitas_pendanaan_antar_divisi_nag > 0 ? number_format($aktivitas_pendanaan_antar_divisi_nag,2) : '(' . number_format(abs($aktivitas_pendanaan_antar_divisi_nag),2) . ')';
+          $akapad_nak = $aktivitas_pendanaan_antar_divisi_nak > 0 ? number_format($aktivitas_pendanaan_antar_divisi_nak,2) : '(' . number_format(abs($aktivitas_pendanaan_antar_divisi_nak),2) . ')';
+          $akapad_all = $aktivitas_pendanaan_antar_divisi_all > 0 ? number_format($aktivitas_pendanaan_antar_divisi_all,2) : '(' . number_format(abs($aktivitas_pendanaan_antar_divisi_all),2) . ')';
+          $total_aktivitas_pendanaan_antar_divisi_nag += $aktivitas_pendanaan_antar_divisi_nag;
+          $total_aktivitas_pendanaan_antar_divisi_nak += $aktivitas_pendanaan_antar_divisi_nak;
+          $total_aktivitas_pendanaan_antar_divisi_all += $aktivitas_pendanaan_antar_divisi_all;
+          $total_akapad_nag = $total_aktivitas_pendanaan_antar_divisi_nag > 0 ? number_format($total_aktivitas_pendanaan_antar_divisi_nag,2) : '(' . number_format(abs($total_aktivitas_pendanaan_antar_divisi_nag),2) . ')';
+          $total_akapad_nak = $total_aktivitas_pendanaan_antar_divisi_nak > 0 ? number_format($total_aktivitas_pendanaan_antar_divisi_nak,2) : '(' . number_format(abs($total_aktivitas_pendanaan_antar_divisi_nak),2) . ')';
+          $total_akapad_all = $total_aktivitas_pendanaan_antar_divisi_all > 0 ? number_format($total_aktivitas_pendanaan_antar_divisi_all,2) : '(' . number_format(abs($total_aktivitas_pendanaan_antar_divisi_all),2) . ')';
+          echo "
+          <tr>
+          <td class='item-left'>{$row['sub_kategori']}</td>";
+          if ($profit_center == 'ALL') {
+            echo "<td class='item-right'>{$akapad_nag}</td>";
+            echo "<td class='item-right'>{$akapad_nak}</td>";
+            echo "<td class='item-right'>{$akapad_all}</td>";
+          }elseif ($profit_center == 'NAG') {
+            echo "<td class='item-right'>{$akapad_nag}</td>";
+          }else{
+            echo "<td class='item-right'>{$akapad_nak}</td>";
+          }
+          echo "<td class='item-italic'>{$row['sub_kategori_eng']}</td>
+          </tr>
+          ";
+        }
+        ?>
+
         <tr class="total-line">
           <th class="total-left"><?= strtoupper('Arus kas yang diperoleh dari aktivitas pendanaan'); ?></th>
           <?php 
@@ -774,9 +825,9 @@ FROM pivot
             $profit_center = isset($_POST['h_profit_center']) ? $_POST['h_profit_center']: null;
           }
 
-          $kas_setara_kas_nag = $total_aktivitas_operasi_nag + $total_aktivitas_investasi_nag + $total_aktivitas_pendanaan_nag;
-          $kas_setara_kas_nak = $total_aktivitas_operasi_nak + $total_aktivitas_investasi_nak + $total_aktivitas_pendanaan_nak;
-          $kas_setara_kas_all = $total_aktivitas_operasi_all + $total_aktivitas_investasi_all + $total_aktivitas_pendanaan_all;
+          $kas_setara_kas_nag = $total_aktivitas_operasi_nag + $total_aktivitas_investasi_nag + $total_aktivitas_pendanaan_nag + $total_aktivitas_pendanaan_antar_divisi_nag;
+          $kas_setara_kas_nak = $total_aktivitas_operasi_nak + $total_aktivitas_investasi_nak + $total_aktivitas_pendanaan_nak + $total_aktivitas_pendanaan_antar_divisi_nak;
+          $kas_setara_kas_all = $total_aktivitas_operasi_all + $total_aktivitas_investasi_all + $total_aktivitas_pendanaan_all + $total_aktivitas_pendanaan_antar_divisi_all;
           $ksk_nag = $kas_setara_kas_nag > 0 ? number_format($kas_setara_kas_nag,2) : '(' . number_format(abs($kas_setara_kas_nag),2) . ')';
           $ksk_nak = $kas_setara_kas_nak > 0 ? number_format($kas_setara_kas_nak,2) : '(' . number_format(abs($kas_setara_kas_nak),2) . ')';
           $ksk_all = $kas_setara_kas_all > 0 ? number_format($kas_setara_kas_all,2) : '(' . number_format(abs($kas_setara_kas_all),2) . ')';
