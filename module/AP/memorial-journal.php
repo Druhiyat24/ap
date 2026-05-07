@@ -216,15 +216,15 @@
     }
 
 
-    $querys2 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Acct - Upload Memorial Journal'");
-        $rs2 = mysqli_fetch_array($querys2);
-        $id2 = isset($rs2['id']) ? $rs2['id'] : 0;
+    // $querys2 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Acct - Upload Memorial Journal'");
+    //     $rs2 = mysqli_fetch_array($querys2);
+    //     $id2 = isset($rs2['id']) ? $rs2['id'] : 0;
 
-        if($id2 == '55'){
-    echo '<button id="btnupload" type="button" class="btn-success btn-xs" style="border-radius: 6%"><span class="fa fa-upload" aria-hidden="true"></span> Upload</button>&nbsp';
-        }else{
-    echo '';
-    }
+    //     if($id2 == '55'){
+    // echo '<button id="btnupload" type="button" class="btn-success btn-xs" style="border-radius: 6%"><span class="fa fa-upload" aria-hidden="true"></span> Upload</button>&nbsp';
+    //     }else{
+    // echo '';
+    // }
 
     echo '<button id="btnverifikasi" type="button" class="btn-warning btn-xs" style="border-radius: 6%"><span class="fa fa-paper-plane" aria-hidden="true"></span> Verifikasi</button>';
 
