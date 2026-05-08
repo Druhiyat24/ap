@@ -618,7 +618,7 @@ $end_date = date("Y-m-d",strtotime($enddate));
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <form id="modal-form2" Method="Post" Action="insert_doc_bankout.Php" Enctype="Multipart/Form-Data">
+                        <form id="modal-form2" Method="Post" Action="insert_doc_bankout.php" Enctype="Multipart/Form-Data">
                             <div class="form-row">
                                 <div class="col-md-12 mb-3">
                                     <label for="nama_supp"><b>No Bank Out</b></label> 
