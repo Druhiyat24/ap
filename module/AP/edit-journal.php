@@ -840,6 +840,61 @@ function editData(no_journal) {
 }
 
 
+function cancelData(no_journal) {
+
+    Swal.fire({
+        title: 'Yakin mau cancel?',
+        text: "Data journal akan dibatalkan!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, cancel!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+
+            $.ajax({
+                url: 'cancel_journal_all.php',
+                type: 'POST',
+                data: {
+                    no_journal: no_journal,
+                    cancel_user: '<?= $user ?>'
+                },
+                dataType: 'json',
+                success: function(res) {
+
+                    if (res.status == 'success') {
+                        Swal.fire(
+                            'Berhasil!',
+                            res.message,
+                            'success'
+                        ).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire(
+                            'Gagal!',
+                            res.message,
+                            'error'
+                        );
+                    }
+
+                },
+                error: function() {
+                    Swal.fire(
+                        'Error!',
+                        'Server bermasalah',
+                        'error'
+                    );
+                }
+            });
+
+        }
+    });
+}
+
+
 function initJournalUI(){
 
   // hitung semua row yang sudah ada

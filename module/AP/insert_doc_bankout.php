@@ -32,7 +32,7 @@ VALUES
 $execute = mysqli_query($conn2,$query);
     If (move_uploaded_file($tmp_file, $path)) {
         alert("Upload Berhasil!");
-        Header("Location: bank-out.Php?nama_supp=$txt_nama_supp&status=$txt_status&start_date=$txt_start_date&end_date=$txt_end_date&bank=$txt_nama_bank&akun=$txt_nama_akun");
+        Header("Location: bank-out.php?nama_supp=$txt_nama_supp&status=$txt_status&start_date=$txt_start_date&end_date=$txt_end_date&bank=$txt_nama_bank&akun=$txt_nama_akun");
         Exit();
     } Else {
         // echo "Not uploaded because of error #".$_FILES["txtfile"]["error"];
@@ -40,7 +40,7 @@ $execute = mysqli_query($conn2,$query);
         // echo "<pre>";
         // print_r($_FILES);
         // echo "</pre>";
-        Header("Location: bank-out.Php?nama_supp=$txt_nama_supp&status=$txt_status&start_date=$txt_start_date&end_date=$txt_end_date&bank=$txt_nama_bank&akun=$txt_nama_akun");
+        Header("Location: bank-out.php?nama_supp=$txt_nama_supp&status=$txt_status&start_date=$txt_start_date&end_date=$txt_end_date&bank=$txt_nama_bank&akun=$txt_nama_akun");
         Exit();
     }
 
