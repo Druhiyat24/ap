@@ -870,7 +870,7 @@ function cancelData(no_journal) {
                             res.message,
                             'success'
                         ).then(() => {
-                            location.reload();
+                            $('#table-data').DataTable().ajax.reload(null,false);
                         });
                     } else {
                         Swal.fire(
