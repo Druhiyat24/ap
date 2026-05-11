@@ -41,11 +41,13 @@
     $rowawal = mysqli_fetch_array($sqlawal);
     $tgl_awal = isset($rowawal['tgl_awal']) ? $rowawal['tgl_awal'] : null;
     $start_date = date("d F Y",strtotime($tgl_awal));
+    $tanggal_awal = date("Y-m-d",strtotime($tgl_awal));
 
     $sqlakhir = mysqli_query($conn2,"select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir'");
     $rowakhir = mysqli_fetch_array($sqlakhir);
     $tgl_akhir = isset($rowakhir['tgl_akhir']) ? $rowakhir['tgl_akhir'] : null;
     $end_date = date("d F Y",strtotime($tgl_akhir));
+    $tanggal_akhir = date("Y-m-d",strtotime($tgl_akhir)); 
 
     ?>
 <!-- 
