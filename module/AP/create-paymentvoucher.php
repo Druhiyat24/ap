@@ -545,16 +545,36 @@
                         ?>
                 <?php echo'</select>
                 </div>
-                   <div style = "display : none;">
-                <select class="form-control selectpicker" name="tocc" id="tocc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>
-                </select>
-                </div>
-                <div style = "display : none;">
-                <select class="form-control selectpicker" name="frcc" id="frcc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>
-                </select>
-                </div>
+                    <div class="col-md-2 mb-3" style="padding-top: 8px;">
+            <label for="nama_supp"><b>To Account</b></label>            
+              <select class="form-control selectpicker" name="tocc" id="tocc" data-dropup-auto="false" data-live-search="true">
+                <option value="-" disabled selected="true">Select Account</option>';?> 
+                <?php 
+                       $tocc ='';
+                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
+                $tocc = isset($_POST['tocc']) ? $_POST['tocc']: null;
+                }   
+                if ($nama_supp == null OR $nama_supp == '') {
+                    $sql = mysqli_query($conn1,"select supplier, CONCAT(UPPER(TRIM(REGEXP_REPLACE(bank_name, ' +', ' '))),' ',UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' ')))) AS bank, UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' '))) AS akun, UPPER(TRIM(REGEXP_REPLACE(beneficiary_name, ' +', ' '))) AS beneficiary_name from mastersupplier where tipe_sup = 'S' and bank_account != '' and bank_account is not null");
+                }else{
+                    $sql = mysqli_query($conn1,"select supplier, CONCAT(UPPER(TRIM(REGEXP_REPLACE(bank_name, ' +', ' '))),' ',UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' ')))) AS bank, UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' '))) AS akun, UPPER(TRIM(REGEXP_REPLACE(beneficiary_name, ' +', ' '))) AS beneficiary_name from mastersupplier where tipe_sup = 'S' and supplier = '$nama_supp' and bank_account != '' and bank_account is not null");
+                }              
+                while ($row = mysqli_fetch_array($sql)) {
+                    $data = $row['bank'];
+                    $indata = $row['akun'];
+                    if($row['bank'] == $tocc){
+                        $isSelected = ' selected="selected"';
+                    }else{
+                        $isSelected = '';
+
+                    }
+                    echo '<option value="'.$indata.'"'.$isSelected.'">'. $data .'</option>';    
+                        }
+                        ?>
+                <?php echo'</select>
+                   
+            </div>
                 <input type="hidden" style="font-size: 14px;" class="form-control" id="ke" name="ke" value="" autocomplete = "off">
                 <input type="hidden" style="font-size: 14px;" class="form-control" id="dari" name="dari" value="" autocomplete = "off">
                 <input type="hidden" style="font-size: 14px;" class="form-control" id="no_cek" name="no_cek" value="" autocomplete = "off">
