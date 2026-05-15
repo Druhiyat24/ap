@@ -77,14 +77,24 @@ $executess = mysqli_query($conn2,$queryss);
 $execute = mysqli_query($conn2,$query);
 
 if ($reff_doc == 'None') {
+    if ($total_nag != 0) {
       $total_nag_idr = $total_nag * $rate;
       $query_nag = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
       VALUES 
-      ('$kode', '$bankout_date', '$reff_doc', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '0', '$amount', '0', '$eqv_idr', 'Draft', '$deskripsi', '$create_user', '$create_date', '', '', '', '', 'SAG')";
+      ('$kode', '$bankout_date', '$reff_doc', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '0', '$total_nag', '0', '$total_nag_idr', 'Draft', '$deskripsi', '$create_user', '$create_date', '', '', '', '', 'NAG')";
 
       $execute_nag = mysqli_query($conn2,$query_nag);
+  }
 
 
+  if ($total_nak != 0) {
+      $total_nak_idr = $total_nak * $rate;
+      $query_nak = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+      VALUES 
+      ('$kode', '$bankout_date', '$reff_doc', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '0', '$total_nak', '0', '$total_nak_idr', 'Draft', '$deskripsi', '$create_user', '$create_date', '', '', '', '', 'NAK')";
+
+      $execute_nak = mysqli_query($conn2,$query_nak);
+  }
 }else{
 
     $queryss3 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
