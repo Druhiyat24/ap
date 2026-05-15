@@ -168,7 +168,7 @@ table {
 					<img src="../../images/img-01.png" style="heigh:70px; width:80px;">
 				</td>
 				<td class="title">
-					PT.NIRWANA ALABARE GARMENT
+					PT. SOLJER ABADI
 					<div style="font-size:12px;line-height:9">
 						Jl. Raya Rancaekek – Majalaya No. 289 Desa Solokan Jeruk Kecamatan Solokan Jeruk, <br />Kabupaten Bandung 40382 <br />Telp. 022-85962081
 					</div>
