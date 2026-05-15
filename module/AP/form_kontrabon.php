@@ -229,6 +229,29 @@
 
                         ?>">
                     </div>
+                     <div class="col-md-3 mb-3">            
+                        <label for="ir_number"><b>Invoice Received Number <i style="color: red;">*</i></b></label>            
+                        <select class="form-control selectpicker" name="ir_number" id="ir_number" data-dropup-auto="false" data-size="5" data-live-search="true">
+                            <option value="-" selected="true">-</option>                                                 
+                            <?php
+                            $ir_number = isset($_POST['ir_number']) ? $_POST['ir_number']: null; 
+                            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;              
+                            $sql = mysqli_query($conn1,"select doc_number, nama_supp, total_amount from ir_invoice_supp_h where status != 'Cancel' and nama_supp = '$nama_supp'");
+                            while ($row = mysqli_fetch_array($sql)) {
+                                $data = $row['doc_number'];
+                                if($row['doc_number'] == $ir_number ){
+                                    $isSelected = ' selected="selected"';
+                                }else{
+                                    $isSelected = '';
+
+                                }
+                                echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
+                            }?>
+                        </select>  
+
+                        <input type="hidden" readonly style="font-size: 13px;;" class="form-control form-control-sm" id="jurnal" name="jurnal" 
+                        value="0" placeholder="<?php echo "KONTRA BON" ?>">
+                    </div>
 
 
                     <div class="col-md-6 mb-3">
@@ -636,13 +659,13 @@
                             <tbody>
                                 <?php
 
-                                $query_ftr = mysqli_query($conn2,"select a.no_ftr_cbd, a.tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.curr, (a.total - COALESCE(b.total_ftr,0)) total, a.no_kbon, a.tgl_kbon, a.no_payment, a.tgl_payment, a.no_pv, a.no_bankout, a.bankout_date, a.coa from (select no_ftr_cbd, tgl_ftr_cbd, supp, no_po, tgl_po, no_pi, curr, c.total, no_kbon, tgl_kbon, no_payment, tgl_payment, no_pv, no_bankout, bankout_date, coa from (select no_ftr_cbd, tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.curr,  a.subtotal, a.tax, a.total, b.no_kbon, b.tgl_kbon, c.no_payment , c.tgl_payment from ftr_cbd a INNER JOIN kontrabon_cbd b on b.no_cbd = a.no_ftr_cbd inner join list_payment_cbd c on c.no_kbon = b.no_kbon where tgl_ftr_cbd >= '2025-06-01' and c.status != 'Cancel' and a.supp = '$nama_supp'
+                                $query_ftr = mysqli_query($conn2,"select a.no_ftr_cbd, a.tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.curr, (a.total - COALESCE(b.total_ftr,0)) total, a.no_kbon, a.tgl_kbon, a.no_payment, a.tgl_payment, a.no_pv, a.no_bankout, a.bankout_date, a.coa from (select no_ftr_cbd, tgl_ftr_cbd, supp, no_po, tgl_po, no_pi, curr, a.total, no_kbon, tgl_kbon, no_payment, tgl_payment, no_pv, no_bankout, bankout_date, coa from (select no_ftr_cbd, tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.curr,  a.subtotal, a.tax, a.total, b.no_kbon, b.tgl_kbon, c.no_payment , c.tgl_payment from ftr_cbd a INNER JOIN kontrabon_cbd b on b.no_cbd = a.no_ftr_cbd inner join list_payment_cbd c on c.no_kbon = b.no_kbon where tgl_ftr_cbd >= '2025-06-01' and c.status != 'Cancel' and a.supp = '$nama_supp'
                                     UNION
                                     select no_ftr_dp, tgl_ftr_dp, a.supp, a.no_po, a.tgl_po, a.no_pi, a.curr,  a.dp_value, 0 tax, a.dp_value total, b.no_kbon, b.tgl_kbon, c.no_payment , c.tgl_payment from ftr_dp a INNER JOIN kontrabon_dp b on b.no_dp = a.no_ftr_dp inner join list_payment_dp c on c.no_kbon = b.no_kbon where tgl_ftr_dp >= '2025-06-01' and c.status != 'Cancel' and a.supp = '$nama_supp') a
                                     INNER JOIN
                                     (select a.no_pv, coa, reff_doc, amount from tbl_pv a INNER JOIN tbl_pv_h b on b.no_pv = a.no_pv where (reff_doc like '%CBD%' OR reff_doc like '%DP%') and b.status != 'Cancel' GROUP BY reff_doc,no_pv) b on b.reff_doc = a.no_payment
                                     INNER JOIN
-                                    (select b.no_bankout, b.bankout_date, a.no_reff, a.total from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where a.no_reff like '%PV/%' and b.status != 'Cancel' GROUP BY a.no_reff) c on c.no_reff = b.no_pv order by tgl_ftr_cbd asc) a LEFT JOIN (select no_ftr, no_po, no_bankout, total_ftr from kontrabon_ftr WHERE nama_supp = '$nama_supp') b on b.no_ftr = a.no_ftr_cbd and b.no_po = a.no_po and b.no_bankout = a.no_bankout where (a.total - COALESCE(b.total_ftr,0)) > 0");
+                                    (select b.no_bankout, b.bankout_date, a.no_reff, a.total from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where a.no_reff like '%PV/%' and b.status != 'Cancel' GROUP BY a.no_reff) c on c.no_reff = b.no_pv order by tgl_ftr_cbd asc) a LEFT JOIN (select no_ftr, a.no_po, no_bankout, total_ftr from kontrabon_ftr a INNER JOIN kontrabon_h b on b.no_kbon = a.no_kbon WHERE a.nama_supp = '$nama_supp' and b.status != 'Cancel') b on b.no_ftr = a.no_ftr_cbd and b.no_po = a.no_po and b.no_bankout = a.no_bankout where (a.total - COALESCE(b.total_ftr,0)) > 0");
 
 
                                 while($row_ftr = mysqli_fetch_array($query_ftr)){
@@ -1855,12 +1878,13 @@ if (!processedPO.includes(po)) {
         var n_code_category = document.getElementById('h_code_ctg').value;
         var cus_ctg = document.getElementById('h_cus_ctg').value;
         var profit_center = $('select[name=profit_center] option').filter(':selected').val();
+        var ir_number = $('select[name=ir_number] option').filter(':selected').val();
         //&& tgl_kbon_h >= tgl_kbon_p 
-        if(total_h != '' && total_h >= 0 ){        
+        if(total_h != '' && total_h >= 0 && ir_number != ''){        
             $.ajax({
                 type:'POST',
                 url:'insertkbon_h.php',
-                data: {'no_kbon_h':no_kbon_h, 'tgl_kbon_h':tgl_kbon_h,'nama_supp_h':nama_supp_h, 'no_faktur_h':no_faktur_h, 'supp_inv_h':supp_inv_h, 'tgl_inv_h':tgl_inv_h, 'tgl_tempo_h':tgl_tempo_h, 'curr_h':curr_h, 'create_user_h':create_user_h, 'sub_h':sub_h, 'tax_h':tax_h, 'dp_h':dp_h, 'pph_h':pph_h, 'total_h':total_h, 'jml_return':jml_return, 'lr_kurs':lr_kurs, 's_qty':s_qty, 's_harga':s_harga, 'materai':materai, 'pot_beli':pot_beli, 'ekspedisi':ekspedisi, 'moq':moq, 'jml_potong':jml_potong, 'no_po_h':no_po_h, 'tgl_kbon_s':tgl_kbon_s, 'unik_code':unik_code, 'mattype':mattype, 'matclass':matclass, 'n_code_category':n_code_category, 'cus_ctg':cus_ctg, 'profit_center':profit_center},
+                data: {'no_kbon_h':no_kbon_h, 'tgl_kbon_h':tgl_kbon_h,'nama_supp_h':nama_supp_h, 'no_faktur_h':no_faktur_h, 'supp_inv_h':supp_inv_h, 'tgl_inv_h':tgl_inv_h, 'tgl_tempo_h':tgl_tempo_h, 'curr_h':curr_h, 'create_user_h':create_user_h, 'sub_h':sub_h, 'tax_h':tax_h, 'dp_h':dp_h, 'pph_h':pph_h, 'total_h':total_h, 'jml_return':jml_return, 'lr_kurs':lr_kurs, 's_qty':s_qty, 's_harga':s_harga, 'materai':materai, 'pot_beli':pot_beli, 'ekspedisi':ekspedisi, 'moq':moq, 'jml_potong':jml_potong, 'no_po_h':no_po_h, 'tgl_kbon_s':tgl_kbon_s, 'unik_code':unik_code, 'mattype':mattype, 'matclass':matclass, 'n_code_category':n_code_category, 'cus_ctg':cus_ctg, 'profit_center':profit_center, 'ir_number':ir_number},
                 cache: 'false',
                 close: function(e){
                     e.preventDefault();
@@ -1978,6 +2002,9 @@ error: function (xhr, ajaxOptions, thrownError) {
         }else if (document.getElementById('total_h').value == ''){
             document.getElementById('calculate').focus();
             alert("Please do the calculation ");
+        }else if ($('select[name=ir_number] option').filter(':selected').val() == ''){
+            document.getElementById('ir_number').focus();
+            alert("Please Input Invoice Received Number ");
         }else if (document.getElementById('total_h').value < 0){
             alert("Contrabon can't be minus ");
         }else{

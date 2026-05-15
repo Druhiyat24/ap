@@ -85,7 +85,7 @@
            </thead>
            <tbody>
             <?php
-            $sql = mysqli_query($conn2,"select a.*, b.status, b.reff_doc, b.akun, b.bank, b.deskripsi from (select no_journal, tgl_journal, type_journal, sum(debit * rate) debit_idr, sum(credit * rate) credit_idr, (sum(debit * rate) - sum(credit * rate)) diff from tbl_list_journal where tgl_journal BETWEEN '2025-07-01' and '2025-12-31' and type_journal = 'Payment Voucher' GROUP BY no_journal) a INNER JOIN b_bankout_h b on a.no_journal = b.no_bankout where diff != 0 AND (diff >= 1 OR diff <= -1)");
+            $sql = mysqli_query($conn2,"select a.*, b.status, b.reff_doc, b.akun, b.bank, b.deskripsi from (select no_journal, tgl_journal, type_journal, sum(debit * rate) debit_idr, sum(credit * rate) credit_idr, (sum(debit * rate) - sum(credit * rate)) diff from tbl_list_journal where tgl_journal BETWEEN '2025-07-01' and '2026-12-31' and type_journal = 'Payment Voucher' GROUP BY no_journal) a INNER JOIN b_bankout_h b on a.no_journal = b.no_bankout where diff != 0 AND (diff >= 1 OR diff <= -1)");
 
             while($row = mysqli_fetch_array($sql)){                                          
               echo'<tr>

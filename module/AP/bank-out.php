@@ -252,7 +252,8 @@ $end_date = date("Y-m-d",strtotime($enddate));
                       $id = isset($rs['id']) ? $rs['id'] : 0;
 
                       if($id == '37'){
-                        echo '<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>';
+                        // echo '<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>';
+                        echo '<button id="btncreate_new" type="button" class="btn-info btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>';
                     }else{
                         echo '';
                     }
@@ -493,13 +494,13 @@ $end_date = date("Y-m-d",strtotime($enddate));
                 </div>                  
 
                 <div class="modal fade" id="mymodal" data-target="#mymodal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-                    <div class="modal-dialog">
+                    <div class="modal-dialog modal-dialog-centered" style="max-width:70%;width:70%;">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
                                 <h4 class="modal-title" id="txt_bpb"></h4>
                             </div>
-                            <div class="container">
+                            <div class="container-fluid">
                                 <div class="row">
                                     <div id="txt_tglbpb" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
                                     <div id="txt_no_po" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
@@ -617,7 +618,7 @@ $end_date = date("Y-m-d",strtotime($enddate));
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <form id="modal-form2" Method="Post" Action="insert_doc_bankout.Php" Enctype="Multipart/Form-Data">
+                        <form id="modal-form2" Method="Post" Action="insert_doc_bankout.php" Enctype="Multipart/Form-Data">
                             <div class="form-row">
                                 <div class="col-md-12 mb-3">
                                     <label for="nama_supp"><b>No Bank Out</b></label> 
@@ -1101,6 +1102,12 @@ $(document).ready(function(){
 <script type="text/javascript">
     document.getElementById('btncreate').onclick = function () {
         location.href = "create-bankout.php";
+    };
+</script>
+
+<script type="text/javascript">
+    document.getElementById('btncreate_new').onclick = function () {
+        location.href = "create-out-bank.php";
     };
 </script>
 

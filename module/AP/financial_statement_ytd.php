@@ -690,7 +690,6 @@ document.getElementById('btnExcel-spl').addEventListener('click', function () {
       th, td {
         padding: 2px 4px;
         vertical-align: middle;
-        mso-number-format:"\\@";
         border: none;
       }
 
@@ -699,15 +698,18 @@ document.getElementById('btnExcel-spl').addEventListener('click', function () {
       .judul-left, .subjudul-left, .grand-left, .desc-left, .subsection-left {
         text-align: left !important;
         mso-justify: left;
-        mso-number-format:"\\@";
       }
 
       .item-right, .section-right, .total-right, .grand-right,
       .judul-right, .subjudul-right, .item-italic, .grand-italic, .total-italic, .desc-right, .subsection-right {
         text-align: right !important;
         mso-justify: right;
-        mso-number-format:"\\@";
       }
+
+      .number {
+    mso-number-format:"#\,##0.00_);(#\,##0.00)";
+    text-align:right;
+}
 
       /* ==== JUDUL DAN SUBJUDUL ==== */
       .judul-left, .judul-right {
@@ -873,7 +875,6 @@ document.getElementById('btnExcel-cfdirect').addEventListener('click', function 
       th, td {
         padding: 2px 4px;
         vertical-align: middle;
-        mso-number-format:"\\@";
         border: none;
       }
 
@@ -882,14 +883,12 @@ document.getElementById('btnExcel-cfdirect').addEventListener('click', function 
       .judul-left, .subjudul-left, .grand-left, .desc-left, .subsection-left {
         text-align: left !important;
         mso-justify: left;
-        mso-number-format:"\\@";
       }
 
       .item-right, .section-right, .total-right, .grand-right,
       .judul-right, .subjudul-right, .item-italic, .grand-italic, .total-italic, .desc-right, .subsection-right {
         text-align: right !important;
         mso-justify: right;
-        mso-number-format:"\\@";
       }
 
       /* ==== JUDUL DAN SUBJUDUL ==== */
@@ -902,6 +901,11 @@ document.getElementById('btnExcel-cfdirect').addEventListener('click', function 
         font-weight: bold;
         font-size: 10pt;
       }
+
+      .number {
+    mso-number-format:"#\,##0.00_);(#\,##0.00)";
+    text-align:right;
+}
 
       /* ==== PERIODE ==== */
       .periode, .isi-periode, .persentage, .isi-persentage {
@@ -1056,7 +1060,6 @@ document.getElementById('btnExcel-cfindirect').addEventListener('click', functio
       th, td {
         padding: 2px 4px;
         vertical-align: middle;
-        mso-number-format:"\\@";
         border: none;
       }
 
@@ -1065,14 +1068,12 @@ document.getElementById('btnExcel-cfindirect').addEventListener('click', functio
       .judul-left, .subjudul-left, .grand-left, .desc-left, .subsection-left {
         text-align: left !important;
         mso-justify: left;
-        mso-number-format:"\\@";
       }
 
       .item-right, .section-right, .total-right, .grand-right,
       .judul-right, .subjudul-right, .item-italic, .grand-italic, .total-italic, .desc-right, .subsection-right {
         text-align: right !important;
         mso-justify: right;
-        mso-number-format:"\\@";
       }
 
       /* ==== JUDUL DAN SUBJUDUL ==== */
@@ -1080,6 +1081,11 @@ document.getElementById('btnExcel-cfindirect').addEventListener('click', functio
         font-weight: bold;
         font-size: 11pt;
       }
+
+      .number {
+    mso-number-format:"#\,##0.00_);(#\,##0.00)";
+    text-align:right;
+}
 
       .subjudul-left, .subjudul-right {
         font-weight: bold;

@@ -454,7 +454,7 @@ while($row = mysql_fetch_array($sqlpv)){
     echo '</select>
     </td>
     <td >
-    <select class="form-control selectpicker nomor_cc" name="nomor_cc" id="nomor_cc" data-width="200px" data-live-search="true"><option value="'.$row['no_costcenter'].'" >'.$row['no_costcenter'].' - '.$row['cc_name'].'</option><option value="-" > - </option>'; $sql2 = mysqli_query($conn1,"select no_cc as code_combine,CONCAT(no_cc,' - ',cc_name) as cost_name from b_master_cc where no_cc != '$no_cc' and id_pc = '$profit_center' AND status = 'Active'"); foreach ($sql2 as $cc) : echo'<option value="'. $cc["code_combine"].'">'.$cc["cost_name"].'</option>'; endforeach; ?>
+    <select class="form-control selectpicker nomor_cc" name="nomor_cc[]" id="nomor_cc" data-width="200px" data-live-search="true"><option value="'.$row['no_costcenter'].'" >'.$row['no_costcenter'].' - '.$row['cc_name'].'</option><option value="-" > - </option>'; $sql2 = mysqli_query($conn1,"select no_cc as code_combine,CONCAT(no_cc,' - ',cc_name) as cost_name from b_master_cc where no_cc != '$no_cc' and id_pc = '$profit_center' AND status = 'Active'"); foreach ($sql2 as $cc) : echo'<option value="'. $cc["code_combine"].'">'.$cc["cost_name"].'</option>'; endforeach; ?>
     <?php
     echo '</select>
     </td>
@@ -1661,9 +1661,14 @@ $("#form-simpan").on("click", "#simpan", function(e){
 
         var tr = $(this).closest('tr');
 
-        var no_coa        = tr.find('td:eq(1) select[name=nomor_coa]').val();
-        var prof_ctr      = tr.find('td:eq(2) select[id=prof_ctr]').val();
-        var no_costcenter = tr.find('td:eq(3) select[name=nomor_cc]').val();
+            no_coa        = tr.find('td:eq(1) select[name=nomor_coa]').val();
+            prof_ctr      = tr.find('td:eq(2) select[id=prof_ctr]').val();
+            no_costcenter = tr.find('td:eq(3) select[id=nomor_cc]').val();
+
+        // var no_coa        = tr.find('td:eq(1) select[name=nomor_coa]').val();
+        // var prof_ctr      = tr.find('td:eq(2) select[id=prof_ctr]').val();
+        // // var no_costcenter = tr.find('td:eq(3) select[name=nomor_cc]').val();
+        // var no_costcenter = tr.find('td:eq(3) select[name="nomor_cc[]"]').val();
 
         if (!no_coa || no_coa=="-") {
             isValid = false;
@@ -1721,7 +1726,7 @@ $("#form-simpan").on("click", "#simpan", function(e){
                             id_cmj     : $('select[name=nama_type]').val(),
                             no_coa     : tr.find('td:eq(1) select[name=nomor_coa]').val(),
                             prof_ctr   : tr.find('td:eq(2) select[id=prof_ctr]').val(),
-                            no_costcenter: tr.find('td:eq(3) select[name=nomor_cc]').val(),
+                            no_costcenter: tr.find('td:eq(3) select[id=nomor_cc]').val(),
                             no_reff    : tr.find('td:eq(4) input').val(),
                             reff_date  : tr.find('td:eq(5) input').val(),
                             buyer      : tr.find('td:eq(6) select[name=buyer]').val(),

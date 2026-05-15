@@ -290,16 +290,42 @@
                         }
                         ?>
                 <?php echo'</select>
-                <div style = "display : none;">
-                <select class="form-control selectpicker" name="tocc" id="tocc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>
-                </select>
-                </div>
                 <input type="hidden" style="font-size: 14px;" class="form-control" id="no_cek" name="no_cek" value="" autocomplete = "off">
                 <input type="hidden" style="font-size: 14px;" class="form-control" id="cek_date" name="cek_date" value="" autocomplete = "off">
                 <input type="hidden" style="font-size: 14px;" class="form-control" id="ke" name="ke" value="" autocomplete = "off">
                 <input type="hidden" style="font-size: 14px;" class="form-control" id="dari" name="dari" value="" autocomplete = "off">
                 <input type="hidden" style="font-size: 14px;" class="form-control" id="pay_for" name="pay_for" value="" autocomplete = "off">
+                   
+            </div>
+
+            <div class="col-md-2 mb-3" style="padding-top: 8px;">
+            <label for="nama_supp"><b>To Account</b></label>            
+              <select class="form-control selectpicker" name="tocc" id="tocc" data-dropup-auto="false" data-live-search="true">
+                <option value="-" disabled selected="true">Select Account</option>';?> 
+                <?php 
+                       $tocc ='';
+                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
+                $tocc = isset($_POST['tocc']) ? $_POST['tocc']: null;
+                }   
+                if ($nama_supp == null OR $nama_supp == '') {
+                    $sql = mysqli_query($conn1,"select supplier, CONCAT(UPPER(TRIM(REGEXP_REPLACE(bank_name, ' +', ' '))),' ',UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' ')))) AS bank, UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' '))) AS akun, UPPER(TRIM(REGEXP_REPLACE(beneficiary_name, ' +', ' '))) AS beneficiary_name from mastersupplier where tipe_sup = 'S' and bank_account != '' and bank_account is not null");
+                }else{
+                    $sql = mysqli_query($conn1,"select supplier, CONCAT(UPPER(TRIM(REGEXP_REPLACE(bank_name, ' +', ' '))),' ',UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' ')))) AS bank, UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' '))) AS akun, UPPER(TRIM(REGEXP_REPLACE(beneficiary_name, ' +', ' '))) AS beneficiary_name from mastersupplier where tipe_sup = 'S' and supplier = '$nama_supp' and bank_account != '' and bank_account is not null");
+                }              
+                while ($row = mysqli_fetch_array($sql)) {
+                    $data = $row['bank'];
+                    $indata = $row['akun'];
+                    if($row['bank'] == $tocc){
+                        $isSelected = ' selected="selected"';
+                    }else{
+                        $isSelected = '';
+
+                    }
+                    echo '<option value="'.$indata.'"'.$isSelected.'">'. $data .'</option>';    
+                        }
+                        ?>
+                <?php echo'</select>
                    
             </div>
                     ';
@@ -519,16 +545,36 @@
                         ?>
                 <?php echo'</select>
                 </div>
-                   <div style = "display : none;">
-                <select class="form-control selectpicker" name="tocc" id="tocc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>
-                </select>
-                </div>
-                <div style = "display : none;">
-                <select class="form-control selectpicker" name="frcc" id="frcc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>
-                </select>
-                </div>
+                    <div class="col-md-2 mb-3" style="padding-top: 8px;">
+            <label for="nama_supp"><b>To Account</b></label>            
+              <select class="form-control selectpicker" name="tocc" id="tocc" data-dropup-auto="false" data-live-search="true">
+                <option value="-" disabled selected="true">Select Account</option>';?> 
+                <?php 
+                       $tocc ='';
+                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
+                $tocc = isset($_POST['tocc']) ? $_POST['tocc']: null;
+                }   
+                if ($nama_supp == null OR $nama_supp == '') {
+                    $sql = mysqli_query($conn1,"select supplier, CONCAT(UPPER(TRIM(REGEXP_REPLACE(bank_name, ' +', ' '))),' ',UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' ')))) AS bank, UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' '))) AS akun, UPPER(TRIM(REGEXP_REPLACE(beneficiary_name, ' +', ' '))) AS beneficiary_name from mastersupplier where tipe_sup = 'S' and bank_account != '' and bank_account is not null");
+                }else{
+                    $sql = mysqli_query($conn1,"select supplier, CONCAT(UPPER(TRIM(REGEXP_REPLACE(bank_name, ' +', ' '))),' ',UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' ')))) AS bank, UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' '))) AS akun, UPPER(TRIM(REGEXP_REPLACE(beneficiary_name, ' +', ' '))) AS beneficiary_name from mastersupplier where tipe_sup = 'S' and supplier = '$nama_supp' and bank_account != '' and bank_account is not null");
+                }              
+                while ($row = mysqli_fetch_array($sql)) {
+                    $data = $row['bank'];
+                    $indata = $row['akun'];
+                    if($row['bank'] == $tocc){
+                        $isSelected = ' selected="selected"';
+                    }else{
+                        $isSelected = '';
+
+                    }
+                    echo '<option value="'.$indata.'"'.$isSelected.'">'. $data .'</option>';    
+                        }
+                        ?>
+                <?php echo'</select>
+                   
+            </div>
                 <input type="hidden" style="font-size: 14px;" class="form-control" id="ke" name="ke" value="" autocomplete = "off">
                 <input type="hidden" style="font-size: 14px;" class="form-control" id="dari" name="dari" value="" autocomplete = "off">
                 <input type="hidden" style="font-size: 14px;" class="form-control" id="no_cek" name="no_cek" value="" autocomplete = "off">
@@ -1994,6 +2040,44 @@ function addListener(elm,index){
 
 <script type="text/javascript">
     $("#form-simpan").on("click", "#simpan", function(){
+        var valid_detail = true;
+
+$("input[type=checkbox]:checked").each(function () {
+
+    // SKIP ROW TEMPLATE / HIDDEN
+    if ($(this).closest('tr').is(':hidden')) {
+        return true;
+    }
+
+    var prof_ctr = $(this).closest('tr')
+        .find('td:eq(2)')
+        .find('select[id=prof_ctr] option:selected')
+        .val();
+
+    var no_coa = $(this).closest('tr')
+        .find('td:eq(1)')
+        .find('select[id=nomor_coa] option:selected')
+        .val();
+
+    if (no_coa === '' || no_coa === '-') {
+        alert('Please select COA');
+        $(this).closest('tr').find('td:eq(1) select[id=nomor_coa]').focus();
+        valid_detail = false;
+        return false;
+    }
+
+    if (prof_ctr === '' || prof_ctr === '-') {
+        alert('Please select Profit Center');
+        $(this).closest('tr').find('td:eq(2) select[id=prof_ctr]').focus();
+        valid_detail = false;
+        return false;
+    }
+});
+
+if (!valid_detail) {
+    return false;
+}
+
         var no_pv = document.getElementById('no_doc').value;  
         var rat_pv = document.getElementById('rat_pv').value;        
         var pv_date = document.getElementById('tgl_active').value;
@@ -2060,8 +2144,10 @@ function addListener(elm,index){
         var ded_add = $(this).closest('tr').find('td:eq(8) input').val() || 0;
         var pph = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').val() || 0;
         var idtax = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').attr('data-idtax');
-        var ppn = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').val() || document.getElementById('pilih_ppn').value;
-        var id_ppn = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').attr('data-idtax') || document.getElementById('idtax').value;
+        var ppn_val = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').val() || document.getElementById('pilih_ppn').value;
+        var ppn = (ppn_val === '0' || ppn_val === '' || ppn_val === null) ? document.getElementById('pilih_ppn').value : ppn_val;
+        var idppn_val = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').attr('data-idtax') || document.getElementById('idtax').value;
+        var id_ppn = (ppn_val === '0' || ppn_val === '' || ppn_val === null) ? document.getElementById('idtax').value : idppn_val;
         var total_h = document.getElementById('total_h').value || 0;
         var curr = document.getElementById('curre').value; 
         var for_pay = $('select[name=forpay] option').filter(':selected').val();

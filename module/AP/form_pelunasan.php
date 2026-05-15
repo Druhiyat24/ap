@@ -130,6 +130,14 @@
         </div>
     </div>                   
 </div>
+
+<div class="form-row">
+        <div class="col-md-8" >
+            <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Descriptions </b></label>         
+            <textarea style="font-size: 15px; text-align: left;" cols="40" rows="3" type="text" class="form-control " name="pesan" id="pesan" value="" placeholder="descriptions..." required></textarea>        
+        </div>
+    </div>
+
 </form>
 <form id="form-simpan">
     <div class="row">
@@ -800,7 +808,7 @@ function updateReffDoc(selectedCoa, row) {
     </select>
     </td>
     <td>
-    <select class="form-control selectpicker nomor_profit" name="nomor_profit" id="nomor_profit" data-live-search="true" data-width="200px" data-size="5">
+    <select class="form-control selectpicker nomor_profit" name="nomor_profit" id="nomor_profit" data-live-search="true" data-width="220px" data-size="5">
     <option value="-"> - </option>
     <?php
     $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
@@ -810,24 +818,24 @@ function updateReffDoc(selectedCoa, row) {
     </select>
     </td>
     <td>
-    <select class="form-control selectpicker nomor_coc" name="nomor_coc[]" id="nomor_coc" data-live-search="true" data-width="200px" data-size="5">
+    <select class="form-control selectpicker nomor_coc" name="nomor_coc[]" id="nomor_coc" data-live-search="true" data-width="220px" data-size="5">
     <option value="-"> - </option>
     </select>
     </td>
     <td>
-    <input style="font-size: 12px;width: 150px;" type="text" class="form-control reff_doc" name="reff_doc[]" placeholder="" autocomplete="off">
+    <input style="font-size: 12px;width: 220px;" type="text" class="form-control reff_doc" name="reff_doc[]" placeholder="" autocomplete="off">
     </td>
     <td>
-    <input type="text" style="font-size: 12px;width: 150px;" name="tgl_active" id="tgl_active" class="form-control tanggal reff_date" autocomplete="off" placeholder="dd-mm-yyyy">
+    <input type="text" style="font-size: 12px;width: 200px;" name="tgl_active" id="tgl_active" class="form-control tanggal reff_date" autocomplete="off" placeholder="dd-mm-yyyy">
     </td>
     <td>
-    <input style="font-size: 12px;width: 150px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off">
+    <input style="font-size: 12px;width: 250px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off">
     </td>
     <td>
-    <input style="text-align: right; font-size: 12px;width: 150px;" type="number" min="1" class="form-control" id="txt_amount" name="txt_amount" oninput="modal_input_amt(value)" autocomplete="off">
+    <input style="text-align: right; font-size: 12px;width: 170px;" type="number" min="1" class="form-control" id="txt_amount" name="txt_amount" oninput="modal_input_amt(value)" autocomplete="off">
     </td>
     <td>
-    <input style="text-align: right; font-size: 12px;width: 150px;" type="number" min="1" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_cre(value)" autocomplete="off">
+    <input style="text-align: right; font-size: 12px;width: 170px;" type="number" min="1" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_cre(value)" autocomplete="off">
     </td>
     <td>
     <input name="chk_a[]" type="checkbox" class="checkall_a" value="">
@@ -887,7 +895,7 @@ function InsertRow2(tableID)
                 </select>
                 </td>
                 <td>
-                <select class="form-control selectpicker nomor_profit" name="nomor_profit" id="nomor_profit" data-live-search="true" data-width="200px" data-size="5">
+                <select class="form-control selectpicker nomor_profit" name="nomor_profit" id="nomor_profit" data-live-search="true" data-width="220px" data-size="5">
                 <option value="-"> - </option>
                 <?php
                 $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
@@ -897,24 +905,24 @@ function InsertRow2(tableID)
                 </select>
                 </td>
                 <td>
-                <select class="form-control selectpicker nomor_coc" name="nomor_coc[]" id="nomor_coc" data-live-search="true" data-width="200px" data-size="5">
+                <select class="form-control selectpicker nomor_coc" name="nomor_coc[]" id="nomor_coc" data-live-search="true" data-width="220px" data-size="5">
                 <option value="-"> - </option>
                 </select>
                 </td>
                 <td>
-                <input style="font-size: 12px;width: 150px;" type="text" class="form-control reff_doc" name="reff_doc[]" placeholder="" autocomplete="off">
+                <input style="font-size: 12px;width: 220px;" type="text" class="form-control reff_doc" name="reff_doc[]" placeholder="" autocomplete="off">
                 </td>
                 <td>
-                <input type="text" style="font-size: 12px;width: 150px;" name="tgl_active" id="tgl_active" class="form-control tanggal reff_date" autocomplete="off" placeholder="dd-mm-yyyy">
+                <input type="text" style="font-size: 12px;width: 170px;" name="tgl_active" id="tgl_active" class="form-control tanggal reff_date" autocomplete="off" placeholder="dd-mm-yyyy">
                 </td>
                 <td>
-                <input style="font-size: 12px;width: 150px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off">
+                <input style="font-size: 12px;width: 250px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off">
                 </td>
                 <td>
-                <input style="text-align: right; font-size: 12px;width: 150px;" type="number" min="1" class="form-control" id="txt_amount" name="txt_amount" oninput="modal_input_amt(value)" autocomplete="off">
+                <input style="text-align: right; font-size: 12px;width: 170px;" type="number" min="1" class="form-control" id="txt_amount" name="txt_amount" oninput="modal_input_amt(value)" autocomplete="off">
                 </td>
                 <td>
-                <input style="text-align: right; font-size: 12px;width: 150px;" type="number" min="1" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_cre(value)" autocomplete="off">
+                <input style="text-align: right; font-size: 12px;width: 170px;" type="number" min="1" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_cre(value)" autocomplete="off">
                 </td>
                 <td>
                 <input name="chk_a[]" type="checkbox" class="checkall_a" value="">
@@ -1299,83 +1307,175 @@ function addListener(elm,index){
 
 
 <script type="text/javascript">
-    $("#form-simpan").on("click", "#simpan", function(){
-        $("input[type=checkbox]:checked").each(function () {
-            var payment_ftr_id = document.getElementById('nopayment').value;        
-            var tgl_pelunasan = document.getElementById('tanggal').value;        
-            var nama_supp = $('select[name=nama_supp] option').filter(':selected').val();    
-            var profit_center = $('select[name=profit_center] option').filter(':selected').val();
+    $("#form-simpan").on("click", "#simpan", function (e) {
+    e.preventDefault();
 
-            var list_payment_id = $(this).closest('#mytable tr').find('td:eq(1)').attr('dataout1');                          
-            var tgl_list_payment = $(this).closest('#mytable tr').find('td:eq(2)').attr('dataout2');
-            var no_kbon = $(this).closest('#mytable tr').find('td:eq(3)').attr('dataout3')
-            var tgl_kbon = $(this).closest('#mytable tr').find('td:eq(4)').attr('dataout4');
-            var valuta_ftr = document.getElementById('valuta1').value;        
-            var ttl_bayar = parseFloat($(this).closest('#mytable tr').find('td:eq(9)').attr('dataout7'),10) ||0;
-            var cara_bayar = 'TRANSFER'; 
-            var account = '-';        
-            var bank = '-';
-            var valuta_bayar = document.getElementById('valuta1').value; 
-            if (valuta_ftr == 'IDR') {
-                var rate = 1;
-            }else{
-                var rate = document.getElementById('rate').value;
+    // ================================
+    // VALIDASI LIST PAYMENT (VISIBLE)
+    // ================================
+    var checkedLP = $("#mytable input[name='select[]']:visible:checked");
+    if (checkedLP.length === 0) {
+        alert("Please check the List Payment number");
+        return false;
+    }
+
+    // ================================
+    // VALIDASI PESAN
+    // ================================
+    var pesan = $('#pesan').val().trim();
+    if (pesan === '') {
+        alert('Please Input Description');
+        $('#pesan').focus();
+        return false;
+    }
+
+    // ================================
+    // VALIDASI TOTAL
+    // ================================
+    var fil_lp     = parseFloat($('#dibayar_h').val()) || 0;
+    var fil_debit  = parseFloat($('#nominaldeb_h').val()) || 0;
+    var fil_credit = parseFloat($('#nominalcre_h').val()) || 0;
+
+    if (fil_lp <= 0) {
+        alert("Invalid Total List Payment");
+        return false;
+    }
+
+    if (fil_debit !== fil_credit) {
+        alert("Please Check Total Credit and Debit");
+        return false;
+    }
+
+    // ================================
+    // LOOP LIST PAYMENT
+    // ================================
+    checkedLP.each(function () {
+
+        var trLP = $(this).closest('tr');
+
+        var payment_ftr_id = $('#nopayment').val();
+        var tgl_pelunasan  = $('#tanggal').val();
+        var nama_supp     = $('select[name=nama_supp]').val();
+        var profit_center = $('select[name=profit_center]').val();
+
+        var list_payment_id  = trLP.find('td:eq(1)').attr('dataout1');
+        var tgl_list_payment = trLP.find('td:eq(2)').attr('dataout2');
+        var no_kbon          = trLP.find('td:eq(3)').attr('dataout3');
+        var tgl_kbon         = trLP.find('td:eq(4)').attr('dataout4');
+        var ttl_bayar        = parseFloat(trLP.find('td:eq(9)').attr('dataout7')) || 0;
+        var ratebpb          = parseFloat(trLP.find('td:eq(10)').attr('data-rate')) || 0;
+        var coa_lp           = trLP.find('td:eq(11)').attr('data-coalp');
+
+        var valuta_ftr   = $('#valuta1').val();
+        var valuta_bayar = valuta_ftr;
+        var cara_bayar   = 'TRANSFER';
+        var account      = '-';
+        var bank         = '-';
+        var rate         = (valuta_ftr === 'IDR') ? 1 : (parseFloat($('#rate').val()) || 0);
+        var nominal      = ttl_bayar;
+        var nomrate      = nominal * rate;
+        var create_user  = "<?php echo $user ?>";
+
+        // ================================
+        // LOOP JURNAL (VISIBLE SAJA)
+        // ================================
+        $("#mytable2 tbody tr:visible").each(function () {
+
+            var trJ = $(this);
+
+            // skip template
+            if (trJ.find('select[name=nomor_coa]').length === 0) {
+                return true;
             }
-            var nomrate = 0;
-            var nominal = parseFloat($(this).closest('#mytable tr').find('td:eq(9)').attr('dataout7'),10) || 0;
-            var create_user = '<?php echo $user ?>';
-            var dibayar = parseFloat($(this).closest('#mytable tr').find('td:eq(9)').attr('dataout7'),10) || 0;
-            var ratebpb = parseFloat($(this).closest('#mytable tr').find('td:eq(10)').attr('data-rate'),10) || 0;
-            var coa_lp = $(this).closest('#mytable tr').find('td:eq(11)').attr('data-coalp');
 
-            var no_coa = $(this).closest('#mytable2 tr').find('td:eq(1)').find('select[name=nomor_coa] option').filter(':selected').val(); 
-            var prof_ctr = $(this).closest('#mytable2 tr').find('td:eq(2)').find('select[id=nomor_profit] option').filter(':selected').val();
-            var no_coc = $(this).closest('#mytable2 tr').find('td:eq(3)').find('select[id=nomor_coc] option').filter(':selected').val();    
-            var reff_doc = $(this).closest('#mytable2 tr').find('td:eq(4) input').val() || $(this).closest('#mytable2 tr').find('td:eq(4) select[name="reff_doc"] option:selected').val() || '';
-            var reff_date = $(this).closest('#mytable2 tr').find('td:eq(5) input').val();
-            var deskripsi = $(this).closest('#mytable2 tr').find('td:eq(6) input').val();
-            var debit = $(this).closest('#mytable2 tr').find('td:eq(7) input').val(); 
-            var credit = $(this).closest('#mytable2 tr').find('td:eq(8) input').val();
+            var no_coa   = trJ.find('select[name=nomor_coa]').val();
+            var coa_text = trJ.find('select[name=nomor_coa] option:selected')
+                              .text().toLowerCase();
 
-            var fil_lp = parseFloat(document.getElementById('dibayar_h').value,10) || 0;
-            var fil_debit = parseFloat(document.getElementById('nominaldeb_h').value,10) || 0;
-            var fil_credit = parseFloat(document.getElementById('nominalcre_h').value,10) || 0;
-            nomrate = nominal * rate;
+            var prof_ctr = trJ.find('#nomor_profit').val();
+            var no_coc   = trJ.find('#nomor_coc').val();
 
-            if(fil_lp > 0 && fil_debit == fil_credit){  
-                $.ajax({
-                    type:'POST',
-                    url:'insertrepaymentftr.php',
-                    data: {'payment_ftr_id':payment_ftr_id, 'tgl_pelunasan':tgl_pelunasan, 'nama_supp':nama_supp,'profit_center':profit_center,'list_payment_id':list_payment_id, 'tgl_list_payment':tgl_list_payment, 'no_kbon':no_kbon,'tgl_kbon':tgl_kbon, 'valuta_ftr':valuta_ftr, 'ttl_bayar':ttl_bayar,'cara_bayar':cara_bayar, 'account':account, 'bank':bank, 'valuta_bayar':valuta_bayar, 'nominal':nominal, 'dibayar':dibayar, 'rate':rate, 'nomrate':nomrate, 'create_user':create_user, 'ratebpb':ratebpb, 'no_coa':no_coa, 'prof_ctr':prof_ctr, 'no_coc':no_coc, 'reff_doc':reff_doc, 'reff_date':reff_date, 'deskripsi':deskripsi, 'debit':debit, 'credit':credit, 'coa_lp':coa_lp},
-                    cache: 'false',
-                    close: function(e){
-                        e.preventDefault();
-                    },
-                    success: function(response){
-                        localStorage.removeItem("profit_center");
-                        console.log(response);
-                // alert(response);
-                window.location = 'pelunasanftr.php';
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                alert(xhr);
+            var reff_doc =
+                trJ.find('td:eq(4) input:visible').val() ||
+                trJ.find('td:eq(4) select.reff_doc:visible').val() ||
+                '';
+
+            var reff_date = trJ.find('td:eq(5) input:visible').val();
+            var deskripsi = trJ.find('td:eq(6) input:visible').val();
+            var debit     = parseFloat(trJ.find('td:eq(7) input:visible').val()) || 0;
+            var credit    = parseFloat(trJ.find('td:eq(8) input:visible').val()) || 0;
+
+            // ================================
+            // VALIDASI NO COA
+            // ================================
+            if (!no_coa || no_coa === '-') {
+                alert('Please select a COA');
+                trJ.find('select[name=nomor_coa]').focus();
+                return false;
             }
+
+            // alert(reff_doc);
+
+            // ================================
+            // VALIDASI KHUSUS COA UANG MUKA
+            // ================================
+            if (coa_text.includes('uang muka')) {
+                if (!reff_doc || reff_doc === '-') {
+                    alert('Reference document is required for Advance Payment COA');
+                    trJ.find('td:eq(4)').find('input, select.reff_doc').filter(':visible').first().focus();
+                    return false;
+                }
+            }
+
+            // ================================
+            // AJAX
+            // ================================
+            $.ajax({
+                type: 'POST',
+                url: 'insertrepaymentftr.php',
+                data: {
+                    payment_ftr_id,
+                    tgl_pelunasan,
+                    nama_supp,
+                    profit_center,
+                    list_payment_id,
+                    tgl_list_payment,
+                    no_kbon,
+                    tgl_kbon,
+                    valuta_ftr,
+                    ttl_bayar,
+                    cara_bayar,
+                    account,
+                    bank,
+                    valuta_bayar,
+                    nominal,
+                    rate,
+                    nomrate,
+                    create_user,
+                    ratebpb,
+                    no_coa,
+                    prof_ctr,
+                    no_coc,
+                    reff_doc,
+                    reff_date,
+                    deskripsi,
+                    debit,
+                    credit,
+                    coa_lp,
+                    pesan
+                },
+                success: function () {
+                    localStorage.removeItem("profit_center");
+                    window.location = 'pelunasanftr.php';
+                }
+            });
+
         });
-            }
 
-        });     
+    });
 
-if(document.querySelectorAll("#mytable input[name='select[]']:checked").length == 0){
-    alert("Please check the List Payment number");            
-} else if((parseFloat(document.getElementById('dibayar_h').value,10) || 0) <= 0){
-    alert("Please check the List Payment number");
-} else if((parseFloat(document.getElementById('nominaldeb_h').value,10) || 0) != (parseFloat(document.getElementById('nominalcre_h').value,10) || 0)){
-    alert("Please Check Total Credit and Debit");
-}  else{
-    alert("Successful payment");
-}           
 });
+
 </script>
 
 <script type="text/javascript">

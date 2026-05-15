@@ -5,6 +5,9 @@ include '../../conn/conn.php';
 $user = $_SESSION['username'];
 $images = '../../images/img-01.png';
 $no_kbon=$_GET['nokontrabon'];
+ob_start();
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 ?>
 
 <?php
@@ -612,15 +615,18 @@ $curr1 = $data1['curr'];
 
 </html>  
 
+</html>  
+
 <?php
 $html = ob_get_clean();
-require_once __DIR__ . '/../../mpdf8/vendor/autoload.php';
-include("../../mpdf8/vendor/mpdf/mpdf/src/mpdf.php");
 
-$mpdf=new \mPDF\mPDF();
+require_once __DIR__ . '/../../mpdf8/vendor/autoload.php';
+
+$mpdf = new \Mpdf\Mpdf([
+    'tempDir' => __DIR__ . '/../../mpdf8/tmp'
+]);
 
 $mpdf->WriteHTML($html);
-ob_clean();
 $mpdf->Output();
 exit;
 ?>

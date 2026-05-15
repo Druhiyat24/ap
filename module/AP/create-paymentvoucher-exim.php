@@ -183,7 +183,7 @@
                 echo date("d-m-Y");
             } ?>" autocomplete='off'>
             </div>
-                <div class="col-md-3 mb-3"> 
+                <div class="col-md-2 mb-3"> 
                     <label for="carabayar" class="col-form-label" style="width: 150px;">Pay Methods </label>               
                 <select class="form-control selectpicker" name="carabayar" id="carabayar" data-live-search="true" onchange="this.form.submit()">
                     <option value="" disabled selected="true">Choose pay method</option>  
@@ -256,16 +256,51 @@
                         }
                         ?>
                 <?php echo'</select>
-                <div style = "display : none;">
-                <select class="form-control selectpicker" name="tocc" id="tocc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>
-                </select>
-                </div>
+                
                 <input type="hidden" style="font-size: 14px;" class="form-control" id="no_cek" name="no_cek" value="" autocomplete = "off">
                 <input type="hidden" style="font-size: 14px;" class="form-control" id="cek_date" name="cek_date" value="" autocomplete = "off">
                 <input type="hidden" style="font-size: 14px;" class="form-control" id="ke" name="ke" value="" autocomplete = "off">
                 <input type="hidden" style="font-size: 14px;" class="form-control" id="dari" name="dari" value="" autocomplete = "off">
                 <input type="hidden" style="font-size: 14px;" class="form-control" id="pay_for" name="pay_for" value="" autocomplete = "off">
+                   
+            </div>
+            <div class="col-md-2 mb-3" style="padding-top: 8px;">
+            <label for="nama_supp"><b>To Account</b></label>            
+              <select class="form-control selectpicker" name="tocc" id="tocc" data-dropup-auto="false" data-live-search="true">
+                <option value="-" disabled selected="true">Select Account</option>';?> 
+                <?php 
+
+                $sql = mysqli_query($conn2,"select DISTINCT ms.supplier supplier from memo_h a
+          inner join mastersupplier ms on a.id_supplier = ms.id_supplier
+          inner join mastersupplier mb on a.id_buyer = mb.id_supplier
+                    inner join memo_det mdet on mdet.id_h = a.id_h
+                    inner join tbl_pv_memo_temp mtemp on mtemp.no_memo = a.nm_memo
+                    where mdet.cancel = 'N' and mdet.nm_sub_ctg != 'VAT' and mtemp.user = '$user' GROUP BY nm_memo order by a.id_h desc limit 1");
+            $row = mysqli_fetch_array($sql);
+            $nama_supp = isset($row['supplier']) ? $row['supplier'] : null;           
+
+                       $tocc ='';
+                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                $tocc = isset($_POST['tocc']) ? $_POST['tocc']: null;
+                }   
+                if ($nama_supp == null OR $nama_supp == '') {
+                    $sql = mysqli_query($conn1,"select supplier, CONCAT(UPPER(TRIM(REGEXP_REPLACE(bank_name, ' +', ' '))),' ',UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' ')))) AS bank, UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' '))) AS akun, UPPER(TRIM(REGEXP_REPLACE(beneficiary_name, ' +', ' '))) AS beneficiary_name from mastersupplier where tipe_sup = 'S' and bank_account != '' and bank_account is not null");
+                }else{
+                    $sql = mysqli_query($conn1,"select supplier, CONCAT(UPPER(TRIM(REGEXP_REPLACE(bank_name, ' +', ' '))),' ',UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' ')))) AS bank, UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' '))) AS akun, UPPER(TRIM(REGEXP_REPLACE(beneficiary_name, ' +', ' '))) AS beneficiary_name from mastersupplier where tipe_sup = 'S' and supplier = '$nama_supp' and bank_account != '' and bank_account is not null");
+                }              
+                while ($row = mysqli_fetch_array($sql)) {
+                    $data = $row['bank'];
+                    $indata = $row['akun'];
+                    if($row['bank'] == $tocc){
+                        $isSelected = ' selected="selected"';
+                    }else{
+                        $isSelected = '';
+
+                    }
+                    echo '<option value="'.$indata.'"'.$isSelected.'">'. $data .'</option>';    
+                        }
+                        ?>
+                <?php echo'</select>
                    
             </div>
                     ';

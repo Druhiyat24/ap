@@ -132,7 +132,8 @@ $rs = mysqli_fetch_array($querys);
 $id = isset($rs['id']) ? $rs['id'] : 0;
 
 if($id == '39'){
-    echo '<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>';
+    // echo '<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>';
+    echo '<button id="btncreate_new" type="button" class="btn-info btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>';
 }else{
     echo '';
 }
@@ -528,6 +529,11 @@ function SidebarCollapse () {
 <script type="text/javascript">
     document.getElementById('btncreate').onclick = function () {
         location.href = "create-petty-cashout.php";
+    };
+</script>
+<script type="text/javascript">
+    document.getElementById('btncreate_new').onclick = function () {
+        location.href = "create-pettycash-out.php";
     };
 </script>
 <script type="text/javascript">

@@ -9,7 +9,7 @@ $doc_num=$_GET['doc_num'];
 $sql= "select doc_num,date,customer,akun,ref_data,bank,deskripsi,curr,create_by,approve_by FROM tbl_bankin_arcollection where doc_num = '$doc_num'";
 $rs=mysqli_fetch_array(mysqli_query($conn2,$sql));
 
-$sqlys = "select no_coa,nama_coa,nama_costcenter,b.profit_center,reff_doc,reff_date,curr,debit,credit, keterangan from tbl_list_journal a left join b_master_cc b on b.no_cc = a.no_costcenter where debit > 0 and no_journal = '$doc_num' and a.status != 'Updated' || credit > 0 and no_journal = '$doc_num' and a.status != 'Updated'";
+$sqlys = "select no_coa,nama_coa,nama_costcenter,CONCAT(c.id_pc, ' - ',c.nama_pc) profit_center,reff_doc,reff_date,curr,debit,credit, a.keterangan from tbl_list_journal a left join b_master_cc b on b.no_cc = a.no_costcenter left join master_pc c on c.kode_pc = a.profit_center  where debit > 0 and no_journal = '$doc_num' and a.status != 'Updated' || credit > 0 and no_journal = '$doc_num' and a.status != 'Updated'";
 
 
 ob_start();
@@ -477,10 +477,12 @@ while($data=mysqli_fetch_array($query)){
 
 <?php
 $html = ob_get_clean();
-require_once __DIR__ . '/../../mpdf8/vendor/autoload.php';
-include("../../mpdf8/vendor/mpdf/mpdf/src/mpdf.php");
 
-$mpdf=new \mPDF\mPDF();
+require_once __DIR__ . '/../../mpdf8/vendor/autoload.php';
+
+$mpdf = new \Mpdf\Mpdf([
+    'tempDir' => __DIR__ . '/../../mpdf8/tmp'
+]);
 
 $mpdf->WriteHTML($html);
 $mpdf->Output();

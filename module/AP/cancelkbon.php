@@ -18,7 +18,7 @@ if(isset($no_kbon)){
 
 	if ($filter_jurnal == null) {
 
-	$jurnal_balik = mysqli_query($conn2,"INSERT into tbl_list_journal select '', no_journal, '$cancel_date' tgl_journal, CONCAT('Reverse ',type_journal) type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, credit, debit, credit_idr, debit_idr, status, keterangan, create_by, create_date, '$cancel_user' approve_by, CURRENT_TIMESTAMP() approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center from tbl_list_journal where no_journal = '$no_kbon'");	
+	$jurnal_balik = mysqli_query($conn2,"INSERT into tbl_list_journal select '', no_journal, tgl_journal, CONCAT('Reverse ',type_journal) type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, credit, debit, credit_idr, debit_idr, status, keterangan, create_by, create_date, '$cancel_user' approve_by, CURRENT_TIMESTAMP() approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center from tbl_list_journal where no_journal = '$no_kbon'");	
 	}
 
 	// $sqljrnl = "insert into tbl_list_journal_cancel (select * from tbl_list_journal where no_journal='$no_kbon')";
@@ -36,7 +36,7 @@ if($execute){
 
 	$query5 = mysqli_query($conn2,"update kontrabon_ftr set status = 'Cancel' where no_kbon = '$no_kbon'");
 
-	$query6 = mysqli_query($conn2,"update kontrabon_ftr set status = 'Cancel' where no_kbon = '$no_kbon'");
+	// $query6 = mysqli_query($conn2,"update kontrabon_ftr set status = 'Cancel' where no_kbon = '$no_kbon'");
 		// $query3 = mysqli_query($conn2,"delete from detail where no_kbon = '$no_kbon'");
 
 	$sql1 = mysqli_query($conn2,"select list_payment_cbd.no_kbon as no_kbon, list_payment_cbd.no_po as no_po, kontrabon_h.dp_value as amount, list_payment_cbd.amount_update as balance from list_payment_cbd inner join kontrabon_h on kontrabon_h.no_po = list_payment_cbd.no_po where kontrabon_h.no_kbon = '$no_kbon' group by kontrabon_h.no_kbon");
