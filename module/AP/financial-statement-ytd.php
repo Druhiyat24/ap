@@ -2324,7 +2324,7 @@ pivot AS (
     periode,
     SUM(CASE WHEN profit_center='NAG' THEN penerimaan_pinjaman ELSE 0 END) AS penerimaan_NAG,
     SUM(CASE WHEN profit_center='NAK' THEN penerimaan_pinjaman ELSE 0 END) AS penerimaan_NAK,
-    SUM(penerimaan_pinjaman - credit_revaluasi) AS penerimaan_TOTAL,
+    SUM(penerimaan_pinjaman) AS penerimaan_TOTAL,
     SUM(CASE WHEN profit_center='NAG' THEN (pembayaran_pinjaman) ELSE 0 END) AS pembayaran_NAG,
     SUM(CASE WHEN profit_center='NAK' THEN (pembayaran_pinjaman) ELSE 0 END) AS pembayaran_NAK,
     SUM(pembayaran_pinjaman) AS pembayaran_TOTAL
@@ -2636,7 +2636,7 @@ pivot AS (
     periode,
     SUM(CASE WHEN profit_center='NAG' THEN penerimaan_pinjaman ELSE 0 END) AS penerimaan_NAG,
     SUM(CASE WHEN profit_center='NAK' THEN penerimaan_pinjaman ELSE 0 END) AS penerimaan_NAK,
-    SUM(penerimaan_pinjaman - credit_revaluasi) AS penerimaan_TOTAL,
+    SUM(penerimaan_pinjaman) AS penerimaan_TOTAL,
     SUM(CASE WHEN profit_center='NAG' THEN (pembayaran_pinjaman) ELSE 0 END) AS pembayaran_NAG,
     SUM(CASE WHEN profit_center='NAK' THEN (pembayaran_pinjaman) ELSE 0 END) AS pembayaran_NAK,
     SUM(pembayaran_pinjaman) AS pembayaran_TOTAL

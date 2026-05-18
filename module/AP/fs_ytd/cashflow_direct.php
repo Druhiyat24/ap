@@ -1186,7 +1186,7 @@ pivot AS (
     periode,
     SUM(CASE WHEN profit_center='NAG' THEN penerimaan_pinjaman ELSE 0 END) AS penerimaan_NAG,
     SUM(CASE WHEN profit_center='NAK' THEN penerimaan_pinjaman ELSE 0 END) AS penerimaan_NAK,
-    SUM(penerimaan_pinjaman - credit_revaluasi) AS penerimaan_TOTAL,
+    SUM(penerimaan_pinjaman) AS penerimaan_TOTAL,
     SUM(CASE WHEN profit_center='NAG' THEN (pembayaran_pinjaman) ELSE 0 END) AS pembayaran_NAG,
     SUM(CASE WHEN profit_center='NAK' THEN (pembayaran_pinjaman) ELSE 0 END) AS pembayaran_NAK,
     SUM(pembayaran_pinjaman) AS pembayaran_TOTAL
@@ -1199,7 +1199,7 @@ pivot_bayar AS (
     periode,
     SUM(CASE WHEN profit_center='NAG' THEN penerimaan_pinjaman ELSE 0 END) AS penerimaan_NAG,
     SUM(CASE WHEN profit_center='NAK' THEN penerimaan_pinjaman ELSE 0 END) AS penerimaan_NAK,
-    SUM(penerimaan_pinjaman - credit_revaluasi) AS penerimaan_TOTAL,
+    SUM(penerimaan_pinjaman) AS penerimaan_TOTAL,
     SUM(CASE WHEN profit_center='NAG' THEN (pembayaran_pinjaman) ELSE 0 END) AS pembayaran_NAG,
     SUM(CASE WHEN profit_center='NAK' THEN (pembayaran_pinjaman) ELSE 0 END) AS pembayaran_NAK,
     SUM(pembayaran_pinjaman) AS pembayaran_TOTAL
@@ -1284,7 +1284,7 @@ SELECT a.periode, 'Pembayaran Pinjaman', 'Payment of loans
        - (pembayaran_TOTAL - b.total_all) pembayaran_TOTAL
 FROM pivot_bayar a left join other_value_bayar b on b.id = a.id and b.periode = a.periode)
 
-select sub_kategori, sub_kategori_eng, sum(total_nag) total_nag, sum(total_nak) total_nak, sum(total_all) total_all from data_fix where sub_kategori = 'Penerimaan Pinjaman' AND periode BETWEEN DATE_FORMAT('$tahun_awal-11-01','%Y-%m') AND DATE_FORMAT('$tahun_awal-12-31','%Y-%m')
+select sub_kategori, sub_kategori_eng, sum(total_nag) total_nag, sum(total_nak) total_nak, sum(total_all) total_all from data_fix where sub_kategori = 'Penerimaan Pinjaman' AND periode BETWEEN DATE_FORMAT('$tahun_awal-01-01','%Y-%m') AND DATE_FORMAT('$tahun_awal-12-31','%Y-%m')
 UNION ALL
 select sub_kategori, sub_kategori_eng, sum(total_nag) total_nag, sum(total_nak) total_nak, sum(total_all) total_all from data_fix_bayar where sub_kategori = 'Pembayaran Pinjaman' AND periode BETWEEN DATE_FORMAT('$tanggal_awal','%Y-%m') AND DATE_FORMAT('$tanggal_akhir','%Y-%m')
 ");
