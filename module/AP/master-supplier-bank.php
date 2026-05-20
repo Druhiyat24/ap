@@ -159,8 +159,21 @@
             Bank Name <span class="text-danger">*</span>
           </label>
           <div class="col-sm-9">
-            <input type="text" class="form-control form-control-sm"
-                   id="sb-bankname" placeholder="Bank name" maxlength="200">
+            <select class="form-control form-control-sm selectpicker"
+                    id="sb-bankname" data-live-search="true"
+                    data-dropup-auto="false" data-size="5">
+              <option value="">-- Select Bank --</option>
+              <?php
+              $sql_bank = mysqli_query($conn2,
+                "SELECT nama_bank FROM master_pilihan_bank WHERE status = 'Y' ORDER BY nama_bank ASC"
+              );
+              while ($bk = mysqli_fetch_assoc($sql_bank)):
+              ?>
+                <option value="<?= htmlspecialchars($bk['nama_bank']) ?>">
+                  <?= htmlspecialchars($bk['nama_bank']) ?>
+                </option>
+              <?php endwhile; ?>
+            </select>
           </div>
         </div>
 
@@ -351,7 +364,8 @@
     $('#sb-supplier').html('<option value="">-- Select Type first --</option>')
                      .prop('disabled', true).selectpicker('refresh');
     $('#sb-currency').val('').selectpicker('refresh');
-    $('#sb-bankname, #sb-account, #sb-beneficiary').val('');
+    $('#sb-bankname').val('').selectpicker('refresh');
+    $('#sb-account, #sb-beneficiary').val('');
     $('#modalSupBank').modal('show');
   }
 
@@ -384,7 +398,7 @@
         });
 
         $('#sb-currency').val(r.bank_currency).selectpicker('refresh');
-        $('#sb-bankname').val(r.bank_name);
+        $('#sb-bankname').val(r.bank_name).selectpicker('refresh');
         $('#sb-account').val(r.bank_account);
         $('#sb-beneficiary').val(r.beneficiary_name);
         $('#modalSupBank').modal('show');
