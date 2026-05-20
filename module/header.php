@@ -311,7 +311,7 @@ input[type=number] {
               </a>
               <a href="../AP/master-supplier-bank.php" class="dropdown-item bg-dark text-white">
               <span class="fa fa-university fa-fw "></span>
-              <span class="menu-collapsed">Master Bank Supplier - Customer</span>
+              <span class="menu-collapsed">Master Bank Supplier</span>
               </a>
               <a href="../AP/master-rate.php" class="dropdown-item bg-dark text-white">
               <span class="fa fa-paperclip fa-fw "></span>
