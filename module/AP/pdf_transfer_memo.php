@@ -223,6 +223,8 @@ table {
 				echo 'TRANSFER MEMO EXIM TO MARKETING';
 			}elseif (strpos($doc_number, 'TETF') !== false) {
 				echo 'TRANSFER MEMO EXIM TO FINANCE';
+			}elseif (strpos($doc_number, 'TFTE') !== false) {
+				echo 'TRANSFER MEMO FINANCE TO EXIM';
 			}else{
 				echo 'TRANSFER MEMO MARKETING TO EXIM';
 			}
