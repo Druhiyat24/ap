@@ -28,7 +28,7 @@ $sql = mysqli_query($conn2,"select no_po,coalesce(no_bpb,'-') no_bpb,item,qty,pr
                             <td style="width:100px;" value="'.$row['no_bpb'].'">'.$row['no_bpb'].'</td>
                             <td style="width:100px;" value="'.$row['item'].'">'.$row['item'].'</td>
                             <td style="width:50px;text-align: right;" value="'.$row['qty'].'">'.number_format($row['qty'],2).'</td>
-                            <td style="width:50px;text-align: right;" value="'.$row['price'].'">'.number_format($row['price'],2).'</td>
+                            <td style="width:50px;text-align: right;" value="'.$row['price'].'">'.number_format($row['price'],4).'</td>
                             <td style="width:50px;text-align: right;" value="'.$row['total'].'">'.number_format($row['total'],2).'</td>      
                             <td style="width:100px;" value="'.$row['attn'].'">'.$row['attn'].'</td>
                             <td style="width:100px;" value="'.$row['seasons'].'">'.$row['seasons'].'</td>

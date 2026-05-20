@@ -442,15 +442,354 @@
 
         </tr>
         <?php
-        $sql = mysqli_query($conn2,"select sub_kategori, total_nag, total_nak, (total_nag + total_nak) total_all, sub_kategori_eng from (select a.id, a.nama_pilihan sub_kategori, a.nama_pilihan_eng sub_kategori_eng, sum(COALESCE(b.credit,0) - COALESCE(c.debit,0)) total_nag, sum(COALESCE(d.credit,0) - COALESCE(e.debit,0)) total_nak from (SELECT * FROM tb_master_pilihan where status = 'Y' and type_pilihan = 'Arus Kas dari Aktivitas Operasi') a 
+        $sqlawal = mysqli_query($conn2,"select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal'");
+        $rowawal = mysqli_fetch_array($sqlawal);
+        $tanggal_awal = date("Y-m-d",strtotime($rowawal['tgl_awal']));
+
+        $sqlakhir = mysqli_query($conn2,"select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir'");
+        $rowakhir = mysqli_fetch_array($sqlakhir);
+        $tanggal_akhir = date("Y-m-d",strtotime($rowakhir['tgl_akhir'])); 
+
+        $sql = mysqli_query($conn2,"WITH
+accounts AS (
+  SELECT profit_center, no_coa, akun, periode, SUM(jan_$tahun_awal) AS saldo_awal
+  FROM (
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-01' periode, s.jan_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-01' periode, s.jan_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-01' periode, s.jan_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-01' periode, s.jan_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.41', '008-759-5858', '$tahun_awal-01' periode, s.jan_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.41') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.42', '008-751-5757', '$tahun_awal-01' periode, s.jan_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.42') AND s.profit_center = 'NAK'
+    
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-02' periode, s.feb_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-02' periode, s.feb_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-02' periode, s.feb_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-02' periode, s.feb_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.41', '008-759-5858', '$tahun_awal-02' periode, s.feb_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.41') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.42', '008-751-5757', '$tahun_awal-02' periode, s.feb_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.42') AND s.profit_center = 'NAK'
+    
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-03' periode, s.mar_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-03' periode, s.mar_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-03' periode, s.mar_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-03' periode, s.mar_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.41', '008-759-5858', '$tahun_awal-03' periode, s.mar_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.41') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.42', '008-751-5757', '$tahun_awal-03' periode, s.mar_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.42') AND s.profit_center = 'NAK'
+    
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-04' periode, s.apr_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-04' periode, s.apr_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-04' periode, s.apr_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-04' periode, s.apr_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.41', '008-759-5858', '$tahun_awal-04' periode, s.apr_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.41') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.42', '008-751-5757', '$tahun_awal-04' periode, s.apr_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.42') AND s.profit_center = 'NAK'
+    
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-05' periode, s.may_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-05' periode, s.may_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-05' periode, s.may_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-05' periode, s.may_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.41', '008-759-5858', '$tahun_awal-05' periode, s.may_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.41') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.42', '008-751-5757', '$tahun_awal-05' periode, s.may_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.42') AND s.profit_center = 'NAK'
+    
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-06' periode, s.jun_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-06' periode, s.jun_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-06' periode, s.jun_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-06' periode, s.jun_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.41', '008-759-5858', '$tahun_awal-06' periode, s.jun_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.41') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.42', '008-751-5757', '$tahun_awal-06' periode, s.jun_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.42') AND s.profit_center = 'NAK'
+    
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-07' periode, s.jul_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-07' periode, s.jul_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-07' periode, s.jul_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-07' periode, s.jul_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.41', '008-759-5858', '$tahun_awal-07' periode, s.jul_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.41') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.42', '008-751-5757', '$tahun_awal-07' periode, s.jul_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.42') AND s.profit_center = 'NAK'
+    
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-08' periode, s.aug_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-08' periode, s.aug_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-08' periode, s.aug_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-08' periode, s.aug_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.41', '008-759-5858', '$tahun_awal-08' periode, s.aug_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.41') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.42', '008-751-5757', '$tahun_awal-08' periode, s.aug_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.42') AND s.profit_center = 'NAK'
+    
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-09' periode, s.sep_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-09' periode, s.sep_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-09' periode, s.sep_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-09' periode, s.sep_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.41', '008-759-5858', '$tahun_awal-09' periode, s.sep_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.41') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.42', '008-751-5757', '$tahun_awal-09' periode, s.sep_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.42') AND s.profit_center = 'NAK'
+    
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-10' periode, s.oct_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-10' periode, s.oct_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-10' periode, s.oct_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-10' periode, s.oct_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.41', '008-759-5858', '$tahun_awal-10' periode, s.oct_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.41') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.42', '008-751-5757', '$tahun_awal-10' periode, s.oct_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.42') AND s.profit_center = 'NAK'
+    
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-11' periode, s.nov_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-11' periode, s.nov_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-11' periode, s.nov_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-11' periode, s.nov_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.41', '008-759-5858', '$tahun_awal-11' periode, s.nov_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.41') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.42', '008-751-5757', '$tahun_awal-11' periode, s.nov_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.42') AND s.profit_center = 'NAK'
+    
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-12' periode, s.dec_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-12' periode, s.dec_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-12' periode, s.dec_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-12' periode, s.dec_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.41', '008-759-5858', '$tahun_awal-12' periode, s.dec_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.41') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.42', '008-751-5757', '$tahun_awal-12' periode, s.dec_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.42') AND s.profit_center = 'NAK'
+  ) AS a
+  GROUP BY profit_center, no_coa, akun, periode
+),
+
+journal_sums AS (
+  SELECT l.profit_center, l.no_coa, DATE_FORMAT(tgl_journal,'%Y-%m') periode,
+         SUM(l.rate * l.debit)  AS debit,
+         SUM(l.rate * l.credit) AS credit
+  FROM tbl_list_journal l
+  WHERE l.tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir')
+    AND (l.no_journal LIKE '%BM%' OR l.no_journal LIKE '%BK%')
+    AND l.profit_center IN ('NAG','NAK')
+  GROUP BY l.profit_center, l.no_coa, DATE_FORMAT(tgl_journal,'%Y-%m')
+),
+
+reval AS (
+  SELECT l.profit_center, l.no_coa, DATE_FORMAT(tgl_journal,'%Y-%m') periode,
+         SUM(l.debit_idr)  AS debit_idr,
+         SUM(l.credit_idr) AS credit_idr
+  FROM tbl_list_journal l
+  WHERE (l.keterangan LIKE '%REVALUASI%' OR l.keterangan LIKE '%REVALUATION%')
+    AND l.tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir')
+    AND l.profit_center IN ('NAG','NAK')
+  GROUP BY l.profit_center, l.no_coa, DATE_FORMAT(tgl_journal,'%Y-%m')
+),
+
+base AS (
+  SELECT a.profit_center, a.no_coa, a.akun, a.periode,
+         a.saldo_awal,
+         COALESCE(j.debit, 0)  AS debit,
+         COALESCE(j.credit,0)  AS credit,
+         (a.saldo_awal + COALESCE(j.debit,0) - COALESCE(j.credit,0)) AS saldo_akhir
+  FROM accounts a
+  LEFT JOIN journal_sums j ON j.no_coa = a.no_coa AND j.profit_center = a.profit_center AND j.periode = a.periode
+),
+
+calc AS (
+  SELECT b.*,
+    CASE
+      WHEN b.saldo_awal > 0 AND b.saldo_akhir < 0 THEN b.credit - b.saldo_awal
+      WHEN b.saldo_awal < 0 AND b.saldo_akhir < 0 THEN b.credit
+      ELSE 0
+    END AS penerimaan_pinjaman,
+    CASE
+      WHEN b.saldo_awal > 0 AND b.saldo_akhir < 0 THEN ABS(b.debit)
+      WHEN b.saldo_awal < 0 AND b.saldo_akhir < 0 THEN ABS(b.debit)
+      WHEN b.saldo_awal < 0 AND b.saldo_akhir > 0 THEN ABS(b.saldo_awal)
+      ELSE 0
+    END AS pembayaran_pinjaman
+  FROM base b
+),
+
+agg AS (
+  SELECT
+    c.profit_center, c.periode,
+    SUM(COALESCE(c.penerimaan_pinjaman,0)) AS penerimaan_pinjaman,
+    SUM(COALESCE(c.pembayaran_pinjaman,0)) AS pembayaran_pinjaman,
+    SUM(COALESCE(
+        CASE WHEN c.saldo_akhir < 0 THEN 0 ELSE COALESCE(r.debit_idr,0) END
+    ,0)) AS debit_revaluasi,
+    SUM(COALESCE(
+        CASE WHEN c.saldo_akhir < 0 THEN 0 ELSE COALESCE(r.credit_idr,0) END
+    ,0)) AS credit_revaluasi
+  FROM calc c
+  LEFT JOIN reval r
+    ON r.no_coa = c.no_coa AND r.profit_center = c.profit_center AND r.periode = c.periode
+  GROUP BY c.profit_center, c.periode
+),
+
+revaluasi as (select '2' id, periode, if(profit_center = 'NAG',sum(debit_revaluasi - credit_revaluasi),0) revaluasi_nag, if(profit_center = 'NAK',sum(debit_revaluasi - credit_revaluasi),0) revaluasi_nak, sum(debit_revaluasi - credit_revaluasi) revaluasi_all from agg GROUP BY periode),
+
+pembayaran as (select id, periode, sub_kategori, total_nag, total_nak, (total_nag + total_nak) total_all, sub_kategori_eng from (select a.id, p.periode AS periode, a.nama_pilihan sub_kategori, a.nama_pilihan_eng sub_kategori_eng, sum(COALESCE(b.credit,0) - COALESCE(c.debit,0)) total_nag, sum(COALESCE(d.credit,0) - COALESCE(e.debit,0)) total_nak from (SELECT * FROM tb_master_pilihan where status = 'Y' and type_pilihan = 'Arus Kas dari Aktivitas Operasi') a 
+CROSS JOIN
+(
+    SELECT '$tahun_awal-01' periode
+    UNION ALL SELECT '$tahun_awal-02'
+    UNION ALL SELECT '$tahun_awal-03'
+    UNION ALL SELECT '$tahun_awal-04'
+    UNION ALL SELECT '$tahun_awal-05'
+    UNION ALL SELECT '$tahun_awal-06'
+    UNION ALL SELECT '$tahun_awal-07'
+    UNION ALL SELECT '$tahun_awal-08'
+    UNION ALL SELECT '$tahun_awal-09'
+    UNION ALL SELECT '$tahun_awal-10'
+    UNION ALL SELECT '$tahun_awal-11'
+    UNION ALL SELECT '$tahun_awal-12'
+) p
           LEFT JOIN
-          (select c.id,c.ind_name, sum(ROUND(credit * rate,2)) credit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_credit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.profit_center = 'NAG' GROUP BY c.id) b on b.ind_name = a.nama_pilihan
+          (select c.id,c.ind_name, DATE_FORMAT(tgl_journal,'%Y-%m') periode, sum(ROUND(credit * rate,2)) credit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_credit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.profit_center = 'NAG' GROUP BY c.id, DATE_FORMAT(tgl_journal,'%Y-%m')) b on b.ind_name = a.nama_pilihan and b.periode = p.periode
           LEFT JOIN
-          (select c.id,c.ind_name, sum(ROUND(debit * rate,2)) debit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_debit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.profit_center = 'NAG' GROUP BY c.id) c on c.ind_name = a.nama_pilihan
+          (select c.id,c.ind_name, DATE_FORMAT(tgl_journal,'%Y-%m') periode, sum(ROUND(debit * rate,2)) debit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_debit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.profit_center = 'NAG' GROUP BY c.id, DATE_FORMAT(tgl_journal,'%Y-%m')) c on c.ind_name = a.nama_pilihan and c.periode = p.periode
           LEFT JOIN
-          (select c.id,c.ind_name, sum(ROUND(credit * rate,2)) credit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_credit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.profit_center = 'NAK' GROUP BY c.id) d on d.ind_name = a.nama_pilihan
+          (select c.id,c.ind_name, DATE_FORMAT(tgl_journal,'%Y-%m') periode, sum(ROUND(credit * rate,2)) credit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_credit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.profit_center = 'NAK' GROUP BY c.id, DATE_FORMAT(tgl_journal,'%Y-%m')) d on d.ind_name = a.nama_pilihan and d.periode = p.periode
           LEFT JOIN
-          (select c.id,c.ind_name, sum(ROUND(debit * rate,2)) debit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_debit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.profit_center = 'NAK' GROUP BY c.id) e on e.ind_name = a.nama_pilihan GROUP BY a.id) a ORDER BY a.id ASC");
+          (select c.id,c.ind_name, DATE_FORMAT(tgl_journal,'%Y-%m') periode, sum(ROUND(debit * rate,2)) debit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_debit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.profit_center = 'NAK' GROUP BY c.id, DATE_FORMAT(tgl_journal,'%Y-%m')) e on e.ind_name = a.nama_pilihan and e.periode = p.periode GROUP BY a.id, p.periode) a ORDER BY periode, a.id ASC),
+          
+  hasil as (select a.id, a.periode, sub_kategori, sub_kategori_eng, (COALESCE(total_nag,0) + COALESCE(revaluasi_nag,0)) total_nag, (COALESCE(total_nak,0) + COALESCE(revaluasi_nak,0)) total_nak, (COALESCE(total_all,0) + COALESCE(revaluasi_all,0)) total_all from pembayaran a LEFT JOIN revaluasi b on b.id = a.id and b.periode = a.periode order by periode, a.id asc)
+  
+  select id, sub_kategori, sub_kategori_eng, sum(total_nag) total_nag, sum(total_nak) total_nak, sum(total_all) total_all from hasil WHERE periode BETWEEN DATE_FORMAT('$tanggal_awal','%Y-%m') AND DATE_FORMAT('$tanggal_akhir','%Y-%m') group by id ORDER BY id asc");
         $total_aktivitas_operasi_nag = 0;
         $total_aktivitas_operasi_nak = 0;
         $total_aktivitas_operasi_all = 0;
@@ -605,54 +944,206 @@
         <?php
         $sql4 = mysqli_query($conn2,"WITH
 accounts AS (
-  SELECT profit_center, no_coa, akun, SUM($kata_filter) AS saldo_awal
+SELECT profit_center, no_coa, akun, periode, SUM(jan_$tahun_awal) AS saldo_awal
   FROM (
-    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, s.$kata_filter
+      SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-01' periode, s.jan_$tahun_awal
     FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
     UNION ALL
-    SELECT 'NAG', '1.10.01', '008-997-1979', s.$kata_filter
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-01' periode, s.jan_$tahun_awal
     FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
-
     UNION ALL
-    SELECT 'NAK', '1.10.02', '008-998-1982', s.$kata_filter
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-01' periode, s.jan_$tahun_awal
     FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
     UNION ALL
-    SELECT 'NAK', '1.10.01', '008-997-1979', s.$kata_filter
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-01' periode, s.jan_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-02' periode, s.feb_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-02' periode, s.feb_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-02' periode, s.feb_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-02' periode, s.feb_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-03' periode, s.mar_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-03' periode, s.mar_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-03' periode, s.mar_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-03' periode, s.mar_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-04' periode, s.apr_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-04' periode, s.apr_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-04' periode, s.apr_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-04' periode, s.apr_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-05' periode, s.may_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-05' periode, s.may_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-05' periode, s.may_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-05' periode, s.may_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-06' periode, s.jun_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-06' periode, s.jun_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-06' periode, s.jun_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-06' periode, s.jun_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-07' periode, s.jul_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-07' periode, s.jul_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-07' periode, s.jul_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NK', '1.10.01', '008-997-1979', '$tahun_awal-07' periode, s.jul_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-08' periode, s.aug_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-08' periode, s.aug_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-08' periode, s.aug_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-08' periode, s.aug_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-09' periode, s.sep_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-09' periode, s.sep_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-09' periode, s.sep_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-09' periode, s.sep_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-10' periode, s.oct_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-10' periode, s.oct_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-10' periode, s.oct_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-10' periode, s.oct_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-11' periode, s.nov_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-11' periode, s.nov_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-11' periode, s.nov_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-11' periode, s.nov_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
+    
+    UNION ALL
+    
+    SELECT 'NAG' AS profit_center, '1.10.02' AS no_coa, '008-998-1982' AS akun, '$tahun_awal-12' periode, s.dec_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAG', '1.10.01', '008-997-1979', '$tahun_awal-12' periode, s.dec_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAG'
+    UNION ALL
+    SELECT 'NAK', '1.10.02', '008-998-1982', '$tahun_awal-12' periode, s.dec_$tahun_awal
+    FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.02','2.20.02') AND s.profit_center = 'NAK'
+    UNION ALL
+    SELECT 'NAK', '1.10.01', '008-997-1979', '$tahun_awal-12' periode, s.dec_$tahun_awal
     FROM fs_saldo_awal_tb s WHERE s.no_coa IN ('1.10.01','2.20.01') AND s.profit_center = 'NAK'
   ) AS a
-  GROUP BY profit_center, no_coa, akun
+  GROUP BY profit_center, no_coa, akun, periode
 ),
 
 journal_sums AS (
-  SELECT l.profit_center, l.no_coa,
+  SELECT l.profit_center, l.no_coa, DATE_FORMAT(tgl_journal,'%Y-%m') periode,
          SUM(l.rate * l.debit)  AS debit,
          SUM(l.rate * l.credit) AS credit
   FROM tbl_list_journal l
   WHERE l.tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir')
     AND (l.no_journal LIKE '%BM%' OR l.no_journal LIKE '%BK%')
     AND l.profit_center IN ('NAG','NAK')
-  GROUP BY l.profit_center, l.no_coa
+  GROUP BY l.profit_center, l.no_coa, DATE_FORMAT(tgl_journal,'%Y-%m')
 ),
 
 reval AS (
-  SELECT l.profit_center, l.no_coa,
+  SELECT l.profit_center, l.no_coa, DATE_FORMAT(tgl_journal,'%Y-%m') periode,
          SUM(l.debit_idr)  AS debit_idr,
          SUM(l.credit_idr) AS credit_idr
   FROM tbl_list_journal l
   WHERE (l.keterangan LIKE '%REVALUASI%' OR l.keterangan LIKE '%REVALUATION%')
     AND l.tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir')
     AND l.profit_center IN ('NAG','NAK')
-  GROUP BY l.profit_center, l.no_coa
+  GROUP BY l.profit_center, l.no_coa, DATE_FORMAT(tgl_journal,'%Y-%m')
 ),
 
 base AS (
-  SELECT a.profit_center, a.no_coa, a.akun,
+  SELECT a.profit_center, a.no_coa, a.akun, a.periode,
          a.saldo_awal,
          COALESCE(j.debit, 0)  AS debit,
          COALESCE(j.credit,0)  AS credit,
          (a.saldo_awal + COALESCE(j.debit,0) - COALESCE(j.credit,0)) AS saldo_akhir
   FROM accounts a
-  LEFT JOIN journal_sums j ON j.no_coa = a.no_coa AND j.profit_center = a.profit_center
+  LEFT JOIN journal_sums j ON j.no_coa = a.no_coa AND j.profit_center = a.profit_center AND j.periode = a.periode
 ),
 
 calc AS (
@@ -673,47 +1164,129 @@ calc AS (
 
 agg AS (
   SELECT
-    c.profit_center,
+    c.profit_center, c.periode,
     SUM(COALESCE(c.penerimaan_pinjaman,0)) AS penerimaan_pinjaman,
     SUM(COALESCE(c.pembayaran_pinjaman,0)) AS pembayaran_pinjaman,
     SUM(COALESCE(
-        CASE WHEN c.saldo_awal > 0 AND c.saldo_akhir < 0 THEN 0 ELSE COALESCE(r.debit_idr,0) END
+        CASE WHEN c.saldo_akhir < 0 THEN 0 ELSE COALESCE(r.debit_idr,0) END
     ,0)) AS debit_revaluasi,
     SUM(COALESCE(
-        CASE WHEN c.saldo_awal > 0 AND c.saldo_akhir < 0 THEN 0 ELSE COALESCE(r.credit_idr,0) END
-    ,0)) AS credit_revaluasi
+        CASE WHEN c.saldo_akhir < 0 THEN 0 ELSE COALESCE(r.credit_idr,0) END
+    ,0)) AS credit_revaluasi,
+    SUM(IF(r.no_coa IN ('1.10.02', '1.10.01'),COALESCE(r.debit_idr,0) - COALESCE(r.credit_idr,0),0)) AS revaluasi_nya
   FROM calc c
   LEFT JOIN reval r
-    ON r.no_coa = c.no_coa AND r.profit_center = c.profit_center
-  GROUP BY c.profit_center
+    ON r.no_coa = c.no_coa AND r.profit_center = c.profit_center AND r.periode = c.periode
+  GROUP BY c.profit_center, c.periode
 ),
 
 pivot AS (
   SELECT
-    'saldo_jan' AS periode,
-    SUM(CASE WHEN profit_center='NAG' THEN penerimaan_pinjaman - credit_revaluasi ELSE 0 END) AS penerimaan_NAG,
-    SUM(CASE WHEN profit_center='NAK' THEN penerimaan_pinjaman - credit_revaluasi ELSE 0 END) AS penerimaan_NAK,
-    SUM(penerimaan_pinjaman - credit_revaluasi) AS penerimaan_TOTAL,
-    SUM(CASE WHEN profit_center='NAG' THEN pembayaran_pinjaman - debit_revaluasi ELSE 0 END) AS pembayaran_NAG,
-    SUM(CASE WHEN profit_center='NAK' THEN pembayaran_pinjaman - debit_revaluasi ELSE 0 END) AS pembayaran_NAK,
-    SUM(pembayaran_pinjaman - debit_revaluasi) AS pembayaran_TOTAL
-  FROM agg
-)
+  14 id,
+    periode,
+    SUM(CASE WHEN profit_center='NAG' THEN penerimaan_pinjaman ELSE 0 END) AS penerimaan_NAG,
+    SUM(CASE WHEN profit_center='NAK' THEN penerimaan_pinjaman ELSE 0 END) AS penerimaan_NAK,
+    SUM(penerimaan_pinjaman) AS penerimaan_TOTAL,
+    SUM(CASE WHEN profit_center='NAG' THEN (pembayaran_pinjaman) ELSE 0 END) AS pembayaran_NAG,
+    SUM(CASE WHEN profit_center='NAK' THEN (pembayaran_pinjaman) ELSE 0 END) AS pembayaran_NAK,
+    SUM(pembayaran_pinjaman) AS pembayaran_TOTAL
+  FROM agg GROUP BY periode
+),
 
-SELECT periode, 'Penerimaan Pinjaman' AS sub_kategori, 'Proceeds from loans' sub_kategori_eng,
-       penerimaan_NAG AS total_nag,
-       penerimaan_NAK AS total_nak,
-       penerimaan_TOTAL AS total_all
-FROM pivot
+pivot_bayar AS (
+  SELECT
+  15 id,
+    periode,
+    SUM(CASE WHEN profit_center='NAG' THEN penerimaan_pinjaman ELSE 0 END) AS penerimaan_NAG,
+    SUM(CASE WHEN profit_center='NAK' THEN penerimaan_pinjaman ELSE 0 END) AS penerimaan_NAK,
+    SUM(penerimaan_pinjaman) AS penerimaan_TOTAL,
+    SUM(CASE WHEN profit_center='NAG' THEN (pembayaran_pinjaman) ELSE 0 END) AS pembayaran_NAG,
+    SUM(CASE WHEN profit_center='NAK' THEN (pembayaran_pinjaman) ELSE 0 END) AS pembayaran_NAK,
+    SUM(pembayaran_pinjaman) AS pembayaran_TOTAL
+  FROM agg GROUP BY periode
+),
 
+other_value as (select id, periode, sub_kategori, total_nag, total_nak, (total_nag + total_nak) total_all, sub_kategori_eng from (select a.id, a.nama_pilihan sub_kategori, a.nama_pilihan_eng sub_kategori_eng, COALESCE(b.periode, c.periode, d.periode, e.periode) AS periode, sum(COALESCE(b.credit,0) - COALESCE(c.debit,0)) total_nag, sum(COALESCE(d.credit,0) - COALESCE(e.debit,0)) total_nak from (SELECT * FROM tb_master_pilihan where status = 'Y' and type_pilihan = 'Arus Kas dari Aktivitas pendanaan') a 
+CROSS JOIN
+(
+    SELECT '$tahun_awal-01' periode
+    UNION ALL SELECT '$tahun_awal-02'
+    UNION ALL SELECT '$tahun_awal-03'
+    UNION ALL SELECT '$tahun_awal-04'
+    UNION ALL SELECT '$tahun_awal-05'
+    UNION ALL SELECT '$tahun_awal-06'
+    UNION ALL SELECT '$tahun_awal-07'
+    UNION ALL SELECT '$tahun_awal-08'
+    UNION ALL SELECT '$tahun_awal-09'
+    UNION ALL SELECT '$tahun_awal-10'
+    UNION ALL SELECT '$tahun_awal-11'
+    UNION ALL SELECT '$tahun_awal-12'
+) p
+          LEFT JOIN
+          (select c.id,c.ind_name, DATE_FORMAT(tgl_journal,'%Y-%m') periode,sum(ROUND(credit * rate,2)) credit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_credit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.no_coa not in ('1.10.02', '1.10.01') and a.profit_center = 'NAG' GROUP BY c.id, DATE_FORMAT(tgl_journal,'%Y-%m')) b on b.ind_name = a.nama_pilihan and b.periode = p.periode
+          LEFT JOIN
+          (select c.id,c.ind_name, DATE_FORMAT(tgl_journal,'%Y-%m') periode,sum(ROUND(debit * rate,2)) debit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_debit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.no_coa not in ('1.10.02', '1.10.01') and a.profit_center = 'NAG' GROUP BY c.id, DATE_FORMAT(tgl_journal,'%Y-%m')) c on c.ind_name = a.nama_pilihan and c.periode = p.periode
+          LEFT JOIN
+          (select c.id,c.ind_name, DATE_FORMAT(tgl_journal,'%Y-%m') periode,sum(ROUND(credit * rate,2)) credit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_credit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.no_coa not in ('1.10.02', '1.10.01') and a.profit_center = 'NAK' GROUP BY c.id, DATE_FORMAT(tgl_journal,'%Y-%m')) d on d.ind_name = a.nama_pilihan and d.periode = p.periode
+          LEFT JOIN
+          (select c.id,c.ind_name, DATE_FORMAT(tgl_journal,'%Y-%m') periode,sum(ROUND(debit * rate,2)) debit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_debit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.no_coa not in ('1.10.02', '1.10.01') and a.profit_center = 'NAK' GROUP BY c.id, DATE_FORMAT(tgl_journal,'%Y-%m')) e on e.ind_name = a.nama_pilihan and e.periode = p.periode GROUP BY a.id, COALESCE(b.periode, c.periode, d.periode, e.periode)) a WHERE a.id = '14' ORDER BY a.id ASC),
+          
+          other_value_bayar as (select id, periode, sub_kategori, total_nag, total_nak, (total_nag + total_nak) total_all, sub_kategori_eng from (select a.id, a.nama_pilihan sub_kategori, a.nama_pilihan_eng sub_kategori_eng, COALESCE(b.periode, c.periode, d.periode, e.periode) AS periode, sum(COALESCE(b.credit,0) - COALESCE(c.debit,0)) total_nag, sum(COALESCE(d.credit,0) - COALESCE(e.debit,0)) total_nak from (SELECT * FROM tb_master_pilihan where status = 'Y' and type_pilihan = 'Arus Kas dari Aktivitas pendanaan') a 
+CROSS JOIN
+(
+    SELECT '$tahun_awal-01' periode
+    UNION ALL SELECT '$tahun_awal-02'
+    UNION ALL SELECT '$tahun_awal-03'
+    UNION ALL SELECT '$tahun_awal-04'
+    UNION ALL SELECT '$tahun_awal-05'
+    UNION ALL SELECT '$tahun_awal-06'
+    UNION ALL SELECT '$tahun_awal-07'
+    UNION ALL SELECT '$tahun_awal-08'
+    UNION ALL SELECT '$tahun_awal-09'
+    UNION ALL SELECT '$tahun_awal-10'
+    UNION ALL SELECT '$tahun_awal-11'
+    UNION ALL SELECT '$tahun_awal-12'
+) p
+          LEFT JOIN
+          (select c.id,c.ind_name, DATE_FORMAT(tgl_journal,'%Y-%m') periode,sum(ROUND(credit * rate,2)) credit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_credit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.no_coa not in ('1.10.02', '1.10.01') and a.profit_center = 'NAG' GROUP BY c.id, DATE_FORMAT(tgl_journal,'%Y-%m')) b on b.ind_name = a.nama_pilihan and b.periode = p.periode
+          LEFT JOIN
+          (select c.id,c.ind_name, DATE_FORMAT(tgl_journal,'%Y-%m') periode,sum(ROUND(debit * rate,2)) debit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_debit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.no_coa not in ('1.10.02', '1.10.01') and a.profit_center = 'NAG' GROUP BY c.id, DATE_FORMAT(tgl_journal,'%Y-%m')) c on c.ind_name = a.nama_pilihan and c.periode = p.periode
+          LEFT JOIN
+          (select c.id,c.ind_name, DATE_FORMAT(tgl_journal,'%Y-%m') periode,sum(ROUND(credit * rate,2)) credit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_credit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.no_coa not in ('1.10.02', '1.10.01') and a.profit_center = 'NAK' GROUP BY c.id, DATE_FORMAT(tgl_journal,'%Y-%m')) d on d.ind_name = a.nama_pilihan and d.periode = p.periode
+          LEFT JOIN
+          (select c.id,c.ind_name, DATE_FORMAT(tgl_journal,'%Y-%m') periode,sum(ROUND(debit * rate,2)) debit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_debit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.no_coa not in ('1.10.02', '1.10.01') and a.profit_center = 'NAK' GROUP BY c.id, DATE_FORMAT(tgl_journal,'%Y-%m')) e on e.ind_name = a.nama_pilihan and e.periode = p.periode GROUP BY a.id, COALESCE(b.periode, c.periode, d.periode, e.periode)) a WHERE a.id = '15' ORDER BY a.id ASC),
+
+data_fix as (SELECT a.periode, 'Penerimaan Pinjaman' AS sub_kategori, 'Proceeds from loans' sub_kategori_eng,
+       (penerimaan_NAG + b.total_nag) AS total_nag,
+       (penerimaan_NAK + b.total_nak) AS total_nak,
+       (penerimaan_TOTAL + b.total_all) AS total_all
+FROM pivot a left join other_value b on b.id = a.id and b.periode = a.periode
 UNION ALL
 
-SELECT periode, 'Pembayaran Pinjaman', 'Payment of loans
+SELECT a.periode, 'Pembayaran Pinjaman', 'Payment of loans
 ',
-       - pembayaran_NAG,
-       - pembayaran_NAK,
-       - pembayaran_TOTAL
-FROM pivot
+       - (pembayaran_NAG - b.total_nag) pembayaran_NAG,
+       - (pembayaran_NAK - b.total_nak) pembayaran_NAK,
+       - (pembayaran_TOTAL - b.total_all) pembayaran_TOTAL
+FROM pivot a left join other_value b on b.id = a.id and b.periode = a.periode),
+
+data_fix_bayar as (SELECT a.periode, 'Penerimaan Pinjaman' AS sub_kategori, 'Proceeds from loans' sub_kategori_eng,
+       (penerimaan_NAG + b.total_nag) AS total_nag,
+       (penerimaan_NAK + b.total_nak) AS total_nak,
+       (penerimaan_TOTAL + b.total_all) AS total_all
+FROM pivot_bayar a left join other_value_bayar b on b.id = a.id and b.periode = a.periode
+UNION ALL
+
+SELECT a.periode, 'Pembayaran Pinjaman', 'Payment of loans
+',
+       - (pembayaran_NAG - b.total_nag) pembayaran_NAG,
+       - (pembayaran_NAK - b.total_nak) pembayaran_NAK,
+       - (pembayaran_TOTAL - b.total_all) pembayaran_TOTAL
+FROM pivot_bayar a left join other_value_bayar b on b.id = a.id and b.periode = a.periode)
+
+select sub_kategori, sub_kategori_eng, sum(total_nag) total_nag, sum(total_nak) total_nak, sum(total_all) total_all from data_fix where sub_kategori = 'Penerimaan Pinjaman' AND periode BETWEEN DATE_FORMAT('$tahun_awal-01-01','%Y-%m') AND DATE_FORMAT('$tahun_awal-12-31','%Y-%m')
+UNION ALL
+select sub_kategori, sub_kategori_eng, sum(total_nag) total_nag, sum(total_nak) total_nak, sum(total_all) total_all from data_fix_bayar where sub_kategori = 'Pembayaran Pinjaman' AND periode BETWEEN DATE_FORMAT('$tanggal_awal','%Y-%m') AND DATE_FORMAT('$tanggal_akhir','%Y-%m')
 ");
         $total_aktivitas_pendanaan_nag = 0;
         $total_aktivitas_pendanaan_nak = 0;
@@ -749,6 +1322,51 @@ FROM pivot
         }
         ?>
 
+
+        <?php
+        $sql = mysqli_query($conn2,"select sub_kategori, total_nag, total_nak, (total_nag + total_nak) total_all, sub_kategori_eng from (select a.id, a.nama_pilihan sub_kategori, a.nama_pilihan_eng sub_kategori_eng, sum(COALESCE(b.credit,0) - COALESCE(c.debit,0)) total_nag, sum(COALESCE(d.credit,0) - COALESCE(e.debit,0)) total_nak from (SELECT * FROM tb_master_pilihan where status = 'Y' and type_pilihan = 'Arus Kas dari Aktivitas Pendanaan' and id not in (14,15)) a 
+          LEFT JOIN
+          (select c.id,c.ind_name, sum(ROUND(credit * rate,2)) credit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_credit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.profit_center = 'NAG' GROUP BY c.id) b on b.ind_name = a.nama_pilihan
+          LEFT JOIN
+          (select c.id,c.ind_name, sum(ROUND(debit * rate,2)) debit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_debit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.profit_center = 'NAG' GROUP BY c.id) c on c.ind_name = a.nama_pilihan
+          LEFT JOIN
+          (select c.id,c.ind_name, sum(ROUND(credit * rate,2)) credit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_credit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.profit_center = 'NAK' GROUP BY c.id) d on d.ind_name = a.nama_pilihan
+          LEFT JOIN
+          (select c.id,c.ind_name, sum(ROUND(debit * rate,2)) debit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_debit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.profit_center = 'NAK' GROUP BY c.id) e on e.ind_name = a.nama_pilihan GROUP BY a.id) a ORDER BY a.id ASC");
+        $total_aktivitas_pendanaan_antar_divisi_nag = 0;
+        $total_aktivitas_pendanaan_antar_divisi_nak = 0;
+        $total_aktivitas_pendanaan_antar_divisi_all = 0;
+        while($row = mysqli_fetch_array($sql)){
+          $aktivitas_pendanaan_antar_divisi_nag = $row['total_nag'] ?? 0;
+          $aktivitas_pendanaan_antar_divisi_nak = $row['total_nak'] ?? 0;
+          $aktivitas_pendanaan_antar_divisi_all = $row['total_all'] ?? 0;
+          $akapad_nag = $aktivitas_pendanaan_antar_divisi_nag > 0 ? number_format($aktivitas_pendanaan_antar_divisi_nag,2) : '(' . number_format(abs($aktivitas_pendanaan_antar_divisi_nag),2) . ')';
+          $akapad_nak = $aktivitas_pendanaan_antar_divisi_nak > 0 ? number_format($aktivitas_pendanaan_antar_divisi_nak,2) : '(' . number_format(abs($aktivitas_pendanaan_antar_divisi_nak),2) . ')';
+          $akapad_all = $aktivitas_pendanaan_antar_divisi_all > 0 ? number_format($aktivitas_pendanaan_antar_divisi_all,2) : '(' . number_format(abs($aktivitas_pendanaan_antar_divisi_all),2) . ')';
+          $total_aktivitas_pendanaan_antar_divisi_nag += $aktivitas_pendanaan_antar_divisi_nag;
+          $total_aktivitas_pendanaan_antar_divisi_nak += $aktivitas_pendanaan_antar_divisi_nak;
+          $total_aktivitas_pendanaan_antar_divisi_all += $aktivitas_pendanaan_antar_divisi_all;
+          $total_akapad_nag = $total_aktivitas_pendanaan_antar_divisi_nag > 0 ? number_format($total_aktivitas_pendanaan_antar_divisi_nag,2) : '(' . number_format(abs($total_aktivitas_pendanaan_antar_divisi_nag),2) . ')';
+          $total_akapad_nak = $total_aktivitas_pendanaan_antar_divisi_nak > 0 ? number_format($total_aktivitas_pendanaan_antar_divisi_nak,2) : '(' . number_format(abs($total_aktivitas_pendanaan_antar_divisi_nak),2) . ')';
+          $total_akapad_all = $total_aktivitas_pendanaan_antar_divisi_all > 0 ? number_format($total_aktivitas_pendanaan_antar_divisi_all,2) : '(' . number_format(abs($total_aktivitas_pendanaan_antar_divisi_all),2) . ')';
+          echo "
+          <tr>
+          <td class='item-left'>{$row['sub_kategori']}</td>";
+          if ($profit_center == 'ALL') {
+            echo "<td class='item-right'>{$akapad_nag}</td>";
+            echo "<td class='item-right'>{$akapad_nak}</td>";
+            echo "<td class='item-right'>{$akapad_all}</td>";
+          }elseif ($profit_center == 'NAG') {
+            echo "<td class='item-right'>{$akapad_nag}</td>";
+          }else{
+            echo "<td class='item-right'>{$akapad_nak}</td>";
+          }
+          echo "<td class='item-italic'>{$row['sub_kategori_eng']}</td>
+          </tr>
+          ";
+        }
+        ?>
+
         <tr class="total-line">
           <th class="total-left"><?= strtoupper('Arus kas yang diperoleh dari aktivitas pendanaan'); ?></th>
           <?php 
@@ -774,9 +1392,9 @@ FROM pivot
             $profit_center = isset($_POST['h_profit_center']) ? $_POST['h_profit_center']: null;
           }
 
-          $kas_setara_kas_nag = $total_aktivitas_operasi_nag + $total_aktivitas_investasi_nag + $total_aktivitas_pendanaan_nag;
-          $kas_setara_kas_nak = $total_aktivitas_operasi_nak + $total_aktivitas_investasi_nak + $total_aktivitas_pendanaan_nak;
-          $kas_setara_kas_all = $total_aktivitas_operasi_all + $total_aktivitas_investasi_all + $total_aktivitas_pendanaan_all;
+          $kas_setara_kas_nag = $total_aktivitas_operasi_nag + $total_aktivitas_investasi_nag + $total_aktivitas_pendanaan_nag + $total_aktivitas_pendanaan_antar_divisi_nag;
+          $kas_setara_kas_nak = $total_aktivitas_operasi_nak + $total_aktivitas_investasi_nak + $total_aktivitas_pendanaan_nak + $total_aktivitas_pendanaan_antar_divisi_nak;
+          $kas_setara_kas_all = $total_aktivitas_operasi_all + $total_aktivitas_investasi_all + $total_aktivitas_pendanaan_all + $total_aktivitas_pendanaan_antar_divisi_all;
           $ksk_nag = $kas_setara_kas_nag > 0 ? number_format($kas_setara_kas_nag,2) : '(' . number_format(abs($kas_setara_kas_nag),2) . ')';
           $ksk_nak = $kas_setara_kas_nak > 0 ? number_format($kas_setara_kas_nak,2) : '(' . number_format(abs($kas_setara_kas_nak),2) . ')';
           $ksk_all = $kas_setara_kas_all > 0 ? number_format($kas_setara_kas_all,2) : '(' . number_format(abs($kas_setara_kas_all),2) . ')';

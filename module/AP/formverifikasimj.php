@@ -90,7 +90,7 @@
             </div>
             </br>
         </br>
-           <div class="tableFix" style="height: 400px;">
+           <div class="tableFix table-responsive" style="height: 400px;">
             <table id="mytable" class="table table-striped table-head-fixed" cellspacing="0" width="100%" style="font-size: 13px;text-align:center;">
                     <thead class="bg-dark text-white">
                         <tr>
@@ -119,10 +119,10 @@
 
             if($nama_type == 'ALL'){
             $sql = mysql_query("select * from (select a.no_mj,a.mj_date,a.id_cmj,b.nama_cmj,a.curr,sum(a.debit) debit,sum(a.credit) credit,a.keterangan,a.status from tbl_memorial_journal a left join master_category_mj b on b.id_cmj = a.id_cmj where a.mj_date between '$start_date' and '$end_date' and status = 'Post' group by a.no_mj) a left JOIN
-                (select no_mj mjno from status_memorial_journal where mj_date between '$start_date' and '$end_date' and status = 'Post' GROUP BY no_mj) b on b.mjno = a.no_mj where b.mjno is null",$conn1);                
+                (select no_mj mjno from status_memorial_journal where status = 'Post' GROUP BY no_mj) b on b.mjno = a.no_mj where b.mjno is null",$conn1);                
             }else {
             $sql = mysql_query("select * from (select a.no_mj,a.mj_date,a.id_cmj,b.nama_cmj,a.curr,sum(a.debit) debit,sum(a.credit) credit,a.keterangan,a.status from tbl_memorial_journal a left join master_category_mj b on b.id_cmj = a.id_cmj where a.id_cmj = '$nama_type' and a.mj_date between '$start_date' and '$end_date' and status = 'Post' group by a.no_mj) a left JOIN
-                (select no_mj mjno from status_memorial_journal where mj_date between '$start_date' and '$end_date' and status = 'Post' GROUP BY no_mj) b on b.mjno = a.no_mj where b.mjno is null",$conn1);
+                (select no_mj mjno from status_memorial_journal where status = 'Post' GROUP BY no_mj) b on b.mjno = a.no_mj where b.mjno is null",$conn1);
             }
                             
             if (!empty($nama_type && $start_date && $end_date)) {                                              

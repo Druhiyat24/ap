@@ -36,6 +36,7 @@ $deskripsi = $_POST['deskripsi'];
 $debit = $_POST['debit'];
 $credit = $_POST['credit'];
 $prof_ctr = $_POST['prof_ctr'];
+$pesan = $_POST['pesan'];
 
 $profit_center = $_POST['profit_center'];
 $coa_lp = $_POST['coa_lp'];
@@ -92,14 +93,14 @@ if ($list_payment_id != '') {
 
 	$queryss = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
 	VALUES 
-	('$payment_ftr_id', '$create_date', 'Payment Non Bank', '$coa_lp', '$nama_coa_lp', '-', '-', '$list_payment_id', '$tgl_list_payment', '-', '-', '$valuta_ftr', '$rate', '$nominal', '0', '$t_nominal', '0', 'Draft', '-', '$create_user', '$create_date', '', '', '', '', '$profit_center')";
+	('$payment_ftr_id', '$create_date', 'Payment Non Bank', '$coa_lp', '$nama_coa_lp', '-', '-', '$list_payment_id', '$tgl_list_payment', '-', '-', '$valuta_ftr', '$rate', '$nominal', '0', '$t_nominal', '0', 'Draft', '$pesan', '$create_user', '$create_date', '', '', '', '', '$profit_center')";
 
 	$executess = mysqli_query($conn2,$queryss);
 
 	if ($valuta_ftr == 'IDR') {	
 		$query = "INSERT INTO payment_ftr (payment_ftr_id, tgl_pelunasan, nama_supp, list_payment_id, tgl_list_payment, no_kbon, tgl_kbon, valuta_ftr, ttl_bayar, cara_bayar, account, bank, valuta_bayar, nominal, nominal_fgn, rate, status, keterangan, create_user, create_date, profit_center, no_coa) 
 		VALUES 
-		('$payment_ftr_id', '$tgl_pelunasan', '$nama_supp', '$list_payment_id', '$tgl_list_payment', '$no_kbon', '$tgl_kbon', '$valuta_ftr', '$ttl_bayar', '$cara_bayar', '$account', '$bank', '$valuta_bayar1', '$nominal', '$nomrate', '$rate', '$status', '$keterangan', '$create_user', '$create_date', '$profit_center', '$coa_lp')";
+		('$payment_ftr_id', '$tgl_pelunasan', '$nama_supp', '$list_payment_id', '$tgl_list_payment', '$no_kbon', '$tgl_kbon', '$valuta_ftr', '$ttl_bayar', '$cara_bayar', '$account', '$bank', '$valuta_bayar1', '$nominal', '$nomrate', '$rate', '$status', '$pesan', '$create_user', '$create_date', '$profit_center', '$coa_lp')";
 
 		$sql2 = mysqli_query($conn2,"INSERT INTO kartu_hutang (no_bpb, no_po, no_kbon, supp_inv, no_faktur, nama_supp, create_date, no_payment, tgl_payment, curr, ket, credit_usd, debit_usd, credit_idr, debit_idr, cek) 
 			VALUES 
@@ -109,7 +110,7 @@ if ($list_payment_id != '') {
 	}else{
 		$query = "INSERT INTO payment_ftr (payment_ftr_id, tgl_pelunasan, nama_supp, list_payment_id, tgl_list_payment, no_kbon, tgl_kbon, valuta_ftr, ttl_bayar, cara_bayar, account, bank, valuta_bayar, nominal, nominal_fgn, rate, status, keterangan, create_user, create_date, profit_center, no_coa) 
 		VALUES 
-		('$payment_ftr_id', '$tgl_pelunasan', '$nama_supp', '$list_payment_id', '$tgl_list_payment', '$no_kbon', '$tgl_kbon', '$valuta_ftr', '$ttl_bayar', '$cara_bayar', '$account', '$bank', '$valuta_bayar1', '$nomrate', '$nominal', '$rate', '$status', '$keterangan', '$create_user', '$create_date', '$profit_center', '$coa_lp')";
+		('$payment_ftr_id', '$tgl_pelunasan', '$nama_supp', '$list_payment_id', '$tgl_list_payment', '$no_kbon', '$tgl_kbon', '$valuta_ftr', '$ttl_bayar', '$cara_bayar', '$account', '$bank', '$valuta_bayar1', '$nomrate', '$nominal', '$rate', '$status', '$pesan', '$create_user', '$create_date', '$profit_center', '$coa_lp')";
 
 		$sql2 = mysqli_query($conn2,"INSERT INTO kartu_hutang (no_bpb, no_po, no_kbon, supp_inv, no_faktur, nama_supp, create_date, no_payment, tgl_payment, curr, ket, rate, credit_usd, debit_usd, credit_idr, debit_idr, cek) 
 			VALUES 

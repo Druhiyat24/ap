@@ -6,7 +6,7 @@
     <div class="box">
         <div class="box header">
 
-            <form id="form-data" action="Payment.php" method="post">        
+            <form id="form-data" action="payment.php" method="post">        
                 <div class="form-row">
                     <div class="col-md-12">
                         <label for="nama_supp"><b>Supplier</b></label>            
@@ -560,7 +560,7 @@ function SidebarCollapse () {
 </script>
 <script type="text/javascript">
     document.getElementById('reset').onclick = function () {
-        location.href = "Payment.php";
+        location.href = "payment.php";
     };
 </script>
 

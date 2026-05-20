@@ -275,29 +275,41 @@
         $total_add_bfr = isset($row_rvs_bfr['total_new']) ? $row_rvs_bfr['total_new'] : 0;
 
 
+        $query_adj = mysqli_query($conn1,"SELECT no_kbon, SUM(COALESCE(saldo_awal,0)) saldo_awal, SUM(COALESCE(ttl_bpb,0)) ttl_bpb, SUM(COALESCE(ttl_adjust,0)) ttl_adjust, SUM(COALESCE(ttl_deduction,0)) ttl_deduction, SUM(COALESCE(ttl_reverse,0)) ttl_reverse from (SELECT no_kbon, 0 saldo_awal, ttl_bpb, ttl_adjust, ttl_deduction, ttl_reverse from kontrabon_adjust where tgl_kbon BETWEEN '$start_date' and '$end_date' and no_kbon = '$no_kbon'
+                UNION
+                SELECT no_kbon, saldo_awal, 0 ttl_bpb, 0 ttl_adjust, 0 ttl_deduction, 0 ttl_reverse from kontrabon_adjust where tgl_kbon < '$start_date' and no_kbon = '$no_kbon') a GROUP BY no_kbon");
+            $data_adj = mysqli_fetch_array($query_adj);
+            $adj_saldo_awal = isset($data_adj['saldo_awal']) ? $data_adj['saldo_awal'] : 0;
+            $adj_bpb = isset($data_adj['ttl_bpb']) ? $data_adj['ttl_bpb'] : 0;
+            $adj_adjust = isset($data_adj['ttl_adjust']) ? $data_adj['ttl_adjust'] : 0;
+            $adj_deduction = isset($data_adj['ttl_deduction']) ? $data_adj['ttl_deduction'] : 0;
+            $adj_reverse = isset($data_adj['ttl_reverse']) ? $data_adj['ttl_reverse'] : 0;
+            $total_adj = $adj_saldo_awal + $adj_bpb - $adj_adjust - $adj_deduction + $adj_reverse;
+
+
 // if($tot_total != 0){
 
         if($no_lp != null){
-            $kurang = $row['bayar'] + $total_gm;
-        }else{
-            $kurang = 0;
-        }
+                $kurang = $row['bayar'] + $total_gm - $adj_deduction;
+            }else{
+                $kurang = 0;
+            }
 
-        if($no_lp2 != null){
-            $bayar = $row['bayar'] + $total_gm2;
-        }else{
-            $bayar = 0;
-        }
+            if($no_lp2 != null){
+                $bayar = $row['bayar'] + $total_gm2;
+            }else{
+                $bayar = 0;
+            }
 
-        if($bbayar == '0' and $tgl_kbon < $start_date){
-           $sa_awal = $row['totalori'] + $row['jml_potong'] - $bayar + $total_rvs_bfr;
-       }
-       elseif($tgl_kbon < $start_date){
-        $sa_awal = $row['bayar'] - $bayar + $total_rvs_bfr;
-    }
-    else{
-        $sa_awal = 0;
-    }
+            if($bbayar == '0' and $tgl_kbon < $start_date){
+                $sa_awal = $row['totalori'] + $row['jml_potong'] - $bayar + ($total_rvs_bfr - $adj_reverse) - $adj_saldo_awal;
+           }
+           elseif($tgl_kbon < $start_date){
+            $sa_awal = $row['bayar'] - $bayar + ($total_rvs_bfr - $adj_reverse) - $adj_saldo_awal;
+        }
+        else{
+            $sa_awal = 0;
+        }
 
 
     // if($tgl_kbon < $start_date ){
@@ -308,28 +320,28 @@
     //     $sa_awal = 0;
     // }
 
+        if($tgl_kbon >= $start_date){
+            if(strpos($no_kbon, 'REV_') !== false ) {
+                if ($total_add != 0) {
+                    $tambah = $total_add -  $adj_bpb;
+                }else{
+                 $tambah = 0 -  $adj_bpb; 
+             }
+         }else{
+            $tambah = $row['totalori'] -  $adj_bpb;
+        }
+    }else{
+        $tambah = 0 -  $adj_bpb;
+    }
+
     if($tgl_kbon >= $start_date){
-        if(strpos($no_kbon, 'REV_') !== false ) {
-            if ($total_add != 0) {
-                $tambah = $total_add;
-            }else{
-             $tambah = 0; 
-         }
+        if(strpos($no_kbon, 'REV_') !== false) {
+         $tambahan = 0  - $adj_adjust; 
      }else{
-        $tambah = $row['totalori'];
+        $tambahan = $row['jml_potong'] - $adj_adjust;
     }
 }else{
-    $tambah = 0;
-}
-
-if($tgl_kbon >= $start_date){
-    if(strpos($no_kbon, 'REV_') !== false) {
-     $tambahan = 0; 
- }else{
-    $tambahan = $row['jml_potong'];
-}
-}else{
-    $tambahan = 0;
+    $tambahan = 0  - $adj_adjust;
 }
 
 if ($currin2 == 'IDR') {
@@ -340,7 +352,8 @@ if ($currin2 == 'IDR') {
     $rate = $jml_rate;
 }
 
-$sa_akhir = $sa_awal + ($tambah + $tambahan) - $kurang + $total_rvs; 
+
+$sa_akhir = $sa_awal + ($tambah + $tambahan) - $kurang + ($total_rvs - $adj_reverse); 
 $saldo_akhir_idr = $sa_akhir * $rate;
 $saldo_akhir_idr_ += $saldo_akhir_idr;
 $sa_akhir_ += $sa_akhir;
@@ -348,7 +361,13 @@ $kurang_ += $kurang;
 $sa_awal_ += $sa_awal;
 $tambah_ += $tambah;
 $tambahan_ += $tambahan;
-$reverse += $total_rvs;
+$reverse += ($total_rvs - $adj_reverse);
+
+if (($total_rvs - $adj_reverse) <= 0) {
+    $input_reverse = ($total_rvs - $adj_reverse);
+}else{
+    $input_reverse = ($total_rvs - $adj_reverse);
+}
 
 if($sa_awal == '0' and $tambah == '0' and $tambahan == '0' and $kurang == '0' and $sa_akhir == '0'){
     echo '';
@@ -439,14 +458,14 @@ if($sa_awal == '0' and $tambah == '0' and $tambahan == '0' and $kurang == '0' an
     <td style="text-align:left;" value = "'.$row['tgl_kbon'].'">'.date("d-M-Y",strtotime($row['tgl_kbon'])).'</td>
     <td value="'.$row['tgl_tempo'].'">'.date("d-M-Y",strtotime($row['tgl_tempo'])).'</td>
     <td style="text-align:left;" value = "'.$row['curr'].'">'.$row['curr'].'</td>
-    <td style="text-align:right;" value = "'.$sa_awal.'">'.$sa_awal.'</td>
-    <td style="text-align:right;" value = "'.$tambah.'">'.$tambah.'</td> 
-    <td style="text-align:right;" value = "'.$tambah.'">'.$tambahan.'</td>         
-    <td style="text-align:right;" value = "'.$kurang.'">'.$kurang.'</td>
-    <td style="text-align:right;" value = "'.$total_rvs.'">'.$total_rvs.'</td>
-    <td style="text-align:right;" value = "'.$sa_akhir.'">'.$sa_akhir.'</td>
-    <td style="text-align:right;" value="'.$rate.'">'.$rate.'</td>
-    <td style="text-align:right;" value="'.$saldo_akhir_idr.'">'.$saldo_akhir_idr.'</td>
+    <td style="text-align:right;" value = "'.$sa_awal.'">'.number_format($sa_awal,2).'</td>
+    <td style="text-align:right;" value = "'.$tambah.'">'.number_format($tambah,2).'</td> 
+    <td style="text-align:right;" value = "'.$tambah.'">'.number_format($tambahan,2).'</td>         
+    <td style="text-align:right;" value = "'.$kurang.'">'.number_format($kurang,2).'</td>
+    <td style="text-align:right;" value = "'.($total_rvs - $adj_reverse).'">'.number_format(($total_rvs - $adj_reverse),2).'</td>
+    <td style="text-align:right;" value = "'.$sa_akhir.'">'.number_format($sa_akhir,2).'</td>
+    <td style="text-align:right;" value="'.$rate.'">'.number_format($rate,2).'</td>
+    <td style="text-align:right;" value="'.$saldo_akhir_idr.'">'.number_format($saldo_akhir_idr,2).'</td>
     <td value="'.$no_coa.'">'.$no_coa.'</td>
     <td value="'.$nama_coa.'">'.$nama_coa.'</td>
     <td value="'.$item_type1.'">'.$item_type1.'</td>

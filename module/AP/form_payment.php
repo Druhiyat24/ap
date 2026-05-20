@@ -17,7 +17,7 @@
     </div>
     <form id="form-data" method="post">
         <div class="form-row mt-2">
-            <div class="col-md-3 mb-3">            
+            <div class="col-md-2 mb-3">            
                 <label for="nopayment"><b>No List Payment</b></label>
                 <?php
                 $sql = mysqli_query($conn2,"select CONCAT('LP/NAG/',DATE_FORMAT(CURRENT_DATE(), '%m%y'),'/',LPAD((COALESCE(max(SUBSTR(no_payment,13)),0) + 1),5,0)) nomor from list_payment WHERE YEAR(tgl_payment) = YEAR (CURRENT_DATE())");
@@ -141,7 +141,7 @@
     ?>">
 </div>
 
-<div class="col-md-3 mb-3">            
+<div class="col-md-2 mb-3">            
     <label for="profit_center"><b>Profit Center <i style="color: red;">*</i></b></label>            
     <select class="form-control form-control-sm selectpicker" name="profit_center" id="profit_center" data-dropup-auto="false" data-live-search="true" onchange="updateNoLP()">
         <option value="" disabled selected="true">Select Profit Center</option>                                                 
@@ -172,18 +172,37 @@
     <!-- </div>   -->          
 
     <div class="col-md-3 mb-3">            
-        <label for="memo"><b>Descriptions</b></label>          
-        <input type="text" style="font-size: 14px;" class="form-control form-control-sm" name="memo" id="memo" 
-        value="<?php             
-        if(!empty($_POST['memo'])) {
-            echo $_POST['memo'];
-        }
-        else{
-            echo '';
-        } ?>">
     </div>            
 
+    <div class="col-md-2 mb-3">
+        <label for="nama_supp"><b>Supplier Bank Name</b></label>            
+        <div class="input-group">
+            <input type="text" readonly style="font-size: 14px; width: 300px;" class="form-control form-control-sm" name="txt_bank_supp" id="txt_bank_supp"  value="<?php 
+            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
 
+            $querys = mysqli_query($conn2,"select bank_name, bank_account, beneficiary_name from mastersupplier where tipe_sup = 'S' and supplier = '$nama_supp' LIMIT 1");
+            $rows = mysqli_fetch_array($querys);
+            $bank_name = $rows['bank_name'];
+            
+            echo $bank_name; 
+        ?>">
+        </div>
+    </div>  
+
+    <div class="col-md-2 mb-3">
+        <label for="nama_supp"><b>Supplier Bank Account</b></label>            
+        <div class="input-group">
+            <input type="text" readonly style="font-size: 14px; width: 300px;" class="form-control form-control-sm" name="txt_akun_supp" id="txt_akun_supp"  value="<?php 
+            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
+
+            $querys = mysqli_query($conn2,"select bank_name, bank_account, beneficiary_name from mastersupplier where tipe_sup = 'S' and supplier = '$nama_supp' LIMIT 1");
+            $rows = mysqli_fetch_array($querys);
+            $bank_account = $rows['bank_account'];
+            
+            echo $bank_account; 
+        ?>">
+        </div>
+    </div>         
 
     <div class="col-md-4 mb-3">
         <label for="nama_supp"><b>Supplier</b></label>            
@@ -212,7 +231,21 @@
             <input type="hidden" name="bpbvalue" id="bpbvalue" value="">      
         </div>
     </div>
-</div>                   
+</div>  
+<div class="col-md-4 mb-3"></div>
+
+<div class="col-md-4 mb-3">            
+        <label for="memo"><b>Descriptions</b></label>          
+        <input type="text" style="font-size: 14px;" class="form-control form-control-sm" name="memo" id="memo" 
+        value="<?php             
+        if(!empty($_POST['memo'])) {
+            echo $_POST['memo'];
+        }
+        else{
+            echo '';
+        } ?>">
+    </div>       
+
 </div>
 </form>
 
@@ -279,7 +312,7 @@
                         <td value="'.$date_diff.'">'.$date_diff.' Day</td>
                         <td style ="text-align: right;" class="dt_out" style="width:100px;" data-out="'.$row['balance'].'">'.$row['balance'].'</td>                            
                         <td style="width:100px;">
-                        <input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control form-control-sm" id="txt_amount" name="txt_amount" value="" disabled>
+                        <input style="text-align: right;" type="text" min="1" style="font-size: 12px;" class="form-control form-control-sm" id="txt_amount" name="txt_amount" value="" disabled>
                         </td>                            
                         <td style="width:100px;" value="'.$row['tgl_tempo'].'">'.date("d-M-Y",strtotime($row['tgl_tempo'])).'</td>                            
                         <td style="width:50px;" value="'.$row['matauang'].'">'.$row['matauang'].'</td>                            
@@ -882,6 +915,42 @@ function addListener(elm,index){
         $('#txt_supp_inv').html('No Supplier Invoice : ' + supp_inv + '');
         $('#txt_tgl_inv').html('Tgl Supplier Invoice : ' + tgl_inv + '');                               
     });
+
+
+//     $('#send').on('click', function() {
+
+//     var supplier = $('#nama_supp').val();
+
+//     if(!supplier){
+//         alert('Supplier belum dipilih');
+//         return;
+//     }
+
+//     $.ajax({
+//         url: 'get_supplier_bank.php',
+//         type: 'POST',
+//         data: { supplier: supplier },
+//         dataType: 'json',
+//         success: function(response){
+//             alert(response.bank_name);
+
+//             if(response.status == 'success'){
+//                 $('#txt_bank_supp').val(response.bank_name);
+//                 $('#txt_akun_supp').val(response.bank_account);
+//             }else{
+//                 alert('Data tidak ditemukan');
+//                 $('#txt_bank_supp').val('');
+//                 $('#txt_akun_supp').val('');
+//             }
+
+//         },
+//         error: function(){
+//             alert('Terjadi error AJAX');
+//         }
+//     });
+
+// });
+
 
 </script>
 

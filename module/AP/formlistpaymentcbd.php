@@ -219,7 +219,7 @@
                             <td style = "display: none;" value="'.$date_diff.'">'.$date_diff.'</td>
                             <td style ="text-align: right;" class="dt_out" style="width:100px;" data-out="'.$row['balance'].'">'.number_format($row['balance'],2).'</td>                            
                             <td style="width:100px;">
-                            <input style="text-align: right;" type="number" min="0" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount" value="" disabled>
+                            <input style="text-align: right;" type="text" min="0" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount" value="" disabled>
                             </td>                            
                             <td style="width:100px;" value="'.$row['tgl_tempo'].'">'.date("d-M-Y",strtotime($row['tgl_tempo'])).'</td>                            
                             <td style="width:50px;" value="'.$row['matauang'].'">'.$row['matauang'].'</td>                            

@@ -121,6 +121,7 @@
                         <th >Keterangan</th>
                         <th >Nama User</th>
                         <th >WS</th>
+                        <th >WS Aktual</th>
                         <th >Style</th>
                         <th >Curr</th>
                         <th >Price</th>
@@ -322,6 +323,9 @@ function SidebarCollapse () {
             },
             {
                 data: 'kpno'
+            },
+            {
+                data: 'no_ws_aktual'
             },
             {
                 data: 'styleno'

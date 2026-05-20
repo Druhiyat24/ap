@@ -1,10 +1,43 @@
 <?php include '../header.php' ?>
 
+<style type="text/css">
+    /* ===== SOFT ROW STATUS (FORMAL) ===== */
+table.dataTable tbody tr.row-ok {
+    background-color: #e9f6ef !important; /* soft green */
+    color: #1f4f3b;
+}
+
+table.dataTable tbody tr.row-warning {
+    background-color: #fff6e5 !important; /* soft amber */
+    color: #7a4a00;
+}
+
+table.dataTable tbody tr.row-danger {
+    background-color: #fdecea !important; /* soft red */
+    color: #7a1f1f;
+}
+
+/* jaga agar hover tetap enak */
+table.dataTable tbody tr:hover {
+    background-color: #eef3f8 !important;
+}
+
+/* angka tetap rapi */
+table.dataTable td {
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+</style>
+
     <!-- MAIN -->
-    <div class="col p-4">
-        <h4 class="text-center">FORM UPDATE BPB</h4>
-<div class="box">
-    <div class="box header">
+    <div class="container-fluid mt-4 p-4">
+  <!-- Card Filter -->
+  <div class="card shadow border-0">
+    <div class="card-header text-white py-2 px-3" 
+    style="background: linear-gradient(90deg, #191970, #1e90ff);">
+    <h5 class="mb-0"><i class="fas fa-file-invoice"></i> FORM UPDATE BPB</h5>
+</div>
 <form id="form-data" method="post">
         <div class="form-row">
             <div class="col-md-3 mb-3">            
@@ -58,7 +91,7 @@
     <div class="modal fade" id="mymodal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
         <div class="modal-dialog">
         <div class="modal-content">
-        <div class="modal-header bg-dark text-white" >
+        <div class="modal-header text-white" style="background: linear-gradient(90deg, #191970, #1e90ff);" >
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
         <h4 class="modal-title" id="Heading">Choose BPB</h4>
         </div>
@@ -151,7 +184,6 @@
 
       <!-- /.modal-dialog --> 
     </div>
-    <div class="box body">
         <div class="row">
         
             <div class="col-md-12">
@@ -174,61 +206,10 @@
                     </thead>
 
             <tbody id="tbl_bpb">
-
-                <?php
-
-    $sql = mysqli_query($conn2,"select a.no_bpb,tgl_bpb,nama_supp,curr,total,user_input,date_input,if(no_inv is null OR no_inv = '',upt_no_inv,no_inv) no_inv,if(no_inv is null OR no_inv = '',upt_tgl_inv,tgl_inv) tgl_inv,no_faktur,tgl_faktur from (select no_bpb,tgl_bpb,nama_supp,curr,total,user_input,date_input,no_inv,tgl_inv,no_faktur,tgl_faktur from tbl_bpb_temp where user_input = '$user' GROUP BY no_bpb) a LEFT JOIN (select no_bpb,upt_no_inv,upt_tgl_inv from bpb_new where upt_no_inv is not null GROUP BY no_bpb) b on b.no_bpb = a.no_bpb");  
-
-    // $resp = simplexml_load_file( 'http://svc.efaktur.pajak.go.id/validasi/faktur/014763379445000/0062478463254/3031300D0609608648016503040201050004208E60CCB161E8ADCC340D1BA76FA4D3A2CE88070E4338A6D819632CEAB809C922' );
-    // $json = json_encode($resp);
-    // echo $;               
-
-    while ($row = mysqli_fetch_assoc($sql)) {
-        $no_inv = isset($row['no_inv']) ? $row['no_inv'] : '-';
-        if ($no_inv == '-') {
-            $tgl_inv = '-';
-        }else{
-            $tgl_inv = date("d-M-Y",strtotime($row['tgl_inv']));
-        }
-
-        $no_faktur = isset($row['no_faktur']) ? $row['no_faktur'] : '-';
-        if ($no_faktur == '-') {
-            $tgl_faktur = '-';
-        }else{
-            $tgl_faktur = date("d-M-Y",strtotime($row['tgl_faktur']));
-        }
-
-        if ($no_inv != '-' && $no_faktur != '-') {
-            $color = 'class="bg-success"';
-        }elseif ($no_inv == '-' && $no_faktur != '-') {
-            $color = 'class="bg-warning"';
-        }elseif ($no_inv != '-' && $no_faktur == '-') {
-            $color = 'class="bg-warning"';
-        }else{
-            $color = 'class="bg-danger"';
-        }
-            
-            echo '<tr '.$color.'>   
-                        <td style="width:10px;"><input type="checkbox" id="select" name="select[]" class="select_item" value="" checked disabled></td>    
-                        <td style="" value="'.$row['no_bpb'].'">'.$row['no_bpb'].'</td>
-                        <td style="" value="'.$row['tgl_bpb'].'">'.date("d-M-Y",strtotime($row['tgl_bpb'])).'</td>
-                        <td style="" value="'.$row['nama_supp'].'">'.$row['nama_supp'].'</td>
-                        <td style="" value="'.$row['curr'].'">'.$row['curr'].'</td>
-                        <td style="" value="'.$row['total'].'">'.number_format($row['total'],2).'</td> 
-                        <td style="" value="'.$no_inv.'">'.$no_inv.'</td>
-                        <td style="" value="'.$tgl_inv.'">'.$tgl_inv.'</td>
-                        <td style="" value="'.$no_faktur.'">'.$no_faktur.'</td>
-                        <td style="" value="'.$tgl_faktur.'">'.$tgl_faktur.'</td> 
-                        <td><a id="tambah"><button style="border-radius: 6px" type="button" class="btn-xs btn-info"><i class="fa fa-plus"aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Add</i></button></a></td>                  
-                             
-                       </tr>';
-        }
-        ?>
             
             </tbody>                    
             </table>   
             </div>                 
-<div class="box footer">   
         <form id="form-simpan">
            <div class="form-row col">
             <div class="col-md-3 mb-3">                              
@@ -263,14 +244,13 @@
                                 
 </div><!-- body-row END -->
 </div>
-</div>
 
 
 <div class="form-row">
     <div class="modal fade" id="modal-scan-inv" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
         <div class="modal-dialog">
         <div class="modal-content">
-        <div class="modal-header bg-dark">
+        <div class="modal-header text-white" style="background: linear-gradient(90deg, #191970, #1e90ff);">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
         <h4 class="modal-title text-white" id="Heading">Update Invoice & Faktur</h4>
         </div>
@@ -341,7 +321,7 @@
                 <div class="col-md-3">
             <form id="modal-form3" method="post">
                 <div class="modal-footer">
-                    <button type="submit" id="send_scan" name="send_scan" class="btn btn-success btn-md" style="width: 100%;"><span class="fa fa-check"></span>
+                    <button type="button" id="send_scan" name="send_scan" class="btn btn-success btn-md" style="width: 100%;"><span class="fa fa-check"></span>
                         Save
                     </button>
                     </div>
@@ -362,6 +342,16 @@
   <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
   <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
   <script language="JavaScript" src="../css/4.1.1/html5-qrcode.min.js"></script>
+  <script language="JavaScript" src="../css/4.1.1/xlsx.full.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/html2pdf.bundle.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/exceljs.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/FileSaver.min.js"></script>
+
+
+<script language="JavaScript" src="../css/4.1.1/select2.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
+<script language="JavaScript" src="../css/4.1.1/dataTables.fixedColumns.min"></script>
+
 <script>
   // Hide submenus
 $('#body-row .collapse').collapse('hide'); 
@@ -394,48 +384,156 @@ function SidebarCollapse () {
 </script>
 
 <script type="text/javascript">
-    $("table tbody tr").on("click", "#tambah", function(){                 
-        var no_bpb = $(this).closest('tr').find('td:eq(1)').attr('value');
-        var tgl_bpb = $(this).closest('tr').find('td:eq(2)').attr('value');
-        var user = '<?php echo $user ?>';
-        $.ajax({
-            type: 'POST',
-            url: 'getdatabpbtemp.php', 
-            data: {'user':user, 'no_bpb':no_bpb},
-            success: function(response) { 
-                var datenow = new Date;
-                var yyyy = datenow.getFullYear();
-                var mm = datenow.getMonth() + 1; // Months start at 0!
-                var dd = datenow.getDate();
+    let datatable = $("#mytable").DataTable({
+    ordering: false,
+    processing: true,
+    serverSide: false,
+    searching: true,
+    info: false,
+    autoWidth: false,
+    scrollX: false,
 
-                if (dd < 10) dd = '0' + dd;
-                if (mm < 10) mm = '0' + mm;
+    paging: false,           // paging OFF
+    scrollY: "350px",         // tinggi tabel
+    scrollCollapse: true,
 
-                var formattedToday = dd + '-' + mm + '-' + yyyy;
-                console.log(formattedToday);
-                if (JSON.parse(response)[1] != null) {
-                    $('#mdl_no_inv').val(JSON.parse(response)[1]);  
-                    $('#mdl_tgl_inv').val(JSON.parse(response)[2]);  
-                }else{
-                    $('#mdl_no_inv').val('');  
-                    $('#mdl_tgl_inv').val(formattedToday);   
-                }
+    pageLength: -1,    
 
-                if (JSON.parse(response)[3] != null) {
-                    $('#mdl_no_faktur').val(JSON.parse(response)[3]);  
-                    $('#mdl_tgl_faktur').val(JSON.parse(response)[4]); 
-                }else{
-                    $('#mdl_no_faktur').val('');  
-                    $('#mdl_tgl_faktur').val(formattedToday);   
-                }
+    ajax: {
+        url: 'get_data_bpb.php',
+        type: 'POST',
+        data: function (d) {
+          d.user = '<?= $user ?>';
+        }
+    },
+
+    columns: [
+        { data: 'checkbox', orderable:false, searchable:false },
+        { data: 'no_bpb' },
+        { data: 'tgl_bpb' },
+        { data: 'nama_supp' },
+        { data: 'curr' },
+        { data: 'total', className:'text-right' },
+        { data: 'no_inv' },
+        { data: 'tgl_inv' },
+        { data: 'no_faktur' },
+        { data: 'tgl_faktur' },
+        { data: 'action', orderable:false, searchable:false }
+    ],
+
+    rowCallback: function (row, data) {
+        if (data.row_color) {
+            $(row).addClass(data.row_color);
+        }
+    },
+
+    initComplete: function () {
+        this.api().columns.adjust();
+    }
+});
+
+$('#mytable').on('draw.dt', function () {
+    datatable.columns.adjust();
+});
+
+</script>
+
+<script type="text/javascript">
+    // $("table tbody tr").on("click", "#tambah", function(){                 
+    //     var no_bpb = $(this).closest('tr').find('td:eq(1)').attr('value');
+    //     var tgl_bpb = $(this).closest('tr').find('td:eq(2)').attr('value');
+    //     var user = '<?php echo $user ?>';
+    //     $.ajax({
+    //         type: 'POST',
+    //         url: 'getdatabpbtemp.php', 
+    //         data: {'user':user, 'no_bpb':no_bpb},
+    //         success: function(response) { 
+    //             var datenow = new Date;
+    //             var yyyy = datenow.getFullYear();
+    //             var mm = datenow.getMonth() + 1; // Months start at 0!
+    //             var dd = datenow.getDate();
+
+    //             if (dd < 10) dd = '0' + dd;
+    //             if (mm < 10) mm = '0' + mm;
+
+    //             var formattedToday = dd + '-' + mm + '-' + yyyy;
+    //             console.log(formattedToday);
+    //             if (JSON.parse(response)[1] != null) {
+    //                 $('#mdl_no_inv').val(JSON.parse(response)[1]);  
+    //                 $('#mdl_tgl_inv').val(JSON.parse(response)[2]);  
+    //             }else{
+    //                 $('#mdl_no_inv').val('');  
+    //                 $('#mdl_tgl_inv').val(formattedToday);   
+    //             }
+
+    //             if (JSON.parse(response)[3] != null) {
+    //                 $('#mdl_no_faktur').val(JSON.parse(response)[3]);  
+    //                 $('#mdl_tgl_faktur').val(JSON.parse(response)[4]); 
+    //             }else{
+    //                 $('#mdl_no_faktur').val('');  
+    //                 $('#mdl_tgl_faktur').val(formattedToday);   
+    //             }
+    //         }
+    //     });
+    //     // alert(tgl_bpb);
+    //     $('#mdl_no_bpb').val(no_bpb);
+    //     $('#mdl_tgl_bpb').val(tgl_bpb);
+    //     $('#input_link').val('');
+    //     $('#modal-scan-inv').modal('show');
+    //     });
+
+    $('#mytable tbody').on('click', '.btn-tambah', function () {
+
+    let table = $('#mytable').DataTable();
+    let rowData = table.row($(this).closest('tr')).data();
+
+    let no_bpb  = rowData.no_bpb;
+    let tgl_bpb = rowData.tgl_bpb;
+    let user    = '<?= $user ?>';
+
+    $.ajax({
+        type: 'POST',
+        url: 'getdatabpbtemp.php',
+        data: {
+            user: user,
+            no_bpb: no_bpb
+        },
+        success: function (response) {
+
+            let res = JSON.parse(response);
+
+            let today = new Date();
+            let dd = String(today.getDate()).padStart(2, '0');
+            let mm = String(today.getMonth() + 1).padStart(2, '0');
+            let yyyy = today.getFullYear();
+            let formattedToday = dd + '-' + mm + '-' + yyyy;
+
+            if (res[1]) {
+                $('#mdl_no_inv').val(res[1]);
+                $('#mdl_tgl_inv').val(res[2]);
+            } else {
+                $('#mdl_no_inv').val('');
+                $('#mdl_tgl_inv').val(formattedToday);
             }
-        });
-        // alert(tgl_bpb);
-        $('#mdl_no_bpb').val(no_bpb);
-        $('#mdl_tgl_bpb').val(tgl_bpb);
-        $('#input_link').val('');
-        $('#modal-scan-inv').modal('show');
-        });
+
+            if (res[3]) {
+                $('#mdl_no_faktur').val(res[3]);
+                $('#mdl_tgl_faktur').val(res[4]);
+            } else {
+                $('#mdl_no_faktur').val('');
+                $('#mdl_tgl_faktur').val(formattedToday);
+            }
+        }
+    });
+
+    $('#mdl_no_bpb').val(no_bpb);
+    $('#mdl_tgl_bpb').val(tgl_bpb);
+    $('#input_link').val('');
+    $('#modal-scan-inv').modal('show');
+});
+
+
+
     function getscan(){
         initScan();
     }
@@ -873,7 +971,9 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
             //     alert(xhr);
             // }
             // });
-            window.location.reload();
+                datatable.ajax.reload(()=>{
+                    datatable.columns.adjust();
+                });
                 },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
@@ -904,6 +1004,10 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
                 // return false; modal-scan-inv
             },
             success: function(response){
+                $('#modal-scan-inv').modal('hide');
+                datatable.ajax.reload(()=>{
+                    datatable.columns.adjust();
+                });
                 // console.log(response);
             },
             error: function (xhr, ajaxOptions, thrownError) {
@@ -954,16 +1058,16 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
                 e.preventDefault();
             },
             success: function(response){
-        $("input[type=checkbox]:checked").each(function () {
+         var $row = $("input[type=checkbox]:checked").first().closest('tr');       
         var no_dok = document.getElementById('no_dok').value;        
         var tgl_dok = document.getElementById('tanggal').value;
-        var no_inv = $(this).closest('tr').find('td:eq(6)').attr('value'); 
-        var tgl_inv = $(this).closest('tr').find('td:eq(7)').attr('value'); 
-        var no_faktur = $(this).closest('tr').find('td:eq(8)').attr('value'); 
-        var tgl_faktur = $(this).closest('tr').find('td:eq(9)').attr('value');   
-        var no_bpb = $(this).closest('tr').find('td:eq(1)').attr('value');                               
-        var tgl_bpb = $(this).closest('tr').find('td:eq(2)').attr('value');
-        var supplier = $(this).closest('tr').find('td:eq(3)').attr('value');
+        var no_inv     = $row.find('td:eq(6)').attr('value'); 
+            var tgl_inv    = $row.find('td:eq(7)').attr('value'); 
+            var no_faktur  = $row.find('td:eq(8)').attr('value'); 
+            var tgl_faktur = $row.find('td:eq(9)').attr('value');   
+            var no_bpb     = $row.find('td:eq(1)').attr('value');                               
+            var tgl_bpb    = $row.find('td:eq(2)').attr('value');
+            var supplier   = $row.find('td:eq(3)').attr('value');
         var create_user = '<?php echo $user; ?>';    
         var unik_code = document.getElementById('unik_code').value;     
         if(no_faktur != '-' && tgl_faktur != '-' && no_bpb != ''){
@@ -986,7 +1090,6 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
             }
         });
     } 
-    });
                 },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);

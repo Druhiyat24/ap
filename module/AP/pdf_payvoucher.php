@@ -280,7 +280,7 @@ CSS HEADER
     </td>
     <td style="border-left: none;font-size: 12px;width: 38%;border-top: none;border-right: none;">
      <?php
-     $sql3 = mysqli_query($conn2," select frm_akun from tbl_pv_h where no_pv = '$no_pv'");
+     $sql3 = mysqli_query($conn2," select CONCAT(sob,' ',frm_akun) frm_akun from tbl_pv_h a INNER JOIN b_masterbank b on b.bank_account = a.frm_akun where no_pv = '$no_pv'");
      $rows3 = mysqli_fetch_array($sql3);
      $frm_akun = $rows3['frm_akun'];
      if ($frm_akun == '-') {
@@ -301,9 +301,11 @@ CSS HEADER
 </td>
 <td style="border-left: none;font-size: 12px; border-top: none;border-right: none;">
     <?php
-    $sql3 = mysqli_query($conn2," select to_akun from tbl_pv_h where no_pv = '$no_pv'");
+    $sql3 = mysqli_query($conn2," select IFNULL(NULLIF(to_akun, ''), '-') AS to_akun from (select CONCAT(bank_name,' ',to_akun) to_akun from tbl_pv_h a INNER JOIN mastersupplier b on b.bank_account = a.to_akun where no_pv = '$no_pv'
+    UNION ALL
+    select CONCAT(bank_name,' ',to_akun) to_akun from tbl_pv_h a INNER JOIN b_masterbank b on b.bank_account = a.to_akun where no_pv = '$no_pv' and b.status = 'Active') a limit 1");
     $rows3 = mysqli_fetch_array($sql3);
-    $to_akun = $rows3['to_akun'];
+    $to_akun = $rows3['to_akun'] ?? '-';
     if ($to_akun == '-') {
      echo '-'; 
  }else{
@@ -708,7 +710,18 @@ CSS HEADER
         <td></td>
     </tr>
     <tr>
-        <td style="font-size: 11px; text-align: center; font-weight: bold;">Putrie</td>
+        <td style="font-size: 11px; text-align: center; font-weight: bold;">
+            <?php
+$sql_user = mysqli_query($conn2,"select DISTINCT CONCAT(UPPER(LEFT(if(create_by = 'mandy1','Mandy', create_by),1)),LOWER(SUBSTRING(if(create_by = 'mandy1','Mandy', create_by),2))) create_by from tbl_pv_h WHERE no_pv = '$no_pv'
+");
+
+$rows_user = mysqli_fetch_array($sql_user);
+$user = $rows_user['create_by'];
+
+echo $user;
+?>
+ 
+     </td>
         <td style="font-size: 11px; text-align: center; font-weight: bold;">Mandy</td>
         <td style="font-size: 11px; text-align: center; font-weight: bold;">Willy</td>
     </tr>
@@ -943,10 +956,12 @@ $row2 = mysqli_fetch_assoc($sql2);
 
 <?php
 $html = ob_get_clean();
-require_once __DIR__ . '/../../mpdf8/vendor/autoload.php';
-include("../../mpdf8/vendor/mpdf/mpdf/src/mpdf.php");
 
-$mpdf=new \mPDF\mPDF();
+require_once __DIR__ . '/../../mpdf8/vendor/autoload.php';
+
+$mpdf = new \Mpdf\Mpdf([
+    'tempDir' => __DIR__ . '/../../mpdf8/tmp'
+]);
 
 $mpdf->WriteHTML($html);
 $mpdf->Output();

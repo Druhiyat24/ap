@@ -293,34 +293,21 @@ while($datas=mysqli_fetch_array($querys)){
 	$sum_outstanding = $datas['outstanding'];
 	$sum_amount = $datas['amount'];
 }
+
+$sql_bank = mysqli_query($conn2,"select supplier, UPPER(TRIM(REGEXP_REPLACE(bank_name, ' +', ' '))) AS bank_name, UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' '))) AS bank_account, UPPER(TRIM(REGEXP_REPLACE(beneficiary_name, ' +', ' '))) AS beneficiary_name from mastersupplier where tipe_sup = 'S' and supplier = '$supplier' LIMIT 1");
+$row_bank = mysqli_fetch_array($sql_bank);
+$beneficiary_name = $row_bank['beneficiary_name'];
+$bank_account = $row_bank['bank_account'];
+$bank_name = $row_bank['bank_name'];
 ?>
 
-<!-- <?php
-//$qty1 +=$qty1+ $qty;				
-//$mata_uang = $data['curr'];
-//$unit = $data['uom']; 
-
-//$total_curr_bef_tax  = $total_curr_bef_tax + $data['subtotal'];
-//$total_curr = $total_curr + $data['subtotal'];	
- 
-//$grand_total = $total_curr_bef_tax + $ppn_nya_____ - $value_pph + $total_utang_debit + $total_other;
- 
-?> -->
 
 <tr>
       <td colspan="4" style="width:35%;text-align:center;"><b>Jumlah</b></td>	  
-<!--       <td style="width:20%;text-align:center;"></td> -->
-<!-- 	  <td style="width:9%;text-align:center;border-right:none"><?php echo number_format($sum_qty,2) ?></td> 
-	  <td style="width:5%;text-align:left;border-left:none"><?php echo $uom ?></td> 
-      <td style="width:5%;text-align:center;border-right:none"></td>
-	  <td style="width:9%;text-align:center;border-left:none"></td> -->
 	  <td style="width:30%;text-align:right;border-left:none;"><?php echo $curr.' '.number_format($sum_total, 2) ?></td>
-<!--       <td style="width:auto;text-align:center;border-left:none"></td> -->
 	  <td style="width:30%;text-align:right;border-left:none;"><?php echo $curr.' '.number_format($sum_outstanding, 2) ?></td>
 	  <td style="width:30%;text-align:right;border-left:none;"><?php echo $curr.' '.number_format($sum_amount, 2) ?></td> 	        	  
-<!-- 	  <td style="width:auto;text-align:center;display: none;"></td> -->
-<!-- 	  <td style="width:15%;text-align:center;display: none;"></td> 
-      <td style="width:15%;text-align:center;display: none;"></td> -->
+
     </tr>
 
   </tbody>
@@ -329,37 +316,12 @@ while($datas=mysqli_fetch_array($querys)){
 
 <table width="100%" border="0" style="font-size:11px">
 
-	<!-- <tr>
-		<td width="60%">
-			
-		</td>
-			
-		<td style="font-weight: bold;">
-			Total BPB
-		</td>
-<td style="width:1%">:</td>
-		<td style="text-align:right; font-weight: bold;">
-			<?php echo $curr." ".number_format($total_bpb, 2); ?>
-		</td>		
-	</tr>	
 
 	<tr>
-		<td width="60%">
-			
-		</td>
-			
-		<td>
-			Total Cash
-		</td>
-<td style="width:1%">:</td>
-		<td style="text-align:right">
-			<?php echo $curr." - ".number_format($total_cash, 2); ?>
-		</td>		
-	</tr>	 -->
-	<tr>
 
 
 		<td width="60%">
+			Payment To: <?php echo $beneficiary_name; ?>
 			
 		</td>
 			
@@ -374,7 +336,7 @@ while($datas=mysqli_fetch_array($querys)){
 
 	<tr>
 		<td width="60%">
-			
+			Bank Account: <?php echo $bank_account; ?>
 		</td>
 			
 		<td >
@@ -389,6 +351,7 @@ while($datas=mysqli_fetch_array($querys)){
 <tr>
 	<tr>
 		<td width="60%">
+			Bank Name: <?php echo $bank_name; ?>
 			
 		</td>
 			
@@ -523,10 +486,12 @@ while($datas=mysqli_fetch_array($querys)){
 
 <?php
 $html = ob_get_clean();
-require_once __DIR__ . '/../../mpdf8/vendor/autoload.php';
-include("../../mpdf8/vendor/mpdf/mpdf/src/mpdf.php");
 
-$mpdf=new \mPDF\mPDF();
+require_once __DIR__ . '/../../mpdf8/vendor/autoload.php';
+
+$mpdf = new \Mpdf\Mpdf([
+    'tempDir' => __DIR__ . '/../../mpdf8/tmp'
+]);
 
 $mpdf->WriteHTML($html);
 $mpdf->Output();

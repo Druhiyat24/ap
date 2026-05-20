@@ -139,7 +139,7 @@
         <?php 
         $ref = isset($_POST['nama_type']) ? $_POST['nama_type']: null;
         // echo($ref);
-        if ($ref == 'CMJ001') { ?>
+        if ($ref == 'CMJ001' || $ref == 'CMJ003') { ?>
             <div class="col-md-2 mb-3">
                 <label for="filter_cmj" class="col-form-label" style="width: 150px;"><b>Type</b></label>            
                 <select class="form-control select2bs4" name="filter_cmj" id="filter_cmj" data-live-search="true" onchange="this.form.submit()">
@@ -446,8 +446,9 @@
             <div class="table">
                 <?php 
                 $ref = isset($_POST['filter_cmj']) ? $_POST['filter_cmj']: null;
+                $type = isset($_POST['nama_type']) ? $_POST['nama_type']: null;
                 if ($ref == 'HRIS') { ?>
-                    <div class="tableFix" style="height: 400px;">
+                    <div class="tableFix table-responsive" style="height: 400px;">
                         <table id="mytable" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
                             <thead>
                                 <tr>
@@ -503,9 +504,10 @@
                                     }
                                     $tgl_hris = date("Y-m-d",strtotime($hris));
                                     $ref_num = isset($_POST['filter_cmj']) ? $_POST['filter_cmj']: null;
+                                    $type = isset($_POST['nama_type']) ? $_POST['nama_type']: null;
                                 }
 
-                                if ($ref_num == 'HRIS') {
+                                if ($ref_num == 'HRIS' && $type == 'CMJ001') {
                                     $sql = mysqli_query($conn3,"select no_journal,id_pc, profit_center, no_coa, nama_coa, no_cc, cc_name, reff_number, reff_date, buyer,ws,curr,debit, credit, deskripsi from (select a.no_journal,c.no_coa,c.nama_coa,a.kode_bagian no_cc,a.nama_bagian cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,(a.gaji - a.potongan + (a.gaji_neto - (a.gaji + a.tunjangan_karyawan_rupiah + a.total_lembur_rupiah + a.bonus - a.piutang_karyawan - a.piutang_bazzar - a.bpjs_tk - a.bpjs_ks - a.potongan))) debit, '0' credit, CONCAT('UPAH DEPT ',UPPER(a.nama_bagian),' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi, b.id_pc, b.profit_center from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian INNER JOIN mastercoa_v2 c on c.no_coa = b.coa_gaji where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m') 
                                         UNION
                                         select a.no_journal,c.no_coa,c.nama_coa,a.kode_bagian no_cc,a.nama_bagian cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,a.tunjangan_karyawan_rupiah debit, '0' credit, CONCAT('TUNJANGAN DEPT ',UPPER(a.nama_bagian),' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi, b.id_pc, b.profit_center from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian INNER JOIN mastercoa_v2 c on c.no_coa = b.coa_tunj where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m')
@@ -523,11 +525,184 @@
                                         select a.no_journal, '2.51.31' no_coa, 'BIAYA YANG MASIH HARUS DIBAYAR - BPJS' nama_coa,'-' no_cc,'-' cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,'0' debit, SUM(a.bpjs_ks) credit, CONCAT('AKRUAL BPJS KS',' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi, b.id_pc, b.profit_center from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m') GROUP BY b.id_pc
                                         UNION
                                         select a.no_journal, '2.51.21' no_coa, 'BIAYA YANG MASIH HARUS DIBAYAR - GAJI' nama_coa,'-' no_cc,'-' cc_name,'-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr,'0' debit, SUM(a.gaji_neto) credit, CONCAT('AKRUAL BEBAN UPAH',' ',UPPER(DATE_FORMAT('$tgl_hris','%M')),' ',DATE_FORMAT('$tgl_hris','%Y')) deskripsi, b.id_pc, b.profit_center from jurnal a inner join b_master_cc b on b.no_cc = a.kode_bagian where periode_payroll = DATE_FORMAT('$tgl_hris','%Y-%m') GROUP BY b.id_pc) a where a.no_journal is null");
+                                }elseif ($ref_num == 'HRIS' && $type == 'CMJ003') {
+                                    mysqli_query($conn3,"DROP TEMPORARY TABLE IF EXISTS tmp_data_jurnal_bpjs");
+                                    mysqli_query($conn3,"CREATE TEMPORARY TABLE tmp_data_jurnal_bpjs
+SELECT * FROM (
+WITH
+log_jurnal as (select DATE_FORMAT(tgl_journal, '%Y-%m') tgl_journal, no_journal from log_jurnal_bpjs where DATE_FORMAT(tgl_journal, '%Y-%m') = DATE_FORMAT('$tgl_hris', '%Y-%m') and status = 'POST' limit 1),
+
+bpjs as (
+SELECT 
+    eb.uuid,
+    eb.kode_bpjs,
+    CONCAT(SUBSTR(eb.kode_bpjs,1,4),'-',SUBSTR(eb.kode_bpjs,5,2)) AS bpjs_kehadiran,
+    ea.enroll_id,
+    ea.nik,
+    ea.employee_name,
+    da.site_nirwana_id,
+    da.site_nirwana_name,
+    da.department_id,
+    da.department_name,
+    da.sub_dept_id,
+    da.sub_dept_name,
+    ea.join_date,
+    ea.tanggal_resign,
+    ea.status_aktif,
+    ea.status_staff,
+
+    -- ===============================
+    -- STATUS BPJS
+    -- ===============================
+    ea.status_aktif_bpjs_tk,
+    ea.tanggal_bpjs_ketenagakerjaan,
+    ea.nomor_bpjs_ketenagakerjaan,
+    ea.status_aktif_bpjs_ks,
+    ea.tanggal_bpjs_kesehatan,
+    ea.nomor_bpjs_kesehatan,
+
+    -- ===============================
+    -- DASAR PERHITUNGAN
+    -- ===============================
+    eb.dasar_pot_bpjs_rupiah,
+
+    -- ===============================
+    -- TOTAL IURAN
+    -- ===============================
+    (eb.bpjs_tk_jht_bruto_rupiah + eb.bpjs_tk_jht_neto_rupiah) AS bpjs_tk_jht_rupiah,
+    (eb.bpjs_tk_jpn_bruto_rupiah + eb.bpjs_tk_jpn_neto_rupiah) AS bpjs_tk_jpn_rupiah,
+    (eb.bpjs_ks_jkn_bruto_rupiah + eb.bpjs_ks_jkn_neto_rupiah) AS bpjs_ks_jkn_rupiah,
+
+    (
+        eb.bpjs_tk_jkk_bruto_rupiah +
+        eb.bpjs_tk_jkm_bruto_rupiah +
+        eb.bpjs_tk_jht_bruto_rupiah +
+        eb.bpjs_tk_jht_neto_rupiah +
+        eb.bpjs_tk_jpn_bruto_rupiah +
+        eb.bpjs_tk_jpn_neto_rupiah +
+        eb.bpjs_ks_jkn_bruto_rupiah +
+        eb.bpjs_ks_jkn_neto_rupiah
+    ) AS total_iuran,
+
+    -- ===============================
+    -- JKM
+    -- ===============================
+    eb.bpjs_tk_jkm_persen,
+    eb.bpjs_tk_jkm_bruto_persen AS bpjs_tk_jkm_perusahaan_persen,
+    eb.bpjs_tk_jkm_neto_persen AS bpjs_tk_jkm_karyawan_persen,
+    (eb.bpjs_tk_jkm_bruto_rupiah + eb.bpjs_tk_jkm_neto_rupiah) AS bpjs_tk_jkm_rupiah,
+    eb.bpjs_tk_jkm_bruto_rupiah AS bpjs_tk_jkm_perusahaan_rupiah,
+    eb.bpjs_tk_jkm_neto_rupiah AS bpjs_tk_jkm_karyawan_rupiah,
+
+    -- ===============================
+    -- JKK
+    -- ===============================
+    eb.bpjs_tk_jkk_persen,
+    eb.bpjs_tk_jkk_bruto_persen AS bpjs_tk_jkk_perusahaan_persen,
+    eb.bpjs_tk_jkk_neto_persen AS bpjs_tk_jkk_karyawan_persen,
+    (eb.bpjs_tk_jkk_bruto_rupiah + eb.bpjs_tk_jkk_neto_rupiah) AS bpjs_tk_jkk_rupiah,
+    eb.bpjs_tk_jkk_bruto_rupiah AS bpjs_tk_jkk_perusahaan_rupiah,
+    eb.bpjs_tk_jkk_neto_rupiah AS bpjs_tk_jkk_karyawan_rupiah,
+
+    -- ===============================
+    -- JHT
+    -- ===============================
+    eb.bpjs_tk_jht_persen,
+    eb.bpjs_tk_jht_bruto_persen AS bpjs_tk_jht_perusahaan_persen,
+    eb.bpjs_tk_jht_neto_persen AS bpjs_tk_jht_karyawan_persen,
+    eb.bpjs_tk_jht_bruto_rupiah AS bpjs_tk_jht_perusahaan_rupiah,
+    eb.bpjs_tk_jht_neto_rupiah AS bpjs_tk_jht_karyawan_rupiah,
+
+    -- ===============================
+    -- JPN
+    -- ===============================
+    eb.bpjs_tk_jpn_persen,
+    eb.bpjs_tk_jpn_bruto_persen AS bpjs_tk_jpn_perusahaan_persen,
+    eb.bpjs_tk_jpn_neto_persen AS bpjs_tk_jpn_karyawan_persen,
+    eb.bpjs_tk_jpn_bruto_rupiah AS bpjs_tk_jpn_perusahaan_rupiah,
+    eb.bpjs_tk_jpn_neto_rupiah AS bpjs_tk_jpn_karyawan_rupiah,
+
+    -- ===============================
+    -- JKN
+    -- ===============================
+    eb.bpjs_ks_jkn_persen,
+    eb.bpjs_ks_jkn_bruto_persen AS bpjs_ks_jkn_perusahaan_persen,
+    eb.bpjs_ks_jkn_neto_persen AS bpjs_ks_jkn_karyawan_persen,
+    eb.bpjs_ks_jkn_bruto_rupiah AS bpjs_ks_jkn_perusahaan_rupiah,
+    eb.bpjs_ks_jkn_neto_rupiah AS bpjs_ks_jkn_karyawan_rupiah,
+
+    eb.operator,
+    SUBSTR(eb.created_at,1,19) AS created_at,
+    SUBSTR(eb.updated_at,1,19) AS updated_at,
+    SUBSTR(eb.deleted_at,1,19) AS deleted_at
+
+FROM employee_bpjs eb
+INNER JOIN employee_atribut ea
+    ON eb.enroll_id = ea.enroll_id
+
+INNER JOIN rekap_perhitungan_payroll rp
+    ON eb.enroll_id = rp.enroll_id
+    AND eb.periode_kehadiran = rp.periode_kehadiran
+
+LEFT JOIN department_all da
+    ON rp.sub_dept_id = da.sub_dept_id
+
+WHERE
+    CONCAT(SUBSTR(eb.kode_bpjs,1,4),'-',SUBSTR(eb.kode_bpjs,5,2)) = DATE_FORMAT('$tgl_hris','%Y-%m') AND
+        DATE_FORMAT(SUBSTRING_INDEX(rp.periode_kehadiran,' s/d ',-1),'%Y-%m') = DATE_FORMAT('$tgl_hris','%Y-%m')
+
+ORDER BY
+    ea.employee_name ASC
+),
+
+data_bpjs as (select * from bpjs a LEFT JOIN log_jurnal b on b.tgl_journal = a.bpjs_kehadiran where no_journal is null)
+
+SELECT * FROM data_bpjs
+) x");
+                                    
+$sql = mysqli_query($conn3,"WITH
+
+bpjs_jkk as (select LAST_DAY(STR_TO_DATE(bpjs_kehadiran, '%Y-%m')) tgl_jurnal, status_staff, no_cc, cc_name, no_coa, nama_coa, id_pc, profit_center, ROUND(sum(bpjs_tk_jkk_perusahaan_rupiah),2) debit, 0 credit, CONCAT('BPJS TK - JKK (', status_staff, ') DEPT ', cc_name, ' ', UPPER(DATE_FORMAT('$tgl_hris', '%M %Y')), ' (', IF(id_pc = 'NAG','GARMENT','KNITTING'), ')') keterangan from tmp_data_jurnal_bpjs  a INNER JOIN b_master_cc b on b.no_cc = a.sub_dept_id INNER JOIN mastercoa_v2 c on c.no_coa = b.coa_bpjs_jkk GROUP BY status_staff, no_cc, id_pc),
+
+bpjs_jkm as (select LAST_DAY(STR_TO_DATE(bpjs_kehadiran, '%Y-%m')) tgl_jurnal, status_staff, no_cc, cc_name, no_coa, nama_coa, id_pc, profit_center, ROUND(sum(bpjs_tk_jkm_perusahaan_rupiah),2) debit, 0 credit, CONCAT('BPJS TK - JKM (', status_staff, ') DEPT ', cc_name, ' ', UPPER(DATE_FORMAT('$tgl_hris', '%M %Y')), ' (', IF(id_pc = 'NAG','GARMENT','KNITTING'), ')') keterangan from tmp_data_jurnal_bpjs  a INNER JOIN b_master_cc b on b.no_cc = a.sub_dept_id INNER JOIN mastercoa_v2 c on c.no_coa = b.coa_bpjs_jkm GROUP BY status_staff, no_cc, id_pc),
+
+bpjs_jht as (select LAST_DAY(STR_TO_DATE(bpjs_kehadiran, '%Y-%m')) tgl_jurnal, status_staff, no_cc, cc_name, no_coa, nama_coa, id_pc, profit_center, ROUND(sum(bpjs_tk_jht_perusahaan_rupiah),2) debit, 0 credit, CONCAT('BPJS TK - JHT (', status_staff, ') DEPT ', cc_name, ' ', UPPER(DATE_FORMAT('$tgl_hris', '%M %Y')), ' (', IF(id_pc = 'NAG','GARMENT','KNITTING'), ')') keterangan from tmp_data_jurnal_bpjs  a INNER JOIN b_master_cc b on b.no_cc = a.sub_dept_id INNER JOIN mastercoa_v2 c on c.no_coa = b.coa_bpjs_jht GROUP BY status_staff, no_cc, id_pc),
+
+bpjs_jpn as (select LAST_DAY(STR_TO_DATE(bpjs_kehadiran, '%Y-%m')) tgl_jurnal, status_staff, no_cc, cc_name, no_coa, nama_coa, id_pc, profit_center, ROUND(sum(bpjs_tk_jpn_perusahaan_rupiah),2) debit, 0 credit, CONCAT('BPJS TK - JPN (', status_staff, ') DEPT ', cc_name, ' ', UPPER(DATE_FORMAT('$tgl_hris', '%M %Y')), ' (', IF(id_pc = 'NAG','GARMENT','KNITTING'), ')') keterangan from tmp_data_jurnal_bpjs  a INNER JOIN b_master_cc b on b.no_cc = a.sub_dept_id INNER JOIN mastercoa_v2 c on c.no_coa = b.coa_bpjs_jpn GROUP BY status_staff, no_cc, id_pc),
+
+bpjs_ks as (select LAST_DAY(STR_TO_DATE(bpjs_kehadiran, '%Y-%m')) tgl_jurnal, status_staff, no_cc, cc_name, no_coa, nama_coa, id_pc, profit_center, ROUND(sum(bpjs_ks_jkn_perusahaan_rupiah),2) debit, 0 credit, CONCAT('BPJS KS (', status_staff, ') DEPT ', cc_name, ' ', UPPER(DATE_FORMAT('$tgl_hris', '%M %Y')), ' (', IF(id_pc = 'NAG','GARMENT','KNITTING'), ')') keterangan from tmp_data_jurnal_bpjs  a INNER JOIN b_master_cc b on b.no_cc = a.sub_dept_id INNER JOIN mastercoa_v2 c on c.no_coa = b.coa_bpjs_ks GROUP BY status_staff, no_cc, id_pc),
+
+total_bpjs_tk as (select tgl_jurnal, status_staff, '-' no_cc, '-' cc_name, '2.51.31' no_coa, 'BIAYA YANG MASIH HARUS DIBAYAR - BPJS' nama_coa, id_pc, profit_center, 0 debit, ROUND(SUM(debit),2) credit, CONCAT('AKRUAL BPJS TK (', status_staff, ') ', UPPER(DATE_FORMAT('$tgl_hris', '%M %Y')), ' (', IF(id_pc = 'NAG','GARMENT','KNITTING'), ')') keterangan from (select * from bpjs_jkk
+UNION ALL
+select * from bpjs_jkm
+UNION ALL
+select * from bpjs_jht
+UNION ALL
+select * from bpjs_jpn) a GROUP BY status_staff, id_pc ORDER BY id_pc, status_staff ASC),
+
+total_bpjs_ks as (select tgl_jurnal, status_staff, '-' no_cc, '-' cc_name, '2.51.31' no_coa, 'BIAYA YANG MASIH HARUS DIBAYAR - BPJS' nama_coa, id_pc, profit_center, 0 debit, ROUND(sum(debit),2) credit, CONCAT('AKRUAL BPJS KS (', status_staff, ') ', UPPER(DATE_FORMAT('$tgl_hris', '%M %Y')), ' (', IF(id_pc = 'NAG','GARMENT','KNITTING'), ')') keterangan from (select * from bpjs_ks) a GROUP BY status_staff, id_pc ORDER BY id_pc, status_staff ASC)
+
+select '' no_journal, id_pc, profit_center, no_coa, nama_coa, no_cc, cc_name, '-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr, debit, credit, keterangan deskripsi from (select * from bpjs_jkk
+UNION ALL
+select * from bpjs_jkm
+UNION ALL
+select * from bpjs_jht
+UNION ALL
+select * from bpjs_jpn
+UNION ALL
+select * from bpjs_ks
+UNION ALL
+select * from total_bpjs_tk
+UNION
+select * from total_bpjs_ks) a
+
+");
 }else{
     '';
 } ?>
 <?php 
 $ref = isset($_POST['filter_cmj']) ? $_POST['filter_cmj']: null;
+$type = isset($_POST['nama_type']) ? $_POST['nama_type']: null;
 if ($ref == 'HRIS') { 
     echo '<tbody id="tbody2">';
     $ttl_debit = 0;
@@ -586,6 +761,7 @@ if ($ref == 'HRIS') {
 <?php } ?>
 <?php 
 $ref = isset($_POST['filter_cmj']) ? $_POST['filter_cmj']: null;
+$type = isset($_POST['nama_type']) ? $_POST['nama_type']: null;
 if ($ref == 'HRIS') { ?>                  
 </table>
 </div>
@@ -629,7 +805,7 @@ if ($ref == 'HRIS') { ?>
         <input type="hidden" name="txt_credit_h" id="txt_credit_h" value="<?php 
         $ref = isset($_POST['filter_cmj']) ? $_POST['filter_cmj']: null;
         if ($ref == 'HRIS') {
-            echo $ttl_credit;
+            echo round($ttl_credit, 2);
         }else{ } ?>">
     </div>
 </br>
@@ -643,7 +819,7 @@ if ($ref == 'HRIS') { ?>
     <input type="hidden" name="txt_debit_h" id="txt_debit_h" value="<?php 
     $ref = isset($_POST['filter_cmj']) ? $_POST['filter_cmj']: null;
     if ($ref == 'HRIS') {
-        echo $ttl_debit;
+        echo round($ttl_debit,2);
     }else{ } ?>">
 </div>
 </br>
@@ -657,7 +833,7 @@ if ($ref == 'HRIS') { ?>
     <input type="hidden" name="txt_credit_idr_h" id="txt_credit_idr_h" value="<?php 
     $ref = isset($_POST['filter_cmj']) ? $_POST['filter_cmj']: null;
     if ($ref == 'HRIS') {
-        echo $ttl_credit;
+        echo round($ttl_credit,2);
     }else{ } ?>">
 </div>
 </br>
@@ -671,7 +847,7 @@ if ($ref == 'HRIS') { ?>
     <input type="hidden" name="txt_debit_idr_h" id="txt_debit_idr_h" value="<?php 
     $ref = isset($_POST['filter_cmj']) ? $_POST['filter_cmj']: null;
     if ($ref == 'HRIS') {
-        echo $ttl_debit;
+        echo round($ttl_debit,2);
     }else{ } ?>">
 </div>
 </br>
@@ -728,6 +904,9 @@ if ($ref == 'HRIS') { ?>
 <script language="JavaScript" src="../css/4.1.1/dataTables.responsive.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/responsive.bootstrap4.min.js"></script>
 <script language="JavaScript" src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/js/select2.full.js"></script>
+<script language="JavaScript" src="../css/4.1.1/select2.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
+<script language="JavaScript" src="../css/4.1.1/dataTables.fixedColumns.min"></script>
 
 <script>
   // Hide submenus
@@ -776,7 +955,8 @@ function SidebarCollapse () {
             paging: false,          // Menambahkan paging
             searching: false,       // Menambahkan pencarian
             scrollCollapse: true,  // Mengatasi jika data tidak cukup
-            fixedHeader: true,     // Menjaga header tetap terlihat
+            fixedHeader: true, 
+            ordering: false,    // Menjaga header tetap terlihat
             language: {
             info: "", // Menghilangkan teks "Showing 1 to 1 of 1 entries"
             infoEmpty: "", // Untuk keadaan ketika tidak ada data
@@ -1655,13 +1835,21 @@ function addListener(elm,index){
  
 </script> -->
 
+<script>
+let coaWajibCC = [];
+
+// Load sekali saat halaman dibuka
+$.getJSON('get_coa_wajib_cc.php', function(data){
+    coaWajibCC = data;
+    console.log("COA wajib CC:", coaWajibCC);
+});
+</script>
+
+
 <script type="text/javascript">
 
-    $("#form-simpan").on("click", "#simpan", function (e) {
-    e.preventDefault(); // cegah submit otomatis
-
-    var isValid = true;
-    var errMsg = "";
+   $("#form-simpan").on("click", "#simpan", function (e) {
+    e.preventDefault();
 
     var fil_cmj   = $('select[name=filter_cmj] option:selected').val();
     var cek_sb1   = $("#fil_sb1").val();
@@ -1673,27 +1861,57 @@ function addListener(elm,index){
     var id_cmj    = $('select[name=nama_type] option:selected').val();
     var tgl_hris  = (fil_cmj == 'HRIS') ? $("#tgl_hris").val() : "";
 
-    // === Validasi global sebelum loop ===
-    if (id_cmj == '' || id_cmj == '-') {
-        alert("Please Select Type Journal");
-        return;
-    }
-    if ((t_credit == '' && t_debit == '') || (t_credit == '0' && t_debit == '0')) {
-        alert("Please Enter Amount");
-        return;
-    }
-    if (t_credit < 0 || t_debit < 0) {
-        alert("Amount Can't be minus");
-        return;
-    }
-    if (t_credit != t_debit) {
-        alert("Debit and Credit can't Balance");
-        return;
-    }
+    // ===== VALIDASI GLOBAL =====
+    if (!id_cmj || id_cmj == "-") return alert("Please Select Type Journal");
+    if ((t_credit == '' && t_debit == '') || (t_credit == '0' && t_debit == '0')) return alert("Please Enter Amount");
+    if (t_credit < 0 || t_debit < 0) return alert("Amount Can't be minus");
+    if (t_credit != t_debit) return alert("Debit and Credit can't Balance");
 
     var rows = $("#mytable input[type=checkbox][id='select']:checked");
-    if (rows.length === 0) {
-        alert("Pilih minimal satu baris data!");
+    if (rows.length === 0) return alert("Pilih minimal satu baris data!");
+
+    var isValid = true;
+    var errMsg  = "";
+
+    rows.each(function () {
+
+        var row = $(this).closest('tr');
+        var no_coa, prof_ctr, no_costcenter;
+
+        if (fil_cmj == 'HRIS') {
+            no_coa        = row.find('td:eq(1)').attr('value');
+            prof_ctr      = row.find('td:eq(3)').attr('value');
+            no_costcenter = row.find('td:eq(4)').attr('value');
+        } else {
+            no_coa        = row.find('td:eq(1) select[name=nomor_coa]').val();
+            prof_ctr      = row.find('td:eq(2) select[id=prof_ctr]').val();
+            no_costcenter = row.find('td:eq(3) select[id=nomor_cc]').val();
+        }
+
+        if (!no_coa || no_coa === "-") {
+            isValid = false;
+            errMsg = "Nomor COA wajib diisi di semua baris.";
+            return false;
+        }
+
+        if (!prof_ctr || prof_ctr === "-") {
+            isValid = false;
+            errMsg = "Profit Center wajib diisi di semua baris.";
+            return false;
+        }
+
+        if (coaWajibCC.includes(no_coa)) {
+            if (!no_costcenter || no_costcenter === "-") {
+                isValid = false;
+                errMsg = "Cost Center wajib diisi untuk COA " + no_coa;
+                return false;
+            }
+        }
+
+    });
+
+    if (!isValid) {
+        alert(errMsg);
         return;
     }
 
@@ -1701,8 +1919,18 @@ function addListener(elm,index){
     var completed = 0;
     var hasError  = false;
 
-    // === Loop baris checkbox yang dipilih ===
+    // 🔵 TAMBAHAN: SWAL LOADING
+    Swal.fire({
+        title: 'Menyimpan Data...',
+        html: 'Memproses ' + totalRows + ' baris.',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
     rows.each(function () {
+
         var row = $(this).closest('tr');
 
         var no_coa, prof_ctr, no_costcenter, no_reff, reff_date,
@@ -1717,7 +1945,7 @@ function addListener(elm,index){
             buyer        = row.find('td:eq(8)').attr('value');
             no_ws        = row.find('td:eq(9)').attr('value');
             curr         = row.find('td:eq(10)').attr('value');
-            rate         = '1';
+            rate         = 1;
             debit        = row.find('td:eq(11)').attr('value') || 0;
             credit       = row.find('td:eq(12)').attr('value') || 0;
             keterangan   = row.find('td:eq(13)').attr('value');
@@ -1734,76 +1962,70 @@ function addListener(elm,index){
             debit        = row.find('td:eq(10) input').val() || 0;
             credit       = row.find('td:eq(11) input').val() || 0;
             keterangan   = row.find('td:eq(12) input').val();
-
-            // validasi COA & Profit Center
-            if (!no_coa || no_coa === "-") {
-                isValid = false;
-                errMsg  = "Harap isi Nomor COA di semua baris yang dipilih.";
-                return false; // break loop
-            }
-            if (!prof_ctr || prof_ctr === "-") {
-                isValid = false;
-                errMsg  = "Harap isi Profit Center di semua baris yang dipilih.";
-                return false; // break loop
-            }
         }
 
-        if (!isValid) {
-            return false; // stop looping jika ada error
-        }
-
-        // === AJAX per baris ===
         $.ajax({
             type: 'POST',
             url: 'insert_memorial_journal.php',
             data: {
-                'cek_sb1': cek_sb1,
-                'no_mj_sb1': no_mj_sb1,
-                'no_mj': no_mj,
-                'mj_date': mj_date,
-                'tgl_hris': tgl_hris,
-                'id_cmj': id_cmj,
-                'no_coa': no_coa,
-                'no_costcenter': no_costcenter,
-                'no_reff': no_reff,
-                'reff_date': reff_date,
-                'buyer': buyer,
-                'no_ws': no_ws,
-                'curr': curr,
-                'rate': rate,
-                'debit': debit,
-                'credit': credit,
-                'keterangan': keterangan,
-                'create_user': '<?php echo $user; ?>',
-                'prof_ctr': prof_ctr
+                cek_sb1,
+                no_mj_sb1,
+                no_mj,
+                mj_date,
+                tgl_hris,
+                id_cmj,
+                no_coa,
+                no_costcenter,
+                no_reff,
+                reff_date,
+                buyer,
+                no_ws,
+                curr,
+                rate,
+                debit,
+                credit,
+                keterangan,
+                create_user: '<?php echo $user; ?>',
+                prof_ctr
             },
-            cache: false,
-            success: function (response) {
-                console.log(response);
+            success: function (res) {
+                console.log(res);
             },
             error: function (xhr) {
-                console.log(xhr);
                 hasError = true;
-                alert("Error: " + xhr.responseText);
+
+                // 🔴 TAMBAHAN: SWAL ERROR
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: 'Terjadi kesalahan: ' + xhr.responseText
+                });
             },
             complete: function () {
                 completed++;
-                // cek apakah semua request selesai
                 if (completed === totalRows && !hasError) {
-                    alert("Data berhasil disimpan");
-                    window.location = 'memorial-journal.php';
+
+                    // 🟢 TAMBAHAN: SWAL SUCCESS + JUMLAH BARIS
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        html: totalRows + ' baris berhasil disimpan.',
+                        confirmButtonText: 'OK'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location = 'memorial-journal.php';
+                        }
+                    });
+
                 }
             }
         });
 
     });
 
-    if (!isValid) {
-        alert(errMsg);
-        return;
-    }
-
 });
+
+
 
 //     $("#form-simpan").on("click", "#simpan", function(){
 //         $("#mytable input[type=checkbox][id='select']:checked").each(function () {
@@ -2022,6 +2244,171 @@ $(document).ready(function (){
 </script>-->
 <!--<script src="//netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
     <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>-->
+
+
+    <!-- WITH
+data_bpjs as (SELECT
+    -- ===============================
+    -- IDENTITAS
+    -- ===============================
+    employee_bpjs.uuid,
+    employee_bpjs.kode_bpjs,
+    CONCAT(SUBSTR(employee_bpjs.kode_bpjs, 1, 4), '-', 
+           SUBSTR(employee_bpjs.kode_bpjs, 5, 2)) AS bpjs_kehadiran,
+
+    employee_atribut.enroll_id,
+    employee_atribut.nik,
+    employee_atribut.employee_name,
+
+    department_all.site_nirwana_id,
+    department_all.site_nirwana_name,
+    department_all.department_id,
+    department_all.department_name,
+    department_all.sub_dept_id,
+    department_all.sub_dept_name,
+
+    employee_atribut.join_date,
+    employee_atribut.tanggal_resign,
+
+    employee_atribut.status_aktif_bpjs_tk,
+    employee_atribut.tanggal_bpjs_ketenagakerjaan,
+    employee_atribut.nomor_bpjs_ketenagakerjaan,
+
+    employee_atribut.status_aktif_bpjs_ks,
+    employee_atribut.tanggal_bpjs_kesehatan,
+    employee_atribut.nomor_bpjs_kesehatan,
+
+    employee_atribut.status_aktif,
+    employee_atribut.status_staff,
+
+    -- ===============================
+    -- DASAR POTONGAN
+    -- ===============================
+    employee_bpjs.dasar_pot_bpjs_rupiah AS dasar_pot_bpjs_rupiah,
+
+    -- ===============================
+    -- TOTAL PER JENIS (GABUNGAN)
+    -- ===============================
+    (employee_bpjs.bpjs_tk_jht_bruto_rupiah +
+     employee_bpjs.bpjs_tk_jht_neto_rupiah) AS bpjs_tk_jht_rupiah,
+
+    (employee_bpjs.bpjs_tk_jpn_bruto_rupiah +
+     employee_bpjs.bpjs_tk_jpn_neto_rupiah) AS bpjs_tk_jpn_rupiah,
+
+    (employee_bpjs.bpjs_ks_jkn_bruto_rupiah +
+     employee_bpjs.bpjs_ks_jkn_neto_rupiah) AS bpjs_ks_jkn_rupiah,
+
+    (
+        employee_bpjs.bpjs_tk_jkk_bruto_rupiah +
+        employee_bpjs.bpjs_tk_jkm_bruto_rupiah +
+        employee_bpjs.bpjs_tk_jht_bruto_rupiah +
+        employee_bpjs.bpjs_tk_jht_neto_rupiah +
+        employee_bpjs.bpjs_tk_jpn_bruto_rupiah +
+        employee_bpjs.bpjs_tk_jpn_neto_rupiah +
+        employee_bpjs.bpjs_ks_jkn_bruto_rupiah +
+        employee_bpjs.bpjs_ks_jkn_neto_rupiah
+    ) AS total_iuran,
+
+    -- ===============================
+    -- JKM
+    -- ===============================
+    employee_bpjs.bpjs_tk_jkm_persen,
+    employee_bpjs.bpjs_tk_jkm_bruto_persen AS bpjs_tk_jkm_perusahaan_persen,
+    employee_bpjs.bpjs_tk_jkm_neto_persen  AS bpjs_tk_jkm_karyawan_persen,
+
+    (employee_bpjs.bpjs_tk_jkm_bruto_rupiah +
+     employee_bpjs.bpjs_tk_jkm_neto_rupiah) AS bpjs_tk_jkm_rupiah,
+
+    employee_bpjs.bpjs_tk_jkm_bruto_rupiah AS bpjs_tk_jkm_perusahaan_rupiah,
+    employee_bpjs.bpjs_tk_jkm_neto_rupiah  AS bpjs_tk_jkm_karyawan_rupiah,
+
+    -- ===============================
+    -- JKK
+    -- ===============================
+    employee_bpjs.bpjs_tk_jkk_persen,
+    employee_bpjs.bpjs_tk_jkk_bruto_persen AS bpjs_tk_jkk_perusahaan_persen,
+    employee_bpjs.bpjs_tk_jkk_neto_persen  AS bpjs_tk_jkk_karyawan_persen,
+
+    (employee_bpjs.bpjs_tk_jkk_bruto_rupiah +
+     employee_bpjs.bpjs_tk_jkk_neto_rupiah) AS bpjs_tk_jkk_rupiah,
+
+    employee_bpjs.bpjs_tk_jkk_bruto_rupiah AS bpjs_tk_jkk_perusahaan_rupiah,
+    employee_bpjs.bpjs_tk_jkk_neto_rupiah  AS bpjs_tk_jkk_karyawan_rupiah,
+
+    -- ===============================
+    -- JHT
+    -- ===============================
+    employee_bpjs.bpjs_tk_jht_persen,
+    employee_bpjs.bpjs_tk_jht_bruto_persen AS bpjs_tk_jht_perusahaan_persen,
+    employee_bpjs.bpjs_tk_jht_neto_persen  AS bpjs_tk_jht_karyawan_persen,
+
+    employee_bpjs.bpjs_tk_jht_bruto_rupiah AS bpjs_tk_jht_perusahaan_rupiah,
+    employee_bpjs.bpjs_tk_jht_neto_rupiah  AS bpjs_tk_jht_karyawan_rupiah,
+
+    -- ===============================
+    -- JPN
+    -- ===============================
+    employee_bpjs.bpjs_tk_jpn_persen,
+    employee_bpjs.bpjs_tk_jpn_bruto_persen AS bpjs_tk_jpn_perusahaan_persen,
+    employee_bpjs.bpjs_tk_jpn_neto_persen  AS bpjs_tk_jpn_karyawan_persen,
+
+    employee_bpjs.bpjs_tk_jpn_bruto_rupiah AS bpjs_tk_jpn_perusahaan_rupiah,
+    employee_bpjs.bpjs_tk_jpn_neto_rupiah  AS bpjs_tk_jpn_karyawan_rupiah,
+
+    -- ===============================
+    -- JKN (KESEHATAN)
+    -- ===============================
+    employee_bpjs.bpjs_ks_jkn_persen,
+    employee_bpjs.bpjs_ks_jkn_bruto_persen AS bpjs_ks_jkn_perusahaan_persen,
+    employee_bpjs.bpjs_ks_jkn_neto_persen  AS bpjs_ks_jkn_karyawan_persen,
+
+    employee_bpjs.bpjs_ks_jkn_bruto_rupiah AS bpjs_ks_jkn_perusahaan_rupiah,
+    employee_bpjs.bpjs_ks_jkn_neto_rupiah  AS bpjs_ks_jkn_karyawan_rupiah,
+
+
+    employee_bpjs.operator,
+    SUBSTR(employee_bpjs.created_at, 1, 19) AS created_at,
+    SUBSTR(employee_bpjs.updated_at, 1, 19) AS updated_at,
+    SUBSTR(employee_bpjs.deleted_at, 1, 19) AS deleted_at
+
+FROM employee_bpjs
+INNER JOIN employee_atribut 
+    ON employee_bpjs.enroll_id = employee_atribut.enroll_id
+INNER JOIN department_all 
+    ON employee_atribut.sub_dept_id = department_all.sub_dept_id
+
+WHERE CONCAT(SUBSTR(employee_bpjs.kode_bpjs, 1, 4), '-', 
+             SUBSTR(employee_bpjs.kode_bpjs, 5, 2)) = DATE_FORMAT('$tgl_hris', '%Y-%m')
+ORDER BY employee_atribut.employee_name ASC),
+
+bpjs_jkk as (select LAST_DAY(STR_TO_DATE(bpjs_kehadiran, '%Y-%m')) tgl_jurnal, status_staff, no_cc, cc_name, no_coa, nama_coa, id_pc, profit_center, ROUND(sum(bpjs_tk_jkk_perusahaan_rupiah),6) debit, 0 credit, CONCAT('BPJS TK - JKK (', status_staff, ') DEPT ', cc_name, ' ', UPPER(DATE_FORMAT('$tgl_hris', '%M %Y')), ' (', IF(id_pc = 'NAG','GARMENT','KNITTING'), ')') keterangan from data_bpjs a INNER JOIN b_master_cc b on b.no_cc = a.sub_dept_id INNER JOIN mastercoa_v2 c on c.no_coa = b.coa_bpjs_jkk GROUP BY status_staff, no_cc, id_pc),
+
+bpjs_jkm as (select LAST_DAY(STR_TO_DATE(bpjs_kehadiran, '%Y-%m')) tgl_jurnal, status_staff, no_cc, cc_name, no_coa, nama_coa, id_pc, profit_center, ROUND(sum(bpjs_tk_jkm_perusahaan_rupiah),6) debit, 0 credit, CONCAT('BPJS TK - JKM (', status_staff, ') DEPT ', cc_name, ' ', UPPER(DATE_FORMAT('$tgl_hris', '%M %Y')), ' (', IF(id_pc = 'NAG','GARMENT','KNITTING'), ')') keterangan from data_bpjs a INNER JOIN b_master_cc b on b.no_cc = a.sub_dept_id INNER JOIN mastercoa_v2 c on c.no_coa = b.coa_bpjs_jkm GROUP BY status_staff, no_cc, id_pc),
+
+bpjs_jht as (select LAST_DAY(STR_TO_DATE(bpjs_kehadiran, '%Y-%m')) tgl_jurnal, status_staff, no_cc, cc_name, no_coa, nama_coa, id_pc, profit_center, ROUND(sum(bpjs_tk_jht_perusahaan_rupiah),6) debit, 0 credit, CONCAT('BPJS TK - JHT (', status_staff, ') DEPT ', cc_name, ' ', UPPER(DATE_FORMAT('$tgl_hris', '%M %Y')), ' (', IF(id_pc = 'NAG','GARMENT','KNITTING'), ')') keterangan from data_bpjs a INNER JOIN b_master_cc b on b.no_cc = a.sub_dept_id INNER JOIN mastercoa_v2 c on c.no_coa = b.coa_bpjs_jht GROUP BY status_staff, no_cc, id_pc),
+
+bpjs_jpn as (select LAST_DAY(STR_TO_DATE(bpjs_kehadiran, '%Y-%m')) tgl_jurnal, status_staff, no_cc, cc_name, no_coa, nama_coa, id_pc, profit_center, ROUND(sum(bpjs_tk_jpn_perusahaan_rupiah),6) debit, 0 credit, CONCAT('BPJS TK - JPN (', status_staff, ') DEPT ', cc_name, ' ', UPPER(DATE_FORMAT('$tgl_hris', '%M %Y')), ' (', IF(id_pc = 'NAG','GARMENT','KNITTING'), ')') keterangan from data_bpjs a INNER JOIN b_master_cc b on b.no_cc = a.sub_dept_id INNER JOIN mastercoa_v2 c on c.no_coa = b.coa_bpjs_jpn GROUP BY status_staff, no_cc, id_pc),
+
+bpjs_ks as (select LAST_DAY(STR_TO_DATE(bpjs_kehadiran, '%Y-%m')) tgl_jurnal, status_staff, no_cc, cc_name, no_coa, nama_coa, id_pc, profit_center, ROUND(sum(bpjs_ks_jkn_perusahaan_rupiah),6) debit, 0 credit, CONCAT('BPJS KS (', status_staff, ') DEPT ', cc_name, ' ', UPPER(DATE_FORMAT('$tgl_hris', '%M %Y')), ' (', IF(id_pc = 'NAG','GARMENT','KNITTING'), ')') keterangan from data_bpjs a INNER JOIN b_master_cc b on b.no_cc = a.sub_dept_id INNER JOIN mastercoa_v2 c on c.no_coa = b.coa_bpjs_ks GROUP BY status_staff, no_cc, id_pc),
+
+total_bpjs_tk as (select LAST_DAY(STR_TO_DATE(bpjs_kehadiran, '%Y-%m')) tgl_jurnal, status_staff, '-' no_cc, '-' cc_name, '2.51.31' no_coa, 'BIAYA YANG MASIH HARUS DIBAYAR - BPJS' nama_coa, id_pc, profit_center, 0 debit, ROUND(SUM(bpjs_tk_jpn_perusahaan_rupiah + bpjs_tk_jht_perusahaan_rupiah + bpjs_tk_jkm_perusahaan_rupiah + bpjs_tk_jkk_perusahaan_rupiah),6) credit, CONCAT('AKRUAL BPJS TK (', status_staff, ') ', UPPER(DATE_FORMAT('$tgl_hris', '%M %Y')), ' (', IF(id_pc = 'NAG','GARMENT','KNITTING'), ')') keterangan from data_bpjs a INNER JOIN b_master_cc b on b.no_cc = a.sub_dept_id GROUP BY status_staff, id_pc ORDER BY id_pc, status_staff ASC),
+
+total_bpjs_ks as (select LAST_DAY(STR_TO_DATE(bpjs_kehadiran, '%Y-%m')) tgl_jurnal, status_staff, '-' no_cc, '-' cc_name, '2.51.31' no_coa, 'BIAYA YANG MASIH HARUS DIBAYAR - BPJS' nama_coa, id_pc, profit_center, 0 debit, ROUND(sum(bpjs_ks_jkn_perusahaan_rupiah),6) credit, CONCAT('AKRUAL BPJS KS (', status_staff, ') ', UPPER(DATE_FORMAT('$tgl_hris', '%M %Y')), ' (', IF(id_pc = 'NAG','GARMENT','KNITTING'), ')') keterangan from data_bpjs a INNER JOIN b_master_cc b on b.no_cc = a.sub_dept_id GROUP BY status_staff, id_pc ORDER BY id_pc, status_staff ASC)
+
+
+select '' no_journal, id_pc, profit_center, no_coa, nama_coa, no_cc, cc_name, '-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr, debit, credit, keterangan deskripsi from (select * from bpjs_jkk
+UNION ALL
+select * from bpjs_jkm
+UNION ALL
+select * from bpjs_jht
+UNION ALL
+select * from bpjs_jpn
+UNION ALL
+select * from bpjs_ks
+UNION ALL
+select * from total_bpjs_tk
+UNION
+select * from total_bpjs_ks) a -->
 
 </body>
 

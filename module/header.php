@@ -1,4 +1,7 @@
 <?php
+ini_set('memory_limit', '4096M');
+set_time_limit(0);
+
 session_start();
 error_reporting(E_ALL & ~E_NOTICE);
 ini_set('display_errors', 0);
@@ -189,6 +192,19 @@ if ($user == '') {
       height: 200px !important;
   }
 
+  /* Chrome, Safari, Edge */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+
 </style>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -213,6 +229,9 @@ if ($user == '') {
 <link href="../css/4.1.1/select2-bootstrap4.min.css" rel="stylesheet">
 <link href="../css/4.1.1/responsive.bootstrap4.min.css" rel="stylesheet">
 <link href="../css/4.1.1/sweetalert2.min" rel="stylesheet">
+<link rel="stylesheet"
+      href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedColumns.dataTables.min.css">
+
 <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/css/select2.min.css" />
   <link rel="stylesheet" href="https://select2.github.io/select2-bootstrap-theme/css/select2-bootstrap.css" /> -->
 </head>
@@ -290,6 +309,10 @@ if ($user == '') {
               <span class="fa fa-paperclip fa-fw "></span>
               <span class="menu-collapsed">Mapping Memo</span>
               </a>
+              <a href="../AP/master-rate.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-paperclip fa-fw "></span>
+              <span class="menu-collapsed">Rate</span>
+              </a>
               ';
           }else{
               echo '';
@@ -309,7 +332,7 @@ if ($user == '') {
         $pur = $rs['purchasing'];
         $app_po = $rs['approve_po'];
 
-        $queryss = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%BPB%' and useraccess.menu != 'Transfer BPB' and useraccess.menu != 'Accept BPB Whs-Acc' and useraccess.menu != 'Maintain BPB' and useraccess.menu not like '%create%' and profit_center != 'NAK' group by username");
+        $queryss = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%BPB%' and useraccess.menu != 'Transfer BPB' and useraccess.menu != 'Accept BPB Whs-Acc' and useraccess.menu != 'Maintain BPB' and useraccess.menu != 'Acct - Rekonsiliasi Jurnal-BPB' and useraccess.menu != 'Acct - Repost Jurnal BPB' and useraccess.menu not like '%create%' and profit_center != 'NAK' group by username");
         while($rss = mysqli_fetch_array($queryss)){
           $menu = isset($rss['ket']) ? $rss['ket'] :0;
           $id = isset($rss['id']) ? $rss['id'] :0;
@@ -618,6 +641,11 @@ $rs2 = mysqli_fetch_array($querys2);
 $menu2 = isset($rs2['menu']) ? $rs2['menu'] :0;
 $id2 = isset($rs2['id']) ? $rs2['id'] :0;
 
+$querys3 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, GROUP_CONCAT(menurole.id) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Approve Transfer Memo' GROUP BY username");
+$rs3 = mysqli_fetch_array($querys3);
+$menu3 = isset($rs3['menu']) ? $rs3['menu'] :0;
+$id3 = isset($rs3['id']) ? $rs3['id'] :0;
+
 echo '
 <li class="dropdown-submenu ">
 <a class="dropdown-item bg-dark text-white" href="#">
@@ -643,6 +671,14 @@ if(strpos($id, '66') !== false){
   <span class="menu-collapsed">IR Report</span>
   </a>';
 }
+
+if(strpos($id3, '109') !== false){    
+  echo '<a href="../AP/approve_transfer_memo.php" class="dropdown-item bg-dark text-white">
+  <span class="fa fa-thumbs-o-up fa-fw "></span>
+  <span class="menu-collapsed">Approve Transfer Memo</span>
+  </a>';
+}
+
 echo'</ul>
 </li>';
 ?>
@@ -887,9 +923,9 @@ echo'</ul>
                     <span class="fa fa-tags fa-fw "></span>
                     <span class="menu-collapsed">AP Report</span>
                     </a>
-                    <a href="../AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
+                    <a href="../AP/payable_card_statement.php" class="dropdown-item bg-dark text-white">
                     <span class="fa fa-tags fa-fw "></span>
-                    <span class="menu-collapsed">PCS Detail Dev</span>
+                    <span class="menu-collapsed">AP Report New</span>
                     </a>
                     <a href="../AP/rekap-pelunasan.php" class="dropdown-item bg-dark text-white">
                     <span class="fa fa-tags fa-fw "></span>
@@ -899,6 +935,10 @@ echo'</ul>
                     echo '<a href="../AP/pcs_detail.php" class="dropdown-item bg-dark text-white">
                     <span class="fa fa-tags fa-fw "></span>
                     <span class="menu-collapsed">AP Report</span>
+                    </a>
+                    <a href="../AP/payable_card_statement.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-tags fa-fw "></span>
+                    <span class="menu-collapsed">AP Report New</span>
                     </a>';
                 }elseif($id == '0' && $id3 == '57'){
                     echo '<a href="../AP/rekap-pelunasan.php" class="dropdown-item bg-dark text-white">
@@ -909,6 +949,10 @@ echo'</ul>
                     echo '<a href="../AP/pcs_detail.php" class="dropdown-item bg-dark text-white">
                     <span class="fa fa-tags fa-fw "></span>
                     <span class="menu-collapsed">AP Report</span>
+                    </a>
+                    <a href="../AP/payable_card_statement.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-tags fa-fw "></span>
+                    <span class="menu-collapsed">AP Report New</span>
                     </a>
                     <a href="../AP/rekap-pelunasan.php" class="dropdown-item bg-dark text-white">
                     <span class="fa fa-tags fa-fw "></span>
@@ -1422,6 +1466,12 @@ echo'</ul>
          <span class="fa fa-print fa-list"></span>
          <span class="menu-collapsed">General Ledger</span>
          </a>';
+         if($user == 'indro' || $user == 'willy' || $user == 'steven'){
+            echo'<a href="../AP/general_ledger.php" class="dropdown-item bg-dark text-white">
+         <span class="fa fa-print fa-list"></span>
+         <span class="menu-collapsed">General Ledger New</span>
+         </a>';
+          }
      }if(strpos($id, '104') !== false){ 
          echo'<a href="../AP/trial_balance.php" class="dropdown-item bg-dark text-white">
          <span class="fas fa-chart-line"></span>
@@ -1435,6 +1485,7 @@ echo'</ul>
      <span class="menu-collapsed">Sub Ledger</span>
      </a>
      <ul class="dropdown-menu bg-dark text-white" role="menu">';
+
      if(strpos($id, '64') !== false){
       echo'<a href="../AP/other_receivable_report.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-fax fa-fw"></span>
@@ -1453,6 +1504,13 @@ echo'</ul>
       <span class="menu-collapsed">Purchase Advance</span>
       </a>';
   }
+  if(strpos($id, '105') !== false){
+      echo'<a href="../AP/prepaid_tax_report.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-fax fa-fw"></span>
+      <span class="menu-collapsed">Prepaid Tax</span>
+      </a>';
+  }
+
   echo'</ul>
   </li>';
   if(strpos($id, '53') !== false){ 
@@ -1474,7 +1532,7 @@ echo'</ul>
    </li>';
 }
 
-if($user == 'indro' || $user == 'willy'){ 
+if($user == 'indro' || $user == 'willy' || $user == 'steven'){ 
    echo'<li class="dropdown-submenu ">
    <a class="dropdown-item bg-dark text-white" href="#">
    <span class="fa fa-balance-scale fa-fw"></span>
@@ -1511,8 +1569,27 @@ if(strpos($id, '90') !== false){
   <span class="menu-collapsed">Bank Out</span>
   </a>';
 }
+if(strpos($id, '107') !== false){
+  echo'<a href="../AP/repost-bpb.php" class="dropdown-item bg-dark text-white">
+  <span class="fas fa-archive"></span>
+  <span class="menu-collapsed">BPB</span>
+  </a>';
+}
 echo'</ul>
 </li>';
+if(strpos($id, '106') !== false){ 
+  echo'<a href="../AP/rekonsiliasi_jurnal_bpb.php" class="dropdown-item bg-dark text-white">
+  <span class="fas fa-file-contract"></span>
+  <span class="menu-collapsed">Rekonsiliasi Jurnal-BPB</span>
+  </a>';
+}
+
+if(strpos($id, '108') !== false){ 
+  echo'<a href="../AP/edit-journal.php" class="dropdown-item bg-dark text-white">
+  <span class="fas fa-pencil-alt"></span>
+  <span class="menu-collapsed">Edit Jurnal</span>
+  </a>';
+}
 
 ?>
 </ul>
@@ -1541,10 +1618,7 @@ echo'</ul>
       </a>
       <ul class="dropdown-menu bg-dark text-white" role="menu">
 
-      <a href="../AP/ca_fabric_trx_in.php" class="dropdown-item bg-dark text-white">
-      <span class="fa fa-cart-arrow-down fa-fw "></span>
-      <span class="menu-collapsed">Trx In</span>
-      </a>
+      
       <a href="../AP/ca_fabric_trx_in_new.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-cart-arrow-down fa-fw "></span>
       <span class="menu-collapsed">Trx Item In</span>
@@ -1553,10 +1627,7 @@ echo'</ul>
       <span class="fa fa-cart-arrow-down fa-fw "></span>
       <span class="menu-collapsed">Trx Barcode In</span>
       </a>
-      <a href="../AP/ca_fabric_trx_out.php" class="dropdown-item bg-dark text-white">
-      <span class="fa fa-paper-plane fa-fw "></span>
-      <span class="menu-collapsed">Trx Out</span>
-      </a>
+      
       <a href="../AP/ca_fabric_trx_out_item.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-paper-plane fa-fw "></span>
       <span class="menu-collapsed">Trx Item Out</span>
@@ -1565,9 +1636,10 @@ echo'</ul>
       <span class="fa fa-paper-plane fa-fw "></span>
       <span class="menu-collapsed">Trx Barcode Out</span>
       </a>
-      <a href="../AP/ca_fabric_summary.php" class="dropdown-item bg-dark text-white">
+      
+      <a href="../AP/ca_fabric_summary_item.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-calculator fa-fw "></span>
-      <span class="menu-collapsed">Summary</span>
+      <span class="menu-collapsed">Summary Item</span>
       </a>
       <a href="../AP/ca_fabric_summary_barcode.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-calculator fa-fw "></span>
@@ -1576,6 +1648,10 @@ echo'</ul>
       <a href="../AP/ca_fabric_summary_sc.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-calculator fa-fw "></span>
       <span class="menu-collapsed">Summary Subcont</span>
+      </a>
+      <a href="../AP/ca_fabric_summary_subcont.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-calculator fa-fw "></span>
+      <span class="menu-collapsed">Summary Subcont New</span>
       </a>
       <a href="../AP/update_bpb_fabric.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-pencil-square fa-fw "></span>
@@ -1591,6 +1667,19 @@ echo'</ul>
   }
 
   ?>
+
+<!--   <a href="../AP/ca_fabric_trx_in.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-cart-arrow-down fa-fw "></span>
+      <span class="menu-collapsed">Trx In</span>
+      </a>
+<a href="../AP/ca_fabric_trx_out.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-paper-plane fa-fw "></span>
+      <span class="menu-collapsed">Trx Out</span>
+      </a>
+<a href="../AP/ca_fabric_summary.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-calculator fa-fw "></span>
+      <span class="menu-collapsed">Summary</span>
+      </a> -->
 </ul>
 </li>
 <!-- END Menu Cost Accounting -->
@@ -1863,7 +1952,7 @@ if(strpos($id, '95') !== false){
     echo '<a href="../AP/form_approve_reverse_kontrabon.php" class="dropdown-item bg-dark text-white">
     <span class="fas fa-angle-right fa-fw "></span>
     <span class="menu-collapsed">Kontrabon</span>
-    '.$notif_rvspay.'
+    '.$notif_rvskbon.'
     </a>';
 }
 
@@ -1871,7 +1960,7 @@ if(strpos($id, '93') !== false){
     echo '<a href="../AP/form_approve_reverse_payment.php" class="dropdown-item bg-dark text-white">
     <span class="fa fa-angle-right fa-fw "></span>
     <span class="menu-collapsed">Payment</span>
-    '.$notif_rvskbon.'
+    '.$notif_rvspay.'
     </a>';
 }
 

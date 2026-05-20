@@ -15,7 +15,7 @@ if ($no_bankout == 'BK/BCA1979/NAG/0525/00339') {
     select no_coa,nama_coa,nama_costcenter,b.profit_center,reff_doc,reff_date,curr, debit, credit, keterangan from tbl_list_journal a left join b_master_cc b on b.no_cc = a.no_costcenter where no_journal = '$no_bankout' AND ( debit > 0 OR credit > 0) and no_coa != '1.10.01' and a.status != 'Updated'";
 }else{
 
-    $sqlys = "select no_coa,nama_coa,nama_costcenter,c.nama_pc profit_center,reff_doc,reff_date,curr,debit,credit, a.keterangan from tbl_list_journal a left join b_master_cc b on b.no_cc = a.no_costcenter left join master_pc c on c.kode_pc = a.profit_center where a.status != 'Updated' AND (debit > 0 and no_journal = '$no_bankout' || credit > 0 and no_journal = '$no_bankout' and a.status != 'Updated')";
+    $sqlys = "select no_coa,nama_coa,nama_costcenter,a.profit_center,reff_doc,reff_date,curr, rate, IF(curr = 'IDR',0,debit) debit, IF(curr = 'IDR',0,credit) credit, ROUND(debit * rate, 2) debit_idr, ROUND(credit * rate, 2) credit_idr, a.keterangan from tbl_list_journal a left join b_master_cc b on b.no_cc = a.no_costcenter left join master_pc c on c.kode_pc = a.profit_center where a.status != 'Updated' AND (debit > 0 and no_journal = '$no_bankout' || credit > 0 and no_journal = '$no_bankout' and a.status != 'Updated')";
 }
 
 ob_start();
@@ -342,12 +342,13 @@ CSS HEADER
               <th style="width: 7%;text-align:center;">Coa No</th>
               <th style="width: 11%;text-align:center;">Coa Name</th>
               <th style="width: 10%;text-align:center;">Cost Center</th>
-              <th style="width: 11%;text-align:center;">Profit Center</th>
+              <th style="width: 6%;text-align:center;">Profit Center</th>
               <th style="width: 10%;text-align:center;">Reff Doc</th>
-              <th style="width: 10%;text-align:center;">Reff Date</th>
-              <th style="width: 7%;text-align:center;">Curr</th>
-              <th style="width: 11%;text-align:center;">Debit</th>
-              <th style="width: 11%;text-align:center;">Credit</th>
+              <th style="width: 6%;text-align:center;">Curr</th>
+              <th style="width: 7%;text-align:center;">Debit</th>
+              <th style="width: 7%;text-align:center;">Credit</th>
+              <th style="width: 12%;text-align:center;">Debit IDR</th>
+              <th style="width: 12%;text-align:center;">Credit IDR</th>
               <th style="width: 12%;text-align:center;">Description</th>
               <th style="display: none;"></th>  
           </tr>
@@ -367,12 +368,13 @@ CSS HEADER
             <td style="text-align: center" value="'.$data['no_coa'].'">'.$data['no_coa'].'</td>
             <td style="text-align: left" value="'.$data['nama_coa'].'">'.$data['nama_coa'].'</td>
             <td style="text-align: left" value="'.$data['nama_costcenter'].'">'.$data['nama_costcenter'].'</td>
-            <td style="text-align: left" value="'.$data['profit_center'].'">'.$data['profit_center'].'</td>
-            <td style="text-align: left" value="'.$data['reff_doc'].'">'.$data['reff_doc'].'</td> 
-            <td style="text-align: left" value="'.$reff_date.'">'.$reff_date.'</td>                                                                      
-            <td style="text-align: left" value="'.$data['curr'].'">'.$data['curr'].'</td> 
+            <td style="text-align: center" value="'.$data['profit_center'].'">'.$data['profit_center'].'</td>
+            <td style="text-align: left" value="'.$data['reff_doc'].'">'.$data['reff_doc'].'</td>                                                                      
+            <td style="text-align: center" value="'.$data['curr'].'">'.$data['curr'].'</td> 
             <td style="text-align: right" value="'.$data['debit'].'">'.number_format($data['debit'],2).'</td>
-            <td style="text-align: right" value="'.$data['credit'].'">'.number_format($data['credit'],2).'</td>                            
+            <td style="text-align: right" value="'.$data['credit'].'">'.number_format($data['credit'],2).'</td> 
+            <td style="text-align: right" value="'.$data['debit_idr'].'">'.number_format($data['debit_idr'],2).'</td>
+            <td style="text-align: right" value="'.$data['credit_idr'].'">'.number_format($data['credit_idr'],2).'</td>                            
             <td style="text-align: left" value="'.$data['keterangan'].'">'.$data['keterangan'].'</td>
             <td style="display: none;"></td>  
             </tr>'; 
