@@ -284,20 +284,20 @@
                 $tocc = isset($_POST['tocc']) ? $_POST['tocc']: null;
                 }   
                 if ($nama_supp == null OR $nama_supp == '') {
-                    $sql = mysqli_query($conn1,"select supplier, CONCAT(UPPER(TRIM(REGEXP_REPLACE(bank_name, ' +', ' '))),' ',UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' ')))) AS bank, UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' '))) AS akun, UPPER(TRIM(REGEXP_REPLACE(beneficiary_name, ' +', ' '))) AS beneficiary_name from mastersupplier where tipe_sup = 'S' and bank_account != '' and bank_account is not null");
+                    $sql = mysqli_query($conn2,"SELECT ms.Supplier AS supplier, CONCAT(UPPER(TRIM(m.bank_name)),' ',UPPER(TRIM(m.bank_account))) AS bank, UPPER(TRIM(m.bank_account)) AS akun FROM master_supplier_bank m JOIN mastersupplier ms ON ms.id_supplier = m.id_supplier WHERE m.status = 'Active' AND m.tipe_sup = 'S' ORDER BY ms.Supplier, m.bank_name");
                 }else{
-                    $sql = mysqli_query($conn1,"select supplier, CONCAT(UPPER(TRIM(REGEXP_REPLACE(bank_name, ' +', ' '))),' ',UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' ')))) AS bank, UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' '))) AS akun, UPPER(TRIM(REGEXP_REPLACE(beneficiary_name, ' +', ' '))) AS beneficiary_name from mastersupplier where tipe_sup = 'S' and supplier = '$nama_supp' and bank_account != '' and bank_account is not null");
-                }              
+                    $sql = mysqli_query($conn2,"SELECT ms.Supplier AS supplier, CONCAT(UPPER(TRIM(m.bank_name)),' ',UPPER(TRIM(m.bank_account))) AS bank, UPPER(TRIM(m.bank_account)) AS akun FROM master_supplier_bank m JOIN mastersupplier ms ON ms.id_supplier = m.id_supplier WHERE m.status = 'Active' AND m.tipe_sup = 'S' AND ms.Supplier = '$nama_supp' ORDER BY m.bank_name");
+                }
                 while ($row = mysqli_fetch_array($sql)) {
                     $data = $row['bank'];
                     $indata = $row['akun'];
-                    if($row['bank'] == $tocc){
+                    if($row['akun'] == $tocc){
                         $isSelected = ' selected="selected"';
                     }else{
                         $isSelected = '';
 
                     }
-                    echo '<option value="'.$indata.'"'.$isSelected.'">'. $data .'</option>';    
+                    echo '<option value="'.$indata.'"'.$isSelected.'">'. $data .'</option>';
                         }
                         ?>
                 <?php echo'</select>

@@ -301,7 +301,7 @@ CSS HEADER
 </td>
 <td style="border-left: none;font-size: 12px; border-top: none;border-right: none;">
     <?php
-    $sql3 = mysqli_query($conn2," select IFNULL(NULLIF(to_akun, ''), '-') AS to_akun from (select CONCAT(bank_name,' ',to_akun) to_akun from tbl_pv_h a INNER JOIN mastersupplier b on b.bank_account = a.to_akun where no_pv = '$no_pv'
+    $sql3 = mysqli_query($conn2," select IFNULL(NULLIF(to_akun, ''), '-') AS to_akun from (select CONCAT(bank_name,' ',to_akun) to_akun from tbl_pv_h a INNER JOIN master_supplier_bank b on b.bank_account = a.to_akun where no_pv = '$no_pv'
     UNION ALL
     select CONCAT(bank_name,' ',to_akun) to_akun from tbl_pv_h a INNER JOIN b_masterbank b on b.bank_account = a.to_akun where no_pv = '$no_pv' and b.status = 'Active') a limit 1");
     $rows3 = mysqli_fetch_array($sql3);

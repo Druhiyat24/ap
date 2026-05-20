@@ -667,6 +667,11 @@ if(strpos($id3, '109') !== false){
   echo '<a href="AP/approve_transfer_memo.php" class="dropdown-item bg-dark text-white">
   <span class="fa fa-thumbs-o-up fa-fw "></span>
   <span class="menu-collapsed">Approve Transfer Memo</span>
+  </a>
+
+  <a href="AP/transfer_memo.php" class="dropdown-item bg-dark text-white">
+  <span class="fa fa-paper-plane fa-fw "></span>
+  <span class="menu-collapsed">Transfer Memo</span>
   </a>';
 }
 

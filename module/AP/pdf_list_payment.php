@@ -294,11 +294,12 @@ while($datas=mysqli_fetch_array($querys)){
 	$sum_amount = $datas['amount'];
 }
 
-$sql_bank = mysqli_query($conn2,"select supplier, UPPER(TRIM(REGEXP_REPLACE(bank_name, ' +', ' '))) AS bank_name, UPPER(TRIM(REGEXP_REPLACE(bank_account, ' +', ' '))) AS bank_account, UPPER(TRIM(REGEXP_REPLACE(beneficiary_name, ' +', ' '))) AS beneficiary_name from mastersupplier where tipe_sup = 'S' and supplier = '$supplier' LIMIT 1");
+$sql_bank = mysqli_query($conn2,"select b.id, beneficiary_name, bank_name, bank_account, bank_currency from list_payment a LEFT JOIN master_supplier_bank b on b.id = a.id_bank_account where no_payment = '$no_payment' GROUP BY b.id");
 $row_bank = mysqli_fetch_array($sql_bank);
 $beneficiary_name = $row_bank['beneficiary_name'];
-$bank_account = $row_bank['bank_account'];
 $bank_name = $row_bank['bank_name'];
+$bank_account = $row_bank['bank_account'];
+$bank_currency = $row_bank['bank_currency'];
 ?>
 
 
@@ -320,10 +321,11 @@ $bank_name = $row_bank['bank_name'];
 	<tr>
 
 
-		<td width="60%">
-			Payment To: <?php echo $beneficiary_name; ?>
+		<td width="20%">
+			Payment To:
 			
 		</td>
+		<td width="45%"></td>
 			
 		<td >
 			Total Kontrabon
@@ -335,9 +337,10 @@ $bank_name = $row_bank['bank_name'];
 	</tr>	
 
 	<tr>
-		<td width="60%">
-			Bank Account: <?php echo $bank_account; ?>
+		<td width="20%">
+			Beneficiary Name
 		</td>
+		<td width="45%">: <?php echo $beneficiary_name; ?></td>
 			
 		<td >
 			Tax (Pph) 
@@ -350,10 +353,10 @@ $bank_name = $row_bank['bank_name'];
 
 <tr>
 	<tr>
-		<td width="60%">
-			Bank Name: <?php echo $bank_name; ?>
-			
+		<td width="20%">
+			Bank Account Number
 		</td>
+		<td width="45%">: <?php echo $bank_account; ?></td>
 			
 		<td >
 			Outstanding 
@@ -366,9 +369,10 @@ $bank_name = $row_bank['bank_name'];
 
 
 	<tr>
-		<td width="60%">
-			
+		<td width="20%">
+			Name Of The Bank
 		</td>
+		<td width="45%">: <?php echo $bank_name; ?></td>
 			
 		<td style="font-weight: bold;">
 			Total Amount 
@@ -376,6 +380,21 @@ $bank_name = $row_bank['bank_name'];
 		<td style="width:1%">:</td>
 		<td style="text-align:right; font-weight: bold;">
 			<?php echo $curr." ".number_format($sum_amount, 2) ?>
+		</td>
+</tr>		
+
+<tr>
+		<td width="20%">
+			Bank Account Currency
+		</td>
+		<td width="45%">: <?php echo $bank_currency; ?></td>
+			
+		<td style="font-weight: bold;">
+			
+		</td>
+		<td style="width:1%"></td>
+		<td style="text-align:right; font-weight: bold;">
+			
 		</td>
 </tr>		
 	

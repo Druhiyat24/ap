@@ -174,34 +174,79 @@
     <div class="col-md-3 mb-3">            
     </div>            
 
+    <?php
+    /* Load bank accounts dari master_supplier_bank berdasarkan supplier terpilih */
+    $supplier_banks = [];
+    if (!empty($nama_supp)) {
+        $q_sb = mysqli_query($conn2,
+            "SELECT msb.id, msb.bank_account, msb.bank_currency, msb.bank_name, msb.beneficiary_name
+             FROM master_supplier_bank msb
+             INNER JOIN mastersupplier ms ON ms.id_supplier = msb.id_supplier
+             WHERE ms.Supplier = '" . mysqli_real_escape_string($conn2, $nama_supp) . "'
+               AND msb.status = 'Active'
+             ORDER BY msb.bank_name ASC"
+        );
+        while ($r = mysqli_fetch_assoc($q_sb)) {
+            $supplier_banks[] = $r;
+        }
+    }
+    ?>
+
+    <!-- Bank Account selectpicker -->
     <div class="col-md-2 mb-3">
-        <label for="nama_supp"><b>Supplier Bank Name</b></label>            
-        <div class="input-group">
-            <input type="text" readonly style="font-size: 14px; width: 300px;" class="form-control form-control-sm" name="txt_bank_supp" id="txt_bank_supp"  value="<?php 
-            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
+        <label><b>Bank Account</b></label>
+        <select class="form-control form-control-sm selectpicker"
+                id="sel_bank_account" name="sel_bank_account"
+                data-live-search="true" data-dropup-auto="false" data-size="8"
+                <?= empty($supplier_banks) ? 'disabled' : '' ?>>
+            <option value="">-- Select Bank Account --</option>
+            <?php foreach ($supplier_banks as $b): ?>
+            <option value="<?= htmlspecialchars($b['bank_account']) ?>"
+                    data-account="<?= htmlspecialchars($b['bank_account']) ?>"
+                    data-currency="<?= htmlspecialchars($b['bank_currency']) ?>"
+                    data-bankname="<?= htmlspecialchars($b['bank_name']) ?>"
+                    data-beneficiary="<?= htmlspecialchars($b['beneficiary_name']) ?>">
+                <?= htmlspecialchars($b['bank_account']) ?>
+            </option>
+            <?php endforeach; ?>
+        </select>
+    </div>
 
-            $querys = mysqli_query($conn2,"select bank_name, bank_account, beneficiary_name from mastersupplier where tipe_sup = 'S' and supplier = '$nama_supp' LIMIT 1");
-            $rows = mysqli_fetch_array($querys);
-            $bank_name = $rows['bank_name'];
-            
-            echo $bank_name; 
-        ?>">
-        </div>
-    </div>  
+    <!-- Currency (readonly auto-fill) -->
 
+    <!-- Bank Name (readonly auto-fill) -->
     <div class="col-md-2 mb-3">
-        <label for="nama_supp"><b>Supplier Bank Account</b></label>            
-        <div class="input-group">
-            <input type="text" readonly style="font-size: 14px; width: 300px;" class="form-control form-control-sm" name="txt_akun_supp" id="txt_akun_supp"  value="<?php 
-            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
+        <label><b>Bank Name</b></label>
+        <input type="text" readonly class="form-control form-control-sm bg-light"
+               id="disp_bankname" name="disp_bankname" placeholder="-">
+    </div>
 
-            $querys = mysqli_query($conn2,"select bank_name, bank_account, beneficiary_name from mastersupplier where tipe_sup = 'S' and supplier = '$nama_supp' LIMIT 1");
-            $rows = mysqli_fetch_array($querys);
-            $bank_account = $rows['bank_account'];
-            
-            echo $bank_account; 
-        ?>">
-        </div>
+    <!-- Beneficiary Name (readonly auto-fill) -->
+    <div class="col-md-2 mb-3">
+        <label><b>Beneficiary Name</b></label>
+        <input type="text" readonly class="form-control form-control-sm bg-light"
+               id="disp_beneficiary" name="disp_beneficiary" placeholder="-">
+    </div>
+    <div class="col-md-1 mb-3">
+        <label><b>Currency</b></label>
+        <input type="text" readonly class="form-control form-control-sm bg-light"
+               id="disp_currency" name="disp_currency" placeholder="-">
+    </div>
+
+    <!-- Hidden backward-compat -->
+    <input type="hidden" id="txt_bank_supp" name="txt_bank_supp">
+    <input type="hidden" id="txt_akun_supp" name="txt_akun_supp"> 
+    <div class="col-md-4 mb-3"></div> 
+    <div class="col-md-4 mb-3">            
+        <label for="memo"><b>Descriptions</b></label>          
+        <input type="text" style="font-size: 14px;" class="form-control form-control-sm" name="memo" id="memo" 
+        value="<?php             
+        if(!empty($_POST['memo'])) {
+            echo $_POST['memo'];
+        }
+        else{
+            echo '';
+        } ?>">
     </div>         
 
     <div class="col-md-4 mb-3">
@@ -232,19 +277,7 @@
         </div>
     </div>
 </div>  
-<div class="col-md-4 mb-3"></div>
-
-<div class="col-md-4 mb-3">            
-        <label for="memo"><b>Descriptions</b></label>          
-        <input type="text" style="font-size: 14px;" class="form-control form-control-sm" name="memo" id="memo" 
-        value="<?php             
-        if(!empty($_POST['memo'])) {
-            echo $_POST['memo'];
-        }
-        else{
-            echo '';
-        } ?>">
-    </div>       
+<div class="col-md-4 mb-3"></div>   
 
 </div>
 </form>
@@ -648,6 +681,25 @@ function SidebarCollapse () {
     });
 </script>
 
+<script>
+// ===== Auto-fill Bank Info saat Bank Account dipilih =====
+$(document).on('change', '#sel_bank_account', function () {
+    var opt = $(this).find('option:selected');
+    var account     = opt.data('account')     || '';
+    var currency    = opt.data('currency')    || '';
+    var bankname    = opt.data('bankname')    || '';
+    var beneficiary = opt.data('beneficiary') || '';
+
+    $('#disp_currency').val(currency);
+    $('#disp_bankname').val(bankname);
+    $('#disp_beneficiary').val(beneficiary);
+
+    // update hidden fields (backward compat)
+    $('#txt_bank_supp').val(bankname);
+    $('#txt_akun_supp').val(account);
+});
+</script>
+
 <!--<script type="text/javascript"> 
     $("#mytable").on("click", "#delbutton", function() {
     var sub = $(this).closest('tr').find('td:eq(4)').attr('data-subtotal');
@@ -839,13 +891,14 @@ function addListener(elm,index){
             var no_coa = $(this).closest('tr').find('td:eq(20)').attr('value');
             var nama_coa = $(this).closest('tr').find('td:eq(21)').attr('value');
             var profit_center = $('select[name=profit_center] option').filter(':selected').val();
+            var bank_account = $('select[name=sel_bank_account] option').filter(':selected').val();
             var balance = 0;
             balance += outstanding - amount;
-            if(amount >= 1 && tgl_payment >= tgl_lp_p){       
+            if(amount >= 1 && tgl_payment >= tgl_lp_p && bank_account != ''){       
                 $.ajax({
                     type:'POST',
                     url:'insertlistpayment.php',
-                    data: {'no_payment':no_payment, 'tgl_payment':tgl_payment, 'keterangan':keterangan, 'no_kbon':no_kbon, 'tgl_kbon':tgl_kbon, 'nama_supp':nama_supp, 'curr':curr, 'create_user':create_user, 'total_kbon':total_kbon, 'top':top, 'outstanding':outstanding, 'amount':amount, 'tgl_tempo':tgl_tempo, 'balance':balance, 'no_bpb':no_bpb, 'tgl_bpb':tgl_bpb, 'no_po':no_po, 'tgl_po':tgl_po, 'pph_value':pph_value, 'duedate':duedate, 'no_coa':no_coa, 'nama_coa':nama_coa, 'profit_center':profit_center},
+                    data: {'no_payment':no_payment, 'tgl_payment':tgl_payment, 'keterangan':keterangan, 'no_kbon':no_kbon, 'tgl_kbon':tgl_kbon, 'nama_supp':nama_supp, 'curr':curr, 'create_user':create_user, 'total_kbon':total_kbon, 'top':top, 'outstanding':outstanding, 'amount':amount, 'tgl_tempo':tgl_tempo, 'balance':balance, 'no_bpb':no_bpb, 'tgl_bpb':tgl_bpb, 'no_po':no_po, 'tgl_po':tgl_po, 'pph_value':pph_value, 'duedate':duedate, 'no_coa':no_coa, 'nama_coa':nama_coa, 'profit_center':profit_center, 'bank_account':bank_account},
                     cache: 'false',
                     close: function(e){
                         e.preventDefault();
@@ -868,6 +921,8 @@ function addListener(elm,index){
             alert("Please check the Kontrabon number");            
         }else if (document.getElementById('tanggal').value < document.getElementById('tgl_perhitungan').value){
             alert("List Payment Date Can't be less than Kontrabon Date ");
+        }else if ($('select[name=sel_bank_account] option').filter(':selected').val() == ''){
+            alert("Please select bank account supplier");
         } else{
             alert("data saved successfully");
         }                       

@@ -49,7 +49,7 @@ try {
             $memoIn = implode(',', $memoList);
 
             // 🔹 update memo_h
-            $updateMemo = "update memo_h a INNER JOIN transfer_memo_exim_det b ON b.nm_memo = a.nm_memo SET a.status_transfer = a.status_to_finance, a.tetf_by = null, a.tetf_date = null, a.status_to_finance = null where b.no_trans = '$no_trans'";
+            $updateMemo = "update memo_h a INNER JOIN transfer_memo_exim_det b ON b.nm_memo = a.nm_memo SET a.status_transfer = 'A-TETF', a.tfte_by = null, a.tfte_date = null where b.no_trans = '$no_trans'";
             mysqli_query($conn2, $updateMemo);
 
             // 🔹 update detail
