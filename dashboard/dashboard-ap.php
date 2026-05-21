@@ -1,590 +1,374 @@
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<?php
+/* ── Data queries ──────────────────────────────────────── */
+// helper — safe fetch
+function _qv($conn, $sql, $col) {
+    $q = mysqli_query($conn, $sql);
+    if (!$q) return 0;
+    $r = mysqli_fetch_array($q);
+    return $r[$col] ?? 0;
+}
+
+// Purchase YTD
+$net_ytd = _qv($conn2,"select sum(total) total from (select sum(total_idr) total from dsb_ap_purchase where tgl_bpb BETWEEN CONCAT(YEAR(CURDATE()),'-01-01') and CURDATE() UNION select -sum(total_idr) total from dsb_ap_retur where tgl_bpb BETWEEN CONCAT(YEAR(CURDATE()),'-01-01') and CURDATE()) a",'total');
+$pch_ytd = _qv($conn2,"select sum(total_idr) total from dsb_ap_purchase where tgl_bpb BETWEEN CONCAT(YEAR(CURDATE()),'-01-01') and CURDATE()",'total');
+$ret_ytd = _qv($conn2,"select sum(total_idr) total from dsb_ap_retur where tgl_bpb BETWEEN CONCAT(YEAR(CURDATE()),'-01-01') and CURDATE()",'total');
+
+// Purchase Current Month
+$net_cm = _qv($conn2,"select sum(total) total from (select sum(total_idr) total from dsb_ap_purchase where MONTH(tgl_bpb)=MONTH(CURDATE()) UNION select -sum(total_idr) total from dsb_ap_retur where MONTH(tgl_bpb)=MONTH(CURDATE())) a",'total');
+$pch_cm = _qv($conn2,"select sum(total_idr) total from dsb_ap_purchase where MONTH(tgl_bpb)=MONTH(CURDATE())",'total');
+$ret_cm = _qv($conn2,"select sum(total_idr) total from dsb_ap_retur where MONTH(tgl_bpb)=MONTH(CURDATE())",'total');
+
+// AP Outstanding
+$ap_sql = "select sum(total_type_idr) total, sum(due_0) not_due, sum(produe_0) over_due from (
+    select 'bpb' id,sum(end_balance_idr) total_type_idr,sum(due_0) due_0,sum(produe_0) produe_0 from dsb_ap_bpb where end_balance_idr!=0
+    UNION select 'kbn',sum(end_balance_idr),sum(due_0),sum(produe_0) from dsb_ap_kbon where end_balance_idr!=0
+    UNION select 'lp',sum(end_balance_idr),sum(due_0),sum(produe_0) from dsb_ap_lp where end_balance_idr!=0) a";
+$q = mysqli_query($conn2, $ap_sql); $ra = $q ? mysqli_fetch_array($q) : [];
+$ap_total   = $ra['total']    ?? 0;
+$ap_notdue  = $ra['not_due']  ?? 0;
+$ap_overdue = $ra['over_due'] ?? 0;
+
+// AP Group / Non-Group
+$ap_group    = _qv($conn2,"select sum(total_type_idr) total from (select sum(end_balance_idr) total_type_idr from dsb_ap_bpb where end_balance_idr!=0 and relasi='GROUP' UNION select sum(end_balance_idr) from dsb_ap_kbon where end_balance_idr!=0 and relasi='GROUP' UNION select sum(end_balance_idr) from dsb_ap_lp where end_balance_idr!=0 and relasi='GROUP') a",'total');
+$ap_nongroup = _qv($conn2,"select sum(total_type_idr) total from (select sum(end_balance_idr) total_type_idr from dsb_ap_bpb where end_balance_idr!=0 and relasi='NON GROUP' UNION select sum(end_balance_idr) from dsb_ap_kbon where end_balance_idr!=0 and relasi='NON GROUP' UNION select sum(end_balance_idr) from dsb_ap_lp where end_balance_idr!=0 and relasi='NON GROUP') a",'total');
+
+// AP USD / IDR
+$q = mysqli_query($conn2,"select sum(end_balance) usd_val, sum(end_balance_idr) usd_idr from (select end_balance,end_balance_idr from dsb_ap_bpb where curr='USD' and end_balance_idr!=0 UNION select end_balance,end_balance_idr from dsb_ap_kbon where curr='USD' and end_balance_idr!=0 UNION select end_balance,end_balance_idr from dsb_ap_lp where curr='USD' and end_balance_idr!=0) a");
+$ru = $q ? mysqli_fetch_array($q) : [];
+$ap_usd_val = $ru['usd_val'] ?? 0;
+$ap_usd_idr = $ru['usd_idr'] ?? 0;
+$ap_idr_val = _qv($conn2,"select sum(end_balance_idr) idr_val from (select end_balance_idr from dsb_ap_bpb where curr='IDR' and end_balance_idr!=0 UNION select end_balance_idr from dsb_ap_kbon where curr='IDR' and end_balance_idr!=0 UNION select end_balance_idr from dsb_ap_lp where curr='IDR' and end_balance_idr!=0) a",'idr_val');
+
+// Chart data — top 10 suppliers by net purchase amount
+$sql_top10_val = mysqli_query($conn2,"select GROUP_CONCAT(total) total from (select nama_supp,round(sum(total),2) total from (select nama_supp,sum(dpp) total from dsb_ap_purchase GROUP BY nama_supp UNION select nama_supp,-sum(dpp) total from dsb_ap_retur GROUP BY nama_supp) a GROUP BY nama_supp order by total desc limit 10) a");
+$r = mysqli_fetch_array($sql_top10_val); $chart_top10_val = $r['total'] ?? '';
+$sql_top10_cat = mysqli_query($conn2,'select GROUP_CONCAT(concat(\'"\',nama_supp,\'"\')) nama_supp from (select nama_supp,round(sum(total),2) total from (select nama_supp,sum(dpp) total from dsb_ap_purchase GROUP BY nama_supp UNION select nama_supp,-sum(dpp) total from dsb_ap_retur GROUP BY nama_supp) a GROUP BY nama_supp order by total desc limit 10) a');
+$r = mysqli_fetch_array($sql_top10_cat); $chart_top10_cat = $r['nama_supp'] ?? '';
+
+$sql_monthly_net = mysqli_query($conn2,"select GROUP_CONCAT(round((COALESCE(ttl_purchase,0)-COALESCE(ttl_retur,0))/1000000,2)) v from (select bulan from dim_date where tahun=YEAR(CURDATE()) GROUP BY bulan ORDER BY bulan) a LEFT JOIN (select MONTH(tgl_bpb) bln,sum(dpp) ttl_purchase from dsb_ap_purchase GROUP BY bln) b on b.bln=a.bulan LEFT JOIN (select MONTH(tgl_bpb) bln,sum(dpp) ttl_retur from dsb_ap_retur GROUP BY bln) c on c.bln=a.bulan");
+$r = mysqli_fetch_array($sql_monthly_net); $monthly_net = $r['v'] ?? '';
+$sql_monthly_pay = mysqli_query($conn2,"select GROUP_CONCAT(round((COALESCE(ttl_bpb,0)+COALESCE(ttl_kbon,0)+COALESCE(ttl_lp,0))/1000000,2)) v from (select bulan from dim_date where tahun=YEAR(CURDATE()) GROUP BY bulan ORDER BY bulan) a LEFT JOIN (select MONTH(tgl_bpb) bln,sum(end_balance_idr) ttl_bpb from dsb_ap_bpb where end_balance_idr!=0 and tgl_bpb>='2024-01-01' GROUP BY bln) b on b.bln=a.bulan LEFT JOIN (select MONTH(tgl_kbon) bln,sum(end_balance_idr) ttl_kbon from dsb_ap_kbon where end_balance_idr!=0 and tgl_kbon>='2024-01-01' GROUP BY bln) c on c.bln=a.bulan LEFT JOIN (select MONTH(tgl_payment) bln,sum(end_balance_idr) ttl_lp from dsb_ap_lp where end_balance_idr!=0 and tgl_payment>='2024-01-01' GROUP BY bln) d on d.bln=a.bulan");
+$r = mysqli_fetch_array($sql_monthly_pay); $monthly_pay = $r['v'] ?? '';
+$sql_monthly_lbl = mysqli_query($conn2,'select GROUP_CONCAT(concat(\'"\',concat(nama_bulan_singkat," ",tahun),\'"\')) label from (select nama_bulan_singkat,tahun from dim_date where tahun=YEAR(CURDATE()) GROUP BY bulan ORDER BY bulan) a');
+$r = mysqli_fetch_array($sql_monthly_lbl); $monthly_lbl = $r['label'] ?? '';
+
+if (!function_exists('fmt')) {
+    function fmt($v) { return 'IDR '.number_format((float)$v,0,',','.'); }
+}
+?>
+
 <style>
-    body {
-        font-family: 'Roboto', sans-serif;
-    }
-    .card-text {
-        font-size: 14px;
-        color: #2F4F4F;
-    }
-    .card {
-        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        border-radius: 10px;
-        background: linear-gradient(90deg, #ffffff, #e9e9e9);
+/* ── AP Dashboard ──────────────────────────────────────── */
+.dsb-info {
+    display: flex; align-items: center; gap: 14px;
+    background: #fff; border-radius: 14px; border: none;
+    padding: 18px 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.07);
+    transition: transform .2s, box-shadow .2s;
+    margin-bottom: 18px;
+    position: relative; overflow: hidden;
+}
+.dsb-info::before {
+    content:''; position:absolute; right:-18px; bottom:-18px;
+    width:80px; height:80px; border-radius:50%;
+    background: rgba(255,255,255,.12);
+}
+.dsb-info:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.12); }
+.dsb-info-icon {
+    width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: #fff;
+}
+.dsb-info-body { flex: 1; min-width: 0; }
+.dsb-info-label { font-size: 11px; font-weight: 600; letter-spacing: .8px;
+    text-transform: uppercase; color: #a0aec0; margin-bottom: 3px; }
+.dsb-info-value { font-size: 15px; font-weight: 700; color: #2d3748;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dsb-info-sub   { font-size: 11.5px; color: #718096; margin-top: 2px; }
 
+.dsb-section {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: #a0aec0;
+    margin: 4px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex; align-items: center; gap: 8px;
+}
+.dsb-section i { color: #cbd5e0; }
 
-    }
+.dsb-chart-card {
+    background: #fff; border-radius: 14px; border: none;
+    box-shadow: 0 2px 12px rgba(0,0,0,.07);
+    margin-bottom: 18px; overflow: hidden;
+}
+.dsb-chart-header {
+    padding: 14px 20px; border-bottom: 1px solid #f0f4f8;
+    font-size: 13px; font-weight: 600; color: #2d3748;
+    display: flex; align-items: center; gap: 8px;
+}
+.dsb-chart-header i { color: #3949ab; }
+.dsb-chart-body { padding: 12px 16px; }
 
-    .card-header {
-        color: black;
-        text-align: center;
-        font-size: 15px;
-        font-weight: bold;
-        padding: 15px; /* Menambah jarak dalam header */
-        white-space: nowrap; /* Agar teks tidak terpotong ke baris kedua */
-        text-overflow: ellipsis; /* Jika teks sangat panjang, tampilkan "..." */
-        overflow: hidden; /* Sembunyikan teks yang keluar dari batas */
-        text-transform: uppercase;
-    }
-
-    .card-body {
-        text-align: center;
-        font-size: 14px;
-        color: #2F4F4F;
-    }
-
-    .card-group .card {
-        margin-bottom: 15px; /* Menambahkan margin bawah antara card */
-    }
-
-    .card-group {
-        display: flex;
-        justify-content: space-between; /* Agar kartu-kartu dalam grup terpisah rata */
-        flex-wrap: wrap; /* Agar kartu-kartu berada di baris berikutnya pada ukuran layar kecil */
-    }
-
+/* Alert badges in header */
+.dsb-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 999px;
+    font-size: 10.5px; font-weight: 600; margin-left: auto;
+}
+.dsb-badge-up   { background: #dcfce7; color: #166534; }
+.dsb-badge-down { background: #fee2e2; color: #991b1b; }
 </style>
 
-<div class="col p-4">
-    <!-- <div class="box " style="background-color: #F0F8FF;"> -->
-<!--         <p id="lastUpdate">
-  <?php
-    $res = mysqli_query($conn2, "select max(create_date) last_update from dsb_ap_bpb");
-    $row = mysqli_fetch_assoc($res);
-    echo "📅 Last update: " . date('d-m-Y H:i:s', strtotime($row['last_update']));
-  ?>
-  <button id="refreshDashboard" class="btn btn-sm btn-warning">🔁 Update</button>
-<p id="refreshInfo" style="margin-top: 10px;"></p>
-</p> -->
-        <div class="row div-dashboard">
-            <div class="col-md-8">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="col p-2 ">
-                            <div class="card">
+<!-- ── SECTION: Purchase Performance ───────────────────── -->
+<div class="dsb-section"><i class="fas fa-shopping-cart"></i> Purchase Performance — <?= date('Y') ?></div>
 
-                                <div class="card-header bg-success border-dark text-white text-center"><b style="font-size: 15px;">Net Purchase Year to Date</b></div>
-                                <div class="card-body">
-                                    <?php
-                                    $sql_npch_ytd = mysqli_query($conn2,"select sum(total) total from (select sum(total_idr) total from dsb_ap_purchase where tgl_bpb BETWEEN CONCAT(DATE_FORMAT(CURRENT_DATE,'%Y'),'-01-','01') and CURRENT_DATE() UNION select -sum(total_idr) total from dsb_ap_retur where tgl_bpb BETWEEN CONCAT(DATE_FORMAT(CURRENT_DATE,'%Y'),'-01-','01') and CURRENT_DATE()) a ");
-                                    $row = mysqli_fetch_array($sql_npch_ytd);
-                                    $total_npch_ytd = isset($row['total']) ? $row['total'] :0;
-
-                                    ?>
-                                    <p class="card-text" style="text-align: center;font-size: 14px;color: #2F4F4F" onclick="showdata_slsytd()"><b>IDR <?= number_format($total_npch_ytd,2); ?></b></p>
-                                </div>
-                            </div>
-                            <div class="card-group">
-                                <div class="card">
-                                    <div class="card-header bg-success border-dark text-white text-center"><b style="font-size: 15px;">Purchase Year to Date</b></div>
-                                    <div class="card-body">
-                                        <?php
-                                        $sql_pch_ytd = mysqli_query($conn2,"select sum(total_idr) total from dsb_ap_purchase where tgl_bpb BETWEEN CONCAT(DATE_FORMAT(CURRENT_DATE,'%Y'),'-01-','01') and CURRENT_DATE()");
-                                        $row = mysqli_fetch_array($sql_pch_ytd);
-                                        $total_pch_ytd = isset($row['total']) ? $row['total'] :0;
-
-                                        ?>
-                                        <p class="card-text" style="text-align: center;font-size: 14px;color: #2F4F4F" onclick="showdata_slsytd()"><b>IDR <?= number_format($total_pch_ytd,2); ?></b></p>
-                                    </div>
-                                </div>
-                                <div class="card">
-                                    <div class="card-header bg-success border-dark text-white text-center"><b style="font-size: 15px;">Purchase Return YTD</b></div>
-                                    <div class="card-body">
-                                        <?php
-                                        $sql_retur_ytd = mysqli_query($conn2,"select sum(total_idr) total from dsb_ap_retur where tgl_bpb BETWEEN CONCAT(DATE_FORMAT(CURRENT_DATE,'%Y'),'-01-','01') and CURRENT_DATE()");
-                                        $row = mysqli_fetch_array($sql_retur_ytd);
-                                        $total_retur_ytd = isset($row['total']) ? $row['total'] :0;
-
-                                        ?>
-                                        <p class="card-text" style="text-align: center;font-size: 14px;color: #2F4F4F" onclick="showdata_slsytd()"><b>IDR (<?= number_format($total_retur_ytd,2); ?>)</b></p>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="col p-2">
-                            <div class="card">
-                                <div class="card-header bg-success border-dark text-white text-center"><b style="font-size: 15px;">Net Purchase Current Month</b></div>
-                                <div class="card-body">
-                                    <?php
-                                    $sql_npch_cm = mysqli_query($conn2,"select sum(total) total from (select sum(total_idr) total from dsb_ap_purchase where MONTH(tgl_bpb) = MONTH(CURRENT_DATE) UNION select -sum(total_idr) total from dsb_ap_retur where MONTH(tgl_bpb) = MONTH(CURRENT_DATE)) a");
-                                    $row = mysqli_fetch_array($sql_npch_cm);
-                                    $total_npch_cm = isset($row['total']) ? $row['total'] :0;
-
-                                    ?>
-                                    <p class="card-text" style="text-align: center;font-size: 14px;color: #2F4F4F" onclick="showdata_slsytd()"><b>IDR <?= number_format($total_npch_cm,2); ?></b></p>
-                                </div>
-                            </div>
-                            <div class="card-group">
-                                <div class="card">
-                                    <div class="card-header bg-success border-dark text-white text-center"><b style="font-size: 15px;">Purchase Current Month</b></div>
-                                    <div class="card-body">
-                                        <?php
-                                        $sql_pch_cm = mysqli_query($conn2,"select sum(total_idr) total from dsb_ap_purchase where MONTH(tgl_bpb) = MONTH(CURRENT_DATE) ");
-                                        $row = mysqli_fetch_array($sql_pch_cm);
-                                        $total_pch_cm = isset($row['total']) ? $row['total'] :0;
-
-                                        ?>
-                                        <p class="card-text" style="text-align: center;font-size: 14px;color: #2F4F4F" onclick="showdata_slsytd()"><b>IDR <?= number_format($total_pch_cm,2); ?></b></p>
-                                    </div>
-                                </div>
-                                <div class="card">
-                                    <div class="card-header bg-success border-dark text-white text-center"><b style="font-size: 15px;">Purchase Return Current Month</b></div>
-                                    <div class="card-body">
-                                        <?php
-                                        $sql_retur_cm = mysqli_query($conn2,"select sum(total_idr) total from dsb_ap_retur where MONTH(tgl_bpb) = MONTH(CURRENT_DATE)");
-                                        $row = mysqli_fetch_array($sql_retur_cm);
-                                        $total_retur_cm = isset($row['total']) ? $row['total'] :0;
-
-                                        ?>
-                                        <p class="card-text" style="text-align: center;font-size: 14px;color: #2F4F4F" onclick="showdata_slsytd()"><b>IDR (<?= number_format($total_retur_cm,2); ?>)</b></p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col p-2">
-       <!--      <div class="card">
-                <h3 class="card-title"><b><u>TOP 10 SUPPLIER BY AMOUNT (YTD)</u></b></h3>
-                <div class="card-header bg-success border-dark text-white text-center"><b style="font-size: 15px;">TOP 10 SUPPLIER BY AMOUNT (YTD)</b></div>
-                    <div class="card-body">
-                        <div id="chart" style="height: 405px;"></div>
-                    </div>
-                </div> -->
-
-                <div class="card">
-                    <div class="card-header border-0">
-                        <div class="d-flex justify-content-between">
-                            <b style="font-size:14px"><u>TOP 10 SUPPLIER BY AMOUNT (YTD)</u></b>
-                                <!-- <select style="width:12rem" class="form-control" id="filter_dsb1" name="filter_dsb1" onchange="cari_ar_lokal_ekspor(this.value)">
-                                        <option value="ALL">ALL</option>
-                                        <option ></option>
-                                    </select> -->
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="position-relative mb-4">
-                                    <div id="chart_supptop10"></div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-                <div class="col-md-4">
-                    <div class="col p-2">
-                        <div class="card">
-                            <?php
-                            $sql_ttl_ap = mysqli_query($conn2,"select nama_supp,curr,sum(total_type_idr) total, sum(due_0) not_due, sum(produe_0) over_due from ((select  nama_supp,curr,sum(total_type_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from (select 'bpb' id, nama_supp,curr,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_bpb where end_balance_idr != 0 and relasi = 'GROUP' GROUP BY nama_supp,curr
-                                UNION
-                                select 'kbn' id, nama_supp,curr,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_kbon where end_balance_idr != 0 and relasi = 'GROUP' GROUP BY nama_supp,curr
-                                UNION
-                                select 'lp' id, nama_supp,curr,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_lp where end_balance_idr != 0 and relasi = 'GROUP' GROUP BY nama_supp,curr) a GROUP BY nama_supp,curr order by nama_supp asc)
-                                UNION
-                                (select  item_type2,curr,sum(total_type_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from (select 'bpb' id, item_type2,curr,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_bpb where end_balance_idr != 0 and relasi = 'NON GROUP' GROUP BY item_type2,curr
-                                UNION
-                                select 'kbn' id, item_type2,curr,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_kbon where end_balance_idr != 0 and relasi = 'NON GROUP' GROUP BY item_type2,curr
-                                UNION
-                                select 'lp' id, item_type2,curr,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_lp where end_balance_idr != 0 and relasi = 'NON GROUP' GROUP BY item_type2,curr) a GROUP BY item_type2,curr order by item_type2 asc)) a");
-                            $row = mysqli_fetch_array($sql_ttl_ap);
-                            $total = isset($row['total']) ? $row['total'] :0;
-                            $not_due = isset($row['not_due']) ? $row['not_due'] :0;
-                            $over_due = isset($row['over_due']) ? $row['over_due'] :0;
-
-                            ?>
-                            <div class="card-header bg-info border-dark text-white text-center"><b style="font-size: 15px;">Account payable Total Outstanding</b></div>
-                            <div class="card-body">
-                                <p class="card-text" style="text-align: center;font-size: 14px;color: #2F4F4F" onclick="showdata_slsytd()"><b>IDR <?= number_format($total,2); ?></b></p>
-                            </div>
-                        </div>
-                        <div class="card-group">
-                            <div class="card">
-                                <div class="card-header bg-info border-dark text-white text-center"><b style="font-size: 15px;">Account Payable Not Due</b></div>
-                                <div class="card-body">
-                                    <p class="card-text" style="text-align: center;font-size: 14px;color: #2F4F4F" onclick="showdata_slsytd()"><b>IDR <?= number_format($not_due,2); ?></b></p>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div class="card-header bg-info border-dark text-white text-center"><b style="font-size: 15px;">Account Payable Over Due</b></div>
-                                <div class="card-body">
-                                    <p class="card-text" style="text-align: center;font-size: 14px;color: #2F4F4F" onclick="showdata_slsytd()"><b>IDR <?= number_format($over_due,2); ?></b></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col p-2">
-                        <div class="card-group">
-                            <div class="card">
-                                <div class="card-header bg-info border-dark text-white text-center"><b style="font-size: 15px;">Account Payable Group</b></div>
-                                <div class="card-body">
-                                    <?php
-                                    $sql_ttl_ap = mysqli_query($conn2,"select nama_supp,curr,sum(total_type_idr) total, sum(due_0) not_due, sum(produe_0) over_due from ((select  nama_supp,curr,sum(total_type_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from (select 'bpb' id, nama_supp,curr,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_bpb where end_balance_idr != 0 and relasi = 'GROUP' GROUP BY nama_supp,curr
-                                        UNION
-                                        select 'kbn' id, nama_supp,curr,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_kbon where end_balance_idr != 0 and relasi = 'GROUP' GROUP BY nama_supp,curr
-                                        UNION
-                                        select 'lp' id, nama_supp,curr,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_lp where end_balance_idr != 0 and relasi = 'GROUP' GROUP BY nama_supp,curr) a GROUP BY nama_supp,curr order by nama_supp asc)) a");
-                                    $row = mysqli_fetch_array($sql_ttl_ap);
-                                    $ap_group = isset($row['total']) ? $row['total'] :0;
-                                    ?>
-                                    <p class="card-text" style="text-align: center;font-size: 14px;color: #2F4F4F" onclick="showdata_slsytd()"><b>IDR <?= number_format($ap_group,2); ?></b></p>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div class="card-header bg-info border-dark text-white text-center"><b style="font-size: 15px;">Account Payable Non Group</b></div>
-                                <div class="card-body">
-                                    <?php
-                                    $sql_ttl_ap = mysqli_query($conn2,"select item_type2,curr,sum(total_type_idr) total, sum(due_0) not_due, sum(produe_0) over_due from ((select  item_type2,curr,sum(total_type_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from (select 'bpb' id, item_type2,curr,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_bpb where end_balance_idr != 0 and relasi = 'NON GROUP' GROUP BY item_type2,curr
-                                        UNION
-                                        select 'kbn' id, item_type2,curr,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_kbon where end_balance_idr != 0 and relasi = 'NON GROUP' GROUP BY item_type2,curr
-                                        UNION
-                                        select 'lp' id, item_type2,curr,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_lp where end_balance_idr != 0 and relasi = 'NON GROUP' GROUP BY item_type2,curr) a GROUP BY item_type2,curr order by item_type2 asc)) a");
-                                    $row = mysqli_fetch_array($sql_ttl_ap);
-                                    $ap_nongroup = isset($row['total']) ? $row['total'] :0;
-                                    ?>
-                                    <p class="card-text" style="text-align: center;font-size: 14px;color: #2F4F4F" onclick="showdata_slsytd()"><b>IDR <?= number_format($ap_nongroup,2); ?></b></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col p-2">
-                        <div class="card-group">
-                            <div class="card">
-                                <div class="card-header bg-info border-dark text-white text-center"><b style="font-size: 15px;">Account Payable Machine</b></div>
-                                <div class="card-body">
-                                    <?php
-                                    $sql_ttl_ap = mysqli_query($conn2,"select  item_type2,curr,sum(total_type_idr) total, sum(due_0) due_0, sum(produe_0) produe_0 from (select 'bpb' id, item_type2,curr,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_bpb where end_balance_idr != 0 and relasi = 'NON GROUP' GROUP BY item_type2,curr
-                                        UNION
-                                        select 'kbn' id, item_type2,curr,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_kbon where end_balance_idr != 0 and relasi = 'NON GROUP' GROUP BY item_type2,curr
-                                        UNION
-                                        select 'lp' id, item_type2,curr,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_lp where end_balance_idr != 0 and relasi = 'NON GROUP' GROUP BY item_type2,curr) a where item_type2 = 'MACHINE' GROUP BY item_type2 order by item_type2 asc");
-                                    $row = mysqli_fetch_array($sql_ttl_ap);
-                                    $ap_machine = isset($row['total']) ? $row['total'] :0;
-                                    ?>
-                                    <p class="card-text" style="text-align: center;font-size: 14px;color: #2F4F4F" onclick="showdata_slsytd()"><b>IDR <?= number_format($ap_machine,2); ?></b></p>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div class="card-header bg-info border-dark text-white text-center"><b style="font-size: 15px;">Account Payable Non Machine</b></div>
-                                <div class="card-body">
-                                    <?php
-                                    $sql_ttl_ap = mysqli_query($conn2,"select  item_type2,curr,sum(total_type_idr) total, sum(due_0) due_0, sum(produe_0) produe_0 from (select 'bpb' id, item_type2,curr,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_bpb where end_balance_idr != 0 and relasi = 'NON GROUP' GROUP BY item_type2,curr
-                                        UNION
-                                        select 'kbn' id, item_type2,curr,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_kbon where end_balance_idr != 0 and relasi = 'NON GROUP' GROUP BY item_type2,curr
-                                        UNION
-                                        select 'lp' id, item_type2,curr,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_lp where end_balance_idr != 0 and relasi = 'NON GROUP' GROUP BY item_type2,curr) a where item_type2 = 'NON MACHINE' GROUP BY item_type2 order by item_type2 asc");
-                                    $row = mysqli_fetch_array($sql_ttl_ap);
-                                    $ap_nonmachine = isset($row['total']) ? $row['total'] :0;
-                                    ?>
-                                    <p class="card-text" style="text-align: center;font-size: 14px;color: #2F4F4F" onclick="showdata_slsytd()"><b>IDR <?= number_format(($ap_nonmachine + $ap_group) ,2); ?></b></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col p-2">
-                        <div class="card-group">
-                            <div class="card">
-                                <div class="card-header bg-info border-dark text-white text-center"><b style="font-size: 15px;">Account Payable USD</b></div>
-                                <div class="card-body">
-                                    <?php
-                                    $sql_ttl_ap = mysqli_query($conn2,"select nama_supp,curr,sum(total_type) total_usd,sum(total_type_idr) total_idr, sum(due_0) not_due, sum(produe_0) over_due from (select * from ((select  nama_supp,curr,if(curr = 'USD',sum(total_type),0) total_type,sum(total_type_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from (select 'bpb' id, nama_supp,curr,sum(end_balance) total_type,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_bpb where end_balance_idr != 0 and relasi = 'GROUP' GROUP BY nama_supp,curr
-                                        UNION
-                                        select 'kbn' id, nama_supp,curr,sum(end_balance) total_type,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_kbon where end_balance_idr != 0 and relasi = 'GROUP' GROUP BY nama_supp,curr
-                                        UNION
-                                        select 'lp' id, nama_supp,curr,sum(end_balance) total_type,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_lp where end_balance_idr != 0 and relasi = 'GROUP' GROUP BY nama_supp,curr) a GROUP BY nama_supp,curr order by nama_supp asc)
-                                        UNION
-                                        (select  item_type2,curr,if(curr = 'USD',sum(total_type),0) total_type,sum(total_type_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from (select 'bpb' id, item_type2,curr,sum(end_balance) total_type,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_bpb where end_balance_idr != 0 and relasi = 'NON GROUP' GROUP BY item_type2,curr
-                                        UNION
-                                        select 'kbn' id, item_type2,curr,sum(end_balance) total_type,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_kbon where end_balance_idr != 0 and relasi = 'NON GROUP' GROUP BY item_type2,curr
-                                        UNION
-                                        select 'lp' id, item_type2,curr,sum(end_balance) total_type,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_lp where end_balance_idr != 0 and relasi = 'NON GROUP' GROUP BY item_type2,curr) a GROUP BY item_type2,curr order by item_type2 asc)) a where curr = 'USD') a");
-                                    $row = mysqli_fetch_array($sql_ttl_ap);
-                                    $total_usd = isset($row['total_usd']) ? $row['total_usd'] :0;
-                                    $total_eqvidr = isset($row['total_idr']) ? $row['total_idr'] :0;
-
-                                    ?>
-                                    <p class="card-text" style="text-align: center;font-size: 14px;color: #2F4F4F" onclick="showdata_slsytd()"><b>USD <?= number_format($total_usd,2); ?></b></p>
-                                    <p class="card-text" style="text-align: center;font-size: 14px;color: #2F4F4F" onclick="showdata_slsytd()"><b>IDR <?= number_format($total_eqvidr,2); ?></b></p>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <div class="card-header bg-info border-dark text-white text-center"><b style="font-size: 15px;">Account Payable IDR</b></div>
-                                <div class="card-body align-middle">
-                                    <?php
-                                    $sql_ttl_ap = mysqli_query($conn2,"select nama_supp,curr,sum(total_type) total_usd,sum(total_type_idr) total_idr, sum(due_0) not_due, sum(produe_0) over_due from (select * from ((select  nama_supp,curr,if(curr = 'USD',sum(total_type),0) total_type,sum(total_type_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from (select 'bpb' id, nama_supp,curr,sum(end_balance) total_type,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_bpb where end_balance_idr != 0 and relasi = 'GROUP' GROUP BY nama_supp,curr
-                                        UNION
-                                        select 'kbn' id, nama_supp,curr,sum(end_balance) total_type,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_kbon where end_balance_idr != 0 and relasi = 'GROUP' GROUP BY nama_supp,curr
-                                        UNION
-                                        select 'lp' id, nama_supp,curr,sum(end_balance) total_type,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_lp where end_balance_idr != 0 and relasi = 'GROUP' GROUP BY nama_supp,curr) a GROUP BY nama_supp,curr order by nama_supp asc)
-                                        UNION
-                                        (select  item_type2,curr,if(curr = 'USD',sum(total_type),0) total_type,sum(total_type_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from (select 'bpb' id, item_type2,curr,sum(end_balance) total_type,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_bpb where end_balance_idr != 0 and relasi = 'NON GROUP' GROUP BY item_type2,curr
-                                        UNION
-                                        select 'kbn' id, item_type2,curr,sum(end_balance) total_type,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_kbon where end_balance_idr != 0 and relasi = 'NON GROUP' GROUP BY item_type2,curr
-                                        UNION
-                                        select 'lp' id, item_type2,curr,sum(end_balance) total_type,sum(end_balance_idr) total_type_idr, sum(due_0) due_0, sum(produe_0) produe_0 from dsb_ap_lp where end_balance_idr != 0 and relasi = 'NON GROUP' GROUP BY item_type2,curr) a GROUP BY item_type2,curr order by item_type2 asc)) a where curr = 'IDR') a");
-                                    $row = mysqli_fetch_array($sql_ttl_ap);
-                                    $total_idr = isset($row['total_idr']) ? $row['total_idr'] :0;
-
-                                    ?>
-                                    <p class="card-text" style="text-align: center;vertical-align: middle;font-size: 15px;color: #2F4F4F" onclick="showdata_slsytd()"><b>IDR <?= number_format($total_idr,2); ?></b></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-    <!-- <div class="col-md-12">
-        <div class="col p-2">
-            <div class="card">
-                <div class="card-header border-0">
-                    <div class="d-flex justify-content-between">
-                        <b style="font-size:14px"><u>TOP 10 SUPPLIER BY AMOUNT (YTD)</u></b>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="position-relative mb-4">
-                        <div id="chart"></div>
-                    </div>
+<div class="row">
+    <!-- Net Purchase YTD -->
+    <div class="col-md-4 col-sm-6">
+        <div class="dsb-info">
+            <div class="dsb-info-icon" style="background:linear-gradient(135deg,#1e88e5,#1565c0);">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="dsb-info-body">
+                <div class="dsb-info-label">Net Purchase YTD</div>
+                <div class="dsb-info-value"><?= fmt($net_ytd) ?></div>
+                <div class="dsb-info-sub">
+                    <span style="color:#10b981;">+<?= fmt($pch_ytd) ?></span>
+                    &nbsp;/&nbsp;
+                    <span style="color:#ef4444;">(<?= fmt($ret_ytd) ?>)</span>
                 </div>
             </div>
         </div>
-    </div> -->
+    </div>
+
+    <!-- Purchase YTD -->
+    <div class="col-md-4 col-sm-6">
+        <div class="dsb-info">
+            <div class="dsb-info-icon" style="background:linear-gradient(135deg,#10b981,#047857);">
+                <i class="fas fa-arrow-up"></i>
+            </div>
+            <div class="dsb-info-body">
+                <div class="dsb-info-label">Purchase Year to Date</div>
+                <div class="dsb-info-value"><?= fmt($pch_ytd) ?></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return YTD -->
+    <div class="col-md-4 col-sm-6">
+        <div class="dsb-info">
+            <div class="dsb-info-icon" style="background:linear-gradient(135deg,#ef4444,#b91c1c);">
+                <i class="fas fa-arrow-down"></i>
+            </div>
+            <div class="dsb-info-body">
+                <div class="dsb-info-label">Purchase Return YTD</div>
+                <div class="dsb-info-value">(<?= fmt($ret_ytd) ?>)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Net Purchase CM -->
+    <div class="col-md-4 col-sm-6">
+        <div class="dsb-info">
+            <div class="dsb-info-icon" style="background:linear-gradient(135deg,#3949ab,#283593);">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <div class="dsb-info-body">
+                <div class="dsb-info-label">Net Purchase <?= date('M Y') ?></div>
+                <div class="dsb-info-value"><?= fmt($net_cm) ?></div>
+                <div class="dsb-info-sub">
+                    <span style="color:#10b981;">+<?= fmt($pch_cm) ?></span>
+                    &nbsp;/&nbsp;
+                    <span style="color:#ef4444;">(<?= fmt($ret_cm) ?>)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchase CM -->
+    <div class="col-md-4 col-sm-6">
+        <div class="dsb-info">
+            <div class="dsb-info-icon" style="background:linear-gradient(135deg,#06b6d4,#0e7490);">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <div class="dsb-info-body">
+                <div class="dsb-info-label">Purchase <?= date('M Y') ?></div>
+                <div class="dsb-info-value"><?= fmt($pch_cm) ?></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return CM -->
+    <div class="col-md-4 col-sm-6">
+        <div class="dsb-info">
+            <div class="dsb-info-icon" style="background:linear-gradient(135deg,#f59e0b,#b45309);">
+                <i class="fas fa-undo-alt"></i>
+            </div>
+            <div class="dsb-info-body">
+                <div class="dsb-info-label">Return <?= date('M Y') ?></div>
+                <div class="dsb-info-value">(<?= fmt($ret_cm) ?>)</div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- ── SECTION: AP Outstanding ──────────────────────────── -->
+<div class="dsb-section"><i class="fas fa-balance-scale"></i> Account Payable Outstanding</div>
+
+<div class="row">
+    <!-- Total Outstanding -->
+    <div class="col-md-4 col-sm-6">
+        <div class="dsb-info">
+            <div class="dsb-info-icon" style="background:linear-gradient(135deg,#7c3aed,#5b21b6);">
+                <i class="fas fa-university"></i>
+            </div>
+            <div class="dsb-info-body">
+                <div class="dsb-info-label">Total Outstanding</div>
+                <div class="dsb-info-value"><?= fmt($ap_total) ?></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Not Due -->
+    <div class="col-md-4 col-sm-6">
+        <div class="dsb-info">
+            <div class="dsb-info-icon" style="background:linear-gradient(135deg,#10b981,#047857);">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="dsb-info-body">
+                <div class="dsb-info-label">Not Due</div>
+                <div class="dsb-info-value"><?= fmt($ap_notdue) ?></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overdue -->
+    <div class="col-md-4 col-sm-6">
+        <div class="dsb-info">
+            <div class="dsb-info-icon" style="background:linear-gradient(135deg,#ef4444,#b91c1c);">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <div class="dsb-info-body">
+                <div class="dsb-info-label">Over Due</div>
+                <div class="dsb-info-value"><?= fmt($ap_overdue) ?></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Group -->
+    <div class="col-md-3 col-sm-6">
+        <div class="dsb-info">
+            <div class="dsb-info-icon" style="background:linear-gradient(135deg,#1e88e5,#1565c0);">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="dsb-info-body">
+                <div class="dsb-info-label">AP Group</div>
+                <div class="dsb-info-value"><?= fmt($ap_group) ?></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Non-Group -->
+    <div class="col-md-3 col-sm-6">
+        <div class="dsb-info">
+            <div class="dsb-info-icon" style="background:linear-gradient(135deg,#64748b,#334155);">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="dsb-info-body">
+                <div class="dsb-info-label">AP Non Group</div>
+                <div class="dsb-info-value"><?= fmt($ap_nongroup) ?></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- USD -->
+    <div class="col-md-3 col-sm-6">
+        <div class="dsb-info">
+            <div class="dsb-info-icon" style="background:linear-gradient(135deg,#f59e0b,#b45309);">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="dsb-info-body">
+                <div class="dsb-info-label">AP in USD</div>
+                <div class="dsb-info-value">USD <?= number_format($ap_usd_val,2) ?></div>
+                <div class="dsb-info-sub"><?= fmt($ap_usd_idr) ?></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- IDR -->
+    <div class="col-md-3 col-sm-6">
+        <div class="dsb-info">
+            <div class="dsb-info-icon" style="background:linear-gradient(135deg,#06b6d4,#0e7490);">
+                <i class="fas fa-coins"></i>
+            </div>
+            <div class="dsb-info-body">
+                <div class="dsb-info-label">AP in IDR</div>
+                <div class="dsb-info-value"><?= fmt($ap_idr_val) ?></div>
+            </div>
+        </div>
+    </div>
 </div>
-<!-- </div> -->
 
+<!-- ── SECTION: Charts ──────────────────────────────────── -->
+<div class="dsb-section"><i class="fas fa-chart-bar"></i> Analytics</div>
 
+<div class="row">
+    <div class="col-md-7">
+        <div class="dsb-chart-card">
+            <div class="dsb-chart-header">
+                <i class="fas fa-trophy"></i> Top 10 Suppliers by Amount (YTD)
+            </div>
+            <div class="dsb-chart-body">
+                <div id="chart_supptop10" style="min-height:300px;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="dsb-chart-card">
+            <div class="dsb-chart-header">
+                <i class="fas fa-chart-area"></i> Monthly Purchase vs Outstanding (Mio IDR)
+            </div>
+            <div class="dsb-chart-body">
+                <div id="chart" style="min-height:300px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
-<script type="text/javascript">
-    var options = {
-        series: [{
-            name: 'Value',
-            data: [<?php 
-                $sql = mysqli_query($conn2,"select GROUP_CONCAT(total) total from (select nama_supp,round(sum(total),2) total from (select nama_supp,sum(dpp) total from dsb_ap_purchase GROUP BY nama_supp 
-                    UNION 
-                    select nama_supp,-sum(dpp) total from dsb_ap_retur GROUP BY nama_supp) a GROUP BY nama_supp order by total desc limit 10) a");
-                $row = mysqli_fetch_array($sql);
-                $total = $row['total'];
-                echo $total;
-                ?>]
-            }],
-            chart: {
-                height: 330,
-                type: 'bar',
-                toolbar: {
-                show: false // Menyembunyikan toolbar default
-            },
-            animations: {
-                enabled: true,
-                easing: 'easeinout',
-                speed: 800, // Durasi animasi
-                animateGradually: {
-                    enabled: true,
-                    delay: 150
-                },
-            },
-        },
-        plotOptions: {
-            bar: {
-                borderRadius: 5, // Membuat bar lebih bulat
-                columnWidth: '70%',
-                colors: {
-                    ranges: [{
-                        from: 0,
-                        to: 100000,
-                        color: '#00C0B0'  // Warna untuk bar rendah
-                    }, {
-                        from: 100000,
-                        to: 500000,
-                        color: '#00A1D1'  // Warna untuk bar sedang
-                    }, {
-                        from: 500000,
-                        to: 1000000,
-                        color: '#016FB9'  // Warna untuk bar tinggi
-                    }]
-                },
-                dataLabels: {
-                    position: 'top',
-                    style: {
-                        fontSize: '12px', // Menambahkan font lebih besar
-                        fontWeight: 'bold',
-                        colors: ['#ffffff'], // Memberikan warna putih pada data label
-                    },
-                },
-                shadow: {
-                    enabled: true,
-                    blur: 5,
-                    color: '#000',
-                    opacity: 0.15
-                }
-            }
-        },
-        dataLabels: {
-            enabled: true,
-            formatter: function (val) {
-                return "IDR " + val.toLocaleString('en-US');
-            },
-            offsetY: -20, // Menurunkan posisi data label sedikit
-            style: {
-                fontSize: '10px', // Mengubah ukuran font data label menjadi 10px
-                colors: ["#304758"],
-                fontFamily: 'Arial, sans-serif',
-                fontWeight: 'bold',
-            }
-        },
-        xaxis: {
-            categories: [<?php 
-                $sql = mysqli_query($conn2,'select GROUP_CONCAT(concat("""",nama_supp,"""")) nama_supp from (select nama_supp,round(sum(total),2) total from (select nama_supp,sum(dpp) total from dsb_ap_purchase GROUP BY nama_supp 
-                    UNION 
-                    select nama_supp,-sum(dpp) total from dsb_ap_retur GROUP BY nama_supp) a GROUP BY nama_supp order by total desc limit 10) a');
-                $row = mysqli_fetch_array($sql);
-                $nama_supp = $row['nama_supp'];
-                echo $nama_supp;
-                ?>],
-                position: 'bottom',
-                axisBorder: {
-                    show: false
-                },
-                axisTicks: {
-                    show: false
-                },
-                crosshairs: {
-                    fill: {
-                        type: 'gradient',
-                        gradient: {
-                            colorFrom: '#D8E3F0',
-                            colorTo: '#BED1E6',
-                            stops: [0, 100],
-                            opacityFrom: 0.4,
-                            opacityTo: 0.5,
-                        }
-                    }
-                },
-                tooltip: {
-                    enabled: true,
-                    style: {
-                        fontSize: '10px',
-                        fontWeight: 'bold'
-                    },
-                },
-                labels: {
-                    style: {
-                        fontSize: '10px',
-                        colors: ['#9e9e9e']
-                    },
-                },
-            },
-            yaxis: {
-                axisBorder: {
-                    show: false
-                },
-                axisTicks: {
-                    show: false,
-                },
-                labels: {
-                    show: false,
-                    formatter: function (val) {
-                        return "IDR " + val.toLocaleString('en-US');
-                    }
-                }
-            },
-            title: {
-                text: '',
-                floating: true,
-                offsetY: 320,
-                align: 'center',
-                position: 'top',
-                style: {
-                    color: '#444',
-                    fontSize: '18px',
-                    fontWeight: 'bold',
-                    fontFamily: 'Arial, sans-serif'
-                }
-            }
-        };
+<script>
+/* ── Top 10 Suppliers chart ── */
+new ApexCharts(document.querySelector("#chart_supptop10"), {
+    series: [{ name: 'Amount (IDR)', data: [<?= $chart_top10_val ?>] }],
+    chart: { type: 'bar', height: 300, toolbar: { show: false },
+             animations: { enabled: true, speed: 700 } },
+    plotOptions: { bar: { borderRadius: 4, columnWidth: '65%', distributed: true } },
+    colors: ['#3949ab','#1e88e5','#00897b','#43a047','#fb8c00','#e53935','#8e24aa','#039be5','#00acc1','#7cb342'],
+    legend: { show: false },
+    dataLabels: { enabled: true, formatter: v => 'IDR ' + (v/1e6).toFixed(1) + 'M',
+        offsetY: -18, style: { fontSize: '9px', colors: ['#2d3748'] } },
+    xaxis: { categories: [<?= $chart_top10_cat ?>],
+        labels: { style: { fontSize: '9px', colors: '#718096' }, rotate: -25 } },
+    yaxis: { labels: { show: false } },
+    grid: { borderColor: '#f0f4f8' },
+    tooltip: { y: { formatter: v => 'IDR ' + Number(v).toLocaleString('id-ID') } }
+}).render();
 
-        var chart = new ApexCharts(document.querySelector("#chart_supptop10"), options);
-        chart.render();
-    </script>
-
-
-    <script type="text/javascript">
-        var options = {
-          series: [{
-              name: 'NET PURCHASE',
-              data: [<?php 
-                $sql = mysqli_query($conn2,"select GROUP_CONCAT(round((COALESCE(ttl_purchase,0) - COALESCE(ttl_retur,0))/1000000,2)) net_purchase from (select bulan,bulan_text,nama_bulan,nama_bulan_singkat,tahun from dim_date where tahun = YEAR(CURRENT_DATE) GROUP BY bulan ORDER BY bulan_text) a LEFT JOIN
-                    (select sum(dpp)ttl_purchase,bln1 from (select dpp,MONTH(tgl_bpb) bln1 from dsb_ap_purchase ) a GROUP BY bln1) b on b.bln1 = a.bulan LEFT JOIN
-                    (select sum(dpp)ttl_retur,bln2 from (select dpp,MONTH(tgl_bpb) bln2 from dsb_ap_retur ) a GROUP BY bln2) c on c.bln2 = a.bulan");
-                $row = mysqli_fetch_array($sql);
-                $total = $row['net_purchase'];
-                echo $total;
-
-                ?>]
-            }, {
-              name: 'PAYMENT',
-              data: [<?php 
-                $sql = mysqli_query($conn2,"select GROUP_CONCAT(round((COALESCE(ttl_bpb,0) + COALESCE(ttl_kbon,0) + COALESCE(ttl_lp,0))/1000000,2)) payment from (select bulan,bulan_text,nama_bulan,nama_bulan_singkat,tahun from dim_date where tahun = YEAR(CURRENT_DATE) GROUP BY bulan ORDER BY bulan_text) a LEFT JOIN
-                    (select bln1,sum(end_balance_idr) ttl_bpb from (select MONTH(tgl_bpb) bln1,end_balance_idr from dsb_ap_bpb where end_balance_idr != 0 and tgl_bpb >= '2024-01-01') a GROUP BY bln1) b on b.bln1 = a.bulan LEFT JOIN
-                    (select bln2,sum(end_balance_idr) ttl_kbon from (select MONTH(tgl_kbon) bln2,end_balance_idr from dsb_ap_kbon where end_balance_idr != 0 and tgl_kbon >= '2024-01-01') a GROUP BY bln2) c on c.bln2 = a.bulan LEFT JOIN
-                    (select bln3,sum(end_balance_idr) ttl_lp from (select MONTH(tgl_payment) bln3,end_balance_idr from dsb_ap_lp where end_balance_idr != 0 and tgl_payment >= '2024-01-01') a GROUP BY bln3) d on d.bln3 = a.bulan");
-                $row = mysqli_fetch_array($sql);
-                $total = $row['payment'];
-                echo $total;
-
-                ?>]
-            }],
-            chart: {
-              type: 'bar',
-              height: 350
-          },
-          plotOptions: {
-              bar: {
-                horizontal: false,
-                columnWidth: '55%',
-                endingShape: 'rounded'
-            },
-        },
-        dataLabels: {
-          enabled: false
-      },
-      stroke: {
-          show: true,
-          width: 2,
-          colors: ['transparent']
-      },
-      xaxis: {
-          categories: [<?php 
-            $sql = mysqli_query($conn2,'select GROUP_CONCAT(concat("""",label,"""")) label from (select concat(nama_bulan_singkat," ",tahun) label from dim_date where tahun = YEAR(CURRENT_DATE) GROUP BY bulan ORDER BY bulan_text) a');
-            $row = mysqli_fetch_array($sql);
-            $label = $row['label'];
-            echo $label;
-
-            ?>],
-        },
-        yaxis: {
-          title: {
-            text: 'MIO'
-        }
-    },
-    fill: {
-      opacity: 1
-  },
-  tooltip: {
-      y: {
-        formatter: function (val) {
-          return "IDR " + val + " MIO"
-      }
-  }
-}
-};
-
-var chart = new ApexCharts(document.querySelector("#chart"), options);
-chart.render();
-
+/* ── Monthly chart ── */
+new ApexCharts(document.querySelector("#chart"), {
+    series: [
+        { name: 'Net Purchase', data: [<?= $monthly_net ?>] },
+        { name: 'AP Outstanding', data: [<?= $monthly_pay ?>] }
+    ],
+    chart: { type: 'bar', height: 300, toolbar: { show: false } },
+    plotOptions: { bar: { columnWidth: '55%', borderRadius: 3 } },
+    colors: ['#3949ab', '#ef4444'],
+    dataLabels: { enabled: false },
+    stroke: { show: true, width: 2, colors: ['transparent'] },
+    xaxis: { categories: [<?= $monthly_lbl ?>],
+        labels: { style: { fontSize: '9px', colors: '#718096' } } },
+    yaxis: { title: { text: 'IDR (Mio)', style: { fontSize: '11px', color: '#a0aec0' } },
+        labels: { style: { fontSize: '9px' } } },
+    grid: { borderColor: '#f0f4f8' },
+    legend: { position: 'top', fontSize: '11px' },
+    tooltip: { y: { formatter: v => 'IDR ' + v + ' Mio' } }
+}).render();
 </script>
-
-

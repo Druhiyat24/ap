@@ -1,2211 +1,572 @@
+<?php
+/* ── Bank Dashboard – data queries ─────────────────────── */
+$bulan = date("M");
+$tahun = date("Y");
+
+// Cash on Hand
+$q = mysqli_query($conn2,"select round(sum(saldo_$bulan),0) total from b_trial_balance_$tahun a INNER JOIN mastercoa_v2 b on b.no_coa=a.no_coa where ind_categori5='KAS' and saldo_$bulan>0");
+$r = mysqli_fetch_array($q);
+$total_coh = $r['total'] ?? 0;
+
+// Cash in Bank
+$q = mysqli_query($conn2,"select round(sum(saldo_$bulan),0) total from b_trial_balance_$tahun a INNER JOIN mastercoa_v2 b on b.no_coa=a.no_coa where ind_categori5='BANK' and saldo_$bulan>0");
+$r = mysqli_fetch_array($q);
+$total_cib = $r['total'] ?? 0;
+
+$total_cb = $total_coh + $total_cib;
+
+// Bank Loan IDR – running balance account 008-997-1979
+$q = mysqli_query($conn1,"select amount from b_saldoawal_bank where account='008-997-1979'");
+$r = mysqli_fetch_array($q);
+$salawal_ = $r['amount'] ?? 0;
+
+$q = mysqli_query($conn1,"select saldo_akhir saldoawal from (SELECT (@runnum:=@runnum+1) AS nomor,q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit,(@runtot:=@runtot+q1.debit-q1.credit) AS saldo_akhir FROM (select transaksi_date as date,no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun='008-997-1979' and transaksi_date<CURRENT_DATE() and status!='Cancel') AS q1 JOIN (SELECT @runtot:=$salawal_,@runnum:=0) runtot) a ORDER BY nomor desc limit 1");
+$r = mysqli_fetch_array($q);
+$saldoswal2_ = $r['saldoawal'] ?? 0;
+
+$q = mysqli_query($conn1,"select date,saldo_akhir from (SELECT (@runnum:=@runnum+1) AS nomor,q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit,(@runtot:=@runtot+q1.debit-q1.credit) AS saldo_akhir FROM (select transaksi_date as date,no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun='008-997-1979' and transaksi_date between CURRENT_DATE() and CURRENT_DATE() and status!='Cancel') AS q1 JOIN (SELECT @runtot:=$saldoswal2_,@runnum:=0) runtot) a ORDER BY nomor desc limit 1");
+$r = mysqli_fetch_array($q);
+$total_bli = $r['saldo_akhir'] ?? $saldoswal2_;
+
+// IDR facility limit
+$q = mysqli_query($conn2,"select SUM(fac_limit) fac_limit from b_masterbank where curr='IDR'");
+$r = mysqli_fetch_array($q);
+$limit_idr = $r['fac_limit'] ?? 0;
+
+// Bank Loan USD – running balance account 008-998-1982
+$q = mysqli_query($conn1,"select amount from b_saldoawal_bank where account='008-998-1982'");
+$r = mysqli_fetch_array($q);
+$salawal = $r['amount'] ?? 0;
+
+$q = mysqli_query($conn1,"select saldo_akhir saldoawal from (SELECT (@runnum:=@runnum+1) AS nomor,q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit,(@runtot:=@runtot+q1.debit-q1.credit) AS saldo_akhir FROM (select transaksi_date as date,no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun='008-998-1982' and transaksi_date<CURRENT_DATE() and status!='Cancel') AS q1 JOIN (SELECT @runtot:=$salawal,@runnum:=0) runtot) a ORDER BY nomor desc limit 1");
+$r = mysqli_fetch_array($q);
+$saldoswal2 = $r['saldoawal'] ?? 0;
+
+$q = mysqli_query($conn1,"select date,saldo_akhir from (SELECT (@runnum:=@runnum+1) AS nomor,q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit,(@runtot:=@runtot+q1.debit-q1.credit) AS saldo_akhir FROM (select transaksi_date as date,no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun='008-998-1982' and transaksi_date between CURRENT_DATE() and CURRENT_DATE() and status!='Cancel') AS q1 JOIN (SELECT @runtot:=$saldoswal2,@runnum:=0) runtot) a ORDER BY nomor desc limit 1");
+$r = mysqli_fetch_array($q);
+$usd_akhir = $r['saldo_akhir'] ?? $saldoswal2;
+$dateakhir = $r['date'] ?? null;
+$saldoakhir = $usd_akhir > 0 ? 0 : $usd_akhir;
+
+// USD exchange rate
+$q = mysqli_query($conn1,"select id,rate FROM masterrate where v_codecurr='PAJAK' and tanggal='$dateakhir'");
+$r = mysqli_fetch_array($q);
+if ($r && ($r['id'] ?? null)) {
+    $rates3 = $r['rate'];
+} else {
+    $q = mysqli_query($conn1,"select max(id) id FROM masterrate where v_codecurr='PAJAK'");
+    $r = mysqli_fetch_array($q);
+    $maxid = $r['id'] ?? null;
+    $q = mysqli_query($conn1,"select ROUND(rate,2) rate FROM masterrate where id='$maxid' and v_codecurr='PAJAK'");
+    $r = mysqli_fetch_array($q);
+    $rates3 = $r['rate'] ?? 1;
+}
+
+// USD facility limit
+$q = mysqli_query($conn2,"select fac_limit,(fac_limit*rate) limit_convert from (select SUM(fac_limit) fac_limit from b_masterbank where curr='usd') a join (select COALESCE(rate,1) rate from masterrate where tanggal=CURRENT_DATE() and v_codecurr='PAJAK') b");
+$r = mysqli_fetch_array($q);
+$fac_limit     = $r['fac_limit']     ?? 0;
+$limit_convert = $r['limit_convert'] ?? 0;
+
+// Totals
+$total_bl    = abs($total_bli) + abs($saldoakhir * $rates3);
+$total_limit = $limit_idr + $limit_convert;
+
+// Gauge utilization %
+$chart_bli = $limit_idr     > 0 ? round((abs($total_bli) / $limit_idr) * 100, 2)                    : 0;
+$chart_blu = $limit_convert > 0 ? round((abs($saldoakhir * $rates3) / $limit_convert) * 100, 2)     : 0;
+$chart_bl  = $total_limit   > 0 ? round($total_bl / $total_limit * 100, 2)                          : 0;
+
+// Monthly labels for bar charts
+$q = mysqli_query($conn2,"WITH RECURSIVE bln AS (SELECT 1 AS m UNION ALL SELECT m+1 FROM bln WHERE m<12) SELECT GROUP_CONCAT(CONCAT('''',DATE_FORMAT(DATE(CONCAT(YEAR(CURDATE()),'-',m,'-01')),'%b %Y'),'''') ORDER BY m) AS nama FROM bln");
+$r = mysqli_fetch_array($q);
+$monthly_lbl_bank = $r['nama'] ?? '';
+
+// Monthly cash data (12 months)
+function _cash_m($conn, $tahun, $filter) {
+    $w = $filter === 'BOTH' ? "IN ('BANK','KAS')" : "='$filter'";
+    $q = mysqli_query($conn,"SELECT CONCAT_WS(',',ROUND(SUM(IF(saldo_jan>0,saldo_jan,0))/1000000,2),ROUND(SUM(IF(saldo_feb>0,saldo_feb,0))/1000000,2),ROUND(SUM(IF(saldo_mar>0,saldo_mar,0))/1000000,2),ROUND(SUM(IF(saldo_apr>0,saldo_apr,0))/1000000,2),ROUND(SUM(IF(saldo_may>0,saldo_may,0))/1000000,2),ROUND(SUM(IF(saldo_jun>0,saldo_jun,0))/1000000,2),ROUND(SUM(IF(saldo_jul>0,saldo_jul,0))/1000000,2),ROUND(SUM(IF(saldo_aug>0,saldo_aug,0))/1000000,2),ROUND(SUM(IF(saldo_sep>0,saldo_sep,0))/1000000,2),ROUND(SUM(IF(saldo_oct>0,saldo_oct,0))/1000000,2),ROUND(SUM(IF(saldo_nov>0,saldo_nov,0))/1000000,2),ROUND(SUM(IF(saldo_dec>0,saldo_dec,0))/1000000,2)) AS data FROM b_trial_balance_$tahun a INNER JOIN mastercoa_v2 b ON b.no_coa=a.no_coa WHERE ind_categori5 $w");
+    $r = mysqli_fetch_array($q);
+    return $r['data'] ?? '0';
+}
+$data_coh_m   = _cash_m($conn2, $tahun, 'KAS');
+$data_cib_m   = _cash_m($conn2, $tahun, 'BANK');
+$data_total_m = _cash_m($conn2, $tahun, 'BOTH');
+
+// Last 3 months loan data
+function _loan_3m($conn, $coa_loan, $coa_od) {
+    $li = is_array($coa_loan) ? "'".implode("','",$coa_loan)."'" : "'$coa_loan'";
+    $oi = is_array($coa_od)   ? "'".implode("','",$coa_od)."'"   : "'$coa_od'";
+    $data = [];
+    for ($i = 3; $i >= 1; $i--) {
+        $d = strtotime("-$i month");
+        $bln = date('M', $d); $yr = date('Y', $d);
+        $q = mysqli_query($conn,"SELECT ROUND(ABS(SUM(IF(no_coa IN ($li),saldo_$bln,0))+SUM(IF(no_coa IN ($oi) AND saldo_$bln<0,saldo_$bln,0)))/1000000,2) total FROM b_trial_balance_$yr");
+        $r = mysqli_fetch_assoc($q);
+        $data[] = $r['total'] ?? 0;
+    }
+    return implode(',', $data);
+}
+$loan_3m_idr   = _loan_3m($conn2, '2.20.01', '1.10.01');
+$loan_3m_usd   = _loan_3m($conn2, '2.20.02', '1.10.02');
+$loan_3m_total = _loan_3m($conn2, ['2.20.01','2.20.02'], ['1.10.01','1.10.02']);
+$cat_3m = implode(',', ["'".date('M Y', strtotime('-3 month'))."'","'".date('M Y', strtotime('-2 month'))."'","'".date('M Y', strtotime('-1 month'))."'"]);
+
+if (!function_exists('fmtb')) {
+    function fmtb($v) { return 'IDR '.number_format((float)$v, 0, ',', '.'); }
+}
+
+// gauge color helper
+function gc($pct) { return $pct > 75 ? '#ef4444' : ($pct > 50 ? '#f59e0b' : '#10b981'); }
+?>
+
 <style>
-    #chartdiv {
-      width: 100%;
-      height: 300px;
-  }
-  #chartdiv2 {
-      width: 100%;
-      height: 300px;
-  }
-  #chartdiv3 {
-      width: 100%;
-      height: 300px;
-  }
-  #chartdiv4 {
-      width: 100%;
-      height: 300px;
-  }
-  #chartdiv5 {
-      width: 100%;
-      height: 300px;
-  }
-  #chartdiv6 {
-      width: 100%;
-      height: 300px;
-  }
-  .modal-md {
-    max-width: 500px;
-}
-
-.modal-md .modal-content {
-    border-radius: 6px;
-}
-
-.modal-md .modal-header {
-    padding: 10px 18px !important;
-}
-
-.modal-md .modal-title {
-    font-weight: 700;
-    font-size: 18px;
-}
-
-.modal-md .modal-header .close {
-    margin-top: -3px;
-    margin-right: -4px;
-    font-size: 18px;
-}
-
-.modal-md table {
-    font-size: 12px;
-}
-
-.modal-md td,
-.modal-md th {
-    padding: 6px 8px !important;
-}
-
+.bank-gauge { min-height: 200px; }
+.bank-3mo   { min-height: 160px; }
 </style>
 
-<div class="row div-dashboard">
-    <div class="col-md-12">
-        <div class="row p-3">
-            <div class="col-md-4">
-                <div class="card border-dark mb-2 mt-2" >
-                    <div class="card-header bg-gradient border-dark text-white" style="background-color:#006400;"><button type="button" class="close text-white" onclick="openmodalcoh()"><span class="fa fa-bars"></span></button><b style="font-size: 0.9rem;">CASH ON HAND</b></div>
-                    <div class="card-body text-secondary">
-                        <p class="card-text" style="text-align: center;font-size: 1.4rem;color: #2F4F4F">
-                            <?php
-                            $bulan = date("M"); 
-                            $tahun = date("Y"); 
-                            $sql_coh = mysqli_query($conn2,"select a.no_coa, a.nama_coa, round(sum(saldo_$bulan),0) total from b_trial_balance_$tahun a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa where ind_categori5 = 'KAS' and saldo_$bulan > 0");
-                            $row_coh = mysqli_fetch_array($sql_coh);
-                            $total_coh = isset($row_coh['total']) ? $row_coh['total'] :0;
-
-                            ?>
-                            IDR <?= number_format($total_coh,0); ?></p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border-dark mb-2 mt-2" >
-                        <div class="card-header bg-gradient border-dark text-white" style="background-color:#006400;" ><button type="button" class="close text-white" onclick="openmodalcib()"><span class="fa fa-bars"></span></button><b style="font-size: 0.9rem;">CASH IN BANK</b></div>
-                        <div class="card-body text-secondary">
-                            <p class="card-text" style="text-align: center;font-size: 1.4rem;color: #2F4F4F"><?php
-                            $bulan = date("M"); 
-                            $tahun = date("Y");
-                            $sql_cib = mysqli_query($conn2,"select a.no_coa, a.nama_coa, round(sum(saldo_$bulan),0) total from b_trial_balance_$tahun a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa where ind_categori5 = 'BANK' and saldo_$bulan > 0");
-                            $row_cib = mysqli_fetch_array($sql_cib);
-                            $total_cib = isset($row_cib['total']) ? $row_cib['total'] :0;
-
-                            ?>
-                            IDR <?= number_format($total_cib,0); ?></p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card border-dark mb-2 mt-2" >
-                        <div class="card-header bg-gradient border-dark text-white" style="background-color:#006400;"><button type="button" class="close text-white" onclick="openmodaltc()"><span class="fa fa-bars"></span></button><b style="font-size: 0.9rem;">CASH & BANK TOTAL</b></div>
-                        <div class="card-body text-secondary">
-                            <p class="card-text" style="text-align: center;font-size: 1.4rem;color: #2F4F4F">
-                                <?php
-                                $total_cb = $total_coh + $total_cib 
-                                ?>
-                                IDR <?= number_format($total_cb,0); ?></p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="card border-dark mb-2 mt-2" >
-                            <div class="card-header bg-info bg-gradient bg-gradient border-dark text-white"><b style="font-size: 0.9rem;">BANK LOAN IDR</b></div>
-                            <div class="card-body text-secondary">
-                                <p class="card-text" style="text-align: center;font-size: 1.4rem;color: #2F4F4F"><?php
-                                $bulan = date("M"); 
-                                $tahun = date("Y");
-                                // $sql_bli = mysqli_query($conn2,"select no_coa,nama_coa,round(- sum(total),0) total from(select no_coa,nama_coa,saldo_$bulan total from b_trial_balance_$tahun where no_coa IN ('2.20.01')
-                                //     UNION
-                                //     select no_coa,nama_coa,if(saldo_$bulan < 0,saldo_$bulan,0) total from b_trial_balance_$tahun where no_coa IN ('1.10.01')) a");
-                                // $row_bli = mysqli_fetch_array($sql_bli);
-                                // $total_bli = isset($row_bli['total']) ? $row_bli['total'] :0;
-
-                                //nilai new 
-                                $sqlswl3_ = mysqli_query($conn1,"select amount from b_saldoawal_bank where account = '008-997-1979'");
-                                $rowswl3_ = mysqli_fetch_array($sqlswl3_);
-                                $swl3_ = isset($rowswl3_['amount']) ? $rowswl3_['amount'] : 0;
-
-                                $sqlsaldo_ = mysqli_query($conn1,"select amount from b_saldoawal_bank where account = '008-997-1979'");
-                                $rowsaldo_ = mysqli_fetch_array($sqlsaldo_);
-                                $salawal_ = isset($rowsaldo_['amount']) ? $rowsaldo_['amount'] : 0;
-
-                                $sqlswl4_ = mysqli_query($conn1,"select nomor,saldo_akhir saldoawal from (SELECT (@runnum :=@runnum + 1) AS nomor,q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
-                                    FROM
-                                    (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '008-997-1979' and transaksi_date < CURRENT_DATE() and status != 'Cancel') AS q1 JOIN
-                                    (SELECT @runtot:= $salawal_ ,@runnum:= 0) runtot) a ORDER BY a.nomor desc limit 1");
-                                $rowswl4_ = mysqli_fetch_array($sqlswl4_);
-                                $saldoswal2_ = isset($rowswl4_['saldoawal']) ? $rowswl4_['saldoawal'] : 0;
-
-                                $sql6_ = mysqli_query($conn1, "select nomor,date,saldo_akhir from (SELECT (@runnum :=@runnum + 1) AS nomor,q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
-                                    FROM
-                                    (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '008-997-1979' and transaksi_date between CURRENT_DATE() and CURRENT_DATE() and status != 'Cancel') AS q1 JOIN
-                                    (SELECT @runtot:= $saldoswal2_,@runnum:=0) runtot) a ORDER BY a.nomor desc limit 1");
-                                $rows6_ = mysqli_fetch_array($sql6_);
-                                $total_bli = isset($rows6_['saldo_akhir']) ? $rows6_['saldo_akhir'] : $saldoswal2_;
-
-                                ?>
-                                IDR <?= number_format(abs($total_bli),0); ?></p>
-                            </div>
-                        </div>
-                        <div class="card border-dark mb-2" >
-                            <div class="card-header border-dark"><b style="font-size: 1rem;">
-                                <?php
-                                $sql1 = mysqli_query($conn2,"select SUM(fac_limit) fac_limit from b_masterbank where curr = 'IDR'");
-                                $row1 = mysqli_fetch_array($sql1);
-                                $limit_idr = isset($row1['fac_limit']) ? $row1['fac_limit'] :0;
-
-                                ?>
-                                LIMIT : IDR <?= number_format($limit_idr,0); ?></b></div>
-                                <div class="card-body text-secondary">
-                                    <div id="chartdiv"></div>
-                                </div>
-                            </div>
-                            <div class="card border-dark mb-2" >
-                                <div class="card-header border-dark"><button type="button" class="close" onclick="openmodalloanidr()"><span class="fa fa-bars"></span></button><b style="font-size: 1rem;">LAST 3 MONTH LOAN BALANCE (IN IDR MIO)</b></div>
-                                <div class="card-body text-secondary">
-                                    <div id="chartdiv2"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <div class="card border-dark mb-2 mt-2" >
-                                <div class="card-header bg-info bg-gradient bg-gradient border-dark text-white"><b style="font-size: 1.1rem;">BANK LOAN USD</b></div>
-                                <div class="card-body text-secondary">
-                                    <p class="card-text" style="text-align: center;font-size: 1.4rem;color: #2F4F4F"><?php
-                                    $bulan = date("M"); 
-                                    $tahun = date("Y");
-                                    $sql_blu = mysqli_query($conn2,"select total,(total / rate) total_convert from (select no_coa,nama_coa,round(sum(total),0) total from (select no_coa,nama_coa,saldo_$bulan total from b_trial_balance_$tahun where no_coa IN ('2.20.02')
-                                        UNION
-                                        select no_coa,nama_coa,if(saldo_$bulan < 0,saldo_$bulan,0) total from b_trial_balance_$tahun where no_coa IN ('1.10.02')) a) a join (select COALESCE(rate,1) rate from masterrate where tanggal = CURRENT_DATE() and v_codecurr = 'PAJAK') b");
-                                    $row_blu = mysqli_fetch_array($sql_blu);
-                                    $total_blu = isset($row_blu['total']) ? $row_blu['total'] :0;
-                                    $total_convert_blu = isset($row_blu['total_convert']) ? $row_blu['total_convert'] :0;
-
-                                    //nilai new 
-                                    $sqlswl3 = mysqli_query($conn1,"select amount from b_saldoawal_bank where account = '008-998-1982'");
-                                    $rowswl3 = mysqli_fetch_array($sqlswl3);
-                                    $swl3 = isset($rowswl3['amount']) ? $rowswl3['amount'] : 0;
-
-                                    $sqlsaldo = mysqli_query($conn1,"select amount from b_saldoawal_bank where account = '008-998-1982'");
-                                    $rowsaldo = mysqli_fetch_array($sqlsaldo);
-                                    $salawal = isset($rowsaldo['amount']) ? $rowsaldo['amount'] : 0;
-
-                                    $sqlswl4 = mysqli_query($conn1,"select nomor,saldo_akhir saldoawal from (SELECT (@runnum :=@runnum + 1) AS nomor,q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
-                                        FROM
-                                        (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '008-998-1982' and transaksi_date < CURRENT_DATE() and status != 'Cancel') AS q1 JOIN
-                                        (SELECT @runtot:= $salawal ,@runnum:= 0) runtot) a ORDER BY a.nomor desc limit 1");
-                                    $rowswl4 = mysqli_fetch_array($sqlswl4);
-                                    $saldoswal2 = isset($rowswl4['saldoawal']) ? $rowswl4['saldoawal'] : 0;
-
-                                    $sql6 = mysqli_query($conn1, "select nomor,date,saldo_akhir from (SELECT (@runnum :=@runnum + 1) AS nomor,q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
-                                        FROM
-                                        (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '008-998-1982' and transaksi_date between CURRENT_DATE() and CURRENT_DATE() and status != 'Cancel') AS q1 JOIN
-                                        (SELECT @runtot:= $saldoswal2,@runnum:=0) runtot) a ORDER BY a.nomor desc limit 1");
-                                    $rows6 = mysqli_fetch_array($sql6);
-                                    if ((isset($rows6['saldo_akhir']) ? $rows6['saldo_akhir'] : $saldoswal2) > 0) {
-                                        $saldoakhir = 0;
-                                    }else{
-                                        $saldoakhir = isset($rows6['saldo_akhir']) ? $rows6['saldo_akhir'] : $saldoswal2;
-                                    }
-                                    $dateakhir = isset($rows6['date']) ? $rows6['date'] : null;
-
-                                    $sqlrates3 = mysqli_query($conn1,"select id,rate FROM masterrate where v_codecurr = 'PAJAK' and tanggal = '$dateakhir'");
-                                    $rowrates3 = mysqli_fetch_array($sqlrates3);
-                                    $maxidrate3 = isset($rowrates3['id']) ? $rowrates3['id'] : null;
-
-                                    if ($maxidrate3 != null) {
-                                        $rates3 = $rowrates3['rate'];
-                                    }else{
-                                        $sqlxss3 = mysqli_query($conn1,"select max(id) as id FROM masterrate where v_codecurr = 'PAJAK'");
-                                        $rowxss3 = mysqli_fetch_array($sqlxss3);
-                                        $maxidss3 = isset($rowxss3['id']) ? $rowxss3['id'] : null;
-
-                                        $sqlyss3 = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where id = '$maxidss3' and v_codecurr = 'PAJAK'");
-                                        $rowyss3 = mysqli_fetch_array($sqlyss3);
-                                        $rates3 = isset($rowyss3['rate']) ? $rowyss3['rate'] : 1;
-                                    }
-
-                                    ?>
-                                    USD <?= number_format(abs($saldoakhir),2); ?> ( IDR <?= number_format(abs($saldoakhir * $rates3),0); ?> )</p>
-                                </div>
-                            </div>
-                            <div class="card border-dark mb-2" >
-                                <div class="card-header border-dark"><b style="font-size: 1rem;">
-                                    <?php
-                                    $sql1 = mysqli_query($conn2,"select fac_limit,(fac_limit * rate) limit_convert from (select SUM(fac_limit) fac_limit from b_masterbank where curr = 'usd') a join (select COALESCE(rate,1) rate from masterrate where tanggal = CURRENT_DATE() and v_codecurr = 'PAJAK') b ");
-                                    $row1 = mysqli_fetch_array($sql1);
-                                    $fac_limit = isset($row1['fac_limit']) ? $row1['fac_limit'] :0;
-                                    $limit_convert = isset($row1['limit_convert']) ? $row1['limit_convert'] :0;
-
-                                    ?>
-                                    LIMIT : USD <?= number_format($fac_limit,0); ?> ( IDR <?= number_format($limit_convert,0); ?> )</b></div>
-                                    <div class="card-body text-secondary">
-                                        <div id="chartdiv3"></div>
-                                    </div>
-                                </div>
-                                <div class="card border-dark mb-2" >
-                                    <div class="card-header border-dark"><button type="button" class="close" onclick="openmodalloanusd()"><span class="fa fa-bars"></span></button><b style="font-size: 1rem;">LAST 3 MONTH LOAN BALANCE (IN IDR MIO)</b></div>
-                                    <div class="card-body text-secondary">
-                                        <div id="chartdiv4"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-4">
-                                <div class="card border-dark mb-2 mt-2" >
-                                    <div class="card-header bg-info bg-gradient border-dark text-white"><b style="font-size: 1.1rem;">BANK LOAN TOTAL</b></div>
-                                    <div class="card-body text-secondary">
-                                        <p class="card-text" style="text-align: center;font-size: 1.4rem;color: #2F4F4F">
-                                            <?php
-                                            $total_bl = abs($total_bli) + abs($saldoakhir * $rates3);
-                                            ?>
-                                            IDR <?= number_format($total_bl,0); ?></p>
-                                        </div>
-                                    </div>
-                                    <div class="card border-dark mb-2" >
-                                        <div class="card-header border-dark"><b style="font-size: 1rem;">
-                                            <?php
-                                            $total_limit = $limit_idr + $limit_convert;
-                                            ?>
-                                            LIMIT : IDR <?= number_format($total_limit,0); ?></b></div>
-                                            <div class="card-body text-secondary">
-                                                <div id="chartdiv5"></div>
-                                            </div>
-                                        </div>
-                                        <div class="card border-dark mb-2" >
-                                            <div class="card-header border-dark"><button type="button" class="close" onclick="openmodalloantotal()"><span class="fa fa-bars"></span></button><b style="font-size: 1rem;">LAST 3 MONTH LOAN BALANCE (IN IDR MIO)</b></div>
-                                            <div class="card-body text-secondary">
-                                                <div id="chartdiv6"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="modal fade" id="modalloanidr" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-                            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-                                <div class="modal-content">
-                                  <div class="modal-header bg-secondary bg-gradient text-white">
-                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                                    <h4 class="modal-title" id="text-tittle">IDR Loan Balance (Month over Month)</h4>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="p-2">
-                                        <div id="chartloanidr"></div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="modal fade" id="modalloanusd" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-                        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-                            <div class="modal-content">
-                              <div class="modal-header bg-secondary bg-gradient text-white">
-                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                                <h4 class="modal-title" id="text-tittle">USD Loan Balance (Month over Month)</h4>
-                            </div>
-                            <div class="modal-body">
-                                <div class="p-2">
-                                    <div id="chartloanusd"></div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-
-                <div class="modal fade" id="modalloantotal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-                    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-                        <div class="modal-content">
-                          <div class="modal-header bg-secondary bg-gradient text-white">
-                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                            <h4 class="modal-title" id="text-tittle">Total Loan Balance (Month over Month)</h4>
-                        </div>
-                        <div class="modal-body">
-                            <div class="p-2">
-                                <div id="chartloantotal"></div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
+<!-- ── Cash Position ──────────────────────────────────────── -->
+<div class="dsb-section"><i class="fas fa-wallet"></i> Cash Position &mdash; <?= date('M Y') ?></div>
+<div class="row mb-2">
+    <div class="col-md-4 col-sm-6 mb-3">
+        <div class="dsb-info" style="cursor:pointer;" onclick="$('#modalcoh').modal('show')">
+            <div class="dsb-info-icon" style="background:linear-gradient(135deg,#10b981,#047857);">
+                <i class="fas fa-hand-holding-usd"></i>
             </div>
-
-            <div class="modal fade" id="modalcoh" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-                    <div class="modal-content">
-                      <div class="modal-header bg-success bg-gradient text-white">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                        <h4 class="modal-title" id="text-tittle">Cash on Hand (Month over Month) in Million IDR</h4>
-                    </div>
-                    <div class="modal-body">
-                        <div class="p-2">
-                            <div id="chartcoh"></div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-
-        <div class="modal fade" id="modalcib" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-                <div class="modal-content">
-                  <div class="modal-header bg-success bg-gradient text-white">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                    <h4 class="modal-title" id="text-tittle">Cash in Banks (Month over Month) in Million IDR</h4>
-                </div>
-                <div class="modal-body">
-                    <div class="p-2">
-                        <div id="chartcib"></div>
-                    </div>
-                </div>
-
+            <div class="dsb-info-body">
+                <div class="dsb-info-label">Cash on Hand</div>
+                <div class="dsb-info-value"><?= fmtb($total_coh) ?></div>
+                <div class="dsb-info-sub"><i class="fas fa-chart-bar"></i> Click for monthly trend</div>
             </div>
         </div>
     </div>
-
-    <div class="modal fade" id="modaltc" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-            <div class="modal-content">
-              <div class="modal-header bg-success bg-gradient text-white">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                <h4 class="modal-title" id="text-tittle">Total Cash (Month over Month) in Million IDR</h4>
+    <div class="col-md-4 col-sm-6 mb-3">
+        <div class="dsb-info" style="cursor:pointer;" onclick="$('#modalcib').modal('show')">
+            <div class="dsb-info-icon" style="background:linear-gradient(135deg,#1e88e5,#1565c0);">
+                <i class="fas fa-university"></i>
             </div>
-            <div class="modal-body">
-                <div class="p-2">
-                    <div id="charttc"></div>
-                </div>
+            <div class="dsb-info-body">
+                <div class="dsb-info-label">Cash in Bank</div>
+                <div class="dsb-info-value"><?= fmtb($total_cib) ?></div>
+                <div class="dsb-info-sub"><i class="fas fa-chart-bar"></i> Click for monthly trend</div>
             </div>
-
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-6 mb-3">
+        <div class="dsb-info" style="cursor:pointer;" onclick="$('#modaltc').modal('show')">
+            <div class="dsb-info-icon" style="background:linear-gradient(135deg,#3949ab,#283593);">
+                <i class="fas fa-coins"></i>
+            </div>
+            <div class="dsb-info-body">
+                <div class="dsb-info-label">Total Cash &amp; Bank</div>
+                <div class="dsb-info-value"><?= fmtb($total_cb) ?></div>
+                <div class="dsb-info-sub"><i class="fas fa-chart-bar"></i> Click for monthly trend</div>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="modaldetcoh" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-<div class="modal-dialog modal-md modal-dialog-centered modal-dialog-scrollable" role="document">
-        <div class="modal-content">
-          <div class="modal-heade" >
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-            <h4 class="modal-title" id="jdl_coh"></h4>
+<!-- ── Bank Loan Utilization ──────────────────────────────── -->
+<div class="dsb-section"><i class="fas fa-landmark"></i> Bank Loan Utilization</div>
+<div class="row">
+
+    <!-- IDR Loan -->
+    <div class="col-md-4 mb-3">
+        <div class="dsb-info mb-3">
+            <div class="dsb-info-icon" style="background:linear-gradient(135deg,#ef4444,#b91c1c);">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <div class="dsb-info-body">
+                <div class="dsb-info-label">Bank Loan IDR</div>
+                <div class="dsb-info-value"><?= fmtb(abs($total_bli)) ?></div>
+                <div class="dsb-info-sub">Limit: <?= fmtb($limit_idr) ?></div>
+            </div>
         </div>
-        <div class="modal-body">
-            <div class="p-0">
+        <div class="dsb-chart-card mb-3">
+            <div class="dsb-chart-header">
+                <i class="fas fa-tachometer-alt"></i> IDR Utilization
+                <span class="dsb-badge <?= $chart_bli > 75 ? 'dsb-badge-down' : 'dsb-badge-up' ?>" style="margin-left:auto;"><?= round($chart_bli,1) ?>%</span>
+            </div>
+            <div class="dsb-chart-body">
+                <div id="chartdiv" class="bank-gauge"></div>
+            </div>
+        </div>
+        <div class="dsb-chart-card">
+            <div class="dsb-chart-header">
+                <i class="fas fa-chart-bar"></i> Last 3 Months (IDR Mio)
+                <span style="margin-left:auto;cursor:pointer;color:#3949ab;font-size:11px;" onclick="$('#modalloanidr').modal('show')">
+                    <i class="fas fa-expand-alt"></i>
+                </span>
+            </div>
+            <div class="dsb-chart-body">
+                <div id="chartdiv2" class="bank-3mo"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- USD Loan -->
+    <div class="col-md-4 mb-3">
+        <div class="dsb-info mb-3">
+            <div class="dsb-info-icon" style="background:linear-gradient(135deg,#f59e0b,#b45309);">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="dsb-info-body">
+                <div class="dsb-info-label">Bank Loan USD</div>
+                <div class="dsb-info-value">USD <?= number_format(abs($saldoakhir),2) ?></div>
+                <div class="dsb-info-sub"><?= fmtb(abs($saldoakhir * $rates3)) ?> &nbsp;&middot;&nbsp; Limit: USD <?= number_format($fac_limit,0) ?></div>
+            </div>
+        </div>
+        <div class="dsb-chart-card mb-3">
+            <div class="dsb-chart-header">
+                <i class="fas fa-tachometer-alt"></i> USD Utilization
+                <span class="dsb-badge <?= $chart_blu > 75 ? 'dsb-badge-down' : 'dsb-badge-up' ?>" style="margin-left:auto;"><?= round($chart_blu,1) ?>%</span>
+            </div>
+            <div class="dsb-chart-body">
+                <div id="chartdiv3" class="bank-gauge"></div>
+            </div>
+        </div>
+        <div class="dsb-chart-card">
+            <div class="dsb-chart-header">
+                <i class="fas fa-chart-bar"></i> Last 3 Months (IDR Mio)
+                <span style="margin-left:auto;cursor:pointer;color:#3949ab;font-size:11px;" onclick="$('#modalloanusd').modal('show')">
+                    <i class="fas fa-expand-alt"></i>
+                </span>
+            </div>
+            <div class="dsb-chart-body">
+                <div id="chartdiv4" class="bank-3mo"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Loan -->
+    <div class="col-md-4 mb-3">
+        <div class="dsb-info mb-3">
+            <div class="dsb-info-icon" style="background:linear-gradient(135deg,#7c3aed,#5b21b6);">
+                <i class="fas fa-balance-scale"></i>
+            </div>
+            <div class="dsb-info-body">
+                <div class="dsb-info-label">Bank Loan Total</div>
+                <div class="dsb-info-value"><?= fmtb($total_bl) ?></div>
+                <div class="dsb-info-sub">Total Limit: <?= fmtb($total_limit) ?></div>
+            </div>
+        </div>
+        <div class="dsb-chart-card mb-3">
+            <div class="dsb-chart-header">
+                <i class="fas fa-tachometer-alt"></i> Total Utilization
+                <span class="dsb-badge <?= $chart_bl > 75 ? 'dsb-badge-down' : 'dsb-badge-up' ?>" style="margin-left:auto;"><?= round($chart_bl,1) ?>%</span>
+            </div>
+            <div class="dsb-chart-body">
+                <div id="chartdiv5" class="bank-gauge"></div>
+            </div>
+        </div>
+        <div class="dsb-chart-card">
+            <div class="dsb-chart-header">
+                <i class="fas fa-chart-bar"></i> Last 3 Months (IDR Mio)
+                <span style="margin-left:auto;cursor:pointer;color:#3949ab;font-size:11px;" onclick="$('#modalloantotal').modal('show')">
+                    <i class="fas fa-expand-alt"></i>
+                </span>
+            </div>
+            <div class="dsb-chart-body">
+                <div id="chartdiv6" class="bank-3mo"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Modals: Loan History ──────────────────────────────── -->
+<?php foreach ([
+    ['modalloanidr',   'IDR Loan Balance — Month over Month',   'chartloanidr',   '#ef4444'],
+    ['modalloanusd',   'USD Loan Balance — Month over Month',   'chartloanusd',   '#f59e0b'],
+    ['modalloantotal', 'Total Loan Balance — Month over Month', 'chartloantotal', '#7c3aed'],
+] as [$mid, $title, $cid, $col]): ?>
+<div class="modal fade" id="<?= $mid ?>" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content" style="border-radius:16px;border:none;overflow:hidden;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#283593,#3949ab);color:#fff;padding:14px 20px;border:none;">
+                <h5 class="modal-title" style="font-size:14px;font-weight:700;"><?= $title ?></h5>
+                <button type="button" class="close" data-dismiss="modal" style="color:#fff;opacity:.8;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="padding:20px;">
+                <div id="<?= $cid ?>" style="min-height:300px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endforeach; ?>
+
+<!-- ── Modals: Cash Monthly Trend ───────────────────────── -->
+<?php foreach ([
+    ['modalcoh', 'Cash on Hand — Month over Month (Mio IDR)', 'chartcoh', '#10b981'],
+    ['modalcib', 'Cash in Bank — Month over Month (Mio IDR)', 'chartcib', '#1e88e5'],
+    ['modaltc',  'Total Cash — Month over Month (Mio IDR)',   'charttc',  '#3949ab'],
+] as [$mid, $title, $cid, $col]): ?>
+<div class="modal fade" id="<?= $mid ?>" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content" style="border-radius:16px;border:none;overflow:hidden;">
+            <div class="modal-header" style="background:linear-gradient(135deg,<?= $col ?>,<?= $col ?>cc);color:#fff;padding:14px 20px;border:none;">
+                <h5 class="modal-title" style="font-size:14px;font-weight:700;"><?= $title ?></h5>
+                <button type="button" class="close" data-dismiss="modal" style="color:#fff;opacity:.8;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="padding:20px;">
+                <div id="<?= $cid ?>" style="min-height:300px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endforeach; ?>
+
+<!-- ── Modals: Detail Drill-down ────────────────────────── -->
+<div class="modal fade" id="modaldetcoh" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content" style="border-radius:16px;border:none;overflow:hidden;">
+            <div class="modal-header" style="padding:12px 18px;border-bottom:1px solid #e2e8f0;">
+                <h6 class="modal-title" id="jdl_coh" style="font-weight:700;"></h6>
+                <button type="button" class="close" data-dismiss="modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" style="padding:12px;">
                 <div id="detail_coh"></div>
             </div>
         </div>
-
     </div>
 </div>
-</div>
 
-<div class="modal fade" id="modaldetcib" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-    <div class="modal-dialog modal-md modal-dialog-centered modal-dialog-scrollable" role="document">
-        <div class="modal-content">
-          <div class="modal-heade" >
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-            <h4 class="modal-title" id="jdl_cib"></h4>
-        </div>
-        <div class="modal-body">
-            <div class="p-0">
+<div class="modal fade" id="modaldetcib" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content" style="border-radius:16px;border:none;overflow:hidden;">
+            <div class="modal-header" style="padding:12px 18px;border-bottom:1px solid #e2e8f0;">
+                <h6 class="modal-title" id="jdl_cib" style="font-weight:700;"></h6>
+                <button type="button" class="close" data-dismiss="modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" style="padding:12px;">
                 <div id="detail_cib"></div>
             </div>
         </div>
-
     </div>
 </div>
-</div>
-<div class="modal fade" id="modaldettc" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+
+<div class="modal fade" id="modaldettc" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content" style="width:380px;">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-            <h4 class="modal-title" id="jdl_tc"></h4>
-        </div>
-        <div class="modal-body">
-            <div class="p-0">
+        <div class="modal-content" style="border-radius:16px;border:none;overflow:hidden;">
+            <div class="modal-header" style="padding:12px 18px;border-bottom:1px solid #e2e8f0;">
+                <h6 class="modal-title" id="jdl_tc" style="font-weight:700;"></h6>
+                <button type="button" class="close" data-dismiss="modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" style="padding:12px;">
                 <div id="detail_tc"></div>
             </div>
         </div>
-
     </div>
 </div>
-</div>
-
-<script type="text/javascript">
-    function openmodalloanidr(){
-        $("#modalloanidr").modal("show");
-    }
-
-    function openmodalloanusd(){
-        $("#modalloanusd").modal("show");
-    }
-
-    function openmodalloantotal(){
-        $("#modalloantotal").modal("show");
-    }
-
-    function openmodalcoh(){
-        $("#modalcoh").modal("show");
-    }
-
-    function openmodalcib(){
-        $("#modalcib").modal("show");
-    }
-
-    function openmodaltc(){
-        $("#modaltc").modal("show");
-    }
-</script>
 
 <script>
-    var options = {
-      series: [{
-          name: 'Total Cash',
-          data: [<?php 
-              $bulan = date("M"); 
-              $tahun = date("Y");
-              $sql1 = mysqli_query($conn2,"SELECT CONCAT_WS(',', saldo_jan, saldo_feb, saldo_mar, saldo_apr, saldo_may, saldo_jun, saldo_jul, saldo_aug, saldo_sep, saldo_oct, saldo_nov, saldo_dec) AS data
-                FROM (SELECT 
-        ROUND(SUM(IF(saldo_jan > 0, saldo_jan, 0))/1000000,2) saldo_jan,
-        ROUND(SUM(IF(saldo_feb > 0, saldo_feb, 0))/1000000,2) saldo_feb,
-        ROUND(SUM(IF(saldo_mar > 0, saldo_mar, 0))/1000000,2) saldo_mar,
-        ROUND(SUM(IF(saldo_apr > 0, saldo_apr, 0))/1000000,2) saldo_apr,
-        ROUND(SUM(IF(saldo_may > 0, saldo_may, 0))/1000000,2) saldo_may,
-        ROUND(SUM(IF(saldo_jun > 0, saldo_jun, 0))/1000000,2) saldo_jun,
-        ROUND(SUM(IF(saldo_jul > 0, saldo_jul, 0))/1000000,2) saldo_jul,
-        ROUND(SUM(IF(saldo_aug > 0, saldo_aug, 0))/1000000,2) saldo_aug,
-        ROUND(SUM(IF(saldo_sep > 0, saldo_sep, 0))/1000000,2) saldo_sep,
-        ROUND(SUM(IF(saldo_oct > 0, saldo_oct, 0))/1000000,2) saldo_oct,
-        ROUND(SUM(IF(saldo_nov > 0, saldo_nov, 0))/1000000,2) saldo_nov,
-        ROUND(SUM(IF(saldo_dec > 0, saldo_dec, 0))/1000000,2) saldo_dec
-    FROM b_trial_balance_$tahun a
-    INNER JOIN mastercoa_v2 b ON b.no_coa = a.no_coa
-    WHERE ind_categori5 IN ('BANK','KAS')) x");
-              $row1 = mysqli_fetch_array($sql1);
-              $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
-              echo $data_bar1;
+/* ── JS modal openers (backward-compat) ── */
+function openmodalloanidr()   { $('#modalloanidr').modal('show'); }
+function openmodalloanusd()   { $('#modalloanusd').modal('show'); }
+function openmodalloantotal() { $('#modalloantotal').modal('show'); }
+function openmodalcoh()       { $('#modalcoh').modal('show'); }
+function openmodalcib()       { $('#modalcib').modal('show'); }
+function openmodaltc()        { $('#modaltc').modal('show'); }
 
-              ?>]
-      }],
-      chart: {
-          height: 350,
-          type: 'bar',
-          events: {
-            click: function(event, chartContext, config, val) {
-              // The last parameter config contains additional information like `seriesIndex` and `dataPointIndex` for cartesian charts
-              // alert(config.dataPointIndex);
-              if (config.dataPointIndex >= 0) {
-                  if (config.dataPointIndex == 0) {
-                    var filter = 'saldo_jan';
-                    var title = 'January';
-                }else if(config.dataPointIndex == 1) {
-                    var filter = 'saldo_feb';
-                    var title = 'February';
-                }else if(config.dataPointIndex == 2) {
-                    var filter = 'saldo_mar';
-                    var title = 'March';
-                }else if(config.dataPointIndex == 3) {
-                    var filter = 'saldo_apr';
-                    var title = 'April';
-                }else if(config.dataPointIndex == 4) {
-                    var filter = 'saldo_may';
-                    var title = 'May';
-                }else if(config.dataPointIndex == 5) {
-                    var filter = 'saldo_jun';
-                    var title = 'June';
-                }else if(config.dataPointIndex == 6) {
-                    var filter = 'saldo_jul';
-                    var title = 'July';
-                }else if(config.dataPointIndex == 7) {
-                    var filter = 'saldo_aug';
-                    var title = 'August';
-                }else if(config.dataPointIndex == 8) {
-                    var filter = 'saldo_sep';
-                    var title = 'September';
-                }else if(config.dataPointIndex == 9) {
-                    var filter = 'saldo_oct';
-                    var title = 'October';
-                }else if(config.dataPointIndex == 10) {
-                    var filter = 'saldo_nov';
-                    var title = 'November';
-                }else if(config.dataPointIndex ==11) {
-                    var filter = 'saldo_dec';
-                    var title = 'December';
+/* ── Gauge chart helper (ApexCharts radialBar) ── */
+function renderGauge(id, value, color) {
+    new ApexCharts(document.querySelector('#' + id), {
+        series: [value],
+        chart: { type: 'radialBar', height: 200, toolbar: { show: false },
+                 sparkline: { enabled: true } },
+        plotOptions: {
+            radialBar: {
+                startAngle: -135, endAngle: 135,
+                hollow: { size: '55%', background: 'transparent' },
+                track: { background: '#e2e8f0', strokeWidth: '90%', margin: 4 },
+                dataLabels: {
+                    name: { show: false },
+                    value: { fontSize: '22px', fontWeight: 700, offsetY: 8,
+                             formatter: function(v) { return v + '%'; }, color: '#2d3748' }
                 }
-                
-                var tahun = <?= $tahun = date("Y"); ?>
-
-                console.log(filter);
-                // console.log(tahun);
-                $.ajax({
-                    type : 'post',
-                    url : '../dashboard/detail_cash_and_bank.php',
-                    data : {'filter': filter},
-                    success : function(data){
-                        $('#detail_cib').html(data);
-                        $('#jdl_cib').html(title + ' <?= date("Y"); ?>');
-                        $('#modaldetcib').modal('show');
-                    },
-                    error:  function (xhr, ajaxOptions, thrownError) {
-                       console.log(xhr);
-                   }
-               });         
-
             }
-        }
-    },
-    colors: ['#008B8B'],
-},
-plotOptions: {
-  bar: {
-    borderRadius: 5,
-    dataLabels: {
-              position: 'top', // top, center, bottom
-          },
-      }
-  },
-  dataLabels: {
-      enabled: true,
-      formatter: function (val) {
-        return val.toLocaleString('en-US');
-    },
-    offsetY: -20,
-    style: {
-        fontSize: '12px',
-        colors: ["#304758"]
+        },
+        fill: { type: 'gradient', gradient: {
+            shade: 'dark', type: 'horizontal',
+            gradientToColors: [color],
+            stops: [0, 100]
+        }},
+        colors: [color],
+        stroke: { lineCap: 'round' }
+    }).render();
+}
+
+renderGauge('chartdiv',  <?= $chart_bli ?>, '<?= gc($chart_bli) ?>');
+renderGauge('chartdiv3', <?= $chart_blu ?>, '<?= gc($chart_blu) ?>');
+renderGauge('chartdiv5', <?= $chart_bl  ?>, '<?= gc($chart_bl)  ?>');
+
+/* ── 3-month loan bar helper ── */
+function renderBar3m(id, data, cats, color) {
+    new ApexCharts(document.querySelector('#' + id), {
+        series: [{ name: 'Loan (Mio IDR)', data: data }],
+        chart: { type: 'bar', height: 160, toolbar: { show: false },
+                 animations: { enabled: true, speed: 600 } },
+        plotOptions: { bar: { borderRadius: 4, columnWidth: '50%',
+            dataLabels: { position: 'top' } } },
+        colors: [color],
+        dataLabels: { enabled: true, formatter: function(v) { return v.toLocaleString('id-ID'); },
+            offsetY: -18, style: { fontSize: '10px', colors: ['#2d3748'] } },
+        xaxis: { categories: cats, labels: { style: { fontSize: '10px' } } },
+        yaxis: { labels: { show: false } },
+        grid: { borderColor: '#f0f4f8' },
+        tooltip: { y: { formatter: function(v) { return 'IDR ' + v + ' Mio'; } } }
+    }).render();
+}
+
+renderBar3m('chartdiv2', [<?= $loan_3m_idr ?>],   [<?= $cat_3m ?>], '#ef4444');
+renderBar3m('chartdiv4', [<?= $loan_3m_usd ?>],   [<?= $cat_3m ?>], '#f59e0b');
+renderBar3m('chartdiv6', [<?= $loan_3m_total ?>],  [<?= $cat_3m ?>], '#7c3aed');
+
+/* ── Loan modal charts (same data, taller) ── */
+$('#modalloanidr').on('shown.bs.modal', function() {
+    if (!$(this).data('rendered')) {
+        new ApexCharts(document.querySelector('#chartloanidr'), {
+            series: [{ name: 'IDR Loan (Mio)', data: [<?= $loan_3m_idr ?>] }],
+            chart: { type: 'bar', height: 300, toolbar: { show: false } },
+            plotOptions: { bar: { borderRadius: 5, columnWidth: '50%' } },
+            colors: ['#ef4444'],
+            dataLabels: { enabled: true, formatter: function(v) { return v.toLocaleString('id-ID'); },
+                offsetY: -18, style: { fontSize: '11px', colors: ['#2d3748'] } },
+            xaxis: { categories: [<?= $cat_3m ?>] },
+            yaxis: { labels: { show: false } },
+            grid: { borderColor: '#f0f4f8' },
+            tooltip: { y: { formatter: function(v) { return 'IDR ' + v + ' Mio'; } } }
+        }).render();
+        $(this).data('rendered', true);
     }
-},
-
-xaxis: {
-  categories: [<?php
-      $sql_bln = mysqli_query($conn2,"WITH RECURSIVE bln AS (
-    SELECT 1 AS m
-    UNION ALL
-    SELECT m+1 FROM bln WHERE m < 12
-)
-SELECT GROUP_CONCAT(CONCAT('''', DATE_FORMAT(DATE(CONCAT(YEAR(CURDATE()), '-', m, '-01')), '%b %Y'), '''') ORDER BY m) AS nama
-FROM bln");
-      $row_bln = mysqli_fetch_array($sql_bln);
-      $nama = isset($row_bln['nama']) ? $row_bln['nama'] :''; 
-      echo $nama;
-      ?>],
-  position: 'bottom',
-  axisBorder: {
-    show: false
-},
-axisTicks: {
-    show: false
-},
-crosshairs: {
-    fill: {
-      type: 'gradient',
-      gradient: {
-        colorFrom: '#D8E3F0',
-        colorTo: '#BED1E6',
-        stops: [0, 100],
-        opacityFrom: 0.4,
-        opacityTo: 0.5,
+});
+$('#modalloanusd').on('shown.bs.modal', function() {
+    if (!$(this).data('rendered')) {
+        new ApexCharts(document.querySelector('#chartloanusd'), {
+            series: [{ name: 'USD Loan (Mio IDR)', data: [<?= $loan_3m_usd ?>] }],
+            chart: { type: 'bar', height: 300, toolbar: { show: false } },
+            plotOptions: { bar: { borderRadius: 5, columnWidth: '50%' } },
+            colors: ['#f59e0b'],
+            dataLabels: { enabled: true, formatter: function(v) { return v.toLocaleString('id-ID'); },
+                offsetY: -18, style: { fontSize: '11px', colors: ['#2d3748'] } },
+            xaxis: { categories: [<?= $cat_3m ?>] },
+            yaxis: { labels: { show: false } },
+            grid: { borderColor: '#f0f4f8' },
+            tooltip: { y: { formatter: function(v) { return 'IDR ' + v + ' Mio'; } } }
+        }).render();
+        $(this).data('rendered', true);
     }
-}
-},
-tooltip: {
-    enabled: true,
-}
-},
-yaxis: {
-  axisBorder: {
-    show: false
-},
-axisTicks: {
-    show: false,
-    colors: ["#304758"]
-},
-labels: {
-    show: false,
-    formatter: function (val) {
-              // return val + "%";
-      return val.toLocaleString('en-US');
-  }
-}
+});
+$('#modalloantotal').on('shown.bs.modal', function() {
+    if (!$(this).data('rendered')) {
+        new ApexCharts(document.querySelector('#chartloantotal'), {
+            series: [{ name: 'Total Loan (Mio IDR)', data: [<?= $loan_3m_total ?>] }],
+            chart: { type: 'bar', height: 300, toolbar: { show: false } },
+            plotOptions: { bar: { borderRadius: 5, columnWidth: '50%' } },
+            colors: ['#7c3aed'],
+            dataLabels: { enabled: true, formatter: function(v) { return v.toLocaleString('id-ID'); },
+                offsetY: -18, style: { fontSize: '11px', colors: ['#2d3748'] } },
+            xaxis: { categories: [<?= $cat_3m ?>] },
+            yaxis: { labels: { show: false } },
+            grid: { borderColor: '#f0f4f8' },
+            tooltip: { y: { formatter: function(v) { return 'IDR ' + v + ' Mio'; } } }
+        }).render();
+        $(this).data('rendered', true);
+    }
+});
 
-},
-title: {
-  text: '',
-  floating: true,
-  offsetY: 330,
-  align: 'center',
-  style: {
-    color: '#444'
-}
-}
-};
-
-var chart = new ApexCharts(document.querySelector("#charttc"), options);
-chart.render();
-</script>
-
-<script>
-    var options = {
-      series: [{
-          name: 'Cash in Banks',
-          data: [<?php 
-              $bulan = date("M"); 
-              $tahun = date("Y");
-              $sql1 = mysqli_query($conn2,"SELECT CONCAT_WS(',', saldo_jan, saldo_feb, saldo_mar, saldo_apr, saldo_may, saldo_jun, saldo_jul, saldo_aug, saldo_sep, saldo_oct, saldo_nov, saldo_dec) AS data
-                FROM (SELECT 
-        ROUND(SUM(IF(saldo_jan > 0, saldo_jan, 0))/1000000,2) saldo_jan,
-        ROUND(SUM(IF(saldo_feb > 0, saldo_feb, 0))/1000000,2) saldo_feb,
-        ROUND(SUM(IF(saldo_mar > 0, saldo_mar, 0))/1000000,2) saldo_mar,
-        ROUND(SUM(IF(saldo_apr > 0, saldo_apr, 0))/1000000,2) saldo_apr,
-        ROUND(SUM(IF(saldo_may > 0, saldo_may, 0))/1000000,2) saldo_may,
-        ROUND(SUM(IF(saldo_jun > 0, saldo_jun, 0))/1000000,2) saldo_jun,
-        ROUND(SUM(IF(saldo_jul > 0, saldo_jul, 0))/1000000,2) saldo_jul,
-        ROUND(SUM(IF(saldo_aug > 0, saldo_aug, 0))/1000000,2) saldo_aug,
-        ROUND(SUM(IF(saldo_sep > 0, saldo_sep, 0))/1000000,2) saldo_sep,
-        ROUND(SUM(IF(saldo_oct > 0, saldo_oct, 0))/1000000,2) saldo_oct,
-        ROUND(SUM(IF(saldo_nov > 0, saldo_nov, 0))/1000000,2) saldo_nov,
-        ROUND(SUM(IF(saldo_dec > 0, saldo_dec, 0))/1000000,2) saldo_dec
-    FROM b_trial_balance_$tahun a
-    INNER JOIN mastercoa_v2 b ON b.no_coa = a.no_coa
-    WHERE ind_categori5 = 'BANK') x");
-              $row1 = mysqli_fetch_array($sql1);
-              $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
-              echo $data_bar1;
-
-              ?>]
-      }],
-      chart: {
-          height: 350,
-          type: 'bar',
-          events: {
-            click: function(event, chartContext, config, val) {
-              // The last parameter config contains additional information like `seriesIndex` and `dataPointIndex` for cartesian charts
-              // alert(config.dataPointIndex);
-              if (config.dataPointIndex >= 0) {
-                  if (config.dataPointIndex == 0) {
-                    var filter = 'saldo_jan';
-                    var title = 'January';
-                }else if(config.dataPointIndex == 1) {
-                    var filter = 'saldo_feb';
-                    var title = 'February';
-                }else if(config.dataPointIndex == 2) {
-                    var filter = 'saldo_mar';
-                    var title = 'March';
-                }else if(config.dataPointIndex == 3) {
-                    var filter = 'saldo_apr';
-                    var title = 'April';
-                }else if(config.dataPointIndex == 4) {
-                    var filter = 'saldo_may';
-                    var title = 'May';
-                }else if(config.dataPointIndex == 5) {
-                    var filter = 'saldo_jun';
-                    var title = 'June';
-                }else if(config.dataPointIndex == 6) {
-                    var filter = 'saldo_jul';
-                    var title = 'July';
-                }else if(config.dataPointIndex == 7) {
-                    var filter = 'saldo_aug';
-                    var title = 'August';
-                }else if(config.dataPointIndex == 8) {
-                    var filter = 'saldo_sep';
-                    var title = 'September';
-                }else if(config.dataPointIndex == 9) {
-                    var filter = 'saldo_oct';
-                    var title = 'October';
-                }else if(config.dataPointIndex == 10) {
-                    var filter = 'saldo_nov';
-                    var title = 'November';
-                }else if(config.dataPointIndex ==11) {
-                    var filter = 'saldo_dec';
-                    var title = 'December';
+/* ── Monthly Cash modal charts ── */
+var monthlyChartOpts = function(seriesData, color, name) {
+    return {
+        series: [{ name: name, data: seriesData }],
+        chart: { type: 'bar', height: 300, toolbar: { show: false },
+            events: {
+                click: function(event, ctx, config) {
+                    if (config.dataPointIndex < 0) return;
+                    var months = ['saldo_jan','saldo_feb','saldo_mar','saldo_apr','saldo_may','saldo_jun',
+                                  'saldo_jul','saldo_aug','saldo_sep','saldo_oct','saldo_nov','saldo_dec'];
+                    var titles = ['January','February','March','April','May','June',
+                                  'July','August','September','October','November','December'];
+                    var filter = months[config.dataPointIndex];
+                    var title  = titles[config.dataPointIndex] + ' <?= date("Y") ?>';
+                    return { filter: filter, title: title };
                 }
-                
-                var tahun = <?= $tahun = date("Y"); ?>
-
-                console.log(filter);
-                // console.log(tahun);
-                $.ajax({
-                    type : 'post',
-                    url : '../dashboard/detail_cash_in_bank.php',
-                    data : {'filter': filter},
-                    success : function(data){
-                        $('#detail_cib').html(data);
-                        $('#jdl_cib').html(title + ' <?= date("Y"); ?>');
-                        $('#modaldetcib').modal('show');
-                    },
-                    error:  function (xhr, ajaxOptions, thrownError) {
-                       console.log(xhr);
-                   }
-               });         
-
             }
-        }
-    },
-    colors: ['#008B8B'],
-},
-plotOptions: {
-  bar: {
-    borderRadius: 5,
-    dataLabels: {
-              position: 'top', // top, center, bottom
-          },
-      }
-  },
-  dataLabels: {
-      enabled: true,
-      formatter: function (val) {
-        return val.toLocaleString('en-US');
-    },
-    offsetY: -20,
-    style: {
-        fontSize: '12px',
-        colors: ["#304758"]
-    }
-},
-
-xaxis: {
-  categories: [<?php
-      $sql_bln = mysqli_query($conn2,"WITH RECURSIVE bln AS (
-    SELECT 1 AS m
-    UNION ALL
-    SELECT m+1 FROM bln WHERE m < 12
-)
-SELECT GROUP_CONCAT(CONCAT('''', DATE_FORMAT(DATE(CONCAT(YEAR(CURDATE()), '-', m, '-01')), '%b %Y'), '''') ORDER BY m) AS nama
-FROM bln");
-      $row_bln = mysqli_fetch_array($sql_bln);
-      $nama = isset($row_bln['nama']) ? $row_bln['nama'] :''; 
-      echo $nama;
-      ?>],
-  position: 'bottom',
-  axisBorder: {
-    show: false
-},
-axisTicks: {
-    show: false
-},
-crosshairs: {
-    fill: {
-      type: 'gradient',
-      gradient: {
-        colorFrom: '#D8E3F0',
-        colorTo: '#BED1E6',
-        stops: [0, 100],
-        opacityFrom: 0.4,
-        opacityTo: 0.5,
-    }
-}
-},
-tooltip: {
-    enabled: true,
-}
-},
-yaxis: {
-  axisBorder: {
-    show: false
-},
-axisTicks: {
-    show: false,
-    colors: ["#304758"]
-},
-labels: {
-    show: false,
-    formatter: function (val) {
-              // return val + "%";
-      return val.toLocaleString('en-US');
-  }
-}
-
-},
-title: {
-  text: '',
-  floating: true,
-  offsetY: 330,
-  align: 'center',
-  style: {
-    color: '#444'
-}
-}
+        },
+        plotOptions: { bar: { borderRadius: 4, columnWidth: '60%', dataLabels: { position: 'top' } } },
+        colors: [color],
+        dataLabels: { enabled: true, formatter: function(v) { return v.toLocaleString('id-ID'); },
+            offsetY: -18, style: { fontSize: '10px', colors: ['#2d3748'] } },
+        xaxis: { categories: [<?= $monthly_lbl_bank ?>], labels: { style: { fontSize: '9px' }, rotate: -30 } },
+        yaxis: { labels: { show: false } },
+        grid: { borderColor: '#f0f4f8' },
+        tooltip: { y: { formatter: function(v) { return v.toLocaleString('id-ID') + ' Mio'; } } }
+    };
 };
 
-var chart = new ApexCharts(document.querySelector("#chartcib"), options);
-chart.render();
-</script>
-
-<script>
-    var options = {
-      series: [{
-          name: 'Cash On Hand',
-          data: [<?php 
-              $bulan = date("M"); 
-              $tahun = date("Y");
-
-              $sql1 = mysqli_query($conn2,"SELECT CONCAT_WS(',', saldo_jan, saldo_feb, saldo_mar, saldo_apr, saldo_may, saldo_jun, saldo_jul, saldo_aug, saldo_sep, saldo_oct, saldo_nov, saldo_dec) AS data
-                FROM (SELECT 
-        ROUND(SUM(IF(saldo_jan > 0, saldo_jan, 0))/1000000,2) saldo_jan,
-        ROUND(SUM(IF(saldo_feb > 0, saldo_feb, 0))/1000000,2) saldo_feb,
-        ROUND(SUM(IF(saldo_mar > 0, saldo_mar, 0))/1000000,2) saldo_mar,
-        ROUND(SUM(IF(saldo_apr > 0, saldo_apr, 0))/1000000,2) saldo_apr,
-        ROUND(SUM(IF(saldo_may > 0, saldo_may, 0))/1000000,2) saldo_may,
-        ROUND(SUM(IF(saldo_jun > 0, saldo_jun, 0))/1000000,2) saldo_jun,
-        ROUND(SUM(IF(saldo_jul > 0, saldo_jul, 0))/1000000,2) saldo_jul,
-        ROUND(SUM(IF(saldo_aug > 0, saldo_aug, 0))/1000000,2) saldo_aug,
-        ROUND(SUM(IF(saldo_sep > 0, saldo_sep, 0))/1000000,2) saldo_sep,
-        ROUND(SUM(IF(saldo_oct > 0, saldo_oct, 0))/1000000,2) saldo_oct,
-        ROUND(SUM(IF(saldo_nov > 0, saldo_nov, 0))/1000000,2) saldo_nov,
-        ROUND(SUM(IF(saldo_dec > 0, saldo_dec, 0))/1000000,2) saldo_dec
-    FROM b_trial_balance_$tahun a
-    INNER JOIN mastercoa_v2 b ON b.no_coa = a.no_coa
-    WHERE ind_categori5 = 'KAS') x");
-              $row1 = mysqli_fetch_array($sql1);
-              $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
-              echo $data_bar1;
-
-              ?>]
-      }],
-      chart: {
-          height: 350,
-          type: 'bar',
-          events: {
-            click: function(event, chartContext, config, val) {
-              // The last parameter config contains additional information like `seriesIndex` and `dataPointIndex` for cartesian charts
-              // alert(config.dataPointIndex);
-              if (config.dataPointIndex >= 0) {
-                  if (config.dataPointIndex == 0) {
-                    var filter = 'saldo_jan';
-                    var title = 'January';
-                }else if(config.dataPointIndex == 1) {
-                    var filter = 'saldo_feb';
-                    var title = 'February';
-                }else if(config.dataPointIndex == 2) {
-                    var filter = 'saldo_mar';
-                    var title = 'March';
-                }else if(config.dataPointIndex == 3) {
-                    var filter = 'saldo_apr';
-                    var title = 'April';
-                }else if(config.dataPointIndex == 4) {
-                    var filter = 'saldo_may';
-                    var title = 'May';
-                }else if(config.dataPointIndex == 5) {
-                    var filter = 'saldo_jun';
-                    var title = 'June';
-                }else if(config.dataPointIndex == 6) {
-                    var filter = 'saldo_jul';
-                    var title = 'July';
-                }else if(config.dataPointIndex == 7) {
-                    var filter = 'saldo_aug';
-                    var title = 'August';
-                }else if(config.dataPointIndex == 8) {
-                    var filter = 'saldo_sep';
-                    var title = 'September';
-                }else if(config.dataPointIndex == 9) {
-                    var filter = 'saldo_oct';
-                    var title = 'October';
-                }else if(config.dataPointIndex == 10) {
-                    var filter = 'saldo_nov';
-                    var title = 'November';
-                }else if(config.dataPointIndex ==11) {
-                    var filter = 'saldo_dec';
-                    var title = 'December';
+$('#modalcoh').on('shown.bs.modal', function() {
+    if (!$(this).data('rendered')) {
+        var opts = monthlyChartOpts([<?= $data_coh_m ?>], '#10b981', 'Cash on Hand (Mio)');
+        opts.chart.events.click = function(event, ctx, config) {
+            if (config.dataPointIndex < 0) return;
+            var months = ['saldo_jan','saldo_feb','saldo_mar','saldo_apr','saldo_may','saldo_jun','saldo_jul','saldo_aug','saldo_sep','saldo_oct','saldo_nov','saldo_dec'];
+            var titles = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            $.ajax({ type:'post', url:'../dashboard/detail_cash_on_hand.php',
+                data: { filter: months[config.dataPointIndex] },
+                success: function(data) {
+                    $('#detail_coh').html(data);
+                    $('#jdl_coh').text(titles[config.dataPointIndex] + ' <?= date("Y") ?>');
+                    $('#modaldetcoh').modal('show');
                 }
-                
-                var tahun = <?= $tahun = date("Y"); ?>
-
-                console.log(filter);
-                // console.log(tahun);
-                $.ajax({
-                    type : 'post',
-                    url : '../dashboard/detail_cash_on_hand.php',
-                    data : {'filter': filter},
-                    success : function(data){
-                        $('#detail_coh').html(data);
-                        $('#jdl_coh').html(title + ' <?= date("Y"); ?>');
-                        $('#modaldetcoh').modal('show');
-                    },
-                    error:  function (xhr, ajaxOptions, thrownError) {
-                       console.log(xhr);
-                   }
-               });         
-
-            }
-        }
-    },
-    colors: ['#008B8B'],
-},
-plotOptions: {
-  bar: {
-    borderRadius: 5,
-    dataLabels: {
-              position: 'top', // top, center, bottom
-          },
-      }
-  },
-  dataLabels: {
-      enabled: true,
-      formatter: function (val) {
-        return val.toLocaleString('en-US');
-    },
-    offsetY: -20,
-    style: {
-        fontSize: '12px',
-        colors: ["#304758"]
+            });
+        };
+        new ApexCharts(document.querySelector('#chartcoh'), opts).render();
+        $(this).data('rendered', true);
     }
-},
+});
 
-xaxis: {
-  categories: [<?php
-     $sql_bln = mysqli_query($conn2, "
-WITH RECURSIVE bln AS (
-    SELECT 1 AS m
-    UNION ALL
-    SELECT m+1 FROM bln WHERE m < 12
-)
-SELECT GROUP_CONCAT(CONCAT('''', DATE_FORMAT(DATE(CONCAT(YEAR(CURDATE()), '-', m, '-01')), '%b %Y'), '''') ORDER BY m) AS nama
-FROM bln
-");
-
-      $row_bln = mysqli_fetch_array($sql_bln);
-      $nama = isset($row_bln['nama']) ? $row_bln['nama'] :''; 
-      echo $nama;
-      ?>],
-  position: 'bottom',
-  axisBorder: {
-    show: false
-},
-axisTicks: {
-    show: false
-},
-crosshairs: {
-    fill: {
-      type: 'gradient',
-      gradient: {
-        colorFrom: '#D8E3F0',
-        colorTo: '#BED1E6',
-        stops: [0, 100],
-        opacityFrom: 0.4,
-        opacityTo: 0.5,
+$('#modalcib').on('shown.bs.modal', function() {
+    if (!$(this).data('rendered')) {
+        var opts = monthlyChartOpts([<?= $data_cib_m ?>], '#1e88e5', 'Cash in Bank (Mio)');
+        opts.chart.events.click = function(event, ctx, config) {
+            if (config.dataPointIndex < 0) return;
+            var months = ['saldo_jan','saldo_feb','saldo_mar','saldo_apr','saldo_may','saldo_jun','saldo_jul','saldo_aug','saldo_sep','saldo_oct','saldo_nov','saldo_dec'];
+            var titles = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            $.ajax({ type:'post', url:'../dashboard/detail_cash_in_bank.php',
+                data: { filter: months[config.dataPointIndex] },
+                success: function(data) {
+                    $('#detail_cib').html(data);
+                    $('#jdl_cib').text(titles[config.dataPointIndex] + ' <?= date("Y") ?>');
+                    $('#modaldetcib').modal('show');
+                }
+            });
+        };
+        new ApexCharts(document.querySelector('#chartcib'), opts).render();
+        $(this).data('rendered', true);
     }
-}
-},
-tooltip: {
-    enabled: true,
-}
-},
-yaxis: {
-  axisBorder: {
-    show: false
-},
-axisTicks: {
-    show: false,
-    colors: ["#304758"]
-},
-labels: {
-    show: false,
-    formatter: function (val) {
-              // return val + "%";
-      return val.toLocaleString('en-US');
-  }
-}
+});
 
-},
-title: {
-  text: '',
-  floating: true,
-  offsetY: 330,
-  align: 'center',
-  style: {
-    color: '#444'
-}
-}
-};
-
-var chart = new ApexCharts(document.querySelector("#chartcoh"), options);
-chart.render();
-</script>
-
-<script>
-    var options = {
-      series: [{
-          name: 'Bank Loan',
-          data: [<?php 
-              $bulan = date("M");
-              $tahun = date("Y"); 
-
-              $sql1 = mysqli_query($conn2,"select CONCAT(saldo_jan,',',saldo_feb,',',saldo_mar,',',saldo_apr,',',saldo_may,',',saldo_jun,',',saldo_jul,',',saldo_aug,',',saldo_sep,',',saldo_oct,',',saldo_nov,',',saldo_dec) data from (select round(abs(sum(saldo_jan /1000000)),2) saldo_jan, round(abs(sum(saldo_feb /1000000)),2) saldo_feb, round(abs(sum(saldo_mar /1000000)),2) saldo_mar, round(abs(sum(saldo_apr /1000000)),2) saldo_apr, round(abs(sum(saldo_may /1000000)),2) saldo_may, round(abs(sum(saldo_jun /1000000)),2) saldo_jun, round(abs(sum(saldo_jul /1000000)),2) saldo_jul, round(abs(sum(saldo_aug /1000000)),2) saldo_aug, round(abs(sum(saldo_sep /1000000)),2) saldo_sep, round(abs(sum(saldo_oct /1000000)),2) saldo_oct, round(abs(sum(saldo_nov /1000000)),2) saldo_nov, round(abs(sum(saldo_dec /1000000)),2) saldo_dec  from (select  saldo_jan, saldo_feb, saldo_mar, saldo_apr, saldo_may, saldo_jun, saldo_jul, saldo_aug, saldo_sep, saldo_oct, saldo_nov, saldo_dec from b_trial_balance_$tahun where no_coa IN ('2.20.01','2.20.02')
-                UNION
-                select if (saldo_jan < 0, saldo_jan, 0) saldo_jan, if (saldo_feb < 0, saldo_feb, 0) saldo_feb, if (saldo_mar < 0, saldo_mar, 0) saldo_mar, if (saldo_apr < 0, saldo_apr, 0) saldo_apr, if (saldo_may < 0, saldo_may, 0) saldo_may, if (saldo_jun < 0, saldo_jun, 0) saldo_jun, if (saldo_jul < 0, saldo_jul, 0) saldo_jul, if (saldo_aug < 0, saldo_aug, 0) saldo_aug, if (saldo_sep < 0, saldo_sep, 0) saldo_sep, if (saldo_oct < 0, saldo_oct, 0) saldo_oct, if (saldo_nov < 0, saldo_nov, 0) saldo_nov, if (saldo_dec < 0, saldo_dec, 0) saldo_dec  from b_trial_balance_$tahun where no_coa IN ('1.10.01','1.10.02')) a) a");
-              $row1 = mysqli_fetch_array($sql1);
-              $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
-              echo $data_bar1;
-
-              ?>]
-      }],
-      chart: {
-          height: 350,
-          type: 'bar',
-          colors: ['#008B8B'],
-      },
-      plotOptions: {
-          bar: {
-            borderRadius: 5,
-            dataLabels: {
-              position: 'top', // top, center, bottom
-          },
-      }
-  },
-  dataLabels: {
-      enabled: true,
-      formatter: function (val) {
-        return val.toLocaleString('en-US');
-    },
-    offsetY: -20,
-    style: {
-        fontSize: '12px',
-        colors: ["#304758"]
+$('#modaltc').on('shown.bs.modal', function() {
+    if (!$(this).data('rendered')) {
+        var opts = monthlyChartOpts([<?= $data_total_m ?>], '#3949ab', 'Total Cash (Mio)');
+        opts.chart.events.click = function(event, ctx, config) {
+            if (config.dataPointIndex < 0) return;
+            var months = ['saldo_jan','saldo_feb','saldo_mar','saldo_apr','saldo_may','saldo_jun','saldo_jul','saldo_aug','saldo_sep','saldo_oct','saldo_nov','saldo_dec'];
+            var titles = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            $.ajax({ type:'post', url:'../dashboard/detail_cash_and_bank.php',
+                data: { filter: months[config.dataPointIndex] },
+                success: function(data) {
+                    $('#detail_cib').html(data);
+                    $('#jdl_cib').text(titles[config.dataPointIndex] + ' <?= date("Y") ?>');
+                    $('#modaldetcib').modal('show');
+                }
+            });
+        };
+        new ApexCharts(document.querySelector('#charttc'), opts).render();
+        $(this).data('rendered', true);
     }
-},
-
-xaxis: {
-  categories: [<?php
-      $sql_bln = mysqli_query($conn2,"select GROUP_CONCAT('''',nama,'''') nama from (
-        select CONCAT('Jan ',YEAR(CURRENT_DATE())) nama
-        UNION
-        select CONCAT('Feb ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Mar ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Apr ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('May ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Jun ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Jul ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Aug ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Sep ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Oct ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Nov ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Dec ',YEAR(CURRENT_DATE()))) a");
-      $row_bln = mysqli_fetch_array($sql_bln);
-      $nama = isset($row_bln['nama']) ? $row_bln['nama'] :''; 
-      echo $nama;
-      ?>],
-  position: 'bottom',
-  axisBorder: {
-    show: false
-},
-axisTicks: {
-    show: false
-},
-crosshairs: {
-    fill: {
-      type: 'gradient',
-      gradient: {
-        colorFrom: '#D8E3F0',
-        colorTo: '#BED1E6',
-        stops: [0, 100],
-        opacityFrom: 0.4,
-        opacityTo: 0.5,
-    }
-}
-},
-tooltip: {
-    enabled: true,
-}
-},
-yaxis: {
-  axisBorder: {
-    show: false
-},
-axisTicks: {
-    show: false,
-    colors: ["#304758"]
-},
-labels: {
-    show: false,
-    formatter: function (val) {
-              // return val + "%";
-      return val.toLocaleString('en-US');
-  }
-}
-
-},
-title: {
-  text: '',
-  floating: true,
-  offsetY: 330,
-  align: 'center',
-  style: {
-    color: '#444'
-}
-}
-};
-
-var chart = new ApexCharts(document.querySelector("#chartloantotal"), options);
-chart.render();
-</script>
-
-<script>
-    var options = {
-      series: [{
-          name: 'Bank Loan',
-          data: [<?php 
-              $bulan = date("M"); 
-              $tahun = date("Y");
-
-              $sql1 = mysqli_query($conn2,"select CONCAT(saldo_jan,',',saldo_feb,',',saldo_mar,',',saldo_apr,',',saldo_may,',',saldo_jun,',',saldo_jul,',',saldo_aug,',',saldo_sep,',',saldo_oct,',',saldo_nov,',',saldo_dec) data from (select round(abs(sum(saldo_jan /1000000)),2) saldo_jan, round(abs(sum(saldo_feb /1000000)),2) saldo_feb, round(abs(sum(saldo_mar /1000000)),2) saldo_mar, round(abs(sum(saldo_apr /1000000)),2) saldo_apr, round(abs(sum(saldo_may /1000000)),2) saldo_may, round(abs(sum(saldo_jun /1000000)),2) saldo_jun, round(abs(sum(saldo_jul /1000000)),2) saldo_jul, round(abs(sum(saldo_aug /1000000)),2) saldo_aug, round(abs(sum(saldo_sep /1000000)),2) saldo_sep, round(abs(sum(saldo_oct /1000000)),2) saldo_oct, round(abs(sum(saldo_nov /1000000)),2) saldo_nov, round(abs(sum(saldo_dec /1000000)),2) saldo_dec  from (select  saldo_jan, saldo_feb, saldo_mar, saldo_apr, saldo_may, saldo_jun, saldo_jul, saldo_aug, saldo_sep, saldo_oct, saldo_nov, saldo_dec from b_trial_balance_$tahun where no_coa IN ('2.20.02')
-                UNION
-                select if (saldo_jan < 0, saldo_jan, 0) saldo_jan, if (saldo_feb < 0, saldo_feb, 0) saldo_feb, if (saldo_mar < 0, saldo_mar, 0) saldo_mar, if (saldo_apr < 0, saldo_apr, 0) saldo_apr, if (saldo_may < 0, saldo_may, 0) saldo_may, if (saldo_jun < 0, saldo_jun, 0) saldo_jun, if (saldo_jul < 0, saldo_jul, 0) saldo_jul, if (saldo_aug < 0, saldo_aug, 0) saldo_aug, if (saldo_sep < 0, saldo_sep, 0) saldo_sep, if (saldo_oct < 0, saldo_oct, 0) saldo_oct, if (saldo_nov < 0, saldo_nov, 0) saldo_nov, if (saldo_dec < 0, saldo_dec, 0) saldo_dec  from b_trial_balance_$tahun where no_coa IN ('1.10.02')) a) a");
-              $row1 = mysqli_fetch_array($sql1);
-              $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
-              echo $data_bar1;
-
-              ?>]
-      }],
-      chart: {
-          height: 350,
-          type: 'bar',
-          colors: ['#008B8B'],
-      },
-      plotOptions: {
-          bar: {
-            borderRadius: 5,
-            dataLabels: {
-              position: 'top', // top, center, bottom
-          },
-      }
-  },
-  dataLabels: {
-      enabled: true,
-      formatter: function (val) {
-        return val.toLocaleString('en-US');
-    },
-    offsetY: -20,
-    style: {
-        fontSize: '12px',
-        colors: ["#304758"]
-    }
-},
-
-xaxis: {
-  categories: [<?php
-      $sql_bln = mysqli_query($conn2,"select GROUP_CONCAT('''',nama,'''') nama from (
-        select CONCAT('Jan ',YEAR(CURRENT_DATE())) nama
-        UNION
-        select CONCAT('Feb ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Mar ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Apr ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('May ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Jun ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Jul ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Aug ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Sep ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Oct ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Nov ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Dec ',YEAR(CURRENT_DATE()))) a");
-      $row_bln = mysqli_fetch_array($sql_bln);
-      $nama = isset($row_bln['nama']) ? $row_bln['nama'] :''; 
-      echo $nama;
-      ?>],
-  position: 'bottom',
-  axisBorder: {
-    show: false
-},
-axisTicks: {
-    show: false
-},
-crosshairs: {
-    fill: {
-      type: 'gradient',
-      gradient: {
-        colorFrom: '#D8E3F0',
-        colorTo: '#BED1E6',
-        stops: [0, 100],
-        opacityFrom: 0.4,
-        opacityTo: 0.5,
-    }
-}
-},
-tooltip: {
-    enabled: true,
-}
-},
-yaxis: {
-  axisBorder: {
-    show: false
-},
-axisTicks: {
-    show: false,
-    colors: ["#304758"]
-},
-labels: {
-    show: false,
-    formatter: function (val) {
-              // return val + "%";
-      return val.toLocaleString('en-US');
-  }
-}
-
-},
-title: {
-  text: '',
-  floating: true,
-  offsetY: 330,
-  align: 'center',
-  style: {
-    color: '#444'
-}
-}
-};
-
-var chart = new ApexCharts(document.querySelector("#chartloanusd"), options);
-chart.render();
-</script>
-
-<script>
-    var options = {
-      series: [{
-          name: 'Bank Loan',
-          data: [<?php 
-              $bulan = date("M"); 
-              $tahun = date("Y");
-
-              $sql1 = mysqli_query($conn2,"select CONCAT(saldo_jan,',',saldo_feb,',',saldo_mar,',',saldo_apr,',',saldo_may,',',saldo_jun,',',saldo_jul,',',saldo_aug,',',saldo_sep,',',saldo_oct,',',saldo_nov,',',saldo_dec) data from (select round(abs(sum(saldo_jan /1000000)),2) saldo_jan, round(abs(sum(saldo_feb /1000000)),2) saldo_feb, round(abs(sum(saldo_mar /1000000)),2) saldo_mar, round(abs(sum(saldo_apr /1000000)),2) saldo_apr, round(abs(sum(saldo_may /1000000)),2) saldo_may, round(abs(sum(saldo_jun /1000000)),2) saldo_jun, round(abs(sum(saldo_jul /1000000)),2) saldo_jul, round(abs(sum(saldo_aug /1000000)),2) saldo_aug, round(abs(sum(saldo_sep /1000000)),2) saldo_sep, round(abs(sum(saldo_oct /1000000)),2) saldo_oct, round(abs(sum(saldo_nov /1000000)),2) saldo_nov, round(abs(sum(saldo_dec /1000000)),2) saldo_dec  from (select  saldo_jan, saldo_feb, saldo_mar, saldo_apr, saldo_may, saldo_jun, saldo_jul, saldo_aug, saldo_sep, saldo_oct, saldo_nov, saldo_dec from b_trial_balance_$tahun where no_coa IN ('2.20.01')
-                UNION
-                select if (saldo_jan < 0, saldo_jan, 0) saldo_jan, if (saldo_feb < 0, saldo_feb, 0) saldo_feb, if (saldo_mar < 0, saldo_mar, 0) saldo_mar, if (saldo_apr < 0, saldo_apr, 0) saldo_apr, if (saldo_may < 0, saldo_may, 0) saldo_may, if (saldo_jun < 0, saldo_jun, 0) saldo_jun, if (saldo_jul < 0, saldo_jul, 0) saldo_jul, if (saldo_aug < 0, saldo_aug, 0) saldo_aug, if (saldo_sep < 0, saldo_sep, 0) saldo_sep, if (saldo_oct < 0, saldo_oct, 0) saldo_oct, if (saldo_nov < 0, saldo_nov, 0) saldo_nov, if (saldo_dec < 0, saldo_dec, 0) saldo_dec  from b_trial_balance_$tahun where no_coa IN ('1.10.01')) a) a");
-              $row1 = mysqli_fetch_array($sql1);
-              $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
-              echo $data_bar1;
-
-              ?>]
-      }],
-      chart: {
-          height: 350,
-          type: 'bar',
-          colors: ['#008B8B'],
-      },
-      plotOptions: {
-          bar: {
-            borderRadius: 5,
-            dataLabels: {
-              position: 'top', // top, center, bottom
-          },
-      }
-  },
-  dataLabels: {
-      enabled: true,
-      formatter: function (val) {
-        return val.toLocaleString('en-US');
-    },
-    offsetY: -20,
-    style: {
-        fontSize: '12px',
-        colors: ["#304758"]
-    }
-},
-
-xaxis: {
-  categories: [<?php
-      $sql_bln = mysqli_query($conn2,"select GROUP_CONCAT('''',nama,'''') nama from (
-        select CONCAT('Jan ',YEAR(CURRENT_DATE())) nama
-        UNION
-        select CONCAT('Feb ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Mar ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Apr ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('May ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Jun ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Jul ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Aug ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Sep ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Oct ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Nov ',YEAR(CURRENT_DATE()))
-        UNION
-        select CONCAT('Dec ',YEAR(CURRENT_DATE()))) a");
-      $row_bln = mysqli_fetch_array($sql_bln);
-      $nama = isset($row_bln['nama']) ? $row_bln['nama'] :''; 
-      echo $nama;
-      ?>],
-  position: 'bottom',
-  axisBorder: {
-    show: false
-},
-axisTicks: {
-    show: false
-},
-crosshairs: {
-    fill: {
-      type: 'gradient',
-      gradient: {
-        colorFrom: '#D8E3F0',
-        colorTo: '#BED1E6',
-        stops: [0, 100],
-        opacityFrom: 0.4,
-        opacityTo: 0.5,
-    }
-}
-},
-tooltip: {
-    enabled: true,
-}
-},
-yaxis: {
-  axisBorder: {
-    show: false
-},
-axisTicks: {
-    show: false,
-    colors: ["#304758"]
-},
-labels: {
-    show: false,
-    formatter: function (val) {
-              // return val + "%";
-      return val.toLocaleString('en-US');
-  }
-}
-
-},
-title: {
-  text: '',
-  floating: true,
-  offsetY: 330,
-  align: 'center',
-  style: {
-    color: '#444'
-}
-}
-};
-
-var chart = new ApexCharts(document.querySelector("#chartloanidr"), options);
-chart.render();
-</script>
-
-<script>
-    am5.ready(function() {
-
-// Create root element
-// https://www.amcharts.com/docs/v5/getting-started/#Root_element
-        var root = am5.Root.new("chartdiv");
-
-
-// Set themes
-// https://www.amcharts.com/docs/v5/concepts/themes/
-        root.setThemes([
-          am5themes_Animated.new(root)
-          ]);
-
-
-// Create chart
-// https://www.amcharts.com/docs/v5/charts/radar-chart/
-        var chart = root.container.children.push(am5radar.RadarChart.new(root, {
-          panX: false,
-          panY: false,
-          startAngle: 170,
-          endAngle: 370
-      }));
-
-
-// Create axis and its renderer
-// https://www.amcharts.com/docs/v5/charts/radar-chart/gauge-charts/#Axes
-        var axisRenderer = am5radar.AxisRendererCircular.new(root, {
-          innerRadius: -40
-      });
-
-        axisRenderer.grid.template.setAll({
-          stroke: root.interfaceColors.get("background"),
-          visible: true,
-          strokeOpacity: 0
-      });
-
-        var xAxis = chart.xAxes.push(am5xy.ValueAxis.new(root, {
-          maxDeviation: 0,
-          min: 0,
-          max: 100,
-          strictMinMax: true,
-          renderer: axisRenderer
-      }));
-
-
-// Add clock hand
-// https://www.amcharts.com/docs/v5/charts/radar-chart/gauge-charts/#Clock_hands
-        var axisDataItem = xAxis.makeDataItem({});
-
-        var clockHand = am5radar.ClockHand.new(root, {
-          pinRadius: am5.percent(15),
-          radius: am5.percent(100),
-          bottomWidth: 40
-      })
-
-        var bullet = axisDataItem.set("bullet", am5xy.AxisBullet.new(root, {
-          sprite: clockHand
-      }));
-
-        xAxis.createAxisRange(axisDataItem);
-
-        var label = chart.radarContainer.children.push(am5.Label.new(root, {
-          fill: am5.color(0xffffff),
-          centerX: am5.percent(50),
-          textAlign: "center",
-          centerY: am5.percent(50),
-          fontSize: "1.2em"
-      }));
-
-        axisDataItem.set("value", 0);
-        bullet.get("sprite").on("rotation", function () {
-          var value = axisDataItem.get("value");
-          var text = Math.round(axisDataItem.get("value")).toString();
-          var fill = am5.color(0x000000);
-          xAxis.axisRanges.each(function (axisRange) {
-            if (value >= axisRange.get("value") && value <= axisRange.get("endValue")) {
-              fill = axisRange.get("axisFill").get("fill");
-          }
-      })
-
-          label.set("text", Math.round(value).toString());
-
-          clockHand.pin.animate({ key: "fill", to: fill, duration: 500, easing: am5.ease.out(am5.ease.cubic) })
-          clockHand.hand.animate({ key: "fill", to: fill, duration: 500, easing: am5.ease.out(am5.ease.cubic) })
-      });
-
-        <?php 
-        $bulan = date("M"); 
-        $tahun = date("Y");
-        // $sql_bli = mysqli_query($conn2,"select no_coa,nama_coa,round(- sum(total),0) total from(select no_coa,nama_coa,saldo_$bulan total from b_trial_balance_2025 where no_coa IN ('2.20.01')
-        //     UNION
-        //     select no_coa,nama_coa,if(saldo_$bulan < 0,saldo_$bulan,0) total from b_trial_balance_2025 where no_coa IN ('1.10.01')) a");
-        // $row_bli = mysqli_fetch_array($sql_bli);
-        // $total_bli = isset($row_bli['total']) ? $row_bli['total'] :0;
-
-        $sql1 = mysqli_query($conn2,"select SUM(fac_limit) fac_limit from b_masterbank where curr = 'IDR'");
-        $row1 = mysqli_fetch_array($sql1);
-        $limit_idr = isset($row1['fac_limit']) ? $row1['fac_limit'] :0;
-
-        $chart_bli = (abs($total_bli) / $limit_idr) * 100;
-
-        ?>
-
-        setInterval(function () {
-          axisDataItem.animate({
-            key: "value",
-            to: <?= $chart_bli ?>,
-            duration: 500,
-            easing: am5.ease.out(am5.ease.cubic)
-        });
-      }, 2000)
-
-        chart.bulletsContainer.set("mask", undefined);
-
-
-// Create axis ranges bands
-// https://www.amcharts.com/docs/v5/charts/radar-chart/gauge-charts/#Bands
-        var bandsData = [{
-          title: "Low",
-          color: "#54b947",
-          lowScore: 0,
-          highScore: 25
-      }, {
-          title: "Medium",
-          color: "#fdae19",
-          lowScore: 25,
-          highScore: 75
-      }, {
-          title: "High",
-          color: "#FA8072",
-          lowScore: 75,
-          highScore: 100
-      }];
-
-        am5.array.each(bandsData, function (data) {
-          var axisRange = xAxis.createAxisRange(xAxis.makeDataItem({}));
-
-          axisRange.setAll({
-            value: data.lowScore,
-            endValue: data.highScore
-        });
-
-          axisRange.get("axisFill").setAll({
-            visible: true,
-            fill: am5.color(data.color),
-            fillOpacity: 0.8
-        });
-
-          axisRange.get("label").setAll({
-            text: data.title,
-            inside: true,
-            radius: 15,
-            fontSize: "0.9em",
-            fill: root.interfaceColors.get("background")
-        });
-      });
-
-
-// Make stuff animate on load
-        chart.appear(1000, 100);
-
-}); // end am5.ready()
-</script>
-
-<script>
-    var options = {
-series: [{
-    name: 'Bank Loan',
-    data: [<?php
-
-    $bulan_list = [];
-    for ($i = 3; $i >= 1; $i--) {
-        $date = strtotime("-$i month");
-        $bulan_list[] = [
-            'bulan' => date('M', $date),
-            'tahun' => date('Y', $date)
-        ];
-    }
-
-    $data = [];
-
-    foreach ($bulan_list as $bln) {
-
-        $tahun_tb = $bln['tahun'];
-        $bulan_tb = $bln['bulan'];
-
-        $sql = mysqli_query($conn2,"
-            SELECT 
-            ROUND(
-                ABS(
-                    SUM(IF(no_coa='2.20.01', saldo_$bulan_tb,0)) +
-                    SUM(IF(no_coa='1.10.01' AND saldo_$bulan_tb < 0, saldo_$bulan_tb,0))
-                ) / 1000000,2
-            ) total
-            FROM b_trial_balance_$tahun_tb
-        ");
-
-        $row = mysqli_fetch_assoc($sql);
-        $data[] = $row['total'] ?? 0;
-    }
-
-    echo implode(",", $data);
-
-    ?>]
-}],
-chart: {
-    height: 350,
-    type: 'bar'
-},
-colors: ['#008B8B'],
-plotOptions: {
-    bar: {
-        borderRadius: 5,
-        dataLabels: {
-            position: 'top'
-        }
-    }
-},
-dataLabels: {
-    enabled: true,
-    formatter: function (val) {
-        return val.toLocaleString('en-US');
-    },
-    offsetY: -20,
-    style: {
-        fontSize: '12px',
-        colors: ["#304758"]
-    }
-},
-xaxis: {
-categories: [<?php
-
-    $cat = [];
-    for ($i = 3; $i >= 1; $i--) {
-        $date = strtotime("-$i month");
-        $cat[] = "'".date('M Y', $date)."'";
-    }
-
-    echo implode(",", $cat);
-
-?>],
-axisBorder: { show: false },
-axisTicks: { show: false }
-},
-yaxis: {
-labels: {
-    formatter: function (val) {
-        return val.toLocaleString('en-US');
-    }
-}
-}
-};
-
-var chart = new ApexCharts(document.querySelector("#chartdiv2"), options);
-chart.render();
-
-</script>
-
-
-<script>
-    am5.ready(function() {
-
-// Create root element
-// https://www.amcharts.com/docs/v5/getting-started/#Root_element
-        var root = am5.Root.new("chartdiv3");
-
-
-// Set themes
-// https://www.amcharts.com/docs/v5/concepts/themes/
-        root.setThemes([
-          am5themes_Animated.new(root)
-          ]);
-
-
-// Create chart
-// https://www.amcharts.com/docs/v5/charts/radar-chart/
-        var chart = root.container.children.push(am5radar.RadarChart.new(root, {
-          panX: false,
-          panY: false,
-          startAngle: 170,
-          endAngle: 370
-      }));
-
-
-// Create axis and its renderer
-// https://www.amcharts.com/docs/v5/charts/radar-chart/gauge-charts/#Axes
-        var axisRenderer = am5radar.AxisRendererCircular.new(root, {
-          innerRadius: -40
-      });
-
-        axisRenderer.grid.template.setAll({
-          stroke: root.interfaceColors.get("background"),
-          visible: true,
-          strokeOpacity: 0
-      });
-
-        var xAxis = chart.xAxes.push(am5xy.ValueAxis.new(root, {
-          maxDeviation: 0,
-          min: 0,
-          max: 100,
-          strictMinMax: true,
-          renderer: axisRenderer
-      }));
-
-
-// Add clock hand
-// https://www.amcharts.com/docs/v5/charts/radar-chart/gauge-charts/#Clock_hands
-        var axisDataItem = xAxis.makeDataItem({});
-
-        var clockHand = am5radar.ClockHand.new(root, {
-          pinRadius: am5.percent(15),
-          radius: am5.percent(100),
-          bottomWidth: 40
-      })
-
-        var bullet = axisDataItem.set("bullet", am5xy.AxisBullet.new(root, {
-          sprite: clockHand
-      }));
-
-        xAxis.createAxisRange(axisDataItem);
-
-        var label = chart.radarContainer.children.push(am5.Label.new(root, {
-          fill: am5.color(0xffffff),
-          centerX: am5.percent(50),
-          textAlign: "center",
-          centerY: am5.percent(50),
-          fontSize: "1.2em"
-      }));
-
-        axisDataItem.set("value", 0);
-        bullet.get("sprite").on("rotation", function () {
-          var value = axisDataItem.get("value");
-          var text = Math.round(axisDataItem.get("value")).toString();
-          var fill = am5.color(0x000000);
-          xAxis.axisRanges.each(function (axisRange) {
-            if (value >= axisRange.get("value") && value <= axisRange.get("endValue")) {
-              fill = axisRange.get("axisFill").get("fill");
-          }
-      })
-
-          label.set("text", Math.round(value).toString());
-
-          clockHand.pin.animate({ key: "fill", to: fill, duration: 500, easing: am5.ease.out(am5.ease.cubic) })
-          clockHand.hand.animate({ key: "fill", to: fill, duration: 500, easing: am5.ease.out(am5.ease.cubic) })
-      });
-
-        <?php 
-        $bulan = date("M"); 
-        // $sql_blu = mysqli_query($conn2,"select total,(total * rate) total_convert from (select no_coa,nama_coa,round(sum(total),0) total from (select no_coa,nama_coa,saldo_$bulan total from b_trial_balance_2025 where no_coa IN ('2.20.02')
-        //     UNION
-        //     select no_coa,nama_coa,if(saldo_$bulan < 0,saldo_$bulan,0) total from b_trial_balance_2025 where no_coa IN ('1.10.02')) a) a join (select COALESCE(rate,1) rate from masterrate where tanggal = CURRENT_DATE() and v_codecurr = 'PAJAK') b");
-        // $row_blu = mysqli_fetch_array($sql_blu);
-        // $total_blu = isset($row_blu['total']) ? $row_blu['total'] :0;
-        // $total_convert_blu = isset($row_blu['total_convert']) ? $row_blu['total_convert'] :0;
-
-        $sql1 = mysqli_query($conn2,"select fac_limit,(fac_limit * rate) limit_convert from (select SUM(fac_limit) fac_limit from b_masterbank where curr = 'usd') a join (select COALESCE(rate,1) rate from masterrate where tanggal = CURRENT_DATE() and v_codecurr = 'PAJAK') b ");
-        $row1 = mysqli_fetch_array($sql1);
-        $fac_limit = isset($row1['fac_limit']) ? $row1['fac_limit'] :0;
-        $limit_convert = isset($row1['limit_convert']) ? $row1['limit_convert'] :0;
-
-        if ($saldoakhir > 0) {
-            $saldoakhirnya = 0;
-        }else{
-            $saldoakhirnya = $saldoakhir;
-        }
-
-        $chart_blu = (abs($saldoakhirnya * $rates3) / $limit_convert) * 100;
-
-        ?>
-
-        setInterval(function () {
-          axisDataItem.animate({
-            key: "value",
-            to: '<?= $chart_blu ?>',
-            duration: 500,
-            easing: am5.ease.out(am5.ease.cubic)
-        });
-      }, 2000)
-
-        chart.bulletsContainer.set("mask", undefined);
-
-
-// Create axis ranges bands
-// https://www.amcharts.com/docs/v5/charts/radar-chart/gauge-charts/#Bands
-        var bandsData = [{
-          title: "Low",
-          color: "#54b947",
-          lowScore: 0,
-          highScore: 25
-      }, {
-          title: "Medium",
-          color: "#fdae19",
-          lowScore: 25,
-          highScore: 75
-      }, {
-          title: "High",
-          color: "#FA8072",
-          lowScore: 75,
-          highScore: 100
-      }];
-
-        am5.array.each(bandsData, function (data) {
-          var axisRange = xAxis.createAxisRange(xAxis.makeDataItem({}));
-
-          axisRange.setAll({
-            value: data.lowScore,
-            endValue: data.highScore
-        });
-
-          axisRange.get("axisFill").setAll({
-            visible: true,
-            fill: am5.color(data.color),
-            fillOpacity: 0.8
-        });
-
-          axisRange.get("label").setAll({
-            text: data.title,
-            inside: true,
-            radius: 15,
-            fontSize: "0.9em",
-            fill: root.interfaceColors.get("background")
-        });
-      });
-
-
-// Make stuff animate on load
-        chart.appear(1000, 100);
-
-}); // end am5.ready()
-</script>
-<!-- select CONCAT('round(abs(sum(saldo2 /1000000)),2) saldo2') -->
-<script>
-   var options = {
-series: [{
-    name: 'Bank Loan',
-    data: [<?php
-
-    $bulan_list = [];
-    for ($i = 3; $i >= 1; $i--) {
-        $date = strtotime("-$i month");
-        $bulan_list[] = [
-            'bulan' => date('M', $date),
-            'tahun' => date('Y', $date)
-        ];
-    }
-
-    $data = [];
-
-    foreach ($bulan_list as $bln) {
-
-        $tahun_tb = $bln['tahun'];
-        $bulan_tb = $bln['bulan'];
-
-        $sql = mysqli_query($conn2,"
-            SELECT 
-            ROUND(
-                ABS(
-                    SUM(IF(no_coa='2.20.02', saldo_$bulan_tb,0)) +
-                    SUM(IF(no_coa='1.10.02' AND saldo_$bulan_tb < 0, saldo_$bulan_tb,0))
-                ) / 1000000,2
-            ) total
-            FROM b_trial_balance_$tahun_tb
-        ");
-
-        $row = mysqli_fetch_assoc($sql);
-        $data[] = $row['total'] ?? 0;
-    }
-
-    echo implode(",", $data);
-
-    ?>]
-}],
-chart: {
-    height: 350,
-    type: 'bar'
-},
-colors: ['#008B8B'],
-plotOptions: {
-    bar: {
-        borderRadius: 5,
-        dataLabels: {
-            position: 'top'
-        }
-    }
-},
-dataLabels: {
-    enabled: true,
-    formatter: function (val) {
-        return val.toLocaleString('en-US');
-    },
-    offsetY: -20,
-    style: {
-        fontSize: '12px',
-        colors: ["#304758"]
-    }
-},
-xaxis: {
-categories: [<?php
-    $cat = [];
-    for ($i = 3; $i >= 1; $i--) {
-        $date = strtotime("-$i month");
-        $cat[] = "'".date('M Y', $date)."'";
-    }
-    echo implode(",", $cat);
-?>],
-axisBorder: { show: false },
-axisTicks: { show: false }
-},
-yaxis: {
-labels: {
-    formatter: function (val) {
-        return val.toLocaleString('en-US');
-    }
-}
-}
-};
-
-var chart = new ApexCharts(document.querySelector("#chartdiv4"), options);
-chart.render();
-
-</script>
-
-
-<script>
-    am5.ready(function() {
-
-// Create root element
-// https://www.amcharts.com/docs/v5/getting-started/#Root_element
-        var root = am5.Root.new("chartdiv5");
-
-
-// Set themes
-// https://www.amcharts.com/docs/v5/concepts/themes/
-        root.setThemes([
-          am5themes_Animated.new(root)
-          ]);
-
-
-// Create chart
-// https://www.amcharts.com/docs/v5/charts/radar-chart/
-        var chart = root.container.children.push(am5radar.RadarChart.new(root, {
-          panX: false,
-          panY: false,
-          startAngle: 170,
-          endAngle: 370
-      }));
-
-
-// Create axis and its renderer
-// https://www.amcharts.com/docs/v5/charts/radar-chart/gauge-charts/#Axes
-        var axisRenderer = am5radar.AxisRendererCircular.new(root, {
-          innerRadius: -40
-      });
-
-        axisRenderer.grid.template.setAll({
-          stroke: root.interfaceColors.get("background"),
-          visible: true,
-          strokeOpacity: 0
-      });
-
-        var xAxis = chart.xAxes.push(am5xy.ValueAxis.new(root, {
-          maxDeviation: 0,
-          min: 0,
-          max: 100,
-          strictMinMax: true,
-          renderer: axisRenderer
-      }));
-
-
-// Add clock hand
-// https://www.amcharts.com/docs/v5/charts/radar-chart/gauge-charts/#Clock_hands
-        var axisDataItem = xAxis.makeDataItem({});
-
-        var clockHand = am5radar.ClockHand.new(root, {
-          pinRadius: am5.percent(15),
-          radius: am5.percent(100),
-          bottomWidth: 40
-      })
-
-        var bullet = axisDataItem.set("bullet", am5xy.AxisBullet.new(root, {
-          sprite: clockHand
-      }));
-
-        xAxis.createAxisRange(axisDataItem);
-
-        var label = chart.radarContainer.children.push(am5.Label.new(root, {
-          fill: am5.color(0xffffff),
-          centerX: am5.percent(50),
-          textAlign: "center",
-          centerY: am5.percent(50),
-          fontSize: "1.2em"
-      }));
-
-        axisDataItem.set("value", 0);
-        bullet.get("sprite").on("rotation", function () {
-          var value = axisDataItem.get("value");
-          var text = Math.round(axisDataItem.get("value")).toString();
-          var fill = am5.color(0x000000);
-          xAxis.axisRanges.each(function (axisRange) {
-            if (value >= axisRange.get("value") && value <= axisRange.get("endValue")) {
-              fill = axisRange.get("axisFill").get("fill");
-          }
-      })
-
-          label.set("text", Math.round(value).toString());
-
-          clockHand.pin.animate({ key: "fill", to: fill, duration: 500, easing: am5.ease.out(am5.ease.cubic) })
-          clockHand.hand.animate({ key: "fill", to: fill, duration: 500, easing: am5.ease.out(am5.ease.cubic) })
-      });
-
-        <?php 
-        $bulan = date("M"); 
-        $sql_blu = mysqli_query($conn2,"select total,(total * rate) total_convert from (select no_coa,nama_coa,round(sum(total),0) total from (select no_coa,nama_coa,saldo_$bulan total from b_trial_balance_2025 where no_coa IN ('2.20.02')
-            UNION
-            select no_coa,nama_coa,if(saldo_$bulan < 0,saldo_$bulan,0) total from b_trial_balance_2025 where no_coa IN ('1.10.02')) a) a join (select COALESCE(rate,1) rate from masterrate where tanggal = CURRENT_DATE() and v_codecurr = 'PAJAK') b");
-        $row_blu = mysqli_fetch_array($sql_blu);
-        $total_blu = isset($row_blu['total']) ? $row_blu['total'] :0;
-        $total_convert_blu = isset($row_blu['total_convert']) ? $row_blu['total_convert'] :0;
-
-        $sql1 = mysqli_query($conn2,"select fac_limit,(fac_limit * rate) limit_convert from (select SUM(fac_limit) fac_limit from b_masterbank where curr = 'usd') a join (select COALESCE(rate,1) rate from masterrate where tanggal = CURRENT_DATE() and v_codecurr = 'PAJAK') b ");
-        $row1 = mysqli_fetch_array($sql1);
-        $fac_limit = isset($row1['fac_limit']) ? $row1['fac_limit'] :0;
-        $limit_convert = isset($row1['limit_convert']) ? $row1['limit_convert'] :0;
-
-        // $sql_bli = mysqli_query($conn2,"select no_coa,nama_coa,round(- sum(total),0) total from(select no_coa,nama_coa,saldo_$bulan total from b_trial_balance_2025 where no_coa IN ('2.20.01')
-        //     UNION
-        //     select no_coa,nama_coa,if(saldo_$bulan < 0,saldo_$bulan,0) total from b_trial_balance_2025 where no_coa IN ('1.10.01')) a");
-        // $row_bli = mysqli_fetch_array($sql_bli);
-        // $total_bli = isset($row_bli['total']) ? $row_bli['total'] :0;
-
-        $sql1 = mysqli_query($conn2,"select SUM(fac_limit) fac_limit from b_masterbank where curr = 'IDR'");
-        $row1 = mysqli_fetch_array($sql1);
-        $limit_idr = isset($row1['fac_limit']) ? $row1['fac_limit'] :0;
-
-        $chart_bl = (abs($total_bli) + abs($saldoakhir * $rates3)) / ($limit_idr + $limit_convert) * 100;
-
-        ?>
-
-        setInterval(function () {
-          axisDataItem.animate({
-            key: "value",
-            to: <?= $chart_bl ?>,
-            duration: 500,
-            easing: am5.ease.out(am5.ease.cubic)
-        });
-      }, 2000)
-
-        chart.bulletsContainer.set("mask", undefined);
-
-
-// Create axis ranges bands
-// https://www.amcharts.com/docs/v5/charts/radar-chart/gauge-charts/#Bands
-        var bandsData = [{
-          title: "Low",
-          color: "#54b947",
-          lowScore: 0,
-          highScore: 25
-      }, {
-          title: "Medium",
-          color: "#fdae19",
-          lowScore: 25,
-          highScore: 75
-      }, {
-          title: "High",
-          color: "#FA8072",
-          lowScore: 75,
-          highScore: 100
-      }];
-
-        am5.array.each(bandsData, function (data) {
-          var axisRange = xAxis.createAxisRange(xAxis.makeDataItem({}));
-
-          axisRange.setAll({
-            value: data.lowScore,
-            endValue: data.highScore
-        });
-
-          axisRange.get("axisFill").setAll({
-            visible: true,
-            fill: am5.color(data.color),
-            fillOpacity: 0.8
-        });
-
-          axisRange.get("label").setAll({
-            text: data.title,
-            inside: true,
-            radius: 15,
-            fontSize: "0.9em",
-            fill: root.interfaceColors.get("background")
-        });
-      });
-
-
-// Make stuff animate on load
-        chart.appear(1000, 100);
-
-}); // end am5.ready()
-</script>
-
-
-<script>
-
-var options = {
-series: [{
-    name: 'Bank Loan',
-    data: [<?php
-
-        $bulan_list = [];
-        for ($i = 3; $i >= 1; $i--) {
-            $date = strtotime("-$i month");
-            $bulan_list[] = [
-                'bulan' => date('M', $date),
-                'tahun' => date('Y', $date)
-            ];
-        }
-
-        $data = [];
-
-        foreach ($bulan_list as $bln) {
-
-            $bulan_tb = $bln['bulan'];
-            $tahun_tb = $bln['tahun'];
-
-            $sql = mysqli_query($conn2,"
-                SELECT 
-                ROUND(
-                    ABS(
-                        SUM(IF(no_coa IN ('2.20.01','2.20.02'), saldo_$bulan_tb,0)) +
-                        SUM(IF(no_coa IN ('1.10.01','1.10.02') AND saldo_$bulan_tb < 0, saldo_$bulan_tb,0))
-                    ) / 1000000,2
-                ) total
-                FROM b_trial_balance_$tahun_tb
-            ");
-
-            $row = mysqli_fetch_assoc($sql);
-            $data[] = $row['total'] ?? 0;
-        }
-
-        echo implode(",", $data);
-
-    ?>]
-}],
-chart: {
-    height: 350,
-    type: 'bar'
-},
-colors: ['#008B8B'],
-plotOptions: {
-    bar: {
-        borderRadius: 5,
-        dataLabels: {
-            position: 'top'
-        }
-    }
-},
-dataLabels: {
-    enabled: true,
-    formatter: function (val) {
-        return val.toLocaleString('en-US');
-    },
-    offsetY: -20,
-    style: {
-        fontSize: '12px',
-        colors: ["#304758"]
-    }
-},
-xaxis: {
-    categories: [<?php
-        $cat = [];
-        for ($i = 3; $i >= 1; $i--) {
-            $date = strtotime("-$i month");
-            $cat[] = "'".date('M Y', $date)."'";
-        }
-        echo implode(",", $cat);
-    ?>],
-    axisBorder: { show: false },
-    axisTicks: { show: false }
-},
-yaxis: {
-    labels: {
-        show: false,
-        formatter: function (val) {
-            return val.toLocaleString('en-US');
-        }
-    }
-},
-tooltip: {
-    enabled: true,
-    y: {
-        formatter: function(val) {
-            return val.toLocaleString('en-US') + " Mio";
-        }
-    }
-}
-};
-
-var chart = new ApexCharts(document.querySelector("#chartdiv6"), options);
-chart.render();
-
+});
 </script>
