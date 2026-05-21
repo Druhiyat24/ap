@@ -183,7 +183,9 @@
           </label>
           <div class="col-sm-9">
             <input type="text" class="form-control form-control-sm"
-                   id="sb-account" placeholder="Account number" maxlength="100">
+                   id="sb-account" placeholder="Account number" maxlength="100"
+                   inputmode="numeric" pattern="[0-9]*"
+                   oninput="this.value=this.value.replace(/[^0-9]/g,'')">
           </div>
         </div>
 
