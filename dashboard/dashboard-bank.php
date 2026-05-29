@@ -115,13 +115,10 @@ $cat_3m = implode(',', ["'".date('M Y', strtotime('-3 month'))."'","'".date('M Y
 if (!function_exists('fmtb')) {
     function fmtb($v) { return 'IDR '.number_format((float)$v, 0, ',', '.'); }
 }
-
-// gauge color helper
-function gc($pct) { return $pct > 75 ? '#ef4444' : ($pct > 50 ? '#f59e0b' : '#10b981'); }
 ?>
 
 <style>
-.bank-gauge { min-height: 200px; }
+.bank-gauge { min-height: 240px; }
 .bank-3mo   { min-height: 160px; }
 </style>
 
@@ -371,37 +368,75 @@ function openmodalcoh()       { $('#modalcoh').modal('show'); }
 function openmodalcib()       { $('#modalcib').modal('show'); }
 function openmodaltc()        { $('#modaltc').modal('show'); }
 
-/* ── Gauge chart helper (ApexCharts radialBar) ── */
-function renderGauge(id, value, color) {
-    new ApexCharts(document.querySelector('#' + id), {
-        series: [value],
-        chart: { type: 'radialBar', height: 200, toolbar: { show: false },
-                 sparkline: { enabled: true } },
-        plotOptions: {
-            radialBar: {
-                startAngle: -135, endAngle: 135,
-                hollow: { size: '55%', background: 'transparent' },
-                track: { background: '#e2e8f0', strokeWidth: '90%', margin: 4 },
-                dataLabels: {
-                    name: { show: false },
-                    value: { fontSize: '22px', fontWeight: 700, offsetY: 8,
-                             formatter: function(v) { return v + '%'; }, color: '#2d3748' }
-                }
-            }
-        },
-        fill: { type: 'gradient', gradient: {
-            shade: 'dark', type: 'horizontal',
-            gradientToColors: [color],
-            stops: [0, 100]
-        }},
-        colors: [color],
-        stroke: { lineCap: 'round' }
-    }).render();
+/* ── Speedometer helper (amCharts 5 RadarChart) ── */
+function renderSpeedometer(divId, value) {
+    am5.ready(function() {
+        var root = am5.Root.new(divId);
+        root.setThemes([am5themes_Animated.new(root)]);
+
+        var chart = root.container.children.push(am5radar.RadarChart.new(root, {
+            panX: false, panY: false, startAngle: 170, endAngle: 370
+        }));
+
+        var axisRenderer = am5radar.AxisRendererCircular.new(root, { innerRadius: -40 });
+        axisRenderer.grid.template.setAll({
+            stroke: root.interfaceColors.get("background"), visible: true, strokeOpacity: 0
+        });
+
+        var xAxis = chart.xAxes.push(am5xy.ValueAxis.new(root, {
+            maxDeviation: 0, min: 0, max: 100, strictMinMax: true, renderer: axisRenderer
+        }));
+
+        var axisDataItem = xAxis.makeDataItem({});
+        var clockHand = am5radar.ClockHand.new(root, {
+            pinRadius: am5.percent(15), radius: am5.percent(100), bottomWidth: 40
+        });
+        var bullet = axisDataItem.set("bullet", am5xy.AxisBullet.new(root, { sprite: clockHand }));
+        xAxis.createAxisRange(axisDataItem);
+
+        var label = chart.radarContainer.children.push(am5.Label.new(root, {
+            fill: am5.color(0xffffff), centerX: am5.percent(50),
+            textAlign: "center", centerY: am5.percent(50), fontSize: "1.2em"
+        }));
+
+        axisDataItem.set("value", 0);
+        bullet.get("sprite").on("rotation", function() {
+            var v = axisDataItem.get("value");
+            var fill = am5.color(0x000000);
+            xAxis.axisRanges.each(function(r) {
+                if (v >= r.get("value") && v <= r.get("endValue")) fill = r.get("axisFill").get("fill");
+            });
+            label.set("text", Math.round(v).toString());
+            clockHand.pin.animate({ key: "fill", to: fill, duration: 500, easing: am5.ease.out(am5.ease.cubic) });
+            clockHand.hand.animate({ key: "fill", to: fill, duration: 500, easing: am5.ease.out(am5.ease.cubic) });
+        });
+
+        setInterval(function() {
+            axisDataItem.animate({ key: "value", to: value, duration: 500, easing: am5.ease.out(am5.ease.cubic) });
+        }, 2000);
+
+        chart.bulletsContainer.set("mask", undefined);
+
+        var bands = [
+            { title: "Low",    color: "#54b947", lowScore: 0,  highScore: 25  },
+            { title: "Medium", color: "#fdae19", lowScore: 25, highScore: 75  },
+            { title: "High",   color: "#FA8072", lowScore: 75, highScore: 100 }
+        ];
+        am5.array.each(bands, function(d) {
+            var r = xAxis.createAxisRange(xAxis.makeDataItem({}));
+            r.setAll({ value: d.lowScore, endValue: d.highScore });
+            r.get("axisFill").setAll({ visible: true, fill: am5.color(d.color), fillOpacity: 0.8 });
+            r.get("label").setAll({ text: d.title, inside: true, radius: 15,
+                fontSize: "0.9em", fill: root.interfaceColors.get("background") });
+        });
+
+        chart.appear(1000, 100);
+    });
 }
 
-renderGauge('chartdiv',  <?= $chart_bli ?>, '<?= gc($chart_bli) ?>');
-renderGauge('chartdiv3', <?= $chart_blu ?>, '<?= gc($chart_blu) ?>');
-renderGauge('chartdiv5', <?= $chart_bl  ?>, '<?= gc($chart_bl)  ?>');
+renderSpeedometer('chartdiv',  <?= $chart_bli ?>);
+renderSpeedometer('chartdiv3', <?= $chart_blu ?>);
+renderSpeedometer('chartdiv5', <?= $chart_bl  ?>);
 
 /* ── 3-month loan bar helper ── */
 function renderBar3m(id, data, cats, color) {
