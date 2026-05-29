@@ -152,7 +152,7 @@ LEFT JOIN department_all da
 
 WHERE
     CONCAT(SUBSTR(eb.kode_bpjs,1,4),'-',SUBSTR(eb.kode_bpjs,5,2)) = DATE_FORMAT('$tgl_hris','%Y-%m') AND
-        DATE_FORMAT(SUBSTRING_INDEX(rp.periode_kehadiran,' s/d ',-1),'%Y-%m') = DATE_FORMAT('$tgl_hris','%Y-%m')
+        DATE_FORMAT(SUBSTRING_INDEX(rp.periode_kehadiran,' s/d ',-1),'%Y-%m') = DATE_FORMAT('$tgl_hris','%Y-%m') and LEFT(ea.nik,3) = 'NAG'
 
 ORDER BY
     ea.employee_name ASC
