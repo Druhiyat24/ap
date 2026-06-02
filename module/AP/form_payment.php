@@ -201,7 +201,7 @@
                 <?= empty($supplier_banks) ? 'disabled' : '' ?>>
             <option value="">-- Select Bank Account --</option>
             <?php foreach ($supplier_banks as $b): ?>
-            <option value="<?= htmlspecialchars($b['bank_account']) ?>"
+            <option value="<?= htmlspecialchars($b['id']) ?>"
                     data-account="<?= htmlspecialchars($b['bank_account']) ?>"
                     data-currency="<?= htmlspecialchars($b['bank_currency']) ?>"
                     data-bankname="<?= htmlspecialchars($b['bank_name']) ?>"
