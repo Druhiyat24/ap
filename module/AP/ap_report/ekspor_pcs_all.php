@@ -2056,7 +2056,7 @@ CASE
     ROUND(SUM(pro_due3),2) pro_due3,
     ROUND(SUM(pro_due4),2) pro_due4,
     ROUND(SUM(pro_due5),2) pro_due5,
-    ROUND(SUM(tot_produe),2) tot_produe FROM (select supplier, curr, saldo_awal, in_bpb, 0 uang_muka, 0 potongan, 0 ded_lp, ded_kontrabon ded_bpb, 0 add_kbon, 0 add_lp, 0 pay_bank, 0 pay_non_bank, 0 pay_cash, reverse_bpb, gm, saldo_akhir, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_gt_360, due_91_120, due_121_180, due_181_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from bpb
+    ROUND(SUM(tot_produe),2) tot_produe FROM (select supplier, curr, saldo_awal, in_bpb, 0 uang_muka, 0 potongan, 0 ded_lp, ded_kontrabon ded_bpb, 0 add_kbon, 0 add_lp, 0 pay_bank, 0 pay_non_bank, 0 pay_cash, reverse_bpb, gm, saldo_akhir, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from bpb
         UNION ALL
         select supplier, curr, saldo_awal, 0 in_bpb, uang_muka, potongan, ded_lp, 0 ded_bpb, total_in add_kbon, 0 add_lp, 0 pay_bank, 0 pay_non_bank, 0 pay_cash, 0 reverse_bpb, ded_gm, saldo_akhir, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from kontrabon
         UNION ALL
@@ -2938,7 +2938,7 @@ CASE
     ROUND(SUM(pro_due3),2) pro_due3,
     ROUND(SUM(pro_due4),2) pro_due4,
     ROUND(SUM(pro_due5),2) pro_due5,
-    ROUND(SUM(tot_produe),2) tot_produe FROM (select supplier, item_type1, relasi, saldo_akhir_idr saldo_akhir, due_current, due_1_30, due_31_60, due_61_90, due_gt_360, due_91_120, due_121_180, due_181_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from bpb
+    ROUND(SUM(tot_produe),2) tot_produe FROM (select supplier, item_type1, relasi, saldo_akhir_idr saldo_akhir, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from bpb
         UNION ALL
         select supplier, item_type1, relasi, saldo_akhir_idr saldo_akhir, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from kontrabon
         UNION ALL
@@ -3813,7 +3813,7 @@ CASE
     ROUND(SUM(pro_due3),2) pro_due3,
     ROUND(SUM(pro_due4),2) pro_due4,
     ROUND(SUM(pro_due5),2) pro_due5,
-    ROUND(SUM(tot_produe),2) tot_produe FROM (select supplier, item_type2, relasi, saldo_akhir_idr saldo_akhir, due_current, due_1_30, due_31_60, due_61_90, due_gt_360, due_91_120, due_121_180, due_181_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from bpb
+    ROUND(SUM(tot_produe),2) tot_produe FROM (select supplier, item_type2, relasi, saldo_akhir_idr saldo_akhir, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from bpb
         UNION ALL
         select supplier, item_type2, relasi, saldo_akhir_idr saldo_akhir, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from kontrabon
         UNION ALL
@@ -4713,7 +4713,7 @@ CASE
                 ROUND(SUM(pro_due3),2) pro_due3,
                 ROUND(SUM(pro_due4),2) pro_due4,
                 ROUND(SUM(pro_due5),2) pro_due5,
-                ROUND(SUM(tot_produe),2) tot_produe FROM (select supplier, curr, IF(CURR = 'usd', saldo_akhir, 0) saldo_akhir, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_gt_360, due_91_120, due_121_180, due_181_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from bpb where relasi = 'GROUP'
+                ROUND(SUM(tot_produe),2) tot_produe FROM (select supplier, curr, IF(CURR = 'usd', saldo_akhir, 0) saldo_akhir, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from bpb where relasi = 'GROUP'
         UNION ALL
         select supplier, curr, IF(CURR = 'usd', saldo_akhir, 0) saldo_akhir, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from kontrabon where relasi = 'GROUP'
         UNION ALL
@@ -5633,7 +5633,7 @@ CASE
                 ROUND(SUM(pro_due3),2) pro_due3,
                 ROUND(SUM(pro_due4),2) pro_due4,
                 ROUND(SUM(pro_due5),2) pro_due5,
-                ROUND(SUM(tot_produe),2) tot_produe FROM (select item_type2, curr, IF(CURR = 'usd', saldo_akhir, 0) saldo_akhir, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_gt_360, due_91_120, due_121_180, due_181_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from bpb where relasi = 'NON GROUP'
+                ROUND(SUM(tot_produe),2) tot_produe FROM (select item_type2, curr, IF(CURR = 'usd', saldo_akhir, 0) saldo_akhir, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from bpb where relasi = 'NON GROUP'
         UNION ALL
         select item_type2, curr, IF(CURR = 'usd', saldo_akhir, 0) saldo_akhir, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe from kontrabon where relasi = 'NON GROUP'
         UNION ALL
