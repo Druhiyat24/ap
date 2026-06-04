@@ -142,7 +142,14 @@ try {
     // ================= INSERT DETAIL =================
     foreach ($detail as $i => $row) {
 
-        $pc_det        = $row['profit_center'];
+        $pcdet        = $row['profit_center'];
+        if ($pcdet == 'NIRWANA ALABARE GARMENT') {
+            $pc_det = 'NAG';
+        }elseif ($pcdet == 'NIRWANA ALABARE KNITTING') {
+            $pc_det = 'NAK';
+        }else{
+            $pc_det = $pcdet;
+        }
         $no_coa        = $row['no_coa'];
         $nama_coa      = $row['nama_coa'];
         $no_cc         = $row['no_cc'];
