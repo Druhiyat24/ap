@@ -161,7 +161,7 @@ ORDER BY
 data_bpjs as (select * from bpjs a LEFT JOIN log_jurnal b on b.tgl_journal = a.bpjs_kehadiran where no_journal is null)
 
 SELECT * FROM data_bpjs
-) x");
+) x where ( tanggal_resign IS NULL OR tanggal_resign >= CONCAT(DATE_FORMAT(DATE_SUB('$tgl_hris', INTERVAL 1 MONTH),'%Y-%m'),'-26'))");
     $sql = "WITH
 
 bpjs_jkk as (select LAST_DAY(STR_TO_DATE(bpjs_kehadiran, '%Y-%m')) tgl_jurnal, status_staff, no_cc, cc_name, no_coa, nama_coa, id_pc, profit_center, ROUND(sum(bpjs_tk_jkk_perusahaan_rupiah),2) debit, 0 credit, CONCAT('BPJS TK - JKK (', status_staff, ') DEPT ', cc_name, ' ', UPPER(DATE_FORMAT('$tgl_hris', '%M %Y')), ' (', IF(id_pc = 'NAG','GARMENT','KNITTING'), ')') keterangan from tmp_data_jurnal_bpjs  a INNER JOIN b_master_cc b on b.no_cc = a.sub_dept_id INNER JOIN mastercoa_v2 c on c.no_coa = b.coa_bpjs_jkk GROUP BY status_staff, no_cc, id_pc),
