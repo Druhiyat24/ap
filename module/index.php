@@ -1660,6 +1660,25 @@ if(strpos($id, '108') !== false){
         </li>';
     }
 
+    if(strpos($id, '110') !== false){
+      echo '           
+      <li class="dropdown-submenu ">
+      <a class="dropdown-item bg-dark text-white" href="#">
+      <span s class="fa fa-tasks fa-fw "></span>
+      <span class="menu-collapsed">Item General</span>
+      </a>
+      <ul class="dropdown-menu bg-dark text-white" role="menu">
+
+      
+      <a href="AP/item_general_usage.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-cart-arrow-down fa-fw "></span>
+      <span class="menu-collapsed">Item General Usage</span>
+      </a>
+
+      </ul>
+      </li>';
+  }
+
     ?>
   <!--    <a href="AP/ca_fabric_trx_in.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-cart-arrow-down fa-fw "></span>
@@ -2162,18 +2181,18 @@ function SidebarCollapse () {
               $tahun = date("Y");
               $sql1 = mysqli_query($conn2,"SELECT CONCAT_WS(',', saldo_jan, saldo_feb, saldo_mar, saldo_apr, saldo_may, saldo_jun, saldo_jul, saldo_aug, saldo_sep, saldo_oct, saldo_nov, saldo_dec) AS data
                 FROM (SELECT 
-        ROUND(SUM(IF(saldo_jan > 0, saldo_jan, 0))/1000000,2) saldo_jan,
-        ROUND(SUM(IF(saldo_feb > 0, saldo_feb, 0))/1000000,2) saldo_feb,
-        ROUND(SUM(IF(saldo_mar > 0, saldo_mar, 0))/1000000,2) saldo_mar,
-        ROUND(SUM(IF(saldo_apr > 0, saldo_apr, 0))/1000000,2) saldo_apr,
-        ROUND(SUM(IF(saldo_may > 0, saldo_may, 0))/1000000,2) saldo_may,
-        ROUND(SUM(IF(saldo_jun > 0, saldo_jun, 0))/1000000,2) saldo_jun,
-        ROUND(SUM(IF(saldo_jul > 0, saldo_jul, 0))/1000000,2) saldo_jul,
-        ROUND(SUM(IF(saldo_aug > 0, saldo_aug, 0))/1000000,2) saldo_aug,
-        ROUND(SUM(IF(saldo_sep > 0, saldo_sep, 0))/1000000,2) saldo_sep,
-        ROUND(SUM(IF(saldo_oct > 0, saldo_oct, 0))/1000000,2) saldo_oct,
-        ROUND(SUM(IF(saldo_nov > 0, saldo_nov, 0))/1000000,2) saldo_nov,
-        ROUND(SUM(IF(saldo_dec > 0, saldo_dec, 0))/1000000,2) saldo_dec
+        IF(MONTH(CURDATE())>=1, ROUND(SUM(IF(saldo_jan>0,saldo_jan,0))/1000000,2),0) saldo_jan,
+        IF(MONTH(CURDATE())>=2, ROUND(SUM(IF(saldo_feb>0,saldo_feb,0))/1000000,2),0) saldo_feb,
+        IF(MONTH(CURDATE())>=3, ROUND(SUM(IF(saldo_mar>0,saldo_mar,0))/1000000,2),0) saldo_mar,
+        IF(MONTH(CURDATE())>=4, ROUND(SUM(IF(saldo_apr>0,saldo_apr,0))/1000000,2),0) saldo_apr,
+        IF(MONTH(CURDATE())>=5, ROUND(SUM(IF(saldo_may>0,saldo_may,0))/1000000,2),0) saldo_may,
+        IF(MONTH(CURDATE())>=6, ROUND(SUM(IF(saldo_jun>0,saldo_jun,0))/1000000,2),0) saldo_jun,
+        IF(MONTH(CURDATE())>=7, ROUND(SUM(IF(saldo_jul>0,saldo_jul,0))/1000000,2),0) saldo_jul,
+        IF(MONTH(CURDATE())>=8, ROUND(SUM(IF(saldo_aug>0,saldo_aug,0))/1000000,2),0) saldo_aug,
+        IF(MONTH(CURDATE())>=9, ROUND(SUM(IF(saldo_sep>0,saldo_sep,0))/1000000,2),0) saldo_sep,
+        IF(MONTH(CURDATE())>=10, ROUND(SUM(IF(saldo_oct>0,saldo_oct,0))/1000000,2),0) saldo_oct,
+        IF(MONTH(CURDATE())>=11, ROUND(SUM(IF(saldo_nov>0,saldo_nov,0))/1000000,2),0) saldo_nov,
+        IF(MONTH(CURDATE())>=12, ROUND(SUM(IF(saldo_dec>0,saldo_dec,0))/1000000,2),0) saldo_dec
     FROM b_trial_balance_$tahun a
     INNER JOIN mastercoa_v2 b ON b.no_coa = a.no_coa
     WHERE ind_categori5 IN ('BANK','KAS')) x");
@@ -2349,18 +2368,18 @@ chart.render();
               $tahun = date("Y");
               $sql1 = mysqli_query($conn2,"SELECT CONCAT_WS(',', saldo_jan, saldo_feb, saldo_mar, saldo_apr, saldo_may, saldo_jun, saldo_jul, saldo_aug, saldo_sep, saldo_oct, saldo_nov, saldo_dec) AS data
                 FROM (SELECT 
-        ROUND(SUM(IF(saldo_jan > 0, saldo_jan, 0))/1000000,2) saldo_jan,
-        ROUND(SUM(IF(saldo_feb > 0, saldo_feb, 0))/1000000,2) saldo_feb,
-        ROUND(SUM(IF(saldo_mar > 0, saldo_mar, 0))/1000000,2) saldo_mar,
-        ROUND(SUM(IF(saldo_apr > 0, saldo_apr, 0))/1000000,2) saldo_apr,
-        ROUND(SUM(IF(saldo_may > 0, saldo_may, 0))/1000000,2) saldo_may,
-        ROUND(SUM(IF(saldo_jun > 0, saldo_jun, 0))/1000000,2) saldo_jun,
-        ROUND(SUM(IF(saldo_jul > 0, saldo_jul, 0))/1000000,2) saldo_jul,
-        ROUND(SUM(IF(saldo_aug > 0, saldo_aug, 0))/1000000,2) saldo_aug,
-        ROUND(SUM(IF(saldo_sep > 0, saldo_sep, 0))/1000000,2) saldo_sep,
-        ROUND(SUM(IF(saldo_oct > 0, saldo_oct, 0))/1000000,2) saldo_oct,
-        ROUND(SUM(IF(saldo_nov > 0, saldo_nov, 0))/1000000,2) saldo_nov,
-        ROUND(SUM(IF(saldo_dec > 0, saldo_dec, 0))/1000000,2) saldo_dec
+        IF(MONTH(CURDATE())>=1, ROUND(SUM(IF(saldo_jan>0,saldo_jan,0))/1000000,2),0) saldo_jan,
+        IF(MONTH(CURDATE())>=2, ROUND(SUM(IF(saldo_feb>0,saldo_feb,0))/1000000,2),0) saldo_feb,
+        IF(MONTH(CURDATE())>=3, ROUND(SUM(IF(saldo_mar>0,saldo_mar,0))/1000000,2),0) saldo_mar,
+        IF(MONTH(CURDATE())>=4, ROUND(SUM(IF(saldo_apr>0,saldo_apr,0))/1000000,2),0) saldo_apr,
+        IF(MONTH(CURDATE())>=5, ROUND(SUM(IF(saldo_may>0,saldo_may,0))/1000000,2),0) saldo_may,
+        IF(MONTH(CURDATE())>=6, ROUND(SUM(IF(saldo_jun>0,saldo_jun,0))/1000000,2),0) saldo_jun,
+        IF(MONTH(CURDATE())>=7, ROUND(SUM(IF(saldo_jul>0,saldo_jul,0))/1000000,2),0) saldo_jul,
+        IF(MONTH(CURDATE())>=8, ROUND(SUM(IF(saldo_aug>0,saldo_aug,0))/1000000,2),0) saldo_aug,
+        IF(MONTH(CURDATE())>=9, ROUND(SUM(IF(saldo_sep>0,saldo_sep,0))/1000000,2),0) saldo_sep,
+        IF(MONTH(CURDATE())>=10, ROUND(SUM(IF(saldo_oct>0,saldo_oct,0))/1000000,2),0) saldo_oct,
+        IF(MONTH(CURDATE())>=11, ROUND(SUM(IF(saldo_nov>0,saldo_nov,0))/1000000,2),0) saldo_nov,
+        IF(MONTH(CURDATE())>=12, ROUND(SUM(IF(saldo_dec>0,saldo_dec,0))/1000000,2),0) saldo_dec
     FROM b_trial_balance_$tahun a
     INNER JOIN mastercoa_v2 b ON b.no_coa = a.no_coa
     WHERE ind_categori5 = 'BANK') x");
@@ -2535,23 +2554,39 @@ chart.render();
               $bulan = date("M"); 
               $tahun = date("Y");
 
-              $sql1 = mysqli_query($conn2,"SELECT CONCAT_WS(',', saldo_jan, saldo_feb, saldo_mar, saldo_apr, saldo_may, saldo_jun, saldo_jul, saldo_aug, saldo_sep, saldo_oct, saldo_nov, saldo_dec) AS data
-                FROM (SELECT 
-        ROUND(SUM(IF(saldo_jan > 0, saldo_jan, 0))/1000000,2) saldo_jan,
-        ROUND(SUM(IF(saldo_feb > 0, saldo_feb, 0))/1000000,2) saldo_feb,
-        ROUND(SUM(IF(saldo_mar > 0, saldo_mar, 0))/1000000,2) saldo_mar,
-        ROUND(SUM(IF(saldo_apr > 0, saldo_apr, 0))/1000000,2) saldo_apr,
-        ROUND(SUM(IF(saldo_may > 0, saldo_may, 0))/1000000,2) saldo_may,
-        ROUND(SUM(IF(saldo_jun > 0, saldo_jun, 0))/1000000,2) saldo_jun,
-        ROUND(SUM(IF(saldo_jul > 0, saldo_jul, 0))/1000000,2) saldo_jul,
-        ROUND(SUM(IF(saldo_aug > 0, saldo_aug, 0))/1000000,2) saldo_aug,
-        ROUND(SUM(IF(saldo_sep > 0, saldo_sep, 0))/1000000,2) saldo_sep,
-        ROUND(SUM(IF(saldo_oct > 0, saldo_oct, 0))/1000000,2) saldo_oct,
-        ROUND(SUM(IF(saldo_nov > 0, saldo_nov, 0))/1000000,2) saldo_nov,
-        ROUND(SUM(IF(saldo_dec > 0, saldo_dec, 0))/1000000,2) saldo_dec
+              $sql1 = mysqli_query($conn2,"SELECT CONCAT_WS(',',
+    saldo_jan,
+    saldo_feb,
+    saldo_mar,
+    saldo_apr,
+    saldo_may,
+    saldo_jun,
+    saldo_jul,
+    saldo_aug,
+    saldo_sep,
+    saldo_oct,
+    saldo_nov,
+    saldo_dec
+) AS data
+FROM (
+    SELECT 
+        IF(MONTH(CURDATE())>=1, ROUND(SUM(IF(saldo_jan>0,saldo_jan,0))/1000000,2),0) saldo_jan,
+        IF(MONTH(CURDATE())>=2, ROUND(SUM(IF(saldo_feb>0,saldo_feb,0))/1000000,2),0) saldo_feb,
+        IF(MONTH(CURDATE())>=3, ROUND(SUM(IF(saldo_mar>0,saldo_mar,0))/1000000,2),0) saldo_mar,
+        IF(MONTH(CURDATE())>=4, ROUND(SUM(IF(saldo_apr>0,saldo_apr,0))/1000000,2),0) saldo_apr,
+        IF(MONTH(CURDATE())>=5, ROUND(SUM(IF(saldo_may>0,saldo_may,0))/1000000,2),0) saldo_may,
+        IF(MONTH(CURDATE())>=6, ROUND(SUM(IF(saldo_jun>0,saldo_jun,0))/1000000,2),0) saldo_jun,
+        IF(MONTH(CURDATE())>=7, ROUND(SUM(IF(saldo_jul>0,saldo_jul,0))/1000000,2),0) saldo_jul,
+        IF(MONTH(CURDATE())>=8, ROUND(SUM(IF(saldo_aug>0,saldo_aug,0))/1000000,2),0) saldo_aug,
+        IF(MONTH(CURDATE())>=9, ROUND(SUM(IF(saldo_sep>0,saldo_sep,0))/1000000,2),0) saldo_sep,
+        IF(MONTH(CURDATE())>=10, ROUND(SUM(IF(saldo_oct>0,saldo_oct,0))/1000000,2),0) saldo_oct,
+        IF(MONTH(CURDATE())>=11, ROUND(SUM(IF(saldo_nov>0,saldo_nov,0))/1000000,2),0) saldo_nov,
+        IF(MONTH(CURDATE())>=12, ROUND(SUM(IF(saldo_dec>0,saldo_dec,0))/1000000,2),0) saldo_dec
     FROM b_trial_balance_$tahun a
-    INNER JOIN mastercoa_v2 b ON b.no_coa = a.no_coa
-    WHERE ind_categori5 = 'KAS') x");
+    INNER JOIN mastercoa_v2 b
+        ON b.no_coa = a.no_coa
+    WHERE ind_categori5 = 'KAS'
+) x");
               $row1 = mysqli_fetch_array($sql1);
               $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
               echo $data_bar1;
