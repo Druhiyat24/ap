@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 ini_set('memory_limit', '4096M');
 set_time_limit(0);
 
@@ -1669,6 +1669,26 @@ if(strpos($id, '108') !== false){
       <a href="../AP/adjust-subcont.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-pencil-square fa-fw "></span>
       <span class="menu-collapsed">Update Subcontractor</span>
+      </a>
+
+      </ul>
+      </li>';
+  }
+
+
+  if(strpos($id, '85') !== false){
+      echo '           
+      <li class="dropdown-submenu ">
+      <a class="dropdown-item bg-dark text-white" href="#">
+      <span s class="fa fa-tasks fa-fw "></span>
+      <span class="menu-collapsed">Item General</span>
+      </a>
+      <ul class="dropdown-menu bg-dark text-white" role="menu">
+
+      
+      <a href="../AP/item_general_usage.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-cart-arrow-down fa-fw "></span>
+      <span class="menu-collapsed">Item General Usage</span>
       </a>
 
       </ul>
