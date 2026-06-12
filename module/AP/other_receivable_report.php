@@ -366,6 +366,13 @@ while($row2 = mysqli_fetch_array($sql)){
     $nm_memo = $row2['nm_memo'];
     $sisa_dn = isset($row2['sisa_dn']) ? $row2['sisa_dn'] : 0;
     $sisa_dn_bfr = isset($row2['sisa_dn_bfr']) ? $row2['sisa_dn_bfr'] : 0;
+    if ($row2['nm_memo'] != 'MEMO/NAG/2402/01544') {
+      $sisa_dn = $sisa_dn;
+      $sisa_dn_bfr = $sisa_dn_bfr;
+    }else{
+      $sisa_dn = 0;
+      $sisa_dn_bfr = 0;
+    }
     $ost_dn = isset($row2['ost_dn']) ? $row2['ost_dn'] : 0;
 
     $sql_mj_b = mysqli_query($conn2,"select no_journal,tgl_journal,sum((credit * rate) - (debit * rate)) total, rate,((credit * rate) - (debit * rate)) total2, reff_doc from tbl_list_journal where no_coa = '1.34.04' and no_journal like '%GM/%' and tgl_journal < '$start_date' and reff_doc = '$nm_memo'");

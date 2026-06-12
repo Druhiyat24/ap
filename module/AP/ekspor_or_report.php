@@ -91,6 +91,13 @@ SELECT nm_memo, tgl_memo,no_invoice,supplier,buyer,total_memo from (SELECT b.id,
         $no++;
         $sisa_dn = isset($row2['sisa_dn']) ? $row2['sisa_dn'] : 0;
         $sisa_dn_bfr = isset($row2['sisa_dn_bfr']) ? $row2['sisa_dn_bfr'] : 0;
+        if ($row2['nm_memo'] != 'MEMO/NAG/2402/01544') {
+      $sisa_dn = $sisa_dn;
+      $sisa_dn_bfr = $sisa_dn_bfr;
+    }else{
+      $sisa_dn = 0;
+      $sisa_dn_bfr = 0;
+    }
         $ost_dn = isset($row2['ost_dn']) ? $row2['ost_dn'] : 0;
 
         $nm_memo = $row2['nm_memo'];
