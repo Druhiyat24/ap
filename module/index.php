@@ -1622,12 +1622,6 @@ if(strpos($id, '108') !== false){
         $menu = isset($rss['ket']) ? $rss['ket'] :0;
         $id = isset($rss['id']) ? $rss['id'] :0;
 
-
-        $queryss = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%Cost Accounting%' and menurole.status = 'Menu' group by username");
-      while($rss = mysqli_fetch_array($queryss)){
-        $menu = isset($rss['ket']) ? $rss['ket'] :0;
-        $id = isset($rss['id']) ? $rss['id'] :0;
-
     }           
 
     if(strpos($id, '85') !== false){
