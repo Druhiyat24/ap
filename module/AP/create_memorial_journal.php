@@ -724,6 +724,15 @@ function updateCostCenter(profCtr, noCoa, row) {
             data: { prof_ctr: profCtr , no_coa: noCoa },  // Kirim data prof_ctr ke server
             dataType: 'json',
             success: function (response) {
+                // Kalau Profit Center / COA baris ini sudah berubah sejak request ini dikirim,
+                // berarti ada request lain yang lebih baru sedang/sudah mengisi dropdown ini.
+                // Response yang basi ini diabaikan supaya tidak ikut menambah opsi yang salah.
+                const currentProfCtr = $(row).find('select.prof_ctr').val() || '-';
+                const currentNoCoa = $(row).find('select.no_coa').val() || '-';
+                if (currentProfCtr !== profCtr || currentNoCoa !== noCoa) {
+                    return;
+                }
+
                 if (response && response.length > 0) {
                     $.each(response, function (index, costCtr) {
                         costCtrDropdown.append(
@@ -757,26 +766,14 @@ $('#profit_center').on('change', function(){
         let row = $(this);
 
         /* set profit center row */
+        /* trigger('change') akan memanggil handler '.prof_ctr' di atas,
+           yang sudah memanggil updateCostCenter() sendiri (lihat baris ~685).
+           Jangan panggil updateCostCenter() lagi di sini, karena akan membuat
+           2 request AJAX paralel untuk baris yang sama dan menyebabkan
+           race condition (opsi cost center basi ikut tampil). */
         row.find('.prof_ctr').val(pcHeader).trigger('change');
 
         console.log("Row PC diubah :", pcHeader);
-
-        /* clear cost center */
-
-        let cc = row.find('.nomor_cc');
-
-        cc.selectpicker('destroy');
-        cc.empty();
-        cc.append('<option value="-"> - </option>');
-        cc.selectpicker('refresh');
-
-        console.log("Cost Center di clear");
-
-        /* ambil coa untuk reload CC */
-
-        let coa = row.find('.no_coa').val() || '-';
-
-        updateCostCenter(pcHeader, coa, row);
 
     });
 

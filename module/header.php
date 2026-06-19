@@ -725,6 +725,24 @@ echo'</ul>
                     </a>
                     </ul>
                     </li>';
+
+                    //NEW PAYMENT VOUCHER
+
+                    // echo '
+                    // <li class="dropdown-submenu ">
+                    // <a class="dropdown-item bg-dark text-white" href="#">
+                    // <span s class="fa fa-credit-card fa-fw "></span>
+                    // <span class="menu-collapsed">Payment Voucher</span>
+                    // </a>
+                    // <ul class="dropdown-menu bg-dark text-white" role="menu">
+
+                    // <a href="../AP/payment-voucher-ap.php" class="dropdown-item bg-dark text-white">
+                    // <span class="fa fa-ticket fa-fw "></span>
+                    // <span class="menu-collapsed">Payment Voucher</span>
+                    // </a>
+
+                    // </ul>
+                    // </li>';
                 }else{
                     echo '';
                 }
@@ -799,7 +817,7 @@ echo'</ul>
                 ?>
 
                 <?php
-                $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%Closing%' and useraccess.menu != 'Closing Periode'");
+                $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%Closing%' and useraccess.menu != 'Closing Periode' and useraccess.menu != 'Closing Fabric Warehouse'");
                 $rs = mysqli_fetch_array($querys);
                 $menu = isset($rs['menu']) ? $rs['menu'] :0;
                 $id = isset($rs['id']) ? $rs['id'] :0;
@@ -1666,6 +1684,10 @@ if(strpos($id, '108') !== false){
       <span class="fa fa-pencil-square fa-fw "></span>
       <span class="menu-collapsed">Update Trx In</span>
       </a>
+      <a href="../AP/update_np_revisi.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-pencil-square fa-fw "></span>
+      <span class="menu-collapsed">Revisi Barcode</span>
+      </a>
       <a href="../AP/adjust-subcont.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-pencil-square fa-fw "></span>
       <span class="menu-collapsed">Update Subcontractor</span>
@@ -1694,6 +1716,68 @@ if(strpos($id, '108') !== false){
       </ul>
       </li>';
   }
+
+      $query_update = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Update BPB Fabric' and menurole.status = 'Menu' group by username");
+      while($rs_update = mysqli_fetch_array($query_update)){
+      $id_update = isset($rs_update['id']) ? $rs_update['id'] :0;
+    }
+
+      echo '
+      <li class="dropdown-submenu ">
+      <a class="dropdown-item bg-dark text-white" href="#">
+      <span s class="far fa-edit fa-fw "></span>
+      <span class="menu-collapsed">Update BPB</span>
+      </a>
+      <ul class="dropdown-menu bg-dark text-white" role="menu">';
+
+      if(strpos($id, '112') !== false){
+        echo '<a href="../AP/update-bpb-fabric.php" class="dropdown-item bg-dark text-white">
+        <span class="fas fa-warehouse fa-fw "></span>
+        <span class="menu-collapsed">Fabric</span>
+        </a>';
+
+        $pendingApproveCount = 0;
+        $cntApproveRs = mysqli_query($conn1, "SELECT COUNT(*) as cnt FROM update_bpb_fabric_h WHERE status NOT IN ('Approved','Cancel')");
+        if ($cntApproveRs) {
+            $cntApproveRow = mysqli_fetch_assoc($cntApproveRs);
+            $pendingApproveCount = (int) ($cntApproveRow['cnt'] ?? 0);
+        }
+
+        echo '<a href="../AP/approve_update_bpb_fabric.php" class="dropdown-item bg-dark text-white d-flex justify-content-between align-items-center">
+        <span><span class="fas fa-check-circle fa-fw "></span>
+        <span class="menu-collapsed">Approve Fabric</span></span>';
+        if ($pendingApproveCount > 0) {
+            echo '<span class="badge badge-danger ml-2">' . $pendingApproveCount . '</span>';
+        }
+        echo '</a>';
+      }
+
+      echo '
+      </ul>
+      </li>';
+
+      $query_close = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Closing Fabric Warehouse' and menurole.status = 'Menu' group by username");
+      while($rs_close = mysqli_fetch_array($query_close)){
+      $id_close = isset($rs_close['id']) ? $rs_close['id'] :0;
+    }
+
+      echo '
+      <li class="dropdown-submenu ">
+      <a class="dropdown-item bg-dark text-white" href="#">
+      <span class="fas fa-calendar-times fa-fw "></span>
+      <span class="menu-collapsed">Closing Period</span>
+      </a>
+      <ul class="dropdown-menu bg-dark text-white" role="menu">';
+
+  if(strpos($id_close, '111') !== false){
+      echo '<a href="../AP/ca_fabric_closing_periode.php" class="dropdown-item bg-dark text-white">
+      <span class="fas fa-warehouse fa-fw "></span>
+      <span class="menu-collapsed">Fabric Warehouse</span>
+      </a>';
+  }
+
+      echo '</ul>
+      </li>';
 
   ?>
 
