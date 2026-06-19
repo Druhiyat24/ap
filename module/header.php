@@ -1730,7 +1730,7 @@ if(strpos($id, '108') !== false){
       </a>
       <ul class="dropdown-menu bg-dark text-white" role="menu">';
 
-      if(strpos($id, '112') !== false){
+      if(strpos($id_update, '112') !== false){
         echo '<a href="../AP/update-bpb-fabric.php" class="dropdown-item bg-dark text-white">
         <span class="fas fa-warehouse fa-fw "></span>
         <span class="menu-collapsed">Fabric</span>
