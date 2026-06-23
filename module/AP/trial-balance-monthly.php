@@ -46,7 +46,7 @@
                echo $_POST['start_date'];
             }
             else{
-               echo date("M Y",strtotime('2025-01-01'));
+               echo date("M Y",strtotime('2026-01-01'));
             } ?>" 
             placeholder="Tanggal Awal">
             </div>
@@ -98,12 +98,18 @@
 
         <a style="padding-right: 5px;" target="_blank" href="ekspor_spl_monthly.php?start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 14px;color: #fff;text-shadow: 1px 1px 1px #000"> Excel SPL</i></button></a>
 
-        <a style="padding-right: 5px;" target="_blank" href="ekspor_cf_direct_monthly.php?start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 14px;color: #fff;text-shadow: 1px 1px 1px #000"> Excel CF Direct</i></button></a>
+        
 
+        <a style="padding-right: 5px;" target="_blank" href="ekspor_cf_direct_monthly_fix.php?start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 14px;color: #fff;text-shadow: 1px 1px 1px #000"> Excel CF Direct</i></button></a>
 
-        <a style="padding-right: 5px;" target="_blank" href="ekspor_cf_indirect_monthly.php?start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 14px;color: #fff;text-shadow: 1px 1px 1px #000"> Excel CF Indirect</i></button></a>
+        <a style="padding-right: 5px;" target="_blank" href="ekspor_cf_indirect_monthly_fix.php?start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 14px;color: #fff;text-shadow: 1px 1px 1px #000"> Excel CF Indirect</i></button></a>
 
         ';
+
+        // <a style="padding-right: 5px;" target="_blank" href="ekspor_cf_direct_monthly.php?start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 14px;color: #fff;text-shadow: 1px 1px 1px #000"> Excel CF Direct</i></button></a>
+
+
+        // <a style="padding-right: 5px;" target="_blank" href="ekspor_cf_indirect_monthly.php?start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 14px;color: #fff;text-shadow: 1px 1px 1px #000"> Excel CF Indirect</i></button></a>
 
         // if($status == 'ALL'){
         //     echo '<a target="_blank" href="ekspor_lp_all.php?nama_supp='.$nama_supp.' && status='.$status.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
