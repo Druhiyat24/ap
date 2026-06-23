@@ -380,9 +380,17 @@ while($row2 = mysqli_fetch_array($sql)){
     $val_mj_b = isset($row_mj_b['total']) ? $row_mj_b['total'] : 0;
 
     if ($val_mj_b > 0) {
-     $beg_balance = $row2['beg_balance'] - $val_mj_b;
+      if ($row2['nm_memo']== 'MEMO/NAG/2402/01544' && $start_date >= '2026-06-01') {
+        $beg_balance = 0; 
+      }else{
+        $beg_balance = $row2['beg_balance'] - $val_mj_b;
+      }
  }else{
-     $beg_balance = $row2['beg_balance'];
+     if ($row2['nm_memo']== 'MEMO/NAG/2402/01544' && $start_date >= '2026-06-01') {
+        $beg_balance = 0; 
+      }else{
+        $beg_balance = $row2['beg_balance'];
+      }
  }
 
         // $beg_balance = $row2['beg_balance'];
@@ -403,7 +411,11 @@ while($row2 = mysqli_fetch_array($sql)){
 }else{
     $forex = 0;
 }
-$end_balance = $beg_balance + $addition - $deduction - $val_mj - $forex; 
+
+
+  $end_balance = $beg_balance + $addition - $deduction - $val_mj - $forex; 
+
+
 if ($deduction2 > 0 and $ost_dn < 1 and $row2['nm_memo'] != 'MEMO/NAG/2402/01544') {
 }else{
     $ttl_beg +=$beg_balance;
