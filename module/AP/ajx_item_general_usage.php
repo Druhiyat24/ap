@@ -59,7 +59,7 @@ END AS coa
     left join reqnon_header r on a.id_jo = r.id 
     LEFT JOIN userpassword up on up.username = r.username
     LEFT JOIN b_master_cc cc on cc.no_cc = up.no_cc
-    where bpbno_int LIKE '%GEN%' AND m.n_id != '3' AND a.bpbdate >= '$start_date' AND a.bpbdate <= '$end_date' $where) a LEFT JOIN mastercoa_v2 b on b.no_coa = a.coa
+    where bpbno_int LIKE '%GEN%' AND m.n_id IN (1,2) AND a.bpbdate >= '$start_date' AND a.bpbdate <= '$end_date' $where) a LEFT JOIN mastercoa_v2 b on b.no_coa = a.coa
 ";
 
 /* ================= EXECUTE ================= */
