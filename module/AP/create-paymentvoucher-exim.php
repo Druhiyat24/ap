@@ -1814,7 +1814,7 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
     // sebagai jaring pengaman terakhir kalau saja disabled attribute ini bisa terlewat.
     function updateBalanceMemo() {
         var totalMemoH = parseFloat(document.getElementById('total_memo_h').value) || 0;
-        var totalH = parseFloat(document.getElementById('total_h').value) || 0;
+        var totalH = parseFloat(document.getElementById('nomrate_h').value) || 0;
         var balance = totalMemoH - totalH;
         var balanceField = document.getElementById('balance_memo');
 
@@ -2146,7 +2146,7 @@ function addListener(elm,index){
 <script type="text/javascript">
     $("#form-simpan").on("click", "#simpan", function(){
         var totalMemoHGuard = parseFloat(document.getElementById('total_memo_h').value) || 0;
-        var totalHGuard = parseFloat(document.getElementById('total_h').value) || 0;
+        var totalHGuard = parseFloat(document.getElementById('nomrate_h').value) || 0;
         if (Math.abs(totalMemoHGuard - totalHGuard) > 0.01) {
             Swal.fire('Error', 'Balance harus 0 sebelum bisa disimpan. Balance saat ini: ' + formatMoney(totalMemoHGuard - totalHGuard), 'error');
             return;
