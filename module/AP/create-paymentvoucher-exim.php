@@ -759,7 +759,7 @@
   inner join tbl_pv_memo_temp mtemp on mtemp.no_memo = a.nm_memo
     inner join tbl_list_journal lj on lj.no_journal = a.nm_memo
     left join master_pc pc on pc.kode_pc = a.profit_center
-  where lj.credit != 0 and mtemp.user = '$user' order by a.nm_memo asc",$conn1);
+  where lj.credit != 0 and mtemp.user = '$user' and lj.keterangan not like '%DISCOUNT%' order by a.nm_memo asc",$conn1);
     }else{
         $sqlpv = mysql_query("select id_h,nm_memo,tgl_memo,jns_trans, ditagihkan,nm_ctg,nm_sub_ctg,item_name,no_coa, nama_coa, id_cc,cc_name, keterangan,sum(biaya ) biaya from (select a.id_h,a.nm_memo,a.tgl_memo,a.jns_trans,IF(a.ditagihkan != 'Y','TIDAK','YA') ditagihkan,mdet.nm_ctg,mdet.nm_sub_ctg,it.item_name,map.no_coa, CONCAT( map.no_coa, ' ', map.nama_coa) nama_coa, map.id_cc,map.cc_name, UPPER(CONCAT(mdet.nm_sub_ctg,' (',ms.supplier, '), BUYER ',mb.supplier, ', ',a.jns_trans, ', ',inv_vendor)) keterangan,mdet.biaya, a.profit_center, CONCAT(pc.id_pc,' - ',pc.nama_pc) nama_pc from memo_h a
            inner join mastersupplier ms on a.id_supplier = ms.id_supplier
@@ -884,7 +884,7 @@ $id++;
 <div class="box footer">   
         <form id="form-simpan">
             <div class="form-row col">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 </br>
 
 <!--             <div class="input-group" >
@@ -916,7 +916,7 @@ $id++;
                 </select>
                 </div>
             <div class="input-group" >
-                <label for="nama_supp" class="col-form-label" style="width: 80px;"><b>PPN</b></label>
+                <label for="nama_supp" class="col-form-label" style="width: 120px;"><b>PPN</b></label>
                  <select class="form-control" name="pilih_ppn" id="pilih_ppn" data-live-search="true" onchange='changeValueTax2(this.value)' required>
                 <option value="" disabled selected="true">Select PPN</option>  
                 <?php 
@@ -943,6 +943,34 @@ $id++;
                 <input type="hidden" name="idtax" id="idtax" value="0">
             </div>
             </br>
+            <div class="input-group" >
+                <label for="nama_supp" class="col-form-label" style="width: 120px;"><b>Total Memo</b></label>
+                <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="total_memo" name="total_memo" placeholder="0.00" readonly value="<?php 
+            $sql = mysqli_query($conn2," select sum(biaya) biaya from tbl_pv_memo_temp where user = '$user' ");
+            $row = mysqli_fetch_array($sql);
+            $biaya = $row['biaya'];           
+            if(!empty($biaya)) {
+                echo number_format($biaya,2);
+            }
+            else{
+                echo '';
+            }?>">
+                 <input type="hidden" name="total_memo_h" id="total_memo_h" value="<?php
+            $sql = mysqli_query($conn2," select sum(biaya) biaya from tbl_pv_memo_temp where user = '$user' ");
+            $row = mysqli_fetch_array($sql);
+            $biaya = $row['biaya'];
+            if(!empty($biaya)) {
+                echo $biaya;
+            }
+            else{
+                echo '';
+            }?>">
+            </div>
+            </br>
+            <div class="input-group" >
+                <label for="nama_supp" class="col-form-label" style="width: 120px;"><b>Balance</b></label>
+                <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="balance_memo" name="balance_memo" placeholder="0.00" readonly>
+            </div>
         <!--     <div class="input-group" >
                 <label for="nama_supp" class="col-form-label" style="width: 80px;"><b>Tax (11%)</b></label>
                 <input type="checkbox" id="check_vat_baru" name="check_vat_baru" onclick="modal_input_vat_baru()">
@@ -951,10 +979,10 @@ $id++;
              
             
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
 
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 </br>
                 <div class="input-group" >
                 <label for="nama_supp" class="col-form-label" style="width: 180px;"><b>Total Without Tax</b></label>
@@ -1077,7 +1105,6 @@ $id++;
   <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
   <script language="JavaScript" src="../css/4.1.1/select2.full.min.js"></script>
   <script language="JavaScript" src="../css/4.1.1/sweetalert2.all.min.js"></script>
-  <script language="JavaScript" src="../css/4.1.1/sweetalert2.min.js"></script>
   <script language="JavaScript" src="../css/4.1.1/bootstrap-multiselect.min.js"></script>
     <script language="JavaScript" src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/js/select2.full.js"></script>
 
@@ -1328,7 +1355,7 @@ function deleteRow(tableID)
                     {
                     if (rowCount <= 1)
                         {
-                        alert("Tidak dapat menghapus semua baris.");
+                        Swal.fire('Error', 'Tidak dapat menghapus semua baris.', 'error');
                         break;
                         }
                     table.deleteRow(i);
@@ -1407,7 +1434,7 @@ function deleteRow(tableID)
                 }
             } catch(e)
     {
-    alert(e);
+    Swal.fire('Error', String(e.message || e), 'error');
     }
  }
  
@@ -1452,7 +1479,7 @@ function deleteRow(tableID)
                 }
             } catch(e)
     {
-    alert(e);
+    Swal.fire('Error', String(e.message || e), 'error');
     }
  }
 
@@ -1779,7 +1806,37 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
   }
 };
 </script>
-    
+
+<script type="text/javascript">
+    // Balance = Total Memo - Total. total_h dihitung ulang oleh banyak fungsi pajak/deduction
+    // berbeda di file ini, jadi dipantau pakai interval (bukan dipanggil manual di tiap fungsi)
+    // supaya tidak ada satupun jalur hitung yang terlewat. Save tetap diblok di handler #simpan
+    // sebagai jaring pengaman terakhir kalau saja disabled attribute ini bisa terlewat.
+    function updateBalanceMemo() {
+        var totalMemoH = parseFloat(document.getElementById('total_memo_h').value) || 0;
+        var totalH = parseFloat(document.getElementById('total_h').value) || 0;
+        var balance = totalMemoH - totalH;
+        var balanceField = document.getElementById('balance_memo');
+
+        balanceField.value = formatMoney(balance);
+
+        // Tombol Save tetap bisa diklik - validasi balance dilakukan di handler klik #simpan
+        // (munculkan Swal kalau belum 0), bukan dengan disable tombolnya.
+        if (Math.abs(balance) > 0.01) {
+            balanceField.style.color = '#c0392b';
+            balanceField.style.fontWeight = 'bold';
+        } else {
+            balanceField.style.color = '';
+            balanceField.style.fontWeight = '';
+        }
+    }
+
+    $(document).ready(function () {
+        updateBalanceMemo();
+        setInterval(updateBalanceMemo, 300);
+    });
+</script>
+
 
 <script type="text/javascript">
     $("input[name=txt_amount]").keyup(function(){
@@ -1966,7 +2023,7 @@ function addListener(elm,index){
                 },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
-                alert(xhr);
+                Swal.fire('Error', xhr.responseText || String(xhr), 'error');
             }
         });             
  
@@ -2001,7 +2058,7 @@ function addListener(elm,index){
                 },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
-                alert(xhr);
+                Swal.fire('Error', xhr.responseText || String(xhr), 'error');
             }
         });             
         });
@@ -2042,7 +2099,7 @@ function addListener(elm,index){
                 },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
-                alert(xhr);
+                Swal.fire('Error', xhr.responseText || String(xhr), 'error');
             }
         });             
         });
@@ -2077,7 +2134,7 @@ function addListener(elm,index){
                 },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
-                alert(xhr);
+                Swal.fire('Error', xhr.responseText || String(xhr), 'error');
             }
         });             
  
@@ -2088,7 +2145,14 @@ function addListener(elm,index){
 
 <script type="text/javascript">
     $("#form-simpan").on("click", "#simpan", function(){
-        var no_pv = document.getElementById('no_doc').value;  
+        var totalMemoHGuard = parseFloat(document.getElementById('total_memo_h').value) || 0;
+        var totalHGuard = parseFloat(document.getElementById('total_h').value) || 0;
+        if (Math.abs(totalMemoHGuard - totalHGuard) > 0.01) {
+            Swal.fire('Error', 'Balance harus 0 sebelum bisa disimpan. Balance saat ini: ' + formatMoney(totalMemoHGuard - totalHGuard), 'error');
+            return;
+        }
+
+        var no_pv = document.getElementById('no_doc').value;
         var rat_pv = document.getElementById('rat_pv').value;        
         var pv_date = document.getElementById('tgl_active').value;
         var nama_supp = document.getElementById('nama_supp').value;  
@@ -2130,7 +2194,7 @@ function addListener(elm,index){
                 },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
-                alert(xhr);
+                Swal.fire('Error', xhr.responseText || String(xhr), 'error');
             }
         });
         
@@ -2176,7 +2240,7 @@ function addListener(elm,index){
                 },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
-                alert(xhr);
+                Swal.fire('Error', xhr.responseText || String(xhr), 'error');
             }
         });
     }
@@ -2184,41 +2248,41 @@ function addListener(elm,index){
         }); 
     }
        if(document.getElementById('nama_supp').value == '' || document.getElementById('nama_supp').value == '-'){
-        alert("Please select Supplier");
+        Swal.fire('Error', 'Please select Supplier', 'error');
         document.getElementById('nama_supp').focus();
         }else if(document.getElementById('sup_doc').value == ''){
-        alert("Please Select Support Document");
+        Swal.fire('Error', 'Please Select Support Document', 'error');
         document.getElementById('sup_doc').focus();
         }else if(document.getElementById('ct_buyer').value == ''){
-        alert("Please select Charge to Buyer");
+        Swal.fire('Error', 'Please select Charge to Buyer', 'error');
         document.getElementById('ct_buyer').focus();
         }else if($('select[name=carabayar] option').filter(':selected').val() == '' || $('select[name=carabayar] option').filter(':selected').val() == '-'){
-        alert("Please select payment method");
+        Swal.fire('Error', 'Please select payment method', 'error');
         document.getElementById('carabayar').focus();
         }else if(document.getElementById('curre').value == ''){
-            alert("Please select currency");
+            Swal.fire('Error', 'Please select currency', 'error');
         document.getElementById('curre').focus();
         }else if(document.getElementById('forpay').value == '' || document.getElementById('forpay').value == '-'){
-        alert("Please select For payment");
+        Swal.fire('Error', 'Please select For payment', 'error');
         document.getElementById('forpay').focus();
         }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && $('select[name=frcc] option').filter(':selected').val() == ''){
-        alert("Please select From Account");
+        Swal.fire('Error', 'Please select From Account', 'error');
         document.getElementById('frcc').focus();
         }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && document.getElementById('forpay').value == 'Pemindah Bukuan Bank' && $('select[name=frcc] option').filter(':selected').val() == '-'){
-        alert("Please select From Account");
+        Swal.fire('Error', 'Please select From Account', 'error');
         document.getElementById('frcc').focus();
         }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && document.getElementById('forpay').value == 'Pemindah Bukuan Bank' && $('select[name=frcc] option').filter(':selected').val() != '-' && $('select[name=tocc] option').filter(':selected').val() == '-'){
-        alert("Please select To Account");
+        Swal.fire('Error', 'Please select To Account', 'error');
         document.getElementById('tocc').focus();
         }else if(document.getElementById('total_h').value == ''){
-        alert("Please Input Amount");
+        Swal.fire('Error', 'Please Input Amount', 'error');
         }else if(document.getElementById('total_h').value <= '0'){
-        alert("Amount can't be Minus");
+        Swal.fire('Error', "Amount can't be Minus", 'error');
         }else if(document.getElementById('total_h').value == '0.00'){
-        alert("Total Amount can't be Zero");
-        }else{               
-       
-            alert("data saved successfully");
+        Swal.fire('Error', "Total Amount can't be Zero", 'error');
+        }else{
+
+            Swal.fire({ icon: 'success', title: 'data saved successfully', timer: 1500, showConfirmButton: false });
         }
     });
 </script>
@@ -2252,7 +2316,7 @@ $("#select_all").click(function() {
                 },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
-                alert(xhr);
+                Swal.fire('Error', xhr.responseText || String(xhr), 'error');
             }
         });             
         });
