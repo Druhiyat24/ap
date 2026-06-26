@@ -29,7 +29,7 @@
             ?>
         </div>
 
-            <div class="col-md-3 mb-3">            
+            <div class="col-md-2 mb-3">            
             <label for="total" class="col-form-label" style="width: 150px;"><b>Payment Voucher Date</b></label>
                 <input type="text" style="font-size: 15px;" name="tgl_active" id="tgl_active" class="form-control tanggal" 
             value="<?php 
@@ -49,7 +49,7 @@
             </div>
 
             
-            <div class="col-md-4 mb-3" style="padding-top: 8px;">
+            <div class="col-md-3 mb-3" style="padding-top: 8px;">
             <label for="nama_supp"><b>Supplier</b></label>            
 <!--               <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true">
                 <option value="-" disabled selected="true">Select Supplier</option>                                                 
@@ -113,38 +113,41 @@
 
         <div class="form-row">
 
-<div class="col-md-4 mb-3">            
-            <label for="total" class="col-form-label" style="width: 150px;"><b>Supporting Document</b></label>
-                <input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="sup_doc" name="sup_doc" value="<?php             
+<div class="col-md-3 mb-3">
+    <label class="col-form-label"><b>Supporting Document</b></label>
 
-            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
-            $sql = mysqli_query($conn2," select GROUP_CONCAT(ket) as sup_doc from (select * from supp_doc_temp where ket != '' ) supp_doc_temp ");
-            $row = mysqli_fetch_array($sql);
-            $sup_doc = $row['sup_doc'];         
-    
-            // $top = 30;
+    <div class="input-group">
+        <input type="text"
+               readonly
+               style="font-size:14px;"
+               class="form-control"
+               id="sup_doc"
+               name="sup_doc"
+               value="<?php
+                    $sql = mysqli_query($conn2,"
+                        SELECT GROUP_CONCAT(ket SEPARATOR ', ') AS sup_doc
+                        FROM supp_doc_temp
+                        WHERE ket != ''
+                    ");
+                    $row = mysqli_fetch_array($sql);
+                    echo $row['sup_doc'];
+               ?>">
 
-            // if(!empty($nama_supp)) {
-                
-                  echo $sup_doc;  
-                
-            // }
-            // else{
-            //     echo '';
-            // } ?>">
-            </div>
+        <div class="input-group-append">
+            <button type="button"
+                    class="btn btn-info"
+                    id="btn5"
+                    data-toggle="modal"
+                    data-target="#mymodal5">
+                Select
+            </button>
+        </div>
+    </div>
+</div>
 
-            <div class="col-md-1 mb-3">            
-            <label for="total" class="col-form-label" style="width: 200px;"><b>Select</b></label>
-                <input style="border: 0;
-    line-height: 1;
-    padding: 10px 10px;
-    font-size: 1rem;
-    text-align: center;
-    color: #fff;
-    text-shadow: 1px 1px 1px #000;
-    border-radius: 6px;
-    background-color: rgb(95, 158, 160);" type="button" name="btn5" id="btn5" data-target="#mymodal5" data-toggle="modal" value="Select"> 
+            <div class="col-md-2 mb-3" style="padding-top: 8px;">
+            <label for="forpay"><b>For Payment</b></label> 
+            <input type="text" readonly style="font-size: 14px;" class="form-control" id="forpay" name="forpay" value="Export - Import">           
             </div>
 
             <div class="col-md-3 mb-3" style="padding-top: 8px;">
@@ -166,26 +169,14 @@
             }?>">           
             </div>
 
-            <div class="col-md-2 mb-3" style="padding-top: 8px;">
-            <label for="forpay"><b>For Payment</b></label> 
-            <input type="text" readonly style="font-size: 14px;" class="form-control" id="forpay" name="forpay" value="Export - Import">           
+            
+
+            <div class="col-md-3 mb-3">
             </div>
-            <div class="col-md-2 mb-3">
-            </div>
-            <div class="col-md-2 mb-3">            
-            <label for="total" class="col-form-label" style="width: 150px;"><b>Payment Date</b></label>
-                <input type="text" style="font-size: 15px;" name="tgl_pay" id="tgl_pay" class="form-control tanggal" 
-            value="<?php 
-            if(!empty($_POST['tgl_pay'])) {
-                echo $_POST['tgl_pay'];
-            }
-            else{
-                echo date("d-m-Y");
-            } ?>" autocomplete='off'>
-            </div>
+            
                 <div class="col-md-2 mb-3"> 
                     <label for="carabayar" class="col-form-label" style="width: 150px;">Pay Methods </label>               
-                <select class="form-control selectpicker" name="carabayar" id="carabayar" data-live-search="true" onchange="this.form.submit()">
+                <select class="form-control selectpicker" name="carabayar" id="carabayar" data-live-search="true">
                     <option value="" disabled selected="true">Choose pay method</option>  
                     <?php
                 $nama_supp ='';
@@ -229,19 +220,50 @@
         
                 </select> 
                 </div>
-                <?php 
+
+                <div class="col-md-2 mb-3">            
+            <label for="total" class="col-form-label" style="width: 150px;"><b>Payment Date</b></label>
+                <input type="text" style="font-size: 15px;" name="tgl_pay" id="tgl_pay" class="form-control tanggal" 
+            value="<?php 
+            if(!empty($_POST['tgl_pay'])) {
+                echo $_POST['tgl_pay'];
+            }
+            else{
+                echo date("d-m-Y");
+            } ?>" autocomplete='off'>
+            </div>
+
+            <div class="col-md-1 mb-3">            
+            <label for="total" class="col-form-label" style="width: 200px;"><b>Select No Memo</b></label>
+                <input style="border: 0;
+    line-height: 1;
+    padding: 10px 10px;
+    font-size: 1rem;
+    text-align: center;
+    color: #fff;
+    text-shadow: 1px 1px 1px #000;
+    border-radius: 6px;
+    background-color: rgb(95, 158, 160);" type="button" name="btn2" id="btn2" data-target="#mymodal2" data-toggle="modal" value="Select Memo"> 
+            </div>
+            <div class="col-md-6 mb-3"></div>
+
+                <?php
+                // From Account/To Account selalu dirender (tidak lagi tergantung
+                // $_POST['carabayar']), supaya ganti Pay Methods bisa toggle
+                // tampilannya lewat JS tanpa submit/reload halaman. Lihat
+                // handler $('#carabayar').on('change', ...) di bagian script.
                 $cb = isset($_POST['carabayar']) ? $_POST['carabayar']: null;
-                if($cb != 'CASH' ){
-                    echo '
-                    <div class="col-md-2 mb-3" style="padding-top: 8px;">
-            <label for="nama_supp"><b>From Account</b></label>            
+                $frccToccHideStyle = ($cb == 'CASH') ? 'display:none;' : '';
+                ?>
+                <div class="col-md-2 mb-3" id="div_frcc" style="padding-top: 8px;<?php echo $frccToccHideStyle; ?>">
+            <label for="nama_supp"><b>From Account</b></label>
               <select class="form-control selectpicker" name="frcc" id="frcc" data-dropup-auto="false" data-live-search="true">
-                <option value="" disabled selected="true">Select Account</option>';?> 
-                <?php 
+                <option value="" disabled selected="true">Select Account</option>
+                <?php
                        $frcc ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $frcc = isset($_POST['frcc']) ? $_POST['frcc']: null;
-                }                 
+                }
                 $sql = mysqli_query($conn1,"select coa_name as bank,curr,bank_account as akun from b_masterbank where status = 'Active' group by id");
                 while ($row = mysqli_fetch_array($sql)) {
                     $data = $row['bank'];
@@ -252,23 +274,23 @@
                         $isSelected = '';
 
                     }
-                    echo '<option value="'.$indata.'"'.$isSelected.'">'. $data .'</option>';    
+                    echo '<option value="'.$indata.'"'.$isSelected.'">'. $data .'</option>';
                         }
                         ?>
-                <?php echo'</select>
-                
+              </select>
+
                 <input type="hidden" style="font-size: 14px;" class="form-control" id="no_cek" name="no_cek" value="" autocomplete = "off">
                 <input type="hidden" style="font-size: 14px;" class="form-control" id="cek_date" name="cek_date" value="" autocomplete = "off">
                 <input type="hidden" style="font-size: 14px;" class="form-control" id="ke" name="ke" value="" autocomplete = "off">
                 <input type="hidden" style="font-size: 14px;" class="form-control" id="dari" name="dari" value="" autocomplete = "off">
                 <input type="hidden" style="font-size: 14px;" class="form-control" id="pay_for" name="pay_for" value="" autocomplete = "off">
-                   
+
             </div>
-            <div class="col-md-2 mb-3" style="padding-top: 8px;">
-            <label for="nama_supp"><b>To Account</b></label>            
+            <div class="col-md-2 mb-3" id="div_tocc" style="padding-top: 8px;<?php echo $frccToccHideStyle; ?>">
+            <label for="nama_supp"><b>To Account</b></label>
               <select class="form-control selectpicker" name="tocc" id="tocc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>';?> 
-                <?php 
+                <option value="-" disabled selected="true">Select Account</option>
+                <?php
 
                 $sql = mysqli_query($conn2,"select DISTINCT ms.supplier supplier from memo_h a
           inner join mastersupplier ms on a.id_supplier = ms.id_supplier
@@ -277,16 +299,16 @@
                     inner join tbl_pv_memo_temp mtemp on mtemp.no_memo = a.nm_memo
                     where mdet.cancel = 'N' and mdet.nm_sub_ctg != 'VAT' and mtemp.user = '$user' GROUP BY nm_memo order by a.id_h desc limit 1");
             $row = mysqli_fetch_array($sql);
-            $nama_supp = isset($row['supplier']) ? $row['supplier'] : null;           
+            $nama_supp_tocc = isset($row['supplier']) ? $row['supplier'] : null;
 
                        $tocc ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $tocc = isset($_POST['tocc']) ? $_POST['tocc']: null;
-                }   
-                if ($nama_supp == null OR $nama_supp == '') {
+                }
+                if ($nama_supp_tocc == null OR $nama_supp_tocc == '') {
                     $sql = mysqli_query($conn2,"SELECT ms.Supplier AS supplier, CONCAT(UPPER(TRIM(m.bank_name)),' ',UPPER(TRIM(m.bank_account))) AS bank, UPPER(TRIM(m.bank_account)) AS akun FROM master_supplier_bank m JOIN mastersupplier ms ON ms.id_supplier = m.id_supplier WHERE m.status = 'Active' AND m.tipe_sup = 'S' ORDER BY ms.Supplier, m.bank_name");
                 }else{
-                    $sql = mysqli_query($conn2,"SELECT ms.Supplier AS supplier, CONCAT(UPPER(TRIM(m.bank_name)),' ',UPPER(TRIM(m.bank_account))) AS bank, UPPER(TRIM(m.bank_account)) AS akun FROM master_supplier_bank m JOIN mastersupplier ms ON ms.id_supplier = m.id_supplier WHERE m.status = 'Active' AND m.tipe_sup = 'S' AND ms.Supplier = '$nama_supp' ORDER BY m.bank_name");
+                    $sql = mysqli_query($conn2,"SELECT ms.Supplier AS supplier, CONCAT(UPPER(TRIM(m.bank_name)),' ',UPPER(TRIM(m.bank_account))) AS bank, UPPER(TRIM(m.bank_account)) AS akun FROM master_supplier_bank m JOIN mastersupplier ms ON ms.id_supplier = m.id_supplier WHERE m.status = 'Active' AND m.tipe_sup = 'S' AND ms.Supplier = '$nama_supp_tocc' ORDER BY m.bank_name");
                 }
                 while ($row = mysqli_fetch_array($sql)) {
                     $data = $row['bank'];
@@ -300,50 +322,18 @@
                     echo '<option value="'.$indata.'"'.$isSelected.'">'. $data .'</option>';
                         }
                         ?>
-                <?php echo'</select>
-                   
-            </div>
-                    ';
-                }
-                else{
+              </select>
 
-                echo '
-                <div style = "display : none;">
-                <select class="form-control selectpicker" name="tocc" id="tocc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>
-                </select>
-                </div>
-                <div style = "display : none;">
-                <select class="form-control selectpicker" name="frcc" id="frcc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>
-                </select>
-                </div>
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="ke" name="ke" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="dari" name="dari" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="no_cek" name="no_cek" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="cek_date" name="cek_date" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="pay_for" name="pay_for" value="" autocomplete = "off">';
-        }?>
-
-        <div class="col-md-1 mb-3">            
-            <label for="total" class="col-form-label" style="width: 200px;"><b>Select No Memo</b></label>
-                <input style="border: 0;
-    line-height: 1;
-    padding: 10px 10px;
-    font-size: 1rem;
-    text-align: center;
-    color: #fff;
-    text-shadow: 1px 1px 1px #000;
-    border-radius: 6px;
-    background-color: rgb(95, 158, 160);" type="button" name="btn2" id="btn2" data-target="#mymodal2" data-toggle="modal" value="Select Memo"> 
             </div>
+
+        
         </div>
 
 
 <div class="form-row">
 
 
-        <div class="col-md-10 mb-3">            
+        <div class="col-md-6 mb-3">            
             <label for="pajak" class="col-form-label" style="width: 150px;"><b>Description</b></label>
                 <textarea style="font-size: 15px; text-align: left;" cols="30" rows="2" type="text" class="form-control " name="pesan" id="pesan" value="<?php             
             if(!empty($_POST['pesan'])) {
@@ -482,7 +472,7 @@
                 </div>  
             </div>
                 <div class="modal-footer">
-                    <button type="submit" id="send3" name="send3" class="btn btn-warning btn-lg" style="width: 100%;"><span class="fa fa-check"></span>
+                    <button type="button" id="send3" name="send3" class="btn btn-warning btn-lg" style="width: 100%;"><span class="fa fa-check"></span>
                         Save
                     </button>
                 </div>           
@@ -577,7 +567,7 @@
   
                 <div class="modal-footer">
                     <div class="col-md-2 mb-3">
-                    <button type="submit" id="savememo" name="savememo" class="btn btn-warning btn-lg" style="width: 100%;"><span class="fa fa-floppy-o" aria-hidden="true"></span>
+                    <button type="button" id="savememo" name="savememo" class="btn btn-warning btn-lg" style="width: 100%;"><span class="fa fa-floppy-o" aria-hidden="true"></span>
                         Save
                     </button>
                 </div>
@@ -680,7 +670,7 @@
     </div>
   
                 <div class="modal-footer">
-                    <button type="submit" id="send5" name="send5" class="btn btn-warning btn-lg" style="width: 100%;"><span class="fa fa-check"></span>
+                    <button type="button" id="send5" name="send5" class="btn btn-warning btn-lg" style="width: 100%;"><span class="fa fa-check"></span>
                         Save
                     </button>
                 </div>           
@@ -721,154 +711,8 @@
     </thead>
     
     <tbody id="tbody2">
-       
-        <?php
-    // $sqlpv = mysql_query("select a.id_h,a.nm_memo,a.tgl_memo,a.jns_trans,IF(a.ditagihkan != 'Y','TIDAK','YA') ditagihkan,mdet.nm_ctg,mdet.nm_sub_ctg,it.item_name,map.no_coa, CONCAT( map.no_coa, ' ', map.nama_coa) nama_coa, map.id_cc,map.cc_name, UPPER(CONCAT(mdet.nm_sub_ctg,' (',ms.supplier, '), BUYER ',mb.supplier, ', ',a.jns_trans, ', ',inv_vendor)) keterangan,mdet.biaya  from memo_h a
-    //       inner join mastersupplier ms on a.id_supplier = ms.id_supplier
-    //       inner join mastersupplier mb on a.id_buyer = mb.id_supplier
-    //       inner join memo_det mdet on mdet.id_h = a.id_h
-    //                 left join master_memo_item it on it.id = a.id_item
-    //                 inner join tbl_pv_memo_temp mtemp on mtemp.no_memo = a.nm_memo
-    //                 left join memo_mapping map on map.id_ctg = mdet.id_ctg and map.id_sub_ctg = mdet.id_sub_ctg and 
-    //                 map.jns_trans = a.jns_trans and map.ditagihkan = a.ditagihkan or map.id_item = a.id_item
-    //       where mdet.cancel = 'N' and mdet.nm_sub_ctg != 'VAT' and mtemp.user = '$user'
-    //       GROUP BY mdet.id order by mdet.id_h",$conn1);
 
-//     (select a.id_h,a.nm_memo,a.tgl_memo,a.jns_trans,IF(a.ditagihkan != 'Y','TIDAK','YA') ditagihkan,mdet.nm_ctg,mdet.nm_sub_ctg,it.item_name,map.no_coa, CONCAT( map.no_coa, ' ', map.nama_coa) nama_coa, map.id_cc,map.cc_name, UPPER(CONCAT(mdet.nm_sub_ctg,' (',ms.supplier, '), BUYER ',mb.supplier, ', ',a.jns_trans, ', ',inv_vendor)) keterangan,mdet.biaya  from memo_h a
-//            inner join mastersupplier ms on a.id_supplier = ms.id_supplier
-//            inner join mastersupplier mb on a.id_buyer = mb.id_supplier
-//            inner join memo_det mdet on mdet.id_h = a.id_h
-//            left join master_memo_item it on it.id = a.id_item
-//            inner join tbl_pv_memo_temp mtemp on mtemp.no_memo = a.nm_memo
-//            left join memo_mapping_v2 map on map.id_ctg = mdet.id_ctg and map.id_sub_ctg = mdet.id_sub_ctg and 
-//            map.jns_trans = a.jns_trans and map.ditagihkan = a.ditagihkan or map.id_item = a.id_item
-//            where mdet.cancel = 'N' and map.status != 'Y' and mtemp.user = '$user'
-//            GROUP BY mdet.id order by mdet.id_h)
-// UNION
-// (select a.id_h,a.nm_memo,a.tgl_memo,a.jns_trans,IF(a.ditagihkan != 'Y','TIDAK','YA') ditagihkan, '' nm_ctg,'' nm_sub_ctg,'' item_name,lj.no_coa, CONCAT( lj.no_coa, ' ', lj.nama_coa) nama_coa, lj.no_costcenter id_cc,lj.nama_costcenter cc_name,lj.keterangan,lj.credit biaya  from memo_h a
-//   inner join tbl_pv_memo_temp mtemp on mtemp.no_memo = a.nm_memo
-//     inner join tbl_list_journal lj on lj.no_journal = a.nm_memo
-//   where lj.credit != 0 and mtemp.user = '$user')
-
-    $sql_jurnal = mysqli_query($conn2,"select no_journal from tbl_list_journal a inner join tbl_pv_memo_temp b on b.no_memo = a.no_journal where b.user = '$user' limit 1");
-    $hasil = mysqli_fetch_array($sql_jurnal);
-    $no_journal = isset($hasil['no_journal']) ?  $hasil['no_journal'] : null;
-
-    if ($no_journal != null) {
-        $sqlpv = mysql_query("select a.id_h,a.nm_memo,a.tgl_memo,a.jns_trans,IF(a.ditagihkan != 'Y','TIDAK','YA') ditagihkan, '' nm_ctg,'' nm_sub_ctg,'' item_name,lj.no_coa, CONCAT( lj.no_coa, ' ', lj.nama_coa) nama_coa, lj.no_costcenter id_cc,lj.nama_costcenter cc_name,lj.keterangan,lj.credit biaya, lj.profit_center, CONCAT(pc.id_pc,' - ',pc.nama_pc) nama_pc  from memo_h a
-  inner join tbl_pv_memo_temp mtemp on mtemp.no_memo = a.nm_memo
-    inner join tbl_list_journal lj on lj.no_journal = a.nm_memo
-    left join master_pc pc on pc.kode_pc = a.profit_center
-  where lj.credit != 0 and mtemp.user = '$user' and lj.keterangan not like '%DISCOUNT%' order by a.nm_memo asc",$conn1);
-    }else{
-        $sqlpv = mysql_query("select id_h,nm_memo,tgl_memo,jns_trans, ditagihkan,nm_ctg,nm_sub_ctg,item_name,no_coa, nama_coa, id_cc,cc_name, keterangan,sum(biaya ) biaya from (select a.id_h,a.nm_memo,a.tgl_memo,a.jns_trans,IF(a.ditagihkan != 'Y','TIDAK','YA') ditagihkan,mdet.nm_ctg,mdet.nm_sub_ctg,it.item_name,map.no_coa, CONCAT( map.no_coa, ' ', map.nama_coa) nama_coa, map.id_cc,map.cc_name, UPPER(CONCAT(mdet.nm_sub_ctg,' (',ms.supplier, '), BUYER ',mb.supplier, ', ',a.jns_trans, ', ',inv_vendor)) keterangan,mdet.biaya, a.profit_center, CONCAT(pc.id_pc,' - ',pc.nama_pc) nama_pc from memo_h a
-           inner join mastersupplier ms on a.id_supplier = ms.id_supplier
-           inner join mastersupplier mb on a.id_buyer = mb.id_supplier
-           inner join memo_det mdet on mdet.id_h = a.id_h
-           left join master_memo_item it on it.id = a.id_item
-           left join master_pc pc on pc.kode_pc = a.profit_center
-           inner join tbl_pv_memo_temp mtemp on mtemp.no_memo = a.nm_memo
-           left join memo_mapping_v2 map on map.id_ctg = mdet.id_ctg and map.id_sub_ctg = mdet.id_sub_ctg and 
-           map.jns_trans = a.jns_trans and map.ditagihkan = a.ditagihkan or map.id_item = a.id_item
-           where mdet.cancel = 'N' and map.status != 'Y' and mtemp.user = '$user'
-           GROUP BY mdet.id order by mdet.id_h) a GROUP BY nm_memo,nm_ctg,nm_sub_ctg",$conn1);
-    }
-
-        $id = 1;
-     while($row = mysql_fetch_array($sqlpv)){
-                    $reff_date = $row['tgl_memo'];
-                    $amount = $row['biaya'];
-                    $coa_memo = $row['no_coa'];
-                    $cc_memo = $row['id_cc'];
-                    $pc_memo = $row['profit_center'];
-                    $ded_add = 0;
-                    if ($reff_date == '' || $reff_date == '1970-01-01') { 
-                        $reffdate = '';
-                    }else{
-                        $reffdate = date("d-m-Y",strtotime($row['tgl_memo'])); 
-                    } 
-
-    echo'<tr>
-            <td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>
-            <td >
-                <input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" value="'.$row['nm_memo'].'" autocomplete="off" >
-            </td>
-            <td hidden>
-                <input style="font-size: 12px" type="text" class="form-control" name="keterangan[]" placeholder="" value="'.$row['jns_trans'].'" autocomplete="off" >
-            </td>
-            <td hidden>
-                <input style="font-size: 12px" type="text" class="form-control" name="keterangan[]" placeholder="" value="'.$row['ditagihkan'].'" autocomplete="off" >
-            </td>
-            <td hidden>
-                <input style="font-size: 12px" type="text" class="form-control" name="keterangan[]" placeholder="" value="'.$row['nm_ctg'].'" autocomplete="off" >
-            </td>
-            <td hidden>
-                <input style="font-size: 12px" type="text" class="form-control" name="keterangan[]" placeholder="" value="'.$row['nm_sub_ctg'].'" autocomplete="off" >
-            </td>
-            <td hidden>
-                <input style="font-size: 12px" type="text" class="form-control" name="keterangan[]" placeholder="" value="'.$row['item_name'].'" autocomplete="off" >
-            </td>
-            <td>
-                <select style="font-size: 12px;" class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-width="150px" data-live-search="true" data-size="5"> <option value="'.$row['no_coa'].'" >'.$row['nama_coa'].'</option><option value="-" > - </option>';  $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2 where no_coa != '$coa_memo' order by no_coa asc"); foreach ($sql as $cc) : echo'<option value="'.$cc["id_coa"].'"> '.$cc["coa"].' </option>'; endforeach; ?>
-                <?php
-                echo '
-                </select>
-            </td>
-            <td >
-                <select style="font-size: 12px;" class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-width="150px" data-live-search="true" data-size="5"> <option value="'.$row['profit_center'].'" >'.$row['nama_pc'].'</option>';  $sql3 = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active' and kode_pc != '$pc_memo'"); foreach ($sql3 as $lpc) : echo'<option value="'.$lpc["kode_pc"].'"> '.$lpc["tampil"].' </option>'; endforeach; ?>
-                <?php
-                echo '
-                </select>
-            </td>
-            <td >
-                <select style="font-size: 12px;" class="form-control selectpicker nomor_cc" name="nomor_cc" id="nomor_cc" data-width="150px" data-live-search="true" data-size="5"> <option value="'.$row['id_cc'].'" >'.$row['cc_name'].'</option>';  $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name, CONCAT(no_cc,' ',cc_name) as cost_name from b_master_cc where status = 'Active' and no_cc != '$cc_memo'"); foreach ($sql2 as $ccs) : echo'<option value="'.$ccs["code_combine"].'"> '.$ccs["cost_name"].' </option>'; endforeach; ?>
-                <?php
-                echo '
-                </select>
-            </td>
-            <td>
-                <textarea style="font-size: 12px" type="text" class="form-control" name="keterangan[]" value="'.$row['keterangan'].'" placeholder="" autocomplete="off">'.$row['keterangan'].'</textarea>
-            </td>';
-            if ($amount == '0') {
-                echo '<td>
-                <input  style="text-align: right;font-size: 12px;" type="number" min="1" value="" class="form-control"  oninput="modal_input_amt(value)" autocomplete = "off" readonly>
-            </td>';
-            }else{
-            echo '<td>
-                <input  style="text-align: right;font-size: 12px;" type="number" min="1" value="'.$row['biaya'].'" class="form-control"  oninput="modal_input_amt(value)" autocomplete = "off">
-            </td>';
-        }
-
-        if ($ded_add == '0') {
-                echo '<td>
-                <input  style="text-align: right;font-size: 12px;" type="number" min="1" value="" class="form-control"  oninput="modal_input_dedadd(value)" autocomplete = "off" readonly>
-            </td>';
-            }else{
-            echo '<td>
-                <input  style="text-align: right;font-size: 12px;" type="number" min="1" value="" class="form-control"  oninput="modal_input_dedadd(value)" autocomplete = "off">
-            </td>';
-        }
-            echo '
-            <td>
-                <input  type="text" style="font-size: 12px;" name="tgl_tempo" id="tgl_tempo" value="" class="form-control tanggal" 
-         autocomplete="off" placeholder="dd-mm-yyyy" >
-            </td>
-            <td>
-                <select style = "font-size: 12px;" class="form-control" name="pphh" id="pphh"  onchange="input_pph()" data-width="120px" data-live-search="true" data-size="5"> <option data-idtax="0" value="0" > Non PPH </option>'; $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPH' GROUP BY idtax"); foreach ($sql as $cc) : echo'<option data-idtax="'.$cc['idtax'].'" value="'.$cc["percentage"].'"> '.$cc["kriteria2"].' </option>'; endforeach; ?>
-                <?php echo'</select>
-            </td>
-
-            <td >
-                <select style = "font-size: 12px;" class="form-control" name="ppnn" id="ppnn'.$id.'"  onchange="input_ppn()" data-width="120px" data-live-search="true" data-size="5"> <option data-idtax="" value="" > Non PPN </option>'; $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPN' GROUP BY idtax"); foreach ($sql as $cc) : echo'<option data-idtax="'.$cc['idtax'].'" value="'.$cc["percentage"].'"> '.$cc["kriteria2"].' </option>'; endforeach; ?>
-                <?php echo'</select>
-            </td>
-
-            <td><input name="chk_a[]" type="checkbox" class="checkall_a" value="" disabled></td>
-        </tr>';
-$id++;
-}
-?>
-<!-- id="pphh'.$id.'" -->
+        <?php include 'inc_memo_detail_rows_exim.php'; ?>
     </tbody>
     <tfoot>
           <tr>
@@ -1758,16 +1602,18 @@ function changeValueTax(id){
 
 function changeValueTax2(id){
     document.getElementById('idtax').value = prdName[id].idtax;
-    var total_pv = parseFloat(document.getElementById('nomrate_h').value,10) || 0;
-    var pph_h = parseFloat(document.getElementById('pph_h').value,10) || 0;
-    var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0;
-    var pph = id;
-    var twot2 = (total_pv).toFixed(2) * (pph /100);
-    var total_h = total_pv + pph_h + twot2 + ded_ad;
-    document.getElementsByName("ppn_h")[0].value = (twot2).toFixed(2);
-    document.getElementsByName("ppn")[0].value = formatMoney(twot2.toFixed(2));
-    document.getElementsByName("total_h")[0].value = (total_h).toFixed(2);
-            document.getElementsByName("total")[0].value = formatMoney(total_h.toFixed(2));
+
+    // Samakan PPN di semua baris detail dengan PPN yang baru dipilih di
+    // header ini, lalu hitung ulang total lewat input_ppn() supaya hasilnya
+    // konsisten dengan perhitungan per-baris (termasuk PPH per baris).
+    $('#tbody2 select[name=ppnn]').val(id);
+    input_ppn();
+
+    // input_ppn() otomatis mengosongkan & menonaktifkan #pilih_ppn kalau ada
+    // baris dengan PPN > 0 (asumsinya dipilih manual per baris). Di sini PPN
+    // baris justru berasal dari pilihan header ini, jadi kembalikan supaya
+    // dropdown-nya tetap kelihatan terpilih dan bisa diganti lagi.
+    $('#pilih_ppn').prop('disabled', false).val(id);
 }
   </script>
 
@@ -1834,6 +1680,20 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
     $(document).ready(function () {
         updateBalanceMemo();
         setInterval(updateBalanceMemo, 300);
+    });
+</script>
+
+<script type="text/javascript">
+    // Toggle tampilan From/To Account berdasarkan Pay Methods tanpa submit
+    // form/reload halaman. Sebelumnya pakai onchange="this.form.submit()"
+    // yang reload seluruh halaman tiap ganti Pay Methods.
+    $('#carabayar').on('change', function () {
+        var isCash = ($(this).val() === 'CASH');
+        if (isCash) {
+            $('#div_frcc, #div_tocc').hide();
+        } else {
+            $('#div_frcc, #div_tocc').show();
+        }
     });
 </script>
 
@@ -2035,35 +1895,48 @@ function addListener(elm,index){
 
 <script type="text/javascript">
     $("#modal-form5").on("click", "#send5", function(){
-        $("input[type=checkbox]:checked").each(function () {
+        // Kirim SATU request ke save_sup_doc_exim.php berisi semua item yang
+        // dicentang. Endpoint itu membersihkan dulu baris milik sesi ini lalu
+        // insert ulang sesuai checklist saat ini - jadi kalau sebelumnya
+        // pilih PO lalu ganti ke SO, PO yang lama ikut terhapus (sebelumnya
+        // pakai insertdoc.php per-checkbox yang tidak pernah menghapus
+        // pilihan lama, jadi pilihan numpuk terus).
+        var $btn = $(this);
+        if ($btn.data('saving')) {
+            return;
+        }
+        $btn.data('saving', true).prop('disabled', true);
+
         var doc_number = document.getElementById('no_doc').value;
-        var unik_code = document.getElementById('unik_code').value;        
-        var data = $(this).closest('tr').find('td:eq(7) input').val();
-         
-             
+        var unik_code = document.getElementById('unik_code').value;
+        var items = [];
+
+        $("#doc_support input[type=checkbox]:checked").each(function () {
+            var data = $(this).closest('tr').find('td:eq(7) input').val();
+            if (data) { items.push(data); }
+        });
+
         $.ajax({
-            type:'POST',
-            url:'insertdoc.php',
-            data: {'doc_number':doc_number, 'unik_code':unik_code, 'data':data},
+            type: 'POST',
+            url: 'save_sup_doc_exim.php',
+            dataType: 'json',
+            data: { 'doc_number':doc_number, 'unik_code':unik_code, 'items': JSON.stringify(items) },
             cache: 'false',
-            close: function(e){
-                e.preventDefault();
+            success: function (response) {
+                $btn.data('saving', false).prop('disabled', false);
+                if (response && response.success) {
+                    $('#sup_doc').val(response.sup_doc);
+                    $('#mymodal5').modal('hide');
+                } else {
+                    Swal.fire('Error', (response && response.error) || 'Gagal menyimpan Supporting Document.', 'error');
+                }
             },
-            success: function(response){
-                console.log(response);
-                // $('#modal-form2').modal('toggle');
-                // $('#modal-form2').modal('hide');
-                 // alert("Data saved successfully");
-                window.location.reload(false);
-                },
             error: function (xhr, ajaxOptions, thrownError) {
+                $btn.data('saving', false).prop('disabled', false);
                 console.log(xhr);
                 Swal.fire('Error', xhr.responseText || String(xhr), 'error');
             }
-        });             
         });
-                // return false; 
- 
     });
 
 
@@ -2071,40 +1944,63 @@ function addListener(elm,index){
 
 <script>
     $("#modal-form2").on("click", "#savememo", function(){
-        $("input[type=checkbox]:checked").each(function () {
+        // Cegah klik ganda - kalau request sebelumnya masih jalan, klik kedua
+        // diabaikan total. Tanpa ini, modal yang lambat menutup (lihat bawah)
+        // membuat user mudah klik Save lagi sebelum request pertama selesai,
+        // sehingga memo yang sama ke-insert dua kali (double).
+        var $btn = $(this);
+        if ($btn.data('saving')) {
+            return;
+        }
+        $btn.data('saving', true).prop('disabled', true);
+
+        var memoPromises = [];
+
+        $("#table-memo input[type=checkbox]:checked").each(function () {
         var no_memo = $(this).closest('tr').find('td:eq(1)').attr('value');
         var tgl_memo = $(this).closest('tr').find('td:eq(2)').attr('value');
         var jenis_transaksi = $(this).closest('tr').find('td:eq(3)').attr('value');
         var supplier = $(this).closest('tr').find('td:eq(4)').attr('value');
         var biaya = $(this).closest('tr').find('td:eq(5)').attr('value');
         var user = '<?php echo $user ?>';
-             
-        $.ajax({
+
+        memoPromises.push($.ajax({
             type:'POST',
             url:'insert_memo_temp.php',
             data: {'no_memo':no_memo, 'tgl_memo':tgl_memo,'jenis_transaksi':jenis_transaksi, 'supplier':supplier, 'biaya':biaya, 'user':user},
             cache: 'false',
-            close: function(e){
-                e.preventDefault();
-                // return false; 
-
-            },
-            success: function(response){
-                // console.log(response);
-                $('#modal-form2').modal('toggle');
-                $('#modal-form2').modal('hide');
-                 // alert(response);
-                // window.location.reload(false);
-                // return false; 
-                },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
                 Swal.fire('Error', xhr.responseText || String(xhr), 'error');
             }
-        });             
+        }));
         });
- 
-                // return false; 
+
+        $.when.apply($, memoPromises).then(function(){
+            // Tutup modal SEGERA setelah insert selesai - jangan tunggu
+            // refresh tabel detail (request kedua, ada banyak query COA/PC/CC
+            // di server). Sebelumnya modal baru ditutup setelah KEDUA request
+            // selesai, jadi kelihatan macam modalnya tidak langsung close.
+            $('#mymodal2').modal('hide');
+            $btn.data('saving', false).prop('disabled', false);
+
+            $.getJSON('get_memo_detail_exim.php', function(data){
+                $('#tbody2').html(data.rows_html);
+                $('#tbody2 .selectpicker').selectpicker();
+                $('#tbody2 .tanggal').datepicker({ format: "dd-mm-yyyy", autoclose: true });
+                $('#nama_supp').val(data.nama_supp);
+                $('#ct_buyer').val(data.ct_buyer);
+                $('#total_memo').val(data.biaya_formatted);
+                $('#total_memo_h').val(data.biaya);
+                $('#nomrate1').val(data.biaya_formatted);
+                $('#nomrate_h').val(data.biaya);
+                $('#total').val(data.biaya_formatted);
+                $('#total_h').val(data.biaya);
+                updateBalanceMemo();
+            });
+        }, function(){
+            $btn.data('saving', false).prop('disabled', false);
+        });
     });
 </script>
 
@@ -2143,8 +2039,28 @@ function addListener(elm,index){
 
 </script> 
 
+<script>
+let coaWajibCC = [];
+
+// Load sekali saat halaman dibuka - tanpa reload, cuma ambil daftar COA yang
+// wajib isi Cost Center dari get_coa_wajib_cc.php (sama seperti di
+// create-memorial-journal.php / create-out-bank.php dll).
+$.getJSON('get_coa_wajib_cc.php', function(data){
+    coaWajibCC = data;
+    console.log("COA wajib CC:", coaWajibCC);
+});
+</script>
+
 <script type="text/javascript">
     $("#form-simpan").on("click", "#simpan", function(){
+        // Cegah klik ganda saat request masih jalan (lihat guard yang sama
+        // di #savememo dan #send5 - klik dobel sebelum request pertama
+        // selesai bisa membuat PV/baris detail tersimpan dua kali).
+        var $btn = $(this);
+        if ($btn.data('saving')) {
+            return;
+        }
+
         var totalMemoHGuard = parseFloat(document.getElementById('total_memo_h').value) || 0;
         var totalHGuard = parseFloat(document.getElementById('nomrate_h').value) || 0;
         if (Math.abs(totalMemoHGuard - totalHGuard) > 0.01) {
@@ -2178,112 +2094,176 @@ function addListener(elm,index){
         var pilih_pph = document.getElementById('pilih_pph').value;
         var create_user = '<?php echo $user; ?>';
 
-        if (total >= '1' && curr !='' && pay_mth != '' && forpay != '' && pay_mth == 'CASH' && ctb != '' && nama_supp != '' || total >= '1' && curr !='' && forpay != '' && pay_mth != '' && pay_mth != 'CASH' && ctb != '' && nama_supp != '' && frcc != '') {
-        $.ajax({
-            type:'POST',
-            url:'insertpv_h.php',
-            data: {'rat_pv':rat_pv, 'no_pv':no_pv, 'pv_date':pv_date, 'nama_supp':nama_supp, 'sup_doc':sup_doc, 'ctb':ctb, 'pay_date':pay_date, 'pay_mth':pay_mth, 'curr':curr, 'forpay':forpay, 'frcc':frcc, 'tocc':tocc, 'no_cek':no_cek, 'cek_date':cek_date, 'ke':ke, 'dari':dari, 'pesan':pesan, 'subtotal':subtotal, 'adjust':adjust, 'pph':pph, 'ppn':ppn, 'total':total, 'pilih_ppn':pilih_ppn, 'pilih_pph':pilih_pph, 'create_user':create_user},
-            cache: 'false',
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){
-                console.log(response);
-                //  // alert(response);
-                // window.location = 'payment-voucher.php';
-                },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                Swal.fire('Error', xhr.responseText || String(xhr), 'error');
-            }
-        });
-        
-                        
-
-        $("input[type=checkbox]:checked").each(function () {
-        var doc_number = document.getElementById('no_doc').value;        
-        var no_coa = $(this).closest('tr').find('td:eq(7)').find('select[name=nomor_coa] option').filter(':selected').val(); 
-        var prof_ctr = $(this).closest('tr').find('td:eq(8)').find('select[id=prof_ctr] option').filter(':selected').val(); 
-        var no_cc = $(this).closest('tr').find('td:eq(9)').find('select[name=nomor_cc] option').filter(':selected').val();      
-        var no_ref = $(this).closest('tr').find('td:eq(1) input').val();                               
-        var ref_date = '';
-        var deskripsi = $(this).closest('tr').find('td:eq(10) textarea').val();                               
-        var amount = $(this).closest('tr').find('td:eq(11) input').val() || 0;
-        var due_date = $(this).closest('tr').find('td:eq(13) input').val();
-        var ded_add = $(this).closest('tr').find('td:eq(12) input').val() || 0;
-        var pph = $(this).closest('tr').find('td:eq(14)').find('select[name=pphh] option').filter(':selected').val() || 0;
-        var idtax = $(this).closest('tr').find('td:eq(14)').find('select[name=pphh] option').filter(':selected').attr('data-idtax');
-        var ppn = $(this).closest('tr').find('td:eq(15)').find('select[name=ppnn] option').filter(':selected').val() || document.getElementById('pilih_ppn').value;
-        var id_ppn = $(this).closest('tr').find('td:eq(16)').find('select[name=ppnn] option').filter(':selected').attr('data-idtax') || document.getElementById('idtax').value;
-        var total_h = document.getElementById('total_h').value || 0;
-        var curr = document.getElementById('curre').value; 
-        var forpay = document.getElementById('forpay').value;
-        var pay_mth = $('select[name=carabayar] option').filter(':selected').val(); 
-        var nama_supp = document.getElementById('nama_supp').value;
-        var ctb = document.getElementById('ct_buyer').value;
-        var user = '<?php echo $user; ?>';
-
-        if (total_h >= '1' && curr !='' && pay_mth != '' && forpay != '' && ctb != '' && nama_supp != '' || total_h >= '1' && curr !='' && pay_mth != '' && forpay != '' && ctb != '' && nama_supp != '') { 
-        $.ajax({
-            type:'POST',
-            url:'insertpv.php',
-            data: {'doc_number':doc_number, 'no_coa':no_coa, 'prof_ctr':prof_ctr, 'no_cc':no_cc, 'no_ref':no_ref, 'ref_date':ref_date, 'deskripsi':deskripsi, 'amount':amount, 'due_date':due_date, 'ded_add':ded_add, 'pph':pph, 'idtax':idtax, 'ppn':ppn, 'id_ppn':id_ppn, 'user':user},
-            cache: 'false',
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){
-                console.log(response);
-                  // alert(response);
-                
-                window.location = 'payment-voucher.php';
-                },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                Swal.fire('Error', xhr.responseText || String(xhr), 'error');
-            }
-        });
-    }
-    
-        }); 
-    }
-       if(document.getElementById('nama_supp').value == '' || document.getElementById('nama_supp').value == '-'){
+        // Validasi dulu SEBELUM kirim ajax apapun, supaya data invalid tidak
+        // pernah mulai terkirim (sebelumnya validasi ini baru dicek setelah
+        // semua ajax sudah ditembak).
+        if(document.getElementById('nama_supp').value == '' || document.getElementById('nama_supp').value == '-'){
         Swal.fire('Error', 'Please select Supplier', 'error');
         document.getElementById('nama_supp').focus();
+        return;
         }else if(document.getElementById('sup_doc').value == ''){
         Swal.fire('Error', 'Please Select Support Document', 'error');
         document.getElementById('sup_doc').focus();
+        return;
         }else if(document.getElementById('ct_buyer').value == ''){
         Swal.fire('Error', 'Please select Charge to Buyer', 'error');
         document.getElementById('ct_buyer').focus();
+        return;
         }else if($('select[name=carabayar] option').filter(':selected').val() == '' || $('select[name=carabayar] option').filter(':selected').val() == '-'){
         Swal.fire('Error', 'Please select payment method', 'error');
         document.getElementById('carabayar').focus();
+        return;
         }else if(document.getElementById('curre').value == ''){
             Swal.fire('Error', 'Please select currency', 'error');
         document.getElementById('curre').focus();
+        return;
         }else if(document.getElementById('forpay').value == '' || document.getElementById('forpay').value == '-'){
         Swal.fire('Error', 'Please select For payment', 'error');
         document.getElementById('forpay').focus();
+        return;
         }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && $('select[name=frcc] option').filter(':selected').val() == ''){
         Swal.fire('Error', 'Please select From Account', 'error');
         document.getElementById('frcc').focus();
+        return;
         }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && document.getElementById('forpay').value == 'Pemindah Bukuan Bank' && $('select[name=frcc] option').filter(':selected').val() == '-'){
         Swal.fire('Error', 'Please select From Account', 'error');
         document.getElementById('frcc').focus();
+        return;
         }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && document.getElementById('forpay').value == 'Pemindah Bukuan Bank' && $('select[name=frcc] option').filter(':selected').val() != '-' && $('select[name=tocc] option').filter(':selected').val() == '-'){
         Swal.fire('Error', 'Please select To Account', 'error');
         document.getElementById('tocc').focus();
+        return;
         }else if(document.getElementById('total_h').value == ''){
         Swal.fire('Error', 'Please Input Amount', 'error');
+        return;
         }else if(document.getElementById('total_h').value <= '0'){
         Swal.fire('Error', "Amount can't be Minus", 'error');
+        return;
         }else if(document.getElementById('total_h').value == '0.00'){
         Swal.fire('Error', "Total Amount can't be Zero", 'error');
-        }else{
-
-            Swal.fire({ icon: 'success', title: 'data saved successfully', timer: 1500, showConfirmButton: false });
+        return;
         }
+
+        // COA dan Profit Center di tiap baris detail wajib diisi, tidak boleh
+        // kosong atau "-" (placeholder default selectpicker). Selain itu,
+        // sebagian COA wajib disertai Cost Center (daftarnya dari
+        // get_coa_wajib_cc.php / coaWajibCC). Semua dicek di sini, sebelum
+        // ajax apapun dikirim, supaya baris yang belum lengkap tidak ikut
+        // tersimpan ke database.
+        var rowValidationError = null;
+        $("#tbody2 input[type=checkbox]:checked").each(function (rowIdx) {
+            var no_coa = $(this).closest('tr').find('td:eq(7)').find('select[name=nomor_coa] option').filter(':selected').val();
+            var prof_ctr = $(this).closest('tr').find('td:eq(8)').find('select[id=prof_ctr] option').filter(':selected').val();
+            var no_cc = $(this).closest('tr').find('td:eq(9)').find('select[name=nomor_cc] option').filter(':selected').val();
+
+            if (!no_coa || no_coa == '-') {
+                rowValidationError = 'COA pada baris detail ke-' + (rowIdx + 1) + ' tidak boleh kosong atau "-"';
+                return false;
+            }
+            if (!prof_ctr || prof_ctr == '-') {
+                rowValidationError = 'Profit Center pada baris detail ke-' + (rowIdx + 1) + ' tidak boleh kosong atau "-"';
+                return false;
+            }
+            if (coaWajibCC.includes(no_coa) && (!no_cc || no_cc == '-')) {
+                rowValidationError = 'COA ' + no_coa + ' pada baris detail ke-' + (rowIdx + 1) + ' wajib mengisi Cost Center';
+                return false;
+            }
+        });
+
+        if (rowValidationError !== null) {
+            Swal.fire('Error', rowValidationError, 'error');
+            return;
+        }
+
+        if (!(total >= '1' && curr !='' && pay_mth != '' && forpay != '' && pay_mth == 'CASH' && ctb != '' && nama_supp != '' || total >= '1' && curr !='' && forpay != '' && pay_mth != '' && pay_mth != 'CASH' && ctb != '' && nama_supp != '' && frcc != '')) {
+            return;
+        }
+
+        // Kumpulkan semua baris detail jadi satu array, dikirim dalam SATU
+        // request ke save_pv_exim.php yang membungkus header + semua detail
+        // dalam satu transaction MySQL. Sebelumnya tiap baris dikirim lewat
+        // ajax terpisah (insertpv.php dipanggil berkali-kali) - kalau salah
+        // satu gagal di tengah jalan, baris lain yang sudah terkirim tetap
+        // ke-commit sendiri-sendiri (tidak atomic, bisa nyangkut sebagian).
+        var rows = [];
+
+        $("#tbody2 input[type=checkbox]:checked").each(function () {
+            var no_coa = $(this).closest('tr').find('td:eq(7)').find('select[name=nomor_coa] option').filter(':selected').val();
+            var prof_ctr = $(this).closest('tr').find('td:eq(8)').find('select[id=prof_ctr] option').filter(':selected').val();
+            var no_cc = $(this).closest('tr').find('td:eq(9)').find('select[name=nomor_cc] option').filter(':selected').val();
+            var no_ref = $(this).closest('tr').find('td:eq(1) input').val();
+            var deskripsi = $(this).closest('tr').find('td:eq(10) textarea').val();
+            var amount = $(this).closest('tr').find('td:eq(11) input').val() || 0;
+            var due_date = $(this).closest('tr').find('td:eq(13) input').val();
+            var ded_add = $(this).closest('tr').find('td:eq(12) input').val() || 0;
+            var pph_row = $(this).closest('tr').find('td:eq(14)').find('select[name=pphh] option').filter(':selected').val() || 0;
+            var idtax = $(this).closest('tr').find('td:eq(14)').find('select[name=pphh] option').filter(':selected').attr('data-idtax');
+            var ppn_row = $(this).closest('tr').find('td:eq(15)').find('select[name=ppnn] option').filter(':selected').val() || pilih_ppn;
+            var id_ppn = $(this).closest('tr').find('td:eq(16)').find('select[name=ppnn] option').filter(':selected').attr('data-idtax') || document.getElementById('idtax').value;
+
+            rows.push({
+                no_coa: no_coa,
+                prof_ctr: prof_ctr,
+                no_cc: no_cc,
+                no_ref: no_ref,
+                deskripsi: deskripsi,
+                amount: amount,
+                due_date: due_date,
+                ded_add: ded_add,
+                pph: pph_row,
+                idtax: idtax,
+                ppn: ppn_row,
+                id_ppn: id_ppn
+            });
+        });
+
+        $btn.data('saving', true).prop('disabled', true);
+
+        $.ajax({
+            type: 'POST',
+            url: 'save_pv_exim.php',
+            dataType: 'json',
+            data: {
+                'rat_pv':rat_pv, 'no_pv':no_pv, 'pv_date':pv_date, 'nama_supp':nama_supp, 'sup_doc':sup_doc,
+                'ctb':ctb, 'pay_date':pay_date, 'pay_mth':pay_mth, 'curr':curr, 'forpay':forpay, 'frcc':frcc,
+                'tocc':tocc, 'no_cek':no_cek, 'cek_date':cek_date, 'ke':ke, 'dari':dari, 'pesan':pesan,
+                'subtotal':subtotal, 'adjust':adjust, 'pph':pph, 'ppn':ppn, 'total':total,
+                'pilih_ppn':pilih_ppn, 'pilih_pph':pilih_pph, 'create_user':create_user,
+                'rows': JSON.stringify(rows)
+            },
+            cache: 'false',
+            success: function (response) {
+                if (response && response.success) {
+                    // Tahan 5 detik dan tetap tampilkan tombol OK supaya user
+                    // sempat baca No PV yang terbentuk - sebelumnya langsung
+                    // redirect tanpa menunggu Swal-nya, jadi kelihatan macam
+                    // notifnya "langsung hilang".
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Data berhasil disimpan',
+                        html: 'No PV: <b>' + (response.no_pv || '-') + '</b>',
+                        timer: 5000,
+                        showConfirmButton: true,
+                        confirmButtonText: 'OK'
+                    }).then(function () {
+                        window.location = 'payment-voucher.php';
+                    });
+                } else {
+                    $btn.data('saving', false).prop('disabled', false);
+                    Swal.fire('Error', (response && response.error) || 'Gagal menyimpan Payment Voucher.', 'error');
+                }
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                $btn.data('saving', false).prop('disabled', false);
+                console.log(xhr);
+                var msg = 'Gagal menyimpan Payment Voucher.';
+                try {
+                    var parsed = JSON.parse(xhr.responseText);
+                    if (parsed && parsed.error) { msg = parsed.error; }
+                } catch (e) {}
+                Swal.fire('Error', msg, 'error');
+            }
+        });
     });
 </script>
 
@@ -2296,8 +2276,8 @@ $("#select_all").click(function() {
 
 <script type="text/javascript">
     $("#form-simpan").on("click", "#batal", function(){
-        $("input[type=checkbox]:checked").each(function () {
-        var doc_number = document.getElementById('no_doc').value;        
+        $("#doc_support input[type=checkbox]:checked").each(function () {
+        var doc_number = document.getElementById('no_doc').value;
          
              
         $.ajax({
