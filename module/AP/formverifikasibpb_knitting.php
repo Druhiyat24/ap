@@ -423,38 +423,67 @@ $(document).ready(function(){
 
 <script type="text/javascript">
     $("#form-simpan").on("click", "#simpan", function(){
-        $("input[type=checkbox]:checked").each(function () {        
-            var ceklist = document.getElementById('select').value;         
+        // Cegah klik ganda selama request masih jalan.
+        var $btn = $(this);
+        if ($btn.data('saving')) {
+            return;
+        }
+
+        var $checked = $("input[name='select[]']:checked");
+        if ($checked.length < 1) {
+            alert("Please check the BPB number");
+            return;
+        }
+
+        $btn.data('saving', true).prop('disabled', true);
+
+        // Kumpulkan semua ajax sebagai promise, baru tampilkan hasil SETELAH
+        // semuanya benar-benar selesai. Sebelumnya alert "Data saved
+        // successfully" muncul instan tanpa menunggu ajax sama sekali, dan
+        // window.location dipanggil di success SALAH SATU baris yang
+        // berjalan paralel/async - begitu baris pertama selesai, halaman
+        // langsung pindah dan baris lain yang belum selesai dikirim jadi
+        // dibatalkan. Itu sebabnya muncul "sukses" tapi datanya tidak (semua)
+        // tersimpan.
+        var savePromises = [];
+        var failedRows = [];
+
+        $checked.each(function () {
+            var ceklist = $(this).val();
             var no_bpb = $(this).closest('tr').find('td:eq(1)').attr('value');
             var no_bpb_asal = $(this).closest('tr').find('td:eq(4)').attr('value');
             var create_user = '<?php echo $user ?>';
             var start_date = document.getElementById('start_date').value;
             var end_date = document.getElementById('end_date').value;
             var tgl_po = $(this).closest('tr').find('td:eq(9)').attr('value');
-            var pterms = $(this).closest('tr').find('td:eq(6)').attr('value');        
+            var pterms = $(this).closest('tr').find('td:eq(6)').attr('value');
 
-            $.ajax({
+            savePromises.push($.ajax({
                 type:'POST',
                 url:'insertfmvbpb_knitting.php',
-                data: {'no_bpb':no_bpb, 'no_bpb_asal':no_bpb_asal, 'ceklist':ceklist, 'create_user':create_user, 'start_date':start_date, 'end_date':end_date, 'tgl_po':tgl_po, 'pterms':pterms},
-                close: function(e){
-                    e.preventDefault();
-                },
-                success: function(response){                
-                    // alert(response);
-                    window.location = 'verifikasibpb_knitting.php';
-
-                },
-                error:  function (xhr, ajaxOptions, thrownError) {
-                 alert(xhr);
-             }
-         });
+                data: {'no_bpb':no_bpb, 'no_bpb_asal':no_bpb_asal, 'ceklist':ceklist, 'create_user':create_user, 'start_date':start_date, 'end_date':end_date, 'tgl_po':tgl_po, 'pterms':pterms}
+            }).then(function (response) {
+                // insertfmvbpb_knitting.php pakai die('Error ...') kalau ada
+                // query yang gagal - itu tetap HTTP 200, jadi harus dicek
+                // isi responsnya sendiri, tidak akan masuk error callback.
+                if (response && response.indexOf('Error') === 0) {
+                    failedRows.push(no_bpb + ': ' + response);
+                }
+            }, function (xhr) {
+                failedRows.push(no_bpb + ': ' + (xhr.responseText || 'request gagal'));
+            }));
         });
-        if(document.querySelectorAll("input[name='select[]']:checked").length >= 1){
-            alert("Data saved successfully");
-        }else{
-            alert("Please check the BPB number");
-        }        
+
+        $.when.apply($, savePromises).always(function () {
+            $btn.data('saving', false).prop('disabled', false);
+
+            if (failedRows.length > 0) {
+                alert('Sebagian data gagal disimpan:\n' + failedRows.join('\n'));
+            } else {
+                alert('Data saved successfully');
+                window.location = 'verifikasibpb_knitting.php';
+            }
+        });
     });
 </script>
 
