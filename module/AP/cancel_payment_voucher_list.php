@@ -41,7 +41,7 @@ if (isset($pl_number)) {
 
         echo 'Data Berhasil Di Cancel';
     } else {
-        echo mysqli_error($conn2);
+        echo 'Error: ' . mysqli_error($conn2);
     }
 } else {
     echo 'Error: pl_number is required';
