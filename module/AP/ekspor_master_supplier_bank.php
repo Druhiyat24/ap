@@ -18,7 +18,8 @@ if ($filter_supplier !== '') {
 }
 
 $q = mysqli_query($conn2,
-    "SELECT ms.Supplier AS supplier_name,
+    "SELECT m.id,
+            ms.Supplier AS supplier_name,
             CASE m.tipe_sup WHEN 'S' THEN 'Supplier' ELSE 'Customer' END AS type,
             m.bank_currency, m.bank_name, m.bank_account,
             m.beneficiary_name, m.status, m.created_by, m.created_date
@@ -52,6 +53,7 @@ $q = mysqli_query($conn2,
     <thead>
       <tr>
         <th class="center"><b>No</b></th>
+        <th><b>ID</b></th>
         <th><b>Type</b></th>
         <th><b>Supplier / Customer</b></th>
         <th><b>Bank Currency</b></th>
@@ -70,6 +72,7 @@ $q = mysqli_query($conn2,
       ?>
       <tr>
         <td class="center"><?= $no++ ?></td>
+        <td><?= htmlspecialchars($row['id'] ?? '-') ?></td>
         <td><?= htmlspecialchars($row['type']) ?></td>
         <td><?= htmlspecialchars($row['supplier_name'] ?? '-') ?></td>
         <td><?= htmlspecialchars($row['bank_currency']) ?></td>

@@ -313,6 +313,7 @@ div.dataTables_wrapper .dataTables_info {
           <div id="txt_nofaktur" class="col-md-3 mb-2"></div>
           <div id="txt_suppinv" class="col-md-3 mb-2"></div>
           <div id="txt_tglinv" class="col-md-3 mb-2"></div>
+          <div id="txt_installment" class="col-md-3 mb-2"></div>
           <div id="details" class="col-12 mt-2"></div>
       </div>
   </div>
@@ -507,12 +508,25 @@ $('#table-data').on('click', 'tbody tr td:first-child', function () {
     $('#txt_nofaktur').html('No Faktur : ' + escapeHtml(data.no_faktur));
     $('#txt_suppinv').html('No Supplier Invoice : ' + escapeHtml(data.supp_inv));
     $('#txt_tglinv').html('Supplier Invoice Date : ' + escapeHtml(data.tgl_inv));
+    // tgl_kbon2 dipakai getDataInstallment() untuk menyimpan "Installment X/Y" -
+    // tampilkan di modal (sama seperti info cicilan di pdf_pv_installment.php),
+    // kosongkan untuk tipe lain.
+    if (data.no_kbon_parent && data.tgl_kbon2 && data.tgl_kbon2.indexOf('Installment') === 0) {
+        $('#txt_installment').html('Installment : ' + escapeHtml(data.tgl_kbon2.replace('Installment ', '').replace('/', ' of ')));
+    } else {
+        $('#txt_installment').html('');
+    }
     $('#details').html('<div class="text-center p-3"><i class="fas fa-spinner fa-spin"></i></div>');
 
     $.ajax({
-        url: 'ajaxkbon.php',
+        // DP/CBD pakai tabel sendiri (kontrabon_dp/kontrabon_cbd, bukan kontrabon),
+        // jadi detailnya harus lewat ajaxkbondp.php/ajaxkboncbd.php masing-masing,
+        // bukan ajaxkbon.php generik. Installment menampilkan nomor anak
+        // (data.no_kbon) di listing, tapi BPB/RO/FTR detailnya tersimpan di nomor
+        // induk - pakai no_kbon_parent kalau ada supaya query-nya tidak salah nomor.
+        url: data.detail_url || 'ajaxkbon.php',
         type: 'POST',
-        data: { no_kbon: data.no_kbon },
+        data: { no_kbon: data.no_kbon_parent || data.no_kbon },
         success: function (html) {
             $('#details').html(html);
         },
@@ -592,6 +606,96 @@ $('#table-data').on('click', '.btn-cancel-kbon', function () {
     });
 });
 
+// Cancel payment voucher (DP)
+$('#table-data').on('click', '.btn-cancel-kbon-dp', function () {
+    const noKbon = this.dataset.no_kbon;
+
+    Swal.fire({
+        title: 'Cancel this payment voucher?',
+        text: noKbon + ' will have its status changed to Cancel.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Yes, Cancel!',
+        cancelButtonText: 'Close'
+    }).then((result) => {
+        if (!result.isConfirmed) return;
+
+        $.ajax({
+            type: 'POST',
+            url: 'cancelkbondp.php',
+            data: { no_kbon: noKbon, cancel_user: '<?php echo $user ?>' },
+            success: function () {
+                Swal.fire({ icon: 'success', title: 'Successfully Cancelled', timer: 1500, showConfirmButton: false });
+                datatable.ajax.reload();
+            },
+            error: function (xhr) {
+                Swal.fire('Error', xhr.responseText, 'error');
+            }
+        });
+    });
+});
+
+$('#table-data').on('click', '.btn-cancel-kbon-cbd', function () {
+    const noKbon = this.dataset.no_kbon;
+
+    Swal.fire({
+        title: 'Cancel this payment voucher?',
+        text: noKbon + ' will have its status changed to Cancel.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Yes, Cancel!',
+        cancelButtonText: 'Close'
+    }).then((result) => {
+        if (!result.isConfirmed) return;
+
+        $.ajax({
+            type: 'POST',
+            url: 'cancelkboncbd.php',
+            data: { no_kbon: noKbon, cancel_user: '<?php echo $user ?>' },
+            success: function () {
+                Swal.fire({ icon: 'success', title: 'Successfully Cancelled', timer: 1500, showConfirmButton: false });
+                datatable.ajax.reload();
+            },
+            error: function (xhr) {
+                Swal.fire('Error', xhr.responseText, 'error');
+            }
+        });
+    });
+});
+
+// Cancel payment voucher (Installment) - cancel salah satu cicilan akan
+// mencancel seluruh cicilan lain pada Payment Voucher induk yang sama.
+$('#table-data').on('click', '.btn-cancel-kbon-installment', function () {
+    const noKbon = this.dataset.no_kbon;
+
+    Swal.fire({
+        title: 'Cancel this payment voucher?',
+        text: 'All installments under this Payment Voucher will have their status changed to Cancel.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        confirmButtonText: 'Yes, Cancel!',
+        cancelButtonText: 'Close'
+    }).then((result) => {
+        if (!result.isConfirmed) return;
+
+        $.ajax({
+            type: 'POST',
+            url: 'cancelkboninstallment.php',
+            data: { no_kbon: noKbon, cancel_user: '<?php echo $user ?>' },
+            success: function () {
+                Swal.fire({ icon: 'success', title: 'Successfully Cancelled', timer: 1500, showConfirmButton: false });
+                datatable.ajax.reload();
+            },
+            error: function (xhr) {
+                Swal.fire('Error', xhr.responseText, 'error');
+            }
+        });
+    });
+});
+
 // Edit kontra bon (draft)
 $('#table-data').on('click', '.btn-edit-kbon', function () {
     const noKbon = this.dataset.no_kbon;
@@ -620,7 +724,7 @@ $('#table-data').on('click', '.btn-edit-kbon', function () {
             success: function (res) {
                 if (res.trim() === 'OK') {
                     localStorage.removeItem('profit_center');
-                    window.location.href = 'form_edit_kontrabon.php?no_kbon=' + encodedNoKbon;
+                    window.location.href = 'form_edit_pv_regular.php?no_kbon=' + encodedNoKbon;
                 } else {
                     Swal.fire('Error', res, 'error');
                 }
@@ -633,20 +737,16 @@ $('#table-data').on('click', '.btn-edit-kbon', function () {
 });
 
 document.getElementById('btnExportExcel').addEventListener('click', function(e) {
-  const where = [];
-  if ($('#nama_supp').val() !== 'ALL') where.push("and a.nama_supp = '" + $('#nama_supp').val() + "'");
-  if ($('#status').val() !== 'ALL') where.push("and a.status = '" + $('#status').val() + "'");
-
   const params = new URLSearchParams({
       nama_supp: $('#nama_supp').val(),
       status: $('#status').val(),
+      type_pv: $('#type_pv').val(),
+      filter_date: $('#filter_date').val(),
       start_date: toYmd($('#start_date').val()),
-      end_date: toYmd($('#end_date').val()),
-      tgl_filter: 'a.' + $('#filter_date').val(),
-      where: where.join(' ')
+      end_date: toYmd($('#end_date').val())
   });
 
-  this.href = 'ekspor_kb_all.php?' + params.toString();
+  this.href = 'ekspor_pv_all.php?' + params.toString();
 });
 
 </script>

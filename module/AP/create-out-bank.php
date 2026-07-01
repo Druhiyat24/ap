@@ -1463,6 +1463,7 @@ $(document).on('change', '.chk_pv', function(){
 
   let tr = $(this).closest('tr');
   let no_pv = tr.find('.no_pv').data('nopv');
+  let type_pv = tr.find('.no_pv').data('typepv');
 
   let total = parseFloat(tr.find('.total_pv').data('total')) || 0;
   let rate = parseFloat(tr.find('.rate_pv').data('ratepv')) || 0;
@@ -1480,7 +1481,7 @@ $(document).on('change', '.chk_pv', function(){
     $.ajax({
       url: 'bank-out/get_pv_detail.php',
       type: 'POST',
-      data: { no_pv: no_pv },
+      data: { no_pv: no_pv, type_pv: type_pv },
       success: function(res){
 
         let data = JSON.parse(res);
@@ -2401,9 +2402,10 @@ $(document).on('change', '.no_coa2', function() {
     let tr = $(this).closest('tr');
 
     let data = {
-      no_pv  : tr.find('.no_pv').data('nopv'),
-      amount : getNumber(tr.find('.txt_amount_pv').val()),
-      pc     : tr.find('.pc_pv').data('pcpv')
+      no_pv   : tr.find('.no_pv').data('nopv'),
+      type_pv : tr.find('.no_pv').data('typepv'),
+      amount  : getNumber(tr.find('.txt_amount_pv').val()),
+      pc      : tr.find('.pc_pv').data('pcpv')
     };
 
     console.log("PV:", data);

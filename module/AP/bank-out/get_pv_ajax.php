@@ -41,23 +41,44 @@ function getBankByAccount($conn2, $bank_account)
     return $bank;
 }
 
-// Sudah pernah ditarik ke bank-out sebelumnya (per type_pv + no_reff) - dipakai
-// untuk mengurangi outstanding, supaya PV/kontrabon yang sudah dibayar
-// sebagian tidak bisa ditarik lebih dari sisanya. type_pv membedakan referensi
-// Biaya (no_pv) dari referensi kontrabon-family (no_kbon), karena format
-// no_kbon ('PV-AP/REG/...') juga mengandung substring 'PV' sama seperti
-// no_pv ('PV/NAG/...') - tidak bisa dibedakan hanya dari isi no_reff.
+// Sudah pernah ditarik sebelumnya - lewat Bank-Out ATAU Petty Cash Out (per
+// type_pv + no_reff) - dipakai untuk mengurangi outstanding, supaya
+// PV/kontrabon yang sudah dibayar sebagian (dari channel manapun) tidak bisa
+// ditarik lebih dari sisanya. type_pv membedakan referensi Biaya (no_pv) dari
+// referensi kontrabon-family (no_kbon), karena format no_kbon ('PV-AP/REG/...')
+// juga mengandung substring 'PV' sama seperti no_pv ('PV/NAG/...') - tidak
+// bisa dibedakan hanya dari isi no_reff.
 function getAlreadyPaid($conn2, $type_pv)
 {
+    $type_pv_esc = mysqli_real_escape_string($conn2, $type_pv);
     $paid = [];
-    $sql = mysqli_query($conn2, "select a.no_reff, sum(a.total) total_paid
+
+    $sqlBank = mysqli_query($conn2, "select a.no_reff, sum(a.total) total_paid
         from b_bankout_det a
         inner join b_bankout_h b on b.no_bankout = a.no_bankout
-        where b.status != 'Cancel' and a.type_pv = '" . mysqli_real_escape_string($conn2, $type_pv) . "'
+        where b.status != 'Cancel' and a.type_pv = '$type_pv_esc'
         group by a.no_reff");
-    while ($row = mysqli_fetch_assoc($sql)) {
+    while ($row = mysqli_fetch_assoc($sqlBank)) {
         $paid[$row['no_reff']] = (float) $row['total_paid'];
     }
+
+    $sqlCash = mysqli_query($conn2, "select a.no_reff, sum(a.amount) total_paid
+        from c_petty_cashout_det a
+        inner join c_petty_cashout_h b on b.no_pco = a.no_pco
+        where b.status != 'Cancel' and a.type_pv = '$type_pv_esc'
+        group by a.no_reff");
+    while ($row = mysqli_fetch_assoc($sqlCash)) {
+        $paid[$row['no_reff']] = ($paid[$row['no_reff']] ?? 0) + (float) $row['total_paid'];
+    }
+
+    $sqlPay = mysqli_query($conn2, "select no_kbon no_reff, sum(nominal) total_paid
+        from payment_ftr
+        where status != 'Cancel' and type_pv = '$type_pv_esc'
+        group by no_kbon");
+    while ($row = mysqli_fetch_assoc($sqlPay)) {
+        $paid[$row['no_reff']] = ($paid[$row['no_reff']] ?? 0) + (float) $row['total_paid'];
+    }
+
     return $paid;
 }
 
@@ -102,7 +123,8 @@ $kontrabonRows = array_merge(
     getDataRegular($conn1, $conn2, $filters, '1', '1', ''),
     getDataInstallment($conn1, $conn2, $filters, '1', '1', ''),
     getDataDp($conn1, $conn2, $filters, '1', '1', ''),
-    getDataCbd($conn1, $conn2, $filters, '1', '1', '')
+    getDataCbd($conn1, $conn2, $filters, '1', '1', ''),
+    getDataSaldoAwal($conn2, $filters)
 );
 
 $kontrabonRows = array_filter($kontrabonRows, function ($r) {
@@ -114,6 +136,7 @@ $alreadyPaidByType = [
     'Installment' => getAlreadyPaid($conn2, 'Installment'),
     'DP'          => getAlreadyPaid($conn2, 'DP'),
     'CBD'         => getAlreadyPaid($conn2, 'CBD'),
+    'SaldoAwal'   => getAlreadyPaid($conn2, 'SaldoAwal'),
 ];
 
 foreach ($kontrabonRows as $r) {

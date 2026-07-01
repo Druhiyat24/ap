@@ -1,4 +1,6 @@
-<?php include '../header.php' ?>
+<?php include '../header.php';
+require_once 'pv_data_functions.php';
+?>
 
 <style type="text/css">
     label {
@@ -198,9 +200,58 @@
                             <td style="display: none;" class="dt_out" style="width:100px;" data-coalp="'.$row['no_coa'].'">'.$row['no_coa'].'</td>
 
                             </tr>';
-                        }                  
+                        }
+
+                        // ===================== PV ROWS (Regular/Installment/DP/CBD) =====================
+                        if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($nama_supp) && !empty($profit_center)) {
+                            $pvFilters = [
+                                'nama_supp'   => $nama_supp,
+                                'status'      => 'ALL',
+                                'filter_date' => 'tgl_kbon',
+                                'start_date'  => $start_date,
+                                'end_date'    => $end_date,
+                            ];
+                            $pvRows = array_merge(
+                                getDataRegular($conn1, $conn2, $pvFilters, '1', '1', ''),
+                                getDataInstallment($conn1, $conn2, $pvFilters, '1', '1', ''),
+                                getDataDp($conn1, $conn2, $pvFilters, '1', '1', ''),
+                                getDataCbd($conn1, $conn2, $pvFilters, '1', '1', ''),
+                                getDataSaldoAwal($conn2, $pvFilters)
+                            );
+                            $pvRows = array_filter($pvRows, function ($r) use ($profit_center) {
+                                return $r['status_pl'] === 'SECOND APPROVED'
+                                    && $r['profit_center'] === $profit_center;
+                            });
+                            foreach ($pvRows as $r) {
+                                $outstanding = (float) $r['total_raw'] - getAlreadyPaidFor($conn2, $r['type'], $r['no_kbon']);
+                                if ($outstanding <= 0.01) continue;
+                                $typePv    = htmlspecialchars($r['type']);
+                                $noPv      = htmlspecialchars($r['no_kbon']);
+                                $pvDateRaw = $r['tgl_kbon_raw'];
+                                $pvDateFmt = !empty($pvDateRaw) ? date('d-M-Y', strtotime($pvDateRaw)) : '-';
+                                $pvSup     = htmlspecialchars($r['nama_supp']);
+                                $curr      = htmlspecialchars($r['curr']);
+                                $rate      = !empty($r['rate']) ? (float) $r['rate'] : 1;
+                                $pph       = (float) ($r['pph_raw'] ?? 0);
+                                $noCoa     = htmlspecialchars($r['no_coa'] ?? '-');
+                                echo '<tr data-typepv="' . $typePv . '" style="background:#f0f8ff;">
+                                    <td style="width:10px;"><input type="checkbox" class="chk-pv-row" name="select[]" value=""></td>
+                                    <td style="width:50px;" class="dt_out" dataout1="">[' . $typePv . '] ' . $noPv . '</td>
+                                    <td style="width:100px;" class="dt_out" dataout2="' . $pvDateFmt . '">' . $pvDateFmt . '</td>
+                                    <td style="width:50px;display:none;" class="dt_out" dataout3="' . $noPv . '">' . $noPv . '</td>
+                                    <td style="width:100px;display:none;" class="dt_out" dataout4="' . htmlspecialchars($pvDateRaw) . '">' . $pvDateFmt . '</td>
+                                    <td style="width:100px;" value="' . $pvSup . '">' . $pvSup . '</td>
+                                    <td style="width:50px;" class="dt_out" dataout5="' . $outstanding . '">' . number_format($outstanding, 2) . '</td>
+                                    <td style="width:50px;" class="dt_out" data-data="' . $pph . '">' . number_format($pph, 2) . '</td>
+                                    <td style="width:100px;" class="dt_out" dataout6="' . $curr . '">' . $curr . '</td>
+                                    <td style="width:100px;" class="dt_out" dataout7="' . $outstanding . '">' . number_format($outstanding, 2) . '</td>
+                                    <td style="display:none;" class="dt_out" data-rate="' . $rate . '">' . number_format($rate, 2) . '</td>
+                                    <td style="display:none;" class="dt_out" data-coalp="' . $noCoa . '">' . $noCoa . '</td>
+                                </tr>';
+                            }
+                        }
                         ?>
-                    </tbody>                    
+                    </tbody>
                 </table> 
             </div> 
 
@@ -1311,11 +1362,18 @@ function addListener(elm,index){
     e.preventDefault();
 
     // ================================
-    // VALIDASI LIST PAYMENT (VISIBLE)
+    // PISAHKAN LP vs PV ROWS
     // ================================
-    var checkedLP = $("#mytable input[name='select[]']:visible:checked");
-    if (checkedLP.length === 0) {
-        alert("Please check the List Payment number");
+    var checkedPV = $("#mytable input.chk-pv-row:visible:checked");
+    var checkedLP = $("#mytable input[name='select[]']:visible:checked").not('.chk-pv-row');
+
+    if (checkedLP.length === 0 && checkedPV.length === 0) {
+        alert("Please check a List Payment or Payment Voucher row");
+        return false;
+    }
+
+    if (checkedLP.length > 0 && checkedPV.length > 0) {
+        alert("Tidak bisa menyimpan LP dan PV bersamaan. Pilih salah satu saja.");
         return false;
     }
 
@@ -1330,24 +1388,92 @@ function addListener(elm,index){
     }
 
     // ================================
-    // VALIDASI TOTAL
+    // VALIDASI TOTAL & BALANCE
     // ================================
     var fil_lp     = parseFloat($('#dibayar_h').val()) || 0;
     var fil_debit  = parseFloat($('#nominaldeb_h').val()) || 0;
     var fil_credit = parseFloat($('#nominalcre_h').val()) || 0;
 
     if (fil_lp <= 0) {
-        alert("Invalid Total List Payment");
+        alert("Invalid Total Payment");
         return false;
     }
 
-    if (fil_debit !== fil_credit) {
+    if (Math.abs(fil_debit - fil_credit) > 0.01) {
         alert("Please Check Total Credit and Debit");
         return false;
     }
 
     // ================================
-    // LOOP LIST PAYMENT
+    // ALUR PV DIRECT
+    // ================================
+    if (checkedPV.length > 0) {
+
+        var detailPv = [];
+        checkedPV.each(function () {
+            var tr = $(this).closest('tr');
+            detailPv.push({
+                no_pv:   tr.find('td:eq(3)').attr('dataout3'),
+                type_pv: tr.attr('data-typepv'),
+                amount:  parseFloat(tr.find('td:eq(9)').attr('dataout7')) || 0,
+                rate:    parseFloat(tr.find('td:eq(10)').attr('data-rate')) || 1
+            });
+        });
+
+        var detailAdjust = [];
+        var adjValid = true;
+        $("#mytable2 tbody tr:visible").each(function () {
+            var trJ = $(this);
+            if (trJ.find('select[name=nomor_coa]').length === 0) return true;
+            var no_coa = trJ.find('select[name=nomor_coa]').val();
+            if (!no_coa || no_coa === '-') { alert('Please select a COA'); adjValid = false; return false; }
+            var debit_a  = parseFloat(trJ.find('td:eq(7) input:visible').val()) || 0;
+            var credit_a = parseFloat(trJ.find('td:eq(8) input:visible').val()) || 0;
+            if (debit_a === 0 && credit_a === 0) return true;
+            detailAdjust.push({
+                coa:       no_coa,
+                pc:        trJ.find('#nomor_profit').val() || '-',
+                cc:        trJ.find('#nomor_coc').val() || '-',
+                reff_doc:  trJ.find('td:eq(4) input:visible').val() || trJ.find('td:eq(4) select.reff_doc option:selected').val() || '',
+                reff_date: trJ.find('td:eq(5) input:visible').val() || '',
+                deskripsi: trJ.find('td:eq(6) input:visible').val() || '',
+                debit:     debit_a,
+                credit:    credit_a
+            });
+        });
+        if (!adjValid) return false;
+
+        $.ajax({
+            type: 'POST',
+            url: 'insertrepaymentftr_pv.php',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                header: {
+                    tanggal:        $('#tanggal').val(),
+                    nama_supp:      $('select[name=nama_supp]').val(),
+                    profit_center:  $('select[name=profit_center]').val(),
+                    pesan:          pesan
+                },
+                detail_pv:     detailPv,
+                detail_adjust: detailAdjust
+            }),
+            success: function (res) {
+                try { res = (typeof res === 'string') ? JSON.parse(res) : res; } catch(e) {}
+                if (res && res.status === 'error') {
+                    alert('Error: ' + res.message);
+                } else {
+                    localStorage.removeItem("profit_center");
+                    window.location = 'pelunasanftr.php';
+                }
+            },
+            error: function () { alert('Gagal menghubungi server'); }
+        });
+
+        return;
+    }
+
+    // ================================
+    // ALUR LP (existing)
     // ================================
     checkedLP.each(function () {
 
@@ -1405,20 +1531,12 @@ function addListener(elm,index){
             var debit     = parseFloat(trJ.find('td:eq(7) input:visible').val()) || 0;
             var credit    = parseFloat(trJ.find('td:eq(8) input:visible').val()) || 0;
 
-            // ================================
-            // VALIDASI NO COA
-            // ================================
             if (!no_coa || no_coa === '-') {
                 alert('Please select a COA');
                 trJ.find('select[name=nomor_coa]').focus();
                 return false;
             }
 
-            // alert(reff_doc);
-
-            // ================================
-            // VALIDASI KHUSUS COA UANG MUKA
-            // ================================
             if (coa_text.includes('uang muka')) {
                 if (!reff_doc || reff_doc === '-') {
                     alert('Reference document is required for Advance Payment COA');
@@ -1427,9 +1545,6 @@ function addListener(elm,index){
                 }
             }
 
-            // ================================
-            // AJAX
-            // ================================
             $.ajax({
                 type: 'POST',
                 url: 'insertrepaymentftr.php',
