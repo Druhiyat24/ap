@@ -444,47 +444,52 @@ $bank_currency = $row_bank['bank_currency'];
 <!--TTD_SPACER-->
 
 <div style="margin-bottom: 2.54cm; page-break-inside: avoid;">
-	<table style="page-break-inside: avoid;" cellpadding="0" cellspacing="0" border="1" width='500';>
+	<table style="page-break-inside: avoid;" cellpadding="0" cellspacing="0" border="1" width='620';>
 
-		<tr>	
+		<tr>
 			<th style="font-size:12px">Created By : </th>
 			<th style="font-size:12px">Checked By : </th>
-			<th colspan="2" style="font-size:12px">Approved By : </th>
+			<th colspan="3" style="font-size:12px">Approved By : </th>
 
 		</tr>
-		<tr>	
+		<tr>
 			<td class="td1">&nbsp;</td>
 			<td class="td1">&nbsp;</td>
-			<td class="td1">&nbsp;</td>	
-			<td class="td1">&nbsp;</td>						
-		</tr>   
-		<tr>	
 			<td class="td1">&nbsp;</td>
 			<td class="td1">&nbsp;</td>
-			<td class="td1">&nbsp; </td>
-			<td class="td1">&nbsp;</td>				
-		</tr>   
-		<tr>	
+			<td class="td1">&nbsp;</td>
+		</tr>
+		<tr>
 			<td class="td1">&nbsp;</td>
 			<td class="td1">&nbsp;</td>
 			<td class="td1">&nbsp; </td>
-			<td class="td1">&nbsp;</td>	
-		</tr>   
-		<tr>	
+			<td class="td1">&nbsp;</td>
+			<td class="td1">&nbsp;</td>
+		</tr>
+		<tr>
 			<td class="td1">&nbsp;</td>
 			<td class="td1">&nbsp;</td>
 			<td class="td1">&nbsp; </td>
-			<td class="td1">&nbsp;</td>	
-		</tr>   
-		<tr>	
+			<td class="td1">&nbsp;</td>
+			<td class="td1">&nbsp;</td>
+		</tr>
+		<tr>
 			<td class="td1">&nbsp;</td>
 			<td class="td1">&nbsp;</td>
 			<td class="td1">&nbsp; </td>
-			<td class="td1">&nbsp;</td>	
+			<td class="td1">&nbsp;</td>
+			<td class="td1">&nbsp;</td>
+		</tr>
+		<tr>
+			<td class="td1">&nbsp;</td>
+			<td class="td1">&nbsp;</td>
+			<td class="td1">&nbsp; </td>
+			<td class="td1">&nbsp;</td>
+			<td class="td1">&nbsp;</td>
 
 		</tr>
-		<tr>	  
-			<td style="font-size:12px;text-align:center; width: 150px;">
+		<tr>
+			<td style="font-size:12px;text-align:center; width: 120px;">
 				<?php
 				$sql1 = mysqli_query($conn2,"select create_user from kontrabon_h_dp where no_kbon = '$no_kbon'");
 				$rows = mysqli_fetch_array($sql1);
@@ -492,22 +497,23 @@ $bank_currency = $row_bank['bank_currency'];
 				echo $create_by;
 				?>
 			</td>
-			<td style="font-size:12px;text-align:center; width: 150px;"><?php
+			<td style="font-size:12px;text-align:center; width: 120px;"><?php
 			$sql1 = mysqli_query($conn2,"select confirm1 from ttd");
 			$rows = mysqli_fetch_array($sql1);
 			$confirm1 = $rows['confirm1'];
 			echo $confirm1;
 			?>
 		</td>
-		<td style="font-size:12px;text-align:center; width: 150px;"><?php
+		<td style="font-size:12px;text-align:center; width: 120px;"><?php
 		$sql1 = mysqli_query($conn2,"select confirm2 from ttd");
 		$rows = mysqli_fetch_array($sql1);
 		$confirm2 = $rows['confirm2'];
 		echo $confirm2;
 		?>
 	</td>
+	<td style="font-size:12px;text-align:center; width: 120px;">Herman</td>
 
-	<td style="font-size:12px;text-align:center; width: 150px;"><?php
+	<td style="font-size:12px;text-align:center; width: 120px;"><?php
 		$sql1 = mysqli_query($conn2,"select approve_by from ttd");
 		$rows = mysqli_fetch_array($sql1);
 		$approve_by = $rows['approve_by'];
@@ -516,10 +522,11 @@ $bank_currency = $row_bank['bank_currency'];
 	</td>
 </tr>
 
-<tr>    
+<tr>
 	<td style="font-size:12px;text-align:center;">AP Staff</td>
 	<td style="font-size:12px;text-align:center">Supervisor</td>
 	<td style="font-size:12px;text-align:center">Finance Manager</td>
+	<td style="font-size:12px;text-align:center">Kadept Fin&amp;Acc</td>
 	<td style="font-size:12px;text-align:center">Director</td>
 </tr> 				
 
