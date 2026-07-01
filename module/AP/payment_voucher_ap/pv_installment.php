@@ -892,9 +892,9 @@
 </div>
 
 <div class="row mb-2 align-items-center">
-  <label class="col-3 col-form-label" style="font-size: 13px;;"><b><u>Potongan PPN</u></b></label>
+  <label class="col-3 col-form-label" style="font-size: 13px;;"><b><u>Koreksi PPN</u></b></label>
   <div class="col-3">
-    <input type="number" min="0" class="form-control form-control-sm text-right" name="potongan_ppn" id="inst_potongan_ppn" placeholder="0.00">
+    <input type="number" class="form-control form-control-sm text-right" name="potongan_ppn" id="inst_potongan_ppn" placeholder="0.00">
 </div>
 <div class="col-4">
     <input type="text" class="form-control form-control-sm text-right" name="potongan_ppn_h" id="inst_potongan_ppn_h" placeholder="0.00" readonly>
@@ -903,9 +903,9 @@
 </div>
 
 <div class="row mb-2 align-items-center">
-  <label class="col-3 col-form-label" style="font-size: 13px;;"><b><u>Potongan PPh</u></b></label>
+  <label class="col-3 col-form-label" style="font-size: 13px;;"><b><u>Koreksi PPh</u></b></label>
   <div class="col-3">
-    <input type="number" min="0" class="form-control form-control-sm text-right" name="potongan_pph" id="inst_potongan_pph" placeholder="0.00">
+    <input type="number" class="form-control form-control-sm text-right" name="potongan_pph" id="inst_potongan_pph" placeholder="0.00">
 </div>
 <div class="col-4">
     <input type="text" class="form-control form-control-sm text-right" name="potongan_pph_h" id="inst_potongan_pph_h" placeholder="0.00" readonly>
@@ -1398,8 +1398,8 @@ function updateSetelahPotonganInst() {
     var potongan_ppn_h = parseFloat(document.getElementById('inst_potongan_ppn').value, 10) || 0;
     var potongan_pph_h = parseFloat(document.getElementById('inst_potongan_pph').value, 10) || 0;
 
-    var pajak_setelah_potongan = pajak_h - potongan_ppn_h;
-    var pph_setelah_potongan = pph_h - potongan_pph_h;
+    var pajak_setelah_potongan = pajak_h + potongan_ppn_h;
+    var pph_setelah_potongan = pph_h + potongan_pph_h;
 
     $("#inst_pajak_setelah_potongan").val(formatMoneyInst(pajak_setelah_potongan));
     $("#inst_pajak_setelah_potongan_h").val(pajak_setelah_potongan);

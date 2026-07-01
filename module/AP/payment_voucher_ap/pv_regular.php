@@ -885,9 +885,9 @@
 </div>
 
 <div class="row mb-2 align-items-center">
-  <label class="col-3 col-form-label" style="font-size: 13px;;"><b><u>Potongan PPN</u></b></label>
+  <label class="col-3 col-form-label" style="font-size: 13px;;"><b><u>Koreksi PPN</u></b></label>
   <div class="col-3">
-    <input type="number" min="0" class="form-control form-control-sm text-right" name="potongan_ppn" id="potongan_ppn" placeholder="0.00">
+    <input type="number" class="form-control form-control-sm text-right" name="potongan_ppn" id="potongan_ppn" placeholder="0.00">
 </div>
 <div class="col-4">
     <input type="text" class="form-control form-control-sm text-right" name="potongan_ppn_h" id="potongan_ppn_h" placeholder="0.00" readonly>
@@ -896,9 +896,9 @@
 </div>
 
 <div class="row mb-2 align-items-center">
-  <label class="col-3 col-form-label" style="font-size: 13px;;"><b><u>Potongan PPh</u></b></label>
+  <label class="col-3 col-form-label" style="font-size: 13px;;"><b><u>Koreksi PPh</u></b></label>
   <div class="col-3">
-    <input type="number" min="0" class="form-control form-control-sm text-right" name="potongan_pph" id="potongan_pph" placeholder="0.00">
+    <input type="number" class="form-control form-control-sm text-right" name="potongan_pph" id="potongan_pph" placeholder="0.00">
 </div>
 <div class="col-4">
     <input type="text" class="form-control form-control-sm text-right" name="potongan_pph_h" id="potongan_pph_h" placeholder="0.00" readonly>
@@ -1352,8 +1352,8 @@ function updateSetelahPotongan() {
     var potongan_ppn_h = parseFloat(document.getElementById('potongan_ppn').value, 10) || 0;
     var potongan_pph_h = parseFloat(document.getElementById('potongan_pph').value, 10) || 0;
 
-    var pajak_setelah_potongan = pajak_h - potongan_ppn_h;
-    var pph_setelah_potongan = pph_h - potongan_pph_h;
+    var pajak_setelah_potongan = pajak_h + potongan_ppn_h;
+    var pph_setelah_potongan = pph_h + potongan_pph_h;
 
     $("#pajak_setelah_potongan").val(formatMoney(pajak_setelah_potongan));
     $("#pajak_setelah_potongan_h").val(pajak_setelah_potongan);

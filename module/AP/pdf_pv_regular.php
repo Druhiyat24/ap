@@ -504,7 +504,7 @@ $bank_currency = $row_bank['bank_currency'];
 				$sqltax = mysqli_query($conn2,"select tax from kontrabon_h where no_kbon = '$no_kbon'");
 				$rowstax = mysqli_fetch_array($sqltax);
 				$jml_tax = $rowstax['tax'];
-				echo $curr." ".number_format($ppn - $potongan_ppn, 2).""; ?>
+				echo $curr." ".number_format($ppn + $potongan_ppn, 2).""; ?>
 			</td>
 		</tr>
 
@@ -519,7 +519,7 @@ $bank_currency = $row_bank['bank_currency'];
 			</td>
 			<td style="width:1%">:</td>
 			<td style="text-align:right;">
-				<?php echo $curr." ( - ".number_format($pph - $potongan_pph, 2)." )"; ?>
+				<?php echo $curr." ( - ".number_format($pph + $potongan_pph, 2)." )"; ?>
 			</td>
 		</tr>
 
