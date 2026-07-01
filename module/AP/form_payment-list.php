@@ -195,6 +195,15 @@ include 'pv_data_functions.php';
                                 return $r['status'] === 'SECOND APPROVED';
                             });
 
+                            // Regular/Installment/DP/CBD sebelum 1 Juli 2026 sudah masuk saldo awal,
+                            // tidak boleh ditarik lagi lewat form ini.
+                            $rowsAll = array_filter($rowsAll, function ($r) {
+                                if (in_array($r['type'], ['Regular', 'Installment', 'DP', 'CBD'])) {
+                                    return $r['tgl_kbon'] >= '2026-07-01';
+                                }
+                                return true;
+                            });
+
                             // Exclude PV yang sudah pernah dimasukkan ke Payment List ATAU
                             // Payment Voucher List lain (belum dibatalkan) - supaya tidak ada
                             // PV yang diklaim dua kali oleh dua feature "list" ini.
