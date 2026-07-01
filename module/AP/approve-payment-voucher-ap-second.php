@@ -130,6 +130,7 @@
                     <option value="Installment">Installment</option>
                     <option value="DP">DP</option>
                     <option value="CBD">CBD</option>
+                    <option value="Saldo Awal">Saldo Awal</option>
                 </select>
             </div>
         </div>
@@ -335,13 +336,15 @@
         regular: 'second_approve_kbon.php',
         installment: 'second_approve_installment.php',
         dp: 'second_approve_dp.php',
-        cbd: 'second_approve_cbd.php'
+        cbd: 'second_approve_cbd.php',
+        saldo_awal: 'second_approve_saldo_awal.php'
     };
     const CANCEL_ENDPOINT = {
         regular: 'cancelkbon.php',
         installment: 'cancelkboninstallment.php',
         dp: 'cancelkbondp.php',
-        cbd: 'cancelkboncbd.php'
+        cbd: 'cancelkboncbd.php',
+        saldo_awal: 'cancel_saldo_awal.php'
     };
 
     // DataTables hanya merender <tr> halaman aktif ke DOM saat paging client-side,

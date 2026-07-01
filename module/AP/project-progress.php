@@ -164,18 +164,37 @@ function statusBadge($s) {
 ?>
 
 <style>
-.tbl-progress th { background-color: #2c3e50; color: #fff; text-align: center; vertical-align: middle; font-size: 11px; white-space: nowrap; }
+/* === TABLE HEADER === */
+.tbl-progress th { background-color: #007bff; color: #fff; text-align: center; vertical-align: middle; font-size: 11px; white-space: nowrap; border-color: #0069d9 !important; }
 .tbl-progress td { font-size: 11px; vertical-align: middle; }
-.tbl-progress .group-it    { background-color: #d4e6f1; }
-.tbl-progress .group-sist  { background-color: #d5f5e3; }
-.tbl-progress .group-user  { background-color: #fdebd0; }
-.badge-done { background-color: #27ae60; color: #fff; }
+/* Group sub-headers in lighter blue shades */
+.tbl-progress .group-it   { background-color: #cce5ff; color: #004085; }
+.tbl-progress .group-sist { background-color: #b8d4f5; color: #003d82; }
+.tbl-progress .group-user { background-color: #9ec5fe; color: #003070; }
+/* Group body cells */
+.tbl-progress td.group-it   { background-color: #f0f7ff; color: #212529; }
+.tbl-progress td.group-sist { background-color: #e8f2ff; color: #212529; }
+.tbl-progress td.group-user { background-color: #ddeeff; color: #212529; }
+
+/* === STAT CARDS === */
 .stat-card { border-radius: 8px; padding: 12px 18px; color: #fff; font-size: 13px; font-weight: 600; }
-.stat-done  { background: linear-gradient(135deg,#27ae60,#1e8449); }
-.stat-prog  { background: linear-gradient(135deg,#e67e22,#ca6f1e); }
-.stat-pend  { background: linear-gradient(135deg,#7f8c8d,#5d6d7e); }
+.stat-done  { background: linear-gradient(135deg,#007bff,#0056b3); }
+.stat-prog  { background: linear-gradient(135deg,#1d99f0,#0d6efd); }
+.stat-pend  { background: linear-gradient(135deg,#6ea8fe,#3d8bfd); }
+
+/* === BOBOT LEGEND === */
 .bobot-legend th, .bobot-legend td { font-size: 11px; padding: 3px 8px; text-align: center; }
+.bobot-legend thead th { background-color: #007bff; color: #fff; border-color: #0069d9 !important; }
+
+/* === PROJECT LIST TABLE === */
+#tbl-projects thead th { background-color: #007bff; color: #fff; }
+
+/* === BUTTONS === */
 .btn-action { font-size: 11px; padding: 2px 8px; }
+
+/* === CARD BORDERS === */
+.card.border-primary { border-color: #007bff !important; }
+.card-header-blue { background-color: #007bff; color: #fff; }
 </style>
 
 <div class="col p-3">
@@ -184,7 +203,7 @@ function statusBadge($s) {
 <!-- ===== LIST VIEW ===== -->
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0"><i class="fa fa-tasks mr-2"></i>Project Progress</h4>
-    <button class="btn btn-success btn-sm" onclick="openProjectModal()">
+    <button class="btn btn-primary btn-sm" onclick="openProjectModal()">
         <i class="fa fa-plus"></i> Tambah Project
     </button>
 </div>
@@ -307,11 +326,11 @@ $sumTotal = count($tasks);
 $sumPct = $sumTotal > 0 ? round($sumDone/$sumTotal*100) : 0;
 ?>
 <div class="row mb-3">
-    <div class="col-md-3"><div class="stat-card stat-done"><i class="fa fa-check-circle mr-1"></i>DONE &nbsp;<span style="font-size:20px"><?=$sumDone?></span> / <?=$sumTotal?></div></div>
+    <div class="col-md-3"><div class="stat-card" style="background:linear-gradient(135deg,#28a745,#1e7e34)"><i class="fa fa-check-circle mr-1"></i>DONE &nbsp;<span style="font-size:20px"><?=$sumDone?></span> / <?=$sumTotal?></div></div>
     <div class="col-md-3"><div class="stat-card stat-prog"><i class="fa fa-spinner mr-1"></i>ON PROGRESS &nbsp;<span style="font-size:20px"><?=$sumProg?></span></div></div>
     <div class="col-md-3"><div class="stat-card stat-pend"><i class="fa fa-clock-o mr-1"></i>PENDING &nbsp;<span style="font-size:20px"><?=$sumPend?></span></div></div>
     <div class="col-md-3">
-        <div class="stat-card" style="background:linear-gradient(135deg,#2980b9,#1a5276)">
+        <div class="stat-card stat-done">
             <i class="fa fa-percent mr-1"></i>PROGRESS &nbsp;<span style="font-size:20px"><?=$sumPct?>%</span>
         </div>
     </div>
@@ -320,7 +339,7 @@ $sumPct = $sumTotal > 0 ? round($sumDone/$sumTotal*100) : 0;
 <!-- Task table -->
 <div class="d-flex justify-content-between align-items-center mb-2">
     <h6 class="mb-0">Daftar Task</h6>
-    <button class="btn btn-success btn-sm" onclick="openTaskModal()">
+    <button class="btn btn-primary btn-sm" onclick="openTaskModal()">
         <i class="fa fa-plus"></i> Tambah Task
     </button>
 </div>
@@ -459,7 +478,7 @@ $sumPct = $sumTotal > 0 ? round($sumDone/$sumTotal*100) : 0;
 <div class="modal fade" id="modalTask" tabindex="-1">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
-            <div class="modal-header bg-success text-white py-2">
+            <div class="modal-header bg-primary text-white py-2">
                 <h6 class="modal-title mb-0" id="modalTaskTitle">Tambah Task</h6>
                 <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
             </div>
@@ -490,8 +509,8 @@ $sumPct = $sumTotal > 0 ? round($sumDone/$sumTotal*100) : 0;
                 </div>
                 <div class="form-row">
                     <div class="col-md-4">
-                        <div class="card border-info mb-2">
-                            <div class="card-header bg-info text-white py-1" style="font-size:11px"><b>IT</b></div>
+                        <div class="card border-primary mb-2">
+                            <div class="card-header bg-primary text-white py-1" style="font-size:11px"><b>IT</b></div>
                             <div class="card-body py-2">
                                 <div class="form-row">
                                     <div class="form-group col-6 mb-1">
@@ -507,8 +526,8 @@ $sumPct = $sumTotal > 0 ? round($sumDone/$sumTotal*100) : 0;
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="card border-success mb-2">
-                            <div class="card-header bg-success text-white py-1" style="font-size:11px"><b>SISTEM</b></div>
+                        <div class="card border-primary mb-2">
+                            <div class="card-header bg-primary text-white py-1" style="font-size:11px"><b>SISTEM</b></div>
                             <div class="card-body py-2">
                                 <div class="form-row">
                                     <div class="form-group col-4 mb-1">
@@ -528,8 +547,8 @@ $sumPct = $sumTotal > 0 ? round($sumDone/$sumTotal*100) : 0;
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="card border-warning mb-2">
-                            <div class="card-header bg-warning py-1" style="font-size:11px"><b>USER</b></div>
+                        <div class="card border-primary mb-2">
+                            <div class="card-header bg-primary text-white py-1" style="font-size:11px"><b>USER</b></div>
                             <div class="card-body py-2">
                                 <div class="form-row">
                                     <div class="form-group col-4 mb-1">
@@ -567,7 +586,7 @@ $sumPct = $sumTotal > 0 ? round($sumDone/$sumTotal*100) : 0;
             </div>
             <div class="modal-footer py-2">
                 <button class="btn btn-secondary btn-sm" data-dismiss="modal">Batal</button>
-                <button class="btn btn-success btn-sm" onclick="saveTask()"><i class="fa fa-save mr-1"></i>Simpan</button>
+                <button class="btn btn-primary btn-sm" onclick="saveTask()"><i class="fa fa-save mr-1"></i>Simpan</button>
             </div>
         </div>
     </div>

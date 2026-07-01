@@ -36,13 +36,17 @@ switch ($type_pv) {
     case 'CBD':
         $data = getApprovalCbd($conn2, $filters, $canSelect);
         break;
+    case 'Saldo Awal':
+        $data = getApprovalSaldoAwal($conn2, $filters, $canSelect);
+        break;
     case 'ALL':
     default:
         $data = array_merge(
             getApprovalRegular($conn2, $filters, $canSelect),
             getApprovalInstallment($conn2, $filters, $canSelect),
             getApprovalDp($conn2, $filters, $canSelect),
-            getApprovalCbd($conn2, $filters, $canSelect)
+            getApprovalCbd($conn2, $filters, $canSelect),
+            getApprovalSaldoAwal($conn2, $filters, $canSelect)
         );
         break;
 }
@@ -251,6 +255,59 @@ function getApprovalDp($conn2, $filters, $canSelect)
             'detail_url'  => 'ajaxkbondp.php',
             'select'      => buildSelect($kbonno, 'dp', $canSelect, $kbonno),
             'cancel_id'   => $kbonno,
+        ];
+    }
+
+    return $data;
+}
+
+/* ====================== TYPE: SALDO AWAL ====================== */
+
+function getApprovalSaldoAwal($conn2, $filters, $canSelect)
+{
+    $where = "status = '" . mysqli_real_escape_string($conn2, $filters['status']) . "'";
+
+    if ($filters['nama_supp'] !== 'ALL' && $filters['nama_supp'] !== '') {
+        $where .= " and nama_supp = '" . mysqli_real_escape_string($conn2, $filters['nama_supp']) . "'";
+    }
+
+    $sql = mysqli_query($conn2, "SELECT no_kbon, tgl_kbon, nama_supp, tgl_tempo, curr,
+        SUM(total) total, status
+        FROM ap_saldo_payment_voucher
+        WHERE $where
+        GROUP BY no_kbon, tgl_kbon, nama_supp, tgl_tempo, curr, status
+        ORDER BY tgl_kbon DESC");
+
+    $data = [];
+
+    while ($row = mysqli_fetch_assoc($sql)) {
+        $kbonno = $row['no_kbon'];
+
+        $data[] = [
+            'no_kbon'       => $kbonno,
+            'type_label'    => 'Saldo Awal',
+            'tgl_kbon'      => !empty($row['tgl_kbon']) ? date('d-M-Y', strtotime($row['tgl_kbon'])) : '-',
+            'tgl_kbon2'     => 'Saldo Awal',
+            'nama_supp'     => $row['nama_supp'],
+            'subtotal'      => number_format($row['total'], 2),
+            'tax'           => '-',
+            'pph_value'     => '-',
+            'dp'            => '-',
+            'return'        => '-',
+            'potong'        => '-',
+            'total'         => number_format($row['total'], 2),
+            'curr'          => $row['curr'],
+            'status'        => $row['status'],
+            'tgl_tempo'     => !empty($row['tgl_tempo']) ? date('d-M-Y', strtotime($row['tgl_tempo'])) : '-',
+            'tgl_tempo_raw' => $row['tgl_tempo'] ?: '',
+            'overdue'       => isOverdue($row['tgl_tempo']),
+            'due_soon'      => isDueSoon($row['tgl_tempo']),
+            'create_user'   => '-',
+            'no_faktur'     => '-',
+            'supp_inv'      => '-',
+            'tgl_inv'       => '-',
+            'select'        => buildSelect($kbonno, 'saldo_awal', $canSelect, $kbonno),
+            'cancel_id'     => $kbonno,
         ];
     }
 
