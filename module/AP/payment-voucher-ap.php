@@ -281,6 +281,7 @@ div.dataTables_wrapper .dataTables_info {
                 <th style="text-align: center;vertical-align: middle;">Potongan</th>
                 <th style="text-align: center;vertical-align: middle;">Total KB</th>
                 <th style="text-align: center;vertical-align: middle;">Currency</th>
+                <th style="text-align: center;vertical-align: middle;width: 140px;">Status</th>
                 <th style="text-align: center;vertical-align: middle;width: 190px;">Action</th>
             </tr>
         </thead>
@@ -458,13 +459,15 @@ function SidebarCollapse () {
       { data: 'potong' },
       { data: 'total' },
       { data: 'curr' },
+      { data: 'status_badge', orderable: false },
       { data: 'action', orderable: false },
       ],
 
       columnDefs: [
           { targets: [4, 5, 6, 7, 8, 9, 10], className: 'text-right' },
-          { targets: [0, 1, 2, 3, 11, 12], className: 'text-center' },
-          { targets: 12, width: '190px' }
+          { targets: [0, 1, 2, 3, 11, 12, 13], className: 'text-center' },
+          { targets: 12, width: '140px' },
+          { targets: 13, width: '190px' }
             ],
 
 });

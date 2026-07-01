@@ -388,7 +388,7 @@ $rates2 = isset($rowyss2['rate']) ? $rowyss2['rate'] : 1;
         (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '$accountid' and transaksi_date between '$start_date' and '$end_date' and status != 'Cancel') AS q1 JOIN
         (SELECT @runtot:= $saldoswal2,@runnum:=0) runtot) a ORDER BY a.nomor desc limit 1");
      $rows6 = mysqli_fetch_array($sql6);
-     $saldoakhir = isset($rows6['saldo_akhir']) ? $rows6['saldo_akhir'] : 0;
+     $saldoakhir = isset($rows6['saldo_akhir']) ? $rows6['saldo_akhir'] : $saldoswal2;
      $dateakhir = isset($rows6['date']) ? $rows6['date'] : null;
 
      $sqlrates3 = mysqli_query($conn1,"select id,rate FROM masterrate where v_codecurr = 'HARIAN' and tanggal = '$dateakhir'");

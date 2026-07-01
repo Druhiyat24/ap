@@ -131,7 +131,7 @@ $period_label = ($start_date !== '' && $end_date !== '')
             <td style="text-align:right;"><?php echo htmlspecialchars($row['potong']); ?></td>
             <td style="text-align:right;"><?php echo htmlspecialchars($row['total']); ?></td>
             <td><?php echo htmlspecialchars($row['curr']); ?></td>
-            <td><?php echo htmlspecialchars($row['status']); ?></td>
+            <td><?php echo htmlspecialchars($row['status_label'] ?? $row['status']); ?></td>
             <td><?php echo htmlspecialchars($row['create_user']); ?></td>
             <td><?php echo htmlspecialchars($row['create_date']); ?></td>
             <td><?php echo htmlspecialchars($row['confirm_user']); ?></td>

@@ -32,7 +32,7 @@ function getDataRegular($conn1, $conn2, $filters, $fin, $app, $group)
         a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value,
         d.tgl_kbon2, d.confirm_user, d.confirm_date, d.create_date, d.profit_center, b.jml_return, b.jml_potong,
         b.potongan_ppn, b.potongan_pph,
-        d.status_pl, d.no_coa, d.nama_coa, d.rate, d.from_account, d.from_bank, d.from_bank_curr
+        d.status_pl, d.status_pvl, d.no_coa, d.nama_coa, d.rate, d.from_account, d.from_bank, d.from_bank_curr
         from kontrabon a
         inner join potongan b on b.no_kbon = a.no_kbon
         inner join kontrabon_h d on d.no_kbon = a.no_kbon
@@ -41,6 +41,7 @@ function getDataRegular($conn1, $conn2, $filters, $fin, $app, $group)
         order by a.tgl_kbon desc");
 
     $data = [];
+    $paidKbons = getPaidKbonsMap($conn2, 'Regular');
 
     while ($row = mysqli_fetch_assoc($sql)) {
         $kbonno = $row['no_kbon'];
@@ -61,6 +62,8 @@ function getDataRegular($conn1, $conn2, $filters, $fin, $app, $group)
         $potong = $row['jml_potong'];
         $total = $sub + $tax - ($pph + $dp + $return) + $potong;
         $rowStatus = $row['status'];
+        $isPaid = isset($paidKbons[$kbonno]);
+        $statusLabel = computeStatusLabel($rowStatus, $row['status_pvl'] ?? null, $row['status_pl'] ?? null, $isPaid);
 
         $data[] = [
             'type'        => 'Regular',
@@ -82,8 +85,11 @@ function getDataRegular($conn1, $conn2, $filters, $fin, $app, $group)
             'tax_raw'     => $tax,
             'pph_raw'     => $pph,
             'curr'        => $row['curr'],
-            'status'      => $rowStatus,
-            'status_pl'   => $row['status_pl'],
+            'status'        => $rowStatus,
+            'status_pl'     => $row['status_pl'],
+            'status_pvl'    => $row['status_pvl'] ?? null,
+            'status_label'  => $statusLabel,
+            'status_badge'  => buildStatusBadge($statusLabel),
             'no_coa'      => $row['no_coa'],
             'nama_coa'    => $row['nama_coa'],
             'rate'        => $row['rate'],
@@ -167,7 +173,7 @@ function getDataInstallment($conn1, $conn2, $filters, $fin, $app, $group)
         $where .= " AND d.no_kbon_det = '" . mysqli_real_escape_string($conn2, $filters['no_kbon_det']) . "'";
     }
 
-    $sql = mysqli_query($conn2, "select d.no_kbon, d.no_kbon_det, d.cicilan_ke, d.total_cicilan, d.tgl_tempo, d.dpp, d.ppn, d.pph, d.ro, d.ftr, d.potongan, d.total, d.status_pl,
+    $sql = mysqli_query($conn2, "select d.no_kbon, d.no_kbon_det, d.cicilan_ke, d.total_cicilan, d.tgl_tempo, d.dpp, d.ppn, d.pph, d.ro, d.ftr, d.potongan, d.total, d.status_pl, d.status_pvl,
         h.tgl_kbon, h.nama_supp, h.curr, h.create_user, h.create_date, h.status, h.no_faktur, h.supp_inv, h.tgl_inv, h.confirm_user, h.confirm_date, h.profit_center,
         h.no_coa, h.nama_coa, h.rate, h.from_account, h.from_bank, h.from_bank_curr
         from kontrabon_h_installment_detail d
@@ -176,6 +182,7 @@ function getDataInstallment($conn1, $conn2, $filters, $fin, $app, $group)
         order by h.tgl_kbon desc, d.no_kbon asc, d.cicilan_ke asc");
 
     $data = [];
+    $paidKbons = getPaidKbonsMap($conn2, 'Installment');
 
     while ($row = mysqli_fetch_assoc($sql)) {
         $kbonno = $row['no_kbon'];
@@ -187,6 +194,8 @@ function getDataInstallment($conn1, $conn2, $filters, $fin, $app, $group)
         $status_closing = $rowClosing['status_closing'] ?? '';
 
         $rowStatus = $row['status'];
+        $isPaid = isset($paidKbons[$kbonDet]);
+        $statusLabel = computeStatusLabel($rowStatus, $row['status_pvl'] ?? null, $row['status_pl'] ?? null, $isPaid);
 
         $data[] = [
             'type'           => 'Installment',
@@ -209,8 +218,11 @@ function getDataInstallment($conn1, $conn2, $filters, $fin, $app, $group)
             'tax_raw'     => $row['ppn'],
             'pph_raw'     => $row['pph'],
             'curr'        => $row['curr'],
-            'status'      => $rowStatus,
-            'status_pl'   => $row['status_pl'],
+            'status'        => $rowStatus,
+            'status_pl'     => $row['status_pl'],
+            'status_pvl'    => $row['status_pvl'] ?? null,
+            'status_label'  => $statusLabel,
+            'status_badge'  => buildStatusBadge($statusLabel),
             'no_coa'      => $row['no_coa'],
             'nama_coa'    => $row['nama_coa'],
             'rate'        => $row['rate'],
@@ -281,13 +293,14 @@ function getDataDp($conn1, $conn2, $filters, $fin, $app, $group)
 
     $sql = mysqli_query($conn2, "select no_kbon, tgl_kbon, nama_supp, subtotal, dp_value, pph, total, curr, status,
         create_user, create_date, confirm_user, confirm_date, no_faktur, supp_inv, tgl_inv, tgl_tempo, profit_center,
-        status_pl, from_account, from_bank, from_bank_curr, item_type, no_coa, nama_coa
+        status_pl, status_pvl, from_account, from_bank, from_bank_curr, item_type, no_coa, nama_coa
         from kontrabon_h_dp
         where $where
         order by tgl_kbon desc");
 
 
     $data = [];
+    $paidKbons = getPaidKbonsMap($conn2, 'DP');
 
     while ($row = mysqli_fetch_assoc($sql)) {
         $kbonno = $row['no_kbon'];
@@ -298,6 +311,8 @@ function getDataDp($conn1, $conn2, $filters, $fin, $app, $group)
         $status_closing = $rowClosing['status_closing'] ?? '';
 
         $rowStatus = $row['status'];
+        $isPaid = isset($paidKbons[$kbonno]);
+        $statusLabel = computeStatusLabel($rowStatus, $row['status_pvl'] ?? null, $row['status_pl'] ?? null, $isPaid);
 
         $data[] = [
             'type'        => 'DP',
@@ -319,8 +334,11 @@ function getDataDp($conn1, $conn2, $filters, $fin, $app, $group)
             'tax_raw'     => 0,
             'pph_raw'     => $row['pph'],
             'curr'        => $row['curr'],
-            'status'      => $rowStatus,
-            'status_pl'   => $row['status_pl'],
+            'status'        => $rowStatus,
+            'status_pl'     => $row['status_pl'],
+            'status_pvl'    => $row['status_pvl'] ?? null,
+            'status_label'  => $statusLabel,
+            'status_badge'  => buildStatusBadge($statusLabel),
             'from_account' => $row['from_account'],
             'from_bank'   => $row['from_bank'],
             'from_bank_curr' => $row['from_bank_curr'],
@@ -390,12 +408,13 @@ function getDataCbd($conn1, $conn2, $filters, $fin, $app, $group)
 
     $sql = mysqli_query($conn2, "select no_kbon, tgl_kbon, nama_supp, subtotal, tax, pph, total, curr, status,
         create_user, create_date, confirm_user, confirm_date, no_faktur, supp_inv, tgl_inv, tgl_tempo, profit_center,
-        status_pl, from_account, from_bank, from_bank_curr, item_type, no_coa, nama_coa
+        status_pl, status_pvl, from_account, from_bank, from_bank_curr, item_type, no_coa, nama_coa
         from kontrabon_h_cbd
         where $where
         order by tgl_kbon desc");
 
     $data = [];
+    $paidKbons = getPaidKbonsMap($conn2, 'CBD');
 
     while ($row = mysqli_fetch_assoc($sql)) {
         $kbonno = $row['no_kbon'];
@@ -406,6 +425,8 @@ function getDataCbd($conn1, $conn2, $filters, $fin, $app, $group)
         $status_closing = $rowClosing['status_closing'] ?? '';
 
         $rowStatus = $row['status'];
+        $isPaid = isset($paidKbons[$kbonno]);
+        $statusLabel = computeStatusLabel($rowStatus, $row['status_pvl'] ?? null, $row['status_pl'] ?? null, $isPaid);
 
         $data[] = [
             'type'        => 'CBD',
@@ -427,8 +448,11 @@ function getDataCbd($conn1, $conn2, $filters, $fin, $app, $group)
             'tax_raw'     => $row['tax'],
             'pph_raw'     => $row['pph'],
             'curr'        => $row['curr'],
-            'status'      => $rowStatus,
-            'status_pl'   => $row['status_pl'],
+            'status'        => $rowStatus,
+            'status_pl'     => $row['status_pl'],
+            'status_pvl'    => $row['status_pvl'] ?? null,
+            'status_label'  => $statusLabel,
+            'status_badge'  => buildStatusBadge($statusLabel),
             'from_account' => $row['from_account'],
             'from_bank'   => $row['from_bank'],
             'from_bank_curr' => $row['from_bank_curr'],
@@ -714,4 +738,77 @@ function getAlreadyPaidFor($conn2, $type_pv, $no_kbon)
     $paidPay = !empty($rowPay['total_paid']) ? (float) $rowPay['total_paid'] : 0;
 
     return $paidBank + $paidCash + $paidPay;
+}
+
+/* ====================== STATUS BADGE ====================== */
+/* computeStatusLabel(): returns plain-text label (used both for the badge
+   HTML and for the Excel export column). Priority order: Paid > Cancel >
+   2nd/1st Approval PL > 3rd Approval PV List > 2nd/1st Approval PV > Draft. */
+
+function computeStatusLabel($status, $statusPvl, $statusPl, $isPaid)
+{
+    if ($isPaid)              return 'Paid';
+    if ($status === 'Cancel') return 'Cancel';
+
+    $plUp  = !empty($statusPl)  ? strtoupper(trim($statusPl))  : '';
+    $pvlUp = !empty($statusPvl) ? strtoupper(trim($statusPvl)) : '';
+
+    if ($plUp  === 'SECOND APPROVED')    return '2nd Approval PL';
+    if ($plUp  === 'FIRST APPROVED')     return '1st Approval PL';
+    if ($pvlUp && $pvlUp !== 'CANCEL')   return '3rd Approval PV List';
+
+    $stUp = strtoupper(trim($status));
+    if ($stUp === 'SECOND APPROVED' || $status === 'Approved') return '2nd Approval PV';
+    if ($stUp === 'FIRST APPROVED')      return '1st Approval PV';
+
+    return 'Draft';
+}
+
+/* buildStatusBadge(): wraps a label from computeStatusLabel() in a colored
+   inline badge for DataTable display. Returns plain $label for unknown values. */
+
+function buildStatusBadge($label)
+{
+    static $colors = [
+        'Paid'                 => '#0d6e4b',
+        'Cancel'               => '#c0392b',
+        '2nd Approval PL'      => '#1e8449',
+        '1st Approval PL'      => '#b7950b',
+        '3rd Approval PV List' => '#6f42c1',
+        '2nd Approval PV'      => '#1e3a8a',
+        '1st Approval PV'      => '#2980b9',
+        'Draft'                => '#546e7a',
+    ];
+    $bg = $colors[$label] ?? '#546e7a';
+    return '<span style="display:inline-block;background:' . $bg
+        . ';color:#fff;border-radius:12px;padding:3px 9px;font-size:11px;font-weight:600;white-space:nowrap;">'
+        . htmlspecialchars($label) . '</span>';
+}
+
+/* getPaidKbonsMap(): one-shot query that returns a set (assoc array keyed by
+   no_kbon) of all PVs of the given type that have been paid via bank out,
+   petty cash out, or payment non-bank. Used instead of per-row sub-queries. */
+
+function getPaidKbonsMap($conn2, $type_pv)
+{
+    $t   = mysqli_real_escape_string($conn2, $type_pv);
+    $sql = mysqli_query($conn2,
+        "SELECT DISTINCT no_reff AS no_kbon FROM b_bankout_det a
+            INNER JOIN b_bankout_h b ON b.no_bankout = a.no_bankout
+            WHERE b.status != 'Cancel' AND a.type_pv = '$t'
+         UNION
+         SELECT DISTINCT no_reff AS no_kbon FROM c_petty_cashout_det a
+            INNER JOIN c_petty_cashout_h b ON b.no_pco = a.no_pco
+            WHERE b.status != 'Cancel' AND a.type_pv = '$t'
+         UNION
+         SELECT DISTINCT no_kbon FROM payment_ftr
+            WHERE status != 'Cancel' AND type_pv = '$t'"
+    );
+    $map = [];
+    if ($sql) {
+        while ($r = mysqli_fetch_assoc($sql)) {
+            $map[$r['no_kbon']] = true;
+        }
+    }
+    return $map;
 }

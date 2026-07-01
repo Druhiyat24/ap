@@ -104,7 +104,7 @@
         (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '$accountid' and transaksi_date between '$start_date' and '$end_date' and status != 'Cancel') AS q1 JOIN
         (SELECT @runtot:= $saldoswal,@runnum:=0) runtot) a ORDER BY a.nomor desc limit 1");
      $rows6 = mysqli_fetch_array($sql6);
-     $saldoakhir = isset($rows6['saldo_akhir']) ? $rows6['saldo_akhir'] : 0;
+     $saldoakhir = isset($rows6['saldo_akhir']) ? $rows6['saldo_akhir'] : $saldoswal;
 
      $sql = mysqli_query($conn1," SELECT '',q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
 FROM
