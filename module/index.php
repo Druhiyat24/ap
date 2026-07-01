@@ -26,6 +26,31 @@ if ($user == '') {
       margin-right: auto;
       height: 30px;
   }
+  .notif-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #ff5b5b, #d62828);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1;
+      padding: 2px 7px;
+      border-radius: 10px;
+      margin-left: 6px;
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.08), 0 1px 3px rgba(0,0,0,0.4);
+      vertical-align: middle;
+      animation: notif-pulse 2s infinite;
+  }
+  @keyframes notif-pulse {
+      0% {
+          box-shadow: 0 0 0 2px rgba(255,255,255,0.08), 0 1px 3px rgba(0,0,0,0.4), 0 0 0 0 rgba(214,40,40,0.55);
+      }
+      70% {
+          box-shadow: 0 0 0 2px rgba(255,255,255,0.08), 0 1px 3px rgba(0,0,0,0.4), 0 0 0 6px rgba(214,40,40,0);
+      }
+      100% {
+          box-shadow: 0 0 0 2px rgba(255,255,255,0.08), 0 1px 3px rgba(0,0,0,0.4), 0 0 0 0 rgba(214,40,40,0);
+      }
+  }
   .box {
       border-style: outset;
       box-sizing: border-box;
@@ -334,7 +359,7 @@ if ($user == '') {
         $row = mysqli_fetch_array($sql);
         $count = isset($row['no_bpb']) ? $row['no_bpb'] : 0;
         if($count != '0'){
-            $notif = '<span class="badge" style="background-color: red;">'.$count.'</span>';
+            $notif = '<span class="notif-badge">'.$count.'</span>';
         }else{
             $notif = '';
         } 
@@ -344,7 +369,7 @@ if ($user == '') {
         $count1 = $row1['no_ro'];
         $countjml = $count + $count1;
         if($count1 != '0'){
-            $notif1 = '<span class="badge" style="background-color: red;">'.$count1.'</span>';
+            $notif1 = '<span class="notif-badge">'.$count1.'</span>';
         }else{
             $notif1 = '';
         }
@@ -550,7 +575,7 @@ while($rss_nak = mysqli_fetch_array($queryss_nak)){
     $row_nak = mysqli_fetch_array($sql_nak);
     $count_nak = $row_nak['no_bpb'];
     if($count_nak != '0'){
-        $notif_nak = '<span class="badge" style="background-color: red;">'.$count_nak.'</span>';
+        $notif_nak = '<span class="notif-badge">'.$count_nak.'</span>';
     }else{
         $notif_nak = '';
     } 
@@ -716,21 +741,26 @@ if($id == '6'){
 
     //NEW PAYMENT VOUCHER
 
-    // echo '
-    // <li class="dropdown-submenu ">
-    // <a class="dropdown-item bg-dark text-white" href="#">
-    // <span s class="fa fa-credit-card fa-fw "></span>
-    // <span class="menu-collapsed">Payment Voucher</span>
-    // </a>
-    // <ul class="dropdown-menu bg-dark text-white" role="menu">
+    echo '
+    <li class="dropdown-submenu ">
+    <a class="dropdown-item bg-dark text-white" href="#">
+    <span s class="fa fa-credit-card fa-fw "></span>
+    <span class="menu-collapsed">Payment Voucher</span>
+    </a>
+    <ul class="dropdown-menu bg-dark text-white" role="menu">
 
-    // <a href="AP/payment-voucher-ap.php" class="dropdown-item bg-dark text-white">
-    // <span class="fa fa-ticket fa-fw "></span>
-    // <span class="menu-collapsed">Payment Voucher</span>
-    // </a>
+    <a href="AP/payment-voucher-ap.php" class="dropdown-item bg-dark text-white">
+    <span class="fa fa-ticket fa-fw "></span>
+    <span class="menu-collapsed">Payment Voucher</span>
+    </a>
 
-    // </ul>
-    // </li>';
+    <a href="AP/payment-voucher-list.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-list-alt fa-fw "></span>
+                    <span class="menu-collapsed">Payment Voucher list</span>
+                    </a>
+
+    </ul>
+    </li>';
 }else{
     echo '';
 }
@@ -821,7 +851,7 @@ $countsa = $rowsa['no_paysa'];
 
 $countlpsa12 = $count123 + $countsa;
 if($countlpsa12 != '0'){
-    $notif123 = '<span class="badge" style="background-color: red;">'.$countlpsa12.'</span>';
+    $notif123 = '<span class="notif-badge">'.$countlpsa12.'</span>';
 }else{
     $notif123 = '';
 }
@@ -830,7 +860,7 @@ $sql456 = mysqli_query($conn2,"select count(distinct(no_payment)) as no_pay from
 $row456 = mysqli_fetch_array($sql456);
 $count456 = $row456['no_pay'];
 if($count456 != '0'){
-    $notif456 = '<span class="badge" style="background-color: red;">'.$count456.'</span>';
+    $notif456 = '<span class="notif-badge">'.$count456.'</span>';
 }else{
     $notif456 = '';
 }
@@ -839,7 +869,7 @@ $sql789 = mysqli_query($conn2,"select count(distinct(no_payment)) as no_pay from
 $row789 = mysqli_fetch_array($sql789);
 $count789 = $row789['no_pay'];
 if($count789 != '0'){
-    $notif789 = '<span class="badge" style="background-color: red;">'.$count789.'</span>';
+    $notif789 = '<span class="notif-badge">'.$count789.'</span>';
 }else{
     $notif789 = '';
 }
@@ -937,11 +967,15 @@ echo '<li class="dropdown-submenu ">
 if($id2 == '35'){
     echo '<a href="AP/pcs_detail.php" class="dropdown-item bg-dark text-white">
     <span class="fa fa-tags fa-fw "></span>
-    <span class="menu-collapsed">AP Report</span>
+    <span class="menu-collapsed">AP Report (Apr 2022 - Dec 2025)</span>
     </a>
    <a href="AP/payable_card_statement.php" class="dropdown-item bg-dark text-white">
     <span class="fa fa-tags fa-fw "></span>
-    <span class="menu-collapsed">AP Report New</span>
+    <span class="menu-collapsed">AP Report (Jan 2026 - Jun 2026)</span>
+    </a>
+    <a href="AP/payable_card_statement2.php" class="dropdown-item bg-dark text-white">
+    <span class="fa fa-tags fa-fw "></span>
+    <span class="menu-collapsed">AP Report</span>
     </a>
     <a href="AP/rekap-pelunasan.php" class="dropdown-item bg-dark text-white">
     <span class="fa fa-tags fa-fw "></span>
@@ -950,11 +984,15 @@ if($id2 == '35'){
 }elseif($id == '18' && $id3 == '0'){
     echo '<a href="AP/pcs_detail.php" class="dropdown-item bg-dark text-white">
     <span class="fa fa-tags fa-fw "></span>
-    <span class="menu-collapsed">AP Report</span>
+    <span class="menu-collapsed">AP Report (Apr 2022 - Dec 2025)</span>
     </a>
     <a href="AP/payable_card_statement.php" class="dropdown-item bg-dark text-white">
     <span class="fa fa-tags fa-fw "></span>
-    <span class="menu-collapsed">AP Report New</span>
+    <span class="menu-collapsed">AP Report (Jan 2026 - Jun 2026)</span>
+    </a>
+    <a href="AP/payable_card_statement2.php" class="dropdown-item bg-dark text-white">
+    <span class="fa fa-tags fa-fw "></span>
+    <span class="menu-collapsed">AP Report</span>
     </a>';
 }elseif($id == '0' && $id3 == '57'){
     echo '<a href="AP/rekap-pelunasan.php" class="dropdown-item bg-dark text-white">
@@ -964,11 +1002,15 @@ if($id2 == '35'){
 }elseif($id == '18' && $id3 == '57'){
     echo '<a href="AP/pcs_detail.php" class="dropdown-item bg-dark text-white">
     <span class="fa fa-tags fa-fw "></span>
-    <span class="menu-collapsed">AP Report</span>
+    <span class="menu-collapsed">AP Report (Apr 2022 - Dec 2025)</span>
     </a>
     <a href="AP/payable_card_statement.php" class="dropdown-item bg-dark text-white">
     <span class="fa fa-tags fa-fw "></span>
-    <span class="menu-collapsed">AP Report New</span>
+    <span class="menu-collapsed">AP Report (Jan 2026 - Jun 2026)</span>
+    </a>
+    <a href="AP/payable_card_statement2.php" class="dropdown-item bg-dark text-white">
+    <span class="fa fa-tags fa-fw "></span>
+    <span class="menu-collapsed">AP Report</span>
     </a>
     <a href="AP/rekap-pelunasan.php" class="dropdown-item bg-dark text-white">
     <span class="fa fa-tags fa-fw "></span>
@@ -1006,7 +1048,7 @@ $sqlkb = mysqli_query($conn2," select count(distinct(no_kbon)) as no_kbon from k
 $rowkb = mysqli_fetch_array($sqlkb);
 $countkb = $rowkb['no_kbon'];
 if($countkb != '0'){
-    $notifkb = '<span class="badge" style="background-color: red;">'.$countkb.'</span>';
+    $notifkb = '<span class="notif-badge">'.$countkb.'</span>';
 }else{
     $notifkb = '';
 }
@@ -1022,7 +1064,7 @@ $countsa = $rowsa['no_paysa'];
 $countlpsa = $countlp + $countsa;
 
 if($countlpsa != '0'){
-    $notiflp = '<span class="badge" style="background-color: red;">'.$countlpsa.'</span>';
+    $notiflp = '<span class="notif-badge">'.$countlpsa.'</span>';
 }else{
     $notiflp = '';
 }
@@ -1032,10 +1074,49 @@ $sqlpay = mysqli_query($conn2," select COUNT(id) jml from (select a.id, payment_
 $rowpay = mysqli_fetch_array($sqlpay);
 $countpay = $rowpay['jml'];
 if($countpay != '0'){
-    $notifpay = '<span class="badge" style="background-color: red;">'.$countpay.'</span>';
+    $notifpay = '<span class="notif-badge">'.$countpay.'</span>';
 }else{
     $notifpay = '';
 }
+
+$sqlpv1 = mysqli_query($conn2," select count(distinct(no_kbon)) as no_kbon from(select no_kbon from kontrabon_h where status = 'draft' and no_kbon not like '%INS%'
+          UNION
+          select no_kbon_det from kontrabon_h_installment_detail where status = 'draft'
+          UNION
+          select no_kbon from kontrabon_h_dp where status = 'draft'
+          UNION
+          select no_kbon from kontrabon_h_cbd where status = 'draft') a");
+          $rowpv1 = mysqli_fetch_array($sqlpv1);
+          $countpv1 = $rowpv1['no_kbon'];
+          if($countpv1 != '0'){
+              $notifpv1 = '<span class="notif-badge">'.$countpv1.'</span>';
+          }else{
+              $notifpv1 = '';
+          }
+
+          $sqlpv2 = mysqli_query($conn2," select count(distinct(no_kbon)) as no_kbon from(select no_kbon from kontrabon_h where status = 'FIRST APPROVED' and no_kbon not like '%INS%'
+          UNION
+          select no_kbon_det from kontrabon_h_installment_detail where status = 'FIRST APPROVED'
+          UNION
+          select no_kbon from kontrabon_h_dp where status = 'FIRST APPROVED'
+          UNION
+          select no_kbon from kontrabon_h_cbd where status = 'FIRST APPROVED') a");
+          $rowpv2 = mysqli_fetch_array($sqlpv2);
+          $countpv2 = $rowpv2['no_kbon'];
+          if($countpv2 != '0'){
+              $notifpv2 = '<span class="notif-badge">'.$countpv2.'</span>';
+          }else{
+              $notifpv2 = '';
+          }
+
+          $sqlpvl = mysqli_query($conn2," select count(distinct(pl_number)) pl_number from pv_payment_voucher_list_h where status = 'Draft'");
+          $rowpvl = mysqli_fetch_array($sqlpvl);
+          $countpvl = $rowpvl['pl_number'];
+          if($countpvl != '0'){
+              $notifpvl = '<span class="notif-badge">'.$countpvl.'</span>';
+          }else{
+              $notifpvl = '';
+          }
 
 echo '<li class="dropdown-submenu ">
 <a class="dropdown-item bg-dark text-white" href="#">
@@ -1067,6 +1148,31 @@ if(strpos($id, '91') !== false){
     '.$notifpay.'
     </a>';
 }
+
+if(strpos($id, '113') !== false){
+              echo '<a href="AP/approve-payment-voucher-ap-first.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-ticket fa-fw "></span>
+              <span class="menu-collapsed">Payment Voucher - First</span>
+              '.$notifpv1.'
+              </a>';
+          }
+
+          if(strpos($id, '114') !== false){
+              echo '<a href="AP/approve-payment-voucher-ap-second.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-ticket fa-fw "></span>
+              <span class="menu-collapsed">Payment Voucher - Second</span>
+              '.$notifpv2.'
+              </a>';
+          }
+
+          if(strpos($id, '119') !== false){
+              echo '<a href="AP/approve-payment-voucher-list.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-ticket fa-fw "></span>
+              <span class="menu-collapsed">Payment Voucher List</span>
+              '.$notifpvl.'
+              </a>';
+          }
+
 echo '</ul>
 </li>';
 
@@ -1135,12 +1241,46 @@ if($id == '78'){
         </a>';
     }
 
+    $querysPl = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Payment List'");
+      $rsPl = mysqli_fetch_array($querysPl);
+      $idPl = isset($rsPl['id']) ? $rsPl['id'] : 0;
+
+      if($idPl == '115'){
+          echo '<a href="AP/payment-list.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-list-alt fa-fw mr-3"></span>
+          <span class="menu-collapsed">Payment List</span>
+          </a>';
+      }
+
     ?>
     <?php
     $querys = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and  useraccess.menu like '%Bank%' and useraccess.menu like '%Approval%' and useraccess.menu not like '%reverse%' group by username");
     $rs = mysqli_fetch_array($querys);
     $menu = isset($rs['menu']) ? $rs['menu'] :0;
     $id = isset($rs['id']) ? $rs['id'] :0;
+
+    $querys_app = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and  useraccess.menu like '%Approval Payment List%' group by username");
+      $rs_app = mysqli_fetch_array($querys_app);
+      $menu_app = isset($rs_app['menu']) ? $rs_app['menu'] :0;
+      $id_app = isset($rs_app['id']) ? $rs_app['id'] :0;
+
+      $sqlpl1 = mysqli_query($conn2," select count(distinct(pl_number)) pl_number from pv_payment_list_h where status = 'Draft'");
+          $rowpl1 = mysqli_fetch_array($sqlpl1);
+          $countpl1 = $rowpl1['pl_number'];
+          if($countpl1 != '0'){
+              $notifpl1 = '<span class="notif-badge">'.$countpl1.'</span>';
+          }else{
+              $notifpl1 = '';
+          }
+
+      $sqlpl2 = mysqli_query($conn2," select count(distinct(pl_number)) pl_number from pv_payment_list_h where status = 'FIRST APPROVED'");
+          $rowpl2 = mysqli_fetch_array($sqlpl2);
+          $countpl2 = $rowpl2['pl_number'];
+          if($countpl2 != '0'){
+              $notifpl2 = '<span class="notif-badge">'.$countpl2.'</span>';
+          }else{
+              $notifpl2 = '';
+          }
 
     echo '
     <li class="dropdown-submenu ">
@@ -1215,6 +1355,22 @@ if($id == '78'){
     }else{
         echo '';
     }
+
+    if(strpos($id_app, '117') !== false){
+              echo '<a href="AP/approve-payment-list-first.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-ticket fa-fw "></span>
+              <span class="menu-collapsed">Payment List - First</span>
+              '.$notifpl1.'
+              </a>';
+          }
+
+          if(strpos($id_app, '118') !== false){
+              echo '<a href="AP/approve-payment-list-second.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-ticket fa-fw "></span>
+              <span class="menu-collapsed">Payment List - Second</span>
+              '.$notifpl2.'
+              </a>';
+          }
     echo '</ul>
     </li>';
     ?>
@@ -2004,7 +2160,7 @@ if(strpos($id, '108') !== false){
   $row_rvspay = mysqli_fetch_array($sql_rvspay);
   $count_rvspay = $row_rvspay['jml'];
   if($count_rvspay != '0'){
-    $notif_rvspay = '<span class="badge" style="background-color: red;">'.$count_rvspay.'</span>';
+    $notif_rvspay = '<span class="notif-badge">'.$count_rvspay.'</span>';
 }else{
     $notif_rvspay = '';
 }
@@ -2067,7 +2223,7 @@ echo '</ul>
         $rs = mysqli_fetch_array($querys);
         $group = isset($rs['Groupp']) ? $rs['Groupp'] : null;
 
-        if($group != 'STAFF' && $group != null){                      
+        if($group != 'STAFF' && $group != null){
             echo '
             <a href="AP/userrole.php" class="dropdown-item bg-dark text-white">
             <span class="fa fa-user-plus fa-fw"></span>
@@ -2075,6 +2231,14 @@ echo '</ul>
             </a>';
         }else{
             echo '';
+        }
+
+        if($user === 'indro'){
+            echo '
+            <a href="AP/project-progress.php" class="dropdown-item bg-dark text-white">
+            <span class="fa fa-tasks fa-fw"></span>
+            <span class="menu-collapsed">Project Progress</span>
+            </a>';
         }
         ?>
     </ul>

@@ -524,7 +524,14 @@ $(function() {
 </script>
 
 <script type="text/javascript">
-    $("table tbody tr").on("click", "#approve", function(){                 
+    $("table tbody tr").on("click", "#approve", function(e){
+        // Elemen ini <a href="">, jadi klik biasa otomatis reload halaman
+        // (navigasi ke href="" = URL saat ini) SEBELUM ajax di bawah selesai
+        // - request ke approvebpb.php jadi kebatalin browser di tengah jalan,
+        // makanya datanya kelihatan tidak pernah tersimpan. preventDefault()
+        // di sini menghentikan reload otomatis itu.
+        e.preventDefault();
+
         var no_bpb = $(this).closest('tr').find('td:eq(0)').attr('value');
         var pono = $(this).closest('tr').find('td:eq(1)').attr('value');
         var tgl_bpb = $(this).closest('tr').find('td:eq(2)').attr('value');
@@ -539,23 +546,29 @@ $(function() {
             type:'POST',
             url:'approvebpb.php',
             data: {'no_bpb':no_bpb, 'approve_user':approve_user, 'update_user':update_user, 'curr':curr, 'pono':pono, 'tgl_bpb':tgl_bpb, 'tgl_po':tgl_po, 'supp':supp, 'total':total},
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){                
+            success: function(response){
                 console.log(response);
-                alert(data);
-                                               
+                // Submit ulang form filter yang sedang aktif supaya tabel
+                // ter-refresh dengan status terbaru, tanpa kehilangan filter
+                // yang sedang dipakai (Supplier/Status/Date) seperti kalau
+                // reload polos ke URL kosong.
+                $('#form-data')[0].submit();
             },
             error:  function (xhr, ajaxOptions, thrownError) {
-               alert(xhr);
+               console.log(xhr);
+               alert(xhr.responseText || String(thrownError));
             }
         });
         });
 </script>
 
 <script type="text/javascript">
-    $("table tbody tr").on("click", "#cancel", function(){                 
+    $("table tbody tr").on("click", "#cancel", function(e){
+        // Sama seperti #approve - <a href=""> tanpa preventDefault membuat
+        // halaman reload sebelum ajax ke cancelbpb.php selesai, jadi
+        // pembatalan tidak pernah benar-benar tersimpan.
+        e.preventDefault();
+
         var no_bpb = $(this).closest('tr').find('td:eq(0)').attr('value');
         var update_user = '<?php echo $user ?>';
 
@@ -563,16 +576,13 @@ $(function() {
             type:'POST',
             url:'cancelbpb.php',
             data: {'no_bpb':no_bpb, 'update_user':update_user},
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){                
+            success: function(response){
                 console.log(response);
-                alert(response);
-                                               
+                $('#form-data')[0].submit();
             },
             error:  function (xhr, ajaxOptions, thrownError) {
-               alert(xhr);
+               console.log(xhr);
+               alert(xhr.responseText || String(thrownError));
             }
         });
         });
