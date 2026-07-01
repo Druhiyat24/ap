@@ -31,6 +31,7 @@ function getDataRegular($conn1, $conn2, $filters, $fin, $app, $group)
         SUM(a.subtotal) as subtotal, SUM(a.tax) as tax, a.curr, a.create_user, a.status, a.tgl_tempo,
         a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value,
         d.tgl_kbon2, d.confirm_user, d.confirm_date, d.create_date, d.profit_center, b.jml_return, b.jml_potong,
+        b.potongan_ppn, b.potongan_pph,
         d.status_pl, d.no_coa, d.nama_coa, d.rate, d.from_account, d.from_bank, d.from_bank_curr
         from kontrabon a
         inner join potongan b on b.no_kbon = a.no_kbon
@@ -54,8 +55,8 @@ function getDataRegular($conn1, $conn2, $filters, $fin, $app, $group)
         $status_closing = $rowClosing['status_closing'] ?? '';
 
         $sub = $row['subtotal'];
-        $tax = $row['tax'];
-        $pph = $row['pph_value'];
+        $tax = $row['tax'] + $row['potongan_ppn'];
+        $pph = $row['pph_value'] + $row['potongan_pph'];
         $return = $row['jml_return'];
         $potong = $row['jml_potong'];
         $total = $sub + $tax - ($pph + $dp + $return) + $potong;
