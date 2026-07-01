@@ -135,7 +135,7 @@
             </div>
             <div id="txt_pl_date" style="font-size: 12px; padding: 0.4rem 0.6rem 0;"></div>
             <div id="txt_pl_desc" style="font-size: 12px; padding: 0.1rem 0.6rem 0.4rem;"></div>
-            <div id="details" style="font-size: 12px; padding: 0 0.6rem 0.6rem; overflow-x: auto;">
+            <div id="details" style="font-size: 12px; padding: 0 0.6rem 0.6rem; overflow-x: auto; max-height: 380px; overflow-y: auto;">
                   <table id="mytable2" class="table table-striped table-bordered table-sm" cellspacing="0" width="100%" style="font-size: 11.5px;text-align:left;">
                         <thead>
                             <tr>

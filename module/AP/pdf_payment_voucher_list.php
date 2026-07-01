@@ -263,24 +263,14 @@ ob_start();
 
     <table border="1" cellspacing="0" style="width:100%;font-size:7.6pt;border-spacing:2px;">
         <tr>
-            <th rowspan="2" style="border: 1px solid black;">No PV</th>
-            <th rowspan="2" style="border: 1px solid black;">PV Date</th>
-            <th rowspan="2" style="border: 1px solid black;">Duedate</th>
-            <th rowspan="2" style="border: 1px solid black;">Curr</th>
-            <th rowspan="2" style="border: 1px solid black;">Amount</th>
-            <th rowspan="2" style="border: 1px solid black;">Profit Center</th>
-            <th rowspan="2" style="border: 1px solid black;">From Account</th>
-            <th rowspan="2" style="border: 1px solid black;">Description</th>
-            <th rowspan="2" style="border: 1px solid black;">Supplier</th>
-            <th rowspan="2" style="border: 1px solid black;">Total Amount</th>
-            <th colspan="4" style="border: 1px solid black;">To Account</th>
-        </tr>
-        <tr>
-            <th style="border: 1px solid black;">Beneficiary Name</th>
-            <th style="border: 1px solid black;">Bank Currency</th>
-            <th style="border: 1px solid black;">Bank Name</th>
-            <th style="border: 1px solid black;">Bank Account</th>
-        </tr>
+            <th style="border: 1px solid black;">Supplier</th>
+            <th style="border: 1px solid black;">No PV</th>
+            <th style="border: 1px solid black;">PV Date</th>
+            <th style="border: 1px solid black;">Duedate</th>
+            <th style="border: 1px solid black;">Curr</th>
+            <th style="border: 1px solid black;">Amount</th>
+            <th style="border: 1px solid black;">Profit Center</th>
+            <th style="border: 1px solid black;">Description</th>
         <tbody>
             <?php foreach ($rows as $idx => $r) {
                 $from = $r['from'];
@@ -289,31 +279,20 @@ ob_start();
                     : '-';
                 ?>
                 <tr>
+                    <td style="text-align:left;vertical-align:top;"><?php echo htmlspecialchars($r['nama_supp']); ?></td>
                     <td style="text-align:left;vertical-align:top;"><?php echo htmlspecialchars($r['no_pv']); ?></td>
                     <td style="text-align:left;vertical-align:top;"><?php echo !empty($r['tgl_kbon']) ? date('d M Y', strtotime($r['tgl_kbon'])) : '-'; ?></td>
                     <td style="text-align:left;vertical-align:top;"><?php echo !empty($r['tgl_tempo']) ? date('d M Y', strtotime($r['tgl_tempo'])) : '-'; ?></td>
                     <td style="text-align:left;vertical-align:top;"><?php echo htmlspecialchars($r['curr']); ?></td>
                     <td style="text-align:right;vertical-align:top;"><?php echo number_format($r['total'], 2); ?></td>
                     <td style="text-align:left;vertical-align:top;"><?php echo htmlspecialchars($r['profit_center']); ?></td>
-                    <td style="text-align:left;vertical-align:top;"><?php echo $fromStr; ?></td>
                     <td style="text-align:left;vertical-align:top;"><?php echo !empty($r['deskripsi']) ? htmlspecialchars($r['deskripsi']) : '-'; ?></td>
-                    <?php if (isset($rowToGroup[$idx])) {
-                        $g = $rowToGroup[$idx];
-                        $bank = $g['bank'];
-                        ?>
-                        <td style="text-align:left;vertical-align:top;" rowspan="<?php echo $g['rowspan']; ?>"><?php echo strtoupper(htmlspecialchars($g['nama_supp'])); ?></td>
-                        <td style="text-align:right;vertical-align:top;" rowspan="<?php echo $g['rowspan']; ?>"><?php echo number_format($g['total'], 2); ?></td>
-                        <td style="text-align:left;vertical-align:top;" rowspan="<?php echo $g['rowspan']; ?>"><?php echo strtoupper(htmlspecialchars($bank['beneficiary_name'])); ?></td>
-                        <td style="text-align:left;vertical-align:top;" rowspan="<?php echo $g['rowspan']; ?>"><?php echo htmlspecialchars($bank['bank_currency']); ?></td>
-                        <td style="text-align:left;vertical-align:top;" rowspan="<?php echo $g['rowspan']; ?>"><?php echo htmlspecialchars($bank['bank_name']); ?></td>
-                        <td style="text-align:left;vertical-align:top;" rowspan="<?php echo $g['rowspan']; ?>"><?php echo htmlspecialchars($bank['bank_account']); ?></td>
-                    <?php } ?>
                 </tr>
             <?php } ?>
             <tr>
-                <td colspan="4" style="text-align:center;height: 25px;"><b>Grand Total</b></td>
+                <td colspan="5" style="text-align:center;height: 25px;"><b>Grand Total</b></td>
                 <td style="text-align:right;"><b><?php echo number_format($grandTotal, 2); ?></b></td>
-                <td colspan="9"></td>
+                <td colspan="2"></td>
             </tr>
         </tbody>
     </table>
@@ -419,7 +398,7 @@ require_once __DIR__ . '/../../mpdf8/vendor/autoload.php';
 
 $mpdf = new \Mpdf\Mpdf([
     'tempDir' => __DIR__ . '/../../mpdf8/tmp',
-    'format' => 'A4-L',
+    'format' => 'A4',
     'margin_left' => 6,
     'margin_right' => 6,
     'margin_top' => 6,

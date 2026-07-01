@@ -270,7 +270,6 @@ include 'pv_data_functions.php';
                 <option value="Installment" <?php echo (($_POST['h_type_pv'] ?? '') === 'Installment') ? ' selected="selected"' : ''; ?>>Installment</option>
                 <option value="DP" <?php echo (($_POST['h_type_pv'] ?? '') === 'DP') ? ' selected="selected"' : ''; ?>>DP</option>
                 <option value="CBD" <?php echo (($_POST['h_type_pv'] ?? '') === 'CBD') ? ' selected="selected"' : ''; ?>>CBD</option>
-                <option value="Biaya" <?php echo (($_POST['h_type_pv'] ?? '') === 'Biaya') ? ' selected="selected"' : ''; ?>>Biaya</option>
                 <option value="SaldoAwal" <?php echo (($_POST['h_type_pv'] ?? '') === 'SaldoAwal') ? ' selected="selected"' : ''; ?>>Saldo Awal</option>
             </select>
           </div>
