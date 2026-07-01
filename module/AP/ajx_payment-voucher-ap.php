@@ -53,6 +53,9 @@ switch ($type_pv) {
             getDataDp($conn1, $conn2, $filters, $fin, $app, $group),
             getDataCbd($conn1, $conn2, $filters, $fin, $app, $group)
         );
+        usort($data, function($a, $b) {
+            return strcmp($b['tgl_kbon_raw'] ?? '', $a['tgl_kbon_raw'] ?? '');
+        });
         break;
 }
 

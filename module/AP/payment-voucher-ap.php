@@ -137,7 +137,7 @@ div.dataTables_wrapper .dataTables_info {
             </select>
         </div>
 
-        <div class="col-md-1">
+        <div class="col-md-2">
             <label for="status"><b>Status</b></label>
             <select class="form-control form-control-sm select2" name="status" id="status" style="width: 100%;">
                 <?php
@@ -145,15 +145,11 @@ div.dataTables_wrapper .dataTables_info {
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $status = isset($_POST['status']) ? $_POST['status'] : 'ALL';
                 }
-
-                $isSelected = ($status == 'ALL') ? ' selected="selected"' : '';
-                echo '<option value="ALL"' . $isSelected . '>ALL</option>';
-
-                $sql = mysqli_query($conn1, "select nama_pilihan from whs_master_pilihan where type_pilihan = 'status_kontrabon' and status = 'Active'");
-                while ($row = mysqli_fetch_array($sql)) {
-                    $data = $row['nama_pilihan'];
-                    $isSelected = ($data == $status) ? ' selected="selected"' : '';
-                    echo '<option value="' . $data . '"' . $isSelected . '>' . $data . '</option>';
+                $statusOpts = ['ALL', 'Draft', 'Cancel', '1st Approval PV', '2nd Approval PV',
+                               '3rd Approval PV List', '1st Approval PL', '2nd Approval PL', 'Paid'];
+                foreach ($statusOpts as $opt) {
+                    $sel = ($opt == $status) ? ' selected="selected"' : '';
+                    echo '<option value="' . htmlspecialchars($opt) . '"' . $sel . '>' . htmlspecialchars($opt) . '</option>';
                 }
                 ?>
             </select>
@@ -190,7 +186,7 @@ div.dataTables_wrapper .dataTables_info {
             </select>
         </div>
 
-        <div class="col-md-4"></div>
+        <div class="col-md-3"></div>
 
     <!-- Start Date -->
     <div class="col-md-2
@@ -425,7 +421,8 @@ function SidebarCollapse () {
   }
 
   let datatable = $("#table-data").DataTable({
-    ordering: false,
+    ordering: true,
+    order: [[1, 'desc']],
     processing: true,
     serverSide: false,
     pageLength: 10,

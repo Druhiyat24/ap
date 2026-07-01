@@ -15,9 +15,7 @@ function getDataRegular($conn1, $conn2, $filters, $fin, $app, $group)
         $where .= " AND a.nama_supp = '" . mysqli_real_escape_string($conn2, $filters['nama_supp']) . "'";
     }
 
-    if ($filters['status'] !== 'ALL' && $filters['status'] !== '') {
-        $where .= " AND a.status = '" . mysqli_real_escape_string($conn2, $filters['status']) . "'";
-    }
+    $where .= buildComputedStatusWhere($conn2, $filters['status'], 'a.status', 'd.status_pl', 'd.status_pvl', 'a.no_kbon', 'Regular');
 
     if ($filters['start_date'] !== '' && $filters['end_date'] !== '') {
         $where .= " AND a." . $filters['filter_date'] . " BETWEEN '" . mysqli_real_escape_string($conn2, $filters['start_date']) . "' AND '" . mysqli_real_escape_string($conn2, $filters['end_date']) . "'";
@@ -161,9 +159,7 @@ function getDataInstallment($conn1, $conn2, $filters, $fin, $app, $group)
         $where .= " AND h.nama_supp = '" . mysqli_real_escape_string($conn2, $filters['nama_supp']) . "'";
     }
 
-    if ($filters['status'] !== 'ALL' && $filters['status'] !== '') {
-        $where .= " AND h.status = '" . mysqli_real_escape_string($conn2, $filters['status']) . "'";
-    }
+    $where .= buildComputedStatusWhere($conn2, $filters['status'], 'h.status', 'd.status_pl', 'd.status_pvl', 'd.no_kbon_det', 'Installment');
 
     if ($filters['start_date'] !== '' && $filters['end_date'] !== '') {
         $where .= " AND h." . $filters['filter_date'] . " BETWEEN '" . mysqli_real_escape_string($conn2, $filters['start_date']) . "' AND '" . mysqli_real_escape_string($conn2, $filters['end_date']) . "'";
@@ -279,9 +275,7 @@ function getDataDp($conn1, $conn2, $filters, $fin, $app, $group)
         $where .= " AND nama_supp = '" . mysqli_real_escape_string($conn2, $filters['nama_supp']) . "'";
     }
 
-    if ($filters['status'] !== 'ALL' && $filters['status'] !== '') {
-        $where .= " AND status = '" . mysqli_real_escape_string($conn2, $filters['status']) . "'";
-    }
+    $where .= buildComputedStatusWhere($conn2, $filters['status'], 'status', 'status_pl', 'status_pvl', 'no_kbon', 'DP');
 
     if (!empty($filters['no_kbon'])) {
         $where .= " AND no_kbon = '" . mysqli_real_escape_string($conn2, $filters['no_kbon']) . "'";
@@ -394,9 +388,7 @@ function getDataCbd($conn1, $conn2, $filters, $fin, $app, $group)
         $where .= " AND nama_supp = '" . mysqli_real_escape_string($conn2, $filters['nama_supp']) . "'";
     }
 
-    if ($filters['status'] !== 'ALL' && $filters['status'] !== '') {
-        $where .= " AND status = '" . mysqli_real_escape_string($conn2, $filters['status']) . "'";
-    }
+    $where .= buildComputedStatusWhere($conn2, $filters['status'], 'status', 'status_pl', 'status_pvl', 'no_kbon', 'CBD');
 
     if (!empty($filters['no_kbon'])) {
         $where .= " AND no_kbon = '" . mysqli_real_escape_string($conn2, $filters['no_kbon']) . "'";
@@ -783,6 +775,50 @@ function buildStatusBadge($label)
     return '<span style="display:inline-block;background:' . $bg
         . ';color:#fff;border-radius:12px;padding:3px 9px;font-size:11px;font-weight:600;white-space:nowrap;">'
         . htmlspecialchars($label) . '</span>';
+}
+
+/* buildComputedStatusWhere(): translates a computed-status label (Draft,
+   Cancel, 1st/2nd Approval PV, 3rd Approval PV List, 1st/2nd Approval PL,
+   Paid) into the appropriate SQL WHERE fragment for the given table columns.
+   Falls back to raw equality for any legacy value not in the list. */
+
+function buildComputedStatusWhere($conn2, $status, $statusCol, $plCol, $pvlCol, $kbonCol, $pv_type)
+{
+    if ($status === 'ALL' || $status === '') return '';
+
+    $t = mysqli_real_escape_string($conn2, $pv_type);
+
+    switch ($status) {
+        case 'Draft':
+            return " AND $statusCol = 'draft'";
+        case 'Cancel':
+            return " AND $statusCol = 'Cancel'";
+        case '1st Approval PV':
+            return " AND $statusCol = 'FIRST APPROVED'";
+        case '2nd Approval PV':
+            return " AND $statusCol IN ('SECOND APPROVED', 'Approved')";
+        case '3rd Approval PV List':
+            return " AND $pvlCol IS NOT NULL AND $pvlCol != '' AND UPPER($pvlCol) != 'CANCEL'";
+        case '1st Approval PL':
+            return " AND $plCol = 'FIRST APPROVED'";
+        case '2nd Approval PL':
+            return " AND $plCol = 'SECOND APPROVED'";
+        case 'Paid':
+            return " AND $kbonCol IN (
+                SELECT no_reff FROM b_bankout_det ba
+                    INNER JOIN b_bankout_h bh ON bh.no_bankout = ba.no_bankout
+                    WHERE bh.status != 'Cancel' AND ba.type_pv = '$t'
+                UNION
+                SELECT no_reff FROM c_petty_cashout_det ca
+                    INNER JOIN c_petty_cashout_h ch ON ch.no_pco = ca.no_pco
+                    WHERE ch.status != 'Cancel' AND ca.type_pv = '$t'
+                UNION
+                SELECT no_kbon FROM payment_ftr
+                    WHERE status != 'Cancel' AND type_pv = '$t'
+            )";
+        default:
+            return " AND $statusCol = '" . mysqli_real_escape_string($conn2, $status) . "'";
+    }
 }
 
 /* getPaidKbonsMap(): one-shot query that returns a set (assoc array keyed by
