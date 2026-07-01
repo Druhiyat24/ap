@@ -183,7 +183,7 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
                         <div class="col-md-2 mb-3">
                             <label for="dp_item_type"><b>Item Type <i style="color: red;">*</i></b></label>
                             <select class="form-control selectpicker" name="item_type" id="dp_item_type" data-dropup-auto="false" data-live-search="true" onchange="updateNoKontraBonDp()">
-                                <option value="" disabled selected="true">Select Profit Center</option>
+                                <option value="" disabled selected="true">Select Item Type</option>
                                 <?php
                                 $item_type = isset($_POST['item_type']) ? $_POST['item_type'] : null;
                                 $sql = mysqli_query($conn1, "select item_type from pv_mapping_jurnal_dp where status = 'Y'   GROUP BY item_type");
