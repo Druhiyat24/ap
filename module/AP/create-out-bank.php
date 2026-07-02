@@ -1466,7 +1466,7 @@ $(document).on('change', '.chk_pv', function(){
   let type_pv = tr.find('.no_pv').data('typepv');
 
   let total = parseFloat(tr.find('.total_pv').data('total')) || 0;
-  let rate = parseFloat(tr.find('.rate_pv').data('ratepv')) || 0;
+  let rate = getNumber($('#rate_bank2').val()) || 1;
   let input = tr.find('.txt_amount_pv');
   let input_idr = tr.find('.txt_amount_pv_idr');
   let total_idr = total * rate;
@@ -1558,7 +1558,7 @@ $(document).on('keyup', '.txt_amount_pv', function(){
   let tr = $(this).closest('tr');
 
   let max  = parseFloat(tr.find('.total_pv').data('total')) || 0;
-  let rate = parseFloat(tr.find('.rate_pv').data('ratepv')) || 0;
+  let rate = getNumber($('#rate_bank2').val()) || 1;
 
   let val = $(this).val().replace(/,/g,'');
   val = parseFloat(val) || 0;
@@ -1588,7 +1588,7 @@ $(document).on('keyup', '.txt_amount_pv_idr', function(){
   let tr = $(this).closest('tr');
 
   let max  = parseFloat(tr.find('.total_pv').data('total')) || 0;
-  let rate = parseFloat(tr.find('.rate_pv').data('ratepv')) || 0;
+  let rate = getNumber($('#rate_bank2').val()) || 1;
 
   let val_idr = $(this).val().replace(/,/g,'');
   val_idr = parseFloat(val_idr) || 0;
@@ -1742,7 +1742,9 @@ function hitungTotalPV(){
     let tr = $(this).closest('tr');
 
     let val = getNumber(tr.find('.txt_amount_pv').val());
-    let val_idr = getNumber(tr.find('.txt_amount_pv_idr').val());
+    let val_idr = val * (rate_bank || 1);
+    tr.find('.txt_amount_pv_idr').val(val_idr.toLocaleString('en-US'));
+    tr.find('.rate_pv').text((rate_bank || 1).toLocaleString('en-US'));
 
     let pc = (tr.find('.pc_pv').data('pcpv') || '').toString().trim().toUpperCase();
 
@@ -1939,7 +1941,7 @@ function loadRate(){
     .prop('readonly', true);
 
     formatNumber(document.getElementById('rate_bank2'));
-    hitungEqv2();
+    hitungTotalPV();
     return;
   }else{
     $('#rate_bank2').prop('readonly', false);
@@ -1962,7 +1964,7 @@ function loadRate(){
       $('#rate_bank2').val(rate);
       formatNumber(document.getElementById('rate_bank2'));
 
-      hitungEqv2();
+      hitungTotalPV();
 
     }
   });
