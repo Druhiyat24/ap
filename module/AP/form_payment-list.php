@@ -194,21 +194,23 @@ include 'pv_data_functions.php';
                                 $rowsAll = array_merge($rowsAll, getDataCbd($conn1, $conn2, $filters, '1', '1', ''));
                             }
 
-                            // Hanya PV yang sudah fully approved yang boleh masuk Payment List.
-                            // Regular/Installment/DP/CBD dua tahap approval (SECOND APPROVED),
-                            // Biaya cuma satu tahap (Approved) - lihat approvepv.php.
+                            // Hanya PV yang sudah fully approved DAN sudah melalui Payment Voucher
+                            // List (status_pvl = 'APPROVED') yang boleh masuk Payment List.
+                            // Biaya tidak melalui PVL sehingga cukup status 'Approved' saja.
+                            // Regular/Installment pakai 'SECOND APPROVED'; CBD/DP pakai 'Approved'.
                             $rowsAll = array_filter($rowsAll, function ($r) {
                                 if ($r['type'] === 'Biaya') {
                                     return $r['status'] === 'Approved';
                                 }
-                                return $r['status'] === 'SECOND APPROVED';
+                                if (!in_array($r['status'], ['SECOND APPROVED', 'Approved'])) return false;
+                                return strtoupper(trim($r['status_pvl'] ?? '')) === 'APPROVED';
                             });
 
                             // Regular/Installment/DP/CBD sebelum 1 Juli 2026 sudah masuk saldo awal,
-                            // tidak boleh ditarik lagi lewat form ini.
+                            // tidak boleh ditarik lagi lewat form ini. Pakai tgl_kbon_raw (YYYY-MM-DD).
                             $rowsAll = array_filter($rowsAll, function ($r) {
                                 if (in_array($r['type'], ['Regular', 'Installment', 'DP', 'CBD'])) {
-                                    return $r['tgl_kbon'] >= '2026-07-01';
+                                    return ($r['tgl_kbon_raw'] ?? '') >= '2026-07-01';
                                 }
                                 return true;
                             });
@@ -455,13 +457,66 @@ function SidebarCollapse () {
         recalcPlSummary();
     });
 
+    // Fungsi simpan — dipanggil dari tombol Save maupun tombol "Coba Lagi" setelah error
+    function doSavePl(rows, totalRows, pl_date, from_account, create_user) {
+        $.ajax({
+            type: 'POST',
+            url: 'save_pv_payment_list.php',
+            data: {
+                pl_date:      pl_date,
+                from_account: from_account,
+                create_user:  create_user,
+                rows:         JSON.stringify(rows)
+            },
+            cache: false,
+            success: function (res) {
+                if (String(res).indexOf('Error') === 0) {
+                    // Rollback terjadi — tawarkan Coba Lagi tanpa ceklis ulang
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal Menyimpan',
+                        html: res + '<br><br>Data belum tersimpan. Klik <b>Coba Lagi</b> untuk mencoba kembali.',
+                        showCancelButton: true,
+                        confirmButtonText: 'Coba Lagi',
+                        cancelButtonText: 'Tutup',
+                        confirmButtonColor: '#1e3a8a'
+                    }).then(function (r) {
+                        if (r.isConfirmed) doSavePl(rows, totalRows, pl_date, from_account, create_user);
+                    });
+                    return;
+                }
+                // Server mengembalikan "OK:PL-PV/0726/00001" — ambil nomor aktual
+                var actualNumber = res.indexOf(':') >= 0 ? res.split(':').slice(1).join(':') : res;
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil Disimpan',
+                    html: '<b>' + totalRows + ' baris</b> Payment Voucher berhasil disimpan ke Payment List <b>' + actualNumber + '</b>.'
+                }).then(function () {
+                    window.location = 'payment-list.php';
+                });
+            },
+            error: function (xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    html: xhr.responseText + '<br><br>Klik <b>Coba Lagi</b> untuk mencoba kembali.',
+                    showCancelButton: true,
+                    confirmButtonText: 'Coba Lagi',
+                    cancelButtonText: 'Tutup',
+                    confirmButtonColor: '#1e3a8a'
+                }).then(function (r) {
+                    if (r.isConfirmed) doSavePl(rows, totalRows, pl_date, from_account, create_user);
+                });
+            }
+        });
+    }
+
     $("#form-simpan").on("click", "#simpan", function () {
-        var pl_number    = $("#pl_number").val();
         var pl_date      = $("#pl_date").val();
         var from_account = $("#from_account").val();
         var create_user  = '<?php echo $user ?>';
 
-        let checked = $("input[name='select_pl[]']:checked");
+        var checked = $("input[name='select_pl[]']:checked");
 
         if (checked.length === 0) {
             Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Please check at least 1 Payment Voucher.' });
@@ -473,61 +528,37 @@ function SidebarCollapse () {
             return;
         }
 
-        $.ajax({
-            type: 'POST',
-            url: 'insert_pv_payment_list_h.php',
-            data: {
-                'pl_number':    pl_number,
-                'pl_date':      pl_date,
-                'from_account': from_account,
-                'create_user':  create_user
-            },
-            cache: false,
-            success: function (response) {
-                checked.each(function () {
-                    var tr = $(this).closest("tr");
-                    var type_pv  = tr.find('td:eq(1)').attr('value');
-                    var no_kbon  = tr.find('td:eq(2)').attr('value');
-                    var tgl_kbon = tr.find('td:eq(3)').attr('value');
-                    var profit_center = tr.find('td:eq(4)').attr('value');
-                    var nama_supp = tr.find('td:eq(5)').attr('value');
-                    var curr     = tr.find('td:eq(6)').attr('value');
-                    var total    = tr.find('td:eq(7)').attr('value');
-                    var deskripsi = tr.find('td:eq(8) input.txt-row-keterangan').val();
+        // Kumpulkan semua baris yang dicentang sebelum konfirmasi
+        var rows = [];
+        checked.each(function () {
+            var tr = $(this).closest("tr");
+            rows.push({
+                type_pv:      tr.find('td:eq(1)').attr('value'),
+                no_kbon:      tr.find('td:eq(2)').attr('value'),
+                tgl_kbon:     tr.find('td:eq(3)').attr('value'),
+                profit_center:tr.find('td:eq(4)').attr('value'),
+                nama_supp:    tr.find('td:eq(5)').attr('value'),
+                curr:         tr.find('td:eq(6)').attr('value'),
+                total:        tr.find('td:eq(7)').attr('value'),
+                deskripsi:    tr.find('td:eq(8) input.txt-row-keterangan').val(),
+                create_user:  create_user
+            });
+        });
 
-                    $.ajax({
-                        type: 'POST',
-                        url: 'insert_pv_payment_list_det.php',
-                        data: {
-                            'pl_number': pl_number,
-                            'type_pv': type_pv,
-                            'no_kbon': no_kbon,
-                            'tgl_kbon': tgl_kbon,
-                            'nama_supp': nama_supp,
-                            'curr': curr,
-                            'total': total,
-                            'deskripsi': deskripsi,
-                            'profit_center': profit_center,
-                            'create_user': create_user
-                        },
-                        cache: false,
-                        error: function (xhr) {
-                            console.error(xhr.responseText);
-                        }
-                    });
-                });
+        var totalRows = rows.length;
 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: 'Data saved successfully!'
-                }).then(() => {
-                    window.location = 'payment-list.php';
-                });
-            },
-            error: function (xhr) {
-                Swal.fire({ icon: 'error', title: 'Error', text: xhr.responseText });
-            }
+        // Konfirmasi sebelum simpan — tampilkan jumlah baris yang akan disimpan
+        Swal.fire({
+            icon: 'question',
+            title: 'Konfirmasi Simpan',
+            html: 'Anda akan menyimpan <b>' + totalRows + ' baris</b> Payment Voucher ke Payment List baru.<br>Lanjutkan?',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Simpan',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#1e3a8a'
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
+            doSavePl(rows, totalRows, pl_date, from_account, create_user);
         });
     });
 </script>
