@@ -16,6 +16,12 @@ if ($type_pv === 'Biaya') {
         LEFT JOIN b_masterbank b on b.bank_account = h.from_account
         LEFT JOIN master_pc pc on pc.kode_pc = h.profit_center
         where d.no_kbon_det = '$no_pv_esc'");
+} elseif ($type_pv === 'SaldoAwal') {
+    $sql = mysqli_query($conn2, "select h.profit_center kode_pc, CONCAT(pc.id_pc,' - ',pc.nama_pc) nama_pc, b.bank_account, b.bank_name, b.curr, b.b_code
+        from ap_saldo_payment_voucher h
+        LEFT JOIN b_masterbank b on b.bank_account = h.from_account
+        LEFT JOIN master_pc pc on pc.kode_pc = h.profit_center
+        where h.no_kbon = '$no_pv_esc'");
 } else {
     $table = $type_pv === 'DP' ? 'kontrabon_h_dp' : ($type_pv === 'CBD' ? 'kontrabon_h_cbd' : 'kontrabon_h');
     $sql = mysqli_query($conn2, "select h.profit_center kode_pc, CONCAT(pc.id_pc,' - ',pc.nama_pc) nama_pc, b.bank_account, b.bank_name, b.curr, b.b_code
