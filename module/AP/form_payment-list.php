@@ -97,7 +97,24 @@ include 'pv_data_functions.php';
                 <label for="pl_date"><b>Payment List Date <i style="color: red;">*</i></b></label>
                 <input type="text" style="font-size: 14px;" name="pl_date" id="pl_date" class="form-control form-control-sm" value="<?php echo date("Y-m-d"); ?>" readonly>
             </div>
-            <div class="col-md-7 mb-3"></div>
+
+            <div class="col-md-3 mb-3">
+                <label for="from_account"><b>From Account <i style="color: red;">*</i></b></label>
+                <select class="form-control form-control-sm select2bs4" name="from_account" id="from_account" data-dropup-auto="false">
+                    <option value="">-- Pilih Rekening --</option>
+                    <?php
+                    $sqlBank = mysqli_query($conn2, "SELECT bank_account, IF(bank_name like '%MANDIRI%', 'MANDIRI', bank_name) bank_name, curr FROM b_masterbank where status = 'Active' ORDER BY id ASC");
+                    $savedFromAccount = $_POST['from_account'] ?? '';
+                    while ($rowBank = mysqli_fetch_assoc($sqlBank)) {
+                        $sel = ($savedFromAccount === $rowBank['bank_account']) ? ' selected' : '';
+                        $label = htmlspecialchars($rowBank['bank_account'] . ' - ' . $rowBank['bank_name'] . ' (' . $rowBank['curr'] . ')');
+                        echo '<option value="' . htmlspecialchars($rowBank['bank_account']) . '"' . $sel . '>' . $label . '</option>';
+                    }
+                    ?>
+                </select>
+            </div>
+
+            <div class="col-md-4 mb-3"></div>
 
             <div class="col-md-5 mb-3">
                 <label for="txt_search"><b>Search Criteria</b></label>
@@ -166,23 +183,15 @@ include 'pv_data_functions.php';
                             ];
 
                             $rowsAll = [];
-                            if ($type_pv === 'ALL' || $type_pv === 'Regular') {
+                            if ($type_pv === 'Regular-Installment' || $type_pv === 'ALL') {
                                 $rowsAll = array_merge($rowsAll, getDataRegular($conn1, $conn2, $filters, '1', '1', ''));
-                            }
-                            if ($type_pv === 'ALL' || $type_pv === 'Installment') {
                                 $rowsAll = array_merge($rowsAll, getDataInstallment($conn1, $conn2, $filters, '1', '1', ''));
-                            }
-                            if ($type_pv === 'ALL' || $type_pv === 'DP') {
-                                $rowsAll = array_merge($rowsAll, getDataDp($conn1, $conn2, $filters, '1', '1', ''));
-                            }
-                            if ($type_pv === 'ALL' || $type_pv === 'CBD') {
-                                $rowsAll = array_merge($rowsAll, getDataCbd($conn1, $conn2, $filters, '1', '1', ''));
-                            }
-                            if ($type_pv === 'ALL' || $type_pv === 'Biaya') {
-                                $rowsAll = array_merge($rowsAll, getDataBiaya($conn2, $filters));
-                            }
-                            if ($type_pv === 'ALL' || $type_pv === 'SaldoAwal') {
                                 $rowsAll = array_merge($rowsAll, getDataSaldoAwal($conn2, $filters));
+                            }
+                            if ($type_pv === 'Biaya-DP-CBD' || $type_pv === 'ALL') {
+                                $rowsAll = array_merge($rowsAll, getDataBiaya($conn2, $filters));
+                                $rowsAll = array_merge($rowsAll, getDataDp($conn1, $conn2, $filters, '1', '1', ''));
+                                $rowsAll = array_merge($rowsAll, getDataCbd($conn1, $conn2, $filters, '1', '1', ''));
                             }
 
                             // Hanya PV yang sudah fully approved yang boleh masuk Payment List.
@@ -273,14 +282,11 @@ include 'pv_data_functions.php';
 
           <div class="form-group mb-3">
             <label for="type_pv"><b>Type Document</b></label>
-            <select class="form-control form-control-sm select2bs4" name="h_type_pv" id="type_pv" data-dropup-auto="false" data-live-search="true">
-                <option value="ALL" <?php echo (($_POST['h_type_pv'] ?? 'ALL') === 'ALL') ? ' selected="selected"' : ''; ?>>ALL</option>
-                <option value="Regular" <?php echo (($_POST['h_type_pv'] ?? '') === 'Regular') ? ' selected="selected"' : ''; ?>>Regular</option>
-                <option value="Installment" <?php echo (($_POST['h_type_pv'] ?? '') === 'Installment') ? ' selected="selected"' : ''; ?>>Installment</option>
-                <option value="DP" <?php echo (($_POST['h_type_pv'] ?? '') === 'DP') ? ' selected="selected"' : ''; ?>>DP</option>
-                <option value="CBD" <?php echo (($_POST['h_type_pv'] ?? '') === 'CBD') ? ' selected="selected"' : ''; ?>>CBD</option>
-                <option value="Biaya" <?php echo (($_POST['h_type_pv'] ?? '') === 'Biaya') ? ' selected="selected"' : ''; ?>>Biaya</option>
-                <option value="SaldoAwal" <?php echo (($_POST['h_type_pv'] ?? '') === 'SaldoAwal') ? ' selected="selected"' : ''; ?>>Saldo Awal</option>
+            <select class="form-control form-control-sm select2bs4" name="h_type_pv" id="type_pv" data-dropup-auto="false">
+                <?php $selType = $_POST['h_type_pv'] ?? ''; ?>
+                <option value="ALL" <?php echo ($selType === 'ALL' || $selType === '') ? 'selected' : ''; ?>>ALL</option>
+                <option value="Regular-Installment" <?php echo ($selType === 'Regular-Installment') ? 'selected' : ''; ?>>Regular-Installment</option>
+                <option value="Biaya-DP-CBD" <?php echo ($selType === 'Biaya-DP-CBD') ? 'selected' : ''; ?>>Biaya-DP-CBD</option>
             </select>
           </div>
 
@@ -450,9 +456,10 @@ function SidebarCollapse () {
     });
 
     $("#form-simpan").on("click", "#simpan", function () {
-        var pl_number  = $("#pl_number").val();
-        var pl_date    = $("#pl_date").val();
-        var create_user = '<?php echo $user ?>';
+        var pl_number    = $("#pl_number").val();
+        var pl_date      = $("#pl_date").val();
+        var from_account = $("#from_account").val();
+        var create_user  = '<?php echo $user ?>';
 
         let checked = $("input[name='select_pl[]']:checked");
 
@@ -461,13 +468,19 @@ function SidebarCollapse () {
             return;
         }
 
+        if (!from_account) {
+            Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Silahkan pilih From Account terlebih dahulu.' });
+            return;
+        }
+
         $.ajax({
             type: 'POST',
             url: 'insert_pv_payment_list_h.php',
             data: {
-                'pl_number': pl_number,
-                'pl_date': pl_date,
-                'create_user': create_user
+                'pl_number':    pl_number,
+                'pl_date':      pl_date,
+                'from_account': from_account,
+                'create_user':  create_user
             },
             cache: false,
             success: function (response) {

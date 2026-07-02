@@ -50,9 +50,24 @@ if (!$update) {
     exit;
 }
 
+// Ambil from_account PL beserta detail bank untuk keperluan sync ke PV
+$sqlH = mysqli_query($conn2, "SELECT h.from_account, b.bank_name, b.curr
+    FROM pv_payment_list_h h
+    LEFT JOIN b_masterbank b ON b.bank_account = h.from_account
+    WHERE h.pl_number = '$pl_number_esc' LIMIT 1");
+$rowH = mysqli_fetch_assoc($sqlH);
+$plFromAccount  = $rowH['from_account'] ?? '';
+$plFromBank     = $rowH['bank_name'] ?? '';
+$plFromCurr     = $rowH['curr'] ?? '';
+
 $sqlDet = mysqli_query($conn2, "select type_pv, no_kbon from pv_payment_list_det where pl_number = '$pl_number_esc' and status != 'Cancel'");
 while ($rowDet = mysqli_fetch_assoc($sqlDet)) {
     updateStatusPl($conn2, $rowDet['type_pv'], $rowDet['no_kbon'], 'SECOND APPROVED');
+
+    // Jika PL punya from_account, update from_account di PV yang berbeda
+    if (!empty($plFromAccount)) {
+        updateFromAccountPv($conn2, $rowDet['type_pv'], $rowDet['no_kbon'], $plFromAccount, $plFromBank, $plFromCurr);
+    }
 }
 
 echo 'Payment List Berhasil Di Second Approve';

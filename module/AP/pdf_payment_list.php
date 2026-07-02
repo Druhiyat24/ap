@@ -12,8 +12,23 @@ ini_set('display_errors', 1);
 <?php
 $pl_number_esc = mysqli_real_escape_string($conn2, $pl_number);
 
-$sqlH = mysqli_query($conn2, "select pl_number, pl_date, deskripsi, created_by, created_date from pv_payment_list_h where pl_number = '$pl_number_esc'");
+$sqlH = mysqli_query($conn2, "SELECT h.pl_number, h.pl_date, h.deskripsi, h.created_by, h.created_date,
+    h.from_account, UPPER(b.beneficiary_name) AS beneficiary_name,
+    UPPER(b.curr) AS bank_curr,
+    UPPER(b.bank_name) AS bank_name,
+    UPPER(b.bank_account) AS bank_account, b.curr AS from_bank_curr
+    FROM pv_payment_list_h h
+    LEFT JOIN b_masterbank b ON b.bank_account = h.from_account
+    WHERE h.pl_number = '$pl_number_esc'");
 $rowH = mysqli_fetch_assoc($sqlH);
+// $plFromAccountDisplay = !empty($rowH['from_account'])
+//     ? $rowH['from_account'] . (!empty($rowH['from_bank_name']) ? ' - ' . $rowH['from_bank_name'] : '')
+//     : '-';
+
+    $beneficiary_name = $rowH['beneficiary_name'] ?? '-';
+    $bank_curr = $rowH['bank_curr'] ?? '-';
+    $bank_name = $rowH['bank_name'] ?? '-';
+    $bank_account = $rowH['bank_account'] ?? '-';
 
 // Ambil due date + bank tujuan per PV - sumbernya beda tergantung type_pv:
 // Regular/Installment/DP/CBD lewat id_bank_account (sama persis pola
@@ -268,17 +283,38 @@ ob_start();
         </tr>
     </table>
     <hr />
-    <!-- <table style="font-size:11px;">
-        <tbody>
-            <tr>
-                <td style="text-align:left;width: 20%;"><b>PAYMENT LIST DATE :</b></td>
-                <td style="text-align:left;width: 40%;"><?php echo !empty($rowH['pl_date']) ? date('d M Y', strtotime($rowH['pl_date'])) : '-'; ?></td>
-                <td style="text-align:left;width: 15%;"><b>KETERANGAN :</b></td>
-                <td style="text-align:left;width: 25%;"><?php echo htmlspecialchars($rowH['deskripsi']); ?></td>
-            </tr>
-        </tbody>
-    </table>
-    <hr /> -->
+    <table style="font-size:11px;">
+    <thead>
+        <tr>
+            <td style="text-align:left;width: 30%;padding-bottom: 10px;"><b>BENEFICIARY NAME :</b></td>
+            <td style="text-align:left;width: 20%;padding-bottom: 10px;"><b>BANK CURRENCY :</b></td>
+            <td style="text-align:left;width: 25%;padding-bottom: 10px;"><b>BANK NAME :</b></td>
+            <td style="text-align:left;width: 25%;padding-bottom: 10px;"><b>BANK ACCOUNT :</b></td>              
+      </tr>
+
+      <tbody>
+        <tr>          
+    <td style="text-align:left;padding-top: -15px;padding-bottom: -10px;">
+    <?= $beneficiary_name ?>   
+    </td>
+    <td style="text-align:left;padding-top: -15px;padding-bottom: -10px;">
+    <?= $bank_curr ?>  
+    </td>
+    <td style="text-align:left;padding-top: -15px;padding-bottom: -10px;">
+        <?= $bank_name ?>
+    </td>
+    <td style="text-align:left;padding-top: -15px;padding-bottom: -10px;">
+    <?= $bank_account ?>  
+    </td>
+   
+</tr>
+
+
+
+</tbody>
+</table>
+<hr />
+
 
     <table border="1" cellspacing="0" style="width:100%;font-size:7.6pt;border-spacing:2px;">
         <tr>
@@ -288,7 +324,7 @@ ob_start();
             <th rowspan="2" style="border: 1px solid black;">Curr</th>
             <th rowspan="2" style="border: 1px solid black;">Amount</th>
             <th rowspan="2" style="border: 1px solid black;">Profit Center</th>
-            <th rowspan="2" style="border: 1px solid black;">From Account</th>
+         <!--    <th rowspan="2" style="border: 1px solid black;">From Account</th> -->
             <th rowspan="2" style="border: 1px solid black;">Description</th>
             <th rowspan="2" style="border: 1px solid black;">Supplier</th>
             <th rowspan="2" style="border: 1px solid black;">Total Amount</th>
@@ -315,7 +351,7 @@ ob_start();
                     <td style="text-align:left;vertical-align:top;"><?php echo htmlspecialchars($r['curr']); ?></td>
                     <td style="text-align:right;vertical-align:top;"><?php echo number_format($r['total'], 2); ?></td>
                     <td style="text-align:left;vertical-align:top;"><?php echo htmlspecialchars($r['profit_center']); ?></td>
-                    <td style="text-align:left;vertical-align:top;"><?php echo $fromStr; ?></td>
+                   <!--  <td style="text-align:left;vertical-align:top;"><?php echo $fromStr; ?></td> -->
                     <td style="text-align:left;vertical-align:top;"><?php echo !empty($r['deskripsi']) ? htmlspecialchars($r['deskripsi']) : '-'; ?></td>
                     <?php if (isset($rowToGroup[$idx])) {
                         $g = $rowToGroup[$idx];

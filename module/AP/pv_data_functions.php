@@ -660,6 +660,43 @@ function updateStatusPl($conn2, $type_pv, $no_kbon, $statusPl)
     mysqli_query($conn2, "update $table set status_pl = $statusPlSql where no_kbon = '$no_kbon_esc'");
 }
 
+/* ====================== FROM ACCOUNT UPDATE ====================== */
+/* Dipanggil dari second_approve_payment_list.php untuk menimpa from_account
+   di PV sumber ketika PL punya from_account berbeda. Juga update from_bank
+   dan from_bank_curr supaya konsisten dengan nilai di b_masterbank. */
+
+function updateFromAccountPv($conn2, $type_pv, $no_kbon, $fromAccount, $fromBank, $fromBankCurr)
+{
+    $no_kbon_esc      = mysqli_real_escape_string($conn2, $no_kbon);
+    $fromAccount_esc  = mysqli_real_escape_string($conn2, $fromAccount);
+    $fromBank_esc     = mysqli_real_escape_string($conn2, $fromBank);
+    $fromCurr_esc     = mysqli_real_escape_string($conn2, $fromBankCurr);
+
+    if ($type_pv === 'Biaya') {
+        mysqli_query($conn2, "UPDATE tbl_pv_h SET frm_akun = '$fromAccount_esc' WHERE no_pv = '$no_kbon_esc'");
+        return;
+    }
+
+    if ($type_pv === 'SaldoAwal') {
+        mysqli_query($conn2, "UPDATE ap_saldo_payment_voucher SET from_account = '$fromAccount_esc', from_bank = '$fromBank_esc', from_bank_curr = '$fromCurr_esc' WHERE no_kbon = '$no_kbon_esc'");
+        return;
+    }
+
+    if ($type_pv === 'Installment') {
+        $sqlParent = mysqli_query($conn2, "SELECT no_kbon FROM kontrabon_h_installment_detail WHERE no_kbon_det = '$no_kbon_esc'");
+        $rowParent = mysqli_fetch_assoc($sqlParent);
+        $parentKbon = $rowParent['no_kbon'] ?? null;
+        if (!empty($parentKbon)) {
+            $pk = mysqli_real_escape_string($conn2, $parentKbon);
+            mysqli_query($conn2, "UPDATE kontrabon_h SET from_account = '$fromAccount_esc', from_bank = '$fromBank_esc', from_bank_curr = '$fromCurr_esc' WHERE no_kbon = '$pk'");
+        }
+        return;
+    }
+
+    $table = $type_pv === 'DP' ? 'kontrabon_h_dp' : ($type_pv === 'CBD' ? 'kontrabon_h_cbd' : 'kontrabon_h');
+    mysqli_query($conn2, "UPDATE $table SET from_account = '$fromAccount_esc', from_bank = '$fromBank_esc', from_bank_curr = '$fromCurr_esc' WHERE no_kbon = '$no_kbon_esc'");
+}
+
 /* ====================== STATUS PVL PROPAGATION ====================== */
 /* Sama persis seperti updateStatusPl() di atas, tapi untuk feature Payment
    Voucher List (single approval) - pakai kolom status_pvl yang terpisah
