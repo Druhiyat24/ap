@@ -260,7 +260,7 @@ if (!empty($type_pv)) {
                                value="<?= !empty($_POST['end_date']) ? htmlspecialchars($_POST['end_date']) : date('d-m-Y') ?>" autocomplete="off">
                     </div>
                     <div class="col-md-2 mb-2 d-flex align-items-end">
-                        <button type="submit" class="btn btn-info btn-sm w-100">
+                        <button type="submit" class="btn btn-info btn-sm">
                             <i class="fa fa-search"></i> Search PV
                         </button>
                     </div>
