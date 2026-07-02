@@ -27,6 +27,7 @@ while ($row = mysqli_fetch_assoc($sql)) {
     $btnShow = '<button type="button" class="btn btn-sm btn-outline-warning btn-show-pl" data-pl="' . htmlspecialchars($plNumber) . '" title="Show"><i class="fas fa-eye"></i> Show</button>';
     $btnPdf = '<a href="pdf_payment_list.php?pl_number=' . htmlspecialchars(rawurlencode($plNumber)) . '" target="_blank" class="btn btn-sm btn-outline-success" title="View PDF"><i class="fa fa-file-pdf-o"></i> PDF</a>';
     $btnCancel = '<button type="button" class="btn btn-sm btn-outline-danger btn-cancel-pl" data-pl="' . htmlspecialchars($plNumber) . '" title="Cancel"><i class="fas fa-times"></i> Cancel</button>';
+    $btnEdit = '<a href="edit_payment_list.php?pl_number=' . htmlspecialchars(rawurlencode($plNumber)) . '" class="btn btn-sm btn-outline-primary" title="Edit"><i class="fa fa-edit"></i> Edit</a>';
 
     // First/Second Approve dilakukan lewat halaman approval khusus
     // (approve-payment-list-first.php / approve-payment-list-second.php) -
@@ -35,7 +36,7 @@ while ($row = mysqli_fetch_assoc($sql)) {
     $action = $btnShow . $btnPdf;
 
     if (strcasecmp($rowStatus, 'Draft') === 0) {
-        $action .= $btnCancel;
+        $action .= $btnEdit . $btnCancel;
     } elseif ($rowStatus === 'FIRST APPROVED') {
         $action .= '<span class="kbon-status-label" style="background:#eef2f9;color:#1e3a8a;"><i class="fa fa-clock-o"></i> Waiting 2nd Approval</span>';
     }

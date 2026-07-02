@@ -2142,7 +2142,28 @@ if(strpos($id, '108') !== false){
       echo '<a href="AP/reverse_petty_cash.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-angle-right fa-fw"></span>
       <span class="menu-collapsed">Petty Cash</span>
-      </a>';  
+      </a>';
+  }
+
+  if(strpos($id, '120') !== false){
+      echo '<a href="AP/reverse_payment_voucher.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-angle-right fa-fw"></span>
+      <span class="menu-collapsed">Payment Voucher</span>
+      </a>';
+  }
+
+  if(strpos($id, '121') !== false){
+      echo '<a href="AP/reverse_payment_voucher_list.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-angle-right fa-fw"></span>
+      <span class="menu-collapsed">Payment Voucher List</span>
+      </a>';
+  }
+
+  if(strpos($id, '122') !== false){
+      echo '<a href="AP/reverse_payment_list.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-angle-right fa-fw"></span>
+      <span class="menu-collapsed">Payment List</span>
+      </a>';
   }
 
   echo '</ul>
@@ -2163,6 +2184,33 @@ if(strpos($id, '108') !== false){
     $notif_rvspay = '<span class="notif-badge">'.$count_rvspay.'</span>';
 }else{
     $notif_rvspay = '';
+}
+
+$sql_rvspl = mysqli_query($conn2," SELECT COUNT(id) jml FROM ap_reverse_h WHERE rvs_number LIKE 'RVS/PL/%' AND status = 'DRAFT'");
+$row_rvspl = mysqli_fetch_array($sql_rvspl);
+$count_rvspl = $row_rvspl['jml'];
+if($count_rvspl != '0'){
+    $notif_rvspl = '<span class="notif-badge">'.$count_rvspl.'</span>';
+}else{
+    $notif_rvspl = '';
+}
+
+$sql_rvspvl = mysqli_query($conn2," SELECT COUNT(id) jml FROM ap_reverse_h WHERE rvs_number LIKE 'RVS/PVL/%' AND status = 'DRAFT'");
+$row_rvspvl = mysqli_fetch_array($sql_rvspvl);
+$count_rvspvl = $row_rvspvl['jml'];
+if($count_rvspvl != '0'){
+    $notif_rvspvl = '<span class="notif-badge">'.$count_rvspvl.'</span>';
+}else{
+    $notif_rvspvl = '';
+}
+
+$sql_rvspv = mysqli_query($conn2," SELECT COUNT(id) jml FROM ap_reverse_h WHERE rvs_number LIKE 'RVS/PV/%' AND rvs_number NOT LIKE 'RVS/PVL/%' AND status = 'DRAFT'");
+$row_rvspv = mysqli_fetch_array($sql_rvspv);
+$count_rvspv = $row_rvspv['jml'];
+if($count_rvspv != '0'){
+    $notif_rvspv = '<span class="notif-badge">'.$count_rvspv.'</span>';
+}else{
+    $notif_rvspv = '';
 }
 
 echo '<li class="dropdown-submenu ">
@@ -2205,6 +2253,29 @@ if(strpos($id, '103') !== false){
     </a>';
 }
 
+if(strpos($id, '124') !== false){
+    echo '<a href="AP/form_approve_reverse_payment_list.php" class="dropdown-item bg-dark text-white">
+    <span class="fa fa-angle-right fa-fw "></span>
+    <span class="menu-collapsed">Payment List</span>
+    '.$notif_rvspl.'
+    </a>';
+}
+
+if(strpos($id, '127') !== false){
+    echo '<a href="AP/form_approve_reverse_payment_voucher_list.php" class="dropdown-item bg-dark text-white">
+    <span class="fa fa-angle-right fa-fw "></span>
+    <span class="menu-collapsed">Payment Voucher List</span>
+    '.$notif_rvspvl.'
+    </a>';
+}
+
+if(strpos($id, '129') !== false){
+    echo '<a href="AP/form_approve_reverse_payment_voucher.php" class="dropdown-item bg-dark text-white">
+    <span class="fa fa-angle-right fa-fw "></span>
+    <span class="menu-collapsed">Payment Voucher</span>
+    '.$notif_rvspv.'
+    </a>';
+}
 
 
 echo '</ul>
