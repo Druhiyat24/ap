@@ -27,7 +27,7 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
                         <div class="col-md-2 mb-3">
                             <label for="dp_tanggal"><b>Payment Voucher Date <i style="color: red;">*</i></b></label>
                             <input type="text" style="font-size: 13px;" name="tanggal" id="dp_tanggal" class="form-control form-control-sm tanggal" onchange="ubahtanggalDp(this.value)"
-                            value="<?php echo !empty($_POST['tanggal']) ? htmlspecialchars($_POST['tanggal']) : date("d-m-Y"); ?>">
+                            value="<?php echo !empty($_POST['tanggal']) ? htmlspecialchars($_POST['tanggal']) : date("Y-m-d"); ?>">
                         </div>
 
                         <input type="hidden" name="jurnal" id="dp_jurnal" value="0">
@@ -65,7 +65,7 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
                         <div class="col-md-2 mb-3">
                             <label for="dp_txt_tgltempo"><b>Due Date <i style="color: red;">*</i></b></label>
                             <input type="text" style="font-size: 13px;" class="form-control form-control-sm tanggal1" name="txt_tgltempo" id="dp_txt_tgltempo"
-                            value="<?php echo !empty($_POST['txt_tgltempo']) ? htmlspecialchars($_POST['txt_tgltempo']) : date("d-m-Y"); ?>">
+                            value="<?php echo !empty($_POST['txt_tgltempo']) ? htmlspecialchars($_POST['txt_tgltempo']) : date("Y-m-d"); ?>">
                         </div>
 
 
@@ -94,7 +94,7 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
                         <input type="hidden" style="font-size: 13px;" class="form-control form-control-sm" id="dp_txt_inv" name="txt_inv"
                             value="<?php echo isset($_POST['txt_inv']) ? htmlspecialchars($_POST['txt_inv']) : ''; ?>" required>
                         <input type="hidden" style="font-size: 13px;" class="form-control form-control-sm tanggal" name="txt_tglsi" id="dp_txt_tglsi"
-                            value="<?php echo !empty($_POST['txt_tglsi']) ? htmlspecialchars($_POST['txt_tglsi']) : date("d-m-Y"); ?>">
+                            value="<?php echo !empty($_POST['txt_tglsi']) ? htmlspecialchars($_POST['txt_tglsi']) : date("Y-m-d"); ?>">
 
                         
                         <div class="col-md-3 mb-3"></div>

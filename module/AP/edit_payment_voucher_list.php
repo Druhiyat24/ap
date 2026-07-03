@@ -150,10 +150,6 @@ if (!empty($type_pv)) {
                     <label><b>Tanggal</b></label>
                     <input type="text" class="form-control form-control-sm" readonly value="<?= htmlspecialchars($plHeader['pl_date']) ?>">
                 </div>
-                <div class="col-md-4 mb-2">
-                    <label><b>Keterangan</b></label>
-                    <input type="text" class="form-control form-control-sm" readonly value="<?= htmlspecialchars($plHeader['deskripsi'] ?? '-') ?>">
-                </div>
                 <div class="col-md-2 mb-2">
                     <label><b>Status</b></label>
                     <input type="text" class="form-control form-control-sm" readonly value="<?= htmlspecialchars($plHeader['status']) ?>">
@@ -208,7 +204,10 @@ if (!empty($type_pv)) {
                             <td class="td-supp text-left" value="<?= htmlspecialchars($cv['nama_supp']) ?>"><?= htmlspecialchars($cv['nama_supp']) ?></td>
                             <td class="td-curr" value="<?= htmlspecialchars($cv['curr']) ?>"><?= htmlspecialchars($cv['curr']) ?></td>
                             <td class="td-total text-right" value="<?= (float)$cv['total'] ?>"><?= number_format((float)$cv['total'], 2) ?></td>
-                            <td><?= htmlspecialchars($cv['deskripsi'] ?? '') ?></td>
+                            <td><input type="text" class="form-control form-control-sm txt-keterangan-existing"
+                                data-no_kbon="<?= htmlspecialchars($cv['no_kbon']) ?>"
+                                value="<?= htmlspecialchars($cv['deskripsi'] ?? '') ?>"
+                                placeholder="Optional" style="font-size:12px;"></td>
                         </tr>
                         <?php endforeach; ?>
                         <?php endif; ?>
@@ -418,7 +417,7 @@ if (!empty($type_pv)) {
   var pl_number   = <?= json_encode($pl_number) ?>;
   var create_user = <?= json_encode($user) ?>;
 
-  function doSaveEdit(pl_number, removes, adds, create_user) {
+  function doSaveEdit(pl_number, removes, adds, create_user, updates) {
       $.ajax({
           type: 'POST',
           url: 'save_edit_payment_voucher_list.php',
@@ -426,7 +425,8 @@ if (!empty($type_pv)) {
               pl_number:   pl_number,
               create_user: create_user,
               removes:     JSON.stringify(removes),
-              adds:        JSON.stringify(adds)
+              adds:        JSON.stringify(adds),
+              updates:     JSON.stringify(updates)
           },
           cache: false,
           success: function(res) {
@@ -440,7 +440,7 @@ if (!empty($type_pv)) {
                       cancelButtonText: 'Close',
                       confirmButtonColor: '#1e3a8a'
                   }).then(function(r) {
-                      if (r.isConfirmed) doSaveEdit(pl_number, removes, adds, create_user);
+                      if (r.isConfirmed) doSaveEdit(pl_number, removes, adds, create_user, updates);
                   });
                   return;
               }
@@ -457,7 +457,7 @@ if (!empty($type_pv)) {
                   cancelButtonText: 'Close',
                   confirmButtonColor: '#1e3a8a'
               }).then(function(r) {
-                  if (r.isConfirmed) doSaveEdit(pl_number, removes, adds, create_user);
+                  if (r.isConfirmed) doSaveEdit(pl_number, removes, adds, create_user, updates);
               });
           }
       });
@@ -487,15 +487,17 @@ if (!empty($type_pv)) {
           });
       });
 
-      if (removes.length === 0 && adds.length === 0) {
-          Swal.fire({ icon: 'warning', title: 'No Changes', text: 'Select PVs to remove or add new PVs.' });
-          return;
-      }
+      var updates = [];
+      $('.txt-keterangan-existing').each(function() {
+          updates.push({ no_kbon: $(this).data('no_kbon'), deskripsi: $(this).val() });
+      });
 
       var msgParts = [];
       if (removes.length > 0) msgParts.push('remove <b>' + removes.length + ' PV(s)</b>');
       if (adds.length > 0)    msgParts.push('add <b>' + adds.length + ' PV(s)</b>');
-      var msg = 'You are about to ' + msgParts.join(' and ') + '. Continue?';
+      var msg = msgParts.length > 0
+          ? 'You are about to ' + msgParts.join(' and ') + '. Continue?'
+          : 'Save changes to this Payment Voucher List?';
 
       Swal.fire({
           icon: 'question',
@@ -507,7 +509,7 @@ if (!empty($type_pv)) {
           confirmButtonColor: '#1e3a8a'
       }).then(function(result) {
           if (!result.isConfirmed) return;
-          doSaveEdit(pl_number, removes, adds, create_user);
+          doSaveEdit(pl_number, removes, adds, create_user, updates);
       });
   });
 </script>

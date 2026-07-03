@@ -7,6 +7,7 @@ $pl_number   = $_POST['pl_number'] ?? '';
 $create_user = mysqli_real_escape_string($conn2, $_POST['create_user'] ?? '');
 $removes     = json_decode($_POST['removes'] ?? '[]', true);
 $adds        = json_decode($_POST['adds'] ?? '[]', true);
+$updates     = json_decode($_POST['updates'] ?? '[]', true);
 
 if (empty($pl_number)) {
     echo 'Error: pl_number kosong';
@@ -26,6 +27,16 @@ if (!$row || $row['status'] !== 'Draft') {
 mysqli_begin_transaction($conn2);
 try {
     $create_date = date('Y-m-d H:i:s');
+
+    // Update keterangan per baris
+    foreach ($updates as $upd) {
+        $upd_kbon = mysqli_real_escape_string($conn2, $upd['no_kbon'] ?? '');
+        $upd_desk = mysqli_real_escape_string($conn2, $upd['deskripsi'] ?? '');
+        if (empty($upd_kbon)) continue;
+        if (!mysqli_query($conn2, "UPDATE pv_payment_voucher_list_det SET deskripsi = '$upd_desk' WHERE pl_number = '$pl_esc' AND no_kbon = '$upd_kbon'")) {
+            throw new Exception('Gagal update keterangan ' . htmlspecialchars($upd_kbon) . ': ' . mysqli_error($conn2));
+        }
+    }
 
     // Remove PVs
     foreach ($removes as $rm) {
