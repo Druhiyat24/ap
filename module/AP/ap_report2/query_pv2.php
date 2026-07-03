@@ -31,7 +31,7 @@ if ($search !== '') {
 $sql = "WITH
 rate as (select * from ap_masterrate where tanggal = '$end_date' and v_codecurr = CASE  WHEN tanggal = LAST_DAY(tanggal) THEN 'HARIAN' ELSE 'PAJAK' END GROUP BY  curr, rate),
 
-saldo_awal as (select nama_supp supplier, no_kbon, tgl_kbon, tgl_tempo duedate, curr, total, rate, no_coa, nama_coa, item_type1, item_type2, relasi from ap_saldo_payment_voucher),
+saldo_awal as (select nama_supp supplier, no_kbon, tgl_kbon, tgl_tempo duedate, curr, (subtotal + tax) total, rate, no_coa, nama_coa, item_type1, item_type2, relasi from ap_saldo_payment_voucher),
 
 in_kontrabon as (select b.nama_supp, a.no_journal, a.tgl_journal, tgl_tempo, a.curr, sum(debit - credit) total, a.rate, d.no_coa, d.nama_coa, item_type1, item_type2, relasi from tbl_list_journal a INNER JOIN kontrabon_h b on b.no_kbon = a.no_journal INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa INNER JOIN (select no_kbon, no_coa, nama_coa from kontrabon_h where status != 'cancel' and no_coa is not null GROUP BY no_kbon) d on d.no_kbon = a.no_journal where tgl_journal > '2026-06-30' and tgl_journal BETWEEN '$start_date' and '$end_date' and type_journal = 'AP - Kontrabon' and a.nama_coa like '%GR/IR%' and b.status != 'Cancel' and no_journal not like '%/INS%' GROUP BY no_journal
 UNION
