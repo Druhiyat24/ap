@@ -48,6 +48,9 @@ switch ($type_pv) {
             getApprovalCbd($conn2, $filters, $canSelect),
             getApprovalSaldoAwal($conn2, $filters, $canSelect)
         );
+        usort($data, function ($a, $b) {
+            return strcmp($a['no_kbon'], $b['no_kbon']);
+        });
         break;
 }
 
@@ -101,7 +104,7 @@ function getApprovalRegular($conn2, $filters, $canSelect)
         inner join potongan b on b.no_kbon = a.no_kbon
         where $where
         group by a.no_kbon
-        order by a.tgl_kbon desc");
+        order by a.no_kbon asc");
 
     $data = [];
 
@@ -171,7 +174,7 @@ function getApprovalInstallment($conn2, $filters, $canSelect)
         from kontrabon_h_installment_detail d
         inner join kontrabon_h h on h.no_kbon = d.no_kbon
         where $where
-        order by h.tgl_kbon desc, d.no_kbon asc, d.cicilan_ke asc");
+        order by d.no_kbon asc, d.cicilan_ke asc");
 
     $data = [];
 
@@ -222,7 +225,7 @@ function getApprovalDp($conn2, $filters, $canSelect)
         create_user, no_faktur, supp_inv, tgl_inv, tgl_tempo
         from kontrabon_h_dp
         where $where
-        order by tgl_kbon desc");
+        order by no_kbon asc");
 
     $data = [];
 
@@ -328,7 +331,7 @@ function getApprovalCbd($conn2, $filters, $canSelect)
         create_user, no_faktur, supp_inv, tgl_inv, tgl_tempo
         from kontrabon_h_cbd
         where $where
-        order by tgl_kbon desc");
+        order by no_kbon asc");
 
     $data = [];
 

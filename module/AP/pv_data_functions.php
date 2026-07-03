@@ -36,7 +36,7 @@ function getDataRegular($conn1, $conn2, $filters, $fin, $app, $group)
         inner join kontrabon_h d on d.no_kbon = a.no_kbon
         where $where
         group by a.no_kbon
-        order by a.tgl_kbon desc");
+        order by a.no_kbon asc");
 
     $data = [];
     $paidKbons = getPaidKbonsMap($conn2, 'Regular');
@@ -175,7 +175,7 @@ function getDataInstallment($conn1, $conn2, $filters, $fin, $app, $group)
         from kontrabon_h_installment_detail d
         inner join kontrabon_h h on h.no_kbon = d.no_kbon
         where $where
-        order by h.tgl_kbon desc, d.no_kbon asc, d.cicilan_ke asc");
+        order by d.no_kbon asc, d.cicilan_ke asc");
 
     $data = [];
     $paidKbons = getPaidKbonsMap($conn2, 'Installment');
@@ -290,7 +290,7 @@ function getDataDp($conn1, $conn2, $filters, $fin, $app, $group)
         status_pl, status_pvl, from_account, from_bank, from_bank_curr, item_type, no_coa, nama_coa
         from kontrabon_h_dp
         where $where
-        order by tgl_kbon desc");
+        order by no_kbon asc");
 
 
     $data = [];
@@ -403,7 +403,7 @@ function getDataCbd($conn1, $conn2, $filters, $fin, $app, $group)
         status_pl, status_pvl, from_account, from_bank, from_bank_curr, item_type, no_coa, nama_coa
         from kontrabon_h_cbd
         where $where
-        order by tgl_kbon desc");
+        order by no_kbon asc");
 
     $data = [];
     $paidKbons = getPaidKbonsMap($conn2, 'CBD');

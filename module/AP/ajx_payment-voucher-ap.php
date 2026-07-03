@@ -54,7 +54,7 @@ switch ($type_pv) {
             getDataCbd($conn1, $conn2, $filters, $fin, $app, $group)
         );
         usort($data, function($a, $b) {
-            return strcmp($b['tgl_kbon_raw'] ?? '', $a['tgl_kbon_raw'] ?? '');
+            return strcmp($a['no_kbon'] ?? '', $b['no_kbon'] ?? '');
         });
         break;
 }

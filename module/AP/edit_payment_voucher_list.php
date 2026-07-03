@@ -66,14 +66,27 @@ if (!empty($type_pv)) {
         $rowsAll = array_merge($rowsAll, getDataSaldoAwal($conn2, $filters));
     }
 
-    // Eligibility for PVL: fully approved (SECOND APPROVED or Approved) AND status_pvl null/Cancel AND status_pl null/Cancel
+    // Eligibility for PVL: fully approved (SECOND APPROVED or Approved) AND status_pvl null/Cancel.
+    // For SaldoAwal: skip status_pl check — getDataSaldoAwal() sets status_pl = status when null
+    // (needed for payment-list flow), which would wrongly exclude them here.
     $rowsAll = array_filter($rowsAll, function ($r) {
         if (!in_array($r['status'], ['SECOND APPROVED', 'Approved'])) return false;
         $pvl = strtoupper(trim($r['status_pvl'] ?? ''));
-        $pl  = strtoupper(trim($r['status_pl']  ?? ''));
-        $pvlOk = ($pvl === '' || $pvl === 'CANCEL');
-        $plOk  = ($pl  === '' || $pl  === 'CANCEL');
-        return $pvlOk && $plOk;
+        if ($pvl !== '' && $pvl !== 'CANCEL') return false;
+        if ($r['type'] !== 'SaldoAwal') {
+            $pl = strtoupper(trim($r['status_pl'] ?? ''));
+            if ($pl !== '' && $pl !== 'CANCEL') return false;
+        }
+        return true;
+    });
+
+    // Regular/Installment/DP/CBD sebelum 1 Juli 2026 sudah masuk saldo awal,
+    // tidak boleh ditarik lagi lewat form ini.
+    $rowsAll = array_filter($rowsAll, function ($r) {
+        if (in_array($r['type'], ['Regular', 'Installment', 'DP', 'CBD'])) {
+            return ($r['tgl_kbon_raw'] ?? '') >= '2026-07-01';
+        }
+        return true;
     });
 
     // Build set of no_kbon already in this PVL (to exclude from Section B)
