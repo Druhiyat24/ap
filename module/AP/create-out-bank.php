@@ -1461,22 +1461,43 @@ $('#btn_tarik_pv').on('click', function(){
 // ===============================
 $(document).on('change', '.chk_pv', function(){
 
-  let tr = $(this).closest('tr');
-  let no_pv = tr.find('.no_pv').data('nopv');
-  let type_pv = tr.find('.no_pv').data('typepv');
-
-  let total = parseFloat(tr.find('.total_pv').data('total')) || 0;
-  let rate = getNumber($('#rate_bank2').val()) || 1;
-  let input = tr.find('.txt_amount_pv');
+  let tr       = $(this).closest('tr');
+  let no_pv    = tr.find('.no_pv').data('nopv');
+  let type_pv  = tr.find('.no_pv').data('typepv');
+  let total    = parseFloat(tr.find('.total_pv').data('total')) || 0;
+  let curr_pv  = tr.find('.rate_pv').data('curr') || 'IDR';
+  let input     = tr.find('.txt_amount_pv');
   let input_idr = tr.find('.txt_amount_pv_idr');
-  let total_idr = total * rate;
 
   if($(this).is(':checked')){
 
     input.prop('disabled', false);
     input.val(total.toLocaleString('en-US'));
     input_idr.prop('disabled', false);
-    input_idr.val(total_idr.toLocaleString('en-US'));
+
+    // Fetch rate untuk currency PV pada tanggal bank out
+    function applyPvIdrRate(rate) {
+      tr.data('idr_rate', rate);
+      input_idr.val((total * rate).toLocaleString('en-US'));
+      tr.find('.rate_pv').text(rate.toLocaleString('en-US'));
+      hitungTotalPV();
+    }
+
+    if (curr_pv === 'IDR') {
+      applyPvIdrRate(1);
+    } else {
+      let doc_date = $('#tgl_active2').val();
+      $.ajax({
+        url: 'get_rate.php',
+        type: 'POST',
+        dataType: 'json',
+        data: { valuta: curr_pv, doc_date: doc_date },
+        success: function(res){
+          let rate = (res.status === 'ok') ? res.rate : (parseFloat(tr.find('.rate_pv').data('ratepv')) || 1);
+          applyPvIdrRate(rate);
+        }
+      });
+    }
 
     $.ajax({
       url: 'bank-out/get_pv_detail.php',
@@ -1486,12 +1507,10 @@ $(document).on('change', '.chk_pv', function(){
 
         let data = JSON.parse(res);
 
-        // HEADER (PC HEADER SAJA)
         $('#account2').val(data.account);
         $('#bank2').val(data.bank);
         $('#currency2').val(data.currency);
         $('#kode_bank2').val(data.b_code);
-
         $('#profit_center_bank2').val(data.profit_center);
         $('#profit_center_bank_show').val(data.nama_pc);
 
@@ -1505,10 +1524,10 @@ $(document).on('change', '.chk_pv', function(){
 
     input.prop('disabled', true);
     input.val('');
+    tr.removeData('idr_rate');
 
     if($('.chk_pv:checked').length === 0){
 
-      // RESET HEADER
       $('#amount_bank2').val('');
       $('#rate_bank2').val('');
       $('#eqv_idr_bank2').val('');
@@ -1558,24 +1577,19 @@ $(document).on('keyup', '.txt_amount_pv', function(){
   let tr = $(this).closest('tr');
 
   let max  = parseFloat(tr.find('.total_pv').data('total')) || 0;
-  let rate = getNumber($('#rate_bank2').val()) || 1;
+  let idr_rate = tr.data('idr_rate');
+  let rate = (idr_rate !== undefined) ? idr_rate : (getNumber($('#rate_bank2').val()) || 1);
 
   let val = $(this).val().replace(/,/g,'');
   val = parseFloat(val) || 0;
 
-  // 🔥 VALIDASI MAX
   if(val > max){
     Swal.fire('Warning','Amount tidak boleh lebih dari Total','warning');
     val = max;
   }
 
-  // 🔥 FORMAT USD
   $(this).val(val.toLocaleString('en-US'));
-
-  // 🔥 HITUNG IDR
-  let val_idr = val * rate;
-
-  tr.find('.txt_amount_pv_idr').val(val_idr.toLocaleString('en-US'));
+  tr.find('.txt_amount_pv_idr').val((val * rate).toLocaleString('en-US'));
 
   hitungTotalPV();
   hitungEqv2();
@@ -1588,22 +1602,20 @@ $(document).on('keyup', '.txt_amount_pv_idr', function(){
   let tr = $(this).closest('tr');
 
   let max  = parseFloat(tr.find('.total_pv').data('total')) || 0;
-  let rate = getNumber($('#rate_bank2').val()) || 1;
+  let idr_rate = tr.data('idr_rate');
+  let rate = (idr_rate !== undefined) ? idr_rate : (getNumber($('#rate_bank2').val()) || 1);
 
   let val_idr = $(this).val().replace(/,/g,'');
   val_idr = parseFloat(val_idr) || 0;
 
-  // 🔥 HITUNG USD
   let val = rate > 0 ? val_idr / rate : 0;
 
-  // 🔥 VALIDASI MAX (pakai USD)
   if(val > max){
     Swal.fire('Warning','Amount tidak boleh lebih dari Total','warning');
     val = max;
     val_idr = val * rate;
   }
 
-  // 🔥 FORMAT
   tr.find('.txt_amount_pv').val(val.toLocaleString('en-US'));
   $(this).val(val_idr.toLocaleString('en-US'));
 
@@ -1742,9 +1754,11 @@ function hitungTotalPV(){
     let tr = $(this).closest('tr');
 
     let val = getNumber(tr.find('.txt_amount_pv').val());
-    let val_idr = val * (rate_bank || 1);
+    let idr_rate = tr.data('idr_rate');
+    let eff_rate = (idr_rate !== undefined) ? idr_rate : (rate_bank || 1);
+    let val_idr = val * eff_rate;
     tr.find('.txt_amount_pv_idr').val(val_idr.toLocaleString('en-US'));
-    tr.find('.rate_pv').text((rate_bank || 1).toLocaleString('en-US'));
+    tr.find('.rate_pv').text(eff_rate.toLocaleString('en-US'));
 
     let pc = (tr.find('.pc_pv').data('pcpv') || '').toString().trim().toUpperCase();
 
@@ -1977,6 +1991,27 @@ function loadRate(){
 // ===============================
 $('#tgl_active2').on('change', function(){
   loadRate();
+
+  let doc_date = $(this).val();
+  $('.chk_pv:checked').each(function(){
+    let tr = $(this).closest('tr');
+    let curr_pv = tr.find('.rate_pv').data('curr') || 'IDR';
+    if (curr_pv === 'IDR') return;
+    $.ajax({
+      url: 'get_rate.php',
+      type: 'POST',
+      dataType: 'json',
+      data: { valuta: curr_pv, doc_date: doc_date },
+      success: function(res){
+        let rate = (res.status === 'ok') ? res.rate : 1;
+        tr.data('idr_rate', rate);
+        let val = getNumber(tr.find('.txt_amount_pv').val());
+        tr.find('.txt_amount_pv_idr').val((val * rate).toLocaleString('en-US'));
+        tr.find('.rate_pv').text(rate.toLocaleString('en-US'));
+        hitungTotalPV();
+      }
+    });
+  });
 });
 
 

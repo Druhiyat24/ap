@@ -101,6 +101,7 @@ while ($row = mysqli_fetch_assoc($sqlBiaya)) {
         'no_pv'     => $row['no_pv'],
         'pv_date'   => $row['pv_date'],
         'due_date'  => $row['due_date'],
+        'curr'      => $row['curr'] ?? 'IDR',
         'dpp'       => (float) $row['subtotal'],
         'ppn'       => (float) $row['ppn'],
         'pph'       => (float) $row['pph'],
@@ -165,6 +166,7 @@ foreach ($kontrabonRows as $r) {
         'no_pv'     => $noKbon,
         'pv_date'   => $r['tgl_kbon_raw'] ?? null,
         'due_date'  => $r['tgl_tempo_raw'] ?? null,
+        'curr'      => $r['curr'] ?? 'IDR',
         'dpp'       => (float) $r['subtotal_raw'],
         'ppn'       => (float) $r['tax_raw'],
         'pph'       => (float) $r['pph_raw'],
@@ -189,7 +191,7 @@ foreach ($rowsOut as $row) {
         <td>' . number_format($row['ppn'], 2) . '</td>
         <td>' . number_format($row['pph'], 2) . '</td>
         <td class="total_pv" data-total="' . $row['total'] . '">' . number_format($row['total'], 2) . '</td>
-        <td class="rate_pv" data-ratepv="' . $row['rate'] . '">' . number_format($row['rate'], 2) . '</td>
+        <td class="rate_pv" data-ratepv="' . $row['rate'] . '" data-curr="' . htmlspecialchars($row['curr']) . '">' . number_format($row['rate'], 2) . '</td>
         <td style="width: 170px;">
             <input type="text" class="form-control txt_amount_pv" style="text-align:right" disabled>
         </td>
