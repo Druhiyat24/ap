@@ -73,6 +73,10 @@
     </button>
 </a>
 
+    <button type="button" id="btnCopySaldo" class="btn btn-warning ml-2" style="margin-top: 30px;" disabled title="Filter harus dari awal bulan ke akhir bulan">
+        <i class="fa fa-copy"></i> Copy Saldo
+    </button>
+
     <?php
     $start_date = isset($_POST['start_date']) ? $_POST['start_date'] : null;
     $end_date = isset($_POST['end_date']) ? $_POST['end_date'] : null;
@@ -239,9 +243,10 @@ div.dataTables_wrapper .dataTables_info {
 <!-- Bootstrap core JavaScript -->
 <script src="../vendor/jquery/jquery.min.js"></script>
 <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>  
+<script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
 <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
 
 <script>
   // Hide submenus
@@ -436,6 +441,66 @@ document.getElementById('btnExportExcel').addEventListener('click', function(e) 
 
     // set dynamic href
     this.href = `ekspor_ca_fabric_summary_barcode.php?start_date=${sd}&end_date=${ed}`;
+});
+
+// ===================== COPY SALDO =====================
+function isFullMonth(dmyStart, dmyEnd) {
+    if (!dmyStart || !dmyEnd) return false;
+    let ps = dmyStart.split('-');
+    let pe = dmyEnd.split('-');
+    if (ps.length < 3 || pe.length < 3) return false;
+    let sd = parseInt(ps[0]), sm = parseInt(ps[1]), sy = parseInt(ps[2]);
+    let ed = parseInt(pe[0]), em = parseInt(pe[1]), ey = parseInt(pe[2]);
+    if (sy !== ey || sm !== em) return false;
+    if (sd !== 1) return false;
+    let lastDay = new Date(ey, em, 0).getDate(); // last day of month sm
+    return ed === lastDay;
+}
+
+function updateCopySaldoBtn() {
+    let sd = $('#start_date').val();
+    let ed = $('#end_date').val();
+    let ok = isFullMonth(sd, ed);
+    $('#btnCopySaldo').prop('disabled', !ok);
+    $('#btnCopySaldo').attr('title', ok ? '' : 'Filter harus dari awal bulan ke akhir bulan');
+}
+
+$('#start_date, #end_date').on('change', updateCopySaldoBtn);
+updateCopySaldoBtn();
+
+$('#btnCopySaldo').on('click', function() {
+    let sd = toYmd($('#start_date').val());
+    let ed = toYmd($('#end_date').val());
+
+    Swal.fire({
+        title: 'Copy Saldo',
+        html: `Copy saldo akhir periode <b>${$('#start_date').val()} – ${$('#end_date').val()}</b> menjadi saldo awal periode berikutnya?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Copy',
+        cancelButtonText: 'Batal'
+    }).then(function(result) {
+        if (!result.isConfirmed) return;
+
+        Swal.fire({ title: 'Memproses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+        $.ajax({
+            type: 'POST',
+            url: 'ca_fabric_copy_saldo_barcode.php',
+            data: { start_date: sd, end_date: ed },
+            dataType: 'json',
+            success: function(res) {
+                if (res.status === 'ok') {
+                    Swal.fire('Berhasil', res.message || 'Copy saldo berhasil.', 'success');
+                } else {
+                    Swal.fire('Gagal', res.message || 'Terjadi kesalahan.', 'error');
+                }
+            },
+            error: function() {
+                Swal.fire('Error', 'Request gagal. Cek koneksi atau server.', 'error');
+            }
+        });
+    });
 });
 
 </script>
