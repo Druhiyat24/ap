@@ -84,7 +84,7 @@ if (!empty($type_pv)) {
     // tidak boleh ditarik lagi lewat form ini.
     $rowsAll = array_filter($rowsAll, function ($r) {
         if (in_array($r['type'], ['Regular', 'Installment', 'DP', 'CBD'])) {
-            return ($r['tgl_kbon_raw'] ?? '') >= '2026-07-01';
+            return substr($r['create_date'] ?? '', 0, 10) >= '2026-07-01';
         }
         return true;
     });

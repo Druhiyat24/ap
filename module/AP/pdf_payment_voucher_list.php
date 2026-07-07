@@ -94,9 +94,7 @@ function getFromAccountInfo($conn2, $type_pv, $no_kbon)
     return $from;
 }
 
-// Urut per Supplier dulu supaya PV dari supplier yang sama jatuh berurutan -
-// dibutuhkan untuk rowspan Supplier/Total Amount/Bank di tabel PDF.
-$sqlDet = mysqli_query($conn2, "select id, type_pv, no_kbon, tgl_kbon, nama_supp, curr, total, deskripsi, profit_center from pv_payment_voucher_list_det where pl_number = '$pl_number_esc' and status != 'Cancel' order by nama_supp asc, no_kbon asc");
+$sqlDet = mysqli_query($conn2, "select id, type_pv, no_kbon, tgl_kbon, nama_supp, curr, total, deskripsi, profit_center from pv_payment_voucher_list_det where pl_number = '$pl_number_esc' and status != 'Cancel' order by no_kbon asc");
 
 $rows = [];
 while ($d = mysqli_fetch_assoc($sqlDet)) {
@@ -144,11 +142,13 @@ foreach ($groups as $g) {
     $rowToGroup[$g['start']] = $g;
 }
 
-$grandTotal = 0;
+$grandTotals = [];
 foreach ($rows as $r) {
-    $grandTotal += $r['total'];
+    $curr = $r['curr'];
+    if (!isset($grandTotals[$curr])) $grandTotals[$curr] = 0;
+    $grandTotals[$curr] += $r['total'];
 }
-$grandTotalCurr = !empty($rows) ? $rows[0]['curr'] : 'IDR';
+ksort($grandTotals);
 
 // Total per Profit Center untuk NOTE di bawah TTD - kode PC ditampilkan
 // sebagai nama divisinya, bukan kode mentah (NAG = Garment, NAK = Knitting).
@@ -290,11 +290,14 @@ ob_start();
                     <td style="text-align:left;vertical-align:top;"><?php echo !empty($r['deskripsi']) ? htmlspecialchars($r['deskripsi']) : '-'; ?></td>
                 </tr>
             <?php } ?>
+            <?php foreach ($grandTotals as $curr => $total): ?>
             <tr>
-                <td colspan="5" style="text-align:center;height: 25px;"><b>Grand Total</b></td>
-                <td style="text-align:right;"><b><?php echo number_format($grandTotal, 2); ?></b></td>
+                <td colspan="4" style="text-align:center;height: 20px;"><b>Grand Total <?php echo htmlspecialchars($curr); ?></b></td>
+                <td style="text-align:center;"><b><?php echo htmlspecialchars($curr); ?></b></td>
+                <td style="text-align:right;"><b><?php echo number_format($total, 2); ?></b></td>
                 <td colspan="2"></td>
             </tr>
+            <?php endforeach; ?>
         </tbody>
     </table>
 
@@ -379,9 +382,11 @@ ob_start();
             </tr>
             <?php } ?> -->
            <!--  style="font-weight: bold" -->
+            <?php foreach ($grandTotals as $curr => $total): ?>
             <tr>
-                <td>Total Payment Voucher List : <?php echo $grandTotalCurr . ' ' . number_format($grandTotal, 2); ?></td>
+                <td>Total Payment Voucher List <?php echo htmlspecialchars($curr); ?> : <?php echo htmlspecialchars($curr) . ' ' . number_format($total, 2); ?></td>
             </tr>
+            <?php endforeach; ?>
         </table>
     </div>
 
