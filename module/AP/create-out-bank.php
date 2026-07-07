@@ -425,11 +425,7 @@
       language: {
         search: "Cari:",
         lengthMenu: "Tampilkan _MENU_ data",
-        info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
-        paginate: {
-          previous: "Prev",
-          next: "Next"
-        }
+        paginate: { previous: "Prev", next: "Next" }
       }
     });
 
@@ -1379,6 +1375,19 @@ $(document).on('change', '.no_coa1', function() {
 
     let tablePV;
 
+    // Ambil semua .chk_pv:checked dari semua halaman (DataTable menyimpan semua
+    // baris di memory meski tidak di DOM saat paging aktif).
+    function getAllCheckedPv() {
+      let nodes = $();
+      if (typeof tableLP !== 'undefined' && tableLP) {
+        nodes = nodes.add($(tableLP.rows().nodes()).find('.chk_pv:checked'));
+      }
+      if (typeof tablePV !== 'undefined' && tablePV) {
+        nodes = nodes.add($(tablePV.rows().nodes()).find('.chk_pv:checked'));
+      }
+      return nodes;
+    }
+
     function initTablePV(){
 
     // destroy dulu kalau sudah pernah dibuat
@@ -1398,11 +1407,7 @@ $(document).on('change', '.no_coa1', function() {
       language: {
         search: "Cari:",
         lengthMenu: "Tampilkan _MENU_ data",
-        info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
-        paginate: {
-          previous: "Prev",
-          next: "Next"
-        }
+        paginate: { previous: "Prev", next: "Next" }
       }
     });
 
@@ -1526,7 +1531,7 @@ $(document).on('change', '.chk_pv', function(){
     input.val('');
     tr.removeData('idr_rate');
 
-    if($('.chk_pv:checked').length === 0){
+    if(getAllCheckedPv().length === 0){
 
       $('#amount_bank2').val('');
       $('#rate_bank2').val('');
@@ -1749,7 +1754,7 @@ function hitungTotalPV(){
   // =========================
   // 🔥 PV (DETAIL ATAS)
   // =========================
-  $('.chk_pv:checked').each(function(){
+  getAllCheckedPv().each(function(){
 
     let tr = $(this).closest('tr');
 
@@ -1993,7 +1998,7 @@ $('#tgl_active2').on('change', function(){
   loadRate();
 
   let doc_date = $(this).val();
-  $('.chk_pv:checked').each(function(){
+  getAllCheckedPv().each(function(){
     let tr = $(this).closest('tr');
     let curr_pv = tr.find('.rate_pv').data('curr') || 'IDR';
     if (curr_pv === 'IDR') return;
@@ -2389,7 +2394,7 @@ $(document).on('change', '.no_coa2', function() {
     return;
   }
 
-  if($('.chk_pv:checked').length === 0){
+  if(getAllCheckedPv().length === 0){
     Swal.fire('Warning','Pilih minimal 1 PV','warning');
     return;
   }
@@ -2434,7 +2439,7 @@ $(document).on('change', '.no_coa2', function() {
   // =========================
   let detail_pv = [];
 
-  $('.chk_pv:checked').each(function(){
+  getAllCheckedPv().each(function(){
 
     let tr = $(this).closest('tr');
 

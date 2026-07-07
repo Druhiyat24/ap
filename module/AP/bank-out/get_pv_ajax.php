@@ -112,12 +112,13 @@ while ($row = mysqli_fetch_assoc($sqlBiaya)) {
 
 // ====================== REGULAR / INSTALLMENT / DP / CBD ======================
 // Hanya yang sudah SECOND APPROVED di Payment List (status_pl) yang boleh ditarik.
+// Semua type tidak di-filter by date di bank-out — PV/kontrabon bisa dari tanggal berapa pun.
 $filters = [
     'nama_supp'   => !empty($supplier) ? $supplier : 'ALL',
     'status'      => 'ALL',
-    'filter_date' => 'tgl_kbon',
-    'start_date'  => $tgl_awal,
-    'end_date'    => $tgl_akhir,
+    'filter_date' => '',
+    'start_date'  => '',
+    'end_date'    => '',
 ];
 
 $kontrabonRows = array_merge(
@@ -128,7 +129,18 @@ $kontrabonRows = array_merge(
     getDataSaldoAwal($conn2, $filters)
 );
 
-$kontrabonRows = array_filter($kontrabonRows, function ($r) {
+// SaldoAwal: getDataSaldoAwal() fallback status_pl ke status saat NULL,
+// sehingga $r['status_pl'] tidak bisa diandalkan. Cek nilai asli dari tabel.
+$saldoAwalPlApproved = [];
+$sqlSaCheck = mysqli_query($conn2, "SELECT no_kbon FROM ap_saldo_payment_voucher WHERE status_pl = 'SECOND APPROVED'");
+while ($rr = mysqli_fetch_assoc($sqlSaCheck)) {
+    $saldoAwalPlApproved[$rr['no_kbon']] = true;
+}
+
+$kontrabonRows = array_filter($kontrabonRows, function ($r) use ($saldoAwalPlApproved) {
+    if ($r['type'] === 'SaldoAwal') {
+        return isset($saldoAwalPlApproved[$r['no_kbon']]);
+    }
     return $r['status_pl'] === 'SECOND APPROVED';
 });
 

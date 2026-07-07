@@ -129,11 +129,13 @@ try {
         $pv_pph = $row_pv['pph'];
         $pv_total = $row_pv['total'];
         $pv_rate = $row_pv['rate'];
+        // $pv_rate = $row_pv['rate']; // Gunakan rate dari header ($rate)
 
         mysqli_query($conn2,"
             INSERT INTO b_bankout_det (no_bankout,no_reff,reff_date,due_date,dpp,ppn,pph,total,curr, eqv_idr, rates, for_balance, profit_center, type_pv)
             VALUES
             ('$doc_num', '$pv_number', '$pv_date', '$pv_duedate', '$pv_sub', '$pv_ppn', '$pv_pph', '$pv_total', '$pv_curr', '$amount', '$pv_rate', '$amount', '$pv_pc', 'Biaya')
+            ('$doc_num', '$pv_number', '$pv_date', '$pv_duedate', '$pv_sub', '$pv_ppn', '$pv_pph', '$pv_total', '$pv_curr', '$amount', '$rate', '$amount', '$pv_pc', 'Biaya')
             ");
 
         mysqli_query($conn2,"insert into tbl_list_journal select '' id, '$doc_num' no_journal, '$doc_date' tgl_journal, type_journal, coa, nama_coa, no_cc, COALESCE(cc_name,'-') cc_name, no_pv no_reff, pv_date reff_date, buyer, no_ws, a.curr, IF(rate is null,1,rate) rate, debit, credit, round(debit * IF(rate is null,1,rate),4) debit_idr, round(credit * IF(rate is null,1,rate),4) credit_idr, 'Draft' status, deskripsi, '$user' create_by, CURRENT_TIMESTAMP() create_date, '' approve_by, '' approve_date, '' cancel_by, '' cancel_date, CURRENT_TIMESTAMP() created_at, CURRENT_TIMESTAMP() updated_at, profit_center from
@@ -221,7 +223,13 @@ try {
             $pv_sub = $rowOne['subtotal_raw'];
             $pv_ppn = $rowOne['tax_raw'];
             $pv_pph = $rowOne['pph_raw'];
-            $pv_rate = !empty($rowOne['rate']) ? $rowOne['rate'] : 1;
+            if ($pv_curr === 'IDR') {
+                $pv_rate = 1;
+            } else {
+                $sqlPvRate = mysqli_query($conn2, "SELECT rate FROM ap_masterrate WHERE v_codecurr = 'PAJAK' AND curr = '" . mysqli_real_escape_string($conn2, $pv_curr) . "' AND tanggal = '" . mysqli_real_escape_string($conn2, $doc_date) . "' LIMIT 1");
+                $rowPvRate = mysqli_fetch_assoc($sqlPvRate);
+                $pv_rate = !empty($rowPvRate['rate']) ? (float)$rowPvRate['rate'] : (float)$rate;
+            }
 
             $alreadyPaid = getAlreadyPaidFor($conn2, $type_pv, $no_pv);
             $pv_total = (float) $rowOne['total_raw'] - $alreadyPaid;
