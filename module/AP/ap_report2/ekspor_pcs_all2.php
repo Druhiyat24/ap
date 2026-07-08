@@ -4117,10 +4117,10 @@ $rowNum = $rowHeader2 + 2;
 $no = 1;
 
 $sql_combined7 = "
-SELECT supplier, curr, relasi, saldo_akhir, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe
+SELECT supplier, curr, relasi, item_type2, saldo_akhir, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe
 FROM ($sql_bpb) bpb
 UNION ALL
-SELECT supplier, curr, relasi, saldo_akhir, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe
+SELECT supplier, curr, relasi, item_type2, saldo_akhir, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe
 FROM ($sql_pv) pv
 ";
 
@@ -5035,6 +5035,57 @@ if ($dataEndRow >= $dataStartRow) {
         ->getBorders()->getAllBorders()
         ->setBorderStyle(Border::BORDER_THIN);
 
+    $sheet6->getStyle("A{$summaryRow_GROUP}:{$lastColLetter}{$summaryRow_GROUP}")
+        ->getFill()
+        ->setFillType(Fill::FILL_SOLID)
+        ->getStartColor()
+        ->setRGB('EAEAEA');
+
+    $rowNum = $summaryRow_GROUP + 1;
+} else {
+
+    /* Tidak ada data GROUP: tetap buat baris Total/Summary
+       dengan nilai 0 supaya formula Grand Total di bawah selalu
+       merujuk ke baris yang valid (mencegah #NAME? di Excel). */
+
+    $lastColLetter = Coordinate::stringFromColumnIndex($lastColIndex);
+
+    $totalIDRRow = $rowNum;
+    $sheet6->mergeCells("A{$totalIDRRow}:C{$totalIDRRow}");
+    $sheet6->setCellValue("A{$totalIDRRow}", "Total IDR");
+    $sheet6->getStyle("A{$totalIDRRow}")
+        ->getAlignment()
+        ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+        ->setVertical(Alignment::VERTICAL_CENTER);
+
+    $totalUSDRow = $totalIDRRow + 1;
+    $sheet6->mergeCells("A{$totalUSDRow}:C{$totalUSDRow}");
+    $sheet6->setCellValue("A{$totalUSDRow}", "Total USD");
+    $sheet6->getStyle("A{$totalUSDRow}")
+        ->getAlignment()
+        ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+        ->setVertical(Alignment::VERTICAL_CENTER);
+
+    $summaryRow_GROUP = $totalUSDRow + 1;
+    $sheet6->mergeCells("A{$summaryRow_GROUP}:D{$summaryRow_GROUP}");
+    $sheet6->setCellValue("A{$summaryRow_GROUP}", "Summary Group");
+    $sheet6->getStyle("A{$summaryRow_GROUP}")
+        ->getAlignment()
+        ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+        ->setVertical(Alignment::VERTICAL_CENTER);
+
+    for ($col = 4; $col <= $lastColIndex; $col++) {
+        $colLetter = Coordinate::stringFromColumnIndex($col);
+        $sheet6->setCellValue($colLetter.$totalIDRRow, 0);
+        $sheet6->setCellValue($colLetter.$totalUSDRow, 0);
+        $sheet6->setCellValue($colLetter.$summaryRow_GROUP, 0);
+    }
+
+    $sheet6->getStyle("A{$totalIDRRow}:{$lastColLetter}{$summaryRow_GROUP}")
+        ->getFont()->setBold(true);
+    $sheet6->getStyle("A{$totalIDRRow}:{$lastColLetter}{$summaryRow_GROUP}")
+        ->getBorders()->getAllBorders()
+        ->setBorderStyle(Border::BORDER_THIN);
     $sheet6->getStyle("A{$summaryRow_GROUP}:{$lastColLetter}{$summaryRow_GROUP}")
         ->getFill()
         ->setFillType(Fill::FILL_SOLID)
@@ -5991,6 +6042,56 @@ if ($dataEndRow >= $dataStartRow) {
             "=SUM({$colLetter}{$dataStartRow}:{$colLetter}{$dataEndRow})"
         );
     }
+
+    $rowNum = $summaryRow + 2;
+} else {
+
+    /* Tidak ada data NON GROUP: tetap buat baris Total/Summary
+       dengan nilai 0 supaya formula Grand Total di bawah selalu
+       merujuk ke baris yang valid (mencegah #NAME? di Excel). */
+
+    $totalIDRRow_NON = $rowNum;
+    $sheet6->mergeCells("A{$totalIDRRow_NON}:C{$totalIDRRow_NON}");
+    $sheet6->setCellValue("A{$totalIDRRow_NON}", "Total IDR");
+    $sheet6->getStyle("A{$totalIDRRow_NON}")
+        ->getAlignment()
+        ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+        ->setVertical(Alignment::VERTICAL_CENTER);
+
+    $totalUSDRow_NON = $totalIDRRow_NON + 1;
+    $sheet6->mergeCells("A{$totalUSDRow_NON}:C{$totalUSDRow_NON}");
+    $sheet6->setCellValue("A{$totalUSDRow_NON}", "Total USD");
+    $sheet6->getStyle("A{$totalUSDRow_NON}")
+        ->getAlignment()
+        ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+        ->setVertical(Alignment::VERTICAL_CENTER);
+
+    $summaryRow = $totalUSDRow_NON + 1;
+    $sheet6->mergeCells("A{$summaryRow}:D{$summaryRow}");
+    $sheet6->setCellValue("A{$summaryRow}", "Summary Non Group");
+    $sheet6->getStyle("A{$summaryRow}")
+        ->getAlignment()
+        ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+        ->setVertical(Alignment::VERTICAL_CENTER);
+
+    for ($col = 4; $col <= $lastColIndex; $col++) {
+        if (in_array($col, $skipCols)) continue;
+        $colLetter = Coordinate::stringFromColumnIndex($col);
+        $sheet6->setCellValue($colLetter.$totalIDRRow_NON, 0);
+        $sheet6->setCellValue($colLetter.$totalUSDRow_NON, 0);
+        $sheet6->setCellValue($colLetter.$summaryRow, 0);
+    }
+
+    $sheet6->getStyle("A{$totalIDRRow_NON}:{$lastColLetter}{$summaryRow}")
+        ->getFont()->setBold(true);
+    $sheet6->getStyle("A{$totalIDRRow_NON}:{$lastColLetter}{$summaryRow}")
+        ->getBorders()->getAllBorders()
+        ->setBorderStyle(Border::BORDER_THIN);
+    $sheet6->getStyle("A{$summaryRow}:{$lastColLetter}{$summaryRow}")
+        ->getFill()
+        ->setFillType(Fill::FILL_SOLID)
+        ->getStartColor()
+        ->setRGB('EAEAEA');
 
     $rowNum = $summaryRow + 2;
 }

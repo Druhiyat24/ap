@@ -108,7 +108,7 @@
             <select class="form-control selectpicker" name="nokbon" id="nokbon" data-live-search="true" onchange='changeValueKBON(this.value)' required>
             <option value="" disabled selected="true">Pilih NO Kontrabon FTR</option>  
              <?php 
-                        $sqlacc = mysqli_query($conn2,"select * from kontrabon");
+                        $sqlacc = mysqli_query($conn2,"select a.no_kbon, a.tgl_kbon, a.curr from kontrabon a inner join kontrabon_h d on d.no_kbon = a.no_kbon where d.status_pl = 'SECOND APPROVED' group by a.no_kbon order by a.no_kbon desc");
                         $jsArrayKBON = "var KBNName = new Array();\n";
 
                         while ($row = mysqli_fetch_array($sqlacc)) {
