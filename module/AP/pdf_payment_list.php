@@ -47,7 +47,9 @@ function getDueDateAndBank($conn2, $type_pv, $no_kbon)
         $tgl_tempo = $row['due_date'] ?? null;
 
         if (!empty($row['to_akun'])) {
-            $sqlBank = mysqli_query($conn2, "select beneficiary_name, bank_name, bank_account, bank_currency from master_supplier_bank where bank_account = '" . mysqli_real_escape_string($conn2, $row['to_akun']) . "'");
+            $sqlBank = mysqli_query($conn2, "select * from (select beneficiary_name, bank_name, bank_account, bank_currency from master_supplier_bank where bank_account = '" . mysqli_real_escape_string($conn2, $row['to_akun']) . "'
+UNION
+select beneficiary_name, upper(bank_name) bank_name, bank_account, curr bank_currency from b_masterbank where bank_account = '" . mysqli_real_escape_string($conn2, $row['to_akun']) . "') t limit 1");
             $rowBank = mysqli_fetch_assoc($sqlBank);
             if ($rowBank) {
                 $bank = $rowBank;
@@ -64,12 +66,22 @@ function getDueDateAndBank($conn2, $type_pv, $no_kbon)
         $parentKbon = $rowDet['no_kbon'] ?? null;
 
         $idBankAccount = null;
-        $sqlBank = mysqli_query($conn2, "select id_bank_account from kontrabon_h where no_kbon = '" . mysqli_real_escape_string($conn2, $parentKbon) . "'");
+        $sqlBank = mysqli_query($conn2, "select id_bank_account from kontrabon_h where no_kbon = '" . mysqli_real_escape_string($conn2, $parentKbon) . "' and create_date > '2026-06-30'");
         $rowBank = mysqli_fetch_assoc($sqlBank);
         $idBankAccount = $rowBank['id_bank_account'] ?? null;
+    } elseif ($type_pv === 'SaldoAwal') {
+        // No PV saldo awal (migrasi sebelum go-live) sumbernya bukan
+        // kontrabon_h, tapi ap_saldo_payment_voucher - beberapa no_kbon
+        // saldo awal kebetulan sama dengan no_kbon lama di kontrabon_h
+        // (created < 1 Juli 2026, id_bank_account-nya kosong), jadi jangan
+        // sampai salah ambil dari situ.
+        $sql = mysqli_query($conn2, "select tgl_tempo, id_bank_supplier from ap_saldo_payment_voucher where no_kbon = '$no_kbon_esc'");
+        $row = mysqli_fetch_assoc($sql);
+        $tgl_tempo = $row['tgl_tempo'] ?? null;
+        $idBankAccount = $row['id_bank_supplier'] ?? null;
     } else {
         $table = $type_pv === 'DP' ? 'kontrabon_h_dp' : ($type_pv === 'CBD' ? 'kontrabon_h_cbd' : 'kontrabon_h');
-        $sql = mysqli_query($conn2, "select tgl_tempo, id_bank_account from $table where no_kbon = '$no_kbon_esc'");
+        $sql = mysqli_query($conn2, "select tgl_tempo, id_bank_account from $table where no_kbon = '$no_kbon_esc' and create_date > '2026-06-30'");
         $row = mysqli_fetch_assoc($sql);
         $tgl_tempo = $row['tgl_tempo'] ?? null;
         $idBankAccount = $row['id_bank_account'] ?? null;
@@ -103,10 +115,14 @@ function getFromAccountInfo($conn2, $type_pv, $no_kbon)
         if (empty($parentKbon)) {
             return $from;
         }
-        $sql = mysqli_query($conn2, "select from_account, from_bank, from_bank_curr from kontrabon_h where no_kbon = '" . mysqli_real_escape_string($conn2, $parentKbon) . "'");
+        $sql = mysqli_query($conn2, "select from_account, from_bank, from_bank_curr from kontrabon_h where no_kbon = '" . mysqli_real_escape_string($conn2, $parentKbon) . "' and create_date > '2026-06-30'");
+    } elseif ($type_pv === 'SaldoAwal') {
+        // Sama seperti getDueDateAndBank(): saldo awal harus dari
+        // ap_saldo_payment_voucher, bukan kontrabon_h (lihat catatan di sana).
+        $sql = mysqli_query($conn2, "select from_account, from_bank, from_bank_curr from ap_saldo_payment_voucher where no_kbon = '$no_kbon_esc'");
     } else {
         $table = $type_pv === 'DP' ? 'kontrabon_h_dp' : ($type_pv === 'CBD' ? 'kontrabon_h_cbd' : 'kontrabon_h');
-        $sql = mysqli_query($conn2, "select from_account, from_bank, from_bank_curr from $table where no_kbon = '$no_kbon_esc'");
+        $sql = mysqli_query($conn2, "select from_account, from_bank, from_bank_curr from $table where no_kbon = '$no_kbon_esc' and create_date > '2026-06-30'");
     }
 
     $row = mysqli_fetch_assoc($sql);
