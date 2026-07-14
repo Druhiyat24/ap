@@ -111,7 +111,7 @@ if ($potongan_pph == '') {
 	$potongan_pph1 = $potongan_pph;
 }
 
-$ttl_kbon = (($sub_h + $lr_kurs1 + $s_qty1 + $s_harga1 + $materai1 + $ekspedisi1 + $moq1) - $pot_beli1 + $potongan_ppn1) + ($tax_h) - $jml_return;
+$ttl_kbon = (($sub_h + $lr_kurs1 + $s_qty1 + $s_harga1 + $materai1 + $ekspedisi1 + $moq1) - $pot_beli1) + ($tax_h) - $jml_return;
 
 $sqlno = mysqli_query($conn1,"select CONCAT(
 	'PV-AP/REG/$profit_center/',
@@ -238,28 +238,28 @@ if ($s_harga1 == 0) {
 }
 
 //coa koreksi ppn
-if ($potongan_ppn1 == 0) {
+// if ($potongan_ppn1 == 0) {
 
-}else{
-	if ($potongan_ppn1 >= 1) {
-		// positif = tambah PPN → debit
-		$querypotppn = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
-		VALUES
-		('$kode', '$create_date', 'AP - Kontrabon', '5.97.02', 'BEBAN SELISIH HARGA', '$no_cc', '$nama_cc', '-', '', '-', '-', '$curr_h', '$rate', '$potongan_ppn1', '0', '$idr_potongan_ppn', '0', 'Draft', '$keter', '$create_user_h', '$create_date', '', '', '', '', '$profit_center')";
+// }else{
+// 	if ($potongan_ppn1 >= 1) {
+// 		// positif = tambah PPN → debit
+// 		$querypotppn = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
+// 		VALUES
+// 		('$kode', '$create_date', 'AP - Kontrabon', '5.97.02', 'BEBAN SELISIH HARGA', '$no_cc', '$nama_cc', '-', '', '-', '-', '$curr_h', '$rate', '$potongan_ppn1', '0', '$idr_potongan_ppn', '0', 'Draft', '$keter', '$create_user_h', '$create_date', '', '', '', '', '$profit_center')";
 
-		$executepotppn = mysqli_query($conn2,$querypotppn);
-	}else{
-		// negatif = kurangi PPN → credit
-		$potongan_ppn2 = abs($potongan_ppn1);
-		$idr_potongan_ppn2 = $potongan_ppn2 * $rate;
+// 		$executepotppn = mysqli_query($conn2,$querypotppn);
+// 	}else{
+// 		// negatif = kurangi PPN → credit
+// 		$potongan_ppn2 = abs($potongan_ppn1);
+// 		$idr_potongan_ppn2 = $potongan_ppn2 * $rate;
 
-		$querypotppn = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
-		VALUES
-		('$kode', '$create_date', 'AP - Kontrabon', '5.97.02', 'BEBAN SELISIH HARGA', '$no_cc', '$nama_cc', '-', '', '-', '-', '$curr_h', '$rate', '0', '$potongan_ppn2', '0', '$idr_potongan_ppn2', 'Draft', '$keter', '$create_user_h', '$create_date', '', '', '', '', '$profit_center')";
+// 		$querypotppn = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
+// 		VALUES
+// 		('$kode', '$create_date', 'AP - Kontrabon', '5.97.02', 'BEBAN SELISIH HARGA', '$no_cc', '$nama_cc', '-', '', '-', '-', '$curr_h', '$rate', '0', '$potongan_ppn2', '0', '$idr_potongan_ppn2', 'Draft', '$keter', '$create_user_h', '$create_date', '', '', '', '', '$profit_center')";
 
-		$executepotppn = mysqli_query($conn2,$querypotppn);
-	}
-}
+// 		$executepotppn = mysqli_query($conn2,$querypotppn);
+// 	}
+// }
 
 //coa materai
 if ($materai1 == 0) {
