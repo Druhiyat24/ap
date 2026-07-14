@@ -218,9 +218,16 @@ require_once 'pv_data_functions.php';
                                 getDataCbd($conn1, $conn2, $pvFilters, '1', '1', ''),
                                 getDataSaldoAwal($conn2, $pvFilters)
                             );
-                            $pvRows = array_filter($pvRows, function ($r) use ($profit_center) {
-                                return $r['status_pl'] === 'SECOND APPROVED'
-                                    && $r['profit_center'] === $profit_center;
+                            // Supplier "ONLINE SHOP" dikecualikan dari alur Payment List dua
+                            // tahap - cukup sudah APPROVED di PV List (approval tunggal), sama
+                            // seperti di bank-out/get_pv_ajax.php.
+                            $isOnlineShop = strtoupper(trim($nama_supp)) === 'ONLINE SHOP';
+                            $pvRows = array_filter($pvRows, function ($r) use ($profit_center, $isOnlineShop) {
+                                if ($r['profit_center'] !== $profit_center) return false;
+                                if ($isOnlineShop) {
+                                    return strtoupper(trim((string) $r['status_pvl'])) === 'APPROVED';
+                                }
+                                return $r['status_pl'] === 'SECOND APPROVED';
                             });
                             foreach ($pvRows as $r) {
                                 $outstanding = (float) $r['total_raw'] - getAlreadyPaidFor($conn2, $r['type'], $r['no_kbon']);
