@@ -1079,7 +1079,7 @@ if($countpay != '0'){
     $notifpay = '';
 }
 
-$sqlpv1 = mysqli_query($conn2," select count(distinct(no_kbon)) as no_kbon from(select no_kbon from kontrabon_h where status = 'draft' and no_kbon not like '%INS%'
+$sqlpv1 = mysqli_query($conn2," select count(distinct(no_kbon)) as no_kbon from(select no_kbon from kontrabon_h where status = 'draft' and no_kbon not like '%INS%' and create_date >= '2026-07-01'
           UNION
           select no_kbon_det from kontrabon_h_installment_detail where status = 'draft'
           UNION
@@ -1094,7 +1094,7 @@ $sqlpv1 = mysqli_query($conn2," select count(distinct(no_kbon)) as no_kbon from(
               $notifpv1 = '';
           }
 
-          $sqlpv2 = mysqli_query($conn2," select count(distinct(no_kbon)) as no_kbon from(select no_kbon from kontrabon_h where status = 'FIRST APPROVED' and no_kbon not like '%INS%'
+          $sqlpv2 = mysqli_query($conn2," select count(distinct(no_kbon)) as no_kbon from(select no_kbon from kontrabon_h where status = 'FIRST APPROVED' and no_kbon not like '%INS%' and create_date >= '2026-07-01'
           UNION
           select no_kbon_det from kontrabon_h_installment_detail where status = 'FIRST APPROVED'
           UNION

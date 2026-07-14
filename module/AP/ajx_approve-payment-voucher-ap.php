@@ -89,7 +89,9 @@ function getApprovalRegular($conn2, $filters, $canSelect)
     // jadi harus dikecualikan disini supaya tidak ter-approve lewat jalur Regular -
     // yang cuma update kontrabon/kontrabon_h dan akan meninggalkan
     // kontrabon_h_installment_detail tetap draft.
-    $where = "a.no_kbon NOT LIKE 'PV-AP/INS/%' and h.status = '" . mysqli_real_escape_string($conn2, $filters['status']) . "'";
+    // Regular yang dibuat sebelum 1 Juli 2026 sengaja tidak ditampilkan di listing approval
+    // (first & second) - permintaan bisnis untuk membatasi approval Regular ke data baru saja.
+    $where = "a.no_kbon NOT LIKE 'PV-AP/INS/%' and h.status = '" . mysqli_real_escape_string($conn2, $filters['status']) . "' and h.create_date >= '2026-07-01'";
 
     if ($filters['nama_supp'] !== 'ALL' && $filters['nama_supp'] !== '') {
         $where .= " and a.nama_supp = '" . mysqli_real_escape_string($conn2, $filters['nama_supp']) . "'";

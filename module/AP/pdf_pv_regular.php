@@ -52,7 +52,7 @@ ob_start();
 
 			margin-top: 1.54cm;
 
-			margin-bottom: 1.54cm;
+			margin-bottom: 0.5cm;
 
 			margin-left: 3.175cm;
 
@@ -435,7 +435,7 @@ $bank_currency = $row_bank['bank_currency'];
 </table> 
 <br>
 
-<div style="margin-bottom: 2.54cm; page-break-inside: avoid;">
+<div style="margin-bottom: 0.2cm; page-break-inside: avoid;">
 	<table width="100%" border="0" style="page-break-inside: avoid;font-size:11px;">
 
 		<tr>
@@ -560,7 +560,7 @@ $bank_currency = $row_bank['bank_currency'];
 
 <!--TTD_SPACER-->
 
-<div style="margin-bottom: 2.54cm; page-break-inside: avoid;">
+<div style="margin-bottom: 0.2cm; page-break-inside: avoid;">
 	<table style="page-break-inside: avoid;" cellpadding="0" cellspacing="0" border="1" width='500';>
 
 		<tr>	
