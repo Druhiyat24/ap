@@ -2494,26 +2494,68 @@ function SidebarCollapse () {
     var options = {
       series: [{
           name: 'Total Cash',
-          data: [<?php 
-              $bulan = date("M"); 
-              $tahun = date("Y");
-              $sql1 = mysqli_query($conn2,"SELECT CONCAT_WS(',', saldo_jan, saldo_feb, saldo_mar, saldo_apr, saldo_may, saldo_jun, saldo_jul, saldo_aug, saldo_sep, saldo_oct, saldo_nov, saldo_dec) AS data
-                FROM (SELECT 
-        IF(MONTH(CURDATE())>=1, ROUND(SUM(IF(saldo_jan>0,saldo_jan,0))/1000000,2),0) saldo_jan,
-        IF(MONTH(CURDATE())>=2, ROUND(SUM(IF(saldo_feb>0,saldo_feb,0))/1000000,2),0) saldo_feb,
-        IF(MONTH(CURDATE())>=3, ROUND(SUM(IF(saldo_mar>0,saldo_mar,0))/1000000,2),0) saldo_mar,
-        IF(MONTH(CURDATE())>=4, ROUND(SUM(IF(saldo_apr>0,saldo_apr,0))/1000000,2),0) saldo_apr,
-        IF(MONTH(CURDATE())>=5, ROUND(SUM(IF(saldo_may>0,saldo_may,0))/1000000,2),0) saldo_may,
-        IF(MONTH(CURDATE())>=6, ROUND(SUM(IF(saldo_jun>0,saldo_jun,0))/1000000,2),0) saldo_jun,
-        IF(MONTH(CURDATE())>=7, ROUND(SUM(IF(saldo_jul>0,saldo_jul,0))/1000000,2),0) saldo_jul,
-        IF(MONTH(CURDATE())>=8, ROUND(SUM(IF(saldo_aug>0,saldo_aug,0))/1000000,2),0) saldo_aug,
-        IF(MONTH(CURDATE())>=9, ROUND(SUM(IF(saldo_sep>0,saldo_sep,0))/1000000,2),0) saldo_sep,
-        IF(MONTH(CURDATE())>=10, ROUND(SUM(IF(saldo_oct>0,saldo_oct,0))/1000000,2),0) saldo_oct,
-        IF(MONTH(CURDATE())>=11, ROUND(SUM(IF(saldo_nov>0,saldo_nov,0))/1000000,2),0) saldo_nov,
-        IF(MONTH(CURDATE())>=12, ROUND(SUM(IF(saldo_dec>0,saldo_dec,0))/1000000,2),0) saldo_dec
-    FROM b_trial_balance_$tahun a
-    INNER JOIN mastercoa_v2 b ON b.no_coa = a.no_coa
-    WHERE ind_categori5 IN ('BANK','KAS')) x");
+          data: [<?php
+              // Gabungan CASH IN BANK + CASH ON HAND per bulan - sama persis
+              // dengan query di dashboard/dashboard-bank.php.
+              $sql1 = mysqli_query($conn1, "
+                SELECT GROUP_CONCAT(
+                    IF(t.bln <= MONTH(CURDATE()), t.total, 0)
+                    ORDER BY t.bln SEPARATOR ','
+                ) AS data
+                FROM (
+                    SELECT pa.bln, ROUND(SUM(GREATEST(pa.bal,0))/1000000,2) AS total
+                    FROM (
+                        SELECT m.bank_account AS acc, mo.bln,
+                               (COALESCE(s.amount,0) + COALESCE(SUM(
+                                   CASE WHEN r.transaksi_date <= LEAST(mo.month_end, CURDATE()) AND r.status != 'Cancel'
+                                        THEN r.debit - r.credit ELSE 0 END
+                               ),0))
+                               * IF(m.curr='IDR',1,
+                                   (SELECT mr.rate FROM masterrate mr
+                                    WHERE mr.curr=m.curr AND mr.v_codecurr='PAJAK'
+                                      AND mr.tanggal <= COALESCE(
+                                          (SELECT MAX(r2.transaksi_date) FROM b_reportbank r2
+                                           WHERE r2.akun = m.bank_account AND r2.transaksi_date <= LEAST(mo.month_end, CURDATE()) AND r2.status != 'Cancel'),
+                                          LEAST(mo.month_end, CURDATE())
+                                      )
+                                    ORDER BY mr.tanggal DESC LIMIT 1)
+                               ) AS bal
+                        FROM b_masterbank m
+                        CROSS JOIN (
+                            SELECT n AS bln, LAST_DAY(MAKEDATE(YEAR(CURDATE()),1) + INTERVAL (n-1) MONTH) AS month_end
+                            FROM (SELECT 1 n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6
+                                  UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12) nn
+                        ) mo
+                        LEFT JOIN b_saldoawal_bank s ON s.account = m.bank_account
+                        LEFT JOIN b_reportbank r ON r.akun = m.bank_account
+                        GROUP BY m.bank_account, mo.bln, mo.month_end, s.amount
+
+                        UNION ALL
+
+                        SELECT c.no_coa AS acc, mo.bln,
+                               (COALESCE(s.amount,0) + COALESCE(SUM(
+                                   CASE WHEN r.transaksi_date <= LEAST(mo.month_end, CURDATE()) AND r.status != 'Cancel'
+                                        THEN r.debit - r.credit ELSE 0 END
+                               ),0))
+                               * IF(s.curr IS NULL OR s.curr='IDR',1,
+                                   (SELECT mr.rate FROM masterrate mr
+                                    WHERE mr.curr=s.curr AND mr.v_codecurr='HARIAN' AND mr.tanggal <= LEAST(mo.month_end, CURDATE())
+                                    ORDER BY mr.tanggal DESC LIMIT 1)
+                               ) AS bal
+                        FROM mastercoa_v2 c
+                        CROSS JOIN (
+                            SELECT n AS bln, LAST_DAY(MAKEDATE(YEAR(CURDATE()),1) + INTERVAL (n-1) MONTH) AS month_end
+                            FROM (SELECT 1 n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6
+                                  UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12) nn
+                        ) mo
+                        LEFT JOIN b_saldoawal_pettycash s ON s.account = c.no_coa
+                        LEFT JOIN c_report_pettycash r ON r.akun = c.no_coa
+                        WHERE c.ind_categori5 = 'KAS'
+                        GROUP BY c.no_coa, mo.bln, mo.month_end, s.amount, s.curr
+                    ) pa
+                    GROUP BY pa.bln
+                ) t
+              ");
               $row1 = mysqli_fetch_array($sql1);
               $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
               echo $data_bar1;
@@ -2681,26 +2723,46 @@ chart.render();
     var options = {
       series: [{
           name: 'Cash in Banks',
-          data: [<?php 
-              $bulan = date("M"); 
-              $tahun = date("Y");
-              $sql1 = mysqli_query($conn2,"SELECT CONCAT_WS(',', saldo_jan, saldo_feb, saldo_mar, saldo_apr, saldo_may, saldo_jun, saldo_jul, saldo_aug, saldo_sep, saldo_oct, saldo_nov, saldo_dec) AS data
-                FROM (SELECT 
-        IF(MONTH(CURDATE())>=1, ROUND(SUM(IF(saldo_jan>0,saldo_jan,0))/1000000,2),0) saldo_jan,
-        IF(MONTH(CURDATE())>=2, ROUND(SUM(IF(saldo_feb>0,saldo_feb,0))/1000000,2),0) saldo_feb,
-        IF(MONTH(CURDATE())>=3, ROUND(SUM(IF(saldo_mar>0,saldo_mar,0))/1000000,2),0) saldo_mar,
-        IF(MONTH(CURDATE())>=4, ROUND(SUM(IF(saldo_apr>0,saldo_apr,0))/1000000,2),0) saldo_apr,
-        IF(MONTH(CURDATE())>=5, ROUND(SUM(IF(saldo_may>0,saldo_may,0))/1000000,2),0) saldo_may,
-        IF(MONTH(CURDATE())>=6, ROUND(SUM(IF(saldo_jun>0,saldo_jun,0))/1000000,2),0) saldo_jun,
-        IF(MONTH(CURDATE())>=7, ROUND(SUM(IF(saldo_jul>0,saldo_jul,0))/1000000,2),0) saldo_jul,
-        IF(MONTH(CURDATE())>=8, ROUND(SUM(IF(saldo_aug>0,saldo_aug,0))/1000000,2),0) saldo_aug,
-        IF(MONTH(CURDATE())>=9, ROUND(SUM(IF(saldo_sep>0,saldo_sep,0))/1000000,2),0) saldo_sep,
-        IF(MONTH(CURDATE())>=10, ROUND(SUM(IF(saldo_oct>0,saldo_oct,0))/1000000,2),0) saldo_oct,
-        IF(MONTH(CURDATE())>=11, ROUND(SUM(IF(saldo_nov>0,saldo_nov,0))/1000000,2),0) saldo_nov,
-        IF(MONTH(CURDATE())>=12, ROUND(SUM(IF(saldo_dec>0,saldo_dec,0))/1000000,2),0) saldo_dec
-    FROM b_trial_balance_$tahun a
-    INNER JOIN mastercoa_v2 b ON b.no_coa = a.no_coa
-    WHERE ind_categori5 = 'BANK') x");
+          data: [<?php
+              // Ending balance riil per bulan (tahun berjalan) - sama persis dengan
+              // query di dashboard/dashboard-bank.php (sumber card+chart CASH IN BANK).
+              $sql1 = mysqli_query($conn1, "
+                SELECT GROUP_CONCAT(
+                    IF(t.bln <= MONTH(CURDATE()), t.total, 0)
+                    ORDER BY t.bln SEPARATOR ','
+                ) AS data
+                FROM (
+                    SELECT pa.bln,
+                           ROUND(SUM(GREATEST(pa.bal,0))/1000000,2) AS total
+                    FROM (
+                        SELECT m.bank_account, mo.bln,
+                               (COALESCE(s.amount,0) + COALESCE(SUM(
+                                   CASE WHEN r.transaksi_date <= LEAST(mo.month_end, CURDATE()) AND r.status != 'Cancel'
+                                        THEN r.debit - r.credit ELSE 0 END
+                               ),0))
+                               * IF(m.curr='IDR',1,
+                                   (SELECT mr.rate FROM masterrate mr
+                                    WHERE mr.curr=m.curr AND mr.v_codecurr='PAJAK'
+                                      AND mr.tanggal <= COALESCE(
+                                          (SELECT MAX(r2.transaksi_date) FROM b_reportbank r2
+                                           WHERE r2.akun = m.bank_account AND r2.transaksi_date <= LEAST(mo.month_end, CURDATE()) AND r2.status != 'Cancel'),
+                                          LEAST(mo.month_end, CURDATE())
+                                      )
+                                    ORDER BY mr.tanggal DESC LIMIT 1)
+                               ) AS bal
+                        FROM b_masterbank m
+                        CROSS JOIN (
+                            SELECT n AS bln, LAST_DAY(MAKEDATE(YEAR(CURDATE()),1) + INTERVAL (n-1) MONTH) AS month_end
+                            FROM (SELECT 1 n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6
+                                  UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12) nn
+                        ) mo
+                        LEFT JOIN b_saldoawal_bank s ON s.account = m.bank_account
+                        LEFT JOIN b_reportbank r ON r.akun = m.bank_account
+                        GROUP BY m.bank_account, mo.bln, mo.month_end, s.amount
+                    ) pa
+                    GROUP BY pa.bln
+                ) t
+              ");
               $row1 = mysqli_fetch_array($sql1);
               $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
               echo $data_bar1;
@@ -2868,43 +2930,43 @@ chart.render();
     var options = {
       series: [{
           name: 'Cash On Hand',
-          data: [<?php 
-              $bulan = date("M"); 
-              $tahun = date("Y");
-
-              $sql1 = mysqli_query($conn2,"SELECT CONCAT_WS(',',
-    saldo_jan,
-    saldo_feb,
-    saldo_mar,
-    saldo_apr,
-    saldo_may,
-    saldo_jun,
-    saldo_jul,
-    saldo_aug,
-    saldo_sep,
-    saldo_oct,
-    saldo_nov,
-    saldo_dec
-) AS data
-FROM (
-    SELECT 
-        IF(MONTH(CURDATE())>=1, ROUND(SUM(IF(saldo_jan>0,saldo_jan,0))/1000000,2),0) saldo_jan,
-        IF(MONTH(CURDATE())>=2, ROUND(SUM(IF(saldo_feb>0,saldo_feb,0))/1000000,2),0) saldo_feb,
-        IF(MONTH(CURDATE())>=3, ROUND(SUM(IF(saldo_mar>0,saldo_mar,0))/1000000,2),0) saldo_mar,
-        IF(MONTH(CURDATE())>=4, ROUND(SUM(IF(saldo_apr>0,saldo_apr,0))/1000000,2),0) saldo_apr,
-        IF(MONTH(CURDATE())>=5, ROUND(SUM(IF(saldo_may>0,saldo_may,0))/1000000,2),0) saldo_may,
-        IF(MONTH(CURDATE())>=6, ROUND(SUM(IF(saldo_jun>0,saldo_jun,0))/1000000,2),0) saldo_jun,
-        IF(MONTH(CURDATE())>=7, ROUND(SUM(IF(saldo_jul>0,saldo_jul,0))/1000000,2),0) saldo_jul,
-        IF(MONTH(CURDATE())>=8, ROUND(SUM(IF(saldo_aug>0,saldo_aug,0))/1000000,2),0) saldo_aug,
-        IF(MONTH(CURDATE())>=9, ROUND(SUM(IF(saldo_sep>0,saldo_sep,0))/1000000,2),0) saldo_sep,
-        IF(MONTH(CURDATE())>=10, ROUND(SUM(IF(saldo_oct>0,saldo_oct,0))/1000000,2),0) saldo_oct,
-        IF(MONTH(CURDATE())>=11, ROUND(SUM(IF(saldo_nov>0,saldo_nov,0))/1000000,2),0) saldo_nov,
-        IF(MONTH(CURDATE())>=12, ROUND(SUM(IF(saldo_dec>0,saldo_dec,0))/1000000,2),0) saldo_dec
-    FROM b_trial_balance_$tahun a
-    INNER JOIN mastercoa_v2 b
-        ON b.no_coa = a.no_coa
-    WHERE ind_categori5 = 'KAS'
-) x");
+          data: [<?php
+              // Ending balance riil per bulan (tahun berjalan) untuk akun kas -
+              // sama persis dengan query di dashboard/dashboard-bank.php
+              // (sumber card+chart CASH ON HAND).
+              $sql1 = mysqli_query($conn1, "
+                SELECT GROUP_CONCAT(
+                    IF(t.bln <= MONTH(CURDATE()), t.total, 0)
+                    ORDER BY t.bln SEPARATOR ','
+                ) AS data
+                FROM (
+                    SELECT pa.bln,
+                           ROUND(SUM(GREATEST(pa.bal,0))/1000000,2) AS total
+                    FROM (
+                        SELECT c.no_coa, mo.bln,
+                               (COALESCE(s.amount,0) + COALESCE(SUM(
+                                   CASE WHEN r.transaksi_date <= LEAST(mo.month_end, CURDATE()) AND r.status != 'Cancel'
+                                        THEN r.debit - r.credit ELSE 0 END
+                               ),0))
+                               * IF(s.curr IS NULL OR s.curr='IDR',1,
+                                   (SELECT mr.rate FROM masterrate mr
+                                    WHERE mr.curr=s.curr AND mr.v_codecurr='HARIAN' AND mr.tanggal <= LEAST(mo.month_end, CURDATE())
+                                    ORDER BY mr.tanggal DESC LIMIT 1)
+                               ) AS bal
+                        FROM mastercoa_v2 c
+                        CROSS JOIN (
+                            SELECT n AS bln, LAST_DAY(MAKEDATE(YEAR(CURDATE()),1) + INTERVAL (n-1) MONTH) AS month_end
+                            FROM (SELECT 1 n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6
+                                  UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12) nn
+                        ) mo
+                        LEFT JOIN b_saldoawal_pettycash s ON s.account = c.no_coa
+                        LEFT JOIN c_report_pettycash r ON r.akun = c.no_coa
+                        WHERE c.ind_categori5 = 'KAS'
+                        GROUP BY c.no_coa, mo.bln, mo.month_end, s.amount, s.curr
+                    ) pa
+                    GROUP BY pa.bln
+                ) t
+              ");
               $row1 = mysqli_fetch_array($sql1);
               $data_bar1 = isset($row1['data']) ? $row1['data'] :0;
               echo $data_bar1;
