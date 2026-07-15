@@ -501,10 +501,13 @@ $bank_currency = $row_bank['bank_currency'];
 			<td style="width:1%">:</td>
 			<td style="text-align:right">
 				<?php
-				$sqltax = mysqli_query($conn2,"select tax from kontrabon_h where no_kbon = '$no_kbon'");
-				$rowstax = mysqli_fetch_array($sqltax);
-				$jml_tax = $rowstax['tax'];
-				echo $curr." ".number_format($ppn + $potongan_ppn, 2).""; ?>
+				// Tax diambil dari SUM(kontrabon.tax) (bukan $ppn hasil hitung
+				// ulang qty*price*tax% di baris BPB) supaya presisi desimalnya
+				// sama persis dengan yang dipakai list (getDataRegular()).
+				$sqlTaxCalc = mysqli_query($conn2, "select SUM(tax) as tax from kontrabon where no_kbon = '$no_kbon'");
+				$rowTaxCalc = mysqli_fetch_assoc($sqlTaxCalc);
+				$tax_calc = $rowTaxCalc['tax'] ?? 0;
+				echo $curr." ".number_format($tax_calc + $potongan_ppn, 2).""; ?>
 			</td>
 		</tr>
 
@@ -550,13 +553,7 @@ $bank_currency = $row_bank['bank_currency'];
 				// getDataRegular()/pv_data_functions.php), bukan baca
 				// kontrabon_h.total langsung - kolom itu bisa NULL/basi kalau
 				// tidak ke-update konsisten, sehingga PDF & list bisa beda.
-				// Tax diambil dari SUM(kontrabon.tax) (bukan $ppn hasil hitung
-				// ulang qty*price*tax% di baris BPB) supaya presisi desimalnya
-				// sama persis dengan yang dipakai list.
-				$sqlTaxCalc = mysqli_query($conn2, "select SUM(tax) as tax from kontrabon where no_kbon = '$no_kbon'");
-				$rowTaxCalc = mysqli_fetch_assoc($sqlTaxCalc);
-				$tax_calc = $rowTaxCalc['tax'] ?? 0;
-
+				// $tax_calc sudah dihitung di baris Ppn di atas.
 				$jml_total = $sum_sub + ($tax_calc + $potongan_ppn) - (($pph + $potongan_pph) + $dp + $jml_return) + $potong;
 				echo $curr." ".number_format($jml_total, 2).""; ?>
 			</td>
