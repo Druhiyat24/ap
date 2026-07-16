@@ -135,7 +135,7 @@ function getFromAccountInfo($conn2, $type_pv, $no_kbon)
 
 // Urut per Supplier dulu supaya PV dari supplier yang sama jatuh berurutan -
 // dibutuhkan untuk rowspan Supplier/Total Amount/Bank di tabel PDF.
-$sqlDet = mysqli_query($conn2, "select id, type_pv, no_kbon, tgl_kbon, nama_supp, curr, total, deskripsi, profit_center from pv_payment_list_det where pl_number = '$pl_number_esc' and status != 'Cancel' order by no_kbon asc");
+$sqlDet = mysqli_query($conn2, "select id, type_pv, no_kbon, tgl_kbon, nama_supp, curr, total, deskripsi, profit_center from pv_payment_list_det where pl_number = '$pl_number_esc' and status != 'Cancel' order by nama_supp, no_kbon asc");
 
 $rows = [];
 while ($d = mysqli_fetch_assoc($sqlDet)) {
