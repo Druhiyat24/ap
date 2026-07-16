@@ -42,11 +42,23 @@
     $d_dpp = 0;
     $d_jenis_trans = '';
 
-    $sqldel = "delete from dsb_ap_retur;";
-    $querydel = mysqli_query($conn1,$sqldel);
+    $batch_size = 1000;
+    $values = [];
 
-    $sqldel2 = "ALTER TABLE dsb_ap_retur AUTO_INCREMENT = 1";
-    $querydel2 = mysqli_query($conn1,$sqldel2);
+    function flush_retur_batch($conn1, &$values) {
+        if (empty($values)) return;
+        $sql_ins = "INSERT INTO dsb_ap_retur (no_bpb,tgl_bpb,nama_supp,tipe,tipe_item,jml_qty,qty_good,qty_reject,curr,price,total,rate,dpp,ppn,total_idr,jenis_transaksi,create_date)
+                    VALUES " . implode(',', $values);
+        mysqli_query($conn1, $sql_ins);
+        $values = [];
+    }
+
+    // DELETE + all INSERTs run inside one transaction so readers never see the
+    // table half-emptied while the (slow, row-by-row computed) refresh is in
+    // progress - they see either the old data or the new data, never a gap.
+    mysqli_begin_transaction($conn1);
+
+    mysqli_query($conn1, "delete from dsb_ap_retur");
 
     while($row = mysqli_fetch_array($sql)){
         $no_bpb = $row['bppbno']; 
@@ -151,10 +163,15 @@
         //     <td style="width: 150px;" value = "'.$no_faktur.'">'.$no_faktur.'</td>
         //     <td style="width: 100px;" value = "'.$tgl_faktur.'">'.$tgl_faktur.'</td>';
         //     echo '</tr>';
-        $queryin = "INSERT INTO dsb_ap_retur (no_bpb,tgl_bpb,nama_supp,tipe,tipe_item,jml_qty,qty_good,qty_reject,curr,price,total,rate,dpp,ppn,total_idr,jenis_transaksi,create_date) 
-                        VALUES 
-                    ('$d_bpbno', '$d_bpbdate', '$d_supplier', '$d_tipe_com', '$asal', '$d_qty', '$d_qty_good', '$d_qty_reject', '$d_curr', '$d_price', '$d_dpp', '$rates', '$dpp_idr', '$ppn_idr', '$ttl_idr', '$d_jenis_trans', '$insert_date')";
-            $executein = mysqli_query($conn1,$queryin);
+        $values[] = "('".mysqli_real_escape_string($conn1,$d_bpbno)."', '".mysqli_real_escape_string($conn1,$d_bpbdate)."', '".mysqli_real_escape_string($conn1,$d_supplier)."', '".mysqli_real_escape_string($conn1,$d_tipe_com)."', '".mysqli_real_escape_string($conn1,$asal)."', '$d_qty', '$d_qty_good', '$d_qty_reject', '".mysqli_real_escape_string($conn1,$d_curr)."', '$d_price', '$d_dpp', '$rates', '$dpp_idr', '$ppn_idr', '$ttl_idr', '".mysqli_real_escape_string($conn1,$d_jenis_trans)."', '$insert_date')";
+
+            if (count($values) >= $batch_size) {
+                flush_retur_batch($conn1, $values);
+            }
 
         }else{ echo ''; }
-}?>
+}
+
+flush_retur_batch($conn1, $values);
+mysqli_commit($conn1);
+?>
