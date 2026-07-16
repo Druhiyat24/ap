@@ -124,12 +124,12 @@
             </div>
             <div class="col-md-3">
                 <label for="type_pv"><b>Type</b></label>
+                <!-- DP & CBD sudah pindah ke approve-pv.php (digabung dengan Second Approval
+                     PV Biaya) - lihat catatan di ajx_approve-payment-voucher-ap.php. -->
                 <select class="form-control form-control-sm select2" name="type_pv" id="type_pv" style="width: 100%;">
                     <option value="ALL" selected="selected">ALL</option>
                     <option value="Regular">Regular</option>
                     <option value="Installment">Installment</option>
-                    <option value="DP">DP</option>
-                    <option value="CBD">CBD</option>
                     <option value="Saldo Awal">Saldo Awal</option>
                 </select>
             </div>
@@ -331,19 +331,16 @@
     });
 
     // Tiap type PV punya tabel & endpoint approve/cancel sendiri-sendiri
-    // (lihat ajx_approve-payment-voucher-ap.php: getApprovalRegular/Installment/Dp/Cbd).
+    // (lihat ajx_approve-payment-voucher-ap.php: getApprovalRegular/Installment/SaldoAwal).
+    // DP & CBD sudah pindah ke approve-pv.php.
     const APPROVE_ENDPOINT = {
         regular: 'second_approve_kbon.php',
         installment: 'second_approve_installment.php',
-        dp: 'second_approve_dp.php',
-        cbd: 'second_approve_cbd.php',
         saldo_awal: 'second_approve_saldo_awal.php'
     };
     const CANCEL_ENDPOINT = {
         regular: 'cancelkbon.php',
         installment: 'cancelkboninstallment.php',
-        dp: 'cancelkbondp.php',
-        cbd: 'cancelkboncbd.php',
         saldo_awal: 'cancel_saldo_awal.php'
     };
 

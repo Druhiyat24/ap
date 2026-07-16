@@ -1,68 +1,498 @@
 <style>
-    #chartdiv {
-      width: 100%;
-      height: 300px;
-  }
-  #chartdiv2 {
-      width: 100%;
-      height: 300px;
-  }
-  #chartdiv3 {
-      width: 100%;
-      height: 300px;
-  }
-  #chartdiv4 {
-      width: 100%;
-      height: 300px;
-  }
-  #chartdiv5 {
-      width: 100%;
-      height: 300px;
-  }
-  #chartdiv6 {
-      width: 100%;
-      height: 300px;
-  }
-  .modal-md {
-    max-width: 500px;
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+/* Dashboard Global Styles */
+.div-dashboard {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    background: #f8fafc !important;
+    padding: 24px !important;
+    border-radius: 24px !important;
 }
 
-.modal-md .modal-content {
-    border-radius: 6px;
+/* Card Container */
+.div-dashboard .card {
+    border: none !important;
+    border-radius: 20px !important;
+    background: #ffffff !important;
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.04), 0 8px 10px -6px rgba(15, 23, 42, 0.04) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    margin-bottom: 24px !important;
+    overflow: hidden !important;
 }
 
-.modal-md .modal-header {
-    padding: 10px 18px !important;
+.div-dashboard .card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 10px 10px -6px rgba(15, 23, 42, 0.08) !important;
 }
 
-.modal-md .modal-title {
-    font-weight: 700;
-    font-size: 18px;
+/* Card Header styles */
+.div-dashboard .card-header {
+    border: none !important;
+    padding: 20px 24px !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
 }
 
-.modal-md .modal-header .close {
-    margin-top: -3px;
-    margin-right: -4px;
-    font-size: 18px;
+/* Specific Card Header Colors - Green for Cash (matches dashboard-ap.php's
+   Purchase green #1f8a4c) */
+.div-dashboard .card-header[style*="background-color:#006400"],
+.div-dashboard .card-header[style*="background-color: rgb(0, 100, 0)"] {
+    background: linear-gradient(135deg, #25a05a, #1f8a4c) !important;
+    color: #ffffff !important;
 }
 
-.modal-md table {
-    font-size: 12px;
+/* Specific Card Header Colors - Blue for Loans (matches dashboard-ap.php's
+   Account Payable blue #2a78d6) */
+.div-dashboard .card-header.bg-info {
+    background: linear-gradient(135deg, #3987e5, #2a78d6) !important;
+    color: #ffffff !important;
 }
 
-.modal-md td,
-.modal-md th {
-    padding: 6px 8px !important;
+/* Secondary/Sub-card Headers (Limit, Month over Month charts) */
+.div-dashboard .card-header.border-dark:not(.bg-info):not([style*="background-color:#006400"]):not([style*="background-color: rgb(0, 100, 0)"]) {
+    background: #ffffff !important;
+    color: #1e293b !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    padding: 18px 24px !important;
 }
 
+.div-dashboard .card-header b {
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.8px !important;
+}
+
+/* Freshness stamp under each card's headline value - mirrors dashboard-ap.php's
+   .ap-hero-updated so both dashboards read as one product. */
+.div-dashboard .card-updated {
+    text-align: center !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    color: #94a3b8 !important;
+    margin-top: -4px !important;
+    margin-bottom: 10px !important;
+}
+.div-dashboard .card-updated .fa {
+    font-size: 0.72rem !important;
+    margin-right: 3px !important;
+}
+
+/* Card Body */
+.div-dashboard .card-body {
+    padding: 24px !important;
+    background: #ffffff !important;
+}
+
+/* Card Value (Amount) text */
+.div-dashboard .card-text {
+    text-align: center !important;
+    font-size: 2.1rem !important;
+    font-weight: 800 !important;
+    color: #0f172a !important; /* Slate-900 */
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    letter-spacing: -0.8px !important;
+    margin: 8px 0 !important;
+    min-height: 68px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Converted/Detail values */
+.div-dashboard .card-text span,
+.div-dashboard .card-header span {
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+    color: #64748b !important; /* Slate-500 */
+    display: block !important;
+    margin-top: 6px !important;
+    letter-spacing: 0px !important;
+    text-transform: none !important;
+}
+
+.div-dashboard .card-header span {
+    display: inline !important;
+    margin-left: 6px !important;
+    color: rgba(30, 41, 59, 0.7) !important;
+}
+
+/* ========== Trigger Button (Open Modal) ========== */
+.btn-detail-trigger {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 6px 14px !important;
+    border-radius: 100px !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 0.68rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    text-transform: uppercase !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+    float: right !important;
+    margin: -4px 0 -4px auto !important;
+    text-decoration: none !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+}
+
+.btn-detail-trigger:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.55) !important;
+    transform: translateY(-1px) scale(1.04) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+    color: #ffffff !important;
+    text-decoration: none !important;
+}
+
+.btn-detail-trigger:active {
+    transform: translateY(0) scale(0.97) !important;
+}
+
+.btn-detail-trigger .fa {
+    font-size: 0.6rem !important;
+    transition: transform 0.25s ease !important;
+}
+
+.btn-detail-trigger:hover .fa {
+    transform: translateX(2px) !important;
+}
+
+/* Light Header variant (white/non-colored headers) */
+.btn-detail-trigger--light {
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0) !important;
+    border-color: #cbd5e1 !important;
+    color: #475569 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+.btn-detail-trigger--light:hover {
+    background: linear-gradient(135deg, #e2e8f0, #cbd5e1) !important;
+    border-color: #94a3b8 !important;
+    color: #1e293b !important;
+    box-shadow: 0 4px 12px rgba(71, 85, 105, 0.15) !important;
+}
+
+/* Chart heights */
+#chartdiv, #chartdiv2, #chartdiv3, #chartdiv4, #chartdiv5, #chartdiv6 {
+    width: 100% !important;
+    height: 300px !important;
+    background: transparent !important;
+}
+
+/* ========== MODAL DESIGN SYSTEM ========== */
+
+/* Backdrop blur */
+.modal-backdrop.show {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    background: rgba(15, 23, 42, 0.45) !important;
+}
+
+/* Entrance animation */
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal.show .modal-dialog {
+    animation: modalSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+/* Modal Content Shell */
+.modal-content {
+    border: none !important;
+    border-radius: 20px !important;
+    box-shadow:
+        0 32px 64px -12px rgba(15, 23, 42, 0.2),
+        0 0 0 1px rgba(15, 23, 42, 0.05) !important;
+    overflow: hidden !important;
+    background: #ffffff !important;
+}
+
+/* ---- Modal Header Base ---- */
+.modal-header {
+    border-bottom: none !important;
+    padding: 28px 32px 20px 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    position: relative !important;
+}
+
+/* Green Header — Cash modals */
+.modal-header.bg-success {
+    background: linear-gradient(135deg, #25a05a 0%, #1f8a4c 50%, #166a3a 100%) !important;
+    color: #ffffff !important;
+}
+
+/* Blue Header — Loan modals */
+.modal-header.bg-secondary {
+    background: linear-gradient(135deg, #3987e5 0%, #2a78d6 50%, #1f5fae 100%) !important;
+    color: #ffffff !important;
+}
+
+/* Detail modal headers (modaldetcoh, modaldetcib, modaldettc) - Cash family too */
+.modal-header.modal-header--detail {
+    background: linear-gradient(135deg, #25a05a 0%, #1f8a4c 50%, #166a3a 100%) !important;
+    color: #ffffff !important;
+    padding: 24px 28px 18px 28px !important;
+}
+
+/* Title */
+.modal-title {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-weight: 800 !important;
+    font-size: 1.1rem !important;
+    letter-spacing: -0.3px !important;
+    line-height: 1.35 !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.08) !important;
+}
+
+/* ---- Close Button ---- */
+.modal-header .close {
+    color: #ffffff !important;
+    opacity: 0.9 !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 50% !important;
+    width: 34px !important;
+    height: 34px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    font-size: 0.8rem !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    position: relative !important;
+    z-index: 2 !important;
+    line-height: 1 !important;
+    text-shadow: none !important;
+}
+
+.modal-header .close:hover {
+    opacity: 1 !important;
+    background: rgba(255, 255, 255, 0.28) !important;
+    transform: rotate(90deg) scale(1.1) !important;
+    border-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+/* ---- Modal Body ---- */
+.modal-body {
+    padding: 28px 32px 32px 32px !important;
+    background: #ffffff !important;
+}
+
+/* ---- Modal Footer (if any) ---- */
+.modal-footer {
+    border-top: 1px solid #f1f5f9 !important;
+    padding: 16px 32px !important;
+}
+
+/* ========== MODAL TABLE STYLING ========== */
+.modal-body table {
+    width: 100% !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 0.82rem !important;
+    color: #334155 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+.modal-body thead tr {
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%) !important;
+}
+
+.modal-body th {
+    font-weight: 700 !important;
+    color: #475569 !important;
+    text-transform: uppercase !important;
+    font-size: 0.7rem !important;
+    letter-spacing: 0.8px !important;
+    padding: 14px 18px !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+    white-space: nowrap !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1 !important;
+}
+
+.modal-body td {
+    padding: 13px 18px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    color: #475569 !important;
+    vertical-align: middle !important;
+    transition: background 0.15s ease !important;
+}
+
+.modal-body tbody tr:nth-child(even) {
+    background: #fafbfd !important;
+}
+
+.modal-body tbody tr:hover {
+    background: #eff6ff !important;
+}
+
+.modal-body tbody tr:hover td {
+    color: #1e293b !important;
+}
+
+.modal-body tbody tr:last-child td {
+    border-bottom: none !important;
+}
+
+/* ========== SCROLLABLE MODAL SCROLLBAR ========== */
+.modal-dialog-scrollable .modal-body {
+    scrollbar-width: thin !important;
+    scrollbar-color: #cbd5e1 transparent !important;
+}
+
+.modal-dialog-scrollable .modal-body::-webkit-scrollbar {
+    width: 5px !important;
+}
+
+.modal-dialog-scrollable .modal-body::-webkit-scrollbar-track {
+    background: transparent !important;
+}
+
+.modal-dialog-scrollable .modal-body::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1 !important;
+    border-radius: 100px !important;
+}
+
+.modal-dialog-scrollable .modal-body::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8 !important;
+}
+
+/* ========== MODAL SIZES ========== */
+.modal-md {
+    max-width: 560px !important;
+}
+
+/* ========== LOCAL SVG ICONS ========== */
+.hdr-icon {
+    display: inline-block !important;
+    width: 15px !important;
+    height: 15px !important;
+    margin-right: 8px !important;
+    margin-top: 0 !important;
+    vertical-align: -2px !important;
+    fill: none !important;
+    stroke: currentColor !important;
+    stroke-width: 2 !important;
+    stroke-linecap: round !important;
+    stroke-linejoin: round !important;
+    color: inherit !important;
+    opacity: 0.9 !important;
+}
+
+.btn-detail-trigger .hdr-icon {
+    width: 10px !important;
+    height: 10px !important;
+    margin-right: 4px !important;
+    vertical-align: -1px !important;
+    opacity: 1 !important;
+}
 </style>
+
+<svg width="0" height="0" style="position:absolute;overflow:hidden;" aria-hidden="true">
+    <defs>
+        <symbol id="icon-cash" viewBox="0 0 24 24">
+            <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+            <circle cx="12" cy="12" r="2"></circle>
+            <path d="M6 12h.01M18 12h.01"></path>
+        </symbol>
+        <symbol id="icon-bank" viewBox="0 0 24 24">
+            <line x1="3" y1="22" x2="21" y2="22"></line>
+            <line x1="6" y1="18" x2="6" y2="11"></line>
+            <line x1="10" y1="18" x2="10" y2="11"></line>
+            <line x1="14" y1="18" x2="14" y2="11"></line>
+            <line x1="18" y1="18" x2="18" y2="11"></line>
+            <polygon points="12 2 21 7 3 7"></polygon>
+        </symbol>
+        <symbol id="icon-calculator" viewBox="0 0 24 24">
+            <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+            <rect x="8" y="6" width="8" height="4"></rect>
+            <line x1="8" y1="14" x2="8" y2="14.01"></line>
+            <line x1="12" y1="14" x2="12" y2="14.01"></line>
+            <line x1="16" y1="14" x2="16" y2="14.01"></line>
+            <line x1="8" y1="18" x2="8" y2="18.01"></line>
+            <line x1="12" y1="18" x2="12" y2="18.01"></line>
+            <line x1="16" y1="18" x2="16" y2="18.01"></line>
+        </symbol>
+        <symbol id="icon-credit-card" viewBox="0 0 24 24">
+            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+            <line x1="1" y1="10" x2="23" y2="10"></line>
+        </symbol>
+        <symbol id="icon-dollar" viewBox="0 0 24 24">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </symbol>
+        <symbol id="icon-scale" viewBox="0 0 24 24">
+            <line x1="12" y1="3" x2="12" y2="21"></line>
+            <line x1="5" y1="7" x2="19" y2="7"></line>
+            <path d="M5 7l-3 6a3 3 0 0 0 6 0z"></path>
+            <path d="M19 7l-3 6a3 3 0 0 0 6 0z"></path>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+        </symbol>
+        <symbol id="icon-gauge" viewBox="0 0 24 24">
+            <circle cx="12" cy="13" r="8"></circle>
+            <path d="M12 13l4-4"></path>
+            <path d="M12 5V3"></path>
+            <path d="M5 13H3"></path>
+            <path d="M21 13h-2"></path>
+        </symbol>
+        <symbol id="icon-trending-up" viewBox="0 0 24 24">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+            <polyline points="17 6 23 6 23 12"></polyline>
+        </symbol>
+        <symbol id="icon-arrow-right" viewBox="0 0 24 24">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+        </symbol>
+    </defs>
+</svg>
+
+<?php
+// All figures on this dashboard are computed live on every page load (no
+// precomputed summary table like dsb_ap_summary), so "now" is the accurate
+// freshness stamp - mirrors the "Updated" line on dashboard-ap.php's cards.
+// Explicit WIB: this server's PHP default timezone is Europe/Berlin, not
+// Asia/Jakarta, so a bare date()/time() call would be off by several hours.
+$bank_updated_at = (new DateTime('now', new DateTimeZone('Asia/Jakarta')))->format('d M Y, H:i');
+?>
 
 <div class="row div-dashboard">
     <div class="col-md-12">
         <div class="row p-3">
             <div class="col-md-4">
                 <div class="card border-dark mb-2 mt-2" >
-                    <div class="card-header bg-gradient border-dark text-white" style="background-color:#006400;"><button type="button" class="close text-white" onclick="openmodalcoh()"><span class="fa fa-bars"></span></button><b style="font-size: 0.9rem;">CASH ON HAND</b></div>
+                    <div class="card-header bg-gradient border-dark text-white" style="background-color:#006400;"><b style="font-size: 0.9rem;"><svg class="hdr-icon"><use href="#icon-cash"></use></svg> CASH ON HAND</b><button type="button" class="btn-detail-trigger" onclick="openmodalcoh()">Detail <svg class="hdr-icon"><use href="#icon-arrow-right"></use></svg></button></div>
                     <div class="card-body text-secondary">
                         <p class="card-text" style="text-align: center;font-size: 1.4rem;color: #2F4F4F">
                             <?php
@@ -94,12 +524,13 @@
 
                             ?>
                             IDR <?= number_format($total_coh,0); ?></p>
+                            <div class="card-updated"><i class="fa fa-clock-o"></i> Updated <?= $bank_updated_at; ?></div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="card border-dark mb-2 mt-2" >
-                        <div class="card-header bg-gradient border-dark text-white" style="background-color:#006400;" ><button type="button" class="close text-white" onclick="openmodalcib()"><span class="fa fa-bars"></span></button><b style="font-size: 0.9rem;">CASH IN BANK</b></div>
+                        <div class="card-header bg-gradient border-dark text-white" style="background-color:#006400;" ><b style="font-size: 0.9rem;"><svg class="hdr-icon"><use href="#icon-bank"></use></svg> CASH IN BANK</b><button type="button" class="btn-detail-trigger" onclick="openmodalcib()">Detail <svg class="hdr-icon"><use href="#icon-arrow-right"></use></svg></button></div>
                         <div class="card-body text-secondary">
                             <p class="card-text" style="text-align: center;font-size: 1.4rem;color: #2F4F4F"><?php
                             // Ending balance riil per akun (b_masterbank + b_saldoawal_bank + b_reportbank),
@@ -137,25 +568,27 @@
 
                             ?>
                             IDR <?= number_format($total_cib,0); ?></p>
+                            <div class="card-updated"><i class="fa fa-clock-o"></i> Updated <?= $bank_updated_at; ?></div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="card border-dark mb-2 mt-2" >
-                        <div class="card-header bg-gradient border-dark text-white" style="background-color:#006400;"><button type="button" class="close text-white" onclick="openmodaltc()"><span class="fa fa-bars"></span></button><b style="font-size: 0.9rem;">CASH & BANK TOTAL</b></div>
+                        <div class="card-header bg-gradient border-dark text-white" style="background-color:#006400;"><b style="font-size: 0.9rem;"><svg class="hdr-icon"><use href="#icon-calculator"></use></svg> CASH & BANK TOTAL</b><button type="button" class="btn-detail-trigger" onclick="openmodaltc()">Detail <svg class="hdr-icon"><use href="#icon-arrow-right"></use></svg></button></div>
                         <div class="card-body text-secondary">
                             <p class="card-text" style="text-align: center;font-size: 1.4rem;color: #2F4F4F">
                                 <?php
                                 $total_cb = $total_coh + $total_cib 
                                 ?>
                                 IDR <?= number_format($total_cb,0); ?></p>
+                                <div class="card-updated"><i class="fa fa-clock-o"></i> Updated <?= $bank_updated_at; ?></div>
                             </div>
                         </div>
                     </div>
 
                     <div class="col-md-4">
                         <div class="card border-dark mb-2 mt-2" >
-                            <div class="card-header bg-info bg-gradient bg-gradient border-dark text-white"><b style="font-size: 0.9rem;">BANK LOAN IDR</b></div>
+                            <div class="card-header bg-info bg-gradient bg-gradient border-dark text-white"><b style="font-size: 0.9rem;"><svg class="hdr-icon"><use href="#icon-credit-card"></use></svg> BANK LOAN IDR</b></div>
                             <div class="card-body text-secondary">
                                 <p class="card-text" style="text-align: center;font-size: 1.4rem;color: #2F4F4F"><?php
                                 $bulan = date("M"); 
@@ -191,6 +624,7 @@
 
                                 ?>
                                 IDR <?= number_format(abs($total_bli),0); ?></p>
+                                <div class="card-updated"><i class="fa fa-clock-o"></i> Updated <?= $bank_updated_at; ?></div>
                             </div>
                         </div>
                         <div class="card border-dark mb-2" >
@@ -201,13 +635,13 @@
                                 $limit_idr = isset($row1['fac_limit']) ? $row1['fac_limit'] :0;
 
                                 ?>
-                                LIMIT : IDR <?= number_format($limit_idr,0); ?></b></div>
+                                <svg class="hdr-icon"><use href="#icon-gauge"></use></svg> LIMIT : IDR <?= number_format($limit_idr,0); ?></b></div>
                                 <div class="card-body text-secondary">
                                     <div id="chartdiv"></div>
                                 </div>
                             </div>
                             <div class="card border-dark mb-2" >
-                                <div class="card-header border-dark"><button type="button" class="close" onclick="openmodalloanidr()"><span class="fa fa-bars"></span></button><b style="font-size: 1rem;">LAST 3 MONTH LOAN BALANCE (IN IDR MIO)</b></div>
+                                <div class="card-header border-dark"><b style="font-size: 1rem;"><svg class="hdr-icon"><use href="#icon-trending-up"></use></svg> LAST 3 MONTH LOAN BALANCE (IN IDR MIO)</b><button type="button" class="btn-detail-trigger btn-detail-trigger--light" onclick="openmodalloanidr()">Detail <svg class="hdr-icon"><use href="#icon-arrow-right"></use></svg></button></div>
                                 <div class="card-body text-secondary">
                                     <div id="chartdiv2"></div>
                                 </div>
@@ -216,7 +650,7 @@
 
                         <div class="col-md-4">
                             <div class="card border-dark mb-2 mt-2" >
-                                <div class="card-header bg-info bg-gradient bg-gradient border-dark text-white"><b style="font-size: 1.1rem;">BANK LOAN USD</b></div>
+                                <div class="card-header bg-info bg-gradient bg-gradient border-dark text-white"><b style="font-size: 0.9rem;"><svg class="hdr-icon"><use href="#icon-dollar"></use></svg> BANK LOAN USD</b></div>
                                 <div class="card-body text-secondary">
                                     <p class="card-text" style="text-align: center;font-size: 1.4rem;color: #2F4F4F"><?php
                                     $bulan = date("M"); 
@@ -273,7 +707,8 @@
                                     }
 
                                     ?>
-                                    USD <?= number_format(abs($saldoakhir),2); ?> ( IDR <?= number_format(abs($saldoakhir * $rates3),0); ?> )</p>
+                                    USD <?= number_format(abs($saldoakhir),2); ?> <span>( IDR <?= number_format(abs($saldoakhir * $rates3),0); ?> )</span></p>
+                                    <div class="card-updated"><i class="fa fa-clock-o"></i> Updated <?= $bank_updated_at; ?></div>
                                 </div>
                             </div>
                             <div class="card border-dark mb-2" >
@@ -285,13 +720,13 @@
                                     $limit_convert = isset($row1['limit_convert']) ? $row1['limit_convert'] :0;
 
                                     ?>
-                                    LIMIT : USD <?= number_format($fac_limit,0); ?> ( IDR <?= number_format($limit_convert,0); ?> )</b></div>
+                                    <svg class="hdr-icon"><use href="#icon-gauge"></use></svg> LIMIT : USD <?= number_format($fac_limit,0); ?> <span>( IDR <?= number_format($limit_convert,0); ?> )</span></b></div>
                                     <div class="card-body text-secondary">
                                         <div id="chartdiv3"></div>
                                     </div>
                                 </div>
                                 <div class="card border-dark mb-2" >
-                                    <div class="card-header border-dark"><button type="button" class="close" onclick="openmodalloanusd()"><span class="fa fa-bars"></span></button><b style="font-size: 1rem;">LAST 3 MONTH LOAN BALANCE (IN IDR MIO)</b></div>
+                                    <div class="card-header border-dark"><b style="font-size: 1rem;"><svg class="hdr-icon"><use href="#icon-trending-up"></use></svg> LAST 3 MONTH LOAN BALANCE (IN IDR MIO)</b><button type="button" class="btn-detail-trigger btn-detail-trigger--light" onclick="openmodalloanusd()">Detail <svg class="hdr-icon"><use href="#icon-arrow-right"></use></svg></button></div>
                                     <div class="card-body text-secondary">
                                         <div id="chartdiv4"></div>
                                     </div>
@@ -300,13 +735,14 @@
 
                             <div class="col-md-4">
                                 <div class="card border-dark mb-2 mt-2" >
-                                    <div class="card-header bg-info bg-gradient border-dark text-white"><b style="font-size: 1.1rem;">BANK LOAN TOTAL</b></div>
+                                    <div class="card-header bg-info bg-gradient border-dark text-white"><b style="font-size: 0.9rem;"><svg class="hdr-icon"><use href="#icon-scale"></use></svg> BANK LOAN TOTAL</b></div>
                                     <div class="card-body text-secondary">
                                         <p class="card-text" style="text-align: center;font-size: 1.4rem;color: #2F4F4F">
                                             <?php
                                             $total_bl = abs($total_bli) + abs($saldoakhir * $rates3);
                                             ?>
                                             IDR <?= number_format($total_bl,0); ?></p>
+                                            <div class="card-updated"><i class="fa fa-clock-o"></i> Updated <?= $bank_updated_at; ?></div>
                                         </div>
                                     </div>
                                     <div class="card border-dark mb-2" >
@@ -314,13 +750,13 @@
                                             <?php
                                             $total_limit = $limit_idr + $limit_convert;
                                             ?>
-                                            LIMIT : IDR <?= number_format($total_limit,0); ?></b></div>
+                                            <svg class="hdr-icon"><use href="#icon-gauge"></use></svg> LIMIT : IDR <?= number_format($total_limit,0); ?></b></div>
                                             <div class="card-body text-secondary">
                                                 <div id="chartdiv5"></div>
                                             </div>
                                         </div>
                                         <div class="card border-dark mb-2" >
-                                            <div class="card-header border-dark"><button type="button" class="close" onclick="openmodalloantotal()"><span class="fa fa-bars"></span></button><b style="font-size: 1rem;">LAST 3 MONTH LOAN BALANCE (IN IDR MIO)</b></div>
+                                            <div class="card-header border-dark"><b style="font-size: 1rem;"><svg class="hdr-icon"><use href="#icon-trending-up"></use></svg> LAST 3 MONTH LOAN BALANCE (IN IDR MIO)</b><button type="button" class="btn-detail-trigger btn-detail-trigger--light" onclick="openmodalloantotal()">Detail <svg class="hdr-icon"><use href="#icon-arrow-right"></use></svg></button></div>
                                             <div class="card-body text-secondary">
                                                 <div id="chartdiv6"></div>
                                             </div>
@@ -334,153 +770,126 @@
                         <div class="modal fade" id="modalloanidr" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                             <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
                                 <div class="modal-content">
-                                  <div class="modal-header bg-secondary bg-gradient text-white">
-                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                                    <h4 class="modal-title" id="text-tittle">IDR Loan Balance (Month over Month)</h4>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="p-2">
+                                    <div class="modal-header bg-secondary bg-gradient text-white">
+                                        <h4 class="modal-title" id="text-tittle">IDR Loan Balance (Month over Month)</h4>
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
+                                    </div>
+                                    <div class="modal-body">
                                         <div id="chartloanidr"></div>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
-                    </div>
 
                     <div class="modal fade" id="modalloanusd" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
                             <div class="modal-content">
-                              <div class="modal-header bg-secondary bg-gradient text-white">
-                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                                <h4 class="modal-title" id="text-tittle">USD Loan Balance (Month over Month)</h4>
-                            </div>
-                            <div class="modal-body">
-                                <div class="p-2">
+                                <div class="modal-header bg-secondary bg-gradient text-white">
+                                    <h4 class="modal-title" id="text-tittle">USD Loan Balance (Month over Month)</h4>
+                                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
+                                </div>
+                                <div class="modal-body">
                                     <div id="chartloanusd"></div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
-                </div>
 
                 <div class="modal fade" id="modalloantotal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
                         <div class="modal-content">
-                          <div class="modal-header bg-secondary bg-gradient text-white">
-                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                            <h4 class="modal-title" id="text-tittle">Total Loan Balance (Month over Month)</h4>
-                        </div>
-                        <div class="modal-body">
-                            <div class="p-2">
+                            <div class="modal-header bg-secondary bg-gradient text-white">
+                                <h4 class="modal-title" id="text-tittle">Total Loan Balance (Month over Month)</h4>
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
+                            </div>
+                            <div class="modal-body">
                                 <div id="chartloantotal"></div>
                             </div>
                         </div>
-
                     </div>
                 </div>
-            </div>
 
             <div class="modal fade" id="modalcoh" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                 <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
                     <div class="modal-content">
-                      <div class="modal-header bg-success bg-gradient text-white">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                        <h4 class="modal-title" id="text-tittle">Cash on Hand (Month over Month) in Million IDR</h4>
-                    </div>
-                    <div class="modal-body">
-                        <div class="p-2">
+                        <div class="modal-header bg-success bg-gradient text-white">
+                            <h4 class="modal-title" id="text-tittle">Cash on Hand (Month over Month) in Million IDR</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
+                        </div>
+                        <div class="modal-body">
                             <div id="chartcoh"></div>
                         </div>
                     </div>
-
                 </div>
             </div>
-        </div>
 
         <div class="modal fade" id="modalcib" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
                 <div class="modal-content">
-                  <div class="modal-header bg-success bg-gradient text-white">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                    <h4 class="modal-title" id="text-tittle">Cash in Banks (Month over Month) in Million IDR</h4>
-                </div>
-                <div class="modal-body">
-                    <div class="p-2">
+                    <div class="modal-header bg-success bg-gradient text-white">
+                        <h4 class="modal-title" id="text-tittle">Cash in Banks (Month over Month) in Million IDR</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
+                    </div>
+                    <div class="modal-body">
                         <div id="chartcib"></div>
                     </div>
                 </div>
-
             </div>
         </div>
-    </div>
 
     <div class="modal fade" id="modaltc" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content">
-              <div class="modal-header bg-success bg-gradient text-white">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                <h4 class="modal-title" id="text-tittle">Total Cash (Month over Month) in Million IDR</h4>
-            </div>
-            <div class="modal-body">
-                <div class="p-2">
+                <div class="modal-header bg-success bg-gradient text-white">
+                    <h4 class="modal-title" id="text-tittle">Total Cash (Month over Month) in Million IDR</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
+                </div>
+                <div class="modal-body">
                     <div id="charttc"></div>
                 </div>
             </div>
-
         </div>
     </div>
-</div>
 
 <div class="modal fade" id="modaldetcoh" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-<div class="modal-dialog modal-md modal-dialog-centered modal-dialog-scrollable" role="document">
+    <div class="modal-dialog modal-md modal-dialog-centered modal-dialog-scrollable" role="document">
         <div class="modal-content">
-          <div class="modal-heade" >
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-            <h4 class="modal-title" id="jdl_coh"></h4>
-        </div>
-        <div class="modal-body">
-            <div class="p-0">
+            <div class="modal-header modal-header--detail">
+                <h4 class="modal-title" id="jdl_coh"></h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
+            </div>
+            <div class="modal-body">
                 <div id="detail_coh"></div>
             </div>
         </div>
-
     </div>
-</div>
 </div>
 
 <div class="modal fade" id="modaldetcib" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
     <div class="modal-dialog modal-md modal-dialog-centered modal-dialog-scrollable" role="document">
         <div class="modal-content">
-          <div class="modal-heade" >
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-            <h4 class="modal-title" id="jdl_cib"></h4>
-        </div>
-        <div class="modal-body">
-            <div class="p-0">
+            <div class="modal-header modal-header--detail">
+                <h4 class="modal-title" id="jdl_cib"></h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
+            </div>
+            <div class="modal-body">
                 <div id="detail_cib"></div>
             </div>
         </div>
-
     </div>
 </div>
-</div>
 <div class="modal fade" id="modaldettc" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content" style="width:380px;">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-            <h4 class="modal-title" id="jdl_tc"></h4>
-        </div>
-        <div class="modal-body">
-            <div class="p-0">
+    <div class="modal-dialog modal-md modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header modal-header--detail">
+                <h4 class="modal-title" id="jdl_tc"></h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
+            </div>
+            <div class="modal-body">
                 <div id="detail_tc"></div>
             </div>
         </div>
-
     </div>
-</div>
 </div>
 
 <script type="text/javascript">
@@ -649,7 +1058,7 @@
             }
         }
     },
-    colors: ['#008B8B'],
+    colors: ['#1f8a4c'],
 },
 plotOptions: {
   bar: {
@@ -859,7 +1268,7 @@ chart.render();
             }
         }
     },
-    colors: ['#008B8B'],
+    colors: ['#1f8a4c'],
 },
 plotOptions: {
   bar: {
@@ -1063,7 +1472,7 @@ chart.render();
             }
         }
     },
-    colors: ['#008B8B'],
+    colors: ['#1f8a4c'],
 },
 plotOptions: {
   bar: {
@@ -1176,7 +1585,7 @@ chart.render();
       chart: {
           height: 350,
           type: 'bar',
-          colors: ['#008B8B'],
+          colors: ['#2a78d6'],
       },
       plotOptions: {
           bar: {
@@ -1303,7 +1712,7 @@ chart.render();
       chart: {
           height: 350,
           type: 'bar',
-          colors: ['#008B8B'],
+          colors: ['#2a78d6'],
       },
       plotOptions: {
           bar: {
@@ -1430,7 +1839,7 @@ chart.render();
       chart: {
           height: 350,
           type: 'bar',
-          colors: ['#008B8B'],
+          colors: ['#2a78d6'],
       },
       plotOptions: {
           bar: {
@@ -1747,7 +2156,7 @@ chart: {
     height: 350,
     type: 'bar'
 },
-colors: ['#008B8B'],
+colors: ['#2a78d6'],
 plotOptions: {
     bar: {
         borderRadius: 5,
@@ -2014,7 +2423,7 @@ chart: {
     height: 350,
     type: 'bar'
 },
-colors: ['#008B8B'],
+colors: ['#2a78d6'],
 plotOptions: {
     bar: {
         borderRadius: 5,
@@ -2284,7 +2693,7 @@ chart: {
     height: 350,
     type: 'bar'
 },
-colors: ['#008B8B'],
+colors: ['#2a78d6'],
 plotOptions: {
     bar: {
         borderRadius: 5,

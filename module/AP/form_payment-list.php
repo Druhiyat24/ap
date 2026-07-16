@@ -61,11 +61,12 @@
 </style>
 
 <?php
-// Payment List menarik Payment Voucher yang sudah "fully approved" - semua
-// type (Regular/Installment/DP/CBD) pakai two-stage approval yang sama,
-// status final-nya 'SECOND APPROVED'. PV yang sudah pernah dimasukkan ke
-// Payment List lain (pv_payment_list_det.status != 'Cancel') disembunyikan
-// dari hasil search ini - mirip persis pola form_reverse_kontrabon.php.
+// Payment List menarik Payment Voucher yang sudah "fully approved". Regular/
+// Installment perlu status_pvl = 'APPROVED' (sudah melalui Payment Voucher
+// List); DP/CBD cukup status 'SECOND APPROVED' di kontrabon_h_dp/kontrabon_h_cbd
+// saja. PV yang sudah pernah dimasukkan ke Payment List lain
+// (pv_payment_list_det.status != 'Cancel') disembunyikan dari hasil search ini
+// - mirip persis pola form_reverse_kontrabon.php.
 include 'pv_data_functions.php';
 ?>
 
@@ -194,13 +195,18 @@ include 'pv_data_functions.php';
                                 $rowsAll = array_merge($rowsAll, getDataCbd($conn1, $conn2, $filters, '1', '1', ''));
                             }
 
-                            // Hanya PV yang sudah fully approved DAN sudah melalui Payment Voucher
-                            // List (status_pvl = 'APPROVED') yang boleh masuk Payment List.
+                            // Hanya PV yang sudah fully approved yang boleh masuk Payment List.
                             // Biaya tidak melalui PVL sehingga cukup status 'Approved' saja.
-                            // Regular/Installment pakai 'SECOND APPROVED'; CBD/DP pakai 'Approved'.
+                            // DP/CBD cukup status 'SECOND APPROVED' di kontrabon_h_cbd/kontrabon_h_dp,
+                            // tidak perlu lagi status_pvl = 'APPROVED'.
+                            // Regular/Installment tetap perlu status_pvl = 'APPROVED' (sudah melalui
+                            // Payment Voucher List).
                             $rowsAll = array_filter($rowsAll, function ($r) {
                                 if ($r['type'] === 'Biaya') {
                                     return $r['status'] === 'Approved';
+                                }
+                                if (in_array($r['type'], ['DP', 'CBD'])) {
+                                    return $r['status'] === 'SECOND APPROVED';
                                 }
                                 if (!in_array($r['status'], ['SECOND APPROVED', 'Approved'])) return false;
                                 return strtoupper(trim($r['status_pvl'] ?? '')) === 'APPROVED';

@@ -4318,157 +4318,98 @@ chart.render();
 
 <!-- AP -->
 
-
 <script type="text/javascript">
-    var options = {
+    function fmtCompactIDR(val) {
+        var n = Math.abs(val);
+        var sign = val < 0 ? '-' : '';
+        if (n >= 1e9) return sign + 'IDR ' + (n / 1e9).toFixed(1) + 'B';
+        if (n >= 1e6) return sign + 'IDR ' + (n / 1e6).toFixed(1) + 'M';
+        if (n >= 1e3) return sign + 'IDR ' + (n / 1e3).toFixed(1) + 'K';
+        return sign + 'IDR ' + n.toLocaleString('en-US');
+    }
+
+    var optionsSupp10 = {
         series: [{
-            name: 'Value',
-            data: [<?php 
-                $sql = mysqli_query($conn2,"select GROUP_CONCAT(total) total from (select nama_supp,round(sum(total),2) total from (select nama_supp,sum(dpp) total from dsb_ap_purchase GROUP BY nama_supp 
-                    UNION 
-                    select nama_supp,-sum(dpp) total from dsb_ap_retur GROUP BY nama_supp) a GROUP BY nama_supp order by total desc limit 10) a");
+            name: 'Amount',
+            data: [<?php
+                $sql = mysqli_query($conn2,"select GROUP_CONCAT(total ORDER BY total DESC) total from (select nama_supp,round(sum(total),2) total from (select nama_supp,sum(dpp) total from dsb_ap_purchase where tgl_bpb BETWEEN CONCAT(YEAR(CURRENT_DATE),'-01-01') and CURRENT_DATE() GROUP BY nama_supp
+                    UNION
+                    select nama_supp,-sum(dpp) total from dsb_ap_retur where tgl_bpb BETWEEN CONCAT(YEAR(CURRENT_DATE),'-01-01') and CURRENT_DATE() GROUP BY nama_supp) a GROUP BY nama_supp order by total desc limit 10) a");
                 $row = mysqli_fetch_array($sql);
                 $total = $row['total'];
                 echo $total;
                 ?>]
             }],
             chart: {
-                height: 330,
+                height: 420,
                 type: 'bar',
-                toolbar: {
-                show: false // Menyembunyikan toolbar default
-            },
-            animations: {
-                enabled: true,
-                easing: 'easeinout',
-                speed: 800, // Durasi animasi
-                animateGradually: {
+                toolbar: { show: false },
+                animations: {
                     enabled: true,
-                    delay: 150
-                },
-            },
-        },
-        plotOptions: {
-            bar: {
-                borderRadius: 5, // Membuat bar lebih bulat
-                columnWidth: '70%',
-                colors: {
-                    ranges: [{
-                        from: 0,
-                        to: 100000,
-                        color: '#00C0B0'  // Warna untuk bar rendah
-                    }, {
-                        from: 100000,
-                        to: 500000,
-                        color: '#00A1D1'  // Warna untuk bar sedang
-                    }, {
-                        from: 500000,
-                        to: 1000000,
-                        color: '#016FB9'  // Warna untuk bar tinggi
-                    }]
-                },
-                dataLabels: {
-                    position: 'top',
-                    style: {
-                        fontSize: '12px', // Menambahkan font lebih besar
-                        fontWeight: 'bold',
-                        colors: ['#ffffff'], // Memberikan warna putih pada data label
-                    },
-                },
-                shadow: {
-                    enabled: true,
-                    blur: 5,
-                    color: '#000',
-                    opacity: 0.15
+                    easing: 'easeinout',
+                    speed: 500
                 }
-            }
-        },
-        dataLabels: {
-            enabled: true,
-            formatter: function (val) {
-                return "IDR " + val.toLocaleString('en-US');
             },
-            offsetY: -20, // Menurunkan posisi data label sedikit
-            style: {
-                fontSize: '10px', // Mengubah ukuran font data label menjadi 10px
-                colors: ["#304758"],
-                fontFamily: 'Arial, sans-serif',
-                fontWeight: 'bold',
-            }
-        },
-        xaxis: {
-            categories: [<?php 
-                $sql = mysqli_query($conn2,'select GROUP_CONCAT(concat("""",nama_supp,"""")) nama_supp from (select nama_supp,round(sum(total),2) total from (select nama_supp,sum(dpp) total from dsb_ap_purchase GROUP BY nama_supp 
-                    UNION 
-                    select nama_supp,-sum(dpp) total from dsb_ap_retur GROUP BY nama_supp) a GROUP BY nama_supp order by total desc limit 10) a');
-                $row = mysqli_fetch_array($sql);
-                $nama_supp = $row['nama_supp'];
-                echo $nama_supp;
-                ?>],
-                position: 'bottom',
-                axisBorder: {
-                    show: false
-                },
-                axisTicks: {
-                    show: false
-                },
-                crosshairs: {
-                    fill: {
-                        type: 'gradient',
-                        gradient: {
-                            colorFrom: '#D8E3F0',
-                            colorTo: '#BED1E6',
-                            stops: [0, 100],
-                            opacityFrom: 0.4,
-                            opacityTo: 0.5,
-                        }
-                    }
-                },
-                tooltip: {
-                    enabled: true,
-                    style: {
-                        fontSize: '10px',
-                        fontWeight: 'bold'
-                    },
-                },
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '55%',
+                    borderRadius: 0,
+                    dataLabels: { position: 'top' }
+                }
+            },
+            colors: ['#2a78d6'],
+            dataLabels: {
+                enabled: true,
+                formatter: fmtCompactIDR,
+                offsetY: -18,
+                style: {
+                    fontSize: '10px',
+                    fontWeight: 600,
+                    colors: ['#14181b']
+                }
+            },
+            xaxis: {
+                categories: [<?php
+                    $sql = mysqli_query($conn2,'select GROUP_CONCAT(concat("""",nama_supp,"""") ORDER BY total DESC) nama_supp from (select nama_supp,round(sum(total),2) total from (select nama_supp,sum(dpp) total from dsb_ap_purchase where tgl_bpb BETWEEN CONCAT(YEAR(CURRENT_DATE),\'-01-01\') and CURRENT_DATE() GROUP BY nama_supp
+                        UNION
+                        select nama_supp,-sum(dpp) total from dsb_ap_retur where tgl_bpb BETWEEN CONCAT(YEAR(CURRENT_DATE),\'-01-01\') and CURRENT_DATE() GROUP BY nama_supp) a GROUP BY nama_supp order by total desc limit 10) a');
+                    $row = mysqli_fetch_array($sql);
+                    $nama_supp = $row['nama_supp'];
+                    echo $nama_supp;
+                    ?>],
                 labels: {
-                    style: {
-                        fontSize: '10px',
-                        colors: ['#9e9e9e']
-                    },
+                    rotate: -45,
+                    rotateAlways: true,
+                    trim: true,
+                    style: { fontSize: '11px', colors: '#52514e' }
                 },
+                axisBorder: { show: false },
+                axisTicks: { show: false }
             },
             yaxis: {
-                axisBorder: {
-                    show: false
-                },
-                axisTicks: {
-                    show: false,
-                },
+                tickAmount: 4,
                 labels: {
-                    show: false,
-                    formatter: function (val) {
-                        return "IDR " + val.toLocaleString('en-US');
-                    }
+                    formatter: fmtCompactIDR,
+                    style: { fontSize: '10px', colors: '#8b8f96' }
                 }
             },
-            title: {
-                text: '',
-                floating: true,
-                offsetY: 320,
-                align: 'center',
-                position: 'top',
-                style: {
-                    color: '#444',
-                    fontSize: '18px',
-                    fontWeight: 'bold',
-                    fontFamily: 'Arial, sans-serif'
+            grid: {
+                borderColor: '#e1e0d9',
+                xaxis: { lines: { show: false } },
+                yaxis: { lines: { show: true } }
+            },
+            tooltip: {
+                y: {
+                    formatter: function (val) {
+                        return 'IDR ' + Math.round(val).toLocaleString('en-US');
+                    }
                 }
             }
         };
 
-        var chart = new ApexCharts(document.querySelector("#chart_supptop10"), options);
-        chart.render();
+        var chartSupp10 = new ApexCharts(document.querySelector("#chart_supptop10"), optionsSupp10);
+        chartSupp10.render();
     </script>
 
 

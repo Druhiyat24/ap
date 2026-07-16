@@ -36,16 +36,48 @@ switch ($type_pv) {
     case 'CBD':
         $data = getApprovalCbd($conn2, $filters, $canSelect);
         break;
+    // DP+CBD digabung - dipakai khusus oleh approve-pv.php untuk Second Approval
+    // (lihat catatan dibawah: sejak dipindah kesana, DP/CBD tidak lagi muncul di
+    // "ALL" milik approve-payment-voucher-ap-second.php).
+    case 'DP-CBD':
+        $data = array_merge(
+            getApprovalDp($conn2, $filters, $canSelect),
+            getApprovalCbd($conn2, $filters, $canSelect)
+        );
+        usort($data, function ($a, $b) {
+            return strcmp($a['no_kbon'], $b['no_kbon']);
+        });
+        break;
+    case 'Biaya':
+        $data = getApprovalBiaya($conn2, $filters, $canSelect);
+        break;
+    // Biaya+DP+CBD digabung dalam satu DataTable di approve-pv.php. Biaya cuma
+    // satu tahap approval (selalu status 'draft', tidak mengikuti $stage) - lihat
+    // getApprovalBiaya().
+    case 'Biaya-DP-CBD':
+        $data = array_merge(
+            getApprovalBiaya($conn2, $filters, $canSelect),
+            getApprovalDp($conn2, $filters, $canSelect),
+            getApprovalCbd($conn2, $filters, $canSelect)
+        );
+        usort($data, function ($a, $b) {
+            return strcmp($a['no_kbon'], $b['no_kbon']);
+        });
+        break;
     case 'Saldo Awal':
         $data = getApprovalSaldoAwal($conn2, $filters, $canSelect);
         break;
     case 'ALL':
     default:
+        // Second Approval untuk DP/CBD sudah pindah ke approve-pv.php (digabung
+        // dengan PV Biaya) - jadi "ALL" di approve-payment-voucher-ap-second.php
+        // tidak lagi menyertakan DP/CBD. First Approval tidak berubah, DP/CBD
+        // tetap tampil disana seperti biasa.
         $data = array_merge(
             getApprovalRegular($conn2, $filters, $canSelect),
             getApprovalInstallment($conn2, $filters, $canSelect),
-            getApprovalDp($conn2, $filters, $canSelect),
-            getApprovalCbd($conn2, $filters, $canSelect),
+            $stage === 'second' ? [] : getApprovalDp($conn2, $filters, $canSelect),
+            $stage === 'second' ? [] : getApprovalCbd($conn2, $filters, $canSelect),
             getApprovalSaldoAwal($conn2, $filters, $canSelect)
         );
         usort($data, function ($a, $b) {
@@ -365,6 +397,68 @@ function getApprovalCbd($conn2, $filters, $canSelect)
             'tgl_inv'     => !empty($row['tgl_inv']) ? date('d-M-Y', strtotime($row['tgl_inv'])) : '-',
             'detail_url'  => 'ajaxkboncbd.php',
             'select'      => buildSelect($kbonno, 'cbd', $canSelect, $kbonno),
+            'cancel_id'   => $kbonno,
+        ];
+    }
+
+    return $data;
+}
+
+/* ====================== TYPE: BIAYA ====================== */
+/* PV umum (non-kontrabon) - header tbl_pv_h, detail tbl_pv. Beda dari type lain:
+   cuma SATU tahap approval (draft -> Approved lewat approvepv.php), tidak ada
+   FIRST/SECOND APPROVED - jadi statusnya selalu 'draft' disini, TIDAK mengikuti
+   $filters['status'] (yang dipakai type lain untuk pilih antara first/second
+   stage). Approve/cancel-nya pakai endpoint & parameter (no_pv, bukan no_kbon)
+   sendiri - lihat APPROVE_ENDPOINT_DPCBD/CANCEL_ENDPOINT_DPCBD di approve-pv.php. */
+
+function getApprovalBiaya($conn2, $filters, $canSelect)
+{
+    $where = "a.status = 'draft'";
+
+    if ($filters['nama_supp'] !== 'ALL' && $filters['nama_supp'] !== '') {
+        $where .= " and a.nama_supp = '" . mysqli_real_escape_string($conn2, $filters['nama_supp']) . "'";
+    }
+
+    $sql = mysqli_query($conn2, "select a.no_pv, a.pv_date, max(b.due_date) as due_date, a.nama_supp, a.curr, a.status,
+        a.create_by, a.subtotal, a.ppn, a.pph,
+        ROUND(SUM((b.amount + (b.amount * b.ppn/100) - (b.amount * b.pph/100)) - (b.ded_add + (b.ded_add * b.ppn/100) - (b.ded_add * b.pph/100))),2) total
+        from tbl_pv_h a
+        inner join tbl_pv b on b.no_pv = a.no_pv
+        where $where
+        group by a.no_pv
+        order by a.no_pv asc");
+
+    $data = [];
+
+    while ($row = mysqli_fetch_assoc($sql)) {
+        $kbonno = $row['no_pv'];
+
+        $data[] = [
+            'no_kbon'     => $kbonno,
+            'type_label'  => 'Biaya',
+            'tgl_kbon'    => !empty($row['pv_date']) ? date('d-M-Y', strtotime($row['pv_date'])) : '-',
+            'tgl_kbon2'   => 'Biaya',
+            'nama_supp'   => $row['nama_supp'],
+            'subtotal'    => number_format($row['subtotal'], 2),
+            'tax'         => number_format($row['ppn'], 2),
+            'pph_value'   => '' . number_format($row['pph'], 2),
+            'dp'          => '-',
+            'return'      => '-',
+            'potong'      => '-',
+            'total'       => number_format($row['total'], 2),
+            'curr'        => $row['curr'],
+            'status'      => $row['status'],
+            'tgl_tempo'     => !empty($row['due_date']) ? date('d-M-Y', strtotime($row['due_date'])) : '-',
+            'tgl_tempo_raw' => $row['due_date'] ?: '',
+            'overdue'       => isOverdue($row['due_date']),
+            'due_soon'      => isDueSoon($row['due_date']),
+            'create_user' => $row['create_by'],
+            'no_faktur'   => '-',
+            'supp_inv'    => '-',
+            'tgl_inv'     => '-',
+            'detail_url'  => 'ajax_pv.php',
+            'select'      => buildSelect($kbonno, 'biaya', $canSelect, $kbonno),
             'cancel_id'   => $kbonno,
         ];
     }
