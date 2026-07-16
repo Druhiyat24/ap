@@ -5,7 +5,7 @@
     $nama_tipe = '';
     $nama_supp = '';
     $date_now = date("Y-m-d");                
-    $start_date = '2024-01-01';
+    $start_date = date('Y') . '-01-01';
     $end_date = date("Y-m-d"); 
 
             $where1 = "where mid(a.bppbno,4,1) in ('A','F','B') and mid(a.bppbno,4,2)!='FG' and d.tipe_sup = 'S' and bppbdate between '$start_date' and '$end_date' order by bppbdate";

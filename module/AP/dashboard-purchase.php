@@ -5,7 +5,7 @@
     $nama_tipe = '';
     $nama_supp = '';
     $date_now = date("Y-m-d");                
-    $start_date = '2024-01-01';
+    $start_date = date('Y') . '-01-01';
     $end_date = date("Y-m-d");               
 
             $where3 = "where bpbno_int LIKE '%GEN%' and d.tipe_sup = 'S' AND a.bpbdate BETWEEN '$start_date' and '$end_date' and tipe_com != 'FOC' || bpbno_int LIKE '%GEN%' and d.tipe_sup = 'S' AND a.bpbdate BETWEEN '$start_date' and '$end_date' and tipe_com is null order by bpbno_int";
