@@ -238,7 +238,7 @@
             <select class="form-control form-control-sm select2bs4" id="modal_nama_supp" name="modal_nama_supp">
                 <option value="ALL">ALL</option>
                 <?php
-                $sqlSupp = mysqli_query($conn2, "SELECT nama_supp FROM mastersupplier WHERE tipe_sup='S' ORDER BY nama_supp ASC");
+                $sqlSupp = mysqli_query($conn2, "SELECT supplier nama_supp FROM mastersupplier WHERE tipe_sup='S' ORDER BY nama_supp ASC");
                 while ($rs = mysqli_fetch_assoc($sqlSupp)) {
                     $sel = (($_POST['h_nama_supp'] ?? '') === $rs['nama_supp']) ? 'selected' : '';
                     echo '<option value="'.htmlspecialchars($rs['nama_supp']).'" '.$sel.'>'.htmlspecialchars($rs['nama_supp']).'</option>';
