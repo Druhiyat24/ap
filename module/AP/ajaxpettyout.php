@@ -8,7 +8,7 @@ $rate = 0;
 $eqv_idr = 0;
 $no_ob = isset($_POST['no_ob']) ? $_POST['no_ob']: null;
 $refdoc = isset($_POST['refdoc']) ? $_POST['refdoc']: null;
-if ($refdoc == 'List Payment') {
+if ($refdoc == 'List Payment' || $refdoc == 'Payment Voucher') {
     $sql = mysqli_query($conn1,"select no_reff, IF(reff_date = '1970-01-01', '-', DATE_FORMAT(reff_date, '%d-%m-%Y')) as reff_date, IF(due_date = '1970-01-01', '-', DATE_FORMAT(due_date, '%d-%m-%Y')) as due_date,dpp,ppn,pph,total,amount from c_petty_cashout_det where no_pco = '$no_ob'");
     $sql2 = mysqli_query($conn1,"select CONCAT(b.no_coa,' ',b.nama_coa) as coa, IF(a.reff_doc = '', '-', a.reff_doc) as reff_doc,IF(a.reff_date = '1970-01-01', '-', DATE_FORMAT(a.reff_date, '%d-%m-%Y')) as reff_date, a.deskripsi, a.t_debit, a.t_credit from c_petty_cashout_adj_det a left join mastercoa_v2 b on b.no_coa = a.id_coa where no_pco = '$no_ob'"); 
     $sql3 = mysqli_query($conn1,"select amount from c_petty_cashout_h where no_pco = '$no_ob'");
@@ -54,7 +54,7 @@ if($refdoc == 'None' || $refdoc == 'Settlement' || $refdoc == 'Advance'){
         }
             $table .= '</table>';
 
-}elseif($refdoc == 'List Payment'){
+}elseif($refdoc == 'List Payment' || $refdoc == 'Payment Voucher'){
 
     $table = '<table id="mytdmodal" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
                     <thead>
@@ -118,7 +118,7 @@ if($refdoc == 'None' || $refdoc == 'Settlement' || $refdoc == 'Advance'){
 
 echo $table;
 
-if ($refdoc == 'List Payment') {
+if ($refdoc == 'List Payment' || $refdoc == 'Payment Voucher') {
  echo '<table width="100%" border="0" style="font-size:12px">
 
     <tr>
