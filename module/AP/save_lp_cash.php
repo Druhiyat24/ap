@@ -40,7 +40,7 @@ try {
     // =========================
 
   $bulan = date('m',strtotime($doc_date));
-  $tahun = date('y',strtotime($doc_date));
+  $tahun = date('Y',strtotime($doc_date));
 
   $prefix = "KKK/".$kode_kas."/".$tahun."/".$bulan;
 
