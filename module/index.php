@@ -1789,7 +1789,10 @@ if(strpos($id, '108') !== false){
         </a>
         <ul class="dropdown-menu bg-dark text-white" role="menu">
 
-       
+      <a href="AP/ca_fabric_list_barcode.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-barcode fa-fw "></span>
+      <span class="menu-collapsed">List Barcode</span>
+      </a>
       <a href="AP/ca_fabric_trx_in_new.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-cart-arrow-down fa-fw "></span>
       <span class="menu-collapsed">Trx Item In</span>
