@@ -53,7 +53,7 @@ $totalRow = mysqli_fetch_assoc(mysqli_query($conn1,
 $total = (int)($totalRow['c'] ?? 0);
 
 $sql = "SELECT a.no_dok, a.tgl_dok, a.supplier, IFNULL(a.no_po,'-') no_po, b.no_barcode, b.id_jo, b.id_item,
-        mi.itemdesc, tmpjo.kpno, tmpjo.styleno, b.np_curr, b.np_tgl_in, b.np_price
+        mi.itemdesc, tmpjo.kpno, tmpjo.styleno, IFNULL(b.np_curr_rev, b.np_curr) np_curr, b.np_tgl_in, IFNULL(b.np_price_rev, b.np_price) np_price
         $fromJoin
         ORDER BY $order_by $order_dir
         LIMIT $start, $length";

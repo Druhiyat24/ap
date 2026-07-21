@@ -49,7 +49,7 @@ $end_date_text   = date("d F Y", strtotime($_GET['end_date']));
         // Dataset besar (bisa ratusan ribu baris) - tidak dibatasi jumlah baris (sengaja),
         // tiap baris di-echo langsung per iterasi while, bukan dikumpulkan ke array dulu.
         $sql = mysqli_query($conn1, "SELECT a.no_dok, a.tgl_dok, a.supplier, IFNULL(a.no_po,'-') no_po, b.no_barcode, b.id_jo, b.id_item,
-                mi.itemdesc, tmpjo.kpno, tmpjo.styleno, b.np_curr, b.np_tgl_in, b.np_price
+                mi.itemdesc, tmpjo.kpno, tmpjo.styleno, IFNULL(b.np_curr_rev, b.np_curr) np_curr, b.np_tgl_in, IFNULL(b.np_price_rev, b.np_price) np_price
                 FROM whs_inmaterial_fabric a
                 INNER JOIN whs_lokasi_inmaterial b ON b.no_dok = a.no_dok
                 INNER JOIN masteritem mi ON mi.id_item = b.id_item
