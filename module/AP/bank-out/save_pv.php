@@ -134,7 +134,7 @@ try {
         mysqli_query($conn2,"
             INSERT INTO b_bankout_det (no_bankout,no_reff,reff_date,due_date,dpp,ppn,pph,total,curr, eqv_idr, rates, for_balance, profit_center, type_pv)
             VALUES
-            ('$doc_num', '$pv_number', '$pv_date', '$pv_duedate', '$pv_sub', '$pv_ppn', '$pv_pph', '$pv_total', '$pv_curr', '$amount', '$pv_rate', '$amount', '$pv_pc', 'Biaya')
+            -- ('$doc_num', '$pv_number', '$pv_date', '$pv_duedate', '$pv_sub', '$pv_ppn', '$pv_pph', '$pv_total', '$pv_curr', '$amount', '$pv_rate', '$amount', '$pv_pc', 'Biaya')
             ('$doc_num', '$pv_number', '$pv_date', '$pv_duedate', '$pv_sub', '$pv_ppn', '$pv_pph', '$pv_total', '$pv_curr', '$amount', '$rate', '$amount', '$pv_pc', 'Biaya')
             ");
 
