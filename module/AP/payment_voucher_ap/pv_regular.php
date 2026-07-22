@@ -1335,6 +1335,19 @@ $(document).on('change', '#from_account', function () {
 </script>
 
 <script type="text/javascript">
+    // JS's native toFixed() rounds half-DOWN for values like 0.365 (shows "0.36")
+    // because 0.365 can't be represented exactly in binary floating point - it's
+    // actually stored as ~0.36499999999999999. This nudges the value by a tiny
+    // relative epsilon before rounding so it lands on the correct side of the
+    // boundary (0.365 -> 0.37), matching how the amount ends up getting saved.
+    // Use this everywhere INSTEAD of raw .toFixed() so what the user sees on
+    // screen always matches what gets stored in the database.
+    function roundHalfUp(num, decimals) {
+        var factor = Math.pow(10, decimals || 0);
+        var nudged = (Number(num) || 0) * factor * (1 + Number.EPSILON);
+        return Math.round(nudged) / factor;
+    }
+
     function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
       try {
         decimalCount = Math.abs(decimalCount);
@@ -1342,7 +1355,8 @@ $(document).on('change', '#from_account', function () {
 
         const negativeSign = amount < 0 ? "-" : "";
 
-        let i = parseInt(amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)).toString();
+        amount = roundHalfUp(Math.abs(Number(amount) || 0), decimalCount);
+        let i = parseInt(amount.toFixed(decimalCount)).toString();
         let j = (i.length > 3) ? i.length % 3 : 0;
 
         return negativeSign + (j ? i.substr(0, j) + thousands : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : "");
@@ -1525,20 +1539,20 @@ if (!processedPO.includes(po)) {
     });
 
     $("#subtotal").val(formatMoney(sum_sub));
-    $("#subtotal_h").val(sum_sub.toFixed(2)); 
-    $("#subtotal_h1").val(data1.toFixed(2)); 
+    $("#subtotal_h").val(roundHalfUp(sum_sub, 2).toFixed(2));
+    $("#subtotal_h1").val(roundHalfUp(data1, 2).toFixed(2));
     $("#potongan").val(formatMoney(total));
-    $("#potongan_h").val(total.toFixed(4));            
+    $("#potongan_h").val(roundHalfUp(total, 4).toFixed(4));
     $("#po").val(nopo1); 
     $("#po1").val(nopo); 
     $("#sisapotongan").val(formatMoney(sisa));
     $("#ttl_sub").val(sisa);
     $("#ttl_dp").val(formatMoney(total_ftr));
-    $("#ttl_dp_h").val(total_ftr.toFixed(2));
+    $("#ttl_dp_h").val(roundHalfUp(total_ftr, 2).toFixed(2));
     $("#pajak").val(formatMoney(ppn));
     $("#pajak_h").val(ppn);
     $("#pph").val(formatMoney(pph11));
-    $("#pph_h").val(pph11.toFixed(2));
+    $("#pph_h").val(roundHalfUp(pph11, 2).toFixed(2));
     updateSetelahPotongan();
     $("#jumlahpotong").val(formatMoney(pot));
     $("#jml_potong").val(pot);
@@ -1599,7 +1613,7 @@ if (!processedPO.includes(po)) {
 
         });  
         $("#pph").val(formatMoney(sum_pph));
-        $("#pph_h").val(sum_pph.toFixed(2));
+        $("#pph_h").val(roundHalfUp(sum_pph, 2).toFixed(2));
         updateSetelahPotongan();
     // $("#subtotal").val(formatMoney(sum_sub));
     // $("#subtotal_h").val(sum_sub);             
@@ -1637,7 +1651,7 @@ if (!processedPO.includes(po)) {
             }   
         });
         $("#potongan").val(formatMoney(sum_total));
-        $("#potongan_h").val(sum_total.toFixed(4));
+        $("#potongan_h").val(roundHalfUp(sum_total, 4).toFixed(4));
     });
 
 
@@ -1659,7 +1673,7 @@ if (!processedPO.includes(po)) {
             }   
         });
         $("#ttl_dp").val(formatMoney(sum_total));
-        $("#ttl_dp_h").val(sum_total.toFixed(4));
+        $("#ttl_dp_h").val(roundHalfUp(sum_total, 4).toFixed(4));
     });
 </script>
 
@@ -1885,9 +1899,9 @@ if (!processedPO.includes(po)) {
         });
 
         $("#total").val(formatMoney(total));
-        $("#total_h").val(total.toFixed(4));
+        $("#total_h").val(roundHalfUp(total, 4).toFixed(4));
         $("#ttl_dp").val(formatMoney(ttl_dp));
-        $("#ttl_dp_h").val(ttl_dp.toFixed(2));
+        $("#ttl_dp_h").val(roundHalfUp(ttl_dp, 2).toFixed(2));
     });
 </script>
 

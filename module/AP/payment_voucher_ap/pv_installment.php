@@ -1381,6 +1381,16 @@ $(document).on('change', '#inst_from_account', function () {
 </script>
 
 <script type="text/javascript">
+    // Lihat pv_regular.php untuk penjelasan lengkap: toFixed() native JS salah
+    // membulatkan nilai seperti 0.365 (jadi "0.36") karena representasi
+    // floating-point biner. roundHalfUp() menutup celah itu supaya angka yang
+    // ditampilkan selalu sama dengan yang tersimpan di database.
+    function roundHalfUp(num, decimals) {
+        var factor = Math.pow(10, decimals || 0);
+        var nudged = (Number(num) || 0) * factor * (1 + Number.EPSILON);
+        return Math.round(nudged) / factor;
+    }
+
     function formatMoneyInst(amount, decimalCount = 2, decimal = ".", thousands = ",") {
       try {
         decimalCount = Math.abs(decimalCount);
@@ -1388,7 +1398,8 @@ $(document).on('change', '#inst_from_account', function () {
 
         const negativeSign = amount < 0 ? "-" : "";
 
-        let i = parseInt(amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)).toString();
+        amount = roundHalfUp(Math.abs(Number(amount) || 0), decimalCount);
+        let i = parseInt(amount.toFixed(decimalCount)).toString();
         let j = (i.length > 3) ? i.length % 3 : 0;
 
         return negativeSign + (j ? i.substr(0, j) + thousands : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : "");
@@ -1571,20 +1582,20 @@ if (!processedPO.includes(po)) {
     });
 
     $("#inst_subtotal").val(formatMoneyInst(sum_sub));
-    $("#inst_subtotal_h").val(sum_sub.toFixed(2)); 
-    $("#inst_subtotal_h1").val(data1.toFixed(2)); 
+    $("#inst_subtotal_h").val(roundHalfUp(sum_sub, 2).toFixed(2));
+    $("#inst_subtotal_h1").val(roundHalfUp(data1, 2).toFixed(2));
     $("#inst_potongan").val(formatMoneyInst(total));
-    $("#inst_potongan_h").val(total.toFixed(4));            
-    $("#inst_po").val(nopo1); 
-    $("#inst_po1").val(nopo); 
+    $("#inst_potongan_h").val(roundHalfUp(total, 4).toFixed(4));
+    $("#inst_po").val(nopo1);
+    $("#inst_po1").val(nopo);
     $("#sisapotongan").val(formatMoneyInst(sisa));
     $("#inst_ttl_sub").val(sisa);
     $("#inst_ttl_dp").val(formatMoneyInst(total_ftr));
-    $("#inst_ttl_dp_h").val(total_ftr.toFixed(2));
+    $("#inst_ttl_dp_h").val(roundHalfUp(total_ftr, 2).toFixed(2));
     $("#inst_pajak").val(formatMoneyInst(ppn));
     $("#inst_pajak_h").val(ppn);
     $("#inst_pph").val(formatMoneyInst(pph11));
-    $("#inst_pph_h").val(pph11.toFixed(2));
+    $("#inst_pph_h").val(roundHalfUp(pph11, 2).toFixed(2));
     updateSetelahPotonganInst();
     $("#inst_jumlahpotong").val(formatMoneyInst(pot));
     $("#inst_jml_potong").val(pot);
@@ -1682,7 +1693,7 @@ $("#inst_mytable").on('change', 'input.chkA_inst', function () {
 
         });  
         $("#inst_pph").val(formatMoneyInst(sum_pph));
-        $("#inst_pph_h").val(sum_pph.toFixed(2));
+        $("#inst_pph_h").val(roundHalfUp(sum_pph, 2).toFixed(2));
         updateSetelahPotonganInst();
     // $("#inst_subtotal").val(formatMoneyInst(sum_sub));
     // $("#inst_subtotal_h").val(sum_sub);             
@@ -1720,7 +1731,7 @@ $("#inst_mytable").on('change', 'input.chkA_inst', function () {
             }   
         });
         $("#inst_potongan").val(formatMoneyInst(sum_total));
-        $("#inst_potongan_h").val(sum_total.toFixed(4));
+        $("#inst_potongan_h").val(roundHalfUp(sum_total, 4).toFixed(4));
     });
 
 
@@ -1742,7 +1753,7 @@ $("#inst_mytable").on('change', 'input.chkA_inst', function () {
             }   
         });
         $("#inst_ttl_dp").val(formatMoneyInst(sum_total));
-        $("#inst_ttl_dp_h").val(sum_total.toFixed(4));
+        $("#inst_ttl_dp_h").val(roundHalfUp(sum_total, 4).toFixed(4));
     });
 </script>
 
@@ -1968,9 +1979,9 @@ $("#inst_mytable").on('change', 'input.chkA_inst', function () {
         });
 
         $("#inst_total").val(formatMoneyInst(total));
-        $("#inst_total_h").val(total.toFixed(4));
+        $("#inst_total_h").val(roundHalfUp(total, 4).toFixed(4));
         $("#inst_ttl_dp").val(formatMoneyInst(ttl_dp));
-        $("#inst_ttl_dp_h").val(ttl_dp.toFixed(2));
+        $("#inst_ttl_dp_h").val(roundHalfUp(ttl_dp, 2).toFixed(2));
         buildCicilanScheduleInst();
     });
 </script>

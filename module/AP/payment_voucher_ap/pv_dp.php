@@ -514,6 +514,16 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
 </script>
 
 <script type="text/javascript">
+    // Lihat pv_regular.php untuk penjelasan lengkap: toFixed() native JS salah
+    // membulatkan nilai seperti 0.365 (jadi "0.36") karena representasi
+    // floating-point biner. roundHalfUp() menutup celah itu supaya angka yang
+    // ditampilkan selalu sama dengan yang tersimpan di database.
+    function roundHalfUp(num, decimals) {
+        var factor = Math.pow(10, decimals || 0);
+        var nudged = (Number(num) || 0) * factor * (1 + Number.EPSILON);
+        return Math.round(nudged) / factor;
+    }
+
     function formatMoneyDp(amount, decimalCount = 2, decimal = ".", thousands = ",") {
         try {
             decimalCount = Math.abs(decimalCount);
@@ -521,7 +531,8 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
 
             const negativeSign = amount < 0 ? "-" : "";
 
-            let i = parseInt(amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)).toString();
+            amount = roundHalfUp(Math.abs(Number(amount) || 0), decimalCount);
+            let i = parseInt(amount.toFixed(decimalCount)).toString();
             let j = (i.length > 3) ? i.length % 3 : 0;
 
             return negativeSign + (j ? i.substr(0, j) + thousands : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : "");

@@ -4,6 +4,18 @@ $no_mj = $_POST['no_journal'];
 
 function h($s){ return htmlspecialchars($s, ENT_QUOTES, 'UTF-8'); }
 
+// Reference Date memang boleh kosong di database (NULL / '' / '0000-00-00').
+// strtotime('0000-00-00') di PHP menghasilkan tanggal aneh ("-0001-11-30",
+// akibat day/month 0 di-rollback), jadi harus dicek eksplisit sebelum
+// diformat, bukan cuma cek '' dan '1970-01-01'.
+function safeDate($val, $format = 'd-m-Y'){
+    if (empty($val) || $val === '0000-00-00' || $val === '1970-01-01') {
+        return '';
+    }
+    $ts = strtotime($val);
+    return $ts !== false ? date($format, $ts) : '';
+}
+
 $sql = mysqli_query($conn1,"
 SELECT 
     a.no_coa, 
@@ -95,6 +107,8 @@ class="table table-striped table-bordered table-hover table-sm">
 <th>Rate</th>
 <th>Debit</th>
 <th>Credit</th>
+<th>Debit IDR</th>
+<th>Credit IDR</th>
 <th>Remark</th>
 <th>Action</th>
 </tr>
@@ -105,7 +119,7 @@ class="table table-striped table-bordered table-hover table-sm">
 <?php foreach ($rows as $r): ?>
 
 <?php
-$date = ($r['reff_date']=='' || $r['reff_date']=='1970-01-01') ? '' : date('d-m-Y', strtotime($r['reff_date']));
+$date = safeDate($r['reff_date']);
 ?>
 
 <tr>
@@ -181,6 +195,16 @@ value="<?= $r['credit']=="0"?"":h($r['credit']) ?>">
 </td>
 
 <td>
+<input type="text" name="debit_idr[]" class="form-control debit_idr" readonly
+value="<?= ($r['debit']=="0"||$r['debit']=="")?"":h(number_format($r['debit']*$r['rate'],2)) ?>">
+</td>
+
+<td>
+<input type="text" name="credit_idr[]" class="form-control credit_idr" readonly
+value="<?= ($r['credit']=="0"||$r['credit']=="")?"":h(number_format($r['credit']*$r['rate'],2)) ?>">
+</td>
+
+<td>
 <textarea type="text" name="remark[]" class="form-control ket" ><?= h($r['remark']) ?></textarea>
 </td>
 
@@ -196,7 +220,7 @@ value="<?= $r['credit']=="0"?"":h($r['credit']) ?>">
 
 <tfoot>
 <tr>
-<td colspan="13" class="text-center">
+<td colspan="16" class="text-center">
 
 <button type="button" class="btn btn-primary" id="btnAdd">
 Add Row
@@ -265,6 +289,10 @@ Delete Row
 
 <td><input type="number" name="credit[]" class="form-control credit" oninput="updateRow(this)"></td>
 
+<td><input type="text" name="debit_idr[]" class="form-control debit_idr" readonly></td>
+
+<td><input type="text" name="credit_idr[]" class="form-control credit_idr" readonly></td>
+
 <td><textarea type="text" name="remark[]" class="form-control ket" ></textarea></td>
 
 <td><input type="checkbox" class="remove"></td>
@@ -276,66 +304,47 @@ Delete Row
 
     <!-- BOX 1 -->
     <div class="col-md-4">
-        <div class="total-box">
-    <h6>Total PT. Nirwana Alabare Garment</h6>
-    <hr>
+        <div class="total-box tone-nag">
+    <div class="total-box-header"><i class="fa fa-building"></i> PT. Nirwana Alabare Garment</div>
+    <div class="total-box-body">
 
-    <div class="row mb-2 align-items-center">
-        <div class="col-4">
-            <label class="mb-0">Total Credit</label>
-        </div>
-        <div class="col-8">
-            <input type="text" class="form-control text-right" id="txt_credit_nag"
-            value="<?php
-                $sqldes = mysqli_query($conn2,"select format(sum(credit),2) as credit from tbl_list_journal where no_journal='$no_mj' and profit_center = 'NAG'");
-                $row = mysqli_fetch_array($sqldes);
-                echo !empty($no_mj) ? $row['credit'] : '';
-            ?>" readonly>
-        </div>
-    </div>
-
-    <div class="row mb-2 align-items-center">
-        <div class="col-4">
-            <label class="mb-0">Total Debit</label>
-        </div>
-        <div class="col-8">
-            <input type="text" class="form-control text-right" id="txt_debit_nag"
+    <div class="total-stat is-debit">
+        <span class="total-stat-label">Debit</span>
+        <div class="total-stat-value-wrap">
+            <input type="text" class="total-stat-value" id="txt_debit_nag"
             value="<?php
                 $sqldes = mysqli_query($conn2,"select format(sum(debit),2) as debit from tbl_list_journal where no_journal='$no_mj' and profit_center = 'NAG'");
                 $row = mysqli_fetch_array($sqldes);
                 echo !empty($no_mj) ? $row['debit'] : '';
             ?>" readonly>
-        </div>
-    </div>
-
-    <div class="row mb-2 align-items-center">
-        <div class="col-4">
-            <label class="mb-0">Total Credit IDR</label>
-        </div>
-        <div class="col-8">
-            <input type="text" class="form-control text-right" id="txt_credit_nag_idr"
-            value="<?php
-                $sqldes = mysqli_query($conn2,"select format(sum(credit_idr),2) as credit_idr from tbl_list_journal where no_journal='$no_mj' and profit_center = 'NAG'");
-                $row = mysqli_fetch_array($sqldes);
-                echo !empty($no_mj) ? $row['credit_idr'] : '';
-            ?>" readonly>
-        </div>
-    </div>
-
-    <div class="row mb-2 align-items-center">
-        <div class="col-4">
-            <label class="mb-0">Total Debit IDR</label>
-        </div>
-        <div class="col-8">
-            <input type="text" class="form-control text-right" id="txt_debit_nag_idr"
+            <div class="total-stat-sub">IDR <input type="text" class="total-stat-value-sm" id="txt_debit_nag_idr"
             value="<?php
                 $sqldes = mysqli_query($conn2,"select format(sum(debit_idr),2) as debit_idr from tbl_list_journal where no_journal='$no_mj' and profit_center = 'NAG'");
                 $row = mysqli_fetch_array($sqldes);
                 echo !empty($no_mj) ? $row['debit_idr'] : '';
-            ?>" readonly>
+            ?>" readonly></div>
         </div>
     </div>
 
+    <div class="total-stat is-credit">
+        <span class="total-stat-label">Credit</span>
+        <div class="total-stat-value-wrap">
+            <input type="text" class="total-stat-value" id="txt_credit_nag"
+            value="<?php
+                $sqldes = mysqli_query($conn2,"select format(sum(credit),2) as credit from tbl_list_journal where no_journal='$no_mj' and profit_center = 'NAG'");
+                $row = mysqli_fetch_array($sqldes);
+                echo !empty($no_mj) ? $row['credit'] : '';
+            ?>" readonly>
+            <div class="total-stat-sub">IDR <input type="text" class="total-stat-value-sm" id="txt_credit_nag_idr"
+            value="<?php
+                $sqldes = mysqli_query($conn2,"select format(sum(credit_idr),2) as credit_idr from tbl_list_journal where no_journal='$no_mj' and profit_center = 'NAG'");
+                $row = mysqli_fetch_array($sqldes);
+                echo !empty($no_mj) ? $row['credit_idr'] : '';
+            ?>" readonly></div>
+        </div>
+    </div>
+
+</div>
 </div>
 
     </div>
@@ -343,132 +352,94 @@ Delete Row
 
     <!-- BOX 2 -->
     <div class="col-md-4">
-        <div class="total-box">
-    <h6>Total PT. Nirwana Alabare Knitting</h6>
-    <hr>
+        <div class="total-box tone-nak">
+    <div class="total-box-header"><i class="fa fa-industry"></i> PT. Nirwana Alabare Knitting</div>
+    <div class="total-box-body">
 
-    <div class="row mb-2 align-items-center">
-        <div class="col-4">
-            <label class="mb-0">Total Credit</label>
-        </div>
-        <div class="col-8">
-            <input type="text" class="form-control text-right" id="txt_credit_nak"
-            value="<?php
-                $sqldes = mysqli_query($conn2,"select format(sum(credit),2) as credit from tbl_list_journal where no_journal='$no_mj' and profit_center = 'NAK'");
-                $row = mysqli_fetch_array($sqldes);
-                echo !empty($no_mj) ? $row['credit'] : '';
-            ?>" readonly>
-        </div>
-    </div>
-
-    <div class="row mb-2 align-items-center">
-        <div class="col-4">
-            <label class="mb-0">Total Debit</label>
-        </div>
-        <div class="col-8">
-            <input type="text" class="form-control text-right" id="txt_debit_nak"
+    <div class="total-stat is-debit">
+        <span class="total-stat-label">Debit</span>
+        <div class="total-stat-value-wrap">
+            <input type="text" class="total-stat-value" id="txt_debit_nak"
             value="<?php
                 $sqldes = mysqli_query($conn2,"select format(sum(debit),2) as debit from tbl_list_journal where no_journal='$no_mj' and profit_center = 'NAK'");
                 $row = mysqli_fetch_array($sqldes);
                 echo !empty($no_mj) ? $row['debit'] : '';
             ?>" readonly>
-        </div>
-    </div>
-
-    <div class="row mb-2 align-items-center">
-        <div class="col-4">
-            <label class="mb-0">Total Credit IDR</label>
-        </div>
-        <div class="col-8">
-            <input type="text" class="form-control text-right" id="txt_credit_nak_idr"
-            value="<?php
-                $sqldes = mysqli_query($conn2,"select format(sum(credit_idr),2) as credit_idr from tbl_list_journal where no_journal='$no_mj' and profit_center = 'NAK'");
-                $row = mysqli_fetch_array($sqldes);
-                echo !empty($no_mj) ? $row['credit_idr'] : '';
-            ?>" readonly>
-        </div>
-    </div>
-
-    <div class="row mb-2 align-items-center">
-        <div class="col-4">
-            <label class="mb-0">Total Debit IDR</label>
-        </div>
-        <div class="col-8">
-            <input type="text" class="form-control text-right" id="txt_debit_nak_idr"
+            <div class="total-stat-sub">IDR <input type="text" class="total-stat-value-sm" id="txt_debit_nak_idr"
             value="<?php
                 $sqldes = mysqli_query($conn2,"select format(sum(debit_idr),2) as debit_idr from tbl_list_journal where no_journal='$no_mj' and profit_center = 'NAK'");
                 $row = mysqli_fetch_array($sqldes);
                 echo !empty($no_mj) ? $row['debit_idr'] : '';
-            ?>" readonly>
+            ?>" readonly></div>
         </div>
     </div>
 
+    <div class="total-stat is-credit">
+        <span class="total-stat-label">Credit</span>
+        <div class="total-stat-value-wrap">
+            <input type="text" class="total-stat-value" id="txt_credit_nak"
+            value="<?php
+                $sqldes = mysqli_query($conn2,"select format(sum(credit),2) as credit from tbl_list_journal where no_journal='$no_mj' and profit_center = 'NAK'");
+                $row = mysqli_fetch_array($sqldes);
+                echo !empty($no_mj) ? $row['credit'] : '';
+            ?>" readonly>
+            <div class="total-stat-sub">IDR <input type="text" class="total-stat-value-sm" id="txt_credit_nak_idr"
+            value="<?php
+                $sqldes = mysqli_query($conn2,"select format(sum(credit_idr),2) as credit_idr from tbl_list_journal where no_journal='$no_mj' and profit_center = 'NAK'");
+                $row = mysqli_fetch_array($sqldes);
+                echo !empty($no_mj) ? $row['credit_idr'] : '';
+            ?>" readonly></div>
+        </div>
+    </div>
+
+</div>
 </div>
     </div>
 
 
     <!-- BOX 3 -->
     <div class="col-md-4">
-        <div class="total-box">
-    <h6>Grand Total</h6>
-    <hr>
+        <div class="total-box tone-all">
+    <div class="total-box-header"><i class="fa fa-calculator"></i> Grand Total</div>
+    <div class="total-box-body">
 
-    <div class="row mb-2 align-items-center">
-        <div class="col-4">
-            <label class="mb-0">Total Credit</label>
-        </div>
-        <div class="col-8">
-            <input type="text" class="form-control text-right" id="txt_credit_all"
-            value="<?php
-                $sqldes = mysqli_query($conn2,"select format(sum(credit),2) as credit from tbl_list_journal where no_journal='$no_mj'");
-                $row = mysqli_fetch_array($sqldes);
-                echo !empty($no_mj) ? $row['credit'] : '';
-            ?>" readonly>
-        </div>
-    </div>
-
-    <div class="row mb-2 align-items-center">
-        <div class="col-4">
-            <label class="mb-0">Total Debit</label>
-        </div>
-        <div class="col-8">
-            <input type="text" class="form-control text-right" id="txt_debit_all"
+    <div class="total-stat is-debit">
+        <span class="total-stat-label">Debit</span>
+        <div class="total-stat-value-wrap">
+            <input type="text" class="total-stat-value" id="txt_debit_all"
             value="<?php
                 $sqldes = mysqli_query($conn2,"select format(sum(debit),2) as debit from tbl_list_journal where no_journal='$no_mj'");
                 $row = mysqli_fetch_array($sqldes);
                 echo !empty($no_mj) ? $row['debit'] : '';
             ?>" readonly>
-        </div>
-    </div>
-
-    <div class="row mb-2 align-items-center">
-        <div class="col-4">
-            <label class="mb-0">Total Credit IDR</label>
-        </div>
-        <div class="col-8">
-            <input type="text" class="form-control text-right" id="txt_credit_all_idr"
-            value="<?php
-                $sqldes = mysqli_query($conn2,"select format(sum(credit_idr),2) as credit_idr from tbl_list_journal where no_journal='$no_mj'");
-                $row = mysqli_fetch_array($sqldes);
-                echo !empty($no_mj) ? $row['credit_idr'] : '';
-            ?>" readonly>
-        </div>
-    </div>
-
-    <div class="row mb-2 align-items-center">
-        <div class="col-4">
-            <label class="mb-0">Total Debit IDR</label>
-        </div>
-        <div class="col-8">
-            <input type="text" class="form-control text-right" id="txt_debit_all_idr"
+            <div class="total-stat-sub">IDR <input type="text" class="total-stat-value-sm" id="txt_debit_all_idr"
             value="<?php
                 $sqldes = mysqli_query($conn2,"select format(sum(debit_idr),2) as debit_idr from tbl_list_journal where no_journal='$no_mj'");
                 $row = mysqli_fetch_array($sqldes);
                 echo !empty($no_mj) ? $row['debit_idr'] : '';
-            ?>" readonly>
+            ?>" readonly></div>
         </div>
     </div>
 
+    <div class="total-stat is-credit">
+        <span class="total-stat-label">Credit</span>
+        <div class="total-stat-value-wrap">
+            <input type="text" class="total-stat-value" id="txt_credit_all"
+            value="<?php
+                $sqldes = mysqli_query($conn2,"select format(sum(credit),2) as credit from tbl_list_journal where no_journal='$no_mj'");
+                $row = mysqli_fetch_array($sqldes);
+                echo !empty($no_mj) ? $row['credit'] : '';
+            ?>" readonly>
+            <div class="total-stat-sub">IDR <input type="text" class="total-stat-value-sm" id="txt_credit_all_idr"
+            value="<?php
+                $sqldes = mysqli_query($conn2,"select format(sum(credit_idr),2) as credit_idr from tbl_list_journal where no_journal='$no_mj'");
+                $row = mysqli_fetch_array($sqldes);
+                echo !empty($no_mj) ? $row['credit_idr'] : '';
+            ?>" readonly></div>
+        </div>
+    </div>
+
+</div>
 </div>
 
 </div>

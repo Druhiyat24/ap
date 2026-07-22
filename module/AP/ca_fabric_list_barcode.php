@@ -66,6 +66,9 @@
                         <button type="button" id="btnExportExcel" class="btn btn-success btn-sm ml-2">
                             <i class="fa fa-file-excel-o" aria-hidden="true"></i> Excel
                         </button>
+                        <button type="button" id="btnUpdateBarcodeOut" class="btn btn-primary btn-sm ml-2">
+                            <i class="fa fa-refresh" aria-hidden="true"></i> Update Barcode Out
+                        </button>
                     </div>
 
                 </div>
@@ -235,6 +238,45 @@
             .catch(() => {
                 Swal.fire({ icon: 'error', title: 'Error', text: 'Export gagal, coba lagi.' });
             });
+    });
+
+    document.getElementById('btnUpdateBarcodeOut').addEventListener('click', function() {
+        Swal.fire({
+            title: 'Update Barcode Out?',
+            text: 'Proses ini akan memperbarui data Barcode Out.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Update',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#0d6efd'
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+
+            Swal.fire({
+                title: 'Memproses update...',
+                text: 'Mohon tunggu dan jangan tutup halaman ini.',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            $.ajax({
+                type: 'POST',
+                url: 'update_out_barcode.php',
+                dataType: 'json',
+                success: function(res) {
+                    if (res.status === 'ok') {
+                        Swal.fire('Berhasil', res.message || 'Barcode Out berhasil diperbarui.', 'success');
+                        dataTableReload();
+                    } else {
+                        Swal.fire('Gagal', res.message || 'Update Barcode Out gagal.', 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire('Error', 'Request gagal. Cek koneksi atau server.', 'error');
+                }
+            });
+        });
     });
 
     $("[data-toggle=tooltip]").tooltip();

@@ -15,6 +15,10 @@ input{
 
 #modalBodyJournal{
     overflow-x:auto;
+    display:flex;
+    flex-direction:column;
+    flex:1 1 auto;
+    min-height:0;
 }
 
 .row-error{
@@ -28,25 +32,80 @@ input{
 
 
 /* ===============================
-   MODAL SIZE
+   MODAL SIZE - FULL SCREEN
+   (biar berasa seperti tab/halaman baru, bukan popup kecil)
 ================================*/
+#modalEdit.modal{
+    padding:0 !important;
+}
+
 #modalEdit .modal-dialog{
-    max-width:95%;
+    max-width:100%;
+    width:100%;
+    height:100%;
+    margin:0;
+}
+
+#modalEdit .modal-content{
+    height:100%;
+    border:0;
+    border-radius:0;
 }
 
 #modalEdit .modal-body{
     max-height:none;
-    overflow:visible;
-}
-
-.table-scroll{
-    height:420px;
     overflow-y:auto;
-    overflow-x:auto;
-    border:1px solid #ddd;
+    flex:1 1 auto;
+    display:flex;
+    flex-direction:column;
+    padding-top:10px;
 }
 
+#modalEdit .modal-body .form-row:first-child{
+    margin-top:0;
+}
 
+#modalEdit .modal-body .form-row:first-child .col-md-3,
+#modalEdit .modal-body .form-row:first-child .col-md-2{
+    margin-bottom:10px;
+}
+
+/* Rantai flex biar tinggi mengalir sampai ke .table-scroll di bawah -
+   tanpa ini, form#formEdit & #modalBodyJournal cuma setinggi isinya
+   sendiri (bukan ikut tinggi modal), jadi flex:1 di .table-scroll
+   tidak ada ruang buat "mengembang". */
+#modalEdit .modal-body > form{
+    display:flex;
+    flex-direction:column;
+    flex:1 1 auto;
+    min-height:0;
+}
+
+#modalEdit .modal-header{
+    padding:0.6rem 1rem;
+    flex-shrink:0;
+}
+
+#modalEdit .modal-title{
+    font-size:1.05rem;
+    margin:0;
+}
+
+#modalEdit .modal-header .close{
+    padding:0;
+    margin:0;
+    font-size:2rem;
+    line-height:1;
+    opacity:0.85;
+}
+
+#modalEdit .modal-header .close:hover{
+    opacity:1;
+}
+
+#modalEdit .modal-footer{
+    flex-shrink:0;
+}
 
 /* ===============================
    TABLE STYLE
@@ -70,15 +129,51 @@ input{
     height:36px;
 }
 
+/* Input/select lebih nyaman dilihat & dipakai: sudut lebih halus, transisi
+   warna saat fokus/hover, biar user gampang lihat lagi ada di kolom mana
+   pas ngisi banyak baris. */
+#tableJournal .form-control{
+    border-radius:6px;
+    border-color:#dfe3e8;
+    transition:border-color .15s ease, box-shadow .15s ease;
+}
+
+#tableJournal .form-control:hover{
+    border-color:#b9c2cc;
+}
+
+#tableJournal .form-control:focus{
+    border-color:#1e90ff;
+    box-shadow:0 0 0 3px rgba(30,144,255,0.15);
+}
+
+#tableJournal .select2-container--default .select2-selection--single{
+    border-radius:6px;
+    border-color:#dfe3e8;
+    transition:border-color .15s ease, box-shadow .15s ease;
+}
+
+#tableJournal .select2-container--default.select2-container--open .select2-selection--single,
+#tableJournal .select2-container--default.select2-container--focus .select2-selection--single{
+    border-color:#1e90ff;
+    box-shadow:0 0 0 3px rgba(30,144,255,0.15);
+}
+
 
 /* ===============================
    TABLE JOURNAL SCROLL
+   flex:1 bikin area tabel ini otomatis mengisi sisa ruang vertikal
+   modal (bukan tinggi tetap 420px) - jadi menyesuaikan sendiri baik di
+   layar kecil (14") maupun besar (21"+), nggak nyisain kotak kosong
+   di atas footer kalau layarnya tinggi/lebar.
 ================================*/
 .table-scroll{
-    max-height:420px;
+    flex:1 1 auto;
+    min-height:220px;
     overflow-y:auto;
     overflow-x:auto;
     border:1px solid #ddd;
+    border-radius:8px;
 }
 
 #tableJournal{
@@ -89,13 +184,29 @@ input{
 #tableJournal thead th{
     position:sticky;
     top:0;
-    background:#f8f9fa;
+    background:#1E3A8A;
+    color:#fff;
+    font-weight:600;
     z-index:2;
 }
 
 #tableJournal td,
 #tableJournal th{
     white-space:nowrap;
+    padding:10px 8px;
+}
+
+/* Zebra + hover, biar baris gampang diikuti mata pas datanya banyak */
+#tableJournal tbody tr:nth-child(even){
+    background:#f9fafb;
+}
+
+#tableJournal tbody tr:hover{
+    background:#eef6ff;
+}
+
+#tableJournal tbody tr.row-error:hover{
+    background:#FA9B9B;
 }
 
 
@@ -108,10 +219,27 @@ input{
     min-width:220px;
 }
 
-#modalEdit table th:nth-child(13),
-#modalEdit table td:nth-child(13){
+#modalEdit table th:nth-child(15),
+#modalEdit table td:nth-child(15){
     width:200px;
     min-width:200px;
+}
+
+#modalEdit table th:nth-child(13),
+#modalEdit table td:nth-child(13),
+#modalEdit table th:nth-child(14),
+#modalEdit table td:nth-child(14){
+    width:130px;
+    min-width:130px;
+}
+
+/* Curr (kolom ke-9) - dulu lebarnya cuma ngikutin native <select> yang sudah
+   disembunyikan select2, jadi kolomnya menyempit sampai teks "IDR"/"USD"
+   meluber keluar kotak. Kasih lebar tetap. */
+#modalEdit table th:nth-child(9),
+#modalEdit table td:nth-child(9){
+    width:110px;
+    min-width:110px;
 }
 
 #modalEdit textarea{
@@ -150,6 +278,26 @@ input{
 #modalEdit .select2-container{
     width:100% !important;
     font-size:14px;
+}
+
+/* Samakan tinggi select2 dengan input/select lain (36px), dan pastikan
+   teks yang kepanjangan dipotong rapi (...) bukan meluber ke luar kotak. */
+#modalEdit .select2-container .select2-selection--single{
+    height:36px;
+    display:flex;
+    align-items:center;
+}
+
+#modalEdit .select2-container .select2-selection--single .select2-selection__rendered{
+    line-height:normal;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    padding-left:8px;
+}
+
+#modalEdit .select2-container .select2-selection--single .select2-selection__arrow{
+    height:34px;
 }
 
 #modalEdit .select2-dropdown{
@@ -318,34 +466,118 @@ div.dataTables_wrapper .dataTables_info {
     margin-top: 10px;
 }
 
+/* ===============================
+   TOTAL CARDS (NAG / NAK / Grand Total)
+   Redesain dari kotak input abu-abu polos jadi card dengan header
+   berwarna + angka besar, biar nggak kaku kayak form. id input di
+   dalamnya TIDAK berubah, jadi setVal()/hitungTotal() di JS tetap
+   jalan tanpa perlu diubah.
+================================*/
 .total-box{
-    border:1px solid #dcdcdc;
-    border-radius:6px;
-    padding:15px;
-    background:#fafafa;
+    border:0;
+    border-radius:12px;
+    padding:0;
+    background:#fff;
+    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+    overflow:hidden;
+    height:100%;
 }
 
-.total-box h6{
-    font-weight:bold;
-    margin-bottom:15px;
-    border-bottom:1px solid #ddd;
-    padding-bottom:5px;
+.total-box .total-box-header{
+    padding:12px 16px;
+    color:#fff;
+    font-weight:700;
+    font-size:14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
 }
 
-.total-row{
+.total-box.tone-nag .total-box-header{
+    background:linear-gradient(90deg, #191970, #1e90ff);
+}
+
+.total-box.tone-nak .total-box-header{
+    background:linear-gradient(90deg, #0f5c3f, #1f8a4c);
+}
+
+.total-box.tone-all .total-box-header{
+    background:linear-gradient(90deg, #1E3A8A, #1E3A8A);
+}
+
+.total-box .total-box-body{
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+}
+
+.total-stat{
     display:flex;
     justify-content:space-between;
-    align-items:center;
-    margin-bottom:10px;
+    align-items:flex-end;
+    padding-bottom:12px;
+    border-bottom:1px dashed #e5e5e5;
 }
 
-.total-row label{
+.total-stat:last-child{
+    border-bottom:0;
+    padding-bottom:0;
+}
+
+.total-stat-label{
+    font-size:12px;
     font-weight:600;
-    margin:0;
+    color:#8a8a8a;
+    text-transform:uppercase;
+    letter-spacing:.03em;
 }
 
-.total-row input{
+.total-stat-value-wrap{
     text-align:right;
+}
+
+.total-stat input.total-stat-value{
+    border:0;
+    background:transparent;
+    padding:0;
+    font-size:19px;
+    font-weight:700;
+    text-align:right;
+    width:auto;
+    max-width:100%;
+    height:auto;
+}
+
+/* Soft/muted, bukan warna terang - biar tetap gampang dibedain Debit vs
+   Credit sekilas tapi kesannya tenang, cocok buat dokumen akuntansi
+   (bukan dashboard). */
+.total-stat.is-debit input.total-stat-value{
+    color:#3d5a80;
+}
+
+.total-stat.is-credit input.total-stat-value{
+    color:#4d7d63;
+}
+
+.total-stat-sub{
+    font-size:16px;
+    font-weight:700;
+    color:#495057;
+    margin-top:4px;
+}
+
+.total-stat-sub input.total-stat-value-sm{
+    border:0;
+    background:transparent;
+    padding:0;
+    font-size:16px;
+    font-weight:700;
+    color:#495057;
+    text-align:right;
+    width:auto;
+    max-width:100%;
+    height:auto;
 }
 
 
@@ -354,18 +586,16 @@ div.dataTables_wrapper .dataTables_info {
 
 </style>
 
-<!-- Modal EDIT -->
+<!-- Modal EDIT (full screen, tampil seperti halaman/tab baru) -->
 <div class="modal fade" id="modalEdit" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered" style="max-width:95%;width:95%;">
+  <div class="modal-dialog">
     <div class="modal-content">
 
       <div class="modal-header text-white" style="background-color: #1E3A8A;">
+        <button type="button" class="close text-white" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
         <h5 class="modal-title">
           <i class="fa fa-edit"></i> Edit Journal
         </h5>
-        <button type="button" class="close text-white" data-dismiss="modal">
-          &times;
-        </button>
       </div>
 
       <div class="modal-body">
@@ -623,24 +853,59 @@ function dataTableReload() {
 }
 
 
-function initSelect2Element(el,url,minInput=1){
+/* ===============================
+   SELECT2 INIT (eager - langsung aktif saat baris dirender/ditambah,
+   bukan nunggu diklik dulu). Sebelumnya select2 baru diaktifkan saat
+   elemen diklik: itu bikin native <select> sempat kebuka duluan lalu
+   "dihijack" jadi select2 sepersekian detik kemudian - kelihatan
+   ngaco/kedap-kedip. Sekarang semua select langsung jadi select2 sejak
+   baris muncul, konsisten.
+================================*/
+
+const SELECT2_CONFIG = {
+    'sel-coa'  : { url:'coa.php',   minInput:1 },
+    'sel-cc'   : { url:'cc.php',    minInput:1 },
+    'sel-pc'   : { url:'pc.php',    minInput:0 },
+    'sel-buyer': { url:'buyer.php', minInput:1 },
+    'sel-ws'   : { url:'ws.php',    minInput:1 },
+    'sel-curr' : { url:'curr.php',  minInput:0 }
+};
+
+function initSelect2Element(el){
 
     if(el.data('select2')) return;
+
+    let cssClass = Object.keys(SELECT2_CONFIG).find(function(c){
+        return el.hasClass(c);
+    });
+
+    if(!cssClass) return;
+
+    let cfg = SELECT2_CONFIG[cssClass];
 
     el.select2({
         width:'100%',
         dropdownParent: $('#modalEdit'),
         dropdownAutoWidth:true,
-        placeholder:'Nothing Selected',
+        placeholder: cssClass === 'sel-cc' ? 'Select Profit Center first' : 'Nothing Selected',
         allowClear:true,
-        minimumInputLength:minInput,
+        minimumInputLength:cfg.minInput,
         ajax:{
-            url:url,
+            url:cfg.url,
             dataType:'json',
             delay:250,
             cache:true,
             data:function(params){
-                return { q: params.term };
+
+                let data = { q: params.term };
+
+                // Cost Center dibatasi sesuai Profit Center baris ini
+                // (cc.php akan kosong kalau pc belum dipilih)
+                if(cssClass === 'sel-cc'){
+                    data.pc = el.closest('tr').find('.sel-pc').val() || '';
+                }
+
+                return data;
             },
             processResults:function(data){
                 return { results:data };
@@ -650,91 +915,39 @@ function initSelect2Element(el,url,minInput=1){
 
 }
 
+// Init semua select2 di dalam suatu scope (satu baris, atau seluruh tabel)
+function initAllSelect2(scope){
+
+    $(scope || document)
+        .find('.sel-coa,.sel-cc,.sel-pc,.sel-buyer,.sel-ws,.sel-curr')
+        .each(function(){
+            initSelect2Element($(this));
+        });
+
+}
+
 
 
 $.fn.modal.Constructor.prototype.enforceFocus = function() {};
 
 $(document).ready(function(){
 
+
 /* ===============================
-   SELECT2 CLICK INIT
+   RESET COST CENTER SAAT PROFIT CENTER GANTI
+   (Cost Center dibatasi per Profit Center - kalau PC-nya diganti,
+   Cost Center yang sudah dipilih sebelumnya bisa jadi sudah tidak
+   valid buat PC yang baru, jadi dikosongkan lagi)
 ================================ */
 
-// COA
-$(document).on('click','.sel-coa',function(){
+$(document).on('change','.sel-pc',function(){
 
-    let el=$(this);
+    let tr = $(this).closest('tr');
+    let ccEl = tr.find('.sel-cc');
 
-    initSelect2Element(el,'coa.php');
-
-    setTimeout(function(){
-        el.select2('open');
-    },50);
-
-});
-
-// COST CENTER
-$(document).on('click','.sel-cc',function(){
-
-    let el=$(this);
-
-    initSelect2Element(el,'cc.php');
-
-    setTimeout(function(){
-        el.select2('open');
-    },50);
-
-});
-
-// PROFIT CENTER
-$(document).on('click','.sel-pc',function(){
-
-    let el=$(this);
-
-    initSelect2Element(el,'pc.php',0);
-
-    setTimeout(function(){
-        el.select2('open');
-    },50);
-
-});
-
-// BUYER
-$(document).on('click','.sel-buyer',function(){
-
-    let el=$(this);
-
-    initSelect2Element(el,'buyer.php');
-
-    setTimeout(function(){
-        el.select2('open');
-    },50);
-
-});
-
-// WS
-$(document).on('click','.sel-ws',function(){
-
-    let el=$(this);
-
-    initSelect2Element(el,'ws.php');
-
-    setTimeout(function(){
-        el.select2('open');
-    },50);
-
-});
-
-// CURRENCY
-$(document).on('click','.sel-curr',function(){
-
-    let el=$(this);
-
-    initSelect2Element(el,'curr.php',0);
-
-    setTimeout(function(){
-        el.select2('open');
-    },50);
+    if(ccEl.length && ccEl.val()){
+        ccEl.val(null).trigger('change');
+    }
 
 });
 
@@ -749,6 +962,8 @@ $(document).on('click','#btnAdd',function(){
 
     $("#tbody2").append(r);
 
+    initAllSelect2(r);
+
 });
 
 
@@ -760,7 +975,18 @@ $(document).on('click','#btnInsert',function(){
 
     let r=$("#templateRow").clone().removeAttr("id").show();
 
-    $("#tbody2 tr:first").before(r);
+    let firstRow = $("#tbody2 tr:first");
+
+    if(firstRow.length){
+        firstRow.before(r);
+    }else{
+        // tbody2 kosong (semua baris sudah dihapus) - tr:first tidak
+        // ada apa-apanya, .before() diam-diam tidak melakukan apapun.
+        // Fallback ke append supaya baris tetap masuk.
+        $("#tbody2").append(r);
+    }
+
+    initAllSelect2(r);
 
 });
 
@@ -771,12 +997,24 @@ $(document).on('click','#btnInsert',function(){
 
 $(document).on('click','#btnDelete',function(){
 
-    $("#tbody2 .remove:checked").each(function(){
+    let checked = $("#tbody2 .remove:checked");
+
+    if(checked.length === 0){
+        Swal.fire({
+            icon:'info',
+            title:'No row selected',
+            text:'Please check the Action column on the row(s) you want to delete first'
+        });
+        return;
+    }
+
+    checked.each(function(){
 
         $(this).closest("tr").remove();
-        hitungTotal();
 
     });
+
+    hitungTotal();
 
 });
 
@@ -830,7 +1068,7 @@ function editData(no_journal) {
       Swal.fire({
         icon:'error',
         title:'Error',
-        text:'Failed load data'
+        text:'Failed to load data'
       });
 
     }
@@ -843,14 +1081,14 @@ function editData(no_journal) {
 function cancelData(no_journal) {
 
     Swal.fire({
-        title: 'Yakin mau cancel?',
-        text: "Data journal akan dibatalkan!",
+        title: 'Are you sure you want to cancel?',
+        text: "This journal entry will be cancelled!",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, cancel!',
-        cancelButtonText: 'Batal'
+        confirmButtonText: 'Yes, cancel it!',
+        cancelButtonText: 'Cancel'
     }).then((result) => {
         if (result.isConfirmed) {
 
@@ -866,7 +1104,7 @@ function cancelData(no_journal) {
 
                     if (res.status == 'success') {
                         Swal.fire(
-                            'Berhasil!',
+                            'Success!',
                             res.message,
                             'success'
                         ).then(() => {
@@ -874,7 +1112,7 @@ function cancelData(no_journal) {
                         });
                     } else {
                         Swal.fire(
-                            'Gagal!',
+                            'Failed!',
                             res.message,
                             'error'
                         );
@@ -884,7 +1122,7 @@ function cancelData(no_journal) {
                 error: function() {
                     Swal.fire(
                         'Error!',
-                        'Server bermasalah',
+                        'A server error occurred',
                         'error'
                     );
                 }
@@ -896,6 +1134,21 @@ function cancelData(no_journal) {
 
 
 function initJournalUI(){
+
+  // select2-kan dropdown Type di header (sebelumnya cuma dikasih class
+  // "select2bs4" tapi tidak pernah benar-benar di-init jadi select2).
+  // Pakai tema default (bukan 'bootstrap4') karena CSS tema bootstrap4
+  // untuk select2 tidak dimuat di halaman ini - sama seperti select2
+  // lain di tabel journal, supaya stylingnya konsisten.
+  if(!$('#nama_type').data('select2')){
+      $('#nama_type').select2({
+          width:'100%',
+          dropdownParent: $('#modalEdit')
+      });
+  }
+
+  // select2-kan semua select yang sudah ke-render dari server
+  initAllSelect2('#tbody2');
 
   // hitung semua row yang sudah ada
   document.querySelectorAll("#tbody2 tr").forEach(row => {
@@ -1038,6 +1291,12 @@ function updateRow(el){
     row.dataset.debit_idr  = debit_idr;
     row.dataset.credit_idr = credit_idr;
 
+    let debitIdrInput  = row.querySelector(".debit_idr");
+    let creditIdrInput = row.querySelector(".credit_idr");
+
+    if(debitIdrInput)  debitIdrInput.value  = debit_idr  ? formatNumber(debit_idr)  : "";
+    if(creditIdrInput) creditIdrInput.value = credit_idr ? formatNumber(credit_idr) : "";
+
     hitungTotal();
 }
 
@@ -1054,14 +1313,13 @@ function hitungTotal(){
 
     document.querySelectorAll("#tbody2 tr").forEach(row=>{
 
-        let pc   = row.querySelector(".sel-pc")?.value;
-        let coa  = row.querySelector(".sel-coa")?.value;
-        let curr = row.querySelector(".sel-curr")?.value;
-
-        // skip jika belum lengkap
-        if(!pc || !coa || !curr){
-            return;
-        }
+        // Grand Total ini cuma tampilan running total buat bantu user pantau
+        // balance sambil ngisi form - jadi TIDAK perlu nunggu Profit
+        // Center/COA/Currency lengkap dulu (itu baru divalidasi & diwajibkan
+        // saat SaveEdit()). Kalau disyaratkan lengkap, baris yang baru
+        // ditambah (Add Row) tapi belum sempat dipilih PC/COA/Curr-nya jadi
+        // hilang dari Grand Total meski Debit/Credit-nya sudah diisi.
+        let pc = row.querySelector(".sel-pc")?.value;
 
         let debit  = toNumber(row.querySelector(".debit")?.value);
         let credit = toNumber(row.querySelector(".credit")?.value);
@@ -1140,8 +1398,8 @@ function validasiPeriode() {
 
             Swal.fire({
                 icon: 'warning',
-                title: 'Periode Salah',
-                text: 'Tanggal akhir tidak boleh lebih kecil dari tanggal awal'
+                title: 'Invalid Period',
+                text: 'End date cannot be earlier than the start date'
             });
 
             $('#edit_tgl_akhir').val(lastValidAkhir);
@@ -1168,8 +1426,8 @@ function validasiPeriodeNew() {
 
             Swal.fire({
                 icon: 'warning',
-                title: 'Periode Salah',
-                text: 'Tanggal akhir tidak boleh lebih kecil dari tanggal awal'
+                title: 'Invalid Period',
+                text: 'End date cannot be earlier than the start date'
             });
 
             $('#new_tgl_akhir').val(lastValidAkhirNew);
@@ -1203,18 +1461,11 @@ function SaveEdit(){
 
   let btn = $("#btnSaveEdit");
 
-  btn.prop("disabled", true)
-     .html('<i class="fa fa-spinner fa-spin"></i> Processing...');
-
-     Swal.fire({
-    title: 'Saving Journal...',
-    html: 'Data sedang diproses, mohon tunggu',
-    allowOutsideClick: false,
-    allowEscapeKey: false,
-    didOpen: () => {
-        Swal.showLoading();
-    }
-});
+  // Loading swal dipindah ke setelah validasi + konfirmasi selesai (lihat
+  // bawah) - sebelumnya loading swal ini dibuka duluan di sini, jadi kalau
+  // ada error validasi, Swal.fire() berikutnya cuma nge-update swal yang
+  // sudah kebuka itu tanpa mereset state showLoading()-nya, hasilnya alert
+  // error muncul tanpa tombol Close (kelihatan nyangkut/nggak bisa ditutup).
 
   function resetButton(){
       btn.prop("disabled", false)
@@ -1268,6 +1519,12 @@ function SaveEdit(){
       let debit  = round2(toNumber(tr.find("input[name='debit[]']").val()));
       let credit = round2(toNumber(tr.find("input[name='credit[]']").val()));
 
+      // Balance dicek pakai debit_idr/credit_idr (kolom yang memang ada di tbl_list_journal),
+      // bukan debit/credit mentah - karena rate bisa beda-beda per baris kalau currency-nya
+      // campuran, jadi debit/credit asli tidak bisa dibandingkan langsung antar baris.
+      let debit_idr  = round2(debit * rate);
+      let credit_idr = round2(credit * rate);
+
       console.log("ROW "+rowIndex,{ // DEBUG
           profit_center,
           coa,
@@ -1275,7 +1532,9 @@ function SaveEdit(){
           curr,
           rate,
           debit,
-          credit
+          credit,
+          debit_idr,
+          credit_idr
       });
 
       /* =====================
@@ -1297,8 +1556,8 @@ function SaveEdit(){
 
           Swal.fire({
               icon:'warning',
-              title:'Profit Center kosong',
-              text:'Profit Center belum dipilih di baris '+rowIndex
+              title:'Profit Center is empty',
+              text:'Profit Center has not been selected in row '+rowIndex
           });
 
           hasError = true;
@@ -1317,8 +1576,8 @@ function SaveEdit(){
 
           Swal.fire({
               icon:'warning',
-              title:'COA kosong',
-              text:'COA belum dipilih di baris '+rowIndex
+              title:'COA is empty',
+              text:'COA has not been selected in row '+rowIndex
           });
 
           hasError = true;
@@ -1343,8 +1602,8 @@ function SaveEdit(){
 
           Swal.fire({
               icon:'warning',
-              title:'Cost Center wajib',
-              text:'COA '+coaClean+' wajib menggunakan Cost Center (baris '+rowIndex+')'
+              title:'Cost Center is required',
+              text:'COA '+coaClean+' requires a Cost Center (row '+rowIndex+')'
           });
 
           hasError = true;
@@ -1363,8 +1622,8 @@ function SaveEdit(){
 
           Swal.fire({
               icon:'error',
-              title:'Rate Tidak Valid',
-              text:'Currency '+curr+' tidak boleh rate = 1 (baris '+rowIndex+')'
+              title:'Invalid Rate',
+              text:'Currency '+curr+' cannot have a rate of 1 (row '+rowIndex+')'
           });
 
           hasError = true;
@@ -1377,15 +1636,15 @@ function SaveEdit(){
       }
 
       /* =====================
-         HITUNG TOTAL PER PC
+         HITUNG TOTAL PER PC (pakai IDR)
       ===================== */
 
       if(!totalPC[profit_center]){
-          totalPC[profit_center] = {debit:0,credit:0};
+          totalPC[profit_center] = {debit_idr:0,credit_idr:0};
       }
 
-      totalPC[profit_center].debit  = round2(totalPC[profit_center].debit + debit);
-      totalPC[profit_center].credit = round2(totalPC[profit_center].credit + credit);
+      totalPC[profit_center].debit_idr  = round2(totalPC[profit_center].debit_idr + debit_idr);
+      totalPC[profit_center].credit_idr = round2(totalPC[profit_center].credit_idr + credit_idr);
 
       console.log("TOTAL PC UPDATE",profit_center,totalPC[profit_center]); // DEBUG
 
@@ -1410,6 +1669,8 @@ function SaveEdit(){
 
           debit: debit,
           credit: credit,
+          debit_idr: debit_idr,
+          credit_idr: credit_idr,
 
           keterangan: tr.find("textarea[name='remark[]']").val()
 
@@ -1426,8 +1687,8 @@ function SaveEdit(){
 
       Swal.fire({
           icon:'warning',
-          title:'Tidak ada transaksi',
-          text:'Silakan isi minimal satu transaksi'
+          title:'No transactions',
+          text:'Please fill in at least one transaction'
       });
 
       resetButton();
@@ -1438,12 +1699,12 @@ function SaveEdit(){
 
       console.log("CHECK BALANCE PC",pc,totalPC[pc]); // DEBUG
 
-      if(round2(totalPC[pc].debit) !== round2(totalPC[pc].credit)){
+      if(round2(totalPC[pc].debit_idr) !== round2(totalPC[pc].credit_idr)){
 
           Swal.fire({
               icon:'error',
-              title:'Tidak Balance',
-              text:'Profit Center '+pc+' Debit dan Credit tidak balance'
+              title:'Not Balanced',
+              text:'Profit Center '+pc+' Debit IDR and Credit IDR are not balanced'
           });
 
           resetButton();
@@ -1451,40 +1712,40 @@ function SaveEdit(){
       }
   }
 
-  let totalDebit = 0;
-  let totalCredit = 0;
+  let totalDebitIdr = 0;
+  let totalCreditIdr = 0;
 
   rows.forEach(function(r){
 
-      totalDebit  = round2(totalDebit + r.debit);
-      totalCredit = round2(totalCredit + r.credit);
+      totalDebitIdr  = round2(totalDebitIdr + r.debit_idr);
+      totalCreditIdr = round2(totalCreditIdr + r.credit_idr);
 
   });
 
   console.log("GRAND TOTAL", { // DEBUG
-      totalDebit,
-      totalCredit,
-      selisih: totalDebit-totalCredit
+      totalDebitIdr,
+      totalCreditIdr,
+      selisih: totalDebitIdr-totalCreditIdr
   });
 
-  if(totalDebit === 0 && totalCredit === 0){
+  if(totalDebitIdr === 0 && totalCreditIdr === 0){
 
       Swal.fire({
           icon:'warning',
-          title:'Data Kosong',
-          text:'Total Debit dan Credit tidak boleh 0'
+          title:'Empty Data',
+          text:'Total Debit IDR and Credit IDR cannot be 0'
       });
 
       resetButton();
       return;
   }
 
-  if(round2(totalDebit) !== round2(totalCredit)){
+  if(round2(totalDebitIdr) !== round2(totalCreditIdr)){
 
       Swal.fire({
           icon:'error',
-          title:'Tidak Balance',
-          text:'Grand Total Debit dan Credit tidak balance'
+          title:'Not Balanced',
+          text:'Grand Total Debit IDR and Credit IDR are not balanced'
       });
 
       resetButton();
@@ -1503,60 +1764,115 @@ function SaveEdit(){
 
   console.log("DATA POST",dataPost); // DEBUG
 
-  $.ajax({
+  // Semua validasi lolos - baru sekarang minta konfirmasi ke user
+  // sebelum benar-benar menyimpan.
+  Swal.fire({
+      icon:'question',
+      title:'Save changes?',
+      text:'Are you sure you want to save these changes?',
+      showCancelButton:true,
+      confirmButtonText:'Yes, save it',
+      cancelButtonText:'Cancel',
+      confirmButtonColor:'#28a745',
+      cancelButtonColor:'#6c757d'
+  }).then((confirmResult) => {
 
-      url:"save_edit_journal.php",
-      type:"POST",
-      data:dataPost,
-
-      success:function(res){
-
-          console.log("SERVER RESPONSE",res); // DEBUG
-
-          if(res === "success"){
-
-              Swal.fire({
-    icon:'success',
-    title:'Berhasil',
-    text:'Journal berhasil diupdate'
-}).then(()=>{
-
-    // tutup modal
-    $("#modalEdit").modal("hide");
-
-    // reload datatable tanpa refresh halaman
-    $('#table-data').DataTable().ajax.reload(null,false);
-
-});
-
-
-          }else{
-
-              Swal.fire({
-                  icon:'error',
-                  title:'Error',
-                  text:res
-              });
-
-              resetButton();
-          }
-
-      },
-
-      error:function(err){
-
-          console.log("AJAX ERROR",err); // DEBUG
-
-          Swal.fire({
-              icon:'error',
-              title:'Server Error',
-              text:'Terjadi kesalahan saat menyimpan data'
-          });
-
-          resetButton();
+      if(!confirmResult.isConfirmed){
+          return;
       }
 
+      performSave(dataPost, btn, resetButton);
+
   });
+
+}
+
+// Dipisah dari SaveEdit() supaya bisa dipanggil ulang langsung dari tombol
+// "Retry Save" di alert kegagalan - tanpa perlu validasi + konfirmasi ulang,
+// dan tanpa user harus input ulang data (dataPost sudah jadi, tinggal kirim lagi).
+function performSave(dataPost, btn, resetButton){
+
+    btn.prop("disabled", true)
+       .html('<i class="fa fa-spinner fa-spin"></i> Processing...');
+
+    Swal.fire({
+        title: 'Saving Journal...',
+        html: 'Please wait, your data is being processed',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    $.ajax({
+
+        url:"save_edit_journal.php",
+        type:"POST",
+        data:dataPost,
+
+        success:function(res){
+
+            console.log("SERVER RESPONSE",res); // DEBUG
+
+            if(res === "success"){
+
+                Swal.fire({
+                    icon:'success',
+                    title:'Success',
+                    text:'Journal updated successfully'
+                }).then(()=>{
+
+                    // tutup modal
+                    $("#modalEdit").modal("hide");
+
+                    // reload datatable tanpa refresh halaman
+                    $('#table-data').DataTable().ajax.reload(null,false);
+
+                });
+
+            }else{
+
+                showSaveFailedRetry(res, dataPost, btn, resetButton);
+                resetButton();
+
+            }
+
+        },
+
+        error:function(err){
+
+            console.log("AJAX ERROR",err); // DEBUG
+
+            showSaveFailedRetry('A server error occurred while saving the data', dataPost, btn, resetButton);
+            resetButton();
+
+        }
+
+    });
+
+}
+
+// Alert gagal-save dengan tombol "Retry Save" - klik langsung kirim ulang
+// dataPost yang sama tanpa harus tutup modal / isi ulang form.
+function showSaveFailedRetry(message, dataPost, btn, resetButton){
+
+    Swal.fire({
+        icon:'error',
+        title:'Save Failed',
+        text:message,
+        showCancelButton:true,
+        confirmButtonText:'Retry Save',
+        cancelButtonText:'Close',
+        confirmButtonColor:'#dc3545',
+        cancelButtonColor:'#6c757d'
+    }).then((retryResult) => {
+
+        if(retryResult.isConfirmed){
+            performSave(dataPost, btn, resetButton);
+        }
+
+    });
 
 }
 
