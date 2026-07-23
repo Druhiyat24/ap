@@ -554,7 +554,7 @@ laporan_mutasi as (
                CASE WHEN duedate >= DATE_ADD(LAST_DAY('$end_date'), INTERVAL 5 MONTH)
                     THEN (saldo_akhir*rate) ELSE 0 END
            ) AS tot_produe,
-           CASE WHEN no_bpb LIKE '%RO%' OR no_bpb LIKE '%OUT%' THEN 1 ELSE 1 END AS f
+           CASE WHEN no_bpb LIKE '%RO%' OR no_bpb LIKE '%OUT%' THEN -1 ELSE 1 END AS f
     from mutasi
 )
 
