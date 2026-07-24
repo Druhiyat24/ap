@@ -76,9 +76,9 @@ ded_nonbank as (select reff_doc, curr, sum(debit-credit) total from tbl_list_jou
 
 ded_nonbank_before as (select reff_doc, curr, sum(debit-credit) total from tbl_list_journal where tgl_journal > '2026-06-30' and tgl_journal < '$start_date' and type_journal = 'Payment Non Bank' and no_journal like '%PAY%' and nama_coa like '%UTANG USAHA%' GROUP BY reff_doc),
 
-ded_gm as (select reff_doc, sum(debit - credit) total from tbl_list_journal where tgl_journal > '2026-06-30' and tgl_journal between '$start_date' and '$end_date' and reff_doc like '%SI/APR%' and nama_coa like '%UTANG USAHA%' and type_journal = 'ACCOUNT PAYABLE' GROUP BY reff_doc),
+ded_gm as (select reff_doc, sum(debit - credit) total from tbl_list_journal where tgl_journal > '2026-06-30' and tgl_journal between '$start_date' and '$end_date' and (reff_doc like '%SI/APR%' OR reff_doc like '%PV-AP/%') and nama_coa like '%UTANG USAHA%' and type_journal = 'ACCOUNT PAYABLE' GROUP BY reff_doc),
 
-ded_gm_before as (select reff_doc, sum(debit - credit) total from tbl_list_journal where tgl_journal > '2026-06-30' and tgl_journal < '$start_date' and reff_doc like '%SI/APR%' and nama_coa like '%UTANG USAHA%' and type_journal = 'ACCOUNT PAYABLE' GROUP BY reff_doc),
+ded_gm_before as (select reff_doc, sum(debit - credit) total from tbl_list_journal where tgl_journal > '2026-06-30' and tgl_journal < '$start_date' and (reff_doc like '%SI/APR%' OR reff_doc like '%PV-AP/%') and nama_coa like '%UTANG USAHA%' and type_journal = 'ACCOUNT PAYABLE' GROUP BY reff_doc),
 
 saldo_in as (select supplier, no_kbon, tgl_kbon, duedate, curr, sum(COALESCE(saldo_awal,0)) saldo_awal, sum(COALESCE(total_in,0)) total_in, rate, no_coa, nama_coa, item_type1, item_type2, relasi from (select supplier, no_kbon, tgl_kbon, duedate, curr, total saldo_awal, 0 total_in, rate, no_coa, nama_coa, item_type1, item_type2, relasi from saldo_awal
 UNION ALL
