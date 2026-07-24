@@ -16,15 +16,31 @@ $sql = mysqli_query($conn2,"   (select a.no_bpb,a.no_po pono,a.tgl_bpb,a.subtota
     union
         (select bppb_new.no_bppb as no_bpb, bppb_new.no_po, bppb_new.tgl_bppb as tgl_bpb, SUM(-(bppb_new.qty * bppb_new.price)) as sub, '0' as tax, SUM(-(bppb_new.qty * bppb_new.price) * (bppb_new.tax / 100)) as tax_return, SUM(-((bppb_new.qty * bppb_new.price) + ((bppb_new.qty * bppb_new.price) * (bppb_new.tax / 100)))) as total, '0' as pph, '0' as cbddp, bppb_new.supplier, potongan.jml_return, potongan.jml_potong from bppb_new inner join return_kb on return_kb.no_bpbrtn = bppb_new.no_bppb inner join potongan on potongan.no_kbon = return_kb.no_kbon  where return_kb.no_kbon = '$no_kbon' and bppb_new.status != 'Cancel' group by bppb_new.no_bppb)");   
 
-$sqll12 = mysqli_query($conn2,"select sum(pph_value) as pph from kontrabon where no_kbon = '$no_kbon' ");    
+$sqll12 = mysqli_query($conn2,"select sum(pph_value) as pph from kontrabon where no_kbon = '$no_kbon' ");
 $rowl12 = mysqli_fetch_assoc($sqll12);
 
-$sqll13 = mysqli_query($conn2,"select dp_value from kontrabon_h where no_kbon = '$no_kbon' ");    
+// Sama seperti pdf_pv_regular.php: CBD/DP diambil dari kontrabon_ftr
+// (jumlah yang benar-benar dipakai di kontrabon ini), bukan dari
+// kontrabon_h.dp_value yang bisa berisi nilai lain.
+$sqll13 = mysqli_query($conn2,"select sum(total_ftr) as total_ftr from kontrabon_ftr where no_kbon = '$no_kbon' ");
 $rowl13 = mysqli_fetch_assoc($sqll13);
 
-
-$sqll15 = mysqli_query($conn2,"select sum((qty * price) * (tax / 100)) as tax_return from bppb_new  where no_kbon = '$no_kbon' ");    
+$sqll15 = mysqli_query($conn2,"select sum((qty * price) * (tax / 100)) as tax_return from bppb_new  where no_kbon = '$no_kbon' ");
 $rowl15 = mysqli_fetch_assoc($sqll15);
+
+// potongan_ppn / potongan_pph juga ikut ditambahkan ke Tax(PPn) & Tax(PPh)
+// sama seperti di PDF.
+$sqll16 = mysqli_query($conn2,"select potongan_ppn, potongan_pph from potongan where no_kbon = '$no_kbon' group by no_kbon");
+$rowl16 = mysqli_fetch_assoc($sqll16);
+$potongan_ppn = isset($rowl16['potongan_ppn']) ? $rowl16['potongan_ppn'] : 0;
+$potongan_pph = isset($rowl16['potongan_pph']) ? $rowl16['potongan_pph'] : 0;
+
+// Grand Total yang ditampilkan di PDF diambil langsung dari kontrabon_h.total
+// (nilai final yang tersimpan), bukan dihitung ulang manual - supaya modal ini
+// selalu sama persis dengan PDF.
+$sqll17 = mysqli_query($conn2,"select total from kontrabon_h where no_kbon = '$no_kbon'");
+$rowl17 = mysqli_fetch_assoc($sqll17);
+$jml_total = isset($rowl17['total']) ? $rowl17['total'] : 0;
 
     $table = '<table id="mytdmodal" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
                     <thead>
@@ -51,13 +67,15 @@ $rowl15 = mysqli_fetch_assoc($sqll15);
             $rowl = mysqli_fetch_assoc($sqll);
             $jml_return = $rowl['jml_return'];
             $jml_potong = $rowl['jml_potong'];
-            $jml_dp = $rowl13['dp_value'];
-            if ($jml_potong >= 0) {
-                $potong = $jml_potong;
-            }else{
-            $potong = abs($jml_potong);
-        }
-            $total = $sub + ($tax - $ppn_return) - $jml_dp - $pph - $potong;
+            $jml_dp = isset($rowl13['total_ftr']) ? $rowl13['total_ftr'] : 0;
+            // Sama seperti Adjustment di PDF: pakai nilai asli (bisa negatif),
+            // bukan dipaksa positif - supaya tandanya tidak menyesatkan.
+            $potong = $jml_potong;
+            $potong_display = ($potong >= 1)
+                ? number_format($potong, 2)
+                : '( - '.number_format(abs($potong), 2).' )';
+            // Total final selalu dari kontrabon_h.total (sama dengan Grand Total di PDF).
+            $total = $jml_total;
             $table .= '<tr>                       
                             <td style="width:100px;" value="'.$row['no_bpb'].'">'.$row['no_bpb'].'</td>                                                                       
                             <td style="width:100px;" value="'.$row['pono'].'">'.$row['pono'].'</td>
@@ -77,86 +95,100 @@ echo '<table width="100%" border="0" style="font-size:12px">
 
     <tr>
         <td width="70%">
-            
+
         </td>
-            
+
         <td>
-            Subtotal
+            SubTotal
         </td>
 <td style="width:1%">:</td>
         <td style="text-align:right">
-            '.number_format($sub,2).'
-        </td>       
-    </tr>   
+            IDR '.number_format($sub,2).'
+        </td>
+    </tr>
     <tr>
         <td width="70%">
-            
+
         </td>
-            
+
         <td>
-            Tax (PPn) 
+            Adjustment
         </td>
 <td style="width:1%">:</td>
         <td style="text-align:right">
-            '.number_format($tax,2).'
-        </td>       
-    </tr>   
+            IDR '.$potong_display.'
+        </td>
+    </tr>
     <tr>
         <td width="70%">
-            
+
         </td>
-            
+
         <td>
-            Tax (PPh) 
+            Total
         </td>
-<td style="width:1%">:</td>
+        <td style="width:1%">:</td>
         <td style="text-align:right">
-            -'.number_format($pph,2).'
-        </td>       
+            IDR '.number_format($sub + $potong,2).'
+        </td>
     </tr>
 
         <tr>
         <td width="70%">
-            
+
         </td>
-            
+
         <td>
-            Potongan
+            Ppn
         </td>
 <td style="width:1%">:</td>
         <td style="text-align:right">
-            '.number_format($potong,2).'
-        </td>       
-    </tr> 
+            IDR '.number_format($tax + $potongan_ppn,2).'
+        </td>
+    </tr>
 
     <tr>
         <td width="70%">
-            
+
         </td>
-            
+
         <td>
-            CBD / DP
+            Pph
         </td>
 <td style="width:1%">:</td>
         <td style="text-align:right">
-            -'.number_format($jml_dp,2).'
-        </td>       
-    </tr>   
+            IDR ( - '.number_format($pph + $potongan_pph,2).' )
+        </td>
+    </tr>
 
     <tr>
         <td width="70%">
-            
+
         </td>
-            
-        <td >
-            Total 
+
+        <td>
+            CBD or DP
+        </td>
+<td style="width:1%">:</td>
+        <td style="text-align:right">
+            IDR ( - '.number_format($jml_dp,2).' )
+        </td>
+    </tr>
+
+    <tr>
+        <td width="70%">
+
+        </td>
+
+        <td style="font-weight:bold;">
+            Grand Total
         </td>
         <td style="width:1%">:</td>
-        <td style="text-align:right">
-            '.number_format($total,2).'
+        <td style="text-align:right;font-weight:bold;">
+            IDR '.number_format($total,2).'
         </td>
-</tr>   
-    
+</tr>
+
 </table>';
 
 // echo '<div id="txt_sub" class="modal-body col-6" style="padding: 0.5rem; margin-left: 65%;"><h7>Subtotal: '.number_format($sub,2).'</h7></div>';
