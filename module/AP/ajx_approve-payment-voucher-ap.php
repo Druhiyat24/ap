@@ -132,7 +132,7 @@ function getApprovalRegular($conn2, $filters, $canSelect)
     $sql = mysqli_query($conn2, "select a.no_kbon, a.tgl_kbon, a.nama_supp,
         SUM(a.subtotal) as subtotal, SUM(a.tax) as tax, a.curr, a.status, SUM(a.pph_value) as pph_value, a.dp_value,
         a.tgl_tempo, a.create_user, a.no_faktur, a.supp_inv, a.tgl_inv,
-        b.jml_return, b.jml_potong
+        b.jml_return, b.jml_potong, h.total
         from kontrabon a
         inner join kontrabon_h h on h.no_kbon = a.no_kbon
         inner join potongan b on b.no_kbon = a.no_kbon
@@ -155,7 +155,10 @@ function getApprovalRegular($conn2, $filters, $canSelect)
         $dp = $row['dp_value'];
         $return = $row['jml_return'] + $tax_return;
         $potong = $row['jml_potong'];
-        $total = $sub + $tax - ($pph + $dp + $return) + $potong;
+        // Pakai nilai total yang tersimpan di kontrabon_h (sama seperti Grand
+        // Total di pdf_pv_regular.php), bukan dihitung ulang dari komponen -
+        // supaya listing approval dan PDF selalu menampilkan angka yang identik.
+        $total = $row['total'];
 
         $data[] = [
             'no_kbon'     => $kbonno,

@@ -29,7 +29,7 @@ function getDataRegular($conn1, $conn2, $filters, $fin, $app, $group)
         SUM(a.subtotal) as subtotal, SUM(a.tax) as tax, a.curr, a.create_user, a.status, a.tgl_tempo,
         a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value,
         d.tgl_kbon2, d.confirm_user, d.confirm_date, d.create_date, d.profit_center, b.jml_return, b.jml_potong,
-        b.potongan_ppn, b.potongan_pph,
+        b.potongan_ppn, b.potongan_pph, d.total,
         d.status_pl, d.status_pvl, d.no_coa, d.nama_coa, d.rate, d.from_account, d.from_bank, d.from_bank_curr
         from kontrabon a
         inner join potongan b on b.no_kbon = a.no_kbon
@@ -58,7 +58,10 @@ function getDataRegular($conn1, $conn2, $filters, $fin, $app, $group)
         $pph = $row['pph_value'] + $row['potongan_pph'];
         $return = $row['jml_return'];
         $potong = $row['jml_potong'];
-        $total = $sub + $tax - ($pph + $dp + $return) + $potong;
+        // Pakai nilai total yang tersimpan di kontrabon_h (sama seperti Grand
+        // Total di pdf_pv_regular.php), bukan dihitung ulang dari komponen -
+        // supaya list dan PDF selalu menampilkan angka yang identik.
+        $total = $row['total'];
         $rowStatus = $row['status'];
         $isPaid = isset($paidKbons[$kbonno]);
         $statusLabel = computeStatusLabel($rowStatus, $row['status_pvl'] ?? null, $row['status_pl'] ?? null, $isPaid);
