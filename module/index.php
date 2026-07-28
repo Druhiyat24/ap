@@ -1252,6 +1252,17 @@ if($id == '78'){
           </a>';
       }
 
+      $querysTl = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Transfer List'");
+      $rsTl = mysqli_fetch_array($querysTl);
+      $idTl = isset($rsTl['id']) ? $rsTl['id'] : 0;
+
+      if($idTl == '130'){
+          echo '<a href="AP/transfer-list.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-exchange fa-fw mr-3"></span>
+          <span class="menu-collapsed">Transfer List</span>
+          </a>';
+      }
+
     ?>
     <?php
     $querys = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and  useraccess.menu like '%Bank%' and useraccess.menu like '%Approval%' and useraccess.menu not like '%reverse%' group by username");

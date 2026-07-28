@@ -198,6 +198,94 @@
                    id="sb-beneficiary" placeholder="Beneficiary name" maxlength="200">
           </div>
         </div>
+
+        <div class="form-group row mb-2">
+          <label class="col-sm-3 col-form-label col-form-label-sm font-weight-bold">
+            Kategori Penerima
+          </label>
+          <div class="col-sm-9">
+            <select class="form-control form-control-sm selectpicker"
+                    id="sb-kategori-penerima" data-dropup-auto="false">
+              <option value="">-- Select Kategori Penerima --</option>
+              <?php
+              $sql_kp = mysqli_query($conn2,
+                "SELECT kode_pilihan, nama_pilihan FROM supplier_master_pilihan WHERE type_pilihan = 'KATEGORI PENERIMA' AND status = 'Y' ORDER BY kode_pilihan ASC"
+              );
+              while ($kp = mysqli_fetch_assoc($sql_kp)):
+              ?>
+                <option value="<?= htmlspecialchars($kp['kode_pilihan']) ?>">
+                  <?= htmlspecialchars($kp['kode_pilihan']) ?> - <?= htmlspecialchars($kp['nama_pilihan']) ?>
+                </option>
+              <?php endwhile; ?>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group row mb-2">
+          <label class="col-sm-3 col-form-label col-form-label-sm font-weight-bold">
+            Kependudukan
+          </label>
+          <div class="col-sm-9">
+            <select class="form-control form-control-sm selectpicker"
+                    id="sb-kependudukan" data-dropup-auto="false">
+              <option value="">-- Select Kependudukan --</option>
+              <?php
+              $sql_kd = mysqli_query($conn2,
+                "SELECT kode_pilihan, nama_pilihan FROM supplier_master_pilihan WHERE type_pilihan = 'KEPENDUDUKAN' AND status = 'Y' ORDER BY kode_pilihan ASC"
+              );
+              while ($kd = mysqli_fetch_assoc($sql_kd)):
+              ?>
+                <option value="<?= htmlspecialchars($kd['kode_pilihan']) ?>">
+                  <?= htmlspecialchars($kd['kode_pilihan']) ?> - <?= htmlspecialchars($kd['nama_pilihan']) ?>
+                </option>
+              <?php endwhile; ?>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group row mb-2">
+          <label class="col-sm-3 col-form-label col-form-label-sm font-weight-bold">
+            Kewarganegaraan
+          </label>
+          <div class="col-sm-9">
+            <select class="form-control form-control-sm selectpicker"
+                    id="sb-kewarganegaraan" data-dropup-auto="false">
+              <option value="">-- Select Kewarganegaraan --</option>
+              <?php
+              $sql_kn = mysqli_query($conn2,
+                "SELECT kode_pilihan, nama_pilihan FROM supplier_master_pilihan WHERE type_pilihan = 'KEWARGANEGARAAN' AND status = 'Y' ORDER BY kode_pilihan ASC"
+              );
+              while ($kn = mysqli_fetch_assoc($sql_kn)):
+              ?>
+                <option value="<?= htmlspecialchars($kn['kode_pilihan']) ?>">
+                  <?= htmlspecialchars($kn['kode_pilihan']) ?> - <?= htmlspecialchars($kn['nama_pilihan']) ?>
+                </option>
+              <?php endwhile; ?>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group row mb-2">
+          <label class="col-sm-3 col-form-label col-form-label-sm font-weight-bold">
+            Tujuan Transaksi
+          </label>
+          <div class="col-sm-9">
+            <select class="form-control form-control-sm selectpicker"
+                    id="sb-tujuan-transaksi" data-live-search="true" data-dropup-auto="false" data-size="8">
+              <option value="">-- Select Tujuan Transaksi --</option>
+              <?php
+              $sql_tt = mysqli_query($conn2,
+                "SELECT kode_pilihan, nama_pilihan FROM supplier_master_pilihan WHERE type_pilihan = 'TUJUAN TRANSAKSI' AND status = 'Y' ORDER BY kode_pilihan ASC"
+              );
+              while ($tt = mysqli_fetch_assoc($sql_tt)):
+              ?>
+                <option value="<?= htmlspecialchars($tt['kode_pilihan']) ?>">
+                  <?= htmlspecialchars($tt['kode_pilihan']) ?> - <?= htmlspecialchars($tt['nama_pilihan']) ?>
+                </option>
+              <?php endwhile; ?>
+            </select>
+          </div>
+        </div>
       </div>
 
       <div class="modal-footer py-2" style="background:#f8f9fa;">
@@ -368,6 +456,10 @@
     $('#sb-currency').val('').selectpicker('refresh');
     $('#sb-bankname').val('').selectpicker('refresh');
     $('#sb-account, #sb-beneficiary').val('');
+    $('#sb-kategori-penerima').val('').selectpicker('refresh');
+    $('#sb-kependudukan').val('').selectpicker('refresh');
+    $('#sb-kewarganegaraan').val('').selectpicker('refresh');
+    $('#sb-tujuan-transaksi').val('').selectpicker('refresh');
     $('#modalSupBank').modal('show');
   }
 
@@ -403,6 +495,10 @@
         $('#sb-bankname').val(r.bank_name).selectpicker('refresh');
         $('#sb-account').val(r.bank_account);
         $('#sb-beneficiary').val(r.beneficiary_name);
+        $('#sb-kategori-penerima').val(r.kategori_penerima).selectpicker('refresh');
+        $('#sb-kependudukan').val(r.kependudukan).selectpicker('refresh');
+        $('#sb-kewarganegaraan').val(r.kewarganegaraan).selectpicker('refresh');
+        $('#sb-tujuan-transaksi').val(r.tujuan_transaksi).selectpicker('refresh');
         $('#modalSupBank').modal('show');
       },
       error: function () { Swal.fire('Error', 'Gagal mengambil data.', 'error'); }
@@ -418,6 +514,10 @@
     var bankname    = $('#sb-bankname').val().trim();
     var account     = $('#sb-account').val().trim();
     var beneficiary = $('#sb-beneficiary').val().trim();
+    var kategori_penerima  = $('#sb-kategori-penerima').val();
+    var kependudukan       = $('#sb-kependudukan').val();
+    var kewarganegaraan    = $('#sb-kewarganegaraan').val();
+    var tujuan_transaksi   = $('#sb-tujuan-transaksi').val();
 
     if (!tipe_sup) {
       Swal.fire('Perhatian', 'Pilih Type (Supplier / Customer) terlebih dahulu.', 'warning');
@@ -432,13 +532,17 @@
       url    : 'save_master_supplier_bank.php',
       method : 'POST',
       data   : {
-        id              : id,
-        tipe_sup        : tipe_sup,
-        id_supplier     : id_supplier,
-        bank_currency   : currency,
-        bank_name       : bankname,
-        bank_account    : account,
-        beneficiary_name: beneficiary
+        id                : id,
+        tipe_sup          : tipe_sup,
+        id_supplier       : id_supplier,
+        bank_currency     : currency,
+        bank_name         : bankname,
+        bank_account      : account,
+        beneficiary_name  : beneficiary,
+        kategori_penerima : kategori_penerima,
+        kependudukan      : kependudukan,
+        kewarganegaraan   : kewarganegaraan,
+        tujuan_transaksi  : tujuan_transaksi
       },
       dataType: 'json',
       success: function (r) {

@@ -22,9 +22,17 @@ $q = mysqli_query($conn2,
             ms.Supplier AS supplier_name,
             CASE m.tipe_sup WHEN 'S' THEN 'Supplier' ELSE 'Customer' END AS type,
             m.bank_currency, m.bank_name, m.bank_account,
-            m.beneficiary_name, m.status, m.created_by, m.created_date
+            m.beneficiary_name, m.status, m.created_by, m.created_date,
+            kp.nama_pilihan AS kategori_penerima_name,
+            kd.nama_pilihan AS kependudukan_name,
+            kn.nama_pilihan AS kewarganegaraan_name,
+            tt.nama_pilihan AS tujuan_transaksi_name
      FROM master_supplier_bank m
      LEFT JOIN mastersupplier ms ON ms.id_supplier = m.id_supplier
+     LEFT JOIN supplier_master_pilihan kp ON kp.kode_pilihan = m.kategori_penerima AND kp.type_pilihan = 'KATEGORI PENERIMA'
+     LEFT JOIN supplier_master_pilihan kd ON kd.kode_pilihan = m.kependudukan AND kd.type_pilihan = 'KEPENDUDUKAN'
+     LEFT JOIN supplier_master_pilihan kn ON kn.kode_pilihan = m.kewarganegaraan AND kn.type_pilihan = 'KEWARGANEGARAAN'
+     LEFT JOIN supplier_master_pilihan tt ON tt.kode_pilihan = m.tujuan_transaksi AND tt.type_pilihan = 'TUJUAN TRANSAKSI'
      $where
      ORDER BY ms.Supplier ASC"
 );
@@ -60,6 +68,10 @@ $q = mysqli_query($conn2,
         <th><b>Bank Name</b></th>
         <th><b>Bank Account</b></th>
         <th><b>Beneficiary Name</b></th>
+        <th><b>Kategori Penerima</b></th>
+        <th><b>Kependudukan</b></th>
+        <th><b>Kewarganegaraan</b></th>
+        <th><b>Tujuan Transaksi</b></th>
         <th><b>Status</b></th>
         <th><b>Created By</b></th>
         <th><b>Created Date</b></th>
@@ -79,6 +91,10 @@ $q = mysqli_query($conn2,
         <td><?= htmlspecialchars($row['bank_name']) ?></td>
         <td><?= htmlspecialchars($row['bank_account']) ?></td>
         <td><?= htmlspecialchars($row['beneficiary_name']) ?></td>
+        <td><?= htmlspecialchars($row['kategori_penerima_name'] ?? '-') ?></td>
+        <td><?= htmlspecialchars($row['kependudukan_name'] ?? '-') ?></td>
+        <td><?= htmlspecialchars($row['kewarganegaraan_name'] ?? '-') ?></td>
+        <td><?= htmlspecialchars($row['tujuan_transaksi_name'] ?? '-') ?></td>
         <td><?= htmlspecialchars($row['status']) ?></td>
         <td><?= htmlspecialchars($row['created_by'] ?? '-') ?></td>
         <td><?= htmlspecialchars($row['created_date'] ?? '-') ?></td>
