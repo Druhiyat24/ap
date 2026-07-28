@@ -178,12 +178,12 @@ $sheet->setCellValue('B11', 'Rekening Biaya :');
 $sheet->getStyle('B7:B11')->getFont()->setBold(true)->getColor()->setRGB($REQUIRED_RED);
 
 // Format Tanggal Efektif : Ymd (mis. 20260723), sesuai template resmi BCA.
-$sheet->setCellValue('C7', !empty($header['tanggal_efektif']) ? date('Ymd', strtotime($header['tanggal_efektif'])) : '');
+$sheet->setCellValue('C7', '');
 $sheet->getStyle('C7')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
 // Rekening Asal & Rekening Biaya di header sengaja dikosongkan.
 $sheet->setCellValue('C8', '');
-$sheet->setCellValue('C9', $firstAccount['bank_curr'] ?: '');
-$sheet->setCellValue('C10', $header['jenis_biaya'] ?: '');
+$sheet->setCellValue('C9', '');
+$sheet->setCellValue('C10', '');
 $sheet->setCellValue('C11', '');
 
 $sheet->getStyle('B1:C1')->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
