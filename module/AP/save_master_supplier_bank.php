@@ -10,6 +10,10 @@ $bank_currency   = strtoupper(trim($_POST['bank_currency']   ?? ''));
 $bank_name       = trim($_POST['bank_name']         ?? '');
 $bank_account    = trim($_POST['bank_account']      ?? '');
 $beneficiary     = trim($_POST['beneficiary_name']  ?? '');
+$kategori_penerima = trim($_POST['kategori_penerima'] ?? '');
+$kependudukan      = trim($_POST['kependudukan']      ?? '');
+$kewarganegaraan   = trim($_POST['kewarganegaraan']   ?? '');
+$tujuan_transaksi  = trim($_POST['tujuan_transaksi']  ?? '');
 
 // ===== Validasi field wajib =====
 if (!$id_supplier || !$tipe_sup || !$bank_currency || !$bank_name || !$bank_account || !$beneficiary) {
@@ -44,12 +48,14 @@ if ($id === 0) {
     $stmt = mysqli_prepare($conn2,
         "INSERT INTO master_supplier_bank
             (id_supplier, tipe_sup, bank_currency, bank_name, bank_account,
-             beneficiary_name, status, created_by, created_date)
-         VALUES (?, ?, ?, ?, ?, ?, 'Active', ?, ?)"
+             beneficiary_name, kategori_penerima, kependudukan, kewarganegaraan,
+             tujuan_transaksi, status, created_by, created_date)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Active', ?, ?)"
     );
-    mysqli_stmt_bind_param($stmt, 'ssssssss',
+    mysqli_stmt_bind_param($stmt, 'ssssssssssss',
         $id_supplier, $tipe_sup, $bank_currency, $bank_name,
-        $bank_account, $beneficiary, $user, $now
+        $bank_account, $beneficiary, $kategori_penerima, $kependudukan,
+        $kewarganegaraan, $tujuan_transaksi, $user, $now
     );
 
 // ===== UPDATE =====
@@ -57,12 +63,15 @@ if ($id === 0) {
     $stmt = mysqli_prepare($conn2,
         "UPDATE master_supplier_bank
          SET id_supplier = ?, tipe_sup = ?, bank_currency = ?,
-             bank_name = ?, bank_account = ?, beneficiary_name = ?
+             bank_name = ?, bank_account = ?, beneficiary_name = ?,
+             kategori_penerima = ?, kependudukan = ?, kewarganegaraan = ?,
+             tujuan_transaksi = ?
          WHERE id = ?"
     );
-    mysqli_stmt_bind_param($stmt, 'ssssssi',
+    mysqli_stmt_bind_param($stmt, 'ssssssssssi',
         $id_supplier, $tipe_sup, $bank_currency, $bank_name,
-        $bank_account, $beneficiary, $id
+        $bank_account, $beneficiary, $kategori_penerima, $kependudukan,
+        $kewarganegaraan, $tujuan_transaksi, $id
     );
 }
 
