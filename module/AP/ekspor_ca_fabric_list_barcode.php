@@ -44,28 +44,20 @@ $end_date_text   = date("d F Y", strtotime($_GET['end_date']));
             <th style="text-align: center;vertical-align: middle;">Tgl Terima</th>
             <th style="text-align: center;vertical-align: middle;">Curr</th>
             <th style="text-align: center;vertical-align: middle;">Price</th>
+            <th style="text-align: center;vertical-align: middle;">Rate</th>
+            <th style="text-align: center;vertical-align: middle;">Price IDR</th>
         </tr>
         <?php
         // Dataset besar (bisa ratusan ribu baris) - tidak dibatasi jumlah baris (sengaja),
         // tiap baris di-echo langsung per iterasi while, bukan dikumpulkan ke array dulu.
-        $sql = mysqli_query($conn1, "SELECT a.no_dok, a.tgl_dok, a.supplier, IFNULL(a.no_po,'-') no_po, b.no_barcode, b.id_jo, b.id_item,
-                mi.itemdesc, tmpjo.kpno, tmpjo.styleno, IFNULL(b.np_curr_rev, b.np_curr) np_curr, b.np_tgl_in, IFNULL(b.np_price_rev, b.np_price) np_price
-                FROM whs_inmaterial_fabric a
-                INNER JOIN whs_lokasi_inmaterial b ON b.no_dok = a.no_dok
-                INNER JOIN masteritem mi ON mi.id_item = b.id_item
-                LEFT JOIN (
-                    SELECT id_jo, kpno, styleno
-                    FROM act_costing ac
-                    INNER JOIN so ON ac.id = so.id_cost
-                    INNER JOIN jo_det jod ON so.id = jod.id_so
-                    GROUP BY id_jo
-                ) tmpjo ON tmpjo.id_jo = b.id_jo
-                WHERE a.supplier NOT LIKE '%Production -%'
-                  AND a.status != 'Cancel'
-                  AND b.status = 'Y'
-                  AND a.tgl_dok BETWEEN '$start_date' AND '$end_date'
-                GROUP BY b.no_barcode
-                ORDER BY a.tgl_dok ASC, a.no_dok ASC");
+        // Sumber data: view vw_whs_master_barcode (gantiin join manual whs_inmaterial_fabric +
+        // whs_lokasi_inmaterial + masteritem + act_costing/so/jo_det) - view-nya sudah
+        // nanganin filter status/supplier di dalam definisinya sendiri.
+        $sql = mysqli_query($conn1, "SELECT no_dok, tgl_dok, supplier, IFNULL(no_po,'-') no_po, no_barcode, id_jo, id_item,
+                itemdesc, kpno, styleno, np_curr, np_tgl_in, np_price, rate, np_price_idr
+                FROM vw_whs_master_barcode
+                WHERE tgl_dok BETWEEN '$start_date' AND '$end_date'
+                ORDER BY tgl_dok ASC, no_dok ASC");
 
         $no = 0;
         while ($row = mysqli_fetch_assoc($sql)) {
@@ -85,6 +77,8 @@ $end_date_text   = date("d F Y", strtotime($_GET['end_date']));
             <td style="width:100px;">'.(!empty($row['np_tgl_in']) ? date("d-M-Y", strtotime($row['np_tgl_in'])) : '-').'</td>
             <td>'.htmlspecialchars($row['np_curr']).'</td>
             <td style="text-align:right;">'.number_format((float)$row['np_price'], 4).'</td>
+            <td style="text-align:right;">'.number_format((float)$row['rate'], 2).'</td>
+            <td style="text-align:right;">'.number_format((float)$row['np_price_idr'], 4).'</td>
             </tr>';
         }
         ?>

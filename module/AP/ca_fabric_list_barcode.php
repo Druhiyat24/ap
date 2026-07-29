@@ -99,6 +99,8 @@
                             <th style="text-align: center;vertical-align: middle;">Tgl Terima</th>
                             <th style="text-align: center;vertical-align: middle;">Curr</th>
                             <th style="text-align: center;vertical-align: middle;">Price</th>
+                            <th style="text-align: center;vertical-align: middle;">Rate</th>
+                            <th style="text-align: center;vertical-align: middle;">Price IDR</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -185,11 +187,13 @@
             { data: 'styleno' },
             { data: 'np_tgl_in' },
             { data: 'np_curr' },
-            { data: 'np_price' }
+            { data: 'np_price' },
+            { data: 'rate' },
+            { data: 'np_price_idr' }
         ],
         columnDefs: [
             { targets: [0, 1, 2, 3, 4, 5, 6, 7, 11, 12], className: 'text-left' },
-            { targets: [13], className: 'text-right' }
+            { targets: [13, 14, 15], className: 'text-right' }
         ]
     });
 
