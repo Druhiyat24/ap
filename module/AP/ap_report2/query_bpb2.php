@@ -76,7 +76,7 @@ trx_in as (
               and type_journal IN ('AP - BPB','AP - BPB RETURN')
               and nama_coa like '%GR/IR%'
         ) a
-        INNER JOIN po_bpb b on b.bpbno_int = a.no_journal
+        LEFT JOIN po_bpb b on b.bpbno_int = a.no_journal
         INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa
         GROUP BY no_journal, no_coa
     ) a where total != 0
@@ -99,7 +99,7 @@ trx_in_before as (
               and type_journal IN ('AP - BPB','AP - BPB RETURN')
               and nama_coa like '%GR/IR%'
         ) a
-        INNER JOIN po_bpb b on b.bpbno_int = a.no_journal
+        LEFT JOIN po_bpb b on b.bpbno_int = a.no_journal
         INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa
         GROUP BY no_journal, no_coa
     ) a where total != 0
