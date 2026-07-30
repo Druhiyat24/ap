@@ -166,17 +166,17 @@ if ($filter == 'tgl_bpb') {
                     (select no_bpb, create_date verif_date from bpb_new where tgl_bpb BETWEEN '$start_date' AND '$end_date' and status != 'Cancel' GROUP BY no_bpb) b on b.no_bpb = a.bpbno_int LEFT JOIN
                     (select no_kbon, tgl_kbon, confirm_date, no_bpb from kontrabon where tgl_kbon >= '$start_date' and status != 'Cancel' GROUP BY no_bpb) c on c.no_bpb = a.bpbno_int LEFT JOIN
                     (select no_payment, tgl_payment, no_kbon, confirm_date, closed_date from list_payment where tgl_payment >= '$start_date' GROUP BY no_kbon) d on d.no_kbon = c.no_kbon LEFT JOIN 
-                    (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and no_reff like '%LP%'
+                    (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and (no_reff like '%LP%' or no_reff like 'PV-AP/%' or no_reff like 'SI/APR/%')
                     UNION ALL
-                    select payment_ftr_id, tgl_pelunasan, list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on e.no_reff = d.no_payment order by bpbdate asc";
+                    select payment_ftr_id, tgl_pelunasan, COALESCE(NULLIF(list_payment_id,''), no_kbon) list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on (e.no_reff = d.no_payment OR e.no_reff = c.no_kbon) order by bpbdate asc";
             }else{
                 $sql = "select nama_supp, bpbno_int no_bpb, bpbdate tgl_bpb, a.confirm_date approve_bpb, verif_date, c.no_kbon, c.tgl_kbon, c.confirm_date approve_kbon, d.no_payment, d.tgl_payment, d.confirm_date approve_lp, d.closed_date close_lp, e.no_bankout no_pelunasan, e.bankout_date tgl_pelunasan, no_sj, no_ws, style from (select supplier nama_supp, bpbno_int, bpbdate, confirm_date, invno no_sj, COALESCE(GROUP_CONCAT(DISTINCT tmpjo.kpno),'-') no_ws, COALESCE(GROUP_CONCAT(DISTINCT tmpjo.styleno),'-') style from bpb a INNER JOIN mastersupplier b on b.id_supplier = a.id_supplier left join (select id_jo,kpno,styleno from act_costing ac inner join so on ac.id=so.id_cost inner join jo_det jod on so.id=jod.id_so group by id_jo) tmpjo on tmpjo.id_jo=a.id_jo where bpbdate BETWEEN '$start_date' AND '$end_date' and confirm = 'Y' and cancel = 'N' GROUP BY bpbno_int) a LEFT JOIN
                     (select no_bpb, create_date verif_date from bpb_new where tgl_bpb BETWEEN '$start_date' AND '$end_date' and status != 'Cancel' GROUP BY no_bpb) b on b.no_bpb = a.bpbno_int LEFT JOIN
                     (select no_kbon, tgl_kbon, confirm_date, no_bpb from kontrabon where tgl_kbon >= '$start_date' and status != 'Cancel' GROUP BY no_bpb) c on c.no_bpb = a.bpbno_int LEFT JOIN
                     (select no_payment, tgl_payment, no_kbon, confirm_date, closed_date from list_payment where tgl_payment >= '$start_date' GROUP BY no_kbon) d on d.no_kbon = c.no_kbon LEFT JOIN 
-                    (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and no_reff like '%LP%'
+                    (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and (no_reff like '%LP%' or no_reff like 'PV-AP/%' or no_reff like 'SI/APR/%')
                     UNION ALL
-                    select payment_ftr_id, tgl_pelunasan, list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on e.no_reff = d.no_payment where nama_supp = '$nama_supp' order by bpbdate asc";
+                    select payment_ftr_id, tgl_pelunasan, COALESCE(NULLIF(list_payment_id,''), no_kbon) list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on (e.no_reff = d.no_payment OR e.no_reff = c.no_kbon) where nama_supp = '$nama_supp' order by bpbdate asc";
             }
         }elseif ($filter == 'tgl_kbon') {
             $filterr = "Kontrabon Date";
@@ -185,17 +185,17 @@ if ($filter == 'tgl_bpb') {
                 (select no_bpb, create_date verif_date from bpb_new where status != 'Cancel' GROUP BY no_bpb) b on b.no_bpb = a.bpbno_int INNER JOIN
                 (select no_kbon, tgl_kbon, confirm_date, no_bpb from kontrabon where tgl_kbon BETWEEN '$start_date' AND '$end_date' and status != 'Cancel' GROUP BY no_bpb) c on c.no_bpb = a.bpbno_int LEFT JOIN
                 (select no_payment, tgl_payment, no_kbon, confirm_date, closed_date from list_payment where tgl_payment >= '$start_date' GROUP BY no_kbon) d on d.no_kbon = c.no_kbon LEFT JOIN 
-                (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and no_reff like '%LP%'
+                (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and (no_reff like '%LP%' or no_reff like 'PV-AP/%' or no_reff like 'SI/APR/%')
                 UNION ALL
-                select payment_ftr_id, tgl_pelunasan, list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on e.no_reff = d.no_payment order by bpbdate asc";
+                select payment_ftr_id, tgl_pelunasan, COALESCE(NULLIF(list_payment_id,''), no_kbon) list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on (e.no_reff = d.no_payment OR e.no_reff = c.no_kbon) order by bpbdate asc";
          }else{
             $sql = "select nama_supp, bpbno_int no_bpb, bpbdate tgl_bpb, a.confirm_date approve_bpb, verif_date, c.no_kbon, c.tgl_kbon, c.confirm_date approve_kbon, d.no_payment, d.tgl_payment, d.confirm_date approve_lp, d.closed_date close_lp, e.no_bankout no_pelunasan, e.bankout_date tgl_pelunasan, no_sj, no_ws, style from (select supplier nama_supp, bpbno_int, bpbdate, confirm_date, invno no_sj, COALESCE(GROUP_CONCAT(DISTINCT tmpjo.kpno),'-') no_ws, COALESCE(GROUP_CONCAT(DISTINCT tmpjo.styleno),'-') style from bpb a INNER JOIN mastersupplier b on b.id_supplier = a.id_supplier left join (select id_jo,kpno,styleno from act_costing ac inner join so on ac.id=so.id_cost inner join jo_det jod on so.id=jod.id_so group by id_jo) tmpjo on tmpjo.id_jo=a.id_jo where confirm = 'Y' and cancel = 'N' GROUP BY bpbno_int) a LEFT JOIN
                 (select no_bpb, create_date verif_date from bpb_new where status != 'Cancel' GROUP BY no_bpb) b on b.no_bpb = a.bpbno_int INNER JOIN
                 (select no_kbon, tgl_kbon, confirm_date, no_bpb from kontrabon where tgl_kbon BETWEEN '$start_date' AND '$end_date' and status != 'Cancel' GROUP BY no_bpb) c on c.no_bpb = a.bpbno_int LEFT JOIN
                 (select no_payment, tgl_payment, no_kbon, confirm_date, closed_date from list_payment where tgl_payment >= '$start_date' GROUP BY no_kbon) d on d.no_kbon = c.no_kbon LEFT JOIN 
-                (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and no_reff like '%LP%'
+                (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and (no_reff like '%LP%' or no_reff like 'PV-AP/%' or no_reff like 'SI/APR/%')
                 UNION ALL
-                select payment_ftr_id, tgl_pelunasan, list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on e.no_reff = d.no_payment where nama_supp = '$nama_supp' order by bpbdate asc";
+                select payment_ftr_id, tgl_pelunasan, COALESCE(NULLIF(list_payment_id,''), no_kbon) list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on (e.no_reff = d.no_payment OR e.no_reff = c.no_kbon) where nama_supp = '$nama_supp' order by bpbdate asc";
         }
     }elseif ($filter == 'tgl_lp') {
         $filterr = "List Payment Date";
@@ -204,17 +204,17 @@ if ($filter == 'tgl_bpb') {
             (select no_bpb, create_date verif_date from bpb_new where status != 'Cancel' GROUP BY no_bpb) b on b.no_bpb = a.bpbno_int LEFT JOIN
             (select no_kbon, tgl_kbon, confirm_date, no_bpb from kontrabon where status != 'Cancel' GROUP BY no_bpb) c on c.no_bpb = a.bpbno_int INNER JOIN
             (select no_payment, tgl_payment, no_kbon, confirm_date, closed_date from list_payment where tgl_payment BETWEEN '$start_date' AND '$end_date' GROUP BY no_kbon) d on d.no_kbon = c.no_kbon LEFT JOIN 
-            (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and no_reff like '%LP%'
+            (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and (no_reff like '%LP%' or no_reff like 'PV-AP/%' or no_reff like 'SI/APR/%')
             UNION ALL
-            select payment_ftr_id, tgl_pelunasan, list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on e.no_reff = d.no_payment order by bpbdate asc";
+            select payment_ftr_id, tgl_pelunasan, COALESCE(NULLIF(list_payment_id,''), no_kbon) list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on (e.no_reff = d.no_payment OR e.no_reff = c.no_kbon) order by bpbdate asc";
      }else{
         $sql = "select nama_supp, bpbno_int no_bpb, bpbdate tgl_bpb, a.confirm_date approve_bpb, verif_date, c.no_kbon, c.tgl_kbon, c.confirm_date approve_kbon, d.no_payment, d.tgl_payment, d.confirm_date approve_lp, d.closed_date close_lp, e.no_bankout no_pelunasan, e.bankout_date tgl_pelunasan, no_sj, no_ws, style from (select supplier nama_supp, bpbno_int, bpbdate, confirm_date, invno no_sj, COALESCE(GROUP_CONCAT(DISTINCT tmpjo.kpno),'-') no_ws, COALESCE(GROUP_CONCAT(DISTINCT tmpjo.styleno),'-') style from bpb a INNER JOIN mastersupplier b on b.id_supplier = a.id_supplier left join (select id_jo,kpno,styleno from act_costing ac inner join so on ac.id=so.id_cost inner join jo_det jod on so.id=jod.id_so group by id_jo) tmpjo on tmpjo.id_jo=a.id_jo where confirm = 'Y' and cancel = 'N' GROUP BY bpbno_int) a LEFT JOIN
             (select no_bpb, create_date verif_date from bpb_new where status != 'Cancel' GROUP BY no_bpb) b on b.no_bpb = a.bpbno_int LEFT JOIN
             (select no_kbon, tgl_kbon, confirm_date, no_bpb from kontrabon where status != 'Cancel' GROUP BY no_bpb) c on c.no_bpb = a.bpbno_int INNER JOIN
             (select no_payment, tgl_payment, no_kbon, confirm_date, closed_date from list_payment where tgl_payment BETWEEN '$start_date' AND '$end_date' GROUP BY no_kbon) d on d.no_kbon = c.no_kbon LEFT JOIN 
-            (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and no_reff like '%LP%'
+            (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and (no_reff like '%LP%' or no_reff like 'PV-AP/%' or no_reff like 'SI/APR/%')
             UNION ALL
-            select payment_ftr_id, tgl_pelunasan, list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on e.no_reff = d.no_payment where nama_supp = '$nama_supp' order by bpbdate asc";
+            select payment_ftr_id, tgl_pelunasan, COALESCE(NULLIF(list_payment_id,''), no_kbon) list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on (e.no_reff = d.no_payment OR e.no_reff = c.no_kbon) where nama_supp = '$nama_supp' order by bpbdate asc";
     }
 
 }else{
@@ -224,17 +224,17 @@ if ($filter == 'tgl_bpb') {
         (select no_bpb, create_date verif_date from bpb_new where status != 'Cancel' GROUP BY no_bpb) b on b.no_bpb = a.bpbno_int LEFT JOIN
         (select no_kbon, tgl_kbon, confirm_date, no_bpb from kontrabon where status != 'Cancel' GROUP BY no_bpb) c on c.no_bpb = a.bpbno_int LEFT JOIN
         (select no_payment, tgl_payment, no_kbon, confirm_date, closed_date from list_payment GROUP BY no_kbon) d on d.no_kbon = c.no_kbon INNER JOIN 
-        (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date BETWEEN '$start_date' AND '$end_date' and b.status != 'Cancel' and no_reff like '%LP%'
+        (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date BETWEEN '$start_date' AND '$end_date' and b.status != 'Cancel' and (no_reff like '%LP%' or no_reff like 'PV-AP/%' or no_reff like 'SI/APR/%')
         UNION ALL
-        select payment_ftr_id, tgl_pelunasan, list_payment_id from payment_ftr where tgl_pelunasan BETWEEN '$start_date' AND '$end_date' AND status != 'Cancel') a GROUP BY no_reff) e on e.no_reff = d.no_payment order by bpbdate asc";
+        select payment_ftr_id, tgl_pelunasan, COALESCE(NULLIF(list_payment_id,''), no_kbon) list_payment_id from payment_ftr where tgl_pelunasan BETWEEN '$start_date' AND '$end_date' AND status != 'Cancel') a GROUP BY no_reff) e on (e.no_reff = d.no_payment OR e.no_reff = c.no_kbon) order by bpbdate asc";
  }else{
     $sql = "select nama_supp, bpbno_int no_bpb, bpbdate tgl_bpb, a.confirm_date approve_bpb, verif_date, c.no_kbon, c.tgl_kbon, c.confirm_date approve_kbon, d.no_payment, d.tgl_payment, d.confirm_date approve_lp, d.closed_date close_lp, e.no_bankout no_pelunasan, e.bankout_date tgl_pelunasan, no_sj, no_ws, style from (select supplier nama_supp, bpbno_int, bpbdate, confirm_date, invno no_sj, COALESCE(GROUP_CONCAT(DISTINCT tmpjo.kpno),'-') no_ws, COALESCE(GROUP_CONCAT(DISTINCT tmpjo.styleno),'-') style from bpb a INNER JOIN mastersupplier b on b.id_supplier = a.id_supplier left join (select id_jo,kpno,styleno from act_costing ac inner join so on ac.id=so.id_cost inner join jo_det jod on so.id=jod.id_so group by id_jo) tmpjo on tmpjo.id_jo=a.id_jo where confirm = 'Y' and cancel = 'N' GROUP BY bpbno_int) a LEFT JOIN
         (select no_bpb, create_date verif_date from bpb_new where status != 'Cancel' GROUP BY no_bpb) b on b.no_bpb = a.bpbno_int LEFT JOIN
         (select no_kbon, tgl_kbon, confirm_date, no_bpb from kontrabon where status != 'Cancel' GROUP BY no_bpb) c on c.no_bpb = a.bpbno_int LEFT JOIN
         (select no_payment, tgl_payment, no_kbon, confirm_date, closed_date from list_payment GROUP BY no_kbon) d on d.no_kbon = c.no_kbon INNER JOIN 
-        (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date BETWEEN '$start_date' AND '$end_date' and b.status != 'Cancel' and no_reff like '%LP%'
+        (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date BETWEEN '$start_date' AND '$end_date' and b.status != 'Cancel' and (no_reff like '%LP%' or no_reff like 'PV-AP/%' or no_reff like 'SI/APR/%')
         UNION ALL
-        select payment_ftr_id, tgl_pelunasan, list_payment_id from payment_ftr where tgl_pelunasan BETWEEN '$start_date' AND '$end_date' AND status != 'Cancel') a GROUP BY no_reff) e on e.no_reff = d.no_payment where nama_supp = '$nama_supp' order by bpbdate asc";
+        select payment_ftr_id, tgl_pelunasan, COALESCE(NULLIF(list_payment_id,''), no_kbon) list_payment_id from payment_ftr where tgl_pelunasan BETWEEN '$start_date' AND '$end_date' AND status != 'Cancel') a GROUP BY no_reff) e on (e.no_reff = d.no_payment OR e.no_reff = c.no_kbon) where nama_supp = '$nama_supp' order by bpbdate asc";
 }
 }
 
@@ -300,17 +300,17 @@ if ($filter == 'tgl_bpb') {
                     (select no_bpb, create_date verif_date from bpb_new where tgl_bpb BETWEEN '$start_date' AND '$end_date' and status != 'Cancel' GROUP BY no_bpb) b on b.no_bpb = a.bpbno_int LEFT JOIN
                     (select no_kbon, tgl_kbon, confirm_date, no_bpb from kontrabon where tgl_kbon >= '$start_date' and status != 'Cancel' GROUP BY no_bpb) c on c.no_bpb = a.bpbno_int LEFT JOIN
                     (select no_payment, tgl_payment, no_kbon, confirm_date, closed_date from list_payment where tgl_payment >= '$start_date' GROUP BY no_kbon) d on d.no_kbon = c.no_kbon LEFT JOIN 
-                    (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and no_reff like '%LP%'
+                    (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and (no_reff like '%LP%' or no_reff like 'PV-AP/%' or no_reff like 'SI/APR/%')
                     UNION ALL
-                    select payment_ftr_id, tgl_pelunasan, list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on e.no_reff = d.no_payment order by bpbdate asc");
+                    select payment_ftr_id, tgl_pelunasan, COALESCE(NULLIF(list_payment_id,''), no_kbon) list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on (e.no_reff = d.no_payment OR e.no_reff = c.no_kbon) order by bpbdate asc");
             }else{
                 $sql = mysqli_query($conn2,"select nama_supp, bpbno_int no_bpb, bpbdate tgl_bpb, a.confirm_date approve_bpb, verif_date, c.no_kbon, c.tgl_kbon, c.confirm_date approve_kbon, d.no_payment, d.tgl_payment, d.confirm_date approve_lp, d.closed_date close_lp, e.no_bankout no_pelunasan, e.bankout_date tgl_pelunasan, no_sj, no_ws, style from (select supplier nama_supp, bpbno_int, bpbdate, confirm_date, invno no_sj, COALESCE(GROUP_CONCAT(DISTINCT tmpjo.kpno),'-') no_ws, COALESCE(GROUP_CONCAT(DISTINCT tmpjo.styleno),'-') style from bpb a INNER JOIN mastersupplier b on b.id_supplier = a.id_supplier left join (select id_jo,kpno,styleno from act_costing ac inner join so on ac.id=so.id_cost inner join jo_det jod on so.id=jod.id_so group by id_jo) tmpjo on tmpjo.id_jo=a.id_jo where bpbdate BETWEEN '$start_date' AND '$end_date' and confirm = 'Y' and cancel = 'N' GROUP BY bpbno_int) a LEFT JOIN
                     (select no_bpb, create_date verif_date from bpb_new where tgl_bpb BETWEEN '$start_date' AND '$end_date' and status != 'Cancel' GROUP BY no_bpb) b on b.no_bpb = a.bpbno_int LEFT JOIN
                     (select no_kbon, tgl_kbon, confirm_date, no_bpb from kontrabon where tgl_kbon >= '$start_date' and status != 'Cancel' GROUP BY no_bpb) c on c.no_bpb = a.bpbno_int LEFT JOIN
                     (select no_payment, tgl_payment, no_kbon, confirm_date, closed_date from list_payment where tgl_payment >= '$start_date' GROUP BY no_kbon) d on d.no_kbon = c.no_kbon LEFT JOIN 
-                    (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and no_reff like '%LP%'
+                    (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and (no_reff like '%LP%' or no_reff like 'PV-AP/%' or no_reff like 'SI/APR/%')
                     UNION ALL
-                    select payment_ftr_id, tgl_pelunasan, list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on e.no_reff = d.no_payment where nama_supp = '$nama_supp' order by bpbdate asc");
+                    select payment_ftr_id, tgl_pelunasan, COALESCE(NULLIF(list_payment_id,''), no_kbon) list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on (e.no_reff = d.no_payment OR e.no_reff = c.no_kbon) where nama_supp = '$nama_supp' order by bpbdate asc");
             }
         }elseif ($filter == 'tgl_kbon') {
          if ($nama_supp == 'ALL') {
@@ -318,17 +318,17 @@ if ($filter == 'tgl_bpb') {
                 (select no_bpb, create_date verif_date from bpb_new where status != 'Cancel' GROUP BY no_bpb) b on b.no_bpb = a.bpbno_int INNER JOIN
                 (select no_kbon, tgl_kbon, confirm_date, no_bpb from kontrabon where tgl_kbon BETWEEN '$start_date' AND '$end_date' and status != 'Cancel' GROUP BY no_bpb) c on c.no_bpb = a.bpbno_int LEFT JOIN
                 (select no_payment, tgl_payment, no_kbon, confirm_date, closed_date from list_payment where tgl_payment >= '$start_date' GROUP BY no_kbon) d on d.no_kbon = c.no_kbon LEFT JOIN 
-                (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and no_reff like '%LP%'
+                (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and (no_reff like '%LP%' or no_reff like 'PV-AP/%' or no_reff like 'SI/APR/%')
                 UNION ALL
-                select payment_ftr_id, tgl_pelunasan, list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on e.no_reff = d.no_payment order by bpbdate asc");
+                select payment_ftr_id, tgl_pelunasan, COALESCE(NULLIF(list_payment_id,''), no_kbon) list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on (e.no_reff = d.no_payment OR e.no_reff = c.no_kbon) order by bpbdate asc");
          }else{
             $sql = mysqli_query($conn2,"select nama_supp, bpbno_int no_bpb, bpbdate tgl_bpb, a.confirm_date approve_bpb, verif_date, c.no_kbon, c.tgl_kbon, c.confirm_date approve_kbon, d.no_payment, d.tgl_payment, d.confirm_date approve_lp, d.closed_date close_lp, e.no_bankout no_pelunasan, e.bankout_date tgl_pelunasan, no_sj, no_ws, style from (select supplier nama_supp, bpbno_int, bpbdate, confirm_date, invno no_sj, COALESCE(GROUP_CONCAT(DISTINCT tmpjo.kpno),'-') no_ws, COALESCE(GROUP_CONCAT(DISTINCT tmpjo.styleno),'-') style from bpb a INNER JOIN mastersupplier b on b.id_supplier = a.id_supplier left join (select id_jo,kpno,styleno from act_costing ac inner join so on ac.id=so.id_cost inner join jo_det jod on so.id=jod.id_so group by id_jo) tmpjo on tmpjo.id_jo=a.id_jo where confirm = 'Y' and cancel = 'N' GROUP BY bpbno_int) a LEFT JOIN
                 (select no_bpb, create_date verif_date from bpb_new where status != 'Cancel' GROUP BY no_bpb) b on b.no_bpb = a.bpbno_int INNER JOIN
                 (select no_kbon, tgl_kbon, confirm_date, no_bpb from kontrabon where tgl_kbon BETWEEN '$start_date' AND '$end_date' and status != 'Cancel' GROUP BY no_bpb) c on c.no_bpb = a.bpbno_int LEFT JOIN
                 (select no_payment, tgl_payment, no_kbon, confirm_date, closed_date from list_payment where tgl_payment >= '$start_date' GROUP BY no_kbon) d on d.no_kbon = c.no_kbon LEFT JOIN 
-                (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and no_reff like '%LP%'
+                (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and (no_reff like '%LP%' or no_reff like 'PV-AP/%' or no_reff like 'SI/APR/%')
                 UNION ALL
-                select payment_ftr_id, tgl_pelunasan, list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on e.no_reff = d.no_payment where nama_supp = '$nama_supp' order by bpbdate asc");
+                select payment_ftr_id, tgl_pelunasan, COALESCE(NULLIF(list_payment_id,''), no_kbon) list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on (e.no_reff = d.no_payment OR e.no_reff = c.no_kbon) where nama_supp = '$nama_supp' order by bpbdate asc");
         }
     }elseif ($filter == 'tgl_lp') {
         if ($nama_supp == 'ALL') {
@@ -336,17 +336,17 @@ if ($filter == 'tgl_bpb') {
             (select no_bpb, create_date verif_date from bpb_new where status != 'Cancel' GROUP BY no_bpb) b on b.no_bpb = a.bpbno_int LEFT JOIN
             (select no_kbon, tgl_kbon, confirm_date, no_bpb from kontrabon where status != 'Cancel' GROUP BY no_bpb) c on c.no_bpb = a.bpbno_int INNER JOIN
             (select no_payment, tgl_payment, no_kbon, confirm_date, closed_date from list_payment where tgl_payment BETWEEN '$start_date' AND '$end_date' GROUP BY no_kbon) d on d.no_kbon = c.no_kbon LEFT JOIN 
-            (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and no_reff like '%LP%'
+            (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and (no_reff like '%LP%' or no_reff like 'PV-AP/%' or no_reff like 'SI/APR/%')
             UNION ALL
-            select payment_ftr_id, tgl_pelunasan, list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on e.no_reff = d.no_payment order by bpbdate asc");
+            select payment_ftr_id, tgl_pelunasan, COALESCE(NULLIF(list_payment_id,''), no_kbon) list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on (e.no_reff = d.no_payment OR e.no_reff = c.no_kbon) order by bpbdate asc");
      }else{
         $sql = mysqli_query($conn2,"select nama_supp, bpbno_int no_bpb, bpbdate tgl_bpb, a.confirm_date approve_bpb, verif_date, c.no_kbon, c.tgl_kbon, c.confirm_date approve_kbon, d.no_payment, d.tgl_payment, d.confirm_date approve_lp, d.closed_date close_lp, e.no_bankout no_pelunasan, e.bankout_date tgl_pelunasan, no_sj, no_ws, style from (select supplier nama_supp, bpbno_int, bpbdate, confirm_date, invno no_sj, COALESCE(GROUP_CONCAT(DISTINCT tmpjo.kpno),'-') no_ws, COALESCE(GROUP_CONCAT(DISTINCT tmpjo.styleno),'-') style from bpb a INNER JOIN mastersupplier b on b.id_supplier = a.id_supplier left join (select id_jo,kpno,styleno from act_costing ac inner join so on ac.id=so.id_cost inner join jo_det jod on so.id=jod.id_so group by id_jo) tmpjo on tmpjo.id_jo=a.id_jo where confirm = 'Y' and cancel = 'N' GROUP BY bpbno_int) a LEFT JOIN
             (select no_bpb, create_date verif_date from bpb_new where status != 'Cancel' GROUP BY no_bpb) b on b.no_bpb = a.bpbno_int LEFT JOIN
             (select no_kbon, tgl_kbon, confirm_date, no_bpb from kontrabon where status != 'Cancel' GROUP BY no_bpb) c on c.no_bpb = a.bpbno_int INNER JOIN
             (select no_payment, tgl_payment, no_kbon, confirm_date, closed_date from list_payment where tgl_payment BETWEEN '$start_date' AND '$end_date' GROUP BY no_kbon) d on d.no_kbon = c.no_kbon LEFT JOIN 
-            (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and no_reff like '%LP%'
+            (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date >= '$start_date' and b.status != 'Cancel' and (no_reff like '%LP%' or no_reff like 'PV-AP/%' or no_reff like 'SI/APR/%')
             UNION ALL
-            select payment_ftr_id, tgl_pelunasan, list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on e.no_reff = d.no_payment where nama_supp = '$nama_supp' order by bpbdate asc");
+            select payment_ftr_id, tgl_pelunasan, COALESCE(NULLIF(list_payment_id,''), no_kbon) list_payment_id from payment_ftr where tgl_pelunasan >= '$start_date' AND status != 'Cancel') a GROUP BY no_reff) e on (e.no_reff = d.no_payment OR e.no_reff = c.no_kbon) where nama_supp = '$nama_supp' order by bpbdate asc");
     }
 
 }else{
@@ -355,17 +355,17 @@ if ($filter == 'tgl_bpb') {
         (select no_bpb, create_date verif_date from bpb_new where status != 'Cancel' GROUP BY no_bpb) b on b.no_bpb = a.bpbno_int LEFT JOIN
         (select no_kbon, tgl_kbon, confirm_date, no_bpb from kontrabon where status != 'Cancel' GROUP BY no_bpb) c on c.no_bpb = a.bpbno_int LEFT JOIN
         (select no_payment, tgl_payment, no_kbon, confirm_date, closed_date from list_payment GROUP BY no_kbon) d on d.no_kbon = c.no_kbon INNER JOIN 
-        (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date BETWEEN '$start_date' AND '$end_date' and b.status != 'Cancel' and no_reff like '%LP%'
+        (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date BETWEEN '$start_date' AND '$end_date' and b.status != 'Cancel' and (no_reff like '%LP%' or no_reff like 'PV-AP/%' or no_reff like 'SI/APR/%')
         UNION ALL
-        select payment_ftr_id, tgl_pelunasan, list_payment_id from payment_ftr where tgl_pelunasan BETWEEN '$start_date' AND '$end_date' AND status != 'Cancel') a GROUP BY no_reff) e on e.no_reff = d.no_payment order by bpbdate asc");
+        select payment_ftr_id, tgl_pelunasan, COALESCE(NULLIF(list_payment_id,''), no_kbon) list_payment_id from payment_ftr where tgl_pelunasan BETWEEN '$start_date' AND '$end_date' AND status != 'Cancel') a GROUP BY no_reff) e on (e.no_reff = d.no_payment OR e.no_reff = c.no_kbon) order by bpbdate asc");
  }else{
     $sql = mysqli_query($conn2,"select nama_supp, bpbno_int no_bpb, bpbdate tgl_bpb, a.confirm_date approve_bpb, verif_date, c.no_kbon, c.tgl_kbon, c.confirm_date approve_kbon, d.no_payment, d.tgl_payment, d.confirm_date approve_lp, d.closed_date close_lp, e.no_bankout no_pelunasan, e.bankout_date tgl_pelunasan, no_sj, no_ws, style from (select supplier nama_supp, bpbno_int, bpbdate, confirm_date, invno no_sj, COALESCE(GROUP_CONCAT(DISTINCT tmpjo.kpno),'-') no_ws, COALESCE(GROUP_CONCAT(DISTINCT tmpjo.styleno),'-') style from bpb a INNER JOIN mastersupplier b on b.id_supplier = a.id_supplier left join (select id_jo,kpno,styleno from act_costing ac inner join so on ac.id=so.id_cost inner join jo_det jod on so.id=jod.id_so group by id_jo) tmpjo on tmpjo.id_jo=a.id_jo where confirm = 'Y' and cancel = 'N' GROUP BY bpbno_int) a LEFT JOIN
         (select no_bpb, create_date verif_date from bpb_new where status != 'Cancel' GROUP BY no_bpb) b on b.no_bpb = a.bpbno_int LEFT JOIN
         (select no_kbon, tgl_kbon, confirm_date, no_bpb from kontrabon where status != 'Cancel' GROUP BY no_bpb) c on c.no_bpb = a.bpbno_int LEFT JOIN
         (select no_payment, tgl_payment, no_kbon, confirm_date, closed_date from list_payment GROUP BY no_kbon) d on d.no_kbon = c.no_kbon INNER JOIN 
-        (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date BETWEEN '$start_date' AND '$end_date' and b.status != 'Cancel' and no_reff like '%LP%'
+        (select * from (select b.no_bankout, b.bankout_date, no_reff from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where bankout_date BETWEEN '$start_date' AND '$end_date' and b.status != 'Cancel' and (no_reff like '%LP%' or no_reff like 'PV-AP/%' or no_reff like 'SI/APR/%')
         UNION ALL
-        select payment_ftr_id, tgl_pelunasan, list_payment_id from payment_ftr where tgl_pelunasan BETWEEN '$start_date' AND '$end_date' AND status != 'Cancel') a GROUP BY no_reff) e on e.no_reff = d.no_payment where nama_supp = '$nama_supp' order by bpbdate asc");
+        select payment_ftr_id, tgl_pelunasan, COALESCE(NULLIF(list_payment_id,''), no_kbon) list_payment_id from payment_ftr where tgl_pelunasan BETWEEN '$start_date' AND '$end_date' AND status != 'Cancel') a GROUP BY no_reff) e on (e.no_reff = d.no_payment OR e.no_reff = c.no_kbon) where nama_supp = '$nama_supp' order by bpbdate asc");
 }
 }
 
