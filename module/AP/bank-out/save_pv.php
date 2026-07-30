@@ -260,10 +260,10 @@ try {
                 ");
 
             if ($bayar_pph > 0) {
-                if ($type_pv === 'Regular') {
-                    $sqlpph = mysqli_query($conn2, "SELECT no_coa, nama_coa FROM mtax WHERE idtax = (SELECT MAX(idtax) FROM kontrabon WHERE no_kbon = '$no_kbon_esc')");
-                } else {
+                if ($type_pv === 'Installment') {
                     $sqlpph = mysqli_query($conn2, "SELECT no_coa, nama_coa FROM mtax WHERE idtax = (SELECT MAX(k.idtax) FROM kontrabon k INNER JOIN kontrabon_h_installment_detail d ON d.no_kbon = k.no_kbon WHERE d.no_kbon_det = '$no_kbon_esc')");
+                } else {
+                    $sqlpph = mysqli_query($conn2, "SELECT no_coa, nama_coa FROM mtax WHERE idtax = (SELECT MAX(idtax) FROM kontrabon WHERE no_kbon = '$no_kbon_esc')");
                 }
                 $rowpph = mysqli_fetch_assoc($sqlpph);
                 $no_coa_pph  = mysqli_real_escape_string($conn2, $rowpph['no_coa'] ?? '');
