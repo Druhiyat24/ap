@@ -13,13 +13,17 @@ ini_set('pcre.backtrack_limit', '10000000');
 <?php
 $pl_number_esc = mysqli_real_escape_string($conn2, $pl_number);
 
+// from_account bisa berupa akun Bank (cocok di b_masterbank) atau akun Kas
+// Kecil (cocok di mastercoa_v2) - kas tidak punya beneficiary_name (bukan
+// pembayaran ke bank), jadi dikosongkan saja untuk baris itu.
 $sqlH = mysqli_query($conn2, "SELECT h.pl_number, h.pl_date, h.deskripsi, h.created_by, h.created_date,
-    h.from_account, UPPER(b.beneficiary_name) AS beneficiary_name,
-    UPPER(b.curr) AS bank_curr,
-    UPPER(b.bank_name) AS bank_name,
-    UPPER(b.bank_account) AS bank_account, b.curr AS from_bank_curr
+    h.from_account, UPPER(IFNULL(b.beneficiary_name,'')) AS beneficiary_name,
+    UPPER(IFNULL(b.curr,'IDR')) AS bank_curr,
+    UPPER(IFNULL(b.bank_name, c.nama_coa)) AS bank_name,
+    UPPER(IFNULL(b.bank_account, c.no_coa)) AS bank_account, IFNULL(b.curr,'IDR') AS from_bank_curr
     FROM pv_payment_list_h h
     LEFT JOIN b_masterbank b ON b.bank_account = h.from_account
+    LEFT JOIN mastercoa_v2 c ON c.no_coa = h.from_account
     WHERE h.pl_number = '$pl_number_esc'");
 $rowH = mysqli_fetch_assoc($sqlH);
 // $plFromAccountDisplay = !empty($rowH['from_account'])

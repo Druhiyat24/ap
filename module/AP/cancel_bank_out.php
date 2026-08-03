@@ -48,7 +48,7 @@ if ($filter_jurnal === null) {
             CURRENT_TIMESTAMP() AS approve_date,
             cancel_by, cancel_date, created_at, updated_at, profit_center
         FROM tbl_list_journal
-        WHERE no_journal='$no_bi'
+        WHERE no_journal='$no_bi' AND status = 'Draft'
     ");
 }
 

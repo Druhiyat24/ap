@@ -104,12 +104,23 @@ include 'pv_data_functions.php';
                 <select class="form-control form-control-sm select2bs4" name="from_account" id="from_account" data-dropup-auto="false">
                     <option value="">-- Pilih Rekening --</option>
                     <?php
-                    $sqlBank = mysqli_query($conn2, "SELECT bank_account, IF(bank_name like '%MANDIRI%', 'MANDIRI', bank_name) bank_name, curr FROM b_masterbank where status = 'Active' ORDER BY id ASC");
+                    // Akun Bank + akun Kas Kecil digabung (union) - sama seperti From
+                    // Account di pv_regular.php.
+                    $sqlBank = mysqli_query($conn2, "
+                        select * from (
+                            (SELECT bank_account as account, IF(bank_name like '%MANDIRI%', 'MANDIRI', bank_name) bank_name, curr, 1 as urutan
+                             FROM b_masterbank where status = 'Active')
+                            UNION
+                            (SELECT no_coa as account, concat(no_coa,' ', nama_coa) bank_name, 'IDR' as curr, 2 as urutan
+                             FROM mastercoa_v2 where no_coa like '%1.01%' and nama_coa like '%kas kecil%')
+                        ) akun_gabungan
+                        ORDER BY urutan ASC, account ASC
+                    ");
                     $savedFromAccount = $_POST['from_account'] ?? '';
                     while ($rowBank = mysqli_fetch_assoc($sqlBank)) {
-                        $sel = ($savedFromAccount === $rowBank['bank_account']) ? ' selected' : '';
-                        $label = htmlspecialchars($rowBank['bank_account'] . ' - ' . $rowBank['bank_name'] . ' (' . $rowBank['curr'] . ')');
-                        echo '<option value="' . htmlspecialchars($rowBank['bank_account']) . '"' . $sel . '>' . $label . '</option>';
+                        $sel = ($savedFromAccount === $rowBank['account']) ? ' selected' : '';
+                        $label = htmlspecialchars($rowBank['account'] . ' - ' . $rowBank['bank_name'] . ' (' . $rowBank['curr'] . ')');
+                        echo '<option value="' . htmlspecialchars($rowBank['account']) . '"' . $sel . '>' . $label . '</option>';
                     }
                     ?>
                 </select>

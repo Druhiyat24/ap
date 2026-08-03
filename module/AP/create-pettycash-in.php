@@ -120,18 +120,74 @@
   }
 
   .total-box{
-    border:1px solid #dcdcdc;
-    border-radius:6px;
-    padding:15px;
-    background:#fafafa;
-}
+    border:0;
+    border-radius:10px;
+    background:#fff;
+    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+    overflow:hidden;
+    height:100%;
+    padding:0;
+  }
 
-.total-box h6{
-    font-weight:bold;
-    margin-bottom:15px;
-    border-bottom:1px solid #ddd;
-    padding-bottom:5px;
-}
+  .total-box .total-box-header{
+    padding:12px 16px;
+    color:#fff;
+    font-weight:700;
+    font-size:14px;
+  }
+
+  .total-box.tone-nag .total-box-header{
+    background:linear-gradient(90deg, #5b7ba8, #7fa0c9);
+  }
+
+  .total-box.tone-nak .total-box-header{
+    background:linear-gradient(90deg, #4f8a6b, #74ad8f);
+  }
+
+  .total-box.tone-all .total-box-header{
+    background:linear-gradient(90deg, #4a5578, #6b7699);
+  }
+
+  .total-box .total-box-body{
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  .total-stat{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    padding-bottom:12px;
+    border-bottom:1px dashed #e5e5e5;
+  }
+
+  .total-stat:last-child{
+    border-bottom:0;
+    padding-bottom:0;
+  }
+
+  .total-stat-label{
+    font-size:12px;
+    font-weight:600;
+    color:#8a8a8a;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+
+  .total-stat input.total-stat-value{
+    border:0;
+    background:transparent;
+    padding:0;
+    font-size:19px;
+    font-weight:700;
+    text-align:right;
+    width:auto;
+    max-width:100%;
+    height:auto;
+    color:#212529;
+  }
 </style>
 
 <!-- MAIN -->
@@ -808,7 +864,7 @@ foreach ($sql3 as $fc) : ?>
     }
 
 
-    function InsertRow(tableID) {
+    function InsertRow2(tableID) {
 
       try {
 
@@ -1155,6 +1211,11 @@ $('#simpan2').on('click', function () {
         return;
     }
 
+    if(!$('#pesan2').val().trim()){
+        Swal.fire('Warning','Description tidak boleh kosong','warning');
+        return;
+    }
+
     let debitNAG  = 0;
     let creditNAG = 0;
     let debitNAK  = 0;
@@ -1175,6 +1236,12 @@ $('#simpan2').on('click', function () {
 
         let debit  = parseFloat(tr.find('[name="txt_amount2[]"]').val()) || 0;
         let credit = parseFloat(tr.find('[name="txt_credit2[]"]').val()) || 0;
+
+        // Kalau description baris kosong, pakai description header
+        let ketInput2 = tr.find('input[name="keterangan2[]"]');
+        if(!ketInput2.val()){
+          ketInput2.val($('#pesan2').val());
+        }
 
         console.log("----- ROW",rowIndex,"-----");
         console.log("COA :", coa);
@@ -1305,6 +1372,96 @@ $('#simpan2').on('click', function () {
 
     console.log($('#form-data2').serialize());
 
+    function doSavePettyinSettle2(){
+
+      $('#simpan2').prop('disabled', true);
+
+      $.ajax({
+
+          url: "petty-in/save_pettyin_settle.php",
+          type: "POST",
+          data: $('#form-data2').serialize(),
+
+          beforeSend:function(){
+
+              console.log("Sending data...");
+
+              Swal.fire({
+                  title: 'Saving...',
+                  allowOutsideClick:false,
+                  didOpen:()=>{
+                      Swal.showLoading();
+                  }
+              });
+
+          },
+
+          success:function(res){
+
+              console.log("Response Server :", res);
+
+              let r = JSON.parse(res);
+
+              if(r.status == 'success'){
+
+                  console.log("SAVE SUCCESS");
+
+                  Swal.fire({
+                      icon:'success',
+                      title:'Success',
+                      text:r.message
+                  }).then(()=>{
+                      location.href='petty-cashin.php';
+                  });
+
+              }else{
+
+                  console.log("SAVE ERROR :", r.message);
+
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: r.message,
+                    showCancelButton: true,
+                    confirmButtonText: 'Coba Lagi',
+                    cancelButtonText: 'Tutup'
+                  }).then((retry) => {
+                    if(retry.isConfirmed){
+                      doSavePettyinSettle2();
+                    }else{
+                      $('#simpan2').prop('disabled', false);
+                    }
+                  });
+
+              }
+
+          },
+
+          error:function(xhr){
+
+              console.log("AJAX ERROR");
+              console.log(xhr.responseText);
+
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Server Error',
+                showCancelButton: true,
+                confirmButtonText: 'Coba Lagi',
+                cancelButtonText: 'Tutup'
+              }).then((retry) => {
+                if(retry.isConfirmed){
+                  doSavePettyinSettle2();
+                }else{
+                  $('#simpan2').prop('disabled', false);
+                }
+              });
+          }
+
+      });
+
+    }
+
     Swal.fire({
         title: "Save Data?",
         icon: "question",
@@ -1314,77 +1471,710 @@ $('#simpan2').on('click', function () {
     }).then((result)=>{
 
         if(result.isConfirmed){
-
             console.log("PROSES AJAX SAVE");
-
-            $.ajax({
-
-                url: "petty-in/save_pettyin_settle.php",
-                type: "POST",
-                data: $('#form-data2').serialize(),
-
-                beforeSend:function(){
-
-                    console.log("Sending data...");
-
-                    Swal.fire({
-                        title: 'Saving...',
-                        allowOutsideClick:false,
-                        didOpen:()=>{
-                            Swal.showLoading();
-                        }
-                    });
-
-                },
-
-                success:function(res){
-
-                    console.log("Response Server :", res);
-
-                    let r = JSON.parse(res);
-
-                    if(r.status == 'success'){
-
-                        console.log("SAVE SUCCESS");
-
-                        Swal.fire({
-                            icon:'success',
-                            title:'Success',
-                            text:r.message
-                        }).then(()=>{
-                            location.href='petty-cashin.php';
-                        });
-
-                    }else{
-
-                        console.log("SAVE ERROR :", r.message);
-
-                        Swal.fire(
-                            'Error',
-                            r.message,
-                            'error'
-                        );
-
-                    }
-
-                },
-
-                error:function(xhr){
-
-                    console.log("AJAX ERROR");
-                    console.log(xhr.responseText);
-
-                    Swal.fire('Error','Server Error','error');
-                }
-
-            });
-
+            doSavePettyinSettle2();
         }
 
     });
 
 });
 
+
+
+//ke 1 (Cash Out)...........................................................................
+
+ function getdataadvance1(val){
+    var no_co = val;
+
+    $.ajax({
+        type:'POST',
+        url:'petty-in/get_data_cashout.php',
+        data: {'no_co':no_co},
+        cache: 'false',
+        close: function(e){
+            e.preventDefault();
+            return false;
+        },
+        success: function(data){
+
+    $('#tbody1').html(data); // langsung ganti isi
+
+    $('.selectpicker').selectpicker('refresh');
+
+    hitung_total1();
+}
+,
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(xhr);
+            alert(xhr);
+        }
+    });
+}
+
+$('#account1').on('change', function() {
+
+      let kode1 = $(this).find(':selected').data('kode1');
+      let pc1 = $(this).find(':selected').data('pc1');
+      let namapc1 = $(this).find(':selected').data('namapc1');
+
+      $('#profit_center_kas_show1').val(namapc1);
+      $('#profit_center_kas1').val(pc1);
+      $('#currency1').val('IDR');
+      $('#kode_kas1').val(kode1);
+
+      hitung_total1();
+
+    });
+
+    $(document).on('change', '.prof_ctr1', function() {
+      const selectedProfCtr = $(this).val();
+      const row = $(this).closest('tr');
+      const selectedCoa = row.find('select.no_coa1').val() || '-';
+      updateCostCenter1(selectedProfCtr, selectedCoa, row);
+    });
+
+    $(document).on('change', '.no_coa1', function() {
+      const selectedCoa = $(this).val();
+      const row = $(this).closest('tr');
+      const selectedProfCtr = row.find('select.prof_ctr1').val() || '-';
+      updateCostCenter1(selectedProfCtr, selectedCoa, row);
+    });
+
+    // Fungsi reusable untuk isi dropdown Cost Center berdasarkan Profit Center
+    function updateCostCenter1(profCtr, noCoa, row) {
+      const costCtrDropdown = $(row).find('.cost_ctr1');
+
+      costCtrDropdown.selectpicker('destroy');
+      costCtrDropdown.empty();
+      costCtrDropdown.append('<option value="-"> - </option>');
+      costCtrDropdown.selectpicker();
+
+      if (profCtr && profCtr !== '-') {
+
+        $.ajax({
+          url: 'getCostCenter.php',
+          type: 'POST',
+          data: {
+            prof_ctr: profCtr,
+            no_coa: noCoa
+          },
+          dataType: 'json',
+          success: function(response) {
+            if (response && response.length > 0) {
+              $.each(response, function(index, costCtr) {
+                costCtrDropdown.append(
+                  `<option value="${costCtr.value}">${costCtr.text}</option>`
+                );
+              });
+
+              costCtrDropdown.selectpicker('refresh');
+            } else {
+              console.warn('Tidak ada data cost center dari server.');
+              costCtrDropdown.selectpicker('refresh');
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error('AJAX Error:', status, error);
+          }
+        });
+      } else {
+        costCtrDropdown.selectpicker('refresh');
+      }
+    }
+
+    function addRow1(tableID) {
+
+      var table = document.getElementById(tableID);
+      var rowCount = table.rows.length;
+      var row = table.insertRow(rowCount);
+
+      var element = `
+<tr>
+<td><input type="checkbox" id="select1" name="select1[]" value="" checked disabled></td>
+
+<td >
+<select class="form-control selectpicker no_coa1" name="nomor_coa1[]" data-live-search="true" data-width="100%" data-size="5">
+<option value="-">-</option>
+<?php
+$sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa,' ',nama_coa) as coa from mastercoa_v2");
+foreach ($sql as $coa) : ?>
+<option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?></option>
+<?php endforeach; ?>
+</select>
+</td>
+
+<td>
+<select class="form-control selectpicker prof_ctr1" name="prof_ctr1[]" data-live-search="true" data-width="100%">
+<option value="-"> - </option>
+<?php
+$sql3 = mysqli_query($conn1, "select kode_pc,id_pc,nama_pc,CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status='Active'");
+foreach ($sql3 as $fc) : ?>
+<option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option>
+<?php endforeach; ?>
+</select>
+</td>
+
+<td>
+<select class="form-control selectpicker cost_ctr1" name="cost_ctr1[]" data-live-search="true" data-width="100%">
+<option value="-"> - </option>
+</select>
+</td>
+
+<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="buyer1[]" autocomplete="off"></td>
+
+<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="no_ws1[]" autocomplete="off"></td>
+
+<td>
+<select class="form-control selectpicker curr_det1" name="currenc1[]">
+<option value="IDR">IDR</option>
+</select>
+</td>
+
+<td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_amount1[]" oninput="modal_input_amt1(this)" autocomplete="off"></td>
+
+<td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_credit1[]" oninput="modal_input_cre1(this)" autocomplete="off"></td>
+
+<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="keterangan1[]" autocomplete="off"></td>
+
+<td><input name="chk_a1[]" type="checkbox" class="checkall_a1"></td>
+
+</tr>
+
+`;
+
+      row.innerHTML = element;
+
+      $('.selectpicker').selectpicker('refresh');
+
+      var headerPC = $('#profit_center_kas1').val();
+
+      if (headerPC) {
+
+        $(row).find('.prof_ctr1').val(headerPC);
+        $(row).find('.prof_ctr1').selectpicker('refresh');
+
+      }
+
+    }
+
+
+    function deleteRow1(tableID) {
+
+      try {
+
+        var table = document.getElementById(tableID);
+        var rowCount = table.rows.length;
+        var deleted = false;
+
+        for (var i = rowCount - 1; i >= 0; i--) {
+
+          var row = table.rows[i];
+          var chkbox = row.querySelector('input[name="chk_a1[]"]');
+
+          if (chkbox && chkbox.checked) {
+
+            if (rowCount <= 1) {
+
+              Swal.fire({
+                icon: 'warning',
+                title: 'Warning',
+                text: 'Tidak dapat menghapus semua baris'
+              });
+
+              return;
+
+            }
+
+            table.deleteRow(i);
+            deleted = true;
+            rowCount--;
+
+          }
+
+        }
+
+        if (!deleted) {
+
+          Swal.fire({
+            icon: 'warning',
+            title: 'Warning',
+            text: 'Silahkan ceklis baris yang ingin dihapus'
+          });
+
+        }
+
+        $('.selectpicker').selectpicker('refresh');
+
+      } catch (e) {
+
+        console.log(e);
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: e.message
+        });
+
+      }
+
+    }
+
+
+    function InsertRow1(tableID) {
+
+      try {
+
+        var table = document.getElementById(tableID);
+        var rowCount = table.rows.length;
+        var inserted = false;
+
+        for (var i = rowCount - 1; i >= 0; i--) {
+
+          var row = table.rows[i];
+          var chkbox = row.querySelector('input[name="chk_a1[]"]');
+
+          if (chkbox && chkbox.checked) {
+
+            var element1 = `
+<tr>
+<td><input type="checkbox" id="select1" name="select1[]" value="" checked disabled></td>
+
+<td >
+<select class="form-control selectpicker no_coa1" name="nomor_coa1[]" data-live-search="true" data-width="100%" data-size="5">
+<option value="-">-</option>
+<?php
+$sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa,' ',nama_coa) as coa from mastercoa_v2");
+foreach ($sql as $coa) : ?>
+<option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?></option>
+<?php endforeach; ?>
+</select>
+</td>
+
+<td>
+<select class="form-control selectpicker prof_ctr1" name="prof_ctr1[]" data-live-search="true" data-width="100%">
+<option value="-"> - </option>
+<?php
+$sql3 = mysqli_query($conn1, "select kode_pc,id_pc,nama_pc,CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status='Active'");
+foreach ($sql3 as $fc) : ?>
+<option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option>
+<?php endforeach; ?>
+</select>
+</td>
+
+<td>
+<select class="form-control selectpicker cost_ctr1" name="cost_ctr1[]" data-live-search="true" data-width="100%">
+<option value="-"> - </option>
+</select>
+</td>
+
+<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="buyer1[]" autocomplete="off"></td>
+
+<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="no_ws1[]" autocomplete="off"></td>
+
+<td>
+<select class="form-control selectpicker curr_det1" name="currenc1[]">
+<option value="IDR">IDR</option>
+</select>
+</td>
+
+<td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_amount1[]" oninput="modal_input_amt1(this)" autocomplete="off"></td>
+
+<td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_credit1[]" oninput="modal_input_cre1(this)" autocomplete="off"></td>
+
+<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="keterangan1[]" autocomplete="off"></td>
+
+<td><input name="chk_a1[]" type="checkbox" class="checkall_a1"></td>
+
+</tr>
+`;
+
+            var newRow = table.insertRow(i + 1);
+            newRow.innerHTML = element1;
+
+            inserted = true;
+
+            var headerPC = $('#profit_center_kas1').val();
+            if (headerPC) {
+
+              $(newRow).find('.prof_ctr1').val(headerPC);
+              $(newRow).find('.prof_ctr1').selectpicker('refresh');
+
+            }
+
+          }
+
+        }
+
+        if (!inserted) {
+
+          Swal.fire({
+            icon: 'warning',
+            title: 'Warning',
+            text: 'Silahkan ceklis baris yang ingin disisipkan'
+          });
+
+        }
+
+        $('.selectpicker').selectpicker('refresh');
+
+      } catch (e) {
+
+        console.log(e);
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: e.message
+        });
+
+      }
+
+    }
+
+
+function modal_input_amt1(el){
+
+let row = $(el).closest('tr');
+
+let debit  = parseFloat($(el).val()) || 0;
+let creditInput = row.find('input[name="txt_credit1[]"]');
+
+if(debit > 0){
+
+creditInput.val(0);
+creditInput.prop('readonly',true);
+
+}else{
+
+creditInput.prop('readonly',false);
+
+}
+
+hitung_total1();
+
+}
+
+
+function modal_input_cre1(el){
+
+let row = $(el).closest('tr');
+
+let credit = parseFloat($(el).val()) || 0;
+let debitInput = row.find('input[name="txt_amount1[]"]');
+
+if(credit > 0){
+
+debitInput.val(0);
+debitInput.prop('readonly',true);
+
+}else{
+
+debitInput.prop('readonly',false);
+
+}
+
+hitung_total1();
+
+}
+
+
+function hitung_total1(){
+
+let debit_nag = 0;
+let credit_nag = 0;
+let debit_nak = 0;
+let credit_nak = 0;
+
+let rate = 1;
+
+$('#tbody1 tr').each(function(index){
+
+let pc = $(this).find('select.prof_ctr1').val();
+let curr = $(this).find('select[name="currenc1[]"]').val();
+
+let debitVal  = $(this).find('input[name="txt_amount1[]"]').val();
+let creditVal = $(this).find('input[name="txt_credit1[]"]').val();
+
+let debit  = parseFloat(debitVal)  || 0;
+let credit = parseFloat(creditVal) || 0;
+
+if(curr === 'USD'){
+
+debit  = debit  * rate;
+credit = credit * rate;
+
+}
+
+if(pc === 'NAG'){
+debit_nag  += debit;
+credit_nag += credit;
+}
+
+if(pc === 'NAK'){
+debit_nak  += debit;
+credit_nak += credit;
+}
+
+});
+
+let header_pc = $('#profit_center_kas1').val();
+
+let amount = parseFloat($('#amount_kas1').val().replace(/,/g,'')) || 0;
+
+let eqv = amount * rate;
+
+if(header_pc === 'NAG'){
+debit_nag += eqv;
+}
+
+if(header_pc === 'NAK'){
+debit_nak += eqv;
+}
+
+let grand_debit  = debit_nag + debit_nak;
+let grand_credit = credit_nag + credit_nak;
+
+$('#tot_debit_nag1').val(formatAngka(debit_nag));
+$('#tot_credit_nag1').val(formatAngka(credit_nag));
+
+$('#tot_debit_nak1').val(formatAngka(debit_nak));
+$('#tot_credit_nak1').val(formatAngka(credit_nak));
+
+$('#tot_debit1').val(formatAngka(grand_debit));
+$('#tot_credit1').val(formatAngka(grand_credit));
+
+$('#h_tot_debit_nag1').val(debit_nag);
+$('#h_tot_credit_nag1').val(credit_nag);
+
+$('#h_tot_debit_nak1').val(debit_nak);
+$('#h_tot_credit_nak1').val(credit_nak);
+
+$('#h_tot_debit1').val(grand_debit);
+$('#h_tot_credit1').val(grand_credit);
+
+}
+
+
+$(document).on('change','.prof_ctr1,.curr_det1',function(){
+
+hitung_total1();
+
+});
+
+$('#amount_kas1').on('keyup change', function(){
+
+hitung_total1();
+
+});
+
+
+$('#simpan1').on('click', function () {
+
+    let account = $('#account1').val();
+
+    if(account == ''){
+        Swal.fire('Warning','Account tidak boleh kosong','warning');
+        return;
+    }
+
+    if(!$('#reff_number1').val()){
+        Swal.fire('Warning','Reff Document tidak boleh kosong','warning');
+        return;
+    }
+
+    if(!$('#pesan1').val().trim()){
+        Swal.fire('Warning','Description tidak boleh kosong','warning');
+        return;
+    }
+
+    let debitNAG  = 0;
+    let creditNAG = 0;
+    let debitNAK  = 0;
+    let creditNAK = 0;
+
+    let error = false;
+
+    $("#tbody1 tr").each(function(){
+
+        let tr = $(this);
+
+        let coa = tr.find('select.no_coa1').first().val();
+        let pc  = tr.find('select.prof_ctr1').first().val();
+        let cc  = tr.find('select.cost_ctr1').first().val();
+
+        let debit  = parseFloat(tr.find('[name="txt_amount1[]"]').val()) || 0;
+        let credit = parseFloat(tr.find('[name="txt_credit1[]"]').val()) || 0;
+
+        let ketInput1 = tr.find('input[name="keterangan1[]"]');
+        if(!ketInput1.val()){
+          ketInput1.val($('#pesan1').val());
+        }
+
+        if(coaWajibCC.includes(coa)){
+
+            if(cc == '-' || cc == '' || cc == null){
+
+                Swal.fire(
+                    'Warning',
+                    'COA '+coa+' wajib isi Cost Center',
+                    'warning'
+                );
+
+                error = true;
+                return false;
+            }
+        }
+
+        if(pc == 'NAG'){
+            debitNAG  += debit;
+            creditNAG += credit;
+        }
+
+        if(pc == 'NAK'){
+            debitNAK  += debit;
+            creditNAK += credit;
+        }
+
+    });
+
+    if(error) return;
+
+    let header_pc = $('#profit_center_kas1').val();
+
+    let header_debit = parseFloat(
+        $('#amount_kas1').val().replace(/,/g,'')
+    ) || 0;
+
+    if(header_pc == 'NAG'){
+
+        let totalDebit  = header_debit + debitNAG;
+        let totalCredit = creditNAG;
+
+        if(totalDebit != totalCredit){
+
+            Swal.fire(
+                'Warning',
+                'Journal Nirwana Alabare Garment tidak balance (Header + Detail)',
+                'warning'
+            );
+
+            return;
+        }
+
+    }
+
+    if(header_pc == 'NAK'){
+
+        let totalDebit  = header_debit + debitNAK;
+        let totalCredit = creditNAK;
+
+        if(totalDebit != totalCredit){
+
+            Swal.fire(
+                'Warning',
+                'Journal Nirwana Alabare Knitting tidak balance (Header + Detail)',
+                'warning'
+            );
+
+            return;
+        }
+
+    }
+
+    function doSavePettyinCashout1(){
+
+      $('#simpan1').prop('disabled', true);
+
+      $.ajax({
+
+          url: "petty-in/save_pettyin_cashout.php",
+          type: "POST",
+          data: $('#form-data1').serialize(),
+
+          beforeSend:function(){
+
+              Swal.fire({
+                  title: 'Saving...',
+                  allowOutsideClick:false,
+                  didOpen:()=>{
+                      Swal.showLoading();
+                  }
+              });
+
+          },
+
+          success:function(res){
+
+              let r = JSON.parse(res);
+
+              if(r.status == 'success'){
+
+                  Swal.fire({
+                      icon:'success',
+                      title:'Success',
+                      text:r.message
+                  }).then(()=>{
+                      location.href='petty-cashin.php';
+                  });
+
+              }else{
+
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: r.message,
+                    showCancelButton: true,
+                    confirmButtonText: 'Coba Lagi',
+                    cancelButtonText: 'Tutup'
+                  }).then((retry) => {
+                    if(retry.isConfirmed){
+                      doSavePettyinCashout1();
+                    }else{
+                      $('#simpan1').prop('disabled', false);
+                    }
+                  });
+
+              }
+
+          },
+
+          error:function(xhr){
+
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Server Error',
+                showCancelButton: true,
+                confirmButtonText: 'Coba Lagi',
+                cancelButtonText: 'Tutup'
+              }).then((retry) => {
+                if(retry.isConfirmed){
+                  doSavePettyinCashout1();
+                }else{
+                  $('#simpan1').prop('disabled', false);
+                }
+              });
+          }
+
+      });
+
+    }
+
+    Swal.fire({
+        title: "Save Data?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Save",
+        cancelButtonText: "Cancel"
+    }).then((result)=>{
+
+        if(result.isConfirmed){
+            doSavePettyinCashout1();
+        }
+
+    });
+
+});
 
 
 //ke 3.....................................................................................
@@ -2011,6 +2801,11 @@ $('#simpan3').on('click', function () {
         return;
     }
 
+    if(!$('#pesan3').val().trim()){
+        Swal.fire('Warning','Description tidak boleh kosong','warning');
+        return;
+    }
+
     let debitNAG  = 0;
     let creditNAG = 0;
     let debitNAK  = 0;
@@ -2031,6 +2826,12 @@ $('#simpan3').on('click', function () {
 
         let debit  = parseFloat(tr.find('[name="txt_amount[]"]').val()) || 0;
         let credit = parseFloat(tr.find('[name="txt_credit[]"]').val()) || 0;
+
+        // Kalau description baris kosong, pakai description header
+        let ketInput3 = tr.find('input[name="keterangan[]"]');
+        if(!ketInput3.val()){
+          ketInput3.val($('#pesan3').val());
+        }
 
         console.log("----- ROW",rowIndex,"-----");
         console.log("COA :", coa);
@@ -2150,6 +2951,96 @@ if(header_pc == 'NAK'){
 
     console.log($('#form-data3').serialize());
 
+    function doSavePettyinNone3(){
+
+      $('#simpan3').prop('disabled', true);
+
+      $.ajax({
+
+          url: "petty-in/save_pettyin_none.php",
+          type: "POST",
+          data: $('#form-data3').serialize(),
+
+          beforeSend:function(){
+
+              console.log("Sending data...");
+
+              Swal.fire({
+                  title: 'Saving...',
+                  allowOutsideClick:false,
+                  didOpen:()=>{
+                      Swal.showLoading();
+                  }
+              });
+
+          },
+
+          success:function(res){
+
+              console.log("Response Server :", res);
+
+              let r = JSON.parse(res);
+
+              if(r.status == 'success'){
+
+                  console.log("SAVE SUCCESS");
+
+                  Swal.fire({
+                      icon:'success',
+                      title:'Success',
+                      text:r.message
+                  }).then(()=>{
+                      location.href='petty-cashin.php';
+                  });
+
+              }else{
+
+                  console.log("SAVE ERROR :", r.message);
+
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: r.message,
+                    showCancelButton: true,
+                    confirmButtonText: 'Coba Lagi',
+                    cancelButtonText: 'Tutup'
+                  }).then((retry) => {
+                    if(retry.isConfirmed){
+                      doSavePettyinNone3();
+                    }else{
+                      $('#simpan3').prop('disabled', false);
+                    }
+                  });
+
+              }
+
+          },
+
+          error:function(xhr){
+
+              console.log("AJAX ERROR");
+              console.log(xhr.responseText);
+
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Server Error',
+                showCancelButton: true,
+                confirmButtonText: 'Coba Lagi',
+                cancelButtonText: 'Tutup'
+              }).then((retry) => {
+                if(retry.isConfirmed){
+                  doSavePettyinNone3();
+                }else{
+                  $('#simpan3').prop('disabled', false);
+                }
+              });
+          }
+
+      });
+
+    }
+
     Swal.fire({
         title: "Save Data?",
         icon: "question",
@@ -2159,71 +3050,8 @@ if(header_pc == 'NAK'){
     }).then((result)=>{
 
         if(result.isConfirmed){
-
             console.log("PROSES AJAX SAVE");
-
-            $.ajax({
-
-                url: "petty-in/save_pettyin_none.php",
-                type: "POST",
-                data: $('#form-data3').serialize(),
-
-                beforeSend:function(){
-
-                    console.log("Sending data...");
-
-                    Swal.fire({
-                        title: 'Saving...',
-                        allowOutsideClick:false,
-                        didOpen:()=>{
-                            Swal.showLoading();
-                        }
-                    });
-
-                },
-
-                success:function(res){
-
-                    console.log("Response Server :", res);
-
-                    let r = JSON.parse(res);
-
-                    if(r.status == 'success'){
-
-                        console.log("SAVE SUCCESS");
-
-                        Swal.fire({
-                            icon:'success',
-                            title:'Success',
-                            text:r.message
-                        }).then(()=>{
-                            location.href='petty-cashin.php';
-                        });
-
-                    }else{
-
-                        console.log("SAVE ERROR :", r.message);
-
-                        Swal.fire(
-                            'Error',
-                            r.message,
-                            'error'
-                        );
-
-                    }
-
-                },
-
-                error:function(xhr){
-
-                    console.log("AJAX ERROR");
-                    console.log(xhr.responseText);
-
-                    Swal.fire('Error','Server Error','error');
-                }
-
-            });
-
+            doSavePettyinNone3();
         }
 
     });

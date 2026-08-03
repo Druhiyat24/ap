@@ -120,17 +120,73 @@
   }
 
   .total-box{
-    border:1px solid #dcdcdc;
-    border-radius:6px;
-    padding:15px;
-    background:#fafafa;
+    border:0;
+    border-radius:10px;
+    background:#fff;
+    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+    overflow:hidden;
+    height:100%;
+    padding:0;
   }
 
-  .total-box h6{
-    font-weight:bold;
-    margin-bottom:15px;
-    border-bottom:1px solid #ddd;
-    padding-bottom:5px;
+  .total-box .total-box-header{
+    padding:12px 16px;
+    color:#fff;
+    font-weight:700;
+    font-size:14px;
+  }
+
+  .total-box.tone-nag .total-box-header{
+    background:linear-gradient(90deg, #5b7ba8, #7fa0c9);
+  }
+
+  .total-box.tone-nak .total-box-header{
+    background:linear-gradient(90deg, #4f8a6b, #74ad8f);
+  }
+
+  .total-box.tone-all .total-box-header{
+    background:linear-gradient(90deg, #4a5578, #6b7699);
+  }
+
+  .total-box .total-box-body{
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  .total-stat{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    padding-bottom:12px;
+    border-bottom:1px dashed #e5e5e5;
+  }
+
+  .total-stat:last-child{
+    border-bottom:0;
+    padding-bottom:0;
+  }
+
+  .total-stat-label{
+    font-size:12px;
+    font-weight:600;
+    color:#8a8a8a;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+
+  .total-stat input.total-stat-value{
+    border:0;
+    background:transparent;
+    padding:0;
+    font-size:19px;
+    font-weight:700;
+    text-align:right;
+    width:auto;
+    max-width:100%;
+    height:auto;
+    color:#212529;
   }
 </style>
 
@@ -148,13 +204,12 @@
     <div class="card-body p-4">
 
       <div class="tab-container">
-        <button class="tablinks active" onclick="openTab(event, 'outbank-lp')">List Payment</button>
-        <button class="tablinks" onclick="openTab(event, 'outbank-pv')">Payment Voucher</button>
+        <button class="tablinks active" onclick="openTab(event, 'outbank-pv')">Payment Voucher</button>
         <button class="tablinks" onclick="openTab(event, 'outbank-none')">None</button>
       </div>
 
 
-      <div id="outbank-lp" class="tabcontent">
+      <div id="outbank-lp" class="tabcontent" style="display:none;">
         <?php include 'bank-out/outbank-lp.php'; ?>
       </div>
 
@@ -1529,6 +1584,8 @@ $(document).on('change', '.chk_pv', function(){
 
     input.prop('disabled', true);
     input.val('');
+    input_idr.prop('disabled', true);
+    input_idr.val('');
     tr.removeData('idr_rate');
 
     if(getAllCheckedPv().length === 0){
@@ -2211,6 +2268,10 @@ $(document).on('change', '.no_coa2', function() {
             text: 'Silahkan ceklis baris yang ingin dihapus'
           });
 
+        } else {
+
+          hitungTotalPV();
+
         }
 
         /* refresh selectpicker jika ada */
@@ -2394,6 +2455,11 @@ $(document).on('change', '.no_coa2', function() {
     return;
   }
 
+  if(!header.desc || !header.desc.trim()){
+    Swal.fire('Warning','Description tidak boleh kosong','warning');
+    return;
+  }
+
   if(getAllCheckedPv().length === 0){
     Swal.fire('Warning','Pilih minimal 1 PV','warning');
     return;
@@ -2466,13 +2532,18 @@ $(document).on('change', '.no_coa2', function() {
 
     let tr = $(this);
 
-    let coa   = tr.find('select.no_coa2').first().val();
-    let pc    = tr.find('select.prof_ctr2').first().val();
-    let cc    = tr.find('select.cost_ctr2').first().val();
+    let coa   = tr.find('select[name="nomor_coa2[]"]').first().val() || tr.find('.no_coa2').first().val();
+    let pc    = tr.find('select[name="prof_ctr2[]"]').first().val() || tr.find('.prof_ctr2').first().val();
+    let cc    = tr.find('select[name="cost_ctr2[]"]').first().val() || tr.find('.cost_ctr2').first().val();
+
+    coa = (coa || '').trim();
+    pc  = (pc || '').trim();
+    cc  = (cc || '').trim();
+
     let debit = parseFloat(tr.find('input[name="txt_amount2[]"]').val()) || 0;
     let credit= parseFloat(tr.find('input[name="txt_credit2[]"]').val()) || 0;
     let desc  = tr.find('input[name="keterangan2[]"]').val();
-    let curr  = tr.find('select.currenc2').first().val();
+    let curr  = tr.find('select[name="currenc2[]"]').first().val() || tr.find('.currenc2').first().val();
     let reff_doc  = tr.find('input[name="no_reff2[]"]').val();
     let reff_date  = tr.find('input[name="reff_date2[]"]').val();
 
@@ -2550,47 +2621,62 @@ $(document).on('change', '.no_coa2', function() {
   console.log("FINAL DATA:", finalData);
 
   // =========================
-  // AJAX SAVE
+  // KONFIRMASI + AJAX SAVE
   // =========================
   Swal.fire({
-    title: 'Saving...',
-    allowOutsideClick: false,
-    didOpen: () => {
-      Swal.showLoading();
-    }
-  });
+    title: "Are you sure?",
+    text: "Data akan disimpan.",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Yes, save it!",
+    cancelButtonText: "Cancel"
+  }).then((result) => {
 
-  $.ajax({
-    url: 'bank-out/save_pv.php',
-    type: 'POST',
-    dataType: 'json',
-    data: {
-      data: JSON.stringify(finalData)
-    },
-    success: function(res){
+    if(!result.isConfirmed) return;
 
-      console.log("RESPONSE:", res);
-
-      if(res.status === 'ok'){
-        Swal.fire({
-          icon: 'success',
-          title: 'Success',
-          text: res.message
-        }).then(() => {
-          location.href='bank-out.php';
-        });
-      }else{
-        Swal.fire('Error', res.message, 'error');
+    Swal.fire({
+      title: 'Saving...',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
       }
+    });
 
-    },
-    error: function(xhr){
+    $.ajax({
+      url: 'bank-out/save_pv.php',
+      type: 'POST',
+      dataType: 'json',
+      data: {
+        data: JSON.stringify(finalData)
+      },
+      success: function(res){
 
-      console.log("ERROR AJAX:", xhr.responseText);
+        console.log("RESPONSE:", res);
 
-      Swal.fire('Error','Terjadi kesalahan server','error');
+        if(res.status === 'ok'){
+          Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: res.message
+          }).then(() => {
+            location.href='bank-out.php';
+          });
+        }else{
+          Swal.fire('Error', res.message, 'error');
+        }
 
-    }
+      },
+      error: function(xhr){
+
+        console.log("ERROR AJAX:", xhr.responseText);
+
+        Swal.fire('Error','Terjadi kesalahan server','error');
+
+      }
+    });
+
   });
 
 });
@@ -2914,6 +3000,10 @@ $(document).on('change', '.no_coa2', function() {
             title: 'Warning',
             text: 'Silahkan ceklis baris yang ingin dihapus'
           });
+
+        } else {
+
+          hitung_total();
 
         }
 
@@ -3280,6 +3370,8 @@ $('#simpan3').on('click', function () {
 
   let source  = $('#nama_supp3').val();
   let account = $('#account3').val();
+  let amount3 = parseFloat($('#amount_bank3').val().replace(/,/g,'')) || 0;
+  let desc3   = $('#pesan3').val().trim();
 
   if(source == ''){
     Swal.fire('Warning','Supplier tidak boleh kosong','warning');
@@ -3291,6 +3383,16 @@ $('#simpan3').on('click', function () {
     return;
   }
 
+  if(amount3 === 0){
+    Swal.fire('Warning','Amount tidak boleh kosong','warning');
+    return;
+  }
+
+  if(desc3 == ''){
+    Swal.fire('Warning','Description tidak boleh kosong','warning');
+    return;
+  }
+
     // TETAP ADA (tapi tidak dipakai hitung)
     let debitNAG  = 0;
     let creditNAG = 0;
@@ -3298,6 +3400,7 @@ $('#simpan3').on('click', function () {
     let creditNAK = 0;
 
     let error = false;
+    let rowIndex3 = 0;
 
     console.log("===== LOOP DETAIL =====");
 
@@ -3305,12 +3408,37 @@ $('#simpan3').on('click', function () {
 
       let tr = $(this);
 
-      let coa = tr.find('.no_coa').val();
-      let pc  = tr.find('.prof_ctr').val();
-      let cc  = tr.find('.cost_ctr').val();
+      let coa = tr.find('select[name="nomor_coa[]"]').first().val() || tr.find('.no_coa').first().val();
+      let pc  = tr.find('select[name="prof_ctr[]"]').first().val() || tr.find('.prof_ctr').first().val();
+      let cc  = tr.find('select[name="cost_ctr[]"]').first().val() || tr.find('.cost_ctr').first().val();
+
+      coa = (coa || '').trim();
+      pc  = (pc || '').trim();
+      cc  = (cc || '').trim();
 
       let debit  = parseFloat(tr.find('[name="txt_amount[]"]').val()) || 0;
       let credit = parseFloat(tr.find('[name="txt_credit[]"]').val()) || 0;
+
+      rowIndex3++;
+
+      /* baris benar-benar kosong (belum diisi sama sekali) - lewati saja */
+      if((coa == '-' || coa == '' || coa == null) && debit === 0 && credit === 0){
+        return;
+      }
+
+      /* VALIDASI COA WAJIB */
+      if(coa == '-' || coa == '' || coa == null){
+        Swal.fire('Warning','Baris ke-'+rowIndex3+': COA wajib diisi','warning');
+        error = true;
+        return false;
+      }
+
+      /* VALIDASI PROFIT CENTER WAJIB */
+      if(pc == '-' || pc == '' || pc == null){
+        Swal.fire('Warning','Baris ke-'+rowIndex3+': Profit Center wajib diisi','warning');
+        error = true;
+        return false;
+      }
 
       /* VALIDASI COST CENTER */
       if(coaWajibCC.includes(coa)){
@@ -3319,6 +3447,13 @@ $('#simpan3').on('click', function () {
           error = true;
           return false;
         }
+      }
+
+      /* VALIDASI DEBIT/CREDIT */
+      if(debit === 0 && credit === 0){
+        Swal.fire('Warning','Baris ke-'+rowIndex3+': Debit/Credit harus diisi','warning');
+        error = true;
+        return false;
       }
 
         // ❌ HITUNG PER PC DIHAPUS (tidak dipakai lagi)

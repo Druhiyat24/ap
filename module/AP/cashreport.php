@@ -1,104 +1,134 @@
 <?php include '../header.php' ?>
 
-    <!-- MAIN -->
-    <div class="col p-4">
-        <h2 class="text-center">REPORT CASH</h2>
-<div class="box">
-    <div class="box header">
+<style type="text/css">
+    label {
+        font-size: 14px;
+    }
 
-        
-       <form id="form-data" action="cashreport.php" method="post">        
-        <div class="form-row">
-            <div class="col-md-5">
-            <label for="accountid" class="col-form-label" ><b>Account </b></label>  
-                <select class="form-control selectpicker" name="accountid" id="accountid" data-live-search="true" onchange='changeValueACC(this.value)' required >
-                <option value="" disabled selected="true">Select Account</option>  
-                <?php 
-                        $sqlacc = mysqli_query($conn1,"select no_coa as account, 'IDR' as curr,concat(no_coa,' ', nama_coa) as coa, SUBSTR(nama_coa,11,1) as kode from mastercoa_v2 where left(no_coa,4) = '1.01'");
-                        $jsArray = "var prdName = new Array();\n";
+    input {
+        font-size: 14px;
+    }
 
-                        while ($row = mysqli_fetch_array($sqlacc)) {
-                            $data = $row['account'];
-                            $data2 = $row['coa'];
-                            if($row['account'] == $_POST['accountid']){
-                                $isSelected  = ' selected="selected"';
-                            }else{
-                                $isSelected = '';
-                            }
-                            echo '<option name="accountid" value="'.$data.'"'.$isSelected.'">'. $data2 .'</option>';    
-                            $jsArray .= "prdName['" . $row['account'] . "'] = {curren:'".addslashes($row['curr'])."'};\n";
-                        }
-                        ?>
-                </select>
-                    <input type="hidden" style="font-size: 12px;" class="form-control" id="curren" name="curren" value="<?php 
-            if(!empty($_POST['curren'])) {
-                echo $_POST['curren'];
-            }
-            else{
-                echo 'IDR';
-            } ?>" readonly > 
-                </div> 
+    .table-gradient th {
+        background: #1E3A8A;
+        color: #fff;
+        text-align: center;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
 
-        <div class="form-row">
-            <div class="col-md-6"> 
-            <label for="start_date"><b>From</b></label>          
-            <input type="text" style="font-size: 12px;" class="form-control tanggal" id="start_date" name="start_date" 
-            value="<?php
-            $start_date ='';
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-               $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-            }
-            if(!empty($_POST['start_date'])) {
-               echo $_POST['start_date'];
-            }
-            else{
-              echo date("d-m-Y");
-            } ?>" 
-            placeholder="Start Date" autocomplete='off'>
-            </div>
+    .table-gradient tr.crr2-beginend th {
+        background: #eef2f9;
+        color: #1e3a8a;
+    }
+</style>
 
-            <div class="col-md-6 mb-1">
-            <label for="end_date"><b>To</b></label>          
-            <input type="text" style="font-size: 12px;" class="form-control tanggal" id="end_date" name="end_date" 
-            value="<?php
-            $end_date ='';
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-               $end_date = date("Y-m-d",strtotime($_POST['end_date']));
-            }
-            if(!empty($_POST['end_date'])) {
-               echo $_POST['end_date'];
-            }
-            else{
-               echo date("d-m-Y");
-            } ?>" 
-            placeholder="End Date" autocomplete='off'>
-            </div>
+<!-- MAIN -->
+<div class="container-fluid mt-4 p-4">
+    <!-- Card Filter -->
+    <div class="card shadow border-0">
+        <div class="card-header text-white py-2 px-3" style="background: linear-gradient(90deg, #191970, #1e90ff);">
+            <h5 class="mb-0"><i class="fa fa-money" aria-hidden="true"></i> REPORT CASH</h5>
         </div>
 
-            <div class="input-group-append col">                                   
-            <button type="submit" id="submit" value=" Search " style="margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
-    line-height: 1;
-    padding: -2px 8px;
-    font-size: 1rem;
-    text-align: center;
-    color: #fff;
-    text-shadow: 1px 1px 1px #000;
-    border-radius: 6px;
-    background-color: rgb(46, 139, 87);"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
-            <button type="button" id="reset" value=" Reset " style="margin-top: 30px; margin-bottom: 5px;border: 0;
-    line-height: 1;
-    padding: -2px 8px;
-    font-size: 1rem;
-    text-align: center;
-    color: #fff;
-    text-shadow: 1px 1px 1px #000;
-    border-radius: 6px;
-    background-color:rgb(250, 69, 1)"><i class="fa fa-repeat" aria-hidden="true"></i> Reset </button>
-            </div>                                                            
+        <div class="card-body p-3">
+            <form id="form-data" action="cashreport.php" method="post">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="accountid" class="form-label"><b>Account</b></label>
+                        <select class="form-control selectpicker" name="accountid" id="accountid" data-live-search="true" onchange='changeValueACC(this.value)' required>
+                            <option value="" disabled selected="true">Select Account</option>
+                            <?php
+                            $sqlacc = mysqli_query($conn1,"select no_coa as account, 'IDR' as curr,concat(no_coa,' ', nama_coa) as coa, SUBSTR(nama_coa,11,1) as kode from mastercoa_v2 where left(no_coa,4) = '1.01'");
+                            $jsArray = "var prdName = new Array();\n";
+
+                            while ($row = mysqli_fetch_array($sqlacc)) {
+                                $data = $row['account'];
+                                $data2 = $row['coa'];
+                                if($row['account'] == $_POST['accountid']){
+                                    $isSelected  = ' selected="selected"';
+                                }else{
+                                    $isSelected = '';
+                                }
+                                echo '<option name="accountid" value="'.$data.'"'.$isSelected.'">'. $data2 .'</option>';
+                                $jsArray .= "prdName['" . $row['account'] . "'] = {curren:'".addslashes($row['curr'])."'};\n";
+                            }
+                            ?>
+                        </select>
+                        <input type="hidden" class="form-control" id="curren" name="curren" value="<?php
+                        if(!empty($_POST['curren'])) {
+                            echo $_POST['curren'];
+                        }
+                        else{
+                            echo 'IDR';
+                        } ?>" readonly>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="start_date" class="form-label"><b>From</b></label>
+                        <input type="text" class="form-control form-control-sm tanggal" id="start_date" name="start_date"
+                        value="<?php
+                        $start_date ='';
+                        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                           $start_date = date("Y-m-d",strtotime($_POST['start_date']));
+                        }
+                        if(!empty($_POST['start_date'])) {
+                           echo $_POST['start_date'];
+                        }
+                        else{
+                          echo date("d-m-Y");
+                        } ?>"
+                        placeholder="Start Date" autocomplete='off'>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="end_date" class="form-label"><b>To</b></label>
+                        <input type="text" class="form-control form-control-sm tanggal" id="end_date" name="end_date"
+                        value="<?php
+                        $end_date ='';
+                        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                           $end_date = date("Y-m-d",strtotime($_POST['end_date']));
+                        }
+                        if(!empty($_POST['end_date'])) {
+                           echo $_POST['end_date'];
+                        }
+                        else{
+                           echo date("d-m-Y");
+                        } ?>"
+                        placeholder="End Date" autocomplete='off'>
+                    </div>
+
+                    <div class="col-md-3 d-flex align-items-end mt-2">
+                        <button type="submit" id="submit" class="btn btn-info btn-sm me-2">
+                            <i class="fa fa-search" aria-hidden="true"></i> Search
+                        </button>
+                        <button type="button" id="reset" class="btn btn-secondary btn-sm ml-2 d-none">
+                            <i class="fa fa-repeat" aria-hidden="true"></i> Reset
+                        </button>
+                        <?php
+                        $nama_bank = '';
+                        $accountid = isset($_POST['accountid']) ? $_POST['accountid']: null;
+                        $curren = isset($_POST['curren']) ? $_POST['curren']: null;
+                        $start_date = isset($_POST['start_date']) ? $_POST['start_date'] : null;
+                        $end_date = isset($_POST['end_date']) ? $_POST['end_date'] : null;
+                        if ($accountid == '1.01.01') {
+                            $nama_bank = 'KAS KECIL PABRIK';
+                        }elseif ($accountid == '1.01.02') {
+                            $nama_bank = 'KAS KECIL KANTOR';
+                        }elseif ($accountid == '1.01.03') {
+                            $nama_bank = 'KAS BESAR';
+                        }else {
+                            $nama_bank = '';
+                        }
+
+                        echo '<a target="_blank" href="report_idrcash.php?nama_bank='.$nama_bank.' && accountid='.$accountid.' && curren='.$curren.' && start_date='.$start_date.' && end_date='.$end_date.'" class="ml-2"><button type="button" class="btn btn-success btn-sm">
+                        <i class="fa fa-file-excel-o" aria-hidden="true"></i> Excel</button></a>';
+                        ?>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
-</br>
-</div>
-</form> 
 
 
 <?php
@@ -115,31 +145,16 @@
     // // echo '<button id="btndraft" type="button" class="btn-warning btn-xs" hidden><span class="fa fa-bars"></span> List Draft</button>';
     // }
 ?>
-    </div>
-    <div class="box body">
-        <div class="row">       
-            <div class="col-md-12">
-                </br>
-    <div style="margin-left: 30px">
-        <?php
+
+    <!-- Card Table -->
+    <div class="card shadow border-0 mt-4">
+        <div class="card-body p-4">
+            <?php
         $nama_bank = '';
         $accountid = isset($_POST['accountid']) ? $_POST['accountid']: null;
         $curren = isset($_POST['curren']) ? $_POST['curren']: null;
         $start_date = isset($_POST['start_date']) ? $_POST['start_date'] : null;
         $end_date = isset($_POST['end_date']) ? $_POST['end_date'] : null;
-        if ($accountid == '1.01.01') {
-        $nama_bank = 'KAS KECIL PABRIK';
-    }elseif ($accountid == '1.01.02') {
-        $nama_bank = 'KAS KECIL KANTOR';
-    }elseif ($accountid == '1.01.03') {
-        $nama_bank = 'KAS BESAR';
-    }else {
-        $nama_bank = '';
-    }
-
- 
-        echo '<a target="_blank" href="report_idrcash.php?nama_bank='.$nama_bank.' && accountid='.$accountid.' && curren='.$curren.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success">
-        <i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> EXCEL</i></button></a>';
 
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $accountid = isset($_POST['accountid']) ? $_POST['accountid']: null;
@@ -195,43 +210,41 @@ $rates = isset($rowyss['rate']) ? $rowyss['rate'] : 0;
 $saldo_ = $saldoawal * $rates;
 
         ?>
-    </div> 
-    <br/>
 
-    <div class="tableFix" style="height: 500px;">        
+    <div class="table-responsive tableFix" style="height: 500px;">
 <table id="datatable" class="table table-striped table-bordered" role="grid" cellspacing="0" width="100%">
-    <?php 
+    <?php
                 $curren = isset($_POST['curren']) ? $_POST['curren']: null;
                 if ( $curren == 'IDR') {
                     echo '
-    <thead>
-        <tr class="thead-dark">
+    <thead class="table-gradient">
+        <tr>
             <th colspan="2" style="text-align: center;vertical-align: middle;width: 22%;">Cash Account</th>
             <th colspan="2" style="text-align: left;vertical-align: middle;width: 22%;">: ';?><?php echo $nama_bank; ?><?php echo'</th>
             <th style="text-align: center;vertical-align: middle;width: 11%;">Benefficiary Name</th>
             <th colspan="2" style="text-align: left;vertical-align: middle;width: 23%;">: PT Nirwana Alabare Garment</th>
             <th style="text-align: center;vertical-align: middle;width: 11%;">Currency</th>
-            <th style="text-align: left;vertical-align: middle;width: 11%;">: ';?><?php echo $curren1; ?><?php echo'</th>                                                                            
+            <th style="text-align: left;vertical-align: middle;width: 11%;">: ';?><?php echo $curren1; ?><?php echo'</th>
         </tr>
-        <tr class="thead-dark">
+        <tr>
             <th style="text-align: center;vertical-align: middle;width: 11%;">Transaction Date</th>
             <th style="text-align: center;vertical-align: middle;width: 11%;">Journal No</th>
             <th colspan="3" style="text-align: center;vertical-align: middle;width: 30%;">Description</th>
             <th style="text-align: center;vertical-align: middle;width: 16%;">Category</th>
-            <th style="text-align: center;vertical-align: middle;width: 10%;">Debit</th> 
+            <th style="text-align: center;vertical-align: middle;width: 10%;">Debit</th>
             <th style="text-align: center;vertical-align: middle;width: 11%;">Credit</th>
-            <th style="text-align: center;vertical-align: middle;width: 11%;">Balance</th>                                                                            
+            <th style="text-align: center;vertical-align: middle;width: 11%;">Balance</th>
         </tr>
-        <tr>
+        <tr class="crr2-beginend">
             <th style="text-align: center;vertical-align: middle;width: 11%;">Beginning Balance</th>
             <th colspan="7" style="text-align: center;vertical-align: middle;width: 78%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 11%;">';?><?php echo number_format($saldoawal,2); ?> <?php echo'</th>                                                                            
+            <th style="text-align: right;vertical-align: middle;width: 11%;">';?><?php echo number_format($saldoawal,2); ?> <?php echo'</th>
         </tr>
     </thead>';
 }else{
     echo '
-    <thead>
-        <tr class="thead-dark">
+    <thead class="table-gradient">
+        <tr>
             <th style="text-align: center;vertical-align: middle;width: 10%;">Name Bank</th>
             <th style="text-align: left;vertical-align: middle;width: 10%;">: ';?><?php echo $nama_bank; ?><?php echo'</th>
             <th style="text-align: center;vertical-align: middle;width: 10%;">Bank Account</th>
@@ -239,23 +252,23 @@ $saldo_ = $saldoawal * $rates;
             <th style="text-align: center;vertical-align: middle;width: 15%;">Benefficiary Name</th>
             <th colspan="2" style="text-align: left;vertical-align: middle;width: 15%;">: PT Nirwana Alabare Garment</th>
             <th style="text-align: center;vertical-align: middle;width: 10%;">Currency</th>
-            <th colspan="2" style="text-align: left;vertical-align: middle;width: 20%;">: ';?><?php echo $curren1; ?><?php echo'</th>                                                                            
+            <th colspan="2" style="text-align: left;vertical-align: middle;width: 20%;">: ';?><?php echo $curren1; ?><?php echo'</th>
         </tr>
-        <tr class="thead-dark">
+        <tr>
             <th style="text-align: center;vertical-align: middle;width: 10%;">Transaction Date</th>
             <th style="text-align: center;vertical-align: middle;width: 10%;">Journal No</th>
             <th colspan="3" style="text-align: center;vertical-align: middle;width: 28%;">Description</th>
             <th style="text-align: center;vertical-align: middle;width: 12%;">Category</th>
-            <th style="text-align: center;vertical-align: middle;width: 10%;">Debit</th> 
+            <th style="text-align: center;vertical-align: middle;width: 10%;">Debit</th>
             <th style="text-align: center;vertical-align: middle;width: 10%;">Credit</th>
             <th style="text-align: center;vertical-align: middle;width: 10%;">Balance</th>
-            <th style="text-align: center;vertical-align: middle;width: 10%;">Balance Eq IDR</th>                                                                            
+            <th style="text-align: center;vertical-align: middle;width: 10%;">Balance Eq IDR</th>
         </tr>
-        <tr>
+        <tr class="crr2-beginend">
             <th style="text-align: center;vertical-align: middle;width: 10%;">Beginning Balance</th>
             <th colspan="7" style="text-align: center;vertical-align: middle;width: 70%;"></th>
             <th style="text-align: right;vertical-align: middle;width: 10%;">';?><?php echo number_format($saldoawal,2); ?> <?php echo'</th>
-            <th style="text-align: right;vertical-align: middle;width: 10%;">';?><?php echo number_format($saldo_,2); ?> <?php echo'</th>                                                                            
+            <th style="text-align: right;vertical-align: middle;width: 10%;">';?><?php echo number_format($saldo_,2); ?> <?php echo'</th>
         </tr>
     </thead>';
 }?>
@@ -394,26 +407,27 @@ $rates3 = isset($rowyss3['rate']) ? $rowyss3['rate'] : 1;
 }
 if($curren == 'IDR'){
 echo '
-            <tr >
+            <tr class="crr2-beginend">
             <th style="text-align: center;vertical-align: middle;width: 11%;">Ending Balance</th>
             <th colspan="7" style="text-align: center;vertical-align: middle;width: 78%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 11%;">'.number_format($saldoakhir,2).'</th></th>                                                                            
+            <th style="text-align: right;vertical-align: middle;width: 11%;">'.number_format($saldoakhir,2).'</th>
         </tr>';
 }else{
 echo '
-            <tr >
+            <tr class="crr2-beginend">
             <th style="text-align: center;vertical-align: middle;width: 10%;">Ending Balance</th>
             <th colspan="7" style="text-align: center;vertical-align: middle;width: 70%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 10%;">'.number_format($saldoakhir,2).'</th></th>
-            <th style="text-align: right;vertical-align: middle;width: 10%;">'.number_format(($saldoakhir * $rates3),2).'</th></th>                                                                            
-        </tr>'; 
+            <th style="text-align: right;vertical-align: middle;width: 10%;">'.number_format($saldoakhir,2).'</th>
+            <th style="text-align: right;vertical-align: middle;width: 10%;">'.number_format(($saldoakhir * $rates3),2).'</th>
+        </tr>';
 }
 ?>
-
-
-                                                         
-</tbody>                    
+</tbody>
 </table>
+</div>
+
+    </div>
+</div>
 </div>
 
 <style type="text/css">
@@ -447,18 +461,10 @@ echo '
     }
 </style>
 
-   
-    </div>
-    </div>
-</div>
-</div><!-- body-row END -->
-</div>
-</div>
-
 <div class="modal fade center" id="mymodalbon" data-target="#mymodalbon" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
        <div class="modal-dialog-full-width modal-dialog momodel modal-fluid" role="document">
         <div class="modal-content-full-width modal-content ">
-            <div class=" modal-header-full-width   modal-header text-left">
+            <div class="modal-header-full-width modal-header text-left text-white" style="background-color: #2563EB;">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
         <h4 class="modal-title" id="txt_kbon"></h4>
         </div>

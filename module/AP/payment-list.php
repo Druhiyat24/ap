@@ -315,9 +315,13 @@ function SidebarCollapse () {
 </script>
 
 <script type="text/javascript">
-    document.getElementById('btncreate').onclick = function () {
-        location.href = "form_payment-list.php";
-    };
+    const btnCreate = document.getElementById('btncreate');
+    if (btnCreate) {
+        btnCreate.onclick = function () {
+            location.href = "form_payment-list.php";
+        };
+    }
+
 </script>
 
 <script type="text/javascript">

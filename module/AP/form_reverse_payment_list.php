@@ -132,8 +132,10 @@
                         }
 
                         if (!empty($start_date) && !empty($end_date)) {
+                            // from_account bisa berupa akun Bank (cocok di b_masterbank) atau
+                            // akun Kas Kecil (cocok di mastercoa_v2).
                             $sql = mysqli_query($conn2,"SELECT h.pl_number, h.pl_date, h.deskripsi, h.from_account,
-                                CONCAT(b.bank_account, IF(b.bank_name != '', CONCAT(' - ', b.bank_name), '')) AS from_account_label,
+                                CONCAT(IFNULL(b.bank_account, c.no_coa), IF(COALESCE(b.bank_name, c.nama_coa, '') != '', CONCAT(' - ', COALESCE(b.bank_name, c.nama_coa)), '')) AS from_account_label,
                                 h.status, h.created_by,
                                 (SELECT COUNT(*) FROM pv_payment_list_det det
                                  WHERE det.pl_number = h.pl_number AND det.status != 'Cancel'
@@ -157,6 +159,7 @@
                                 ) AS paid_count
                                 FROM pv_payment_list_h h
                                 LEFT JOIN b_masterbank b ON b.bank_account = h.from_account
+                                LEFT JOIN mastercoa_v2 c ON c.no_coa = h.from_account
                                 WHERE h.status IN ('FIRST APPROVED', 'SECOND APPROVED')
                                 AND h.pl_date BETWEEN '$start_date' AND '$end_date'
                                 AND h.pl_number NOT IN (

@@ -1,22 +1,86 @@
 <?php include '../header.php' ?>
 
-<!-- MAIN -->
-<div class="col p-4">
-    <h2 class="text-center">LIST PETTY CASH IN</h2>
-    <div class="box">
-        <div class="box header">
+<style type="text/css">
+    label {
+        font-size: 14px;
+    }
 
-            <form id="form-data" action="petty-cashin.php" method="post">        
-                <div class="form-row">
+    input {
+        font-size: 14px;
+    }
+
+    .table-gradient th {
+        background: #1E3A8A;
+        color: #fff;
+        text-align: center;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    div.dataTables_wrapper .dataTables_paginate {
+        float: right;
+        margin-top: 10px;
+    }
+
+    div.dataTables_wrapper .dataTables_info {
+        float: left;
+        margin-top: 10px;
+    }
+
+    .kbon-action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .kbon-action-buttons .btn {
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 4px 11px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .kbon-action-buttons .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+    }
+
+    .kbon-status-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 20px;
+        white-space: nowrap;
+    }
+</style>
+
+<!-- MAIN -->
+<div class="container-fluid mt-4 p-4">
+    <!-- Card Filter -->
+    <div class="card shadow border-0">
+        <div class="card-header text-white py-2 px-3" style="background: linear-gradient(90deg, #191970, #1e90ff);">
+            <h5 class="mb-0"><i class="fa fa-money" aria-hidden="true"></i> LIST PETTY CASH IN</h5>
+        </div>
+
+        <div class="card-body p-3">
+            <form id="form-data" action="petty-cashin.php" method="post">
+                <div class="row g-3">
                  <div class="col-md-3">
-                    <label for="nama_supp"><b>Refference</b></label>            
+                    <label for="nama_supp"><b>Refference</b></label>
                     <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true" >
-                        <option value="ALL" selected="true">ALL</option>                                                
+                        <option value="ALL" selected="true">ALL</option>
                         <?php
                         $nama_supp ='';
                         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
-                        }                 
+                        }
                         $sql = mysqli_query($conn1,"select ref_doc from master_forpay where ket = '5'");
                         while ($row = mysqli_fetch_array($sql)) {
                             $data = $row['ref_doc'];
@@ -25,14 +89,14 @@
                             }else{
                                 $isSelected = '';
                             }
-                            echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
+                            echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';
                         }?>
                     </select>
-                </div>  
+                </div>
 
                 <div class="col-md-2">
-                    <label for="doc_Number"><b>Document Number</b></label>            
-                    <input type="text" class="form-control" name="doc_num" id="doc_num" style="font-size: 12px; text-align: left;" 
+                    <label for="doc_Number"><b>Document Number</b></label>
+                    <input type="text" class="form-control form-control-sm" name="doc_num" id="doc_num" style="font-size: 12px; text-align: left;"
                     value="<?php
                     $doc_num ='';
                     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -47,9 +111,9 @@
              </div>
 
 
-             <div class="col-md-2 mb-3"> 
-                <label for="start_date"><b>From</b></label>          
-                <input type="text" style="font-size: 12px;" class="form-control tanggal" id="start_date" name="start_date" 
+             <div class="col-md-2">
+                <label for="start_date"><b>From</b></label>
+                <input type="text" style="font-size: 12px;" class="form-control form-control-sm tanggal" id="start_date" name="start_date"
                 value="<?php
                 $start_date ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -60,13 +124,13 @@
              }
              else{
                  echo date("d-m-Y");
-             } ?>" 
+             } ?>"
              placeholder="Tanggal Awal" >
          </div>
 
-         <div class="col-md-2 mb-3"> 
-            <label for="end_date"><b>To</b></label>          
-            <input type="text" style="font-size: 12px;" class="form-control tanggal" id="end_date" name="end_date" 
+         <div class="col-md-2">
+            <label for="end_date"><b>To</b></label>
+            <input type="text" style="font-size: 12px;" class="form-control form-control-sm tanggal" id="end_date" name="end_date"
             value="<?php
             $end_date ='';
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -77,177 +141,54 @@
          }
          else{
              echo date("d-m-Y");
-         } ?>" 
+         } ?>"
          placeholder="Tanggal Awal" >
      </div>
-     <div class="input-group-append col">                                   
-        <button type="submit" id="submit" value=" Search " style="margin-top: 30px; margin-bottom: 15px;margin-right: 15px;border: 0;
-        line-height: 1;
-        padding: -2px 8px;
-        font-size: 1rem;
-        text-align: center;
-        color: #fff;
-        text-shadow: 1px 1px 1px #000;
-        border-radius: 6px;
-        background-color: rgb(46, 139, 87);"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
-        <button type="button" id="reset" value=" Reset " style="margin-top: 30px; margin-bottom: 15px;margin-right: 15px;border: 0;
-        line-height: 1;
-        padding: -2px 8px;
-        font-size: 1rem;
-        text-align: center;
-        color: #fff;
-        text-shadow: 1px 1px 1px #000;
-        border-radius: 6px;
-        background-color:rgb(250, 69, 1)"><i class="fa fa-repeat" aria-hidden="true"></i> Reset </button>
-
+     <div class="col-md-3 d-flex align-items-end">
+        <button type="submit" id="submit" class="btn btn-info btn-sm me-2">
+            <i class="fa fa-search" aria-hidden="true"></i> Search</button>
+        
         <?php
-        $reference = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null; 
-        $doc_num = isset($_POST['doc_num']) ? $_POST['doc_num']: null; 
-        $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-        $end_date = date("Y-m-d",strtotime($_POST['end_date']));
+        $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create Cash'");
+        $rs = mysqli_fetch_array($querys);
+        $id = isset($rs['id']) ? $rs['id'] : 0;
 
-        if($reference == 'ALL' and empty($doc_num) and empty($start_date) and empty($end_date)){
-           $where = "";
-       }elseif($reference == 'ALL' and empty($doc_num) and !empty($start_date) and !empty($end_date)){
-           $where = "where a.tgl_pci between '$start_date' and '$end_date'";
-       }elseif($reference != 'ALL' and empty($doc_num)){
-           $where = "where a.reff = '$reference' and a.tgl_pci between '$start_date' and '$end_date'";
-       }elseif($reference == 'ALL' and !empty($doc_num)){
-           $where = "where a.no_pci like '%$doc_num%' and a.tgl_pci between '$start_date' and '$end_date'";
-       }else{
-           $where = "where a.reff = '$reference' and a.no_pci like '%$doc_num%' and a.tgl_pci between '$start_date' and '$end_date'";  
-       }
+        if($id == '39'){
+            echo '<button id="btncreate_new" type="button" class="btn btn-primary btn-sm ml-2"><i class="fa fa-plus-circle" aria-hidden="true"></i> Create</button>';
+        }
+        ?>
 
-       echo '<a target="_blank" href="ekspor_petty_cash_in.php?reference='.$reference.'&&doc_num='.$doc_num.'&&start_date='.$start_date.'&&end_date='.$end_date.'&&where='.$where.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;line-height: 1;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 14px;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
-       ?>
-   </div>                                                            
+        <button type="button" id="btnExportExcel" class="btn btn-success btn-sm ml-2">
+            <i class="fa fa-file-excel-o" aria-hidden="true"></i> Excel
+        </button>
+
+   </div>
 </div>
-<br/>
+</form>
 </div>
-</form> 
-
-<?php
-$querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create Cash'");
-$rs = mysqli_fetch_array($querys);
-$id = isset($rs['id']) ? $rs['id'] : 0;
-
-if($id == '39'){
-    // echo '<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>';
-    echo '<button id="btncreate_new" type="button" class="btn-info btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>';
-}else{
-    echo '';
-}
-?>
 </div>
-<div class="box body">
-    <div class="row">       
-        <div class="col-md-12">
 
+    <!-- Card Table -->
+    <div class="card shadow border-0 mt-4">
+        <div class="card-body p-4">
+            <div class="table-responsive">
 
-            <table id="datatable" class="table table-striped table-bordered" role="grid" cellspacing="0" width="100%">
-                <thead>
-                    <tr class="thead-dark">
+            <table id="datatable" class="table table-striped table-bordered table-hover table-sm" role="grid" cellspacing="0" width="100%">
+                <thead class="table-gradient">
+                    <tr>
                         <th style="text-align: center;vertical-align: middle;">Document Number</th>
                         <th style="text-align: center;vertical-align: middle;">Date</th>
                         <th style="text-align: center;vertical-align: middle;">Refference</th>
                         <th style="text-align: center;vertical-align: middle;">Refference Document</th>
                         <th style="text-align: center;vertical-align: middle;">Other Document</th>
                         <th style="text-align: center;vertical-align: middle;">Account</th>
-                        <th style="text-align: center;vertical-align: middle;">Amount</th> 
-                        <th style="display: none;">Amount</th>     
-                        <th style="text-align: center;vertical-align: middle;">Action</th>                                                    
+                        <th style="text-align: center;vertical-align: middle;">Amount</th>
+                        <th style="text-align: center;vertical-align: middle;">Status</th>
+                        <th style="text-align: center;vertical-align: middle;width: 220px;">Action</th>
                     </tr>
                 </thead>
 
-                <tbody>
-                    <?php
-                    $nama_supp ='';
-                    $doc_num = '';
-                    $reference = '';
-                    $start_date ='';
-                    $end_date ='';
-                    $date_now = date("Y-m-d");                
-                    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                        $reference = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null; 
-                        $doc_num = isset($_POST['doc_num']) ? $_POST['doc_num']: null; 
-                        $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-                        $end_date = date("Y-m-d",strtotime($_POST['end_date']));               
-                    }
-                    if($reference == 'ALL' and empty($doc_num) and empty($start_date) and empty($end_date)){
-                       $where = "";
-                   }elseif($reference == 'ALL' and empty($doc_num) and !empty($start_date) and !empty($end_date)){
-                       $where = "where a.tgl_pci between '$start_date' and '$end_date'";
-                   }elseif($reference != 'ALL' and empty($doc_num)){
-                       $where = "where a.reff = '$reference' and a.tgl_pci between '$start_date' and '$end_date'";
-                   }elseif($reference == 'ALL' and !empty($doc_num)){
-                       $where = "where a.no_pci like '%$doc_num%' and a.tgl_pci between '$start_date' and '$end_date'";
-                   }else{
-                       $where = "where a.reff = '$reference' and a.no_pci like '%$doc_num%' and a.tgl_pci between '$start_date' and '$end_date'";  
-                   }
-
-                   $sql = mysql_query("select a.no_pci,a.tgl_pci,a.reff,if(a.reff_doc = '','-',a.reff_doc) as reff_doc,if(a.oth_doc = '','-',a.oth_doc) as oth_doc,b.nama_coa,a.amount,if(a.deskripsi = '','-',a.deskripsi) as deskripsi,a.status from c_petty_cashin_h a left join mastercoa_v2 b on b.no_coa = a.coa_akun $where group by a.no_pci",$conn1);
-
-                   while($row = mysqli_fetch_array($sql)){
-                    $reff =$row['reff'];
-                    $oth = $row['oth_doc'];
-
-                    if ($reff == 'None') {
-                        $reff_doc = $row['oth_doc'];
-                    }else{
-                        $reff_doc = $row['reff_doc'];
-                    }
-
-
-                    if ($reff == 'None') {
-                        $oth_doc = '-';
-                    }else{
-                        $oth_doc = $row['oth_doc'];
-                    }
-
-                    echo '<tr style="font-size:12px;text-align:center;">
-                    <td style="width: 150px;" value = "'.$row['no_pci'].'">'.$row['no_pci'].'</td>
-                    <td style="width: 100px;" value = "'.$row['tgl_pci'].'">'.date("d-M-Y",strtotime($row['tgl_pci'])).'</td>
-                    <td style="width: 150px;" value = "'.$row['reff'].'">'.$row['reff'].'</td>
-                    <td style="width: 150px;" value = "'.$reff_doc.'">'.$reff_doc.'</td>
-                    <td style="width: 150px;" value = "'.$oth_doc.'">'.$oth_doc.'</td>
-                    <td style="width: 150px;" value = "'.$row['nama_coa'].'">'.$row['nama_coa'].'</td>
-                    <td style="width:50px; text-align : center;" value="'.$row['amount'].'">'.number_format($row['amount'],2).'</td>
-                    <td style="display: none" value = "'.$row['deskripsi'].'">'.$row['deskripsi'].'</td>';
-                    if ($row['status'] == 'Cancel') {
-                        echo '<td style="text-align: center;">-</td>';
-                    }else{
-                        echo '<td style="width:50px; text-align:center; white-space:nowrap;">';
-
-                        if ($row['status'] == 'Draft' && $reff == 'None') {
-                            echo '<button 
-                            type="button" 
-                            class="btn-xs btn-warning edit-none" 
-                            data-pettycash="'.$row['no_pci'].'" 
-                            style="border-radius: 6px; margin-right: 3px;">
-                            <i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit
-                            </button>';
-                        }elseif ($row['status'] == 'Draft' && $reff == 'Settlement') {
-                            echo '<button 
-                            type="button" 
-                            class="btn-xs btn-warning edit-settle" 
-                            data-pettycash="'.$row['no_pci'].'" 
-                            style="border-radius: 6px; margin-right: 3px;">
-                            <i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit
-                            </button>';
-                        }
-
-                        echo '<a href="pdf_petty_cashin.php?no_pci='.$row['no_pci'].'" target="_blank">
-                        <button type="button" class="btn-xs btn-success" style="border-radius: 6px;">
-                        <i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 5px; padding-left: 3px;"></i> Pdf
-                        </button>
-                        </a>';
-
-                        echo '</td>';
-                    }
-
-                        echo '</tr>';
-                    }?>
-                </tbody>                    
+                <tbody></tbody>
             </table>
 
         </div>
@@ -324,13 +265,76 @@ function SidebarCollapse () {
     $('#collapse-icon').toggleClass('fa-angle-double-left fa-angle-double-right');
 }
 </script>
-<script>
-    $(document).ready(function() {
-        $('#datatable').dataTable();
+<script type="text/javascript">
+    var datatable = $('#datatable').DataTable({
+        ordering: false,
+        processing: true,
+        serverSide: false,
+        paging: true,
+        searching: true,
+        info: true,
+        autoWidth: false,
 
-        $("[data-toggle=tooltip]").tooltip();
+        ajax: {
+            url: 'ajx_petty_cashin.php',
+            type: 'POST',
+            data: function(d) {
+                d.reference = $('#nama_supp').val();
+                d.doc_num = $('#doc_num').val();
+                d.start_date = $('#start_date').val();
+                d.end_date = $('#end_date').val();
+            }
+        },
 
-    } );
+        columns: [
+            { data: 'no_pci' },
+            { data: 'tgl_pci' },
+            { data: 'reff' },
+            { data: 'reff_doc' },
+            { data: 'oth_doc' },
+            { data: 'nama_coa' },
+            { data: 'amount' },
+            { data: 'status' },
+            { data: 'action', orderable: false },
+        ],
+
+        columnDefs: [
+            { targets: [3, 4, 5], className: 'text-left' },
+            { targets: [6], className: 'text-right' },
+            { targets: [0, 1, 2, 7, 8], className: 'text-center' },
+        ],
+    });
+
+    function dataTableReload() {
+        datatable.ajax.reload();
+    }
+
+    $('#form-data').on('submit', function(e) {
+        e.preventDefault();
+        dataTableReload();
+    });
+
+    $("[data-toggle=tooltip]").tooltip();
+
+    document.getElementById('btnExportExcel').onclick = function() {
+
+        Swal.fire({
+            title: 'Menyiapkan Excel...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        window.location.href = 'ekspor_petty_cash_in.php?reference=' + encodeURIComponent($('#nama_supp').val())
+            + '&doc_num=' + encodeURIComponent($('#doc_num').val())
+            + '&start_date=' + encodeURIComponent($('#start_date').val())
+            + '&end_date=' + encodeURIComponent($('#end_date').val());
+
+        setTimeout(function() {
+            Swal.close();
+        }, 1500);
+    };
 </script>
 
 <script type="text/javascript">
@@ -349,12 +353,8 @@ function SidebarCollapse () {
 
     $(document).on("click", ".edit-none", function() {
         let doc_num = $(this).data("pettycash");
-        // var closing = $(this).closest('tr').find('td:eq(13)').attr('value');
-        var closing = 'Open';
-    // alert(no_kbon + ' ' + closing);
-    let encodedDocNum = btoa(doc_num); // sama dengan base64_encode di PHP
+        let encodedDocNum = btoa(doc_num); // sama dengan base64_encode di PHP
 
-    if (closing == 'Open') {
         Swal.fire({
             title: "Are you sure?",
             text: "You are about to edit this document.",
@@ -365,30 +365,15 @@ function SidebarCollapse () {
         }).then((result) => {
             if (result.isConfirmed) {
                 window.location.href = "form_edit_pettycash_in_none.php?doc_num=" + encodedDocNum;
-                // window.open("form_edit_pettycash_in_none.php?doc_num=" + encodedDocNum, "_blank");
             }
         });
-    }else{
-        Swal.fire({
-            icon: "error",
-            title: "Sorry!",
-            text: "The Bank period has already been closed.",
-            confirmButtonText: "OK"
-        });
-
-    }
-
-});
+    });
 
 
     $(document).on("click", ".edit-settle", function() {
         let doc_num = $(this).data("pettycash");
-        // var closing = $(this).closest('tr').find('td:eq(13)').attr('value');
-        var closing = 'Open';
-    // alert(no_kbon + ' ' + closing);
-    let encodedDocNum = btoa(doc_num); // sama dengan base64_encode di PHP
+        let encodedDocNum = btoa(doc_num); // sama dengan base64_encode di PHP
 
-    if (closing == 'Open') {
         Swal.fire({
             title: "Are you sure?",
             text: "You are about to edit this document.",
@@ -399,20 +384,73 @@ function SidebarCollapse () {
         }).then((result) => {
             if (result.isConfirmed) {
                 window.location.href = "form_edit_pettycash_in_settle.php?doc_num=" + encodedDocNum;
-                // window.open("form_edit_pettycash_in_settle.php?doc_num=" + encodedDocNum, "_blank");
             }
         });
-    }else{
+    });
+
+    $(document).on("click", ".edit-cashout", function() {
+        let doc_num = $(this).data("pettycash");
+        let encodedDocNum = btoa(doc_num); // sama dengan base64_encode di PHP
+
         Swal.fire({
-            icon: "error",
-            title: "Sorry!",
-            text: "The Bank period has already been closed.",
-            confirmButtonText: "OK"
+            title: "Are you sure?",
+            text: "You will be redirected to the edit form.",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Yes, edit it!",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "form_edit_pettycash_in_cashout.php?doc_num=" + encodedDocNum;
+            }
         });
+    });
 
-    }
+    $(document).on("click", ".cancel-pci", function() {
+        let doc_num = $(this).data("pettycash");
+        let cancel_user = '<?php echo $user; ?>';
 
-});
+        Swal.fire({
+            title: "Are you sure cancel " + doc_num + "?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            confirmButtonText: "Yes, cancel it!",
+            cancelButtonText: "Batal"
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+
+            Swal.fire({
+                title: 'Processing...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            $.ajax({
+                type: 'POST',
+                url: 'cancelpetcashin.php',
+                data: { no_pci: doc_num, cancel_user: cancel_user },
+                dataType: 'json',
+                success: function(res) {
+                    if (res.status === 'ok') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: res.message
+                        }).then(() => {
+                            dataTableReload();
+                        });
+                    } else {
+                        Swal.fire('Error', res.message, 'error');
+                    }
+                },
+                error: function(xhr) {
+                    console.log("ERROR AJAX:", xhr.responseText);
+                    Swal.fire('Error', 'Terjadi kesalahan server', 'error');
+                }
+            });
+        });
+    });
 </script>
 
 <script type="text/javascript">
@@ -464,37 +502,31 @@ function SidebarCollapse () {
 </script>
 
 
-<script type="text/javascript">     
-    $('table tbody tr').on('click', 'td:eq(0)', function(){                
+<script type="text/javascript">
+    $(document).on("click", ".btn-show-pci", function() {
+        const data = datatable.row($(this).closest('tr')).data();
+        if (!data) return;
+
         $('#mymodal').modal('show');
-        var no_ib = $(this).closest('tr').find('td:eq(0)').attr('value');
-        var date = $(this).closest('tr').find('td:eq(1)').text();
-        var reff = $(this).closest('tr').find('td:eq(2)').attr('value');
-        var reff_doc = $(this).closest('tr').find('td:eq(3)').attr('value');
-        var oth_doc = $(this).closest('tr').find('td:eq(4)').attr('value');
-        var curr = "IDR";
-        var akun = $(this).closest('tr').find('td:eq(5)').attr('value');
-        var desk = $(this).closest('tr').find('td:eq(7)').text();
 
         $.ajax({
-            type : 'post',
-            url : 'ajaxpettyin.php',
-            data : {'no_ib': no_ib, 'refdoc': reff},
-            success : function(data){
-    $('#details').html(data); //menampilkan data ke dalam modal
-}
-});         
-        //make your ajax call populate items or what even you need
-        $('#txt_bpb').html(no_ib);
-        $('#txt_tglbpb').html('Date : ' + date + '');
-        $('#txt_no_po').html('Refference : ' + reff + '');
-        $('#txt_supp').html('Refference Document : ' + reff_doc + '');
-        $('#txt_top').html('Other Document : ' + oth_doc + '');
-        $('#txt_curr').html('Kas Account : ' + akun + '');        
-        $('#txt_confirm').html('Currency : ' + curr + '');
-        $('#txt_tgl_po').html('Description : ' + desk + '');                    
-    });
+            type: 'post',
+            url: 'ajaxpettyin.php',
+            data: { 'no_ib': data.no_pci, 'refdoc': data.reff },
+            success: function(html) {
+                $('#details').html(html);
+            }
+        });
 
+        $('#txt_bpb').html(data.no_pci);
+        $('#txt_tglbpb').html('Date : ' + data.tgl_pci_raw);
+        $('#txt_no_po').html('Refference : ' + data.reff);
+        $('#txt_supp').html('Refference Document : ' + data.reff_doc);
+        $('#txt_top').html('Other Document : ' + data.oth_doc);
+        $('#txt_curr').html('Kas Account : ' + data.nama_coa);
+        $('#txt_confirm').html('Currency : IDR');
+        $('#txt_tgl_po').html('Description : ' + data.deskripsi);
+    });
 </script>
 
 <script type="text/javascript">

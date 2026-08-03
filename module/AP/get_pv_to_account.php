@@ -1,0 +1,33 @@
+<?php
+include '../../conn/conn.php';
+
+// Dipakai oleh create-paymentvoucher.php untuk mengisi ulang dropdown "To
+// Account" tanpa reload halaman ketika For Payment / Supplier berubah.
+// Sumber data-nya berbeda tergantung For Payment - sengaja dipertahankan
+// sama persis seperti query lama yang sebelumnya tertanam di halaman:
+// - Pemindah Bukuan Bank & Cicilan Pinjaman Bank -> rekening PERUSAHAAN (b_masterbank)
+// - Lainnya & default (kosong)                   -> rekening SUPPLIER (master_supplier_bank), difilter nama_supp
+
+$forpay = $_POST['forpay'] ?? '';
+$nama_supp = $_POST['nama_supp'] ?? '';
+$nama_supp_esc = mysqli_real_escape_string($conn2, $nama_supp);
+
+$data = [];
+
+if ($forpay === 'Pemindah Bukuan Bank' || $forpay === 'Cicilan Pinjaman Bank') {
+    $sql = mysqli_query($conn1, "select coa_name as bank, bank_account as akun from b_masterbank where status = 'Active' group by id");
+    while ($row = mysqli_fetch_assoc($sql)) {
+        $data[] = ['value' => $row['akun'], 'text' => $row['bank']];
+    }
+} else {
+    if ($nama_supp === '' ) {
+        $sql = mysqli_query($conn2, "SELECT ms.Supplier AS supplier, CONCAT(UPPER(TRIM(m.bank_name)),' ',UPPER(TRIM(m.bank_account))) AS bank, UPPER(TRIM(m.bank_account)) AS akun FROM master_supplier_bank m JOIN mastersupplier ms ON ms.id_supplier = m.id_supplier WHERE m.status = 'Active' AND m.tipe_sup = 'S' ORDER BY ms.Supplier, m.bank_name");
+    } else {
+        $sql = mysqli_query($conn2, "SELECT ms.Supplier AS supplier, CONCAT(UPPER(TRIM(m.bank_name)),' ',UPPER(TRIM(m.bank_account))) AS bank, UPPER(TRIM(m.bank_account)) AS akun FROM master_supplier_bank m JOIN mastersupplier ms ON ms.id_supplier = m.id_supplier WHERE m.status = 'Active' AND m.tipe_sup = 'S' AND ms.Supplier = '$nama_supp_esc' ORDER BY m.bank_name");
+    }
+    while ($row = mysqli_fetch_assoc($sql)) {
+        $data[] = ['value' => $row['akun'], 'text' => $row['bank']];
+    }
+}
+
+echo json_encode($data);

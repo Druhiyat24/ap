@@ -65,10 +65,19 @@
         <?php 
         // koneksi database
         include '../../conn/conn.php';
-        // $nama_supp=$_GET['nama_supp'];
-        $where =$_GET['where'];
+        // Backward compatible with existing links that send a complete WHERE clause.
+        $where = isset($_GET['where']) ? $_GET['where'] : '';
         $start_date = date("Y-m-d",strtotime($_GET['start_date']));
         $end_date = date("Y-m-d",strtotime($_GET['end_date']));
+        if ($where === '') {
+            $conditions = ["bankout_date BETWEEN '" . mysqli_real_escape_string($conn2, $start_date) . "' AND '" . mysqli_real_escape_string($conn2, $end_date) . "'"];
+            foreach (['nama_supp', 'bank', 'akun', 'status'] as $field) {
+                if (isset($_GET[$field]) && $_GET[$field] !== '' && $_GET[$field] !== 'ALL') {
+                    $conditions[] = $field . " = '" . mysqli_real_escape_string($conn2, $_GET[$field]) . "'";
+                }
+            }
+            $where = 'WHERE ' . implode(' AND ', $conditions);
+        }
         // menampilkan data pegawai
   
 

@@ -120,17 +120,73 @@
   }
 
   .total-box{
-    border:1px solid #dcdcdc;
-    border-radius:6px;
-    padding:15px;
-    background:#fafafa;
+    border:0;
+    border-radius:10px;
+    background:#fff;
+    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+    overflow:hidden;
+    height:100%;
+    padding:0;
   }
 
-  .total-box h6{
-    font-weight:bold;
-    margin-bottom:15px;
-    border-bottom:1px solid #ddd;
-    padding-bottom:5px;
+  .total-box .total-box-header{
+    padding:12px 16px;
+    color:#fff;
+    font-weight:700;
+    font-size:14px;
+  }
+
+  .total-box.tone-nag .total-box-header{
+    background:linear-gradient(90deg, #5b7ba8, #7fa0c9);
+  }
+
+  .total-box.tone-nak .total-box-header{
+    background:linear-gradient(90deg, #4f8a6b, #74ad8f);
+  }
+
+  .total-box.tone-all .total-box-header{
+    background:linear-gradient(90deg, #4a5578, #6b7699);
+  }
+
+  .total-box .total-box-body{
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  .total-stat{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    padding-bottom:12px;
+    border-bottom:1px dashed #e5e5e5;
+  }
+
+  .total-stat:last-child{
+    border-bottom:0;
+    padding-bottom:0;
+  }
+
+  .total-stat-label{
+    font-size:12px;
+    font-weight:600;
+    color:#8a8a8a;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+
+  .total-stat input.total-stat-value{
+    border:0;
+    background:transparent;
+    padding:0;
+    font-size:19px;
+    font-weight:700;
+    text-align:right;
+    width:auto;
+    max-width:100%;
+    height:auto;
+    color:#212529;
   }
 </style>
 
@@ -148,10 +204,10 @@
       <div class="card-body p-4">
 
         <div class="tab-container">
-          <button class="tablinks" onclick="openTab(event, 'pettyout_none')">None</button>
+          <button class="tablinks active" onclick="openTab(event, 'pettyout_none')">None</button>
           <button class="tablinks" onclick="openTab(event, 'pettyout_advance')">Advance</button>
           <button class="tablinks" onclick="openTab(event, 'pettyout_settle')">Settlement</button>
-          <button class="tablinks active" onclick="openTab(event, 'pettyout_lp')">List Payment</button>
+         <!--  <button class="tablinks" onclick="openTab(event, 'pettyout_lp')">List Payment</button> -->
           <button class="tablinks" onclick="openTab(event, 'pettyout_pv')">Payment Voucher</button>
         </div>
 
@@ -477,7 +533,7 @@ $.getJSON('get_coa_wajib_cc.php', function(data){
 <td><input type="checkbox" id="select1" name="select1[]" value="" checked disabled></td>
 
 <td >
-<select class="form-control selectpicker no_coa1" name="nomor_coa1[]" data-live-search="true" data-width="220px" data-size="5">
+<select class="form-control selectpicker no_coa1" name="nomor_coa1[]" data-live-search="true" data-width="100%" data-size="5">
 <option value="-">-</option>
 <?php
 $sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa,' ',nama_coa) as coa from mastercoa_v2");
@@ -488,7 +544,7 @@ foreach ($sql as $coa) : ?>
 </td>
 
 <td>
-<select class="form-control selectpicker prof_ctr1" name="prof_ctr1[]" data-live-search="true" data-width="200px">
+<select class="form-control selectpicker prof_ctr1" name="prof_ctr1[]" data-live-search="true" data-width="100%">
 <option value="-"> - </option>
 <?php
 $sql3 = mysqli_query($conn1, "select kode_pc,id_pc,nama_pc,CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status='Active'");
@@ -499,7 +555,7 @@ foreach ($sql3 as $fc) : ?>
 </td>
 
 <td>
-<select class="form-control selectpicker cost_ctr1" name="cost_ctr1[]" data-live-search="true" data-width="200px">
+<select class="form-control selectpicker cost_ctr1" name="cost_ctr1[]" data-live-search="true" data-width="100%">
 <option value="-"> - </option>
 </select>
 </td>
@@ -630,7 +686,7 @@ foreach ($sql3 as $fc) : ?>
 <td><input type="checkbox" id="select1" name="select1[]" value="" checked disabled></td>
 
 <td >
-<select class="form-control selectpicker no_coa1" name="nomor_coa1[]" data-live-search="true" data-width="220px" data-size="5">
+<select class="form-control selectpicker no_coa1" name="nomor_coa1[]" data-live-search="true" data-width="100%" data-size="5">
 <option value="-">-</option>
 <?php
 $sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa,' ',nama_coa) as coa from mastercoa_v2");
@@ -641,7 +697,7 @@ foreach ($sql as $coa) : ?>
 </td>
 
 <td>
-<select class="form-control selectpicker prof_ctr1" name="prof_ctr1[]" data-live-search="true" data-width="200px">
+<select class="form-control selectpicker prof_ctr1" name="prof_ctr1[]" data-live-search="true" data-width="100%">
 <option value="-"> - </option>
 <?php
 $sql3 = mysqli_query($conn1, "select kode_pc,id_pc,nama_pc,CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status='Active'");
@@ -652,7 +708,7 @@ foreach ($sql3 as $fc) : ?>
 </td>
 
 <td>
-<select class="form-control selectpicker cost_ctr1" name="cost_ctr1[]" data-live-search="true" data-width="200px">
+<select class="form-control selectpicker cost_ctr1" name="cost_ctr1[]" data-live-search="true" data-width="100%">
 <option value="-"> - </option>
 </select>
 </td>
@@ -954,6 +1010,11 @@ $('#simpan1').on('click', function () {
     return;
   }
 
+  if(!$('#pesan1').val().trim()){
+    Swal.fire('Warning','Description tidak boleh kosong','warning');
+    return;
+  }
+
     let debitNAG  = 0;
     let creditNAG = 0;
     let debitNAK  = 0;
@@ -975,12 +1036,43 @@ $('#simpan1').on('click', function () {
         let debit  = parseFloat(tr.find('[name="txt_amount1[]"]').val()) || 0;
         let credit = parseFloat(tr.find('[name="txt_credit1[]"]').val()) || 0;
 
+        // Kalau description baris kosong, pakai description header (form
+        // di-submit lewat serialize() jadi diisi langsung ke DOM-nya)
+        let ketInput = tr.find('input[name="keterangan1[]"]');
+        if(!ketInput.val()){
+          ketInput.val($('#pesan1').val());
+        }
+
         console.log("----- ROW",rowIndex,"-----");
         console.log("COA :", coa);
         console.log("PC :", pc);
         console.log("Cost Center :", cc);
         console.log("Debit :", debit);
         console.log("Credit :", credit);
+
+        /* VALIDASI COA WAJIB */
+
+        if(!coa || coa == '-'){
+
+            console.log("ERROR: COA kosong");
+
+            Swal.fire('Warning','COA wajib diisi','warning');
+
+            error = true;
+            return false;
+        }
+
+        /* VALIDASI PROFIT CENTER WAJIB */
+
+        if(!pc || pc == '-'){
+
+            console.log("ERROR: Profit Center kosong");
+
+            Swal.fire('Warning','Profit Center wajib diisi','warning');
+
+            error = true;
+            return false;
+        }
 
         /* VALIDASI COST CENTER */
 
@@ -1104,6 +1196,98 @@ $('#simpan1').on('click', function () {
 
     console.log($('#form-data1').serialize());
 
+    function doSaveNone1(){
+
+      // Cegah double-submit: tombol dikunci begitu user konfirmasi &
+      // mulai proses save, baru dibuka lagi kalau ada error.
+      $('#simpan1').prop('disabled', true);
+
+      $.ajax({
+
+          url: "petty-out/save_pettyout_none.php",
+          type: "POST",
+          data: $('#form-data1').serialize(),
+
+          beforeSend:function(){
+
+              console.log("Sending data...");
+
+              Swal.fire({
+                  title: 'Saving...',
+                  allowOutsideClick:false,
+                  didOpen:()=>{
+                      Swal.showLoading();
+                  }
+              });
+
+          },
+
+          success:function(res){
+
+              console.log("Response Server :", res);
+
+              let r = JSON.parse(res);
+
+              if(r.status == 'success'){
+
+                  console.log("SAVE SUCCESS");
+
+                  Swal.fire({
+                      icon:'success',
+                      title:'Success',
+                      text:r.message
+                  }).then(()=>{
+                      location.href='petty-cashout.php';
+                  });
+
+              }else{
+
+                  console.log("SAVE ERROR :", r.message);
+
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: r.message,
+                    showCancelButton: true,
+                    confirmButtonText: 'Coba Lagi',
+                    cancelButtonText: 'Tutup'
+                  }).then((retry) => {
+                    if(retry.isConfirmed){
+                      doSaveNone1();
+                    }else{
+                      $('#simpan1').prop('disabled', false);
+                    }
+                  });
+
+              }
+
+          },
+
+          error:function(xhr){
+
+              console.log("AJAX ERROR");
+              console.log(xhr.responseText);
+
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Terjadi kesalahan server',
+                showCancelButton: true,
+                confirmButtonText: 'Coba Lagi',
+                cancelButtonText: 'Tutup'
+              }).then((retry) => {
+                if(retry.isConfirmed){
+                  doSaveNone1();
+                }else{
+                  $('#simpan1').prop('disabled', false);
+                }
+              });
+          }
+
+      });
+
+    }
+
     Swal.fire({
         title: "Save Data?",
         icon: "question",
@@ -1113,71 +1297,8 @@ $('#simpan1').on('click', function () {
     }).then((result)=>{
 
         if(result.isConfirmed){
-
             console.log("PROSES AJAX SAVE");
-
-            $.ajax({
-
-                url: "petty-out/save_pettyout_none.php",
-                type: "POST",
-                data: $('#form-data1').serialize(),
-
-                beforeSend:function(){
-
-                    console.log("Sending data...");
-
-                    Swal.fire({
-                        title: 'Saving...',
-                        allowOutsideClick:false,
-                        didOpen:()=>{
-                            Swal.showLoading();
-                        }
-                    });
-
-                },
-
-                success:function(res){
-
-                    console.log("Response Server :", res);
-
-                    let r = JSON.parse(res);
-
-                    if(r.status == 'success'){
-
-                        console.log("SAVE SUCCESS");
-
-                        Swal.fire({
-                            icon:'success',
-                            title:'Success',
-                            text:r.message
-                        }).then(()=>{
-                            location.href='petty-cashout.php';
-                        });
-
-                    }else{
-
-                        console.log("SAVE ERROR :", r.message);
-
-                        Swal.fire(
-                            'Error',
-                            r.message,
-                            'error'
-                        );
-
-                    }
-
-                },
-
-                error:function(xhr){
-
-                    console.log("AJAX ERROR");
-                    console.log(xhr.responseText);
-
-                    Swal.fire('Error','Server Error','error');
-                }
-
-            });
-
+            doSaveNone1();
         }
 
     });
@@ -1336,7 +1457,7 @@ $('#simpan1').on('click', function () {
 <td><input type="checkbox" id="select3" name="select3[]" value="" checked disabled></td>
 
 <td >
-<select class="form-control selectpicker no_coa3" name="nomor_coa3[]" data-live-search="true" data-width="220px" data-size="5">
+<select class="form-control selectpicker no_coa3" name="nomor_coa3[]" data-live-search="true" data-width="100%" data-size="5">
 <option value="1.49.98" >1.49.98 UANG MUKA PEMBELIAN - KAS KECIL</option>
 <?php
 $sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa,' ',nama_coa) as coa from mastercoa_v2 where no_coa != '1.49.98'");
@@ -1347,7 +1468,7 @@ foreach ($sql as $coa) : ?>
 </td>
 
 <td>
-<select class="form-control selectpicker prof_ctr3" name="prof_ctr3[]" data-live-search="true" data-width="200px">
+<select class="form-control selectpicker prof_ctr3" name="prof_ctr3[]" data-live-search="true" data-width="100%">
 <option value="-"> - </option>
 <?php
 $sql3 = mysqli_query($conn1, "select kode_pc,id_pc,nama_pc,CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status='Active'");
@@ -1358,7 +1479,7 @@ foreach ($sql3 as $fc) : ?>
 </td>
 
 <td>
-<select class="form-control selectpicker cost_ctr3" name="cost_ctr3[]" data-live-search="true" data-width="200px">
+<select class="form-control selectpicker cost_ctr3" name="cost_ctr3[]" data-live-search="true" data-width="100%">
 <option value="-"> - </option>
 </select>
 </td>
@@ -1489,7 +1610,7 @@ foreach ($sql3 as $fc) : ?>
 <td><input type="checkbox" id="select3" name="select3[]" value="" checked disabled></td>
 
 <td >
-<select class="form-control selectpicker no_coa3" name="nomor_coa3[]" data-live-search="true" data-width="220px" data-size="5">
+<select class="form-control selectpicker no_coa3" name="nomor_coa3[]" data-live-search="true" data-width="100%" data-size="5">
 <option value="1.49.98" >1.49.98 UANG MUKA PEMBELIAN - KAS KECIL</option>
 <?php
 $sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa,' ',nama_coa) as coa from mastercoa_v2 where no_coa != '1.49.98'");
@@ -1500,7 +1621,7 @@ foreach ($sql as $coa) : ?>
 </td>
 
 <td>
-<select class="form-control selectpicker prof_ctr3" name="prof_ctr3[]" data-live-search="true" data-width="200px">
+<select class="form-control selectpicker prof_ctr3" name="prof_ctr3[]" data-live-search="true" data-width="100%">
 <option value="-"> - </option>
 <?php
 $sql3 = mysqli_query($conn1, "select kode_pc,id_pc,nama_pc,CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status='Active'");
@@ -1511,7 +1632,7 @@ foreach ($sql3 as $fc) : ?>
 </td>
 
 <td>
-<select class="form-control selectpicker cost_ctr3" name="cost_ctr3[]" data-live-search="true" data-width="200px">
+<select class="form-control selectpicker cost_ctr3" name="cost_ctr3[]" data-live-search="true" data-width="100%">
 <option value="-"> - </option>
 </select>
 </td>
@@ -1813,6 +1934,11 @@ $('#simpan3').on('click', function () {
     return;
   }
 
+  if(!$('#pesan3').val().trim()){
+    Swal.fire('Warning','Description tidak boleh kosong','warning');
+    return;
+  }
+
     let debitNAG  = 0;
     let creditNAG = 0;
     let debitNAK  = 0;
@@ -1834,12 +1960,42 @@ $('#simpan3').on('click', function () {
         let debit  = parseFloat(tr.find('[name="txt_amount3[]"]').val()) || 0;
         let credit = parseFloat(tr.find('[name="txt_credit3[]"]').val()) || 0;
 
+        // Kalau description baris kosong, pakai description header
+        let ketInput3 = tr.find('input[name="keterangan3[]"]');
+        if(!ketInput3.val()){
+          ketInput3.val($('#pesan3').val());
+        }
+
         console.log("----- ROW",rowIndex,"-----");
         console.log("COA :", coa);
         console.log("PC :", pc);
         console.log("Cost Center :", cc);
         console.log("Debit :", debit);
         console.log("Credit :", credit);
+
+        /* VALIDASI COA WAJIB */
+
+        if(!coa || coa == '-'){
+
+            console.log("ERROR: COA kosong");
+
+            Swal.fire('Warning','COA wajib diisi','warning');
+
+            error = true;
+            return false;
+        }
+
+        /* VALIDASI PROFIT CENTER WAJIB */
+
+        if(!pc || pc == '-'){
+
+            console.log("ERROR: Profit Center kosong");
+
+            Swal.fire('Warning','Profit Center wajib diisi','warning');
+
+            error = true;
+            return false;
+        }
 
         /* VALIDASI COST CENTER */
 
@@ -1963,6 +2119,96 @@ $('#simpan3').on('click', function () {
 
     console.log($('#form-data3').serialize());
 
+    function doSaveAdvance3(){
+
+      $('#simpan3').prop('disabled', true);
+
+      $.ajax({
+
+          url: "petty-out/save_pettyout_advance.php",
+          type: "POST",
+          data: $('#form-data3').serialize(),
+
+          beforeSend:function(){
+
+              console.log("Sending data...");
+
+              Swal.fire({
+                  title: 'Saving...',
+                  allowOutsideClick:false,
+                  didOpen:()=>{
+                      Swal.showLoading();
+                  }
+              });
+
+          },
+
+          success:function(res){
+
+              console.log("Response Server :", res);
+
+              let r = JSON.parse(res);
+
+              if(r.status == 'success'){
+
+                  console.log("SAVE SUCCESS");
+
+                  Swal.fire({
+                      icon:'success',
+                      title:'Success',
+                      text:r.message
+                  }).then(()=>{
+                     location.href='petty-cashout.php';
+                  });
+
+              }else{
+
+                  console.log("SAVE ERROR :", r.message);
+
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: r.message,
+                    showCancelButton: true,
+                    confirmButtonText: 'Coba Lagi',
+                    cancelButtonText: 'Tutup'
+                  }).then((retry) => {
+                    if(retry.isConfirmed){
+                      doSaveAdvance3();
+                    }else{
+                      $('#simpan3').prop('disabled', false);
+                    }
+                  });
+
+              }
+
+          },
+
+          error:function(xhr){
+
+              console.log("AJAX ERROR");
+              console.log(xhr.responseText);
+
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Terjadi kesalahan server',
+                showCancelButton: true,
+                confirmButtonText: 'Coba Lagi',
+                cancelButtonText: 'Tutup'
+              }).then((retry) => {
+                if(retry.isConfirmed){
+                  doSaveAdvance3();
+                }else{
+                  $('#simpan3').prop('disabled', false);
+                }
+              });
+          }
+
+      });
+
+    }
+
     Swal.fire({
         title: "Save Data?",
         icon: "question",
@@ -1972,71 +2218,8 @@ $('#simpan3').on('click', function () {
     }).then((result)=>{
 
         if(result.isConfirmed){
-
             console.log("PROSES AJAX SAVE");
-
-            $.ajax({
-
-                url: "petty-out/save_pettyout_advance.php",
-                type: "POST",
-                data: $('#form-data3').serialize(),
-
-                beforeSend:function(){
-
-                    console.log("Sending data...");
-
-                    Swal.fire({
-                        title: 'Saving...',
-                        allowOutsideClick:false,
-                        didOpen:()=>{
-                            Swal.showLoading();
-                        }
-                    });
-
-                },
-
-                success:function(res){
-
-                    console.log("Response Server :", res);
-
-                    let r = JSON.parse(res);
-
-                    if(r.status == 'success'){
-
-                        console.log("SAVE SUCCESS");
-
-                        Swal.fire({
-                            icon:'success',
-                            title:'Success',
-                            text:r.message
-                        }).then(()=>{
-                           location.href='petty-cashout.php';
-                        });
-
-                    }else{
-
-                        console.log("SAVE ERROR :", r.message);
-
-                        Swal.fire(
-                            'Error',
-                            r.message,
-                            'error'
-                        );
-
-                    }
-
-                },
-
-                error:function(xhr){
-
-                    console.log("AJAX ERROR");
-                    console.log(xhr.responseText);
-
-                    Swal.fire('Error','Server Error','error');
-                }
-
-            });
-
+            doSaveAdvance3();
         }
 
     });
@@ -2223,7 +2406,7 @@ function UbahCostArc2(val) {
 <td><input type="checkbox" id="select2" name="select2[]" value="" checked disabled></td>
 
 <td >
-<select class="form-control selectpicker no_coa2" name="nomor_coa2[]" data-live-search="true" data-width="220px" data-size="5">
+<select class="form-control selectpicker no_coa2" name="nomor_coa2[]" data-live-search="true" data-width="100%" data-size="5">
 <option value="-">-</option>
 <?php
 $sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa,' ',nama_coa) as coa from mastercoa_v2");
@@ -2234,7 +2417,7 @@ foreach ($sql as $coa) : ?>
 </td>
 
 <td>
-<select class="form-control selectpicker prof_ctr2" name="prof_ctr2[]" data-live-search="true" data-width="200px">
+<select class="form-control selectpicker prof_ctr2" name="prof_ctr2[]" data-live-search="true" data-width="100%">
 <option value="-"> - </option>
 <?php
 $sql3 = mysqli_query($conn1, "select kode_pc,id_pc,nama_pc,CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status='Active'");
@@ -2245,7 +2428,7 @@ foreach ($sql3 as $fc) : ?>
 </td>
 
 <td>
-<select class="form-control selectpicker cost_ctr2" name="cost_ctr2[]" data-live-search="true" data-width="200px">
+<select class="form-control selectpicker cost_ctr2" name="cost_ctr2[]" data-live-search="true" data-width="100%">
 <option value="-"> - </option>
 </select>
 </td>
@@ -2356,7 +2539,7 @@ foreach ($sql3 as $fc) : ?>
     }
 
 
-    function InsertRow(tableID) {
+    function InsertRow2(tableID) {
 
       try {
 
@@ -2376,7 +2559,7 @@ foreach ($sql3 as $fc) : ?>
 <td><input type="checkbox" id="select2" name="select2[]" value="" checked disabled></td>
 
 <td >
-<select class="form-control selectpicker no_coa2" name="nomor_coa2[]" data-live-search="true" data-width="220px" data-size="5">
+<select class="form-control selectpicker no_coa2" name="nomor_coa2[]" data-live-search="true" data-width="100%" data-size="5">
 <option value="-">-</option>
 <?php
 $sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa,' ',nama_coa) as coa from mastercoa_v2");
@@ -2387,7 +2570,7 @@ foreach ($sql as $coa) : ?>
 </td>
 
 <td>
-<select class="form-control selectpicker prof_ctr2" name="prof_ctr2[]" data-live-search="true" data-width="200px">
+<select class="form-control selectpicker prof_ctr2" name="prof_ctr2[]" data-live-search="true" data-width="100%">
 <option value="-"> - </option>
 <?php
 $sql3 = mysqli_query($conn1, "select kode_pc,id_pc,nama_pc,CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status='Active'");
@@ -2398,7 +2581,7 @@ foreach ($sql3 as $fc) : ?>
 </td>
 
 <td>
-<select class="form-control selectpicker cost_ctr2" name="cost_ctr2[]" data-live-search="true" data-width="200px">
+<select class="form-control selectpicker cost_ctr2" name="cost_ctr2[]" data-live-search="true" data-width="100%">
 <option value="-"> - </option>
 </select>
 </td>
@@ -2696,6 +2879,11 @@ $('#simpan2').on('click', function () {
         return;
     }
 
+    if(!$('#pesan2').val().trim()){
+        Swal.fire('Warning','Description tidak boleh kosong','warning');
+        return;
+    }
+
     let debitNAG  = 0;
     let creditNAG = 0;
     let debitNAK  = 0;
@@ -2717,12 +2905,42 @@ $('#simpan2').on('click', function () {
         let debit  = parseFloat(tr.find('[name="txt_amount2[]"]').val()) || 0;
         let credit = parseFloat(tr.find('[name="txt_credit2[]"]').val()) || 0;
 
+        // Kalau description baris kosong, pakai description header
+        let ketInput2 = tr.find('input[name="keterangan2[]"]');
+        if(!ketInput2.val()){
+          ketInput2.val($('#pesan2').val());
+        }
+
         console.log("----- ROW",rowIndex,"-----");
         console.log("COA :", coa);
         console.log("PC :", pc);
         console.log("Cost Center :", cc);
         console.log("Debit :", debit);
         console.log("Credit :", credit);
+
+        /* VALIDASI COA WAJIB */
+
+        if(!coa || coa == '-'){
+
+            console.log("ERROR: COA kosong");
+
+            Swal.fire('Warning','COA wajib diisi','warning');
+
+            error = true;
+            return false;
+        }
+
+        /* VALIDASI PROFIT CENTER WAJIB */
+
+        if(!pc || pc == '-'){
+
+            console.log("ERROR: Profit Center kosong");
+
+            Swal.fire('Warning','Profit Center wajib diisi','warning');
+
+            error = true;
+            return false;
+        }
 
         /* VALIDASI COST CENTER */
 
@@ -2846,6 +3064,96 @@ $('#simpan2').on('click', function () {
 
     console.log($('#form-data2').serialize());
 
+    function doSaveSettle2(){
+
+      $('#simpan2').prop('disabled', true);
+
+      $.ajax({
+
+          url: "petty-out/save_pettyout_settle.php",
+          type: "POST",
+          data: $('#form-data2').serialize(),
+
+          beforeSend:function(){
+
+              console.log("Sending data...");
+
+              Swal.fire({
+                  title: 'Saving...',
+                  allowOutsideClick:false,
+                  didOpen:()=>{
+                      Swal.showLoading();
+                  }
+              });
+
+          },
+
+          success:function(res){
+
+              console.log("Response Server :", res);
+
+              let r = JSON.parse(res);
+
+              if(r.status == 'success'){
+
+                  console.log("SAVE SUCCESS");
+
+                  Swal.fire({
+                      icon:'success',
+                      title:'Success',
+                      text:r.message
+                  }).then(()=>{
+                     location.href='petty-cashout.php';
+                  });
+
+              }else{
+
+                  console.log("SAVE ERROR :", r.message);
+
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: r.message,
+                    showCancelButton: true,
+                    confirmButtonText: 'Coba Lagi',
+                    cancelButtonText: 'Tutup'
+                  }).then((retry) => {
+                    if(retry.isConfirmed){
+                      doSaveSettle2();
+                    }else{
+                      $('#simpan2').prop('disabled', false);
+                    }
+                  });
+
+              }
+
+          },
+
+          error:function(xhr){
+
+              console.log("AJAX ERROR");
+              console.log(xhr.responseText);
+
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Terjadi kesalahan server',
+                showCancelButton: true,
+                confirmButtonText: 'Coba Lagi',
+                cancelButtonText: 'Tutup'
+              }).then((retry) => {
+                if(retry.isConfirmed){
+                  doSaveSettle2();
+                }else{
+                  $('#simpan2').prop('disabled', false);
+                }
+              });
+          }
+
+      });
+
+    }
+
     Swal.fire({
         title: "Save Data?",
         icon: "question",
@@ -2855,71 +3163,8 @@ $('#simpan2').on('click', function () {
     }).then((result)=>{
 
         if(result.isConfirmed){
-
             console.log("PROSES AJAX SAVE");
-
-            $.ajax({
-
-                url: "petty-out/save_pettyout_settle.php",
-                type: "POST",
-                data: $('#form-data2').serialize(),
-
-                beforeSend:function(){
-
-                    console.log("Sending data...");
-
-                    Swal.fire({
-                        title: 'Saving...',
-                        allowOutsideClick:false,
-                        didOpen:()=>{
-                            Swal.showLoading();
-                        }
-                    });
-
-                },
-
-                success:function(res){
-
-                    console.log("Response Server :", res);
-
-                    let r = JSON.parse(res);
-
-                    if(r.status == 'success'){
-
-                        console.log("SAVE SUCCESS");
-
-                        Swal.fire({
-                            icon:'success',
-                            title:'Success',
-                            text:r.message
-                        }).then(()=>{
-                           location.href='petty-cashout.php';
-                        });
-
-                    }else{
-
-                        console.log("SAVE ERROR :", r.message);
-
-                        Swal.fire(
-                            'Error',
-                            r.message,
-                            'error'
-                        );
-
-                    }
-
-                },
-
-                error:function(xhr){
-
-                    console.log("AJAX ERROR");
-                    console.log(xhr.responseText);
-
-                    Swal.fire('Error','Server Error','error');
-                }
-
-            });
-
+            doSaveSettle2();
         }
 
     });
@@ -3692,7 +3937,7 @@ $('#simpan4').on('click', function(){
     kode_kas   : $('#kode_kas4').val(),
     pc_header   : $('#profit_center_kas4').val(),
     amount     : getNumber($('#amount_kas4').val()),
-    desc       : $('#pesan1').val()
+    desc       : $('#pesan4').val()
   };
 
   console.log("HEADER:", header);
@@ -3712,6 +3957,11 @@ $('#simpan4').on('click', function(){
 
   if(!header.account){
     Swal.fire('Warning','Account belum terisi','warning');
+    return;
+  }
+
+  if(!header.desc || !header.desc.trim()){
+    Swal.fire('Warning','Description tidak boleh kosong','warning');
     return;
   }
 
@@ -3797,6 +4047,9 @@ $('#simpan4').on('click', function(){
     let debit = parseFloat(tr.find('input[name="txt_amount4[]"]').val()) || 0;
     let credit= parseFloat(tr.find('input[name="txt_credit4[]"]').val()) || 0;
     let desc  = tr.find('input[name="keterangan4[]"]').val();
+    if(!desc){
+      desc = $('#pesan4').val();
+    }
     let curr  = tr.find('select.currenc4').first().val();
     let reff_doc  = tr.find('input[name="no_reff4[]"]').val();
     let reff_date  = tr.find('input[name="reff_date4[]"]').val();
@@ -3877,46 +4130,82 @@ $('#simpan4').on('click', function(){
   // =========================
   // AJAX SAVE
   // =========================
-  Swal.fire({
-    title: 'Saving...',
-    allowOutsideClick: false,
-    didOpen: () => {
-      Swal.showLoading();
-    }
-  });
+  function doSaveLp4(){
 
-  $.ajax({
-    url: 'save_lp_cash.php',
-    type: 'POST',
-    dataType: 'json',
-    data: {
-      data: JSON.stringify(finalData)
-    },
-    success: function(res){
+    // Cegah double-submit: tombol dikunci begitu mulai proses save, baru
+    // dibuka lagi kalau ada error (supaya bisa dicoba ulang).
+    $('#simpan4').prop('disabled', true);
 
-      console.log("RESPONSE:", res);
-
-      if(res.status === 'ok'){
-        Swal.fire({
-          icon: 'success',
-          title: 'Success',
-          text: res.message
-        }).then(() => {
-          location.href='petty-cashout.php';
-        });
-      }else{
-        Swal.fire('Error', res.message, 'error');
+    Swal.fire({
+      title: 'Saving...',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
       }
+    });
 
-    },
-    error: function(xhr){
+    $.ajax({
+      url: 'save_lp_cash.php',
+      type: 'POST',
+      dataType: 'json',
+      data: {
+        data: JSON.stringify(finalData)
+      },
+      success: function(res){
 
-      console.log("ERROR AJAX:", xhr.responseText);
+        console.log("RESPONSE:", res);
 
-      Swal.fire('Error','Terjadi kesalahan server','error');
+        if(res.status === 'ok'){
+          Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: res.message
+          }).then(() => {
+            location.href='petty-cashout.php';
+          });
+        }else{
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: res.message,
+            showCancelButton: true,
+            confirmButtonText: 'Coba Lagi',
+            cancelButtonText: 'Tutup'
+          }).then((retry) => {
+            if(retry.isConfirmed){
+              doSaveLp4();
+            }else{
+              $('#simpan4').prop('disabled', false);
+            }
+          });
+        }
 
-    }
-  });
+      },
+      error: function(xhr){
+
+        console.log("ERROR AJAX:", xhr.responseText);
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Terjadi kesalahan server',
+          showCancelButton: true,
+          confirmButtonText: 'Coba Lagi',
+          cancelButtonText: 'Tutup'
+        }).then((retry) => {
+          if(retry.isConfirmed){
+            doSaveLp4();
+          }else{
+            $('#simpan4').prop('disabled', false);
+          }
+        });
+
+      }
+    });
+
+  }
+
+  doSaveLp4();
 
 });
 
@@ -3993,7 +4282,8 @@ $('#btn_tarik_pv5').on('click', function(){
     data: {
       tgl_awal: tgl_awal,
       tgl_akhir: tgl_akhir,
-      supplier: supplier
+      supplier: supplier,
+      fund_type: 'CASH' // Petty Cash Out cuma boleh tarik PV yang akunnya Kas Kecil, bukan Bank
     },
     beforeSend:function(){
       Swal.fire({
@@ -4030,6 +4320,17 @@ $('#table-pv5').on('change', '.chk_pv', function(){
     input.val(total.toLocaleString('en-US'));
     input_idr.prop('disabled', false);
     input_idr.val(total_idr.toLocaleString('en-US'));
+
+    // Auto-baca Account & Currency dari PV yang dicentang (nilai yang
+    // tersimpan waktu PV itu dibuat) - cuma kalau Account belum diisi,
+    // supaya user tetap bisa ubah manual kalau mau tanpa ketimpa lagi
+    // tiap centang baris lain.
+    if(!$('#account5').val()){
+      let pvAccount = tr.find('.no_pv').data('account');
+      if(pvAccount && $('#account5 option[value="' + pvAccount + '"]').length){
+        $('#account5').val(pvAccount).trigger('change');
+      }
+    }
 
     hitungTotalPV5();
 
@@ -4179,7 +4480,7 @@ function addRow5(tableID) {
 <td><input type="checkbox" id="select5" name="select5[]" value="" checked disabled></td>
 
 <td >
-<select class="form-control selectpicker no_coa5" name="nomor_coa5[]" data-live-search="true" data-width="220px" data-size="5">
+<select class="form-control selectpicker no_coa5" name="nomor_coa5[]" data-live-search="true" data-width="100%" data-size="5">
 <option value="-">-</option>
 <?php
 $sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa,' ',nama_coa) as coa from mastercoa_v2");
@@ -4190,7 +4491,7 @@ foreach ($sql as $coa) : ?>
 </td>
 
 <td>
-<select class="form-control selectpicker prof_ctr5" name="prof_ctr5[]" data-live-search="true" data-width="200px">
+<select class="form-control selectpicker prof_ctr5" name="prof_ctr5[]" data-live-search="true" data-width="100%">
 <option value="-"> - </option>
 <?php
 $sql3 = mysqli_query($conn1, "select kode_pc,id_pc,nama_pc,CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status='Active'");
@@ -4201,7 +4502,7 @@ foreach ($sql3 as $fc) : ?>
 </td>
 
 <td>
-<select class="form-control selectpicker cost_ctr5" name="cost_ctr5[]" data-live-search="true" data-width="200px">
+<select class="form-control selectpicker cost_ctr5" name="cost_ctr5[]" data-live-search="true" data-width="100%">
 <option value="-"> - </option>
 </select>
 </td>
@@ -4307,7 +4608,7 @@ function InsertRow5(tableID) {
 <td><input type="checkbox" id="select5" name="select5[]" value="" checked disabled></td>
 
 <td >
-<select class="form-control selectpicker no_coa5" name="nomor_coa5[]" data-live-search="true" data-width="220px" data-size="5">
+<select class="form-control selectpicker no_coa5" name="nomor_coa5[]" data-live-search="true" data-width="100%" data-size="5">
 <option value="-">-</option>
 <?php
 $sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa,' ',nama_coa) as coa from mastercoa_v2");
@@ -4318,7 +4619,7 @@ foreach ($sql as $coa) : ?>
 </td>
 
 <td>
-<select class="form-control selectpicker prof_ctr5" name="prof_ctr5[]" data-live-search="true" data-width="200px">
+<select class="form-control selectpicker prof_ctr5" name="prof_ctr5[]" data-live-search="true" data-width="100%">
 <option value="-"> - </option>
 <?php
 $sql3 = mysqli_query($conn1, "select kode_pc,id_pc,nama_pc,CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status='Active'");
@@ -4329,7 +4630,7 @@ foreach ($sql3 as $fc) : ?>
 </td>
 
 <td>
-<select class="form-control selectpicker cost_ctr5" name="cost_ctr5[]" data-live-search="true" data-width="200px">
+<select class="form-control selectpicker cost_ctr5" name="cost_ctr5[]" data-live-search="true" data-width="100%">
 <option value="-"> - </option>
 </select>
 </td>
@@ -4551,6 +4852,11 @@ $('#simpan5').on('click', function(){
     return;
   }
 
+  if(!header.desc || !header.desc.trim()){
+    Swal.fire('Warning','Description tidak boleh kosong','warning');
+    return;
+  }
+
   if(header.amount <= 0){
     Swal.fire('Warning','Amount tidak boleh 0','warning');
     return;
@@ -4615,6 +4921,9 @@ $('#simpan5').on('click', function(){
     let debit = parseFloat(tr.find('input[name="txt_amount5[]"]').val()) || 0;
     let credit= parseFloat(tr.find('input[name="txt_credit5[]"]').val()) || 0;
     let desc  = tr.find('input[name="keterangan5[]"]').val();
+    if(!desc){
+      desc = $('#pesan5').val();
+    }
     let curr  = tr.find('select.currenc5').first().val();
     let reff_doc  = tr.find('input[name="no_reff5[]"]').val();
     let reff_date  = tr.find('input[name="reff_date5[]"]').val();
@@ -4669,37 +4978,73 @@ $('#simpan5').on('click', function(){
     }
   };
 
-  Swal.fire({
-    title: 'Saving...',
-    allowOutsideClick: false,
-    didOpen: () => { Swal.showLoading(); }
-  });
+  function doSavePv5(){
 
-  $.ajax({
-    url: 'save_pv_cash.php',
-    type: 'POST',
-    dataType: 'json',
-    data: { data: JSON.stringify(finalData) },
-    success: function(res){
+    // Cegah double-submit: tombol dikunci begitu validasi lolos & mulai
+    // proses save, baru dibuka lagi kalau ada error (supaya bisa dicoba ulang).
+    $('#simpan5').prop('disabled', true);
 
-      if(res.status === 'ok'){
+    Swal.fire({
+      title: 'Saving...',
+      allowOutsideClick: false,
+      didOpen: () => { Swal.showLoading(); }
+    });
+
+    $.ajax({
+      url: 'save_pv_cash.php',
+      type: 'POST',
+      dataType: 'json',
+      data: { data: JSON.stringify(finalData) },
+      success: function(res){
+
+        if(res.status === 'ok'){
+          Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: res.message
+          }).then(() => {
+            location.href='petty-cashout.php';
+          });
+        }else{
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: res.message,
+            showCancelButton: true,
+            confirmButtonText: 'Coba Lagi',
+            cancelButtonText: 'Tutup'
+          }).then((retry) => {
+            if(retry.isConfirmed){
+              doSavePv5();
+            }else{
+              $('#simpan5').prop('disabled', false);
+            }
+          });
+        }
+
+      },
+      error: function(xhr){
+        console.log("ERROR AJAX:", xhr.responseText);
         Swal.fire({
-          icon: 'success',
-          title: 'Success',
-          text: res.message
-        }).then(() => {
-          location.href='petty-cashout.php';
+          icon: 'error',
+          title: 'Error',
+          text: 'Terjadi kesalahan server',
+          showCancelButton: true,
+          confirmButtonText: 'Coba Lagi',
+          cancelButtonText: 'Tutup'
+        }).then((retry) => {
+          if(retry.isConfirmed){
+            doSavePv5();
+          }else{
+            $('#simpan5').prop('disabled', false);
+          }
         });
-      }else{
-        Swal.fire('Error', res.message, 'error');
       }
+    });
 
-    },
-    error: function(xhr){
-      console.log("ERROR AJAX:", xhr.responseText);
-      Swal.fire('Error','Terjadi kesalahan server','error');
-    }
-  });
+  }
+
+  doSavePv5();
 
 });
 
