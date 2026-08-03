@@ -90,7 +90,7 @@
         }
 
 
-        $sql = mysqli_query($conn2,"select a.*, IFNULL(b.no_coa,'-') no_coa, IFNULL(b.nama_coa,'-') nama_coa from (SELECT if(a.bpbno_int!='',a.bpbno_int,a.bpbno) bpbno,a.bpbdate, ifnull(mp.nama_pc, 'NIRWANA ALABARE GARMENT') profit_center, a.invno,a.jenis_dok,right(a.nomor_aju,6) nomor_aju,a.tanggal_aju, lpad(a.bcno,6,'0') bcno,a.bcdate,d.supplier,a.pono,z.tipe_com,a.id_item,s.goods_code, CONCAT(s.itemdesc,' ',coalesce(s.add_info,'')) itemdesc,m.description,s.color,s.size, a.qty,a.unit,a.berat_bersih,a.remark,a.username,CONCAT(a.confirm_by, ' (', a.confirm_date, ')') AS confirm_by,r.reqno,'' whs_code,a.curr,if(z.tipe_com ='FOC','0',a.price) price,a.jenis_trans,a.reffno, IFNULL(cc.no_cc,'-') no_cc, IFNULL(cc.cc_name,'-') cc_name,CASE
+        $sql = mysqli_query($conn2,"select a.*, IFNULL(b.no_coa,'-') no_coa, IFNULL(b.nama_coa,'-') nama_coa from (SELECT if(a.bpbno_int!='',a.bpbno_int,a.bpbno) bpbno,a.bpbdate, ifnull(mp.nama_pc, 'NIRWANA ALABARE GARMENT') profit_center, a.invno,a.jenis_dok,right(a.nomor_aju,6) nomor_aju,a.tanggal_aju, lpad(a.bcno,6,'0') bcno,a.bcdate,d.supplier,a.pono,z.tipe_com,a.id_item,s.goods_code, CONCAT(s.itemdesc,' ',coalesce(s.add_info,'')) itemdesc,m.description,s.color,s.size, a.qty,a.unit,a.berat_bersih,a.remark,r.username,CONCAT(a.confirm_by, ' (', a.confirm_date, ')') AS confirm_by,r.reqno,'' whs_code,a.curr,if(z.tipe_com ='FOC','0',a.price) price,a.jenis_trans,a.reffno, IFNULL(cc.no_cc,'-') no_cc, IFNULL(cc.cc_name,'-') cc_name,CASE
     WHEN id_group2 = 1 THEN coa_production
     WHEN id_group2 = 2 THEN coa_sup_production
     WHEN id_group2 = 3 THEN coa_sup_gen_adm
