@@ -2,7 +2,14 @@
 include '../../conn/conn.php';
 ini_set('date.timezone', 'Asia/Jakarta');
 
-$no_pv = $_POST['no_pv'];
+function q($conn, $sql) {
+    $result = mysqli_query($conn, $sql);
+    if ($result === false) {
+        throw new Exception(mysqli_error($conn));
+    }
+    return $result;
+}
+
 $pv_date =  date("Y-m-d",strtotime($_POST['pv_date']));
 $nama_supp = $_POST['nama_supp'];
 $sup_doc = $_POST['sup_doc'];
@@ -31,39 +38,108 @@ $create_date = date("Y-m-d H:i:s");
 $status = "Draft";
 $rat_pv = $_POST['rat_pv'];
 
+$details = json_decode($_POST['details'] ?? '[]', true) ?: [];
 
-// echo "< -- >";
-echo $no_pv;
-// echo "< -- >";
-// echo $tgl_kbon;
-// echo "< -- >";
-// echo $valuta_ftr;
-// echo "< -- >";
-// echo $ttl_bayar;
-// echo "< -- >";
-// echo $cara_bayar;
-// echo "< -- >";
-// echo $account;
-// echo "< -- >";
-// echo $bank;
-// echo "< -- >";
+mysqli_begin_transaction($conn2);
 
+try {
+    $pv_tax_type_esc = mysqli_real_escape_string($conn2, $pv_tax_type);
+    $create_user_esc = mysqli_real_escape_string($conn2, $create_user);
 
-$pv_tax_type_esc = mysqli_real_escape_string($conn2, $pv_tax_type);
+    // Jangan pakai no_pv yang dikirim dari client (dihitung sekali saat
+    // halaman dibuka) - kalau halaman sempat dibiarkan terbuka lama sambil
+    // dokumen lain dibuat, nomor itu jadi basi dan bisa dobel. Nomor
+    // digenerate ulang di sini, di dalam transaksi + FOR UPDATE, tepat saat
+    // mau disimpan.
+    $bln = date('m', strtotime($pv_date));
+    $thn = date('y', strtotime($pv_date));
+    $huruf = "PV/NAG/$bln$thn/";
 
-$query = "INSERT INTO tbl_pv_h (no_pv,pv_date,nama_supp,supp_doc,ctb,pay_date,pay_meth,curr,for_pay,pv_tax_type, frm_akun,to_akun,ke,dari,no_cek, cek_date,deskripsi,subtotal,adjust,pph,ppn,total,outstanding,per_ppn,per_pph,rate,create_by,create_date,status)
-VALUES
-	('$no_pv', '$pv_date', '$nama_supp', '$sup_doc', '$ctb', '$pay_date', '$pay_mth', '$curr', '$forpay', '$pv_tax_type_esc', '$frcc', '$tocc', '$ke', '$dari', '$no_cek', '$cek_date', '$pesan', '$subtotal', '$adjust', '$pph', '$ppn', '$total', '$total', '$pilih_ppn', '$pilih_pph', '$rat_pv', '$create_user', '$create_date', '$status')";
+    $sqlNum = q($conn2, "
+        SELECT MAX(CAST(RIGHT(no_pv,5) AS UNSIGNED)) AS max_urut
+        FROM tbl_pv_h
+        WHERE no_pv LIKE '" . mysqli_real_escape_string($conn2, $huruf) . "%'
+        FOR UPDATE
+    ");
+    $rowNum = mysqli_fetch_assoc($sqlNum);
+    $urutan = (int) ($rowNum['max_urut'] ?? 0) + 1;
+    $no_pv = $huruf . sprintf("%05d", $urutan);
 
-$execute = mysqli_query($conn2,$query);
+    q($conn2, "INSERT INTO tbl_pv_h (no_pv,pv_date,nama_supp,supp_doc,ctb,pay_date,pay_meth,curr,for_pay,pv_tax_type, frm_akun,to_akun,ke,dari,no_cek, cek_date,deskripsi,subtotal,adjust,pph,ppn,total,outstanding,per_ppn,per_pph,rate,create_by,create_date,status)
+        VALUES
+        ('$no_pv', '$pv_date', '$nama_supp', '$sup_doc', '$ctb', '$pay_date', '$pay_mth', '$curr', '$forpay', '$pv_tax_type_esc', '$frcc', '$tocc', '$ke', '$dari', '$no_cek', '$cek_date', '$pesan', '$subtotal', '$adjust', '$pph', '$ppn', '$total', '$total', '$pilih_ppn', '$pilih_pph', '$rat_pv', '$create_user', '$create_date', '$status')");
 
+    // Detail baris - bulk insert satu statement, bukan satu INSERT per baris
+    // (dulu tiap baris kirim request AJAX terpisah ke insertpv.php, jadi
+    // kalau salah satu gagal di tengah, sisanya sudah kadung tersimpan
+    // tanpa rollback).
+    $pvValues = [];
+    $noRefsSeen = [];
 
-if(!$execute){	
-   die('Error: ' . mysqli_error());	
-}else{
-	$query2 = "delete from supp_doc_temp";
-	$execute2 = mysqli_query($conn2,$query2);
+    foreach ($details as $d) {
+        $amount = (float) ($d['amount'] ?? 0);
+        $ded_add = (float) ($d['ded_add'] ?? 0);
+
+        if ($amount == 0 && $ded_add == 0) {
+            continue;
+        }
+
+        $no_coa = mysqli_real_escape_string($conn2, $d['no_coa'] ?? '');
+        $no_cc = mysqli_real_escape_string($conn2, $d['no_cc'] ?? '');
+        $prof_ctr_check = trim($d['prof_ctr'] ?? '');
+
+        if ($no_coa === '' || $no_coa === '-') {
+            throw new Exception('COA wajib diisi.');
+        }
+        if ($prof_ctr_check === '' || $prof_ctr_check === '-') {
+            throw new Exception('Profit Center wajib diisi.');
+        }
+
+        $sqlWajibCc = q($conn1, "select no_coa from mastercoa_v2 where no_coa = '" . mysqli_real_escape_string($conn1, $no_coa) . "'
+            and (support_gen_adm = 'Y' OR support_prod = 'Y' OR prod = 'Y' OR support_sell = 'Y')");
+        if (mysqli_num_rows($sqlWajibCc) > 0 && ($no_cc === '-' || $no_cc === '')) {
+            throw new Exception('COA ' . $no_coa . ' wajib isi Cost Center.');
+        }
+
+        $no_ref = mysqli_real_escape_string($conn2, $d['no_ref'] ?? '');
+        $ref_date = date("Y-m-d", strtotime($d['ref_date'] ?? ''));
+        $deskripsi = mysqli_real_escape_string($conn2, $d['deskripsi'] ?? '');
+        $due_date = date("Y-m-d", strtotime($d['due_date'] ?? ''));
+        $d_pph = mysqli_real_escape_string($conn2, $d['pph'] ?? 0);
+        $idtax = mysqli_real_escape_string($conn2, $d['idtax'] ?? '');
+        $d_ppn = mysqli_real_escape_string($conn2, $d['ppn'] ?? 0);
+        $id_ppn = mysqli_real_escape_string($conn2, $d['id_ppn'] ?? '');
+        $prof_ctr = mysqli_real_escape_string($conn2, $d['prof_ctr'] ?? '');
+
+        $pvValues[] = "('$no_pv', '$no_coa', '$no_cc', '$no_ref', '$ref_date', '$deskripsi', '$amount', '$due_date', '$ded_add', '$d_pph', '$idtax', '$d_ppn', '$id_ppn', '$prof_ctr')";
+
+        if ($no_ref !== '' && !isset($noRefsSeen[$no_ref])) {
+            $noRefsSeen[$no_ref] = true;
+        }
+    }
+
+    if (!empty($pvValues)) {
+        q($conn2, "INSERT INTO tbl_pv (no_pv,coa,no_cc,reff_doc,reff_date,deskripsi,amount,due_date,ded_add,pph,id_pph,ppn,id_ppn,profit_center)
+            VALUES " . implode(',', $pvValues));
+    }
+
+    // Efek samping per no_ref (Reff Doc) - update/pembersihan memo terkait,
+    // sama seperti yang dulu dilakukan insertpv.php per baris.
+    foreach (array_keys($noRefsSeen) as $no_ref) {
+        q($conn2, "update memo_h set status='PAYMENT', no_pv='$no_pv' where nm_memo='$no_ref'");
+        q($conn2, "delete from tbl_pv_memo_temp where no_memo = '$no_ref' and user = '$create_user_esc'");
+        q($conn2, "UPDATE memo_h set no_pv = '$no_pv', status='PAYMENT DRAFT' where nm_memo = '$no_ref'");
+        q($conn2, "delete from tbl_pv_ftr_temp where no_memo = '$no_ref' and user = '$create_user_esc'");
+        q($conn2, "UPDATE memo_h set status='Paid' where no_payment = '$no_ref'");
+    }
+
+    q($conn2, "delete from supp_doc_temp");
+
+    mysqli_commit($conn2);
+    echo $no_pv;
+} catch (Exception $e) {
+    mysqli_rollback($conn2);
+    echo "Error: " . $e->getMessage();
 }
 
 mysqli_close($conn2);
-?>

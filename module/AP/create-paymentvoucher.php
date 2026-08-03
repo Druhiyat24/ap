@@ -1,9 +1,28 @@
 <?php include '../header.php' ?>
 
 <style>
-    .pv-card{ border:0; border-radius:12px; background:#fff; box-shadow:0 2px 12px rgba(0,0,0,0.08); overflow:hidden; margin-bottom:20px; }
-    .pv-card .box.header{ padding:20px; }
-    .pv-card .box.body{ padding:0 20px 20px; }
+    /* Tema admin (AdminLTE) ngasih border/box-shadow default ke .box/.box-header/
+       .box-body yang bikin garis pemisah nongol di antara section - di-nol-in
+       semua di sini biar bersih, ganti sama shadow+radius punya .pv-card sendiri. */
+    .pv-card, .pv-card.box, .pv-card .box-header, .pv-card .box-body,
+    .pv-card .box.header, .pv-card .box.body, .pv-card .box.footer {
+        border: 0 !important;
+        box-shadow: none !important;
+    }
+    /* AdminLTE ngasih .box border-top 3px + shadow tipis banget bawaan tema -
+       rgba(0,0,0,.125) ternyata kelihatan nyaris polos di browser, jadi warna
+       border dibikin lebih jelas/gelap supaya tepi card kelihatan tegas. */
+    .pv-card, div.box.pv-card {
+        border-radius: .25rem !important;
+        background: #fff !important;
+        box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.25) !important;
+        overflow: hidden !important;
+        margin-bottom: 20px !important;
+        border: 1px solid #c9ccd1 !important;
+        border-top: 1px solid #c9ccd1 !important;
+    }
+    .pv-card .box.header{ padding:24px 24px 8px; }
+    .pv-card .box.body{ padding:8px 24px 24px; }
     .total-box{ border:0; border-radius:10px; background:#fff; box-shadow:0 2px 10px rgba(0,0,0,0.08); overflow:hidden; }
     .total-box .total-box-header{ padding:12px 16px; color:#fff; font-weight:700; font-size:14px; background:linear-gradient(90deg, #4a5578, #6b7699); }
     .total-box .total-box-body{ padding:16px; display:flex; flex-direction:column; gap:14px; }
@@ -44,7 +63,10 @@
             $sql = mysqli_query($conn2,"select max(no_pv) from tbl_pv_h where YEAR(pv_date) = YEAR(CURRENT_DATE())");
             $row = mysqli_fetch_array($sql);
             $kodepay = $row['max(no_pv)'];
-            $urutan = (int) substr($kodepay, 12, 5);
+            // Ambil 5 digit TERAKHIR, bukan posisi tetap ke-12 - biar tetap
+            // benar walau panjang prefix "PV/NAG/MMYY/" berubah suatu saat.
+            $urutan = (int) substr($kodepay, -5);
+            $urutan++;
 
             $bln = date("m");
             $thn = date("y");
@@ -336,8 +358,8 @@
             <input type="text" style="font-size: 14px;" class="form-control" id="dari" name="dari" value="" autocomplete="off">
         </div>
 
-        <div class="col-md-3 mb-3" id="div_payfor">
-            <label for="pay_for" class="col-form-label" style="width: 150px;"><b>-</b></label>
+        <div class="col-md-2 mb-3" id="div_payfor">
+            <label for="pay_for" class="col-form-label" style="width: 150px;"><b>For payment Other</b></label>
             <input type="text" style="font-size: 14px;" class="form-control" id="pay_for" name="pay_for" value="" autocomplete="off">
         </div>
 
@@ -661,10 +683,10 @@
           </tr>
     </tfoot>                   
             </table>                    
-<div class="box footer pv-card" style="padding:20px;">
+<div style="padding:20px 0 0; border:0; box-shadow:none; background:transparent;">
         <form id="form-simpan">
             <div class="form-row col">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div style="display:none;">
                     <select class="form-control selectpicker" name="pilih_pph" id="pilih_pph" data-dropup-auto="false" data-live-search="true">
                         <option value="-" disabled selected="true">Select Account</option>
@@ -696,7 +718,7 @@
                 </select>
                 <input type="hidden" name="idtax" id="idtax" value="0">
             </div>
-            <div class="col-md-4">
+            <div class="col-md-5">
 
             </div>
             <div class="col-md-4">
@@ -787,8 +809,16 @@
     <script language="JavaScript" src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/js/select2.full.js"></script>
 
 <script>
+  // COA yang wajib isi Cost Center (support_gen_adm/support_prod/prod/support_sell = 'Y')
+  var coaWajibCC = [];
+  $.getJSON('get_coa_wajib_cc.php', function(data){
+      coaWajibCC = data;
+  });
+</script>
+
+<script>
   // Hide submenus
-$('#body-row .collapse').collapse('hide'); 
+$('#body-row .collapse').collapse('hide');
 
 // Collapse/Expand icon
 $('#collapse-icon').addClass('fa-angle-double-left'); 
@@ -1042,32 +1072,30 @@ function addRow(tableID) {
     var rowCount = table.rows.length;
     var row = table.insertRow(rowCount);
 
-$(function() {
+ var element1 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td><select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="100%" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="100%" data-size="5"><option value="-"> - </option><?php $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'"); foreach ($sql3 as $fc) : ?> <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option> <?php endforeach; ?> </select> </td> <td> <select class="form-control selectpicker nomor_cc" name="nomor_cc[]" id="nomor_cc" data-live-search="true" data-width="100%" data-size="5"> <option value="-"> - </option> </select> </td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input type="text" style="font-size: 12px;" name="tgl_active" id="tgl_active" class="form-control tanggal" value="" autocomplete="off" placeholder="dd-mm-yyyy"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_dedadd(value)" autocomplete = "off"></td><td><input type="text" style="font-size: 12px;" name="tgl_tempo" id="tgl_tempo" class="form-control tanggal" autocomplete="off" placeholder="dd-mm-yyyy" value="<?= date("d-m-Y"); ?>"></td><td><select class="form-control select2add" name="pphh" style="width:100%" onchange="input_pph()"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPH' GROUP BY idtax"); foreach ($sql as $pph) : ?> <option data-idtax="<?= $pph["idtax"]; ?>" value="<?= $pph["percentage"]; ?>"><?= $pph["kriteria2"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control select2add ppnn-row" name="ppnn" style="width:100%" onchange="input_ppn()"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPN' GROUP BY idtax"); foreach ($sql as $ppn) : ?> <option data-idtax="<?= $ppn["idtax"]; ?>" value="<?= $ppn["percentage"]; ?>"><?= $ppn["kriteria2"]; ?> </option><?php endforeach; ?></select></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
+
+    row.innerHTML = element1;
+
     $('.selectpicker').selectpicker();
-});
-$(document).ready(function () {
     $('.tanggal').datepicker({
         format: "dd-mm-yyyy",
-        autoclose:true
+        autoclose: true
     });
-});
-$(function() {
-      //Initialize Select2 Elements
-      var selectcoba = rowCount;
-      $('.rowCount').select2({
-         theme: 'bootstrap4'
-      })
-      //Initialize Select2 Elements
-      $('.select2add').select2({
+    $('.select2add').select2({
         theme: 'bootstrap4',
-        dropdownAutoWidth : true
-      })
+        dropdownAutoWidth: true,
+        width: '100%'
     });
- $coa = '';
- var element1 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td style="width: 50px"><select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="150px" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="200px" data-size="5"><option value="-"> - </option><?php $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'"); foreach ($sql3 as $fc) : ?> <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option> <?php endforeach; ?> </select> </td> <td> <select class="form-control selectpicker nomor_cc" name="nomor_cc[]" id="nomor_cc" data-live-search="true" data-width="200px" data-size="5"> <option value="-"> - </option> </select> </td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input type="text" style="font-size: 12px;" name="tgl_active" id="tgl_active" class="form-control tanggal" value="" autocomplete="off" placeholder="dd-mm-yyyy"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_dedadd(value)" autocomplete = "off"></td><td><input type="text" style="font-size: 12px;" name="tgl_tempo" id="tgl_tempo" class="form-control tanggal" autocomplete="off" placeholder="dd-mm-yyyy" value="<?= date("d-m-Y"); ?>"></td><td style="width: 50px"><select class="form-control select2add" name="pphh"  data-live-search="true" onchange="input_pph()" data-width="120px" data-size="5"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPH' GROUP BY idtax"); foreach ($sql as $pph) : ?> <option data-idtax="<?= $pph["idtax"]; ?>" value="<?= $pph["percentage"]; ?>"><?= $pph["kriteria2"]; ?> </option><?php endforeach; ?></select></td></td><td style="width: 50px"><select class="form-control select2add" name="ppnn"  data-live-search="true" onchange="input_ppn()" data-width="120px" data-size="5"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPN' GROUP BY idtax"); foreach ($sql as $ppn) : ?> <option data-idtax="<?= $ppn["idtax"]; ?>" value="<?= $ppn["percentage"]; ?>"><?= $ppn["kriteria2"]; ?> </option><?php endforeach; ?></select></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
 
-
- row.innerHTML = element1;
+    // Kalau PPN header sudah dikunci ke nilai tertentu (bukan Non PPN), baris
+    // baru ini juga langsung ikut nilai itu & ikut terkunci - konsisten
+    // dengan baris-baris lain yang sudah ada (lihat changeValueTax2()).
+    var headerPpnVal = $('#pilih_ppn').val();
+    if (headerPpnVal && headerPpnVal !== '0') {
+        var $newPpnRow = $(row).find('select[name=ppnn]');
+        $newPpnRow.val(headerPpnVal).trigger('change');
+        $newPpnRow.prop('disabled', true);
+    }
 }
 
 function deleteRow(tableID)
@@ -1090,75 +1118,7 @@ function deleteRow(tableID)
                     table.deleteRow(i);
                     rowCount--;
                     i--;
-                    
-    var table = document.getElementById("tbody2");
-    var tota = 0;
-    var tota_ppn = 0;
-    var t_ppn = 0;
-    var tota_amt = 0;
-    var tota_ded = 0;
-    var harga = 0;
-    var totall = 0;
-    var tot_price= 0;
-    var total_ppn= 0;
-    var harga = 0;
-    var harga2 = 0;
-    var total_pv = parseFloat(document.getElementById('nomrate_h').value,10) || 0;
-    var ppn_h = parseFloat(document.getElementById('ppn_h').value,10) || 0;
-    var h_ppn = document.getElementById('pilih_ppn').value || 0;
-    var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0;
-            for (var i = 1; i < (table.rows.length); i++) {
-
-    var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
-    var price2 = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
-    var pph = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
-    var ppn = document.getElementById("tbody2").rows[i].cells[11].children[0].value || 0;
-
-    if(price == ''){
-        tot_price = - price2;
-    }else{
-        tot_price = price;
-    }
-
-    if (price == '') {
-        harga = 0;
-    }else{
-        harga = price;
-    }
-
-    if (price2 == '') {
-        harga2 = 0;
-    }else{
-        harga2 = price2;
-    }
-
-
-    tota += tot_price * (pph/100);
-    tota_ppn += tot_price * (ppn/100);
-    tota_amt += parseFloat(harga);
-    tota_ded += parseFloat(- harga2);
-    total_ppn = tota_amt * (h_ppn /100);
-
-    if (tota_ppn == 0) {
-        t_ppn = total_ppn;
-    }else{
-        t_ppn = tota_ppn;
-    }
-
-    var total_h = tota_amt + t_ppn - tota + tota_ded;
-
-
-    document.getElementsByName("ppn_h")[0].value = (t_ppn).toFixed(2);
-    document.getElementsByName("ppn")[0].value = formatMoney(t_ppn.toFixed(2));   
-    document.getElementsByName("pph_h")[0].value = (- tota).toFixed(2);
-    document.getElementsByName("pph")[0].value = formatMoney(- tota.toFixed(2));
-    document.getElementsByName("total_h")[0].value = (total_h).toFixed(2);
-    document.getElementsByName("total")[0].value = formatMoney(total_h.toFixed(2));
-    document.getElementsByName("nomrate_h")[0].value = (tota_amt).toFixed(2);
-    document.getElementsByName("nomrate1")[0].value = formatMoney(tota_amt.toFixed(2));
-    document.getElementsByName("ded_ad")[0].value = (tota_ded).toFixed(2);
-    document.getElementsByName("ded_ad_h")[0].value = formatMoney(tota_ded.toFixed(2));
-}
+                    recalcAllRows();
                     }
                 }
             } catch(e)
@@ -1213,107 +1173,79 @@ function deleteRow(tableID)
  }
 
  function hitungRow(){
-     
+
 }
 </script>
 
 <script type="text/javascript">
+    // Satu-satunya sumber perhitungan Total - dipanggil dari SEMUA trigger
+    // (input Amount, input Deduction, ganti PPH per baris, ganti PPN per
+    // baris, ganti PPN header, delete row) supaya hasilnya selalu konsisten.
+    // Sebelumnya tiap trigger punya hitungan sendiri-sendiri yang saling
+    // tumpang tindih/tidak sinkron - baris Deduction pun tidak pernah ikut
+    // dihitung PPN/PPH-nya sama sekali.
+    function recalcAllRows(){
+        var table = document.getElementById("tbody2");
+        var subtotal = 0;
+        var dedTotal = 0;
+        var pphTotal = 0;
+        var ppnTotal = 0;
+
+        for (var i = 1; i < table.rows.length; i++) {
+            var amountEl = table.rows[i].cells[7].children[0];
+            var dedEl    = table.rows[i].cells[8].children[0];
+            var pphEl    = table.rows[i].cells[10].children[0];
+            var ppnEl    = table.rows[i].cells[11].children[0];
+
+            var amountVal = amountEl.value;
+            var dedVal    = dedEl.value;
+            var pphPct    = parseFloat(pphEl.value) || 0;
+            var ppnPct    = parseFloat(ppnEl.value) || 0;
+
+            var base;
+            if (amountVal === '') {
+                // Baris Deduction - base negatif supaya PPH/PPN baris ini
+                // ikut mengurangi total, sama seperti Deduction-nya sendiri.
+                dedEl.readOnly = false;
+                amountEl.readOnly = (dedVal !== '');
+                var ded = parseFloat(dedVal) || 0;
+                dedTotal += ded;
+                base = -ded;
+            } else {
+                amountEl.readOnly = false;
+                dedEl.readOnly = true;
+                var amt = parseFloat(amountVal) || 0;
+                subtotal += amt;
+                base = amt;
+            }
+
+            pphTotal += base * (pphPct / 100);
+            ppnTotal += base * (ppnPct / 100);
+        }
+
+        var dedAdValue = -dedTotal;
+        var pphDisplay = -pphTotal;
+        var totalH = subtotal + dedAdValue + ppnTotal - pphTotal;
+
+        document.getElementsByName("nomrate_h")[0].value = subtotal.toFixed(2);
+        document.getElementsByName("nomrate1")[0].value = formatMoney(subtotal.toFixed(2));
+        document.getElementsByName("ded_ad")[0].value = dedAdValue.toFixed(2);
+        document.getElementsByName("ded_ad_h")[0].value = formatMoney(dedAdValue.toFixed(2));
+        document.getElementsByName("pph_h")[0].value = pphDisplay.toFixed(2);
+        document.getElementsByName("pph")[0].value = formatMoney(pphDisplay.toFixed(2));
+        document.getElementsByName("ppn_h")[0].value = ppnTotal.toFixed(2);
+        document.getElementsByName("ppn")[0].value = formatMoney(ppnTotal.toFixed(2));
+        document.getElementsByName("total_h")[0].value = totalH.toFixed(2);
+        document.getElementsByName("total")[0].value = formatMoney(totalH.toFixed(2));
+    }
+
     function input_pph(){
-     var table = document.getElementById("tbody2");
-    var tota = 0;
-    var harga = 0;
-    var totall = 0;
-    var tot_price= 0;
-    var tot_min= 0;
-    var tot_plus= 0;
-    var ppn_h = 0;
-    var total_pv = parseFloat(document.getElementById('nomrate_h').value,10) || 0;
-    // var ppn_h = parseFloat(document.getElementById('ppn_h').value,10) || 0;
-    var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0;
-            for (var i = 1; i < (table.rows.length); i++) {
-
-    var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
-    var price2 = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
-    var pph = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
-    var ppn = document.getElementById("tbody2").rows[i].cells[11].children[0].value || 0;
-
-    if(price == ''){
-        tot_price = - price2;
-        tot_min += tot_price * (pph/100);
-        document.getElementsByName("pph_min")[0].value = (- tot_min).toFixed(2);
-    }else{
-        tot_price = price;
-        tot_plus += tot_price * (pph/100);
-        document.getElementsByName("pph_plus")[0].value = (- tot_plus).toFixed(2);
+        recalcAllRows();
     }
 
-    tota += tot_price * (pph/100);
-    ppn_h += tot_price * (ppn/100);
-    var total_h = total_pv + ppn_h - tota + ded_ad;
-    
-    document.getElementsByName("pph_h")[0].value = (- tota).toFixed(2);
-    document.getElementsByName("pph")[0].value = formatMoney(- tota.toFixed(2));
-    document.getElementsByName("ppn_h")[0].value = (ppn_h).toFixed(2);
-    document.getElementsByName("ppn")[0].value = formatMoney(ppn_h.toFixed(2));
-    document.getElementsByName("total_h")[0].value = (total_h).toFixed(2);
-    document.getElementsByName("total")[0].value = formatMoney(total_h.toFixed(2));
-}
-}
-
-
-function input_ppn(){
-     var table = document.getElementById("tbody2");
-    var tota = 0;
-    var harga = 0;
-    var totall = 0;
-    var tot_price= 0;
-    var tot_min= 0;
-    var tot_plus= 0;
-    var id = 0;
-    var pph_h = 0;
-    var total_pv = parseFloat(document.getElementById('nomrate_h').value,10) || 0;
-    // var ppn_h = parseFloat(document.getElementById('ppn_h').value,10) || 0;
-    var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0;
-    $('#pilih_ppn').prop('disabled', false);
-            for (var i = 1; i < (table.rows.length); i++) {
-
-    var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
-    var price2 = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
-    var pph = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
-    var ppn = document.getElementById("tbody2").rows[i].cells[11].children[0].value || 0;
-
-    if(price == ''){
-        tot_price = - price2;
-        tot_min += tot_price * (pph/100);
-        document.getElementsByName("pph_min")[0].value = (- tot_min).toFixed(2);
-    }else{
-        tot_price = price;
-        tot_plus += tot_price * (pph/100);
-        document.getElementsByName("pph_plus")[0].value = (- tot_plus).toFixed(2);
+    function input_ppn(){
+        recalcAllRows();
     }
-
-    tota += tot_price * (ppn/100);
-    pph_h += tot_price * (pph/100);
-    var total_h = total_pv - pph_h + tota + ded_ad;
-
-    console.log(total_pv);
-    console.log(ppn_h);
-    console.log(tota);
-    console.log(ded_ad);
-    
-    document.getElementsByName("ppn_h")[0].value = (tota).toFixed(2);
-    document.getElementsByName("ppn")[0].value = formatMoney(tota.toFixed(2));
-    document.getElementsByName("pph_h")[0].value = (- pph_h).toFixed(2);
-    document.getElementsByName("pph")[0].value = formatMoney(- pph_h.toFixed(2));
-    document.getElementsByName("total_h")[0].value = (total_h).toFixed(2);
-    document.getElementsByName("total")[0].value = formatMoney(total_h.toFixed(2));
-    if (ppn > 0) {
-
-    $('#pilih_ppn').prop('disabled', true);
-    $('#pilih_ppn').val('');
-    }
-}
-}
 
 
 function getdate() {
@@ -1345,99 +1277,13 @@ function getdate() {
 </script>
 
 <script type="text/javascript">
-      function modal_input_amt(){ 
-    var pph_h = parseFloat(document.getElementById('pph_h').value,10) || 0;
-    var pph_ded = parseFloat(document.getElementById('pph_min').value,10) || 0;
-    var ppn_h = parseFloat(document.getElementById('ppn_h').value,10) || 0;
-    var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0; 
-    var ppn = parseFloat(document.getElementById('pilih_ppn').value,10) || 0;    
-    var table = document.getElementById("tbody2");
-    var tota = 0;
-    var tota_pph = 0;
-    var total_pph = 0;
-    var tota_ppn = 0;
-    var harga = 0;
-    var totall = 0;
-            for (var i = 1; i < (table.rows.length); i++) {
+      function modal_input_amt(){
+        recalcAllRows();
+      }
 
-    var price = document.getElementById("tbody2").rows[i].cells[7].children[0].value;
-    var price2 = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
-    var pph = document.getElementById("tbody2").rows[i].cells[10].children[0].value || 0;
-    var ppn = document.getElementById("tbody2").rows[i].cells[11].children[0].value || 0;
-
-    if (price == '') {
-        harga = 0;
-        price2.readOnly = false;
-    }else{
-        harga = price;
-        price2.readOnly = true;
-    }
-    tota += parseFloat(harga);
-    tota_pph += parseFloat(harga) * (pph/100);
-    total_pph = tota_pph - pph_ded;
-    console.log(ppn);
-    tota_ppn += parseFloat(harga) * (ppn/100);
-    totall = tota + ded_ad + tota_ppn - total_pph;
-
-
-
-    document.getElementsByName("nomrate_h")[0].value = tota.toFixed(2);
-    document.getElementsByName("nomrate1")[0].value = formatMoney(tota.toFixed(2));
-    document.getElementsByName("total_h")[0].value = totall.toFixed(2);
-    document.getElementsByName("total")[0].value = formatMoney(totall.toFixed(2));
-    // document.getElementsByName("pph_h")[0].value = (- total_pph).toFixed(2);
-    // document.getElementsByName("pph")[0].value = formatMoney(- total_pph.toFixed(2));
-    // document.getElementsByName("ppn_h")[0].value = (tota_ppn).toFixed(2);
-    // document.getElementsByName("ppn")[0].value = formatMoney(tota_ppn.toFixed(2));
-    document.getElementsByName("pph_plus")[0].value = (- tota_pph).toFixed(2);
-}
-}
-
-function modal_input_dedadd(){ 
-    var total_pv = parseFloat(document.getElementById('nomrate_h').value,10) || 0; 
-    var pph_h = parseFloat(document.getElementById('pph_h').value,10) || 0;
-    var pph_amt = parseFloat(document.getElementById('pph_plus').value,10) || 0;
-    var ppn_h = parseFloat(document.getElementById('ppn_h').value,10) || 0;
-    var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0;   
-    var table = document.getElementById("tbody2");
-    var tota = 0;
-    var total = 0;
-    var harga = 0;
-    var harga2 = 0;
-    var totall = 0;
-    var tota_pph = 0;
-    var total_pph = 0;
-            for (var i = 1; i < (table.rows.length); i++) {
-
-    var price = document.getElementById("tbody2").rows[i].cells[8].children[0].value;
-    var price_amt = document.getElementById("tbody2").rows[i].cells[7].children[0];
-    var pph = document.getElementById("tbody2").rows[i].cells[10].children[0].value;
-
-    if (price == '') {
-        harga = 0;
-        harga2 = price_amt;
-        price_amt.readOnly = false;
-    }else{
-        harga = price;
-        harga2 = 0;
-        price_amt.readOnly = true;
-    }
-    tota += parseFloat(- harga);
-    tota_pph += parseFloat(harga) * (pph/100);
-    total_pph = pph_amt + tota_pph;
-    total = total_pv + tota + ppn_h + total_pph;
-
-
-
-    document.getElementsByName("ded_ad")[0].value = tota.toFixed(2);
-    document.getElementsByName("ded_ad_h")[0].value = formatMoney(tota.toFixed(2));
-    document.getElementsByName("total_h")[0].value = total.toFixed(2);
-    document.getElementsByName("total")[0].value = formatMoney(total.toFixed(2));
-    // document.getElementsByName("pph_h")[0].value = (total_pph).toFixed(2);
-    // document.getElementsByName("pph")[0].value = formatMoney(total_pph.toFixed(2));
-    document.getElementsByName("pph_min")[0].value = (tota_pph).toFixed(2);
-}
-}
+      function modal_input_dedadd(){
+        recalcAllRows();
+      }
 
 
 
@@ -1485,16 +1331,20 @@ function changeValueTax(id){
 
 function changeValueTax2(id){
     document.getElementById('idtax').value = prdName[id].idtax;
-    var total_pv = parseFloat(document.getElementById('nomrate_h').value,10) || 0;
-    var pph_h = parseFloat(document.getElementById('pph_h').value,10) || 0;
-    var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0;
-    var pph = id;
-    var twot2 = (total_pv).toFixed(2) * (pph /100);
-    var total_h = total_pv + pph_h + twot2 + ded_ad;
-    document.getElementsByName("ppn_h")[0].value = (twot2).toFixed(2);
-    document.getElementsByName("ppn")[0].value = formatMoney(twot2.toFixed(2));
-    document.getElementsByName("total_h")[0].value = (total_h).toFixed(2);
-            document.getElementsByName("total")[0].value = formatMoney(total_h.toFixed(2));
+
+    // PPN header dipilih (bukan Non PPN) -> semua PPN per baris ikut nilai
+    // ini & dikunci (tidak bisa diubah manual per baris). Balik ke Non PPN
+    // di header -> PPN per baris bisa dipilih bebas lagi. Total dihitung
+    // ulang lewat recalcAllRows() supaya baris Deduction juga tetap ikut
+    // terhitung PPN/PPH-nya, bukan cuma dianggap dari subtotal Amount saja.
+    var $rowPpn = $('#tbody2 select[name=ppnn]');
+    if (id && id !== '0') {
+        $rowPpn.val(id).trigger('change');
+        $rowPpn.prop('disabled', true);
+    } else {
+        $rowPpn.prop('disabled', false);
+    }
+    recalcAllRows();
 }
   </script>
 
@@ -1775,6 +1625,14 @@ function addListener(elm,index){
 
 <script type="text/javascript">
     $("#form-simpan").on("click", "#simpan", function(){
+        // Cegah klik dobel - tombol langsung dinonaktifkan begitu diklik,
+        // cuma diaktifkan lagi kalau validasi gagal atau ada error dari
+        // server (biar bisa dicoba lagi tanpa reload).
+        if ($(this).prop('disabled')) {
+            return;
+        }
+        var $saveBtn = $(this);
+
         var valid_detail = true;
 
 $("input[type=checkbox]:checked").each(function () {
@@ -1794,16 +1652,28 @@ $("input[type=checkbox]:checked").each(function () {
         .find('select[id=nomor_coa] option:selected')
         .val();
 
+    var cost_ctr = $(this).closest('tr')
+        .find('td:eq(3)')
+        .find('select[id=nomor_cc] option:selected')
+        .val();
+
     if (no_coa === '' || no_coa === '-') {
-        alert('Please select COA');
+        Swal.fire('Warning', 'Please select COA', 'warning');
         $(this).closest('tr').find('td:eq(1) select[id=nomor_coa]').focus();
         valid_detail = false;
         return false;
     }
 
     if (prof_ctr === '' || prof_ctr === '-') {
-        alert('Please select Profit Center');
+        Swal.fire('Warning', 'Please select Profit Center', 'warning');
         $(this).closest('tr').find('td:eq(2) select[id=prof_ctr]').focus();
+        valid_detail = false;
+        return false;
+    }
+
+    if (coaWajibCC.includes(no_coa) && (cost_ctr === '' || cost_ctr === '-' || cost_ctr == null)) {
+        Swal.fire('Warning', 'COA ' + no_coa + ' wajib isi Cost Center', 'warning');
+        $(this).closest('tr').find('td:eq(3) select[id=nomor_cc]').focus();
         valid_detail = false;
         return false;
     }
@@ -1854,110 +1724,131 @@ if (!valid_detail) {
         // no_pv tidak pernah benar-benar tersimpan/bertambah. Sekarang cuma
         // ada SATU validasi, dijalankan SEBELUM ajax manapun dikirim.
         if ($('select[name=nama_supp] option').filter(':selected').val() == '' || $('select[name=nama_supp] option').filter(':selected').val() == '-') {
-            alert("Please select Supplier");
+            Swal.fire('Warning', 'Please select Supplier', 'warning');
             document.getElementById('nama_supp').focus();
             return;
         }
         if (sup_doc == '') {
-            alert("Please Select Support Document");
+            Swal.fire('Warning', 'Please Select Support Document', 'warning');
             document.getElementById('sup_doc').focus();
             return;
         }
         if (ctb == '' || ctb == null) {
-            alert("Please select Charge to Buyer");
+            Swal.fire('Warning', 'Please select Charge to Buyer', 'warning');
             document.getElementById('ct_buyer').focus();
             return;
         }
         if (pay_mth == '' || pay_mth == '-') {
-            alert("Please select payment method");
+            Swal.fire('Warning', 'Please select payment method', 'warning');
             document.getElementById('carabayar').focus();
             return;
         }
         if (pv_tax_type == '' || pv_tax_type == null) {
-            alert("Please select Payment Voucher Type");
+            Swal.fire('Warning', 'Please select Payment Voucher Type', 'warning');
             document.getElementById('pv_tax_type').focus();
             return;
         }
         if (curr == '') {
-            alert("Please Enter Currency");
+            Swal.fire('Warning', 'Please Enter Currency', 'warning');
             document.getElementById('curre').focus();
             return;
         }
         if (for_pay == '' || for_pay == '-') {
-            alert("Please select For payment");
+            Swal.fire('Warning', 'Please select For payment', 'warning');
             document.getElementById('forpay').focus();
             return;
         }
         if (for_pay == 'Lainnya' && document.getElementById('pay_for').value == '') {
-            alert("Please Input For payment");
+            Swal.fire('Warning', 'Please Input For payment', 'warning');
             document.getElementById('pay_for').focus();
             return;
         }
         if (pay_mth != 'CASH' && frcc == '-') {
-            alert("Please select From Account");
+            Swal.fire('Warning', 'Please select From Account', 'warning');
             document.getElementById('frcc').focus();
             return;
         }
         if (pay_mth != 'CASH' && for_pay == 'Pemindah Bukuan Bank' && tocc == '-') {
-            alert("Please select To Account");
+            Swal.fire('Warning', 'Please select To Account', 'warning');
             document.getElementById('tocc').focus();
             return;
         }
         if (total == '' || total == null) {
-            alert("Please Input Amount");
+            Swal.fire('Warning', 'Please Input Amount', 'warning');
             return;
         }
         if (parseFloat(total) <= 0) {
-            alert("Amount can't be Minus or Zero");
+            Swal.fire('Warning', "Amount can't be Minus or Zero", 'warning');
             return;
         }
+
+        // Kumpulkan semua baris detail yang dicentang jadi satu array -
+        // dikirim SEKALIGUS bareng header dalam satu request, supaya
+        // server bisa insert semuanya (header + detail) dalam SATU
+        // transaksi (all-or-nothing), bukan satu request AJAX per baris
+        // seperti sebelumnya (kalau salah satu gagal di tengah, baris lain
+        // yang sudah kadung tersimpan tidak ke-rollback).
+        var details = [];
+        $("input[type=checkbox]:checked").each(function () {
+            var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val();
+            var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[id=nomor_coa] option').filter(':selected').val();
+            var no_cc = $(this).closest('tr').find('td:eq(3)').find('select[id=nomor_cc] option').filter(':selected').val();
+            var no_ref = $(this).closest('tr').find('td:eq(4) input').val();
+            var ref_date = $(this).closest('tr').find('td:eq(5) input').val();
+            var deskripsi = $(this).closest('tr').find('td:eq(6) input').val();
+            var amount = $(this).closest('tr').find('td:eq(7) input').val() || 0;
+            var due_date = $(this).closest('tr').find('td:eq(9) input').val();
+            var ded_add = $(this).closest('tr').find('td:eq(8) input').val() || 0;
+            var d_pph = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').val() || 0;
+            var idtax = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').attr('data-idtax');
+            var ppn_val = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').val() || document.getElementById('pilih_ppn').value;
+            var d_ppn = (ppn_val === '0' || ppn_val === '' || ppn_val === null) ? document.getElementById('pilih_ppn').value : ppn_val;
+            var idppn_val = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').attr('data-idtax') || document.getElementById('idtax').value;
+            var id_ppn = (ppn_val === '0' || ppn_val === '' || ppn_val === null) ? document.getElementById('idtax').value : idppn_val;
+
+            details.push({
+                prof_ctr: prof_ctr, no_coa: no_coa, no_cc: no_cc, no_ref: no_ref,
+                ref_date: ref_date, deskripsi: deskripsi, amount: amount,
+                due_date: due_date, ded_add: ded_add, pph: d_pph, idtax: idtax,
+                ppn: d_ppn, id_ppn: id_ppn
+            });
+        });
+
+        $saveBtn.prop('disabled', true);
 
         $.ajax({
             type:'POST',
             url:'insertpv_h.php',
-            data: {'rat_pv':rat_pv, 'no_pv':no_pv, 'pv_date':pv_date, 'nama_supp':nama_supp, 'sup_doc':sup_doc, 'ctb':ctb, 'pay_date':pay_date, 'pay_mth':pay_mth, 'curr':curr, 'forpay':forpay, 'pv_tax_type':pv_tax_type, 'frcc':frcc, 'tocc':tocc, 'no_cek':no_cek, 'cek_date':cek_date, 'ke':ke, 'dari':dari, 'pesan':pesan, 'subtotal':subtotal, 'adjust':adjust, 'pph':pph, 'ppn':ppn, 'total':total, 'pilih_ppn':pilih_ppn, 'pilih_pph':pilih_pph, 'create_user':create_user},
+            data: {'rat_pv':rat_pv, 'pv_date':pv_date, 'nama_supp':nama_supp, 'sup_doc':sup_doc, 'ctb':ctb, 'pay_date':pay_date, 'pay_mth':pay_mth, 'curr':curr, 'forpay':forpay, 'pv_tax_type':pv_tax_type, 'frcc':frcc, 'tocc':tocc, 'no_cek':no_cek, 'cek_date':cek_date, 'ke':ke, 'dari':dari, 'pesan':pesan, 'subtotal':subtotal, 'adjust':adjust, 'pph':pph, 'ppn':ppn, 'total':total, 'pilih_ppn':pilih_ppn, 'pilih_pph':pilih_pph, 'create_user':create_user, 'details': JSON.stringify(details)},
             cache: 'false',
             success: function(response){
                 console.log(response);
 
-                var detailCalls = [];
+                // no_pv yang ditampilkan di form itu cuma preview yang
+                // dihitung sekali saat halaman dibuka - kalau halaman
+                // dibiarkan terbuka lama, angka itu bisa basi. Nomor asli
+                // yang benar-benar tersimpan adalah yang di-generate ulang
+                // oleh insertpv_h.php sendiri & dikembalikan lewat response.
+                var savedNoPv = (response || '').trim();
+                if (savedNoPv === '' || savedNoPv.indexOf('Error') === 0) {
+                    $saveBtn.prop('disabled', false);
+                    Swal.fire('Error', 'Gagal menyimpan Payment Voucher: ' + savedNoPv, 'error');
+                    return;
+                }
 
-                $("input[type=checkbox]:checked").each(function () {
-                    var doc_number = no_pv;
-                    var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val();
-                    var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[id=nomor_coa] option').filter(':selected').val();
-                    var no_cc = $(this).closest('tr').find('td:eq(3)').find('select[id=nomor_cc] option').filter(':selected').val();
-                    var no_ref = $(this).closest('tr').find('td:eq(4) input').val();
-                    var ref_date = $(this).closest('tr').find('td:eq(5) input').val();
-                    var deskripsi = $(this).closest('tr').find('td:eq(6) input').val();
-                    var amount = $(this).closest('tr').find('td:eq(7) input').val() || 0;
-                    var due_date = $(this).closest('tr').find('td:eq(9) input').val();
-                    var ded_add = $(this).closest('tr').find('td:eq(8) input').val() || 0;
-                    var d_pph = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').val() || 0;
-                    var idtax = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').attr('data-idtax');
-                    var ppn_val = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').val() || document.getElementById('pilih_ppn').value;
-                    var d_ppn = (ppn_val === '0' || ppn_val === '' || ppn_val === null) ? document.getElementById('pilih_ppn').value : ppn_val;
-                    var idppn_val = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').attr('data-idtax') || document.getElementById('idtax').value;
-                    var id_ppn = (ppn_val === '0' || ppn_val === '' || ppn_val === null) ? document.getElementById('idtax').value : idppn_val;
-
-                    detailCalls.push($.ajax({
-                        type:'POST',
-                        url:'insertpv.php',
-                        data: {'doc_number':doc_number, 'prof_ctr':prof_ctr, 'no_coa':no_coa, 'no_cc':no_cc, 'no_ref':no_ref, 'ref_date':ref_date, 'deskripsi':deskripsi, 'amount':amount, 'due_date':due_date, 'ded_add':ded_add, 'pph':d_pph, 'idtax':idtax, 'ppn':d_ppn, 'id_ppn':id_ppn},
-                        cache: 'false',
-                        error: function (xhr) {
-                            console.log(xhr);
-                        }
-                    }));
-                });
-
-                $.when.apply($, detailCalls).always(function () {
+                Swal.fire({
+                    title: 'Berhasil!',
+                    text: 'Payment Voucher ' + savedNoPv + ' berhasil disimpan.',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then(function () {
                     window.location = 'payment-voucher.php';
                 });
                 },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
-                alert('Gagal menyimpan header Payment Voucher: ' + (xhr.responseText || thrownError));
+                $saveBtn.prop('disabled', false);
+                Swal.fire('Error', 'Gagal menyimpan Payment Voucher: ' + (xhr.responseText || thrownError), 'error');
             }
         });
     });
