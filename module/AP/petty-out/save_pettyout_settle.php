@@ -4,6 +4,17 @@ session_start();
 
 date_default_timezone_set('Asia/Jakarta');
 
+// Jalankan query mutating (INSERT/UPDATE/DELETE) dan lempar Exception kalau
+// gagal, supaya transaksi ke-rollback dengan benar.
+function dbExec($conn, $sql)
+{
+    $result = mysqli_query($conn, $sql);
+    if ($result === false) {
+        throw new Exception('DB Error: ' . mysqli_error($conn));
+    }
+    return $result;
+}
+
 mysqli_begin_transaction($conn2);
 
 try{
@@ -38,16 +49,27 @@ $prefix = "KKK/".$kode_kas."/".$tahun."/".$bulan;
    AMBIL MAX URUTAN
 ========================= */
 
-$sql = mysqli_query($conn2,"
+$sql = dbExec($conn2,"
 SELECT MAX(CAST(RIGHT(no_pco,5) AS UNSIGNED)) AS max_urut
 FROM c_petty_cashout_h
 WHERE no_pco LIKE '$prefix%'
 FOR UPDATE
 ");
 
-$row = mysqli_fetch_assoc($sql);
+$sqlJ = dbExec($conn2,"
+SELECT MAX(CAST(RIGHT(no_journal,5) AS UNSIGNED)) AS max_urut
+FROM tbl_list_journal
+WHERE no_journal LIKE '$prefix%'
+FOR UPDATE
+");
 
-$urutan = ($row['max_urut'] ?? 0) + 1;
+$row = mysqli_fetch_assoc($sql);
+$maxHeader = (int) ($row['max_urut'] ?? 0);
+
+$rowJ = mysqli_fetch_assoc($sqlJ);
+$maxJournal = (int) ($rowJ['max_urut'] ?? 0);
+
+$urutan = max($maxHeader, $maxJournal) + 1;
 
 
 /* =========================
@@ -56,11 +78,11 @@ $urutan = ($row['max_urut'] ?? 0) + 1;
 
 $doc_num = $prefix."/".sprintf("%05d",$urutan);
 
-$sqlcoa = mysqli_query($conn2,"select nama_coa from mastercoa_v2 where no_coa = '$akun'");
+$sqlcoa = dbExec($conn2,"select nama_coa from mastercoa_v2 where no_coa = '" . mysqli_real_escape_string($conn2, $akun) . "'");
 $rowcoa = mysqli_fetch_array($sqlcoa);
 $nama_coa = $rowcoa['nama_coa'];
 
-$sqlsupp = mysqli_query($conn2,"select nama_supp from c_petty_cashout_h where no_pco = '$reff_number'");
+$sqlsupp = dbExec($conn2,"select nama_supp from c_petty_cashout_h where no_pco = '" . mysqli_real_escape_string($conn2, $reff_number) . "'");
 $rowsupp = mysqli_fetch_array($sqlsupp);
 $nama_supp = $rowsupp['nama_supp'];
 
@@ -69,34 +91,28 @@ INSERT HEADER
 ========================= */
 
 
-mysqli_query($conn2,"
+dbExec($conn2,"
 INSERT INTO c_petty_cashout_h (no_pco,tgl_pco,reff,nama_supp,coa_akun,curr,amount,deskripsi,status, create_by,create_date, reff_doc)
 VALUES
 ('$doc_num', '$doc_date', '$ref_num', '$nama_supp', '$akun', '$curr', '$amount','$desc', '$status', '$user', '$create_date', '$reff_number')
 ");
 
 
-mysqli_query($conn2,"
-INSERT INTO c_report_pettycash (transaksi_date,no_doc,deskripsi,akun,categori,cf_categori,curr,debit,credit, balance, status) 
+dbExec($conn2,"
+INSERT INTO c_report_pettycash (transaksi_date,no_doc,deskripsi,akun,categori,cf_categori,curr,debit,credit, balance, status)
 VALUES
 ('$doc_date', '$doc_num', '$desc', '$akun', '', '', '$curr', '0', '$amount', '$amount', '$status')
 ");
 
 
-mysqli_query($conn2,"update c_petty_cashout_h set settlement='Y' where no_pco = '$reff_number'");
-
-
-
-mysqli_query($conn2,"
-INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
-VALUES
-('$doc_num', '$doc_date', '$ref_num', '$akun', '$nama_coa', '-', '-', '$reff_number', '', '-', '-', 'IDR', '1', '0', '$amount', '0', '$amount', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc_kas')
-");
+dbExec($conn2,"update c_petty_cashout_h set settlement='Y' where no_pco = '" . mysqli_real_escape_string($conn2, $reff_number) . "'");
 
 
 /* =========================
 INSERT DETAIL TABLE
 ========================= */
+// Baris-baris c_petty_cashout_none / tbl_list_journal dikumpulkan dulu ke
+// array, baru di-insert sekali per tabel (bulk insert) di akhir.
 
 $coa    = $_POST['nomor_coa2'];
 $pc     = $_POST['prof_ctr2'];
@@ -108,56 +124,51 @@ $ket    = $_POST['keterangan2'];
 $debit  = $_POST['txt_amount2'];
 $credit = $_POST['txt_credit2'];
 
+$detRows     = [];
+$journalRows = ["('$doc_num', '$doc_date', '$ref_num', '$akun', '$nama_coa', '-', '-', '$reff_number', '', '-', '-', 'IDR', '1', '0', '$amount', '0', '$amount', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc_kas')"];
+
 for($i=0;$i<count($coa);$i++){
 
-	$no_coa = $coa[$i];
-    $pc_i   = $pc[$i];
-    $cc_i   = $cc[$i];
-    $buyer_i= $buyer[$i];
-    $ws_i   = $no_ws[$i];
-    $curr_i = $curr[$i];
-    $ket_i  = $ket[$i];
+	$no_coa = mysqli_real_escape_string($conn2, $coa[$i]);
+    $pc_i   = mysqli_real_escape_string($conn2, $pc[$i]);
+    $cc_i   = mysqli_real_escape_string($conn2, $cc[$i]);
+    $buyer_i= mysqli_real_escape_string($conn2, $buyer[$i]);
+    $ws_i   = mysqli_real_escape_string($conn2, $no_ws[$i]);
+    $curr_i = mysqli_real_escape_string($conn2, $curr[$i]);
+    $ket_i  = mysqli_real_escape_string($conn2, !empty($ket[$i]) ? $ket[$i] : $desc);
 
 
 
-if($no_coa=='-' || $no_coa=='') continue;
+if($coa[$i]=='-' || $coa[$i]=='') continue;
 
 $d_debit  = str_replace(',','',$debit[$i]);
 $d_credit = str_replace(',','',$credit[$i]);
 
-if ($curr_i == 'IDR') {
-   	$rate_det = 1;
-   	$d_debit_idr = $d_debit;
-   	$d_credit_idr = $d_credit;
-}else{
-   	$rate_det = 1;
-   	$d_debit_idr = $d_debit * $rate;
-   	$d_credit_idr = $d_credit * $rate;
-}
-
-$sqlcoa = mysqli_query($conn2,"select nama_coa from mastercoa_v2 where no_coa = '$no_coa'");
+$sqlcoa = dbExec($conn2,"select nama_coa from mastercoa_v2 where no_coa = '$no_coa'");
 $rowcoa = mysqli_fetch_array($sqlcoa);
 $nama_coa = isset($rowcoa['nama_coa']) ? $rowcoa['nama_coa'] : null;
 
-$sqlcc = mysqli_query($conn2,"select cc_name from b_master_cc where no_cc = '$cc_i'");
+$sqlcc = dbExec($conn2,"select cc_name from b_master_cc where no_cc = '$cc_i'");
 $rowcc = mysqli_fetch_array($sqlcc);
 $nama_cc = isset($rowcc['cc_name']) ? $rowcc['cc_name'] : null;
 
+$detRows[] = "('$doc_num', '$doc_date', '$ref_num', '$no_coa', '$pc_i', '$cc_i', '$buyer_i', '$ws_i', '$curr_i', '$d_debit', '$d_credit', '$ket_i')";
 
-mysqli_query($conn2,"
-INSERT INTO c_petty_cashout_none (no_pco,tgl_pco,reff_doc,no_coa, profit_center, no_costcntr,buyer,no_ws,curr,debit,credit,deskripsi)
-VALUES
-('$doc_num', '$doc_date', '$ref_num', '$no_coa', '$pc_i', '$cc_i', '$buyer_i', '$ws_i', '$curr_i', '$d_debit', '$d_credit', '$ket_i')
-");
-
-mysqli_query($conn2,"
-INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
-VALUES
-('$doc_num', '$doc_date', '$ref_num', '$no_coa', '$nama_coa', '$cc_i', '$nama_cc', '$reff_number', '', '$buyer_i', '$ws_i', '$curr_i', '1', '$d_debit', '$d_credit', '$d_debit', '$d_credit', 'Draft', '$ket_i', '$user', '$create_date', '', '', '', '', '$pc_i')
-");
-
+$journalRows[] = "('$doc_num', '$doc_date', '$ref_num', '$no_coa', '$nama_coa', '$cc_i', '$nama_cc', '$reff_number', '', '$buyer_i', '$ws_i', '$curr_i', '1', '$d_debit', '$d_credit', '$d_debit', '$d_credit', 'Draft', '$ket_i', '$user', '$create_date', '', '', '', '', '$pc_i')";
 
 }
+
+if (!empty($detRows)) {
+    dbExec($conn2, "
+        INSERT INTO c_petty_cashout_none (no_pco,tgl_pco,reff_doc,no_coa, profit_center, no_costcntr,buyer,no_ws,curr,debit,credit,deskripsi)
+        VALUES " . implode(', ', $detRows)
+    );
+}
+
+dbExec($conn2, "
+    INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
+    VALUES " . implode(', ', $journalRows)
+);
 
 
 mysqli_commit($conn2);

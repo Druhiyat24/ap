@@ -45,7 +45,7 @@
 
                 <div class="col-md-3 mb-2">
                     <label><b>Reff Document</b></label>
-                    <select class="form-control select2" id="reff_number1" name="reff_number1" data-live-search="true" onchange="getdataadvance(this.value)">
+                    <select class="form-control select2" id="reff_number1" name="reff_number1" data-live-search="true" onchange="getdataadvance1(this.value)">
                         <option value="">Select Reff Document</option>
 
                         <?php
@@ -129,101 +129,80 @@
 
                 <!-- NAG -->
                 <div class="col-md-4">
-                    <div class="total-box">
-                        <h6>Total PT. Nirwana Alabare Garment</h6>
-                        <hr>
+                    <div class="total-box tone-nag">
+                        <div class="total-box-header"><i class="fa fa-building"></i> Total PT. Nirwana Alabare Garment</div>
+                        <div class="total-box-body">
 
-                        <div class="row mb-2 align-items-center">
-                            <div class="col-4">
-                                <label class="mb-0">Total Debit</label>
+                            <div class="total-stat is-debit">
+                                <span class="total-stat-label">Total Debit</span>
+                                <div class="total-stat-value-wrap">
+                                    <input type="text" class="total-stat-value" id="tot_debit_nag1" name="tot_debit_nag1" readonly>
+                                    <input type="hidden" id="h_tot_debit_nag1" name="h_tot_debit_nag1" readonly>
+                                </div>
                             </div>
-                            <div class="col-8">
-                                <input type="text" style="font-size:14px;text-align:right"
-                                    class="form-control" id="tot_debit_nag1" name="tot_debit_nag1" readonly>
-                                <input type="hidden" style="font-size:14px;text-align:right"
-                                    class="form-control" id="h_tot_debit_nag1" name="h_tot_debit_nag1" readonly>
+
+                            <div class="total-stat is-credit">
+                                <span class="total-stat-label">Total Credit</span>
+                                <div class="total-stat-value-wrap">
+                                    <input type="text" class="total-stat-value" id="tot_credit_nag1" name="tot_credit_nag1" readonly>
+                                    <input type="hidden" id="h_tot_credit_nag1" name="h_tot_credit_nag1" readonly>
+                                </div>
                             </div>
+
                         </div>
-
-                        <div class="row mb-2 align-items-center">
-                            <div class="col-4">
-                                <label class="mb-0">Total Credit</label>
-                            </div>
-                            <div class="col-8">
-                                <input type="text" style="font-size:14px;text-align:right"
-                                    class="form-control" id="tot_credit_nag1" name="tot_credit_nag1" readonly>
-                                <input type="hidden" style="font-size:14px;text-align:right"
-                                    class="form-control" id="h_tot_credit_nag1" name="h_tot_credit_nag1" readonly>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
 
 
                 <!-- NAK -->
                 <div class="col-md-4">
-                    <div class="total-box">
-                        <h6>Total PT. Nirwana Alabare Knitting</h6>
-                        <hr>
+                    <div class="total-box tone-nak">
+                        <div class="total-box-header"><i class="fa fa-industry"></i> Total PT. Nirwana Alabare Knitting</div>
+                        <div class="total-box-body">
 
-                        <div class="row mb-2 align-items-center">
-                            <div class="col-4">
-                                <label class="mb-0">Total Debit</label>
+                            <div class="total-stat is-debit">
+                                <span class="total-stat-label">Total Debit</span>
+                                <div class="total-stat-value-wrap">
+                                    <input type="text" class="total-stat-value" id="tot_debit_nak1" name="tot_debit_nak1" readonly>
+                                    <input type="hidden" id="h_tot_debit_nak1" name="h_tot_debit_nak1" readonly>
+                                </div>
                             </div>
-                            <div class="col-8">
-                                <input type="text" style="font-size:14px;text-align:right"
-                                    class="form-control" id="tot_debit_nak1" name="tot_debit_nak1" readonly>
-                                <input type="hidden" style="font-size:14px;text-align:right"
-                                    class="form-control" id="h_tot_debit_nak1" name="h_tot_debit_nak1" readonly>
+
+                            <div class="total-stat is-credit">
+                                <span class="total-stat-label">Total Credit</span>
+                                <div class="total-stat-value-wrap">
+                                    <input type="text" class="total-stat-value" id="tot_credit_nak1" name="tot_credit_nak1" readonly>
+                                    <input type="hidden" id="h_tot_credit_nak1" name="h_tot_credit_nak1" readonly>
+                                </div>
                             </div>
+
                         </div>
-
-                        <div class="row mb-2 align-items-center">
-                            <div class="col-4">
-                                <label class="mb-0">Total Credit</label>
-                            </div>
-                            <div class="col-8">
-                                <input type="text" style="font-size:14px;text-align:right"
-                                    class="form-control" id="tot_credit_nak1" name="tot_credit_nak1" readonly>
-                                <input type="hidden" style="font-size:14px;text-align:right"
-                                    class="form-control" id="h_tot_credit_nak1" name="h_tot_credit_nak1" readonly>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
 
 
                 <div class="col-md-4">
-                    <div class="total-box">
-                        <h6>Grand Total</h6>
-                        <hr>
+                    <div class="total-box tone-all">
+                        <div class="total-box-header"><i class="fa fa-calculator"></i> Grand Total</div>
+                        <div class="total-box-body">
 
-                        <div class="row mb-2 align-items-center">
-                            <div class="col-4">
-                                <label class="mb-0">Total Debit</label>
+                            <div class="total-stat is-debit">
+                                <span class="total-stat-label">Total Debit</span>
+                                <div class="total-stat-value-wrap">
+                                    <input type="text" class="total-stat-value" id="tot_debit1" name="tot_debit1" readonly>
+                                    <input type="hidden" id="h_tot_debit1" name="h_tot_debit1" readonly>
+                                </div>
                             </div>
-                            <div class="col-8">
-                                <input type="text" style="font-size:14px;text-align:right"
-                                    class="form-control" id="tot_debit1" name="tot_debit1" readonly>
-                                <input type="hidden" style="font-size:14px;text-align:right"
-                                    class="form-control" id="h_tot_debit1" name="h_tot_debit1" readonly>
+
+                            <div class="total-stat is-credit">
+                                <span class="total-stat-label">Total Credit</span>
+                                <div class="total-stat-value-wrap">
+                                    <input type="text" class="total-stat-value" id="tot_credit1" name="tot_credit1" readonly>
+                                    <input type="hidden" id="h_tot_credit1" name="h_tot_credit1" readonly>
+                                </div>
                             </div>
+
                         </div>
-
-                        <div class="row mb-2 align-items-center">
-                            <div class="col-4">
-                                <label class="mb-0">Total Credit</label>
-                            </div>
-                            <div class="col-8">
-                                <input type="text" style="font-size:14px;text-align:right"
-                                    class="form-control" id="tot_credit1" name="tot_credit1" readonly>
-                                <input type="hidden" style="font-size:14px;text-align:right"
-                                    class="form-control" id="h_tot_credit1" name="h_tot_credit1" readonly>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
 

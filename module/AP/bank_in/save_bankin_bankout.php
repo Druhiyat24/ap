@@ -5,6 +5,16 @@ session_start();
 
 date_default_timezone_set('Asia/Jakarta');
 
+// Jalankan query dan lempar Exception kalau gagal, supaya rollback benar-benar
+// terpicu saat ada query yang error (bukan cuma saat exception PHP biasa).
+function q($conn, $sql) {
+    $result = mysqli_query($conn, $sql);
+    if ($result === false) {
+        throw new Exception(mysqli_error($conn));
+    }
+    return $result;
+}
+
 mysqli_begin_transaction($conn2);
 
 try{
@@ -21,8 +31,16 @@ $bank      = $_POST['bank2'];
 $kode_bank = $_POST['kode_bank2'];
 $curr      = $_POST['currency2'];
 $pc_bank   = $_POST['profit_center_bank2'];
-$desc      = $_POST['pesan2'] ?? '-';
+$desc      = trim($_POST['pesan2'] ?? '');
 $bank_out  = $_POST['bk'] ?? '-';
+
+if ($akun === '') {
+    throw new Exception('Account tidak boleh kosong.');
+}
+
+if ($desc === '') {
+    throw new Exception('Description tidak boleh kosong.');
+}
 
 $amount = str_replace(',','',$_POST['amount_bank2']);
 $rate   = str_replace(',','',$_POST['rate_bank2']);
@@ -47,7 +65,7 @@ $prefix = "BM/".$kode_bank."/".$pc_bank."/".$bulan.$tahun;
    AMBIL MAX URUTAN
 ========================= */
 
-$sql = mysqli_query($conn2,"
+$sql = q($conn2,"
 SELECT MAX(CAST(RIGHT(doc_num,5) AS UNSIGNED)) AS max_urut
 FROM tbl_bankin_arcollection
 WHERE doc_num LIKE '$prefix%'
@@ -55,8 +73,22 @@ FOR UPDATE
 ");
 
 $row = mysqli_fetch_assoc($sql);
+$maxHeader = (int) ($row['max_urut'] ?? 0);
 
-$urutan = ($row['max_urut'] ?? 0) + 1;
+// Nomor yang pernah dipakai tetap tercatat permanen di tbl_list_journal
+// walau doc_num di header sudah berubah (akun diganti saat edit),
+// jadi nomor lama tidak boleh dipakai ulang untuk dokumen baru.
+$sqlJ = q($conn2,"
+SELECT MAX(CAST(RIGHT(no_journal,5) AS UNSIGNED)) AS max_urut
+FROM tbl_list_journal
+WHERE no_journal LIKE '$prefix%'
+FOR UPDATE
+");
+
+$rowJ = mysqli_fetch_assoc($sqlJ);
+$maxJournal = (int) ($rowJ['max_urut'] ?? 0);
+
+$urutan = max($maxHeader, $maxJournal) + 1;
 
 
 /* =========================
@@ -65,28 +97,40 @@ $urutan = ($row['max_urut'] ?? 0) + 1;
 
 $doc_num = $prefix."/".sprintf("%05d",$urutan);
 
-$sqlcoa1 = mysqli_query($conn1,"select no_coa,nama_coa from mastercoa_v2 where nama_coa like '%$akun%' and ind_categori2 = 'ASET'");
+$sqlcoa1 = q($conn1,"select no_coa,nama_coa from mastercoa_v2 where nama_coa like '%$akun%' and ind_categori2 = 'ASET'");
 $rowcoa1 = mysqli_fetch_array($sqlcoa1);
-$no_coa1 = $rowcoa1['no_coa'];
-$nama_coa1 = $rowcoa1['nama_coa'];
+$no_coa1 = $rowcoa1['no_coa'] ?? null;
+$nama_coa1 = $rowcoa1['nama_coa'] ?? null;
 
-$reff_doc       = $_POST['no_journal'];
-$reff_date      = date('Y-m-d',strtotime($_POST['tgl_journal']));
+if (!$no_coa1) {
+    throw new Exception('COA Bank untuk akun "'.$akun.'" tidak ditemukan di mastercoa_v2.');
+}
+
+$reff_doc       = $_POST['no_journal'] ?? '';
+$reff_date      = !empty($_POST['tgl_journal']) ? date('Y-m-d',strtotime($_POST['tgl_journal'])) : $doc_date;
 $coa            = $_POST['no_coa'] ?? '-';
 $pc             = $_POST['profit_center'] ?? '-';
 $cost           = $_POST['no_cc'] ?? '-';
-$curr_reff      = $_POST['curr'];
-$rate_reff      = $_POST['rate'];
-$total_reff     = $_POST['debit'];
-$total_idr_reff = $_POST['debit_idr'];
+$curr_reff      = $_POST['curr'] ?? $curr;
+$rate_reff      = $_POST['rate'] ?? 1;
+$total_reff     = $_POST['debit'] ?? 0;
+$total_idr_reff = $_POST['debit_idr'] ?? 0;
 
-$sqlcoa = mysqli_query($conn1,"select nama_coa from mastercoa_v2 where no_coa = '$coa'");
+if ($reff_doc === '') {
+    throw new Exception('Bank Out tidak boleh kosong.');
+}
+
+$sqlcoa = q($conn1,"select nama_coa from mastercoa_v2 where no_coa = '".mysqli_real_escape_string($conn1,$coa)."'");
 $rowcoa = mysqli_fetch_array($sqlcoa);
-$nama_coa = isset($rowcoa['nama_coa']) ? $rowcoa['nama_coa'] : null;
+$nama_coa = $rowcoa['nama_coa'] ?? '-';
 
-$sqlcc = mysqli_query($conn1,"select cc_name from b_master_cc where no_cc = '$cost'");
-$rowcc = mysqli_fetch_array($sqlcc);
-$nama_cc = isset($rowcc['cc_name']) ? $rowcc['cc_name'] : null;
+$nama_cc = null;
+if ($cost && $cost !== '-') {
+    $sqlcc = q($conn1,"select cc_name from b_master_cc where no_cc = '".mysqli_real_escape_string($conn1,$cost)."'");
+    $rowcc = mysqli_fetch_array($sqlcc);
+    $nama_cc = $rowcc['cc_name'] ?? null;
+}
+$nama_cc = $nama_cc ?: '-';
 
 $selisih = $eqv - $total_idr_reff;
 
@@ -106,7 +150,7 @@ if ($selisih > 0) {
    INSERT BANK
 ========================= */
 
-mysqli_query($conn2,"
+q($conn2,"
 INSERT INTO tbl_bankin_arcollection
 (
 doc_num,date,ref_data,customer,akun,bank,curr,id_coa,id_cost_center, amount,rate,eqv_idr, outstanding,deskripsi, status,create_by,create_date, profit_center
@@ -116,7 +160,7 @@ VALUES
 ");
 
 
-mysqli_query($conn2,"
+q($conn2,"
 INSERT INTO b_reportbank
 (transaksi_date,no_doc,deskripsi,akun,categori,cf_categori,curr,debit,credit, balance,status)
 VALUES
@@ -124,20 +168,7 @@ VALUES
 ");
 
 
-/* ========================
-   INSERT JOURNAL
-========================= */
-
-
-mysqli_query($conn2,"
-INSERT INTO tbl_list_journal
-(no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
-VALUES
-('$doc_num', '$doc_date', '$ref_num', '$no_coa1', '$nama_coa1', '-', '-', '$reff_doc', '$reff_date', '-', '-', '$curr', '$rate', '$amount', '0', '$eqv', '0', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc_bank')
-");
-
-
-mysqli_query($conn2,"
+q($conn2,"
 INSERT INTO b_bankin_none
 (no_bankin,id_coa,no_reff,reff_date,deskripsi,t_debit,t_credit,profit_center)
 VALUES
@@ -145,22 +176,24 @@ VALUES
 ");
 
 
-mysqli_query($conn2,"
-INSERT INTO tbl_list_journal
-(no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
-VALUES
-('$doc_num', '$doc_date', '$ref_num', '$coa', '$nama_coa', '-', '-', '$reff_doc', '$reff_date', '-', '-', '$curr_reff', '$rate_reff', '0', '$total_reff', '0', '$total_idr_reff', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc')
-");
+/* ========================
+   INSERT JOURNAL (bulk)
+========================= */
+
+$journalValues = [];
+
+$journalValues[] = "('$doc_num', '$doc_date', '$ref_num', '$no_coa1', '$nama_coa1', '-', '-', '$reff_doc', '$reff_date', '-', '-', '$curr', '$rate', '$amount', '0', '$eqv', '0', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc_bank')";
+$journalValues[] = "('$doc_num', '$doc_date', '$ref_num', '$coa', '$nama_coa', '-', '-', '$reff_doc', '$reff_date', '-', '-', '$curr_reff', '$rate_reff', '0', '$total_reff', '0', '$total_idr_reff', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc')";
 
 if ($selisih != 0) {
-    mysqli_query($conn2,"
-  INSERT INTO tbl_list_journal
-  (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
-  VALUES
-  ('$doc_num', '$doc_date', '$ref_num', '8.52.01', 'LABA / (RUGI) SELISIH KURS', '-', '-', '$reff_doc', '$reff_date', '-', '-', 'IDR', '1', '$debit_reff', '$credit_reff', '$debit_reff', '$credit_reff', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc')
-  ");
-
+    $journalValues[] = "('$doc_num', '$doc_date', '$ref_num', '8.52.01', 'LABA / (RUGI) SELISIH KURS', '-', '-', '$reff_doc', '$reff_date', '-', '-', 'IDR', '1', '$debit_reff', '$credit_reff', '$debit_reff', '$credit_reff', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc')";
 }
+
+q($conn2, "
+INSERT INTO tbl_list_journal
+(no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
+VALUES " . implode(',', $journalValues)
+);
 
 
 
@@ -188,4 +221,3 @@ echo json_encode([
 }
 
 ?>
-

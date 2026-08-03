@@ -1,9 +1,35 @@
 <?php include '../header.php' ?>
 
+<style>
+    .pv-card{ border:0; border-radius:12px; background:#fff; box-shadow:0 2px 12px rgba(0,0,0,0.08); overflow:hidden; margin-bottom:20px; }
+    .pv-card .box.header{ padding:20px; }
+    .pv-card .box.body{ padding:0 20px 20px; }
+    .total-box{ border:0; border-radius:10px; background:#fff; box-shadow:0 2px 10px rgba(0,0,0,0.08); overflow:hidden; }
+    .total-box .total-box-header{ padding:12px 16px; color:#fff; font-weight:700; font-size:14px; background:linear-gradient(90deg, #4a5578, #6b7699); }
+    .total-box .total-box-body{ padding:16px; display:flex; flex-direction:column; gap:14px; }
+    .total-stat{ display:flex; justify-content:space-between; align-items:flex-end; padding-bottom:12px; border-bottom:1px dashed #e5e5e5; }
+    .total-stat:last-child{ border-bottom:0; padding-bottom:0; }
+    .total-stat-label{ font-size:12px; font-weight:600; color:#8a8a8a; text-transform:uppercase; letter-spacing:.03em; }
+    .total-stat input.total-stat-value{ border:0; background:transparent; padding:0; font-size:19px; font-weight:700; text-align:right; width:auto; max-width:100%; height:auto; color:#212529; }
+
+    /* Catatan: JANGAN kasih width:100% !important ke .select2-container -
+       select2 membuka dropdown-nya dengan container terpisah yang juga
+       pakai class .select2-container, jadi aturan lebar itu ikut membesarkan
+       panel dropdown-nya jadi selebar halaman. Lebar cukup diatur lewat
+       inline style="width:100%" di masing-masing <select>. */
+    .select2-selection--single{ height: calc(1.5em + .75rem + 2px) !important; padding:.375rem .75rem !important; display:flex !important; align-items:center; }
+    .select2-selection--single .select2-selection__rendered{ line-height:1.5 !important; padding-left:0 !important; font-size:14px; }
+    .select2-selection--single .select2-selection__arrow{ height: calc(1.5em + .75rem) !important; top:0 !important; }
+
+    .table-gradient2 th{ background:#3B82F6; color:#fff; text-align:center; vertical-align:middle; white-space:nowrap; }
+</style>
+
     <!-- MAIN -->
     <div class="col p-4">
-        <h2 class="text-center">FORM PAYMENT VOUCHER</h2>
-<div class="box">
+<div class="box pv-card">
+    <div class="card-header text-white py-2 px-3" style="background: linear-gradient(90deg, #191970, #1e90ff); margin:-1px -1px 0; border-radius:12px 12px 0 0;">
+        <h5 class="mb-0"><i class="fa fa-file-text-o"></i> FORM PAYMENT VOUCHER</h5>
+    </div>
     <div class="box header">
 <form id="form-data" method="post">
     <div style="padding-left: 10px;padding-top: 5px;">
@@ -19,7 +45,7 @@
             $row = mysqli_fetch_array($sql);
             $kodepay = $row['max(no_pv)'];
             $urutan = (int) substr($kodepay, 12, 5);
-            $urutan++;
+
             $bln = date("m");
             $thn = date("y");
             $huruf = "PV/NAG/$bln$thn/";
@@ -29,7 +55,7 @@
             ?>
         </div>
 
-            <div class="col-md-3 mb-3">            
+            <div class="col-md-2 mb-3">            
             <label for="total" class="col-form-label" style="width: 150px;"><b>Payment Voucher Date</b></label>
                 <input type="text" style="font-size: 15px;" name="tgl_active" id="tgl_active" class="form-control tanggal" 
             value="<?php 
@@ -49,10 +75,10 @@
             </div>
 
             
-            <div class="col-md-4 mb-3" style="padding-top: 8px;">
+            <div class="col-md-3 mb-3" style="padding-top: 8px;">
             <label for="nama_supp"><b>Supplier</b></label>            
-              <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true" onchange="this.form.submit()">
-                <option value="-" disabled selected="true">Select Supplier</option>                                                 
+              <select class="form-control select2" name="nama_supp" id="nama_supp" style="width:100%">
+                <option value="-" disabled selected="true">Select Supplier</option>
                 <?php
                 $nama_supp ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -99,43 +125,50 @@
 
         <div class="form-row">
 
-<div class="col-md-4 mb-3">            
-            <label for="total" class="col-form-label" style="width: 150px;"><b>Supporting Document</b></label>
-                <input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="sup_doc" name="sup_doc" value="<?php             
+<div class="col-md-3 mb-3">
+    <label class="col-form-label"><b>Supporting Document</b></label>
 
-            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
-            $sql = mysqli_query($conn2," select GROUP_CONCAT(ket) as sup_doc from supp_doc_temp ");
-            $row = mysqli_fetch_array($sql);
-            $sup_doc = $row['sup_doc'];         
-    
-            // $top = 30;
+    <div class="input-group">
+        <input type="text"
+               readonly
+               style="font-size:14px;"
+               class="form-control"
+               id="sup_doc"
+               name="sup_doc"
+               value="<?php
+                    $sql = mysqli_query($conn2, "select GROUP_CONCAT(ket) as sup_doc from supp_doc_temp");
+                    $row = mysqli_fetch_array($sql);
+                    echo $row['sup_doc'];
+               ?>">
 
-            // if(!empty($nama_supp)) {
-                
-                  echo $sup_doc;  
-                
-            // }
-            // else{
-            //     echo '';
-            // } ?>">
-            </div>
+        <div class="input-group-append">
+            <button type="button"
+                    class="btn btn-info"
+                    id="btn2"
+                    data-toggle="modal"
+                    data-target="#mymodal2">
+                Select
+            </button>
+        </div>
+    </div>
+</div>
 
-            <div class="col-md-1 mb-3">            
-            <label for="total" class="col-form-label" style="width: 200px;"><b>Select</b></label>
-                <input style="border: 0;
-    line-height: 1;
-    padding: 10px 10px;
-    font-size: 1rem;
-    text-align: center;
-    color: #fff;
-    text-shadow: 1px 1px 1px #000;
-    border-radius: 6px;
-    background-color: rgb(95, 158, 160);" type="button" name="btn2" id="btn2" data-target="#mymodal2" data-toggle="modal" value="Select"> 
+
+                <div class="col-md-2 mb-3">            
+            <label for="total" class="col-form-label" style="width: 150px;"><b>Payment Date</b></label>
+                <input type="text" style="font-size: 15px;" name="tgl_pay" id="tgl_pay" class="form-control tanggal" 
+            value="<?php 
+            if(!empty($_POST['tgl_pay'])) {
+                echo $_POST['tgl_pay'];
+            }
+            else{
+                echo date("d-m-Y");
+            } ?>" autocomplete='off'>
             </div>
 
             <div class="col-md-3 mb-3" style="padding-top: 8px;">
             <label for="ct_buyer"><b>Charge To Buyer</b></label>            
-              <select class="form-control selectpicker" name="ct_buyer" id="ct_buyer" data-dropup-auto="false" data-live-search="true">
+              <select class="form-control select2" name="ct_buyer" id="ct_buyer" style="width:100%">
                 <option value="" disabled selected="true">Select Buyer</option> 
                 <option value="-" <?php
                 $ct_buyer = '';
@@ -169,22 +202,12 @@
                 </select>
 
                 </div>
-
-                <div class="col-md-2 mb-3">            
-            <label for="total" class="col-form-label" style="width: 150px;"><b>Payment Date</b></label>
-                <input type="text" style="font-size: 15px;" name="tgl_pay" id="tgl_pay" class="form-control tanggal" 
-            value="<?php 
-            if(!empty($_POST['tgl_pay'])) {
-                echo $_POST['tgl_pay'];
-            }
-            else{
-                echo date("d-m-Y");
-            } ?>" autocomplete='off'>
-            </div>
+                <div class="col-md-4 mb-3">
+                </div>
                 <div class="col-md-3 mb-3"> 
                     <label for="carabayar" class="col-form-label" style="width: 150px;">Pay Methods </label>               
-                <select class="form-control selectpicker" name="carabayar" id="carabayar" data-live-search="true" onchange="this.form.submit()">
-                    <option value="" disabled selected="true">Choose pay method</option>  
+                <select class="form-control select2" name="carabayar" id="carabayar" style="width:100%">
+                    <option value="" disabled selected="true">Choose pay method</option>
                     <?php
                 $carabayar ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -202,43 +225,53 @@
                     echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
                 }?> 
         
-                </select> 
+                </select>
                 </div>
-                <div class="col-md-1 mb-3"> 
-                    <label for="carabayar" class="col-form-label" style="width: 150px;">Currency </label>               
-                <select class="form-control selectpicker" name="curre" id="curre" data-live-search="true">
-                    <option value="" disabled selected="true">Curr</option>  
-                    <?php
-                $curre ='';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $curre = isset($_POST['curre']) ? $_POST['curre']: null;
-                }                 
-                $sql = mysqli_query($conn1,"select DISTINCT curr from b_masterbank union select 'EUR' curr ");
-                while ($row = mysqli_fetch_array($sql)) {
-                    $data = $row['curr'];
-                    if($row['curr'] == $curre){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
+                <!--
+                    From Account/To Account dipindah ke sini (baris Pay
+                    Methods) atas permintaan user, ditukar posisi dengan
+                    Payment Voucher Type/Currency yang sekarang pindah ke
+                    baris For Payment di bawah. ID/nama tetap sama, cuma
+                    posisi DOM-nya yang berubah - JS toggle & AJAX tetap
+                    pilih elemen lewat ID jadi tidak terpengaruh.
+                -->
+                <div class="col-md-2 mb-3" id="div_frcc" style="padding-top: 8px;">
+                    <label for="frcc"><b>From Account</b></label>
+                    <select class="form-control select2" name="frcc" id="frcc" style="width:100%">
+                        <option value="-" selected="selected">Select Account</option>
+                        <?php
+                        $sql = mysqli_query($conn1, "select coa_name as bank, bank_account as akun from b_masterbank where status = 'Active' group by id");
+                        while ($row = mysqli_fetch_array($sql)) {
+                            echo '<option value="' . $row['akun'] . '">' . $row['bank'] . '</option>';
+                        }
+                        ?>
+                    </select>
+                </div>
 
-                    }
-                    echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
-                }?> 
-        
-                </select> 
+                <div class="col-md-2 mb-3" id="div_tocc" style="padding-top: 8px;">
+                    <label for="tocc"><b>To Account</b></label>
+                    <select class="form-control select2" name="tocc" id="tocc" style="width:100%">
+                        <option value="-" selected="selected">Select Account</option>
+                        <?php
+                        $sql = mysqli_query($conn2, "SELECT ms.Supplier AS supplier, CONCAT(UPPER(TRIM(m.bank_name)),' ',UPPER(TRIM(m.bank_account))) AS bank, UPPER(TRIM(m.bank_account)) AS akun FROM master_supplier_bank m JOIN mastersupplier ms ON ms.id_supplier = m.id_supplier WHERE m.status = 'Active' AND m.tipe_sup = 'S' ORDER BY ms.Supplier, m.bank_name");
+                        while ($row = mysqli_fetch_array($sql)) {
+                            echo '<option value="' . $row['akun'] . '">' . $row['bank'] . '</option>';
+                        }
+                        ?>
+                    </select>
                 </div>
         </div>
         </br>
 <div class="form-row">
     <div class="col-md-3 mb-3" style="padding-top: 8px;">
-            <label for="nama_supp"><b>For Payment</b></label>            
-              <select class="form-control selectpicker" name="forpay" id="forpay" data-dropup-auto="false" data-live-search="true" onchange="this.form.submit()">
-                <option value="-" disabled selected="true">Select For Payment</option>                                                 
+            <label for="nama_supp"><b>For Payment</b></label>
+              <select class="form-control select2" name="forpay" id="forpay" style="width:100%">
+                <option value="-" disabled selected="true">Select For Payment</option>
                 <?php
                 $forpay ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $forpay = isset($_POST['forpay']) ? $_POST['forpay']: null;
-                }                 
+                }
                 $sql = mysqli_query($conn1,"select ref_doc from master_forpay where ket = '1'");
                 while ($row = mysqli_fetch_array($sql)) {
                     $data = $row['ref_doc'];
@@ -248,386 +281,75 @@
                         $isSelected = '';
 
                     }
-                    echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
+                    echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';
                 }?>
                 </select>
 
 
         </div>
-        <?php 
-                $ref = isset($_POST['forpay']) ? $_POST['forpay']: null;
-                $cb = isset($_POST['carabayar']) ? $_POST['carabayar']: null;
-                if ($cb != 'CASH' && $ref == 'Pemindah Bukuan Bank') {
-                    echo '
-                         
-            ';}elseif ($cb != 'CASH' && $ref == 'Lainnya') {
-                    echo '
-                
-                   
-            ';}
-                elseif($cb != 'CASH' && $ref != 'Pemindah Bukuan Bank' || $cb != 'CASH' && $ref != 'Lainnya'){
-                    echo '
-                    <div class="col-md-2 mb-3" style="padding-top: 8px;">
-            <label for="nama_supp"><b>From Account</b></label>            
-              <select class="form-control selectpicker" name="frcc" id="frcc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>';?> 
-                <?php 
-                       $frcc ='';
+        <div class="col-md-2 mb-3">
+            <label for="pv_tax_type" class="col-form-label" style="width: 150px;">Payment Voucher Type</label>
+            <select class="form-control select2" name="pv_tax_type" id="pv_tax_type" style="width:100%">
+                <option value="" disabled selected="selected">Select Type</option>
+                <option value="Tax">Tax</option>
+                <option value="Non Tax">Non Tax</option>
+            </select>
+        </div>
+        <div class="col-md-1 mb-3">
+            <label for="curre" class="col-form-label" style="width: 150px;">Currency </label>
+            <select class="form-control select2" name="curre" id="curre" style="width:100%">
+                <option value="" disabled selected="true">Curr</option>
+                <?php
+                $curre ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $frcc = isset($_POST['frcc']) ? $_POST['frcc']: null;
-                }                 
-                $sql = mysqli_query($conn1,"select coa_name as bank,curr,bank_account as akun from b_masterbank where status = 'Active' group by id");
-                while ($row = mysqli_fetch_array($sql)) {
-                    $data = $row['bank'];
-                    $indata = $row['akun'];
-                    if($row['akun'] == $frcc){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
-
-                    }
-                    echo '<option value="'.$indata.'"'.$isSelected.'">'. $data .'</option>';    
-                        }
-                        ?>
-                <?php echo'</select>
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="no_cek" name="no_cek" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="cek_date" name="cek_date" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="ke" name="ke" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="dari" name="dari" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="pay_for" name="pay_for" value="" autocomplete = "off">
-                   
-            </div>
-
-            <div class="col-md-2 mb-3" style="padding-top: 8px;">
-            <label for="nama_supp"><b>To Account</b></label>            
-              <select class="form-control selectpicker" name="tocc" id="tocc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>';?> 
-                <?php 
-                       $tocc ='';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
-                $tocc = isset($_POST['tocc']) ? $_POST['tocc']: null;
-                }   
-                if ($nama_supp == null OR $nama_supp == '') {
-                    $sql = mysqli_query($conn2,"SELECT ms.Supplier AS supplier, CONCAT(UPPER(TRIM(m.bank_name)),' ',UPPER(TRIM(m.bank_account))) AS bank, UPPER(TRIM(m.bank_account)) AS akun FROM master_supplier_bank m JOIN mastersupplier ms ON ms.id_supplier = m.id_supplier WHERE m.status = 'Active' AND m.tipe_sup = 'S' ORDER BY ms.Supplier, m.bank_name");
-                }else{
-                    $sql = mysqli_query($conn2,"SELECT ms.Supplier AS supplier, CONCAT(UPPER(TRIM(m.bank_name)),' ',UPPER(TRIM(m.bank_account))) AS bank, UPPER(TRIM(m.bank_account)) AS akun FROM master_supplier_bank m JOIN mastersupplier ms ON ms.id_supplier = m.id_supplier WHERE m.status = 'Active' AND m.tipe_sup = 'S' AND ms.Supplier = '$nama_supp' ORDER BY m.bank_name");
+                $curre = isset($_POST['curre']) ? $_POST['curre']: null;
                 }
+                $sql = mysqli_query($conn1,"select DISTINCT curr from b_masterbank union select 'EUR' curr ");
                 while ($row = mysqli_fetch_array($sql)) {
-                    $data = $row['bank'];
-                    $indata = $row['akun'];
-                    if($row['akun'] == $tocc){
+                    $data = $row['curr'];
+                    if($row['curr'] == $curre){
                         $isSelected = ' selected="selected"';
                     }else{
                         $isSelected = '';
 
                     }
-                    echo '<option value="'.$indata.'"'.$isSelected.'">'. $data .'</option>';
-                        }
-                        ?>
-                <?php echo'</select>
+                    echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';
+                }?>
+            </select>
+        </div>
+        <!--
+            Dulu blok ini di-render dua kali secara terpisah oleh PHP,
+            dua blok kondisi berbeda berdasarkan $_POST forpay/carabayar
+            saat halaman reload penuh, menghasilkan select#frcc/#tocc yang
+            dobel/duplikat id di beberapa kombinasi. Sekarang cukup satu set
+            field statis, ditampilkan/disembunyikan via JS (lihat fungsi
+            updateForPaymentFields()) tanpa reload - field & nama tetap sama
+            persis supaya insertpv_h.php tidak perlu diubah.
+        -->
+        <div class="col-md-1 mb-3" id="div_ke">
+            <label for="ke" class="col-form-label" style="width: 150px;"><b>To</b></label>
+            <input type="text" style="font-size: 14px;" class="form-control" id="ke" name="ke" value="" autocomplete="off">
+        </div>
 
-            </div>
-                    ';
-                }
-                else{
-                    echo '';}?>
-         <?php 
-                $ref = isset($_POST['forpay']) ? $_POST['forpay']: null;
-                $cb = isset($_POST['carabayar']) ? $_POST['carabayar']: null;
-                if ($ref == 'Pemindah Bukuan Bank' && $cb != 'CASH') {
-                    echo '
-                     <div class="col-md-2 mb-3" style="padding-top: 8px;">
-            <label for="nama_supp"><b>From Account</b></label>            
-              <select class="form-control selectpicker" name="frcc" id="frcc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>';?> 
-                <?php 
-                       $frcc ='';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $frcc = isset($_POST['frcc']) ? $_POST['frcc']: null;
-                }                 
-                $sql = mysqli_query($conn1,"select coa_name as bank,curr,bank_account as akun from b_masterbank where status = 'Active' group by id");
-                while ($row = mysqli_fetch_array($sql)) {
-                    $data = $row['bank'];
-                    $indata = $row['akun'];
-                    if($row['akun'] == $frcc){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
+        <div class="col-md-1 mb-3" id="div_dari">
+            <label for="dari" class="col-form-label" style="width: 150px;"><b>From</b></label>
+            <input type="text" style="font-size: 14px;" class="form-control" id="dari" name="dari" value="" autocomplete="off">
+        </div>
 
-                    }
-                    echo '<option value="'.$indata.'"'.$isSelected.'">'. $data .'</option>';    
-                        }
-                        ?>
-                <?php echo'</select>
-                </div>
-                         <div class="col-md-2 mb-3" style="padding-top: 8px;">
-            <label for="nama_supp"><b>To Account</b></label>            
-              <select class="form-control selectpicker" name="tocc" id="tocc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>';?> 
-                <?php 
-                       $tocc ='';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $tocc = isset($_POST['tocc']) ? $_POST['tocc']: null;
-                }                 
-                $sql = mysqli_query($conn1,"select coa_name as bank,curr,bank_account as akun from b_masterbank where status = 'Active' group by id");
-                while ($row = mysqli_fetch_array($sql)) {
-                    $data = $row['bank'];
-                    $indata = $row['akun'];
-                    if($row['bank'] == $tocc){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
+        <div class="col-md-3 mb-3" id="div_payfor">
+            <label for="pay_for" class="col-form-label" style="width: 150px;"><b>-</b></label>
+            <input type="text" style="font-size: 14px;" class="form-control" id="pay_for" name="pay_for" value="" autocomplete="off">
+        </div>
 
-                    }
-                    echo '<option value="'.$indata.'"'.$isSelected.'">'. $data .'</option>';    
-                        }
-                        ?>
-                <?php echo'</select>
-                   
-            </div>
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="ke" name="ke" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="dari" name="dari" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="no_cek" name="no_cek" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="cek_date" name="cek_date" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="pay_for" name="pay_for" value="" autocomplete = "off">
-            ';
-                }elseif ($ref == 'Pemindah Bukuan Bank' && $cb == 'CASH') {
-                    echo '
-                         <div style = "display : none;">
-                <select class="form-control selectpicker" name="tocc" id="tocc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>
-                </select>
-                </div>
-                <div style = "display : none;">
-                <select class="form-control selectpicker" name="frcc" id="frcc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>
-                </select>
-                </div>
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="ke" name="ke" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="dari" name="dari" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="no_cek" name="no_cek" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="cek_date" name="cek_date" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="pay_for" name="pay_for" value="" autocomplete = "off">
-            ';
-                } elseif($ref == 'Cicilan Pinjaman Bank' && $cb != 'CASH'){
-                echo '
-                         <div class="col-md-2 mb-3" style="padding-top: 8px;">
-            <label for="tocc"><b>To Account</b></label>            
-              <select class="form-control selectpicker" name="tocc" id="tocc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>';?> 
-                <?php 
-                       $tocc ='';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $tocc = isset($_POST['tocc']) ? $_POST['tocc']: null;
-                }                 
-                $sql = mysqli_query($conn1,"select coa_name as bank,curr,bank_account as akun from b_masterbank where status = 'Active' group by id");
-                while ($row = mysqli_fetch_array($sql)) {
-                    $data = $row['bank'];
-                    $indata = $row['akun'];
-                    if($row['bank'] == $tocc){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
-
-                    }
-                    echo '<option value="'.$indata.'"'.$isSelected.'">'. $data .'</option>';    
-                        }
-                        ?>
-                <?php echo'</select>
-                   
-            </div>
-            <div class="col-md-1 mb-3">            
-            <label for="total" class="col-form-label" style="width: 150px;"><b>To</b></label>
-                <input type="text" style="font-size: 14px;" class="form-control" id="ke" name="ke" value="" autocomplete = "off">
-            </div>
-            <div class="col-md-1 mb-3">            
-            <label for="total" class="col-form-label" style="width: 150px;"><b>From</b></label>
-                <input type="text" style="font-size: 14px;" class="form-control" id="dari" name="dari" value="" autocomplete = "off">
-            </div>
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="no_cek" name="no_cek" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="cek_date" name="cek_date" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="pay_for" name="pay_for" value="" autocomplete = "off">
-            ';
-                }elseif($ref == 'Cicilan Pinjaman Bank' && $cb == 'CASH'){
-                echo '
-                   
-            <div style = "display : none;">
-                <select class="form-control selectpicker" name="tocc" id="tocc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>
-                </select>
-                </div>
-                <div style = "display : none;">
-                <select class="form-control selectpicker" name="frcc" id="frcc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>
-                </select>
-                </div>
-                <div class="col-md-1 mb-3">            
-            <label for="total" class="col-form-label" style="width: 150px;"><b>To</b></label>
-                <input type="text" style="font-size: 14px;" class="form-control" id="ke" name="ke" value="" autocomplete = "off">
-            </div>
-            <div class="col-md-1 mb-3">            
-            <label for="total" class="col-form-label" style="width: 150px;"><b>From</b></label>
-                <input type="text" style="font-size: 14px;" class="form-control" id="dari" name="dari" value="" autocomplete = "off">
-            </div>
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="no_cek" name="no_cek" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="cek_date" name="cek_date" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="pay_for" name="pay_for" value="" autocomplete = "off">
-            ';
-                }elseif($ref == 'Cicilan Aktiva Tetap' && $cb != 'CASH'){
-                   echo '
-                   <div class="col-md-1 mb-3">            
-            <label for="total" class="col-form-label" style="width: 150px;"><b>To</b></label>
-                <input type="text" style="font-size: 14px;" class="form-control" id="ke" name="ke" value="" autocomplete = "off">
-            </div>
-            <div class="col-md-1 mb-3">            
-            <label for="total" class="col-form-label" style="width: 150px;"><b>From</b></label>
-                <input type="text" style="font-size: 14px;" class="form-control" id="dari" name="dari" value="" autocomplete = "off">
-            </div>
-            <div style = "display : none;">
-                <select class="form-control selectpicker" name="tocc" id="tocc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>
-                </select>
-                </div>
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="no_cek" name="no_cek" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="cek_date" name="cek_date" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="pay_for" name="pay_for" value="" autocomplete = "off">'; 
-                }elseif($ref == 'Cicilan Aktiva Tetap' && $cb == 'CASH'){
-                   echo '
-                   <div class="col-md-1 mb-3">            
-            <label for="total" class="col-form-label" style="width: 150px;"><b>To</b></label>
-                <input type="text" style="font-size: 14px;" class="form-control" id="ke" name="ke" value="" autocomplete = "off">
-            </div>
-            <div class="col-md-1 mb-3">            
-            <label for="total" class="col-form-label" style="width: 150px;"><b>From</b></label>
-                <input type="text" style="font-size: 14px;" class="form-control" id="dari" name="dari" value="" autocomplete = "off">
-            </div>
-            <div style = "display : none;">
-                <select class="form-control selectpicker" name="tocc" id="tocc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>
-                </select>
-                </div>
-                <div style = "display : none;">
-                <select class="form-control selectpicker" name="frcc" id="frcc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>
-                </select>
-                </div>
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="no_cek" name="no_cek" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="cek_date" name="cek_date" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="pay_for" name="pay_for" value="" autocomplete = "off">'; 
-                }elseif($ref == 'Lainnya' && $cb != 'CASH'){
-                   echo '
-                   <div class="col-md-3 mb-3">            
-            <label for="total" class="col-form-label" style="width: 150px;"><b>-</b></label>
-                <input type="text" style="font-size: 14px;" class="form-control" id="pay_for" name="pay_for" value="" autocomplete = "off">
-            </div>
-            <div class="col-md-2 mb-3" style="padding-top: 8px;">
-            <label for="nama_supp"><b>From Account</b></label>            
-              <select class="form-control selectpicker" name="frcc" id="frcc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>';?> 
-                <?php 
-                       $frcc ='';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $frcc = isset($_POST['frcc']) ? $_POST['frcc']: null;
-                }                 
-                $sql = mysqli_query($conn1,"select coa_name as bank,curr,bank_account as akun from b_masterbank where status = 'Active' group by id");
-                while ($row = mysqli_fetch_array($sql)) {
-                    $data = $row['bank'];
-                    $indata = $row['akun'];
-                    if($row['akun'] == $frcc){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
-
-                    }
-                    echo '<option value="'.$indata.'"'.$isSelected.'">'. $data .'</option>';    
-                        }
-                        ?>
-                <?php echo'</select>
-                </div>
-                    <div class="col-md-2 mb-3" style="padding-top: 8px;">
-            <label for="nama_supp"><b>To Account</b></label>            
-              <select class="form-control selectpicker" name="tocc" id="tocc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>';?> 
-                <?php 
-                       $tocc ='';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
-                $tocc = isset($_POST['tocc']) ? $_POST['tocc']: null;
-                }   
-                if ($nama_supp == null OR $nama_supp == '') {
-                    $sql = mysqli_query($conn2,"SELECT ms.Supplier AS supplier, CONCAT(UPPER(TRIM(m.bank_name)),' ',UPPER(TRIM(m.bank_account))) AS bank, UPPER(TRIM(m.bank_account)) AS akun FROM master_supplier_bank m JOIN mastersupplier ms ON ms.id_supplier = m.id_supplier WHERE m.status = 'Active' AND m.tipe_sup = 'S' ORDER BY ms.Supplier, m.bank_name");
-                }else{
-                    $sql = mysqli_query($conn2,"SELECT ms.Supplier AS supplier, CONCAT(UPPER(TRIM(m.bank_name)),' ',UPPER(TRIM(m.bank_account))) AS bank, UPPER(TRIM(m.bank_account)) AS akun FROM master_supplier_bank m JOIN mastersupplier ms ON ms.id_supplier = m.id_supplier WHERE m.status = 'Active' AND m.tipe_sup = 'S' AND ms.Supplier = '$nama_supp' ORDER BY m.bank_name");
-                }
-                while ($row = mysqli_fetch_array($sql)) {
-                    $data = $row['bank'];
-                    $indata = $row['akun'];
-                    if($row['akun'] == $tocc){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
-
-                    }
-                    echo '<option value="'.$indata.'"'.$isSelected.'">'. $data .'</option>';
-                        }
-                        ?>
-                <?php echo'</select>
-
-            </div>
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="ke" name="ke" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="dari" name="dari" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="no_cek" name="no_cek" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="cek_date" name="cek_date" value="" autocomplete = "off">
-
-                '; 
-                }elseif($ref == 'Lainnya' && $cb == 'CASH'){
-                   echo '
-                   <div class="col-md-3 mb-3">            
-            <label for="total" class="col-form-label" style="width: 150px;"><b>-</b></label>
-                <input type="text" style="font-size: 14px;" class="form-control" id="pay_for" name="pay_for" value="" autocomplete = "off">
-            </div>
-                   <div style = "display : none;">
-                <select class="form-control selectpicker" name="tocc" id="tocc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>
-                </select>
-                </div>
-                <div style = "display : none;">
-                <select class="form-control selectpicker" name="frcc" id="frcc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>
-                </select>
-                </div>
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="ke" name="ke" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="dari" name="dari" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="no_cek" name="no_cek" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="cek_date" name="cek_date" value="" autocomplete = "off">
-                '; 
-                }else{
-
-                echo '
-                <div style = "display : none;">
-                <select class="form-control selectpicker" name="tocc" id="tocc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>
-                </select>
-                </div>
-                <div style = "display : none;">
-                <select class="form-control selectpicker" name="frcc" id="frcc" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>
-                </select>
-                </div>
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="ke" name="ke" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="dari" name="dari" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="no_cek" name="no_cek" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="cek_date" name="cek_date" value="" autocomplete = "off">
-                <input type="hidden" style="font-size: 14px;" class="form-control" id="pay_for" name="pay_for" value="" autocomplete = "off">';
-        }?>
+        <input type="hidden" style="font-size: 14px;" class="form-control" id="no_cek" name="no_cek" value="" autocomplete="off">
+        <input type="hidden" style="font-size: 14px;" class="form-control" id="cek_date" name="cek_date" value="" autocomplete="off">
     </div>
 
 
 <div class="form-row">
 
 
-        <div class="col-md-10 mb-3">            
+        <div class="col-md-8 mb-3">            
             <label for="pajak" class="col-form-label" style="width: 150px;"><b>Description</b></label>
                 <textarea style="font-size: 15px; text-align: left;" cols="30" rows="2" type="text" class="form-control " name="pesan" id="pesan" value="<?php             
             if(!empty($_POST['pesan'])) {
@@ -847,7 +569,7 @@
     </div>
   
                 <div class="modal-footer">
-                    <button type="submit" id="send2" name="send2" class="btn btn-warning btn-lg" style="width: 100%;"><span class="fa fa-check"></span>
+                    <button type="button" id="send2" name="send2" class="btn btn-warning btn-lg" style="width: 100%;"><span class="fa fa-check"></span>
                         Save
                     </button>
                 </div>           
@@ -865,7 +587,7 @@
             <div class="col-md-12">
 
             <table id="mytable" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
-                    <thead>
+                    <thead class="table-gradient2">
         <tr><th class="text-center" style="width: 2%">-</th>
             <th class="text-center" style="width: 12%">COA</th>
             <th class="text-center" style="width: 10%">Profit Center</th>
@@ -939,45 +661,19 @@
           </tr>
     </tfoot>                   
             </table>                    
-<div class="box footer">   
+<div class="box footer pv-card" style="padding:20px;">
         <form id="form-simpan">
             <div class="form-row col">
             <div class="col-md-4">
-                </br>
-
-<!--             <div class="input-group" >
-                <label for="nama_supp" class="col-form-label" style="width: 80px;"><b>PPH</b></label>
-                 <select class="form-control" name="pilih_pph" id="pilih_pph" data-live-search="true" onchange='changeValueTax(this.value)' required >
-                <option value="" disabled selected="true">Select Account</option>  
-                <option value="0" selected="selected">Non PPH</option>
-                <?php 
-                        $sqlacc = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPH'  GROUP BY idtax ");
-
-                        while ($row = mysqli_fetch_array($sqlacc)) {
-                            $data = $row['percentage'];
-                            $data2 = $row['kriteria2'];
-                            if($row['kriteria2'] == $_POST['pilih_pph']){
-                                $isSelected  = ' selected="selected"';
-                            }else{
-                                $isSelected = '';
-                            }
-                            echo '<option name="pilih_pph" value="'.$data.'"'.$isSelected.'">'. $data2 .'</option>';    
-                            
-                        }
-                        ?>
-                </select>
-            </div>
-        </br> -->
-        <div style = "display : none;">
-                <select class="form-control selectpicker" name="pilih_pph" id="pilih_pph" data-dropup-auto="false" data-live-search="true">
-                <option value="-" disabled selected="true">Select Account</option>
-                </select>
+                <div style="display:none;">
+                    <select class="form-control selectpicker" name="pilih_pph" id="pilih_pph" data-dropup-auto="false" data-live-search="true">
+                        <option value="-" disabled selected="true">Select Account</option>
+                    </select>
                 </div>
-            <div class="input-group" >
-                <label for="nama_supp" class="col-form-label" style="width: 80px;"><b>PPN</b></label>
-                 <select class="form-control select2" name="pilih_ppn" id="pilih_ppn" data-live-search="true" onchange='changeValueTax2(this.value)' required>
-                <option value="" disabled selected="true">Select PPN</option>  
-                <?php 
+                <label for="pilih_ppn"><b>PPN</b></label>
+                <select class="form-control select2" name="pilih_ppn" id="pilih_ppn" style="width:100%" onchange='changeValueTax2(this.value)' required>
+                    <option value="" disabled selected="true">Select PPN</option>
+                    <?php
                         $sqlacc = mysqli_query($conn1,"select '0' idtax, 'Non PPN' kriteria, '0' percentage, 'Non PPN' kriteria2
                                                         union
                                                         select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPN'  GROUP BY idtax");
@@ -992,62 +688,50 @@
                             }else{
                                 $isSelected = '';
                             }
-                            echo '<option name="pilih_ppn" value="'.$data.'"'.$isSelected.'">'. $data2 .'</option>'; 
-                            $jsArray .= "prdName['" . $row['percentage'] . "'] = {idtax:'" . addslashes($row['idtax']) . "'};\n";   
-                            
+                            echo '<option name="pilih_ppn" value="'.$data.'"'.$isSelected.'">'. $data2 .'</option>';
+                            $jsArray .= "prdName['" . $row['percentage'] . "'] = {idtax:'" . addslashes($row['idtax']) . "'};\n";
+
                         }
                         ?>
                 </select>
                 <input type="hidden" name="idtax" id="idtax" value="0">
             </div>
-            </br>
-        <!--     <div class="input-group" >
-                <label for="nama_supp" class="col-form-label" style="width: 80px;"><b>Tax (11%)</b></label>
-                <input type="checkbox" id="check_vat_baru" name="check_vat_baru" onclick="modal_input_vat_baru()">
-            </div>
-            </br> -->
-             
-            
-            </div>
             <div class="col-md-4">
 
             </div>
             <div class="col-md-4">
-                </br>
-                <div class="input-group" >
-                <label for="nama_supp" class="col-form-label" style="width: 180px;"><b>Total Without Tax</b></label>
-                <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="nomrate1" name="nomrate1" placeholder="0.00" readonly>
-                 <input type="hidden" name="nomrate_h" id="nomrate_h" value="">
-            </div>
-            </br>
-            <div class="input-group" >
-                <label for="nama_supp" class="col-form-label" style="width: 180px;"><b>Deduction</b></label>
-                <input type="hidden" style="font-size: 14px;text-align: right;" class="form-control" id="ded_ad" name="ded_ad" placeholder="0.00" >
-                <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="ded_ad_h" name="ded_ad_h" placeholder="0.00" readonly>
-            </div>
-            </br>
-            <div class="input-group" >
-                <label for="nama_supp" class="col-form-label" style="width: 180px;"><b>Incoming Tax</b></label>
-                <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="pph" name="pph" placeholder="0.00" readonly>
-                <input type="hidden" name="pph_h" id="pph_h" value="">
-                <input type="hidden" name="pph_min" id="pph_min" value="">
-                <input type="hidden" name="pph_plus" id="pph_plus" value="">
-            </div>
-            </br>
-            <div class="input-group" >
-                <label for="nama_supp" class="col-form-label" style="width: 180px;"><b>Value Added Tax</b></label>
-                <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="ppn" name="ppn" placeholder="0.00" readonly>
-                <input type="hidden" name="ppn_h" id="ppn_h" value="">
-            </div>
-            </br>
-            <div class="input-group" >
-                <label for="nama_supp" class="col-form-label" style="width: 180px;"><b>Total</b></label>
-                <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="total" name="total" placeholder="0.00" readonly>
-                <input type="hidden" name="total_h" id="total_h" value="">
-            </div>
-            </br>
-
-             
+                <div class="total-box">
+                    <div class="total-box-header"><i class="fa fa-calculator"></i> Total</div>
+                    <div class="total-box-body">
+                        <div class="total-stat">
+                            <span class="total-stat-label">Total Without Tax</span>
+                            <input type="text" class="total-stat-value" id="nomrate1" name="nomrate1" placeholder="0.00" readonly>
+                            <input type="hidden" name="nomrate_h" id="nomrate_h" value="">
+                        </div>
+                        <div class="total-stat">
+                            <span class="total-stat-label">Deduction</span>
+                            <input type="hidden" id="ded_ad" name="ded_ad" placeholder="0.00">
+                            <input type="text" class="total-stat-value" id="ded_ad_h" name="ded_ad_h" placeholder="0.00" readonly>
+                        </div>
+                        <div class="total-stat">
+                            <span class="total-stat-label">Incoming Tax</span>
+                            <input type="text" class="total-stat-value" id="pph" name="pph" placeholder="0.00" readonly>
+                            <input type="hidden" name="pph_h" id="pph_h" value="">
+                            <input type="hidden" name="pph_min" id="pph_min" value="">
+                            <input type="hidden" name="pph_plus" id="pph_plus" value="">
+                        </div>
+                        <div class="total-stat">
+                            <span class="total-stat-label">Value Added Tax</span>
+                            <input type="text" class="total-stat-value" id="ppn" name="ppn" placeholder="0.00" readonly>
+                            <input type="hidden" name="ppn_h" id="ppn_h" value="">
+                        </div>
+                        <div class="total-stat">
+                            <span class="total-stat-label"><b>Total</b></span>
+                            <input type="text" class="total-stat-value" id="total" name="total" placeholder="0.00" readonly>
+                            <input type="hidden" name="total_h" id="total_h" value="">
+                        </div>
+                    </div>
+                </div>
         </div>
             
             
@@ -1098,6 +782,7 @@
   <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
   <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
   <script language="JavaScript" src="../css/4.1.1/select2.full.min.js"></script>
+  <script language="JavaScript" src="../css/4.1.1/sweetalert2.all.min.js"></script>
   <script language="JavaScript" src="../css/4.1.1/bootstrap-multiselect.min.js"></script>
     <script language="JavaScript" src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/js/select2.full.js"></script>
 
@@ -1201,6 +886,89 @@ $(function() {
   </script> -->
 
 <script type="text/javascript">
+    // Ganti/isi ulang opsi #tocc sesuai For Payment yang dipilih (bank
+    // perusahaan untuk Pemindah Bukuan Bank/Cicilan Pinjaman Bank, atau bank
+    // supplier terpilih untuk Lainnya/default) tanpa reload halaman.
+    function refreshToAccount() {
+        var forpay = $('#forpay').val() || '';
+        var nama_supp = $('#nama_supp').val() || '';
+        var $tocc = $('#tocc');
+        var currentVal = $tocc.val();
+
+        $.ajax({
+            url: 'get_pv_to_account.php',
+            type: 'POST',
+            dataType: 'json',
+            data: { forpay: forpay, nama_supp: nama_supp },
+            success: function (response) {
+                $tocc.empty().append('<option value="-" selected="selected">Select Account</option>');
+                $.each(response || [], function (i, acc) {
+                    $tocc.append('<option value="' + acc.value + '">' + acc.text + '</option>');
+                });
+                if (currentVal && $tocc.find('option[value="' + currentVal + '"]').length) {
+                    $tocc.val(currentVal);
+                }
+                $tocc.trigger('change');
+            }
+        });
+    }
+
+    // Tampilkan/sembunyikan From Account/To Account/Ke/Dari/For Payment
+    // sesuai kombinasi Pay Methods + For Payment - dulu logic ini ada di
+    // PHP dan trigger-nya reload seluruh halaman (onchange="this.form.submit()").
+    function updateForPaymentFields() {
+        var cb = $('#carabayar').val() || '';
+        var ref = $('#forpay').val() || '';
+
+        var isCash = (cb === 'CASH');
+        var isPinjamanBank = (ref === 'Cicilan Pinjaman Bank');
+        var isAktivaTetap = (ref === 'Cicilan Aktiva Tetap');
+        var isLainnya = (ref === 'Lainnya');
+
+        // Dulu (kode PHP lama) From Account/To Account tetap tampil untuk
+        // SEMUA For Payment selama Pay Methods bukan CASH - termasuk Cicilan
+        // Pinjaman Bank & Cicilan Aktiva Tetap (jadi Ke/Dari itu TAMBAHAN,
+        // bukan pengganti Account). Sebelumnya field ini malah disembunyikan
+        // untuk 2 For Payment itu, jadi hilang padahal sebelumnya ada.
+        var showFrom = !isCash;
+        var showTo = !isCash;
+        var showKeDari = (isPinjamanBank || isAktivaTetap);
+        var showPayFor = isLainnya;
+
+        $('#div_frcc').toggle(showFrom);
+        $('#div_tocc').toggle(showTo);
+        $('#div_ke, #div_dari').toggle(showKeDari);
+        $('#div_payfor').toggle(showPayFor);
+
+        if (!showFrom) { $('#frcc').val('-').trigger('change'); }
+        if (!showTo) { $('#tocc').val('-').trigger('change'); }
+        if (!showKeDari) { $('#ke').val(''); $('#dari').val(''); }
+        if (!showPayFor) { $('#pay_for').val(''); }
+
+        if (showTo) {
+            refreshToAccount();
+        }
+    }
+
+    $(document).on('change', '#carabayar, #forpay', function () {
+        updateForPaymentFields();
+    });
+
+    $(document).on('change', '#nama_supp', function () {
+        // Cek wrapper div-nya, bukan <select> aslinya - select2 selalu
+        // menyembunyikan <select> asli (display:none) meski wrapper-nya
+        // (#div_tocc) tampil, jadi $('#tocc').is(':visible') selalu false.
+        if ($('#div_tocc').is(':visible')) {
+            refreshToAccount();
+        }
+    });
+
+    $(document).ready(function () {
+        updateForPaymentFields();
+    });
+</script>
+
+<script type="text/javascript">
 
      $(document).on('change', '.prof_ctr', function () {
         const selectedProfCtr = $(this).val();
@@ -1221,7 +989,6 @@ $(function() {
     // console.log("selectedCoa:", selectedCoa);
     updateCostCenter(selectedProfCtr, selectedCoa, row);
 });
-
 
 
 // Fungsi reusable untuk isi dropdown Cost Center berdasarkan Profit Center
@@ -1267,56 +1034,13 @@ function updateCostCenter(profCtr, noCoa, row) {
     
    // JavaScript Document
 function addRow(tableID) {
-
-    // var pay_mth = $('select[name=carabayar] option').filter(':selected').val();
-    // var nama_supp = $('select[name=nama_supp] option').filter(':selected').val();
-    // var sup_doc = document.getElementById('sup_doc').value;
-    // var ctb = $('select[name=ct_buyer] option').filter(':selected').val();
-    // var curr = document.getElementById('curre').value;
-    // var for_pay = $('select[name=forpay] option').filter(':selected').val();
-    //     if (for_pay == 'Lainnya') {
-    //      var forpay = document.getElementById('pay_for').value;
-    //     }else{
-    //      var forpay = $('select[name=forpay] option').filter(':selected').val();   
-    //     }
-    // if(pay_mth != '' && nama_supp != '' && ctb != '' && curr != '' && forpay != '' || 
-    //     pay_mth != '-' && nama_supp != '-' && ctb != '-' && curr != '-' && forpay != '-'){
-
-        if($('select[name=nama_supp] option').filter(':selected').val() == '' || $('select[name=nama_supp] option').filter(':selected').val() == '-'){
-        alert("Please select Supplier");
-        document.getElementById('nama_supp').focus();
-        }else if(document.getElementById('sup_doc').value == ''){
-        alert("Please Select Support Document");
-        document.getElementById('sup_doc').focus();
-        }else if($('select[name=ct_buyer] option').filter(':selected').val() == ''){
-        alert("Please select Charge to Buyer");
-        document.getElementById('ct_buyer').focus();
-        }else if($('select[name=carabayar] option').filter(':selected').val() == '' || $('select[name=carabayar] option').filter(':selected').val() == '-'){
-        alert("Please select payment method");
-        document.getElementById('carabayar').focus();
-        }else if(document.getElementById('curre').value == ''){
-        alert("Please Enter Currency");
-        document.getElementById('curre').focus();
-        }else if($('select[name=forpay] option').filter(':selected').val() == '' || $('select[name=forpay] option').filter(':selected').val() == '-'){
-        alert("Please select For payment");
-        document.getElementById('forpay').focus();
-        }else if($('select[name=forpay] option').filter(':selected').val() == 'Lainnya' && document.getElementById('pay_for').value == ''){
-        alert("Please Input For payment");
-        document.getElementById('pay_for').focus();
-        }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && $('select[name=frcc] option').filter(':selected').val() == '-'){
-        alert("Please select From Account");
-        document.getElementById('frcc').focus();
-        }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && $('select[name=forpay] option').filter(':selected').val() == 'Pemindah Bukuan Bank' && $('select[name=frcc] option').filter(':selected').val() == '-'){
-        alert("Please select From Account");
-        document.getElementById('frcc').focus();
-        }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && $('select[name=forpay] option').filter(':selected').val() == 'Pemindah Bukuan Bank' && $('select[name=frcc] option').filter(':selected').val() != '-' && $('select[name=tocc] option').filter(':selected').val() == '-'){
-        alert("Please select To Account");
-        document.getElementById('tocc').focus();
-        }else{   
-         var tableID = "tbody2";
- var table = document.getElementById(tableID);
- var rowCount = table.rows.length;
- var row = table.insertRow(rowCount);
+    // Header (Supplier/Pay Methods/For Payment/dst) dulu WAJIB diisi dulu
+    // sebelum bisa Add Row. Sekarang baris detail bisa ditambah kapan saja -
+    // validasi header dipindah ke saat Save saja (lihat handler #simpan).
+    var tableID = "tbody2";
+    var table = document.getElementById(tableID);
+    var rowCount = table.rows.length;
+    var row = table.insertRow(rowCount);
 
 $(function() {
     $('.selectpicker').selectpicker();
@@ -1343,10 +1067,9 @@ $(function() {
  var element1 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td style="width: 50px"><select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="150px" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="200px" data-size="5"><option value="-"> - </option><?php $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'"); foreach ($sql3 as $fc) : ?> <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option> <?php endforeach; ?> </select> </td> <td> <select class="form-control selectpicker nomor_cc" name="nomor_cc[]" id="nomor_cc" data-live-search="true" data-width="200px" data-size="5"> <option value="-"> - </option> </select> </td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input type="text" style="font-size: 12px;" name="tgl_active" id="tgl_active" class="form-control tanggal" value="" autocomplete="off" placeholder="dd-mm-yyyy"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_dedadd(value)" autocomplete = "off"></td><td><input type="text" style="font-size: 12px;" name="tgl_tempo" id="tgl_tempo" class="form-control tanggal" autocomplete="off" placeholder="dd-mm-yyyy" value="<?= date("d-m-Y"); ?>"></td><td style="width: 50px"><select class="form-control select2add" name="pphh"  data-live-search="true" onchange="input_pph()" data-width="120px" data-size="5"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPH' GROUP BY idtax"); foreach ($sql as $pph) : ?> <option data-idtax="<?= $pph["idtax"]; ?>" value="<?= $pph["percentage"]; ?>"><?= $pph["kriteria2"]; ?> </option><?php endforeach; ?></select></td></td><td style="width: 50px"><select class="form-control select2add" name="ppnn"  data-live-search="true" onchange="input_ppn()" data-width="120px" data-size="5"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPN' GROUP BY idtax"); foreach ($sql as $ppn) : ?> <option data-idtax="<?= $ppn["idtax"]; ?>" value="<?= $ppn["percentage"]; ?>"><?= $ppn["kriteria2"]; ?> </option><?php endforeach; ?></select></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
 
 
- row.innerHTML = element1;             
-        }
-    }
-    
+ row.innerHTML = element1;
+}
+
 function deleteRow(tableID)
 {
     try
@@ -1972,35 +1695,47 @@ function addListener(elm,index){
 
 <script type="text/javascript">
     $("#modal-form2").on("click", "#send2", function(){
-        $("input[type=checkbox]:checked").each(function () {
+        // Sama seperti create-paymentvoucher-exim.php: satu request berisi
+        // semua item yang dicentang ke save_sup_doc.php, yang membersihkan
+        // dulu baris milik sesi ini lalu insert ulang sesuai checklist saat
+        // ini - jadi tidak numpuk seperti insertdoc.php (lama), dan tidak
+        // perlu reload halaman karena hasilnya (sup_doc) langsung dikembalikan.
+        var $btn = $(this);
+        if ($btn.data('saving')) {
+            return;
+        }
+        $btn.data('saving', true).prop('disabled', true);
+
         var doc_number = document.getElementById('no_doc').value;
-        var unik_code = document.getElementById('unik_code').value;        
-        var data = $(this).closest('tr').find('td:eq(1) input').val();
-         
-             
-        $.ajax({
-            type:'POST',
-            url:'insertdoc.php',
-            data: {'doc_number':doc_number, 'unik_code':unik_code, 'data':data},
-            cache: 'false',
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){
-                console.log(response);
-                // $('#modal-form2').modal('toggle');
-                // $('#modal-form2').modal('hide');
-                 // alert("Data saved successfully");
-                window.location.reload(false);
-                },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                alert(xhr);
-            }
-        });             
+        var unik_code = document.getElementById('unik_code').value;
+        var items = [];
+
+        $("#doc_support input[type=checkbox]:checked").each(function () {
+            var data = $(this).closest('tr').find('td:eq(1) input').val();
+            if (data) { items.push(data); }
         });
-                // return false; 
- 
+
+        $.ajax({
+            type: 'POST',
+            url: 'save_sup_doc.php',
+            dataType: 'json',
+            data: { 'doc_number': doc_number, 'unik_code': unik_code, 'items': JSON.stringify(items) },
+            cache: 'false',
+            success: function (response) {
+                $btn.data('saving', false).prop('disabled', false);
+                if (response && response.success) {
+                    $('#sup_doc').val(response.sup_doc);
+                    $('#mymodal2').modal('hide');
+                } else {
+                    Swal.fire('Error', (response && response.error) || 'Gagal menyimpan Supporting Document.', 'error');
+                }
+            },
+            error: function (xhr) {
+                $btn.data('saving', false).prop('disabled', false);
+                console.log(xhr);
+                Swal.fire('Error', xhr.responseText || String(xhr), 'error');
+            }
+        });
     });
 
 
@@ -2107,119 +1842,124 @@ if (!valid_detail) {
         var total = document.getElementById('total_h').value;
         var pilih_ppn = document.getElementById('pilih_ppn').value;
         var pilih_pph = document.getElementById('pilih_pph').value;
+        var pv_tax_type = $('select[name=pv_tax_type] option').filter(':selected').val();
         var create_user = '<?php echo $user; ?>';
 
-        if (total >= '1' && curr !='' && pay_mth != '' && forpay != '' && ctb != '' && nama_supp != '' || total >= '1' && curr !='' && pay_mth != '' && forpay != '-' && ctb != '' && nama_supp != '') {
+        // Dulu ada 2 pengecekan terpisah: satu gerbang sederhana yang
+        // MENENTUKAN apakah insertpv_h.php benar-benar dipanggil, dan satu
+        // lagi validasi detail terpisah yang cuma menentukan apakah alert
+        // "data saved successfully" muncul - keduanya TIDAK saling terhubung.
+        // Akibatnya alert sukses bisa muncul padahal gerbang pertama gagal
+        // dan insertpv_h.php tidak pernah dipanggil sama sekali, sehingga
+        // no_pv tidak pernah benar-benar tersimpan/bertambah. Sekarang cuma
+        // ada SATU validasi, dijalankan SEBELUM ajax manapun dikirim.
+        if ($('select[name=nama_supp] option').filter(':selected').val() == '' || $('select[name=nama_supp] option').filter(':selected').val() == '-') {
+            alert("Please select Supplier");
+            document.getElementById('nama_supp').focus();
+            return;
+        }
+        if (sup_doc == '') {
+            alert("Please Select Support Document");
+            document.getElementById('sup_doc').focus();
+            return;
+        }
+        if (ctb == '' || ctb == null) {
+            alert("Please select Charge to Buyer");
+            document.getElementById('ct_buyer').focus();
+            return;
+        }
+        if (pay_mth == '' || pay_mth == '-') {
+            alert("Please select payment method");
+            document.getElementById('carabayar').focus();
+            return;
+        }
+        if (pv_tax_type == '' || pv_tax_type == null) {
+            alert("Please select Payment Voucher Type");
+            document.getElementById('pv_tax_type').focus();
+            return;
+        }
+        if (curr == '') {
+            alert("Please Enter Currency");
+            document.getElementById('curre').focus();
+            return;
+        }
+        if (for_pay == '' || for_pay == '-') {
+            alert("Please select For payment");
+            document.getElementById('forpay').focus();
+            return;
+        }
+        if (for_pay == 'Lainnya' && document.getElementById('pay_for').value == '') {
+            alert("Please Input For payment");
+            document.getElementById('pay_for').focus();
+            return;
+        }
+        if (pay_mth != 'CASH' && frcc == '-') {
+            alert("Please select From Account");
+            document.getElementById('frcc').focus();
+            return;
+        }
+        if (pay_mth != 'CASH' && for_pay == 'Pemindah Bukuan Bank' && tocc == '-') {
+            alert("Please select To Account");
+            document.getElementById('tocc').focus();
+            return;
+        }
+        if (total == '' || total == null) {
+            alert("Please Input Amount");
+            return;
+        }
+        if (parseFloat(total) <= 0) {
+            alert("Amount can't be Minus or Zero");
+            return;
+        }
+
         $.ajax({
             type:'POST',
             url:'insertpv_h.php',
-            data: {'rat_pv':rat_pv, 'no_pv':no_pv, 'pv_date':pv_date, 'nama_supp':nama_supp, 'sup_doc':sup_doc, 'ctb':ctb, 'pay_date':pay_date, 'pay_mth':pay_mth, 'curr':curr, 'forpay':forpay, 'frcc':frcc, 'tocc':tocc, 'no_cek':no_cek, 'cek_date':cek_date, 'ke':ke, 'dari':dari, 'pesan':pesan, 'subtotal':subtotal, 'adjust':adjust, 'pph':pph, 'ppn':ppn, 'total':total, 'pilih_ppn':pilih_ppn, 'pilih_pph':pilih_pph, 'create_user':create_user},
+            data: {'rat_pv':rat_pv, 'no_pv':no_pv, 'pv_date':pv_date, 'nama_supp':nama_supp, 'sup_doc':sup_doc, 'ctb':ctb, 'pay_date':pay_date, 'pay_mth':pay_mth, 'curr':curr, 'forpay':forpay, 'pv_tax_type':pv_tax_type, 'frcc':frcc, 'tocc':tocc, 'no_cek':no_cek, 'cek_date':cek_date, 'ke':ke, 'dari':dari, 'pesan':pesan, 'subtotal':subtotal, 'adjust':adjust, 'pph':pph, 'ppn':ppn, 'total':total, 'pilih_ppn':pilih_ppn, 'pilih_pph':pilih_pph, 'create_user':create_user},
             cache: 'false',
-            close: function(e){
-                e.preventDefault();
-            },
             success: function(response){
                 console.log(response);
-                //  // alert(response);
-                window.location = 'payment-voucher.php';
+
+                var detailCalls = [];
+
+                $("input[type=checkbox]:checked").each(function () {
+                    var doc_number = no_pv;
+                    var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val();
+                    var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[id=nomor_coa] option').filter(':selected').val();
+                    var no_cc = $(this).closest('tr').find('td:eq(3)').find('select[id=nomor_cc] option').filter(':selected').val();
+                    var no_ref = $(this).closest('tr').find('td:eq(4) input').val();
+                    var ref_date = $(this).closest('tr').find('td:eq(5) input').val();
+                    var deskripsi = $(this).closest('tr').find('td:eq(6) input').val();
+                    var amount = $(this).closest('tr').find('td:eq(7) input').val() || 0;
+                    var due_date = $(this).closest('tr').find('td:eq(9) input').val();
+                    var ded_add = $(this).closest('tr').find('td:eq(8) input').val() || 0;
+                    var d_pph = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').val() || 0;
+                    var idtax = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').attr('data-idtax');
+                    var ppn_val = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').val() || document.getElementById('pilih_ppn').value;
+                    var d_ppn = (ppn_val === '0' || ppn_val === '' || ppn_val === null) ? document.getElementById('pilih_ppn').value : ppn_val;
+                    var idppn_val = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').attr('data-idtax') || document.getElementById('idtax').value;
+                    var id_ppn = (ppn_val === '0' || ppn_val === '' || ppn_val === null) ? document.getElementById('idtax').value : idppn_val;
+
+                    detailCalls.push($.ajax({
+                        type:'POST',
+                        url:'insertpv.php',
+                        data: {'doc_number':doc_number, 'prof_ctr':prof_ctr, 'no_coa':no_coa, 'no_cc':no_cc, 'no_ref':no_ref, 'ref_date':ref_date, 'deskripsi':deskripsi, 'amount':amount, 'due_date':due_date, 'ded_add':ded_add, 'pph':d_pph, 'idtax':idtax, 'ppn':d_ppn, 'id_ppn':id_ppn},
+                        cache: 'false',
+                        error: function (xhr) {
+                            console.log(xhr);
+                        }
+                    }));
+                });
+
+                $.when.apply($, detailCalls).always(function () {
+                    window.location = 'payment-voucher.php';
+                });
                 },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
-                alert(xhr);
+                alert('Gagal menyimpan header Payment Voucher: ' + (xhr.responseText || thrownError));
             }
         });
-        } 
-                        
-
-        $("input[type=checkbox]:checked").each(function () {
-        var doc_number = document.getElementById('no_doc').value;        
-        var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val(); 
-        var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[id=nomor_coa] option').filter(':selected').val(); 
-        var no_cc = $(this).closest('tr').find('td:eq(3)').find('select[id=nomor_cc] option').filter(':selected').val();      
-        var no_ref = $(this).closest('tr').find('td:eq(4) input').val();                               
-        var ref_date = $(this).closest('tr').find('td:eq(5) input').val();
-        var deskripsi = $(this).closest('tr').find('td:eq(6) input').val();                               
-        var amount = $(this).closest('tr').find('td:eq(7) input').val() || 0;
-        var due_date = $(this).closest('tr').find('td:eq(9) input').val();
-        var ded_add = $(this).closest('tr').find('td:eq(8) input').val() || 0;
-        var pph = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').val() || 0;
-        var idtax = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').attr('data-idtax');
-        var ppn_val = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').val() || document.getElementById('pilih_ppn').value;
-        var ppn = (ppn_val === '0' || ppn_val === '' || ppn_val === null) ? document.getElementById('pilih_ppn').value : ppn_val;
-        var idppn_val = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').attr('data-idtax') || document.getElementById('idtax').value;
-        var id_ppn = (ppn_val === '0' || ppn_val === '' || ppn_val === null) ? document.getElementById('idtax').value : idppn_val;
-        var total_h = document.getElementById('total_h').value || 0;
-        var curr = document.getElementById('curre').value; 
-        var for_pay = $('select[name=forpay] option').filter(':selected').val();
-        if (for_pay == 'Lainnya') {
-         var forpay = document.getElementById('pay_for').value;
-        }else{
-         var forpay = $('select[name=forpay] option').filter(':selected').val();   
-        }
-        var pay_mth = $('select[name=carabayar] option').filter(':selected').val(); 
-        var nama_supp = $('select[name=nama_supp] option').filter(':selected').val();
-        var ctb = $('select[name=ct_buyer] option').filter(':selected').val();
-
-        if (total_h >= '1' && curr !='' && pay_mth != '' && forpay != '' && ctb != '' && nama_supp != '' || total_h >= '1' && curr !='' && pay_mth != '' && forpay != '' && ctb != '' && nama_supp != '') { 
-        $.ajax({
-            type:'POST',
-            url:'insertpv.php',
-            data: {'doc_number':doc_number, 'prof_ctr':prof_ctr, 'no_coa':no_coa, 'no_cc':no_cc, 'no_ref':no_ref, 'ref_date':ref_date, 'deskripsi':deskripsi, 'amount':amount, 'due_date':due_date, 'ded_add':ded_add, 'pph':pph, 'idtax':idtax, 'ppn':ppn, 'id_ppn':id_ppn},
-            cache: 'false',
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){
-                console.log(response);
-                  // alert(response);
-                
-                window.location = 'payment-voucher.php';
-                },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                alert(xhr);
-            }
-        });
-    }
-    
-        }); 
-       if($('select[name=nama_supp] option').filter(':selected').val() == '' || $('select[name=nama_supp] option').filter(':selected').val() == '-'){
-        alert("Please select Supplier");
-        document.getElementById('nama_supp').focus();
-        }else if(document.getElementById('sup_doc').value == ''){
-        alert("Please Select Support Document");
-        document.getElementById('sup_doc').focus();
-        }else if($('select[name=ct_buyer] option').filter(':selected').val() == ''){
-        alert("Please select Charge to Buyer");
-        document.getElementById('ct_buyer').focus();
-        }else if($('select[name=carabayar] option').filter(':selected').val() == '' || $('select[name=carabayar] option').filter(':selected').val() == '-'){
-        alert("Please select payment method");
-        document.getElementById('carabayar').focus();
-        }else if(document.getElementById('curre').value == ''){
-        alert("Please Enter Currency");
-        document.getElementById('curre').focus();
-        }else if($('select[name=forpay] option').filter(':selected').val() == '' || $('select[name=forpay] option').filter(':selected').val() == '-'){
-        alert("Please select For payment");
-        document.getElementById('forpay').focus();
-        }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && $('select[name=frcc] option').filter(':selected').val() == '-'){
-        alert("Please select From Account");
-        document.getElementById('frcc').focus();
-        }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && $('select[name=forpay] option').filter(':selected').val() == 'Pemindah Bukuan Bank' && $('select[name=frcc] option').filter(':selected').val() == '-'){
-        alert("Please select From Account");
-        document.getElementById('frcc').focus();
-        }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && $('select[name=forpay] option').filter(':selected').val() == 'Pemindah Bukuan Bank' && $('select[name=frcc] option').filter(':selected').val() != '-' && $('select[name=tocc] option').filter(':selected').val() == '-'){
-        alert("Please select To Account");
-        document.getElementById('tocc').focus();
-        }else if(document.getElementById('total_h').value == ''){
-        alert("Please Input Amount");
-        }else if(document.getElementById('total_h').value <= '0'){
-        alert("Amount can't be Minus");
-        }else if(document.getElementById('total_h').value == '0.00'){
-        alert("Total Amount can't be Zero");
-        }else{               
-       
-            alert("data saved successfully");
-        }
     });
 </script>
 

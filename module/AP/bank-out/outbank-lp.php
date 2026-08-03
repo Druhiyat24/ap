@@ -29,10 +29,8 @@
                 </div>
                 <div class="col-md-3 mb-2"> </div>
 
-                <div class="col-md-3 mb-2">
-                    <label><b>Profit Center</b></label>
-                    <input type="text" class="form-control angka" id="profit_center_bank_show1" name="profit_center_bank_show1" readonly>
-                </div>
+                <input type="hidden" id="profit_center_bank_show1" name="profit_center_bank_show1">
+                <div class="col-md-3 mb-2"></div>
                 <div class="col-md-2 mb-2">
                     <label><b>Reff Date</b></label>
                     <input type="text" name="tgl_filawal1" id="tgl_filawal1" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off">

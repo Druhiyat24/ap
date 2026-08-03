@@ -1,28 +1,19 @@
-<!DOCTYPE html>
 <?php
 include '../../conn/conn.php';
-$images = '../../images/img-01.png';
-$no_pv=$_GET['no_pv'];
-?>
 
-<?php
-$sql= "select * from tbl_pv_h where no_pv = '$no_pv'";
-$rs=mysqli_fetch_array(mysqli_query($conn2,$sql));
-$amount = $rs['subtotal'];
-$adjust = $rs['adjust'];
+// ob_start() harus paling awal, sebelum query/echo apapun - kalau ada output
+// (termasuk PHP notice) yang lolos sebelum ini, teksnya bakal nyelip di depan
+// byte "%PDF-" pas mpdf Output() dipanggil di akhir file, jadi PDF-nya corrupt.
+ob_start();
 
-$twot = $amount + $adjust;
+$no_pv = $_GET['no_pv'] ?? '';
+
+$rs = mysqli_fetch_array(mysqli_query($conn2, "select * from tbl_pv_h where no_pv = '$no_pv'")) ?: [];
 
 $sqlys = " select a.no_pv,concat(b.no_coa,' - ',b.nama_coa) as nama_coa,if(d.cc_name is null,'-',concat(d.no_cc, ' - ',d.cc_name)) cc_name, if(a.reff_doc = '','-',a.reff_doc) as reff_doc,a.reff_date,if(a.deskripsi = '','-',a.deskripsi) as deskripsi,a.amount,a.ded_add,a.due_date, (a.amount * (a.pph/100)) as pph, coalesce(pc.nama_pc,'-') profit_center from tbl_pv a left join mastercoa_v2 b on b.no_coa = a.coa left join b_master_cc d on d.no_cc = a.no_cc left join master_pc pc on pc.kode_pc = a.profit_center where no_pv = '$no_pv' and amount != '0' OR no_pv = '$no_pv' and ded_add != '0' order by a.reff_doc asc";
 
 $sqlas = "select curr from tbl_pv_h where no_pv = '$no_pv'";
-
-ob_start();
 ?>
-
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -35,130 +26,99 @@ ob_start();
 
 
 
-    @page *{
-
-        margin-top: 1.54cm;
-
-        margin-bottom: 1.54cm;
-
-        margin-left: 3.175cm;
-
-        margin-right: 3.175cm;
-
+    @page * {
+      margin-top: 1.54cm;
+      margin-bottom: 1.54cm;
+      margin-left: 3.175cm;
+      margin-right: 3.175cm;
     }
 
+    table   { margin: auto; border-collapse: collapse; width: 100%; }
+    td, th  { padding: 3px 2px; text-align: left; }
+    h1      { text-align: center; }
+    th      { text-align: center; padding: 10px; }
 
+    .footer        { width: 100%; height: 30px; margin-top: 50px; text-align: right; }
+    .header        { width: 100%; height: 20px; padding-top: 0; margin-bottom: 10px; }
+    .title         { font-size: 30px; font-weight: bold; text-align: center; margin-top: -90px; }
+    .horizontal    { height: 0; width: 100%; border: 1px solid #000000; }
+    .position_top  { vertical-align: top; }
+    .td1           { border: 1px solid black; border-top: none; border-bottom: none; }
+    .header_title  { width: 100%; height: auto; text-align: center; font-size: 12px; }
 
-    table{margin: auto;}
+    /* Sel di 2 tabel info (header dokumen + Payment To..Amount) pakai class di
+       bawah ini gantiin inline style yang tadinya diulang manual di tiap <td>.
+       Border tiap sisi di-none-kan satu-satu supaya yang kelihatan cuma
+       bingkai TERLUAR tabel (efek "borderless") - baris/kolom di tengah semua
+       nge-blend karena saling menghilangkan border masing-masing. table2 juga
+       nge-none-in border-top di SEMUA barisnya karena nempel langsung di
+       bawah table1 (yang gambar garis pemisah cukup dari border-bottom baris
+       terakhir table1, biar gak dobel garis). */
+    .fs12 { font-size: 12px; }
+    .bl0  { border-left: none; }
+    .br0  { border-right: none; }
+    .bt0  { border-top: none; }
+    .bb0  { border-bottom: none; }
+    .bn   { border: none; }
+    .vt   { vertical-align: top; }
+    .tac  { text-align: center; }
+    .tar  { text-align: right; }
+    .fwb  { font-weight: bold; }
+    .w1   { width: 1%; }
+    .w2   { width: 2%; }
+    .w3   { width: 3%; }
+    .w12  { width: 12%; }
+    .w19  { width: 19%; }
+    .w38  { width: 38%; }
+    .w51  { width: 51%; }
 
-    td,th{padding: 1px;text-align: left}
+    /* Header dokumen dibuat rapat: tanpa ruang padding atas/bawah pada
+       sel judul, logo, dan identitas voucher. */
+    .voucher-document-header td {
+      padding: 0 2px;
+      line-height: 16px;
+    }
 
-    h1{text-align: center}
-
-    th{text-align:center; padding: 10px;}
-
-
-
-    .footer{
-
-       width:100%;
-
-       height:30px;
-
-       margin-top:50px;
-
-       text-align:right;
-
-
-
-   }
-
-/*
-
-CSS HEADER
-
-*/
-
-
-
-   .header{
-
-       width:100%;
-
-       height:20px;
-
-       padding-top:0;
-
-       margin-bottom:10px;
-
-   }
-
-   .title{
-
-       font-size:30px;
-
-       font-weight:bold;
-
-       text-align:center;
-
-       margin-top:-90px;
-
-   }
-
-
-
-   .horizontal{
-
-       height:0;
-
-       width:100%;
-
-       border:1px solid #000000;
-
-   }
-
-   .position_top {
-
-       vertical-align: top;
-
-
-
-   }
-
-
-
-   table {
-
+    /* Tabel tanda tangan menempel ke tabel header sebelumnya. Hilangkan
+       border atas tabel ini supaya tidak menjadi garis dobel/lebih tebal. */
+    .approval-signatures {
       border-collapse: collapse;
-
+      border: 1px solid #000;
+      border-top: 0 !important;
+      margin-bottom: 0;
+      table-layout: fixed;
       width: 100%;
+    }
+    .approval-signatures td {
+      border: 1px solid #000;
+    }
+    .approval-signatures tr:first-child td {
+      border-top: 0 !important;
+    }
 
-  }
+    /* Kolom label informasi voucher tidak boleh mengambil sisa lebar tabel;
+       titik dua dibuat dekat dengan labelnya. */
+    .voucher-info tr > td:first-child {
+      width: 13% !important;
+      padding-right: 0;
+      white-space: nowrap;
+    }
+    .voucher-info tr > td:nth-child(2) {
+      padding-left: 0;
+    }
+    .voucher-info td {
+      padding-top: 4px;
+      padding-bottom: 4px;
+    }
 
-  .td1{
-    border:1px solid black;
-    border-top: none;
-    border-bottom: none;
-}
-
-.header_title{
-
-	width:100%;
-
-	height:auto;
-
-	text-align:center;
-
-
-
-	font-size:12px;
-
-	
-
-}
-
-
-
+    /* Area Description di header selalu disediakan untuk empat baris.
+       Teks selebihnya disembunyikan agar layout PDF tetap konsisten. */
+    .description-fixed-4-lines {
+      height: 56px;
+      line-height: 14px;
+      overflow: hidden;
+      white-space: pre-line;
+    }
 </style>
 
 
@@ -166,7 +126,7 @@ CSS HEADER
 </head>
 <body style=" padding-left:5%; padding-right:5%;">
   <div class="header">
-    <table width="100%" border="1">
+    <table class="voucher-document-header" width="100%" border="1">
         <tr>
             <td rowspan ="3" style="border-right: none;">
                 <img src="../../images/img-01.png" style="heigh:65px; width:75px;">
@@ -202,12 +162,12 @@ CSS HEADER
             <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;">
                 :
             </td>
-            <td style="border-left: none;font-size: 12px;border-top: none;">
+            <td style="border-left: none;font-size: 12px;border-top: none;white-space: nowrap;">
                 PT Nirwana Alabare Garment
             </td>
         </tr>
     </table>
-    <table width="100%" border="1">
+    <table class="voucher-info" width="100%" border="1">
        <tr>
         <td style="border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
             Payment To
@@ -271,6 +231,86 @@ CSS HEADER
 
      </td>
  </tr>
+
+ <tr>
+    <td style="border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
+        Payment Method
+    </td>
+    <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
+        :
+    </td>
+    <td style="border-left: none;font-size: 12px;width: 38%;border-top: none;border-right: none;">
+        <?php echo $rs['pay_meth'];?>
+    </td>
+    
+ <td style="width: 3%; border: none;">
+
+ </td>
+ <td style="border-right: none;font-size: 12px;border-top: none;border-bottom: none;border-left: none;">
+        Cheque No
+    </td>
+    <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
+        :
+    </td>
+    <td style="border-left: none;font-size: 12px;border-top: none;border-right: none;">
+       <?php
+       $sql3 = mysqli_query($conn2," select no_cek from tbl_pv_h where no_pv = '$no_pv'");
+       $rows3 = mysqli_fetch_array($sql3);
+       $no_cek = $rows3['no_cek'];
+       if ($no_cek == '') {
+         echo '-'; 
+     }else{
+         echo $no_cek;
+     }
+     ?>
+ </td>
+<td style="width: 2%;border-left: none; border-top: none;border-bottom: none;">
+
+</td>
+</tr>
+
+<tr>
+    <td style="border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
+        Charge To Buyer
+    </td>
+    <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
+        :
+    </td>
+    <td style="border-left: none;font-size: 12px;width: 38%;border-top: none;border-right: none;">
+     <?php $ctb =  $rs['ctb'];
+     if ($ctb == '' || $ctb == 'Unrealize') {
+         echo '-'; 
+     }else{
+         echo $ctb;
+     }?>
+ </td>
+ <td style="width: 3%; border: none;">
+
+ </td>
+  <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;">
+    Cheque Date
+</td>
+<td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;">
+    :
+</td>
+<td style="border-left: none;font-size: 12px; border-top: none;border-right: none;">
+    <?php
+    $sql3 = mysqli_query($conn2," select cek_date from tbl_pv_h where no_pv = '$no_pv'");
+    $rows3 = mysqli_fetch_array($sql3);
+    $cek_date = $rows3['cek_date'];
+    if ($cek_date == '0000-00-00' || $cek_date == '1970-01-01') {
+     echo '-'; 
+ }else{
+     echo date("d F Y",strtotime($cek_date));
+ }
+ ?>
+</td>
+ 
+ <td style="width: 2%;border-left: none; border-top: none;border-bottom: none;">
+
+ </td>
+</tr>
+
  <tr>
     <td style="border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
         From Account
@@ -293,17 +333,32 @@ CSS HEADER
  <td style="width: 3%; border: none;">
 
  </td>
- <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;">
+  <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;">
+
+ </td>
+ <td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;">
+
+ </td>
+ <td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;">
+
+ </td>
+ 
+<td style="width: 2%;border-left: none; border-top: none;border-bottom: none;">
+
+</td>
+</tr>
+<tr>
+    <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-bottom: none;">
     To Account
 </td>
 <td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;">
     :
 </td>
-<td style="border-left: none;font-size: 12px; border-top: none;border-right: none;">
+<td colspan="5" style="border-left: none;font-size: 12px;border-top: none;border-right: none;">
     <?php
-    $sql3 = mysqli_query($conn2," select IFNULL(NULLIF(to_akun, ''), '-') AS to_akun from (select CONCAT(bank_name,' ',to_akun) to_akun from tbl_pv_h a INNER JOIN master_supplier_bank b on b.bank_account = a.to_akun where no_pv = '$no_pv'
+    $sql3 = mysqli_query($conn2," select UPPER(IFNULL(NULLIF(to_akun, ''), '-')) AS to_akun from (select CONCAT(beneficiary_name,' - ',bank_name,' - ',to_akun) to_akun from tbl_pv_h a INNER JOIN master_supplier_bank b on b.bank_account = a.to_akun where no_pv = '$no_pv'
     UNION ALL
-    select CONCAT(bank_name,' ',to_akun) to_akun from tbl_pv_h a INNER JOIN b_masterbank b on b.bank_account = a.to_akun where no_pv = '$no_pv' and b.status = 'Active') a limit 1");
+    select CONCAT(beneficiary_name,' - ',bank_name,' ',to_akun) to_akun from tbl_pv_h a INNER JOIN b_masterbank b on b.bank_account = a.to_akun where no_pv = '$no_pv' and b.status = 'Active') a limit 1");
     $rows3 = mysqli_fetch_array($sql3);
     $to_akun = $rows3['to_akun'] ?? '-';
     if ($to_akun == '-') {
@@ -313,80 +368,12 @@ CSS HEADER
  }
  ?>
 </td>
-<td style="width: 2%;border-left: none; border-top: none;border-bottom: none;">
 
-</td>
-</tr>
-<tr>
-    <td style="border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
-        Payment Method
-    </td>
-    <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
-        :
-    </td>
-    <td style="border-left: none;font-size: 12px;width: 38%;border-top: none;border-right: none;">
-        <?php echo $rs['pay_meth'];?>
-    </td>
-    <td style="width: 3%; border: none;">
-
-    </td>
-    <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;">
-
-    </td>
-    <td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;">
-
-    </td>
-    <td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;">
-
-    </td>
     <td style="width: 2%;border-left: none; border-top: none;border-bottom: none;">
 
     </td>
 </tr>
-<tr>
-    <td style="border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
-        Cheque No
-    </td>
-    <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
-        :
-    </td>
-    <td style="border-left: none;font-size: 12px;width: 38%;border-top: none;border-right: none;">
-       <?php
-       $sql3 = mysqli_query($conn2," select no_cek from tbl_pv_h where no_pv = '$no_pv'");
-       $rows3 = mysqli_fetch_array($sql3);
-       $no_cek = $rows3['no_cek'];
-       if ($no_cek == '') {
-         echo '-'; 
-     }else{
-         echo $no_cek;
-     }
-     ?>
- </td>
- <td style="width: 3%; border: none;">
 
- </td>
- <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;">
-    Cheque Date
-</td>
-<td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;">
-    :
-</td>
-<td style="border-left: none;font-size: 12px; border-top: none;border-right: none;">
-    <?php
-    $sql3 = mysqli_query($conn2," select cek_date from tbl_pv_h where no_pv = '$no_pv'");
-    $rows3 = mysqli_fetch_array($sql3);
-    $cek_date = $rows3['cek_date'];
-    if ($cek_date == '0000-00-00' || $cek_date == '1970-01-01') {
-     echo '-'; 
- }else{
-     echo date("d F Y",strtotime($cek_date));
- }
- ?>
-</td>
-<td style="width: 2%;border-left: none; border-top: none;border-bottom: none;">
-
-</td>
-</tr>
 <tr>
     <td style="border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
         Supporting Doc
@@ -413,39 +400,9 @@ CSS HEADER
 
     </td>
 </tr>
+
 <tr>
-    <td style="border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
-        Charge To Buyer
-    </td>
-    <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
-        :
-    </td>
-    <td style="border-left: none;font-size: 12px;width: 38%;border-top: none;border-right: none;">
-     <?php $ctb =  $rs['ctb'];
-     if ($ctb == '' || $ctb == 'Unrealize') {
-         echo '-'; 
-     }else{
-         echo $ctb;
-     }?>
- </td>
- <td style="width: 3%; border: none;">
-
- </td>
- <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;">
-
- </td>
- <td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;">
-
- </td>
- <td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;">
-
- </td>
- <td style="width: 2%;border-left: none; border-top: none;border-bottom: none;">
-
- </td>
-</tr>
-<tr>
-    <td style="border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
+    <td style="border-right: none;font-size: 12px;border-top: none;border-bottom: none;vertical-align: top;">
         Refference Doc
     </td>
     <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
@@ -466,27 +423,13 @@ CSS HEADER
  <td style="width: 3%; border: none;">
 
  </td>
- <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;">
-
- </td>
- <td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;">
-
- </td>
- <td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;">
-
- </td>
- <td style="width: 2%;border-left: none; border-top: none;border-bottom: none;">
-
- </td>
-</tr>
-<tr>
-    <td style="border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
+<td style="border-right: none;font-size: 12px;border-top: none;border-bottom: none;border-left: none;vertical-align: top;">
         Reff Doc Date
     </td>
     <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
         :
     </td>
-    <td style="border-left: none;font-size: 12px;width: 38%;border-top: none;border-right: none;">
+    <td style="border-left: none;font-size: 12px;border-top: none;border-right: none;">
         <?php
         $sql3 = mysqli_query($conn2,"select GROUP_CONCAT(reff_date) as reff_date from (select if(reff_date = '1970-01-01', '-', CONCAT(' ',reff_date)) as reff_date from tbl_pv where no_pv = '$no_pv' group by reff_doc ORDER BY id asc) a");
         $rows3 = mysqli_fetch_array($sql3);
@@ -498,45 +441,35 @@ CSS HEADER
      }
      ?>
  </td>
- <td style="width: 3%; border: none;">
-
- </td>
- <td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;">
-
- </td>
- <td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;">
-
- </td>
- <td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;">
-
- </td>
  <td style="width: 2%;border-left: none; border-top: none;border-bottom: none;">
 
  </td>
 </tr>
+
 <tr>
-    <td style="border-right: none;font-size: 12px;border-top: none;border-bottom: none;width: 19%;vertical-align: top;">
+    <td height="56" style="height:56px;border-right: none;font-size: 12px;border-top: none;border-bottom: none;width: 19%;vertical-align: top;">
         Description
     </td>
-    <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;vertical-align: top;">
+    <td height="56" style="height:56px;width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;vertical-align: top;">
         :
     </td>
-    <td colspan="5" style="border-left: none;font-size: 12px;border-top: none;border-right: none;">
-        <?php echo $rs['deskripsi'];?>
+    <td colspan="5" height="56" style="height:56px;border-left: none;font-size: 12px;border-top: none;border-right: none;vertical-align: top;">
+        <div class="description-fixed-4-lines"><?php echo $rs['deskripsi'] ?? '';?></div>
     </td>
-    <td style="width: 2%;border-left: none; border-top: none;border-bottom: none;">
+    <td height="56" style="height:56px;width: 2%;border-left: none; border-top: none;border-bottom: none;">
 
     </td>
 </tr>
+
 <tr>
     <td style="border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
         Amount
     </td>
     <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
-
+        :
     </td>
-    <td style="border-left: none;font-size: 12px;width: 38%;border-top: none;border-right: none; border-bottom: none;">
-
+    <td style="border-left: none;font-size: 12px;width: 38%;border-top: none;border-right: none;">
+       <?php echo $rs['curr']; echo ' '; echo number_format($rs['total'], 2); ?>
     </td>
     <td style="width: 3%; border: none;">
 
@@ -554,117 +487,8 @@ CSS HEADER
 
     </td>
 </tr>
-<tr>
-    <td style="border-right: none;font-size: 12px;border-top: none;border-bottom: none;padding-left: 10px;">
-        Total Without Tax
-    </td>
-    <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
-     : 
- </td>
- <td style="border-left: none;font-size: 12px;width: 38%;border-top: none;border-right: none; border-bottom: none;text-align: right;padding-right: 20px;">
-  <?php echo $rs['curr']; echo ' '; echo number_format($twot, 2); ?>
-</td>
-<td style="width: 3%; border: none;">
 
-</td>
-<td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;">
 
-</td>
-<td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;">
-
-</td>
-<td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;">
-
-</td>
-<td style="width: 2%;border-left: none; border-top: none;border-bottom: none;">
-
-</td>
-</tr>
-<tr>
-    <td style="border-right: none;font-size: 12px;border-top: none;border-bottom: none;padding-left: 10px;">
-       <?php
-       $sql3 = mysqli_query($conn2,"select max(pph) as pph from tbl_pv where no_pv = '$no_pv'");
-       $rows3 = mysqli_fetch_array($sql3);
-       $pph = $rows3['pph'];
-
-       ?>
-       Incoming Tax
-       <!-- (<?php echo $pph;?>%) -->
-   </td>
-   <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
-     : 
- </td>
- <td style="border-left: none;font-size: 12px;width: 38%;border-top: none;border-right: none; border-bottom: none;text-align: right;padding-right: 20px;">
-  (<?php echo $rs['curr']; echo ' '; echo number_format(abs($rs['pph']), 2); ?>)
-</td>
-<td style="width: 3%; border: none;">
-
-</td>
-<td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;">
-
-</td>
-<td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;">
-
-</td>
-<td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;">
-
-</td>
-<td style="width: 2%;border-left: none; border-top: none;border-bottom: none;">
-
-</td>
-</tr>
-<tr>
-    <td style="border-right: none;font-size: 12px;border-top: none;padding-left: 10px;width: 21%;">
-        Value Added Tax(<?php echo $rs['per_ppn'];?>%)
-    </td>
-    <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;">
-     : 
- </td>
- <td style="border-left: none;font-size: 12px;width: 38%;border-top: none;border-right: none;text-align: right;padding-right: 20px;">
-  <?php echo $rs['curr']; echo ' '; echo number_format($rs['ppn'], 2); ?>
-</td>
-<td style="width: 3%; border: none;">
-
-</td>
-<td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;">
-
-</td>
-<td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;">
-
-</td>
-<td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;">
-
-</td>
-<td style="width: 2%;border-left: none; border-top: none;border-bottom: none;">
-
-</td>
-</tr>
-<tr>
-    <td style="border-right: none;font-size: 12px;border-top: none;padding-left: 10px;border-bottom: none;">
-        Grand Total
-    </td>
-    <td style="width: 1%; border-left: none;border-right: none;font-size: 12px;border-top: none;border-bottom: none;">
-     : 
- </td>
- <td style="border-left: none;font-size: 12px;width: 38%;border-top: none;border-right: none; text-align: right;padding-right: 20px;border-bottom: none;">
-   <?php echo $rs['curr']; echo ' '; echo number_format($rs['total'], 2); ?>
-</td>
-<td style="width: 3%;border-left: none;border-right: none;border-top: none;border-bottom: none; ">
-
-</td>
-<td style="border-right: none;font-size: 12px; width: 12%; border-top: none;border-left: none;border-bottom: none;">
-
-</td>
-<td style="width: 1%; border-left: none;border-right: none;font-size: 12px; border-top: none;border-bottom: none;">
-
-</td>
-<td style="border-left: none;font-size: 12px; border-top: none;border-right: none;border-bottom: none;">
-
-</td>
-<td style="width: 2%;border-left: none; border-top: none;border-bottom: none;">
-
-</td>
-</tr>
 <tr>
     <td style="border-right: none;font-size: 12px;border-top: none;padding-left: 10px;padding-top: 8px;">
 
@@ -693,24 +517,37 @@ CSS HEADER
 </tr>
 
 </table>
-<!-- Bagian Created dan Checked -->
-<!-- Bagian Created dan Checked -->
-<table width="100%" border="1" style="border-collapse: collapse; margin-bottom: 0;">
-    <tr>
-        <td style="width: 35%; font-size: 11px; text-align: center; font-weight: bold;">
-            Created By
-        </td>
-        <td colspan="2" style="width: 28%; font-size: 11px; text-align: center; font-weight: bold;">
-            Checked By
-        </td>
-    </tr>
-    <tr>
-        <td style="height: 40px;"></td>
-        <td></td>
-        <td></td>
-    </tr>
+<?php
+$isTaxPv = ($rs['pv_tax_type'] ?? '') === 'Tax';
+$approvedByCols = $isTaxPv ? 3 : 2;
+$totalCols = 1 + 2 + $approvedByCols;
+$mandyColIndex = 1;
+$mandyWidthPct = (100 / $totalCols) + 2;
+$otherWidthPct = (100 - $mandyWidthPct) / ($totalCols - 1);
+$colWidths = [];
+for ($i = 0; $i < $totalCols; $i++) {
+    $colWidths[] = $i === $mandyColIndex ? $mandyWidthPct : $otherWidthPct;
+}
+?>
+<table class="approval-signatures" width="100%" border="0">
     <tr>
         <td style="font-size: 11px; text-align: center; font-weight: bold;">
+            Created By
+        </td>
+        <td colspan="2" style="font-size: 11px; text-align: center; font-weight: bold;">
+            Checked By
+        </td>
+        <td colspan="<?= $approvedByCols ?>" style="font-size: 11px; text-align: center; font-weight: bold;">
+            Approved By
+        </td>
+    </tr>
+    <tr>
+        <?php foreach ($colWidths as $w): ?>
+        <td style="width:<?= $w ?>%;height: 40px;"></td>
+        <?php endforeach; ?>
+    </tr>
+    <tr>
+        <td style="width:<?= $colWidths[0] ?>%;font-size: 11px; text-align: center; font-weight: bold;">
             <?php
 $sql_user = mysqli_query($conn2,"select DISTINCT CONCAT(UPPER(LEFT(if(create_by = 'mandy1','Mandy', create_by),1)),LOWER(SUBSTRING(if(create_by = 'mandy1','Mandy', create_by),2))) create_by from tbl_pv_h WHERE no_pv = '$no_pv'
 ");
@@ -720,78 +557,36 @@ $user = $rows_user['create_by'];
 
 echo $user;
 ?>
- 
+
      </td>
-        <td style="font-size: 11px; text-align: center; font-weight: bold;">Mandy</td>
-        <td style="font-size: 11px; text-align: center; font-weight: bold;">Willy</td>
+        <td style="width:<?= $colWidths[1] ?>%;font-size: 11px; text-align: center; font-weight: bold;">Mandy</td>
+        <td style="width:<?= $colWidths[2] ?>%;font-size: 11px; text-align: center; font-weight: bold;">Willy</td>
+        <td style="width:<?= $colWidths[3] ?>%;font-size: 11px; text-align: center; font-weight: bold;">Herman</td>
+        <?php if ($isTaxPv): ?>
+        <td style="width:<?= $colWidths[4] ?>%;font-size: 11px; text-align: center; font-weight: bold;">Budiarto</td>
+        <?php endif; ?>
+        <td style="width:<?= $colWidths[$totalCols - 1] ?>%;font-size: 11px; text-align: center; font-weight: bold;">Syenni Santosa</td>
     </tr>
     <tr>
-        <td style="font-size: 11px; text-align: center; font-weight: bold;">Staff Bank</td>
-        <td style="font-size: 11px; text-align: center; font-weight: bold;">SPV Bank</td>
-        <td style="font-size: 11px; text-align: center; font-weight: bold;">Fin Manager</td>
+        <td style="width:<?= $colWidths[0] ?>%;font-size: 11px; text-align: center; font-weight: bold;">Staff Bank</td>
+        <td style="width:<?= $colWidths[1] ?>%;font-size: 11px; text-align: center; font-weight: bold;">SPV Bank</td>
+        <td style="width:<?= $colWidths[2] ?>%;font-size: 11px; text-align: center; font-weight: bold;">Fin Manager</td>
+        <td style="width:<?= $colWidths[3] ?>%;font-size: 11px; text-align: center; font-weight: bold;">Kadept Fin&Acc</td>
+        <?php if ($isTaxPv): ?>
+        <td style="width:<?= $colWidths[4] ?>%;font-size: 11px; text-align: center; font-weight: bold;">Kadiv Fin&Acc</td>
+        <?php endif; ?>
+        <td style="width:<?= $colWidths[$totalCols - 1] ?>%;font-size: 11px; text-align: center; font-weight: bold;">Director</td>
     </tr>
 </table>
-
-<!-- Bagian Approved -->
-<table width="100%" border="1" style="border-collapse: collapse; margin-top: -1px;">
-    <tr>
-        <td colspan="4" style="font-size: 11px; text-align: center; font-weight: bold;">
-            Approved By
-        </td>
-    </tr>
-    <tr>
-        <td style="height: 40px;"></td>
-        <td></td>
-        <td></td>
-        <td></td>
-    </tr>
-    <tr>
-        <td style="font-size: 11px; text-align: center; font-weight: bold;">Herman</td>
-        <td style="font-size: 11px; text-align: center; font-weight: bold;">Budiarto</td>
-        <td style="font-size: 11px; text-align: center; font-weight: bold;">Syenni Santosa</td>
-        <td style="font-size: 11px; text-align: center; font-weight: bold;">Sylvia Santosa</td>
-    </tr>
-    <tr>
-        <td style="font-size: 11px; text-align: center; font-weight: bold;">Kadept Fin&Acc</td>
-        <td style="font-size: 11px; text-align: center; font-weight: bold;">Kadiv Fin&Acc</td>
-        <td style="font-size: 11px; text-align: center; font-weight: bold;">Director</td>
-        <td style="font-size: 11px; text-align: center; font-weight: bold;">Director</td>
-    </tr>
-</table>
-
-
 
 </div>
 
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
+
+<?php
+// Dorong section "DETAIL" ke halaman berikutnya - spasi manual karena mpdf
+// versi ini tidak selalu konsisten menghormati page-break-before di sini.
+echo str_repeat("<br/>\n", 46);
+?>
 
 
 <table style="page-break-inside: avoid; font-size:11px;" border="0">
@@ -804,7 +599,7 @@ echo $user;
 
 </table>
 <?php
-$query1 = mysqli_query($conn2,$sqlas)or die(mysqli_error());
+$query1 = mysqli_query($conn2,$sqlas)or die(mysqli_error($conn2));
 $data1=mysqli_fetch_array($query1);
 $curr1 = $data1['curr'];
 ?>
@@ -825,7 +620,7 @@ $curr1 = $data1['curr'];
   </tr>
   <tbody >
     <?php
-    $query = mysqli_query($conn2,$sqlys)or die(mysqli_error());
+    $query = mysqli_query($conn2,$sqlys)or die(mysqli_error($conn2));
     $sum_amount = 0;
     $sum_ded = 0;
     $sum_pph = 0;

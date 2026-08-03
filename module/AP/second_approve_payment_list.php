@@ -50,10 +50,13 @@ if (!$update) {
     exit;
 }
 
-// Ambil from_account PL beserta detail bank untuk keperluan sync ke PV
-$sqlH = mysqli_query($conn2, "SELECT h.from_account, b.bank_name, b.curr
+// Ambil from_account PL beserta detail bank untuk keperluan sync ke PV -
+// from_account bisa berupa akun Bank (cocok di b_masterbank) atau akun Kas
+// Kecil (cocok di mastercoa_v2, selalu IDR).
+$sqlH = mysqli_query($conn2, "SELECT h.from_account, IFNULL(b.bank_name, c.nama_coa) bank_name, IFNULL(b.curr,'IDR') curr
     FROM pv_payment_list_h h
     LEFT JOIN b_masterbank b ON b.bank_account = h.from_account
+    LEFT JOIN mastercoa_v2 c ON c.no_coa = h.from_account
     WHERE h.pl_number = '$pl_number_esc' LIMIT 1");
 $rowH = mysqli_fetch_assoc($sqlH);
 $plFromAccount  = $rowH['from_account'] ?? '';

@@ -313,9 +313,36 @@
                         <option value="">Select Account</option>
 
                         <?php
-                        $sql = mysqli_query($conn1, "select bank_name as bank,curr,bank_account as account,RIGHT(bank_account,4) as kode, nama_pc, kode_pc, b_code from b_masterbank a INNER JOIN master_pc b on b.kode_pc = a.profit_center_bank where a.status = 'Active'");
+                        // Akun Bank + akun Kas Kecil digabung jadi satu dropdown (union).
+                        // Pembatasan per user: dessy cuma boleh lihat Bank, Yeni_acc cuma
+                        // boleh lihat Kas, user lainnya lihat semuanya.
+                        $where_akun = '';
+                        if (strcasecmp($user, 'dessy') === 0) {
+                            $where_akun = "WHERE tipe_akun = 'BANK'";
+                        } elseif (strcasecmp($user, 'Yeni_acc') === 0) {
+                            $where_akun = "WHERE tipe_akun = 'CASH'";
+                        }
+
+                        $sql = mysqli_query($conn1, "
+                            select * from (
+                                (select bank_account as account, bank_name as bank, curr, RIGHT(bank_account,4) as kode, nama_pc, kode_pc, b_code, 'BANK' as tipe_akun
+                                 from b_masterbank a INNER JOIN master_pc b on b.kode_pc = a.profit_center_bank where a.status = 'Active')
+                                UNION
+                                (select no_coa as account, concat(no_coa,' ', nama_coa) as bank, 'IDR' as curr, kode_cash as kode,
+                                 IF(no_coa = '1.01.11','PCP002 - NIRWANA ALABARE KNITTING','PCP001 - NIRWANA ALABARE GARMENT') as nama_pc,
+                                 IF(no_coa = '1.01.11','NAK','NAG') as kode_pc, kode_cash as b_code, 'CASH' as tipe_akun
+                                 from mastercoa_v2 where no_coa like '%1.01%' and nama_coa like '%kas kecil%')
+                            ) akun_gabungan
+                            $where_akun
+                            ORDER BY tipe_akun ASC, account ASC
+                        ");
                         while ($row = mysqli_fetch_assoc($sql)) {
-                            echo "<option value='" . $row['account'] . "' data-bank='" . $row['bank'] . "' data-currency='" . $row['curr'] . "' data-namapc='" . $row['nama_pc'] . "' data-kodepc='" . $row['kode_pc'] . "'  data-kodebank='" . $row['b_code'] . "'>" . $row['account'] . " </option>";
+                            // Value yang dikirim ke database tetap cuma nomor akun/COA
+                            // ($row['account']) - yang berubah cuma teks yang tampil di
+                            // dropdown: akun Kas ditampilkan "no_coa NAMA_COA" (mis.
+                            // "1.01.01 KAS KECIL PABRIK"), akun Bank tetap seperti semula.
+                            $label = ($row['tipe_akun'] === 'CASH') ? $row['bank'] : $row['account'];
+                            echo "<option value='" . $row['account'] . "' data-bank='" . $row['bank'] . "' data-currency='" . $row['curr'] . "' data-namapc='" . $row['nama_pc'] . "' data-kodepc='" . $row['kode_pc'] . "'  data-kodebank='" . $row['b_code'] . "'>" . $label . " </option>";
                         }
                         ?>
 

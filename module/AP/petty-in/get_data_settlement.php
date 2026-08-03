@@ -10,11 +10,11 @@ $table = '';
 
 while ($row = mysqli_fetch_assoc($sql)) {
 
-    $table .= '<tr>       
+    $table .= '<tr>
     <td id="select"><input type="checkbox" id="select2" name="select2[]" value="" checked disabled></td>
-    <td style="width: 50px"><select class="form-control selectpicker no_coa2" name="nomor_coa2[]" data-live-search="true" data-width="220px" data-size="5"> <option value="'.$row['no_coa'].'" >'.$row['coa'].'</option></select></td>
-    <td ><select class="form-control selectpicker prof_ctr2" name="prof_ctr2[]" data-live-search="true" data-width="200px" data-size="5"> <option value="'.$row['profit_center'].'" >'.$row['nama_pc'].'</option></select></td>
-    <td ><select class="form-control selectpicker cost_ctr2" name="cost_ctr2[]" data-live-search="true" data-width="200px" data-size="5"> <option value="'.$row['no_costcntr'].'" >'.$row['cc_name'].'</option></select></td>
+    <td><select class="form-control selectpicker no_coa2" name="nomor_coa2[]" data-live-search="true" data-width="100%" data-size="5"> <option value="'.$row['no_coa'].'" >'.$row['coa'].'</option></select></td>
+    <td><select class="form-control selectpicker prof_ctr2" name="prof_ctr2[]" data-live-search="true" data-width="100%" data-size="5"> <option value="'.$row['profit_center'].'" >'.$row['nama_pc'].'</option></select></td>
+    <td><select class="form-control selectpicker cost_ctr2" name="cost_ctr2[]" data-live-search="true" data-width="100%" data-size="5"> <option value="'.$row['no_costcntr'].'" >'.$row['cc_name'].'</option></select></td>
     <td><input style="font-size:12px;width:100%" type="text" class="form-control" name="buyer2[]" placeholder="" autocomplete="off" value="'.$row['buyer'].'"></td>
     <td><input style="font-size:12px;width:100%" type="text" class="form-control" name="no_ws2[]" placeholder="" autocomplete="off" value="'.$row['no_ws'].'"></td>
     <td><select class="form-control selectpicker curr_det2" name="currenc2[]" id="currenc" data-live-search="true"><option value="'.$row['curr'].'">'.$row['curr'].'</option></td></select>

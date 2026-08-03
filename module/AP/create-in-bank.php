@@ -112,18 +112,74 @@
   }
 
   .total-box{
-    border:1px solid #dcdcdc;
-    border-radius:6px;
-    padding:15px;
-    background:#fafafa;
-}
+    border:0;
+    border-radius:10px;
+    background:#fff;
+    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+    overflow:hidden;
+    height:100%;
+    padding:0;
+  }
 
-.total-box h6{
-    font-weight:bold;
-    margin-bottom:15px;
-    border-bottom:1px solid #ddd;
-    padding-bottom:5px;
-}
+  .total-box .total-box-header{
+    padding:12px 16px;
+    color:#fff;
+    font-weight:700;
+    font-size:14px;
+  }
+
+  .total-box.tone-nag .total-box-header{
+    background:linear-gradient(90deg, #5b7ba8, #7fa0c9);
+  }
+
+  .total-box.tone-nak .total-box-header{
+    background:linear-gradient(90deg, #4f8a6b, #74ad8f);
+  }
+
+  .total-box.tone-all .total-box-header{
+    background:linear-gradient(90deg, #4a5578, #6b7699);
+  }
+
+  .total-box .total-box-body{
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  .total-stat{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    padding-bottom:12px;
+    border-bottom:1px dashed #e5e5e5;
+  }
+
+  .total-stat:last-child{
+    border-bottom:0;
+    padding-bottom:0;
+  }
+
+  .total-stat-label{
+    font-size:12px;
+    font-weight:600;
+    color:#8a8a8a;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+
+  .total-stat input.total-stat-value{
+    border:0;
+    background:transparent;
+    padding:0;
+    font-size:19px;
+    font-weight:700;
+    text-align:right;
+    width:auto;
+    max-width:100%;
+    height:auto;
+    color:#212529;
+  }
 </style>
 
 <!-- MAIN -->
@@ -421,9 +477,12 @@
 
       let account = $('#account').val();
       let coa = $('#coa').val();
+      let profit_center = $('#profit_center').val();
+      let cost = $('#cost').val();
       let amount = $('#amount_bank').val();
       let rate = $('#rate_bank').val().replace(/,/g, '');
       let currency = $('#currency').val();
+      let desc = $('#pesan').val().trim();
 
       // VALIDASI
       if (account == '') {
@@ -438,6 +497,18 @@
         return;
       }
 
+      if (!profit_center || profit_center == '') {
+        Swal.fire('Warning', 'Profit Center tidak boleh kosong', 'warning');
+        $('#profit_center').focus();
+        return;
+      }
+
+      if (coaWajibCC.includes(coa) && (!cost || cost == '')) {
+        Swal.fire('Warning', 'COA ' + coa + ' wajib isi Cost Center', 'warning');
+        $('#cost').focus();
+        return;
+      }
+
       if (amount == '' || amount == '0') {
         Swal.fire('Warning', 'Amount tidak boleh kosong', 'warning');
         $('#amount_bank').focus();
@@ -447,6 +518,12 @@
       if (currency != 'IDR' && rate == 1) {
         Swal.fire('Warning', 'Currency non IDR harus memiliki rate selain 1', 'warning');
         $('#rate_bank').focus();
+        return;
+      }
+
+      if (desc == '') {
+        Swal.fire('Warning', 'Description tidak boleh kosong', 'warning');
+        $('#pesan').focus();
         return;
       }
 
@@ -741,6 +818,7 @@
       let rate2 = $('#rate_bank2').val().replace(/,/g, '');
       let currency2 = $('#currency2').val();
       let no_bk = $('#no_bk').val();
+      let desc2 = $('#pesan2').val().trim();
 
       // VALIDASI
       if (account2 == '') {
@@ -764,6 +842,12 @@
       if (currency2 != 'IDR' && rate2 == 1) {
         Swal.fire('Warning', 'Currency non IDR harus memiliki rate selain 1', 'warning');
         $('#rate_bank2').focus();
+        return;
+      }
+
+      if (desc2 == '') {
+        Swal.fire('Warning', 'Description tidak boleh kosong', 'warning');
+        $('#pesan2').focus();
         return;
       }
 
@@ -1595,6 +1679,28 @@ $('#simpan3').on('click', function () {
         return;
     }
 
+    if($('#pesan3').val().trim() == ''){
+        Swal.fire('Warning','Description tidak boleh kosong','warning');
+        return;
+    }
+
+    let curr3 = $('#currency3').val();
+    let rate3 = parseFloat($('#rate_bank3').val().replace(/,/g,'')) || 0;
+
+    if (curr3 != 'IDR' && rate3 == 1) {
+        Swal.fire('Warning', 'Currency non IDR harus memiliki rate selain 1', 'warning');
+        return;
+    }
+
+    // Description detail yang tidak diisi mengikuti description pada header.
+    // Set sebelum serialize supaya nilai yang dikirim dan yang terlihat konsisten.
+    const headerDescription = $('#pesan3').val().trim();
+    $('#tbody3 input[name="keterangan[]"]').each(function(){
+        if($(this).val().trim() === ''){
+            $(this).val(headerDescription);
+        }
+    });
+
     let debitNAG  = 0;
     let creditNAG = 0;
     let debitNAK  = 0;
@@ -1620,10 +1726,17 @@ $('#simpan3').on('click', function () {
 
         let tr = $(this);
 
-        let coa  = tr.find('.no_coa').val();
-        let pc   = tr.find('.prof_ctr').val();
-        let cc   = tr.find('.cost_ctr').val();
-        let curr = tr.find('select[name="currenc[]"]').val();
+        // Ambil dari nama field terlebih dahulu. Bootstrap-select menambahkan
+        // elemen tampilan sendiri, sedangkan nilai sebenarnya tetap ada pada
+        // <select>; selector class bisa tidak menemukan elemen pada row tertentu.
+        let coa  = tr.find('select[name="nomor_coa[]"]').first().val() || tr.find('.no_coa').first().val();
+        let pc   = tr.find('select[name="prof_ctr[]"]').first().val() || tr.find('.prof_ctr').first().val();
+        let cc   = tr.find('select[name="cost_ctr[]"]').first().val() || tr.find('.cost_ctr').first().val();
+        let curr = tr.find('select[name="currenc[]"]').first().val();
+
+        coa = (coa || '').trim();
+        pc  = (pc || '').trim();
+        cc  = (cc || '').trim();
 
         let debitVal  = tr.find('input[name="txt_amount[]"]').val();
         let creditVal = tr.find('input[name="txt_credit[]"]').val();
@@ -1638,6 +1751,30 @@ $('#simpan3').on('click', function () {
         console.log("Currency :", curr);
         console.log("Debit Raw :", debit);
         console.log("Credit Raw :", credit);
+
+        /* =========================
+           VALIDASI COA & PROFIT CENTER WAJIB
+        ========================= */
+
+        if(!coa || coa == '-'){
+
+            console.log("ERROR: COA kosong");
+
+            Swal.fire('Warning','COA wajib diisi','warning');
+
+            error = true;
+            return false;
+        }
+
+        if(!pc || pc == '-'){
+
+            console.log("ERROR: Profit Center kosong");
+
+            Swal.fire('Warning','Profit Center wajib diisi','warning');
+
+            error = true;
+            return false;
+        }
 
         /* =========================
            VALIDASI COST CENTER
@@ -1660,6 +1797,20 @@ $('#simpan3').on('click', function () {
                 error = true;
                 return false;
             }
+        }
+
+        /* =========================
+           VALIDASI DATA ERROR (baris kosong)
+        ========================= */
+
+        if(debit === 0 && credit === 0){
+
+            console.log("ERROR: Debit/Credit kosong");
+
+            Swal.fire('Warning','Debit/Credit harus diisi','warning');
+
+            error = true;
+            return false;
         }
 
         /* ======================

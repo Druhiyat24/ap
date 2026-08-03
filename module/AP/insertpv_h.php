@@ -11,6 +11,7 @@ $pay_date =  date("Y-m-d",strtotime($_POST['pay_date']));
 $pay_mth = $_POST['pay_mth'];
 $curr = $_POST['curr'];
 $forpay = $_POST['forpay'];
+$pv_tax_type = $_POST['pv_tax_type'] ?? '';
 $frcc = $_POST['frcc'];
 $tocc = $_POST['tocc'];
 $ke = $_POST['ke'];
@@ -48,9 +49,11 @@ echo $no_pv;
 // echo "< -- >";
 
 
-$query = "INSERT INTO tbl_pv_h (no_pv,pv_date,nama_supp,supp_doc,ctb,pay_date,pay_meth,curr,for_pay, frm_akun,to_akun,ke,dari,no_cek, cek_date,deskripsi,subtotal,adjust,pph,ppn,total,outstanding,per_ppn,per_pph,rate,create_by,create_date,status) 
-VALUES 
-	('$no_pv', '$pv_date', '$nama_supp', '$sup_doc', '$ctb', '$pay_date', '$pay_mth', '$curr', '$forpay', '$frcc', '$tocc', '$ke', '$dari', '$no_cek', '$cek_date', '$pesan', '$subtotal', '$adjust', '$pph', '$ppn', '$total', '$total', '$pilih_ppn', '$pilih_pph', '$rat_pv', '$create_user', '$create_date', '$status')";
+$pv_tax_type_esc = mysqli_real_escape_string($conn2, $pv_tax_type);
+
+$query = "INSERT INTO tbl_pv_h (no_pv,pv_date,nama_supp,supp_doc,ctb,pay_date,pay_meth,curr,for_pay,pv_tax_type, frm_akun,to_akun,ke,dari,no_cek, cek_date,deskripsi,subtotal,adjust,pph,ppn,total,outstanding,per_ppn,per_pph,rate,create_by,create_date,status)
+VALUES
+	('$no_pv', '$pv_date', '$nama_supp', '$sup_doc', '$ctb', '$pay_date', '$pay_mth', '$curr', '$forpay', '$pv_tax_type_esc', '$frcc', '$tocc', '$ke', '$dari', '$no_cek', '$cek_date', '$pesan', '$subtotal', '$adjust', '$pph', '$ppn', '$total', '$total', '$pilih_ppn', '$pilih_pph', '$rat_pv', '$create_user', '$create_date', '$status')";
 
 $execute = mysqli_query($conn2,$query);
 

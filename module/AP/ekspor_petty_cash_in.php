@@ -29,12 +29,12 @@
     <?php
     header("Content-type: application/vnd-ms-excel");
     header("Content-Disposition: attachment; filename=Petty Cash In.xls");
-    $reference =$_GET['reference'];
-    $doc_num =$_GET['doc_num'];
+    $reference = isset($_GET['reference']) ? trim($_GET['reference']) : 'ALL';
+    $doc_num = isset($_GET['doc_num']) ? trim($_GET['doc_num']) : '';
     $start_date = date("d F Y",strtotime($_GET['start_date']));
     $end_date = date("d F Y",strtotime($_GET['end_date'])); ?>
 
-    <h4>LIST PETTY CASH IN <br/> <?php if($reference == 'ALL'){ echo strtoupper($reference); echo " REFERENCE ";} else{ echo strtoupper($reference); } ?> <br/> PERIODE <?php echo strtoupper($start_date); ?> - <?php echo strtoupper($end_date); ?></h4>
+    <h4>LIST PETTY CASH IN <br/> <?php if($reference == 'ALL'){ echo 'ALL'; echo " REFERENCE "; } else { echo htmlspecialchars(strtoupper($reference)); } ?> <br/> PERIODE <?php echo htmlspecialchars(strtoupper($start_date)); ?> - <?php echo htmlspecialchars(strtoupper($end_date)); ?></h4>
 
     <table style="width:100%;font-size:10px;" border="1" >
         <tr>
@@ -52,15 +52,25 @@
             <th style="text-align: center; vertical-align: middle;">Create By</th>
             <th style="text-align: center; vertical-align: middle;">Create Date</th>
         </tr>
-        <?php 
+        <?php
         // koneksi database
         include '../../conn/conn.php';
-        $reference=$_GET['reference'];
-        $doc_num =$_GET['doc_num'];
+        $reference = isset($_GET['reference']) ? trim($_GET['reference']) : 'ALL';
+        $doc_num = isset($_GET['doc_num']) ? trim($_GET['doc_num']) : '';
         $start_date = date("Y-m-d",strtotime($_GET['start_date']));
         $end_date = date("Y-m-d",strtotime($_GET['end_date']));
-        $where =$_GET['where'];
 
+        $conditions = [];
+        if ($reference !== '' && $reference !== 'ALL') {
+            $conditions[] = "a.reff = '" . mysqli_real_escape_string($conn1, $reference) . "'";
+        }
+        if ($doc_num !== '') {
+            $conditions[] = "a.no_pci like '%" . mysqli_real_escape_string($conn1, $doc_num) . "%'";
+        }
+        if ($start_date !== '' && $end_date !== '') {
+            $conditions[] = "a.tgl_pci between '" . mysqli_real_escape_string($conn1, $start_date) . "' and '" . mysqli_real_escape_string($conn1, $end_date) . "'";
+        }
+        $where = count($conditions) ? ('where ' . implode(' and ', $conditions)) : '';
 
         $sql = mysqli_query($conn2,"select a.no_pci,a.tgl_pci,a.reff,if(a.reff_doc = '','-',a.reff_doc) as reff_doc,if(a.oth_doc = '','-',a.oth_doc) as oth_doc, a.curr, b.nama_coa,a.amount,if(a.deskripsi = '','-',a.deskripsi) as deskripsi,a.status, a.create_by, a.create_date from c_petty_cashin_h a left join mastercoa_v2 b on b.no_coa = a.coa_akun $where group by a.no_pci");
 

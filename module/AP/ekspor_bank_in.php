@@ -64,12 +64,28 @@
         <?php 
         // koneksi database
         include '../../conn/conn.php';
-        // $nama_supp=$_GET['nama_supp'];
-        $where =$_GET['where'];
+
+        $nama_supp = isset($_GET['nama_supp']) ? trim($_GET['nama_supp']) : 'ALL';
+        $bank      = isset($_GET['bank']) ? trim($_GET['bank']) : 'ALL';
+        $akun      = isset($_GET['akun']) ? trim($_GET['akun']) : 'ALL';
+        $status    = isset($_GET['status']) ? trim($_GET['status']) : 'ALL';
         $start_date = date("Y-m-d",strtotime($_GET['start_date']));
         $end_date = date("Y-m-d",strtotime($_GET['end_date']));
-        // menampilkan data pegawai
-  
+
+        $conditions = ["DATE(date) BETWEEN '" . mysqli_real_escape_string($conn2, $start_date) . "' AND '" . mysqli_real_escape_string($conn2, $end_date) . "'"];
+        if ($nama_supp !== '' && $nama_supp !== 'ALL') {
+            $conditions[] = "customer = '" . mysqli_real_escape_string($conn2, $nama_supp) . "'";
+        }
+        if ($bank !== '' && $bank !== 'ALL') {
+            $conditions[] = "bank = '" . mysqli_real_escape_string($conn2, $bank) . "'";
+        }
+        if ($akun !== '' && $akun !== 'ALL') {
+            $conditions[] = "akun = '" . mysqli_real_escape_string($conn2, $akun) . "'";
+        }
+        if ($status !== '' && $status !== 'ALL') {
+            $conditions[] = "status = '" . mysqli_real_escape_string($conn2, $status) . "'";
+        }
+        $where = 'where ' . implode(' and ', $conditions);
 
         $sql = mysqli_query($conn2,"select doc_num, customer, date, ref_data, akun, bank, curr, amount, outstanding, status,deskripsi,create_by,create_date,approve_by,approve_date from tbl_bankin_arcollection $where group by doc_num order by id asc");
 

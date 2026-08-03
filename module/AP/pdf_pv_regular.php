@@ -268,7 +268,10 @@ CSS HEADER
 	</td>
 	<td style="text-align:left;padding-top: -15px;padding-bottom: -10px;">
       <?php
-      $sql3 = mysqli_query($conn2,"select no_kbon, IFNULL(coa_name,'-') bank_account from kontrabon_h a left join b_masterbank b on b.bank_account = a.from_account where no_kbon = '$no_kbon'");
+      // from_account bisa berupa nomor akun Bank (cocok di b_masterbank) atau
+      // nomor COA Kas Kecil (cocok di mastercoa_v2) - dulu cuma di-JOIN ke
+      // b_masterbank jadi akun Kas selalu tampil "-".
+      $sql3 = mysqli_query($conn2,"select a.no_kbon, IFNULL(b.coa_name, IFNULL(c.nama_coa,'-')) bank_account from kontrabon_h a left join b_masterbank b on b.bank_account = a.from_account left join mastercoa_v2 c on c.no_coa = a.from_account where a.no_kbon = '$no_kbon'");
       $rows2 = mysqli_fetch_array($sql3);
       	$bank_account = $rows2['bank_account'];
 		echo $bank_account;

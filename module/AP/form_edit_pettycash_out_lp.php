@@ -296,7 +296,7 @@ $row = mysqli_fetch_array($sql);                        ;
                         echo '<tr">
                         <td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>
                         <td>
-                        <select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="220px" data-size="5"> 
+                        <select class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="100%" data-size="5"> 
                         <option value="'.$row['id_coa'].'" >'.$row['nama_coa'].'</option>
                         <option value="-" > - </option>'; 
                         $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2 where no_coa != '$id_coa'"); 
@@ -319,7 +319,7 @@ $row = mysqli_fetch_array($sql);                        ;
                     </td>';
                     echo '
                     <td style="width: 200px;">
-                    <select class="form-control selectpicker cost_ctr" name="cost_ctr" id="cost_ctr" data-live-search="true" data-width="200px" data-size="5"> 
+                    <select class="form-control selectpicker cost_ctr" name="cost_ctr" id="cost_ctr" data-live-search="true" data-width="100%" data-size="5"> 
                     <option value="'.$row['id_cost_center'].'" >'.$row['cc_name'].'</option>';
                     if ($row['id_cost_center'] != '-') {
                         echo '<option value="-" > - </option>';
@@ -686,7 +686,7 @@ function initializePlugins() {
     <tr>
     <td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>
     <td style="width: 50px">
-    <select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="220px" data-size="5">
+    <select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="100%" data-size="5">
     <option value="-">-</option>
     <?php $sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa, ' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?>
     <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?></option>
@@ -704,7 +704,7 @@ foreach ($sql3 as $fc) : ?>
 </select>
 </td>
 <td>
-<select class="form-control selectpicker cost_ctr" name="cost_ctr[]" id="cost_ctr" data-live-search="true" data-width="200px" data-size="5">
+<select class="form-control selectpicker cost_ctr" name="cost_ctr[]" id="cost_ctr" data-live-search="true" data-width="100%" data-size="5">
 <option value="-"> - </option>
 </select>
 </td>
@@ -786,7 +786,7 @@ if (headerPC) {
                             <tr>
                             <td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>
                             <td style="width: 50px">
-                            <select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="220px" data-size="5">
+                            <select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="100%" data-size="5">
                             <option value="-">-</option>
                             <?php $sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa, ' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?>
                             <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?></option>
@@ -804,7 +804,7 @@ if (headerPC) {
                         </select>
                         </td>
                         <td>
-                        <select class="form-control selectpicker cost_ctr" name="cost_ctr" id="cost_ctr" data-live-search="true" data-width="200px" data-size="5">
+                        <select class="form-control selectpicker cost_ctr" name="cost_ctr" id="cost_ctr" data-live-search="true" data-width="100%" data-size="5">
                         <option value="-"> - </option>
                         </select>
                         </td>
@@ -947,6 +947,10 @@ if (headerPC) {
         var total_nak = 0;
         var total_nag = 0;
 
+        if (!deskripsi || !deskripsi.trim()) {
+            Swal.fire('Warning', 'Description tidak boleh kosong', 'warning');
+            return;
+        }
 
         if (h_tot_debit != h_tot_credit) {
             Swal.fire({
@@ -967,6 +971,9 @@ if (headerPC) {
             let debit           = $(this).find("input[name='txt_amount']").val();
             let credit          = $(this).find("input[name='txt_credit']").val();
             let keterangan      = $(this).find("input[name='keterangan']").val();
+            if (!keterangan) {
+                keterangan = deskripsi;
+            }
 
 
             console.log ("det_coa : " + coa);
@@ -991,6 +998,81 @@ if (headerPC) {
         }
     });
 
+        function doUpdateLp(){
+
+            // Cegah double-submit: tombol dikunci begitu mulai proses save,
+            // baru dibuka lagi kalau ada error (supaya bisa dicoba ulang).
+            $('#edit_data').prop('disabled', true);
+
+            $.ajax({
+                type: "POST",
+                url: "update_pco_lp.php",
+                data: {
+                    doc_num: doc_num,
+                    date: date,
+                    ref_data: ref_data,
+                    customer: customer,
+                    profit_center: profit_center,
+                    akun: akun,
+                    curr: curr,
+                    amount: amount,
+                    rate: rate,
+                    eqv_idr: eqv_idr,
+                    deskripsi: deskripsi,
+                    h_tot_debit: h_tot_debit,
+                    h_tot_credit: h_tot_credit,
+                    create_user: create_user,
+                    total_nak: total_nak,
+                    total_nag: total_nag,
+                    details: JSON.stringify(details)
+                },
+                success: function (res) {
+                    if (res.trim() === "OK") {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Success",
+                            text: "Data has been successfully updated!"
+                        }).then(() => {
+                            window.location.href = "petty-cashout.php";
+                            // window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: res,
+                            showCancelButton: true,
+                            confirmButtonText: "Coba Lagi",
+                            cancelButtonText: "Tutup"
+                        }).then((retry) => {
+                            if(retry.isConfirmed){
+                                doUpdateLp();
+                            }else{
+                                $('#edit_data').prop('disabled', false);
+                            }
+                        });
+                    }
+                },
+                error: function (xhr) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "Failed to update : " + xhr.responseText,
+                        showCancelButton: true,
+                        confirmButtonText: "Coba Lagi",
+                        cancelButtonText: "Tutup"
+                    }).then((retry) => {
+                        if(retry.isConfirmed){
+                            doUpdateLp();
+                        }else{
+                            $('#edit_data').prop('disabled', false);
+                        }
+                    });
+                }
+            });
+
+        }
+
         Swal.fire({
             title: "Are you sure?",
             text: "The data will be updated.",
@@ -1002,50 +1084,7 @@ if (headerPC) {
             cancelButtonText: "Cancel"
         }).then((result) => {
             if (result.isConfirmed) {
-                $.ajax({
-                    type: "POST",
-                    url: "update_pco_lp.php",
-                    data: {
-                        doc_num: doc_num,
-                        date: date,
-                        ref_data: ref_data,
-                        customer: customer,
-                        profit_center: profit_center,
-                        akun: akun,
-                        curr: curr,
-                        amount: amount,
-                        rate: rate,
-                        eqv_idr: eqv_idr,
-                        deskripsi: deskripsi,
-                        h_tot_debit: h_tot_debit,
-                        h_tot_credit: h_tot_credit,
-                        create_user: create_user,
-                        total_nak: total_nak,
-                        total_nag: total_nag,
-                        details: JSON.stringify(details)
-                    },
-                    success: function (res) {
-                        if (res.trim() === "OK") {
-                            Swal.fire({
-                                icon: "success",
-                                title: "Success",
-                                text: "Data has been successfully updated!"
-                            }).then(() => {
-                                window.location.href = "petty-cashout.php";
-                                // window.location.reload();
-                            });
-                        } else {
-                            Swal.fire("Error", res, "error");
-                        }
-                    },
-                    error: function (xhr) {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Error",
-                            text: "Failed to update : " + xhr.responseText
-                        });
-                    }
-                });
+                doUpdateLp();
             }
         });
     });

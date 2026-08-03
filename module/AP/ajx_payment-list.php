@@ -33,15 +33,19 @@ while ($row = mysqli_fetch_assoc($sql)) {
     // (approve-payment-list-first.php / approve-payment-list-second.php) -
     // sama seperti pola kontrabon (payment-voucher-ap.php juga tidak punya
     // tombol approve inline). Di sini cuma label status menunggu approval.
-    $action = $btnShow . $btnPdf;
+    if (strcasecmp($rowStatus, 'Cancel') === 0) {
+        $action = '<span class="text-danger font-weight-bold">Cancelled</span>';
+    } else {
+        $action = $btnShow . $btnPdf;
 
-    if (strcasecmp($rowStatus, 'Draft') === 0) {
-        $action .= $btnEdit . $btnCancel;
-    } elseif ($rowStatus === 'FIRST APPROVED') {
-        $action .= '<span class="kbon-status-label" style="background:#eef2f9;color:#1e3a8a;"><i class="fa fa-clock-o"></i> Waiting 2nd Approval</span>';
+        if (strcasecmp($rowStatus, 'Draft') === 0) {
+            $action .= $btnEdit . $btnCancel;
+        } elseif ($rowStatus === 'FIRST APPROVED') {
+            $action .= '<span class="kbon-status-label" style="background:#eef2f9;color:#1e3a8a;"><i class="fa fa-clock-o"></i> Waiting 2nd Approval</span>';
+        }
+
+        $action = '<div class="kbon-action-buttons">' . $action . '</div>';
     }
-
-    $action = '<div class="kbon-action-buttons">' . $action . '</div>';
 
     $data[] = [
         'pl_number'    => $plNumber,
