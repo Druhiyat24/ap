@@ -57,6 +57,7 @@ $ppn_h = pv_esc($conn2, $_POST['ppn'] ?? 0);
 $total = pv_esc($conn2, $_POST['total'] ?? 0);
 $pilih_ppn = pv_esc($conn2, $_POST['pilih_ppn'] ?? '');
 $pilih_pph = pv_esc($conn2, $_POST['pilih_pph'] ?? '');
+$pv_tax_type = pv_esc($conn2, $_POST['pv_tax_type'] ?? '');
 $create_user = pv_esc($conn2, $_POST['create_user'] ?? '');
 $create_date = date('Y-m-d H:i:s');
 $status = 'Draft';
@@ -64,9 +65,12 @@ $status = 'Draft';
 mysqli_begin_transaction($conn2);
 
 try {
-    $query = "INSERT INTO tbl_pv_h (no_pv,pv_date,nama_supp,supp_doc,ctb,pay_date,pay_meth,curr,for_pay, frm_akun,to_akun,ke,dari,no_cek, cek_date,deskripsi,subtotal,adjust,pph,ppn,total,outstanding,per_ppn,per_pph,rate,create_by,create_date,status)
+    // pv_form_type = 'EXIM' - menandai dokumen ini dibuat dari
+    // create-paymentvoucher-exim.php, dipakai nanti supaya halaman edit
+    // tahu template mana yang harus dipakai.
+    $query = "INSERT INTO tbl_pv_h (no_pv,pv_date,nama_supp,supp_doc,ctb,pay_date,pay_meth,curr,for_pay,pv_tax_type,pv_form_type, frm_akun,to_akun,ke,dari,no_cek, cek_date,deskripsi,subtotal,adjust,pph,ppn,total,outstanding,per_ppn,per_pph,rate,create_by,create_date,status)
     VALUES
-        ('$no_pv', '$pv_date', '$nama_supp', '$sup_doc', '$ctb', '$pay_date', '$pay_mth', '$curr', '$forpay', '$frcc', '$tocc', '$ke', '$dari', '$no_cek', '$cek_date', '$pesan', '$subtotal', '$adjust', '$pph_h', '$ppn_h', '$total', '$total', '$pilih_ppn', '$pilih_pph', '$rat_pv', '$create_user', '$create_date', '$status')";
+        ('$no_pv', '$pv_date', '$nama_supp', '$sup_doc', '$ctb', '$pay_date', '$pay_mth', '$curr', '$forpay', '$pv_tax_type', 'EXIM', '$frcc', '$tocc', '$ke', '$dari', '$no_cek', '$cek_date', '$pesan', '$subtotal', '$adjust', '$pph_h', '$ppn_h', '$total', '$total', '$pilih_ppn', '$pilih_pph', '$rat_pv', '$create_user', '$create_date', '$status')";
 
     if (!mysqli_query($conn2, $query)) {
         throw new Exception('Gagal insert header PV: ' . mysqli_error($conn2));
@@ -90,6 +94,19 @@ try {
         $ref_date = '1970-01-01';
 
         if ($amount != '0' || $ded_add != '0') {
+            if ($no_coa === '' || $no_coa === '-') {
+                throw new Exception("COA pada baris ke-$rowNum wajib diisi.");
+            }
+            if ($prof_ctr === '' || $prof_ctr === '-') {
+                throw new Exception("Profit Center pada baris ke-$rowNum wajib diisi.");
+            }
+
+            $sqlWajibCc = mysqli_query($conn1, "select no_coa from mastercoa_v2 where no_coa = '" . pv_esc($conn1, $no_coa) . "'
+                and (support_gen_adm = 'Y' OR support_prod = 'Y' OR prod = 'Y' OR support_sell = 'Y')");
+            if (mysqli_num_rows($sqlWajibCc) > 0 && ($no_cc === '-' || $no_cc === '')) {
+                throw new Exception("COA $no_coa pada baris ke-$rowNum wajib isi Cost Center.");
+            }
+
             $q = "INSERT INTO tbl_pv (no_pv,coa,no_cc,reff_doc,reff_date,deskripsi,amount,due_date,ded_add,pph,id_pph,ppn,id_ppn,profit_center)
             VALUES
                 ('$no_pv', '$no_coa', '$no_cc', '$no_ref', '$ref_date', '$deskripsi', '$amount', '$due_date', '$ded_add', '$pph','$idtax', '$ppn','$id_ppn','$prof_ctr')";

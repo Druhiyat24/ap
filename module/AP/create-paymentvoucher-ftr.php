@@ -2009,22 +2009,27 @@ function addListener(elm,index){
 
         <script type="text/javascript">
             $("#form-simpan").on("click", "#simpan", function(){
-                var no_pv = document.getElementById('no_doc').value;  
-                var rat_pv = document.getElementById('rat_pv').value;        
+                // Cegah klik dobel - sama seperti create-paymentvoucher.php.
+                if ($(this).prop('disabled')) {
+                    return;
+                }
+                var $saveBtn = $(this);
+
+                var rat_pv = document.getElementById('rat_pv').value;
                 var pv_date = document.getElementById('tgl_active').value;
-                var nama_supp = document.getElementById('nama_supp').value;       
-                var sup_doc = document.getElementById('sup_doc').value;        
-                var ctb = $('select[name=ct_buyer] option').filter(':selected').val();    
+                var nama_supp = document.getElementById('nama_supp').value;
+                var sup_doc = document.getElementById('sup_doc').value;
+                var ctb = $('select[name=ct_buyer] option').filter(':selected').val();
                 var pay_date = document.getElementById('tgl_pay').value;
-                var pay_mth = $('select[name=carabayar] option').filter(':selected').val(); 
-                var curr = document.getElementById('curre').value; 
+                var pay_mth = $('select[name=carabayar] option').filter(':selected').val();
+                var curr = document.getElementById('curre').value;
                 var forpay = document.getElementById('forpay').value;
                 var frcc = $('select[name=frcc] option').filter(':selected').val();
                 var tocc = $('select[name=tocc] option').filter(':selected').val();
-                var no_cek = document.getElementById('no_cek').value;        
+                var no_cek = document.getElementById('no_cek').value;
                 var cek_date = document.getElementById('cek_date').value;
-                var ke = document.getElementById('ke').value; 
-                var dari = document.getElementById('dari').value;        
+                var ke = document.getElementById('ke').value;
+                var dari = document.getElementById('dari').value;
                 var pesan = document.getElementById('pesan').value;
                 var subtotal = document.getElementById('nomrate_h').value || 0;
                 var adjust = document.getElementById('ded_ad').value;
@@ -2035,116 +2040,122 @@ function addListener(elm,index){
                 var pilih_pph = document.getElementById('pilih_pph').value;
                 var create_user = '<?php echo $user; ?>';
 
-                if (total >= '1' && curr !='' && pay_mth != '' && forpay != '' && ctb != '' && nama_supp != '' || total >= '1' && curr !='' && pay_mth != '' && forpay != '-' && ctb != '' && nama_supp != '') {
-                    $.ajax({
-                        type:'POST',
-                        url:'insertpv_h.php',
-                        data: {'rat_pv':rat_pv, 'no_pv':no_pv, 'pv_date':pv_date, 'nama_supp':nama_supp, 'sup_doc':sup_doc, 'ctb':ctb, 'pay_date':pay_date, 'pay_mth':pay_mth, 'curr':curr, 'forpay':forpay, 'frcc':frcc, 'tocc':tocc, 'no_cek':no_cek, 'cek_date':cek_date, 'ke':ke, 'dari':dari, 'pesan':pesan, 'subtotal':subtotal, 'adjust':adjust, 'pph':pph, 'ppn':ppn, 'total':total, 'pilih_ppn':pilih_ppn, 'pilih_pph':pilih_pph, 'create_user':create_user},
-                        cache: 'false',
-                        close: function(e){
-                            e.preventDefault();
-                        },
-                        success: function(response){
-                            console.log(response);
-                //  // alert(response);
-                window.location = 'payment-voucher.php';
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                alert(xhr);
-            }
-        });
-                } 
+                // Satu validasi, dijalankan SEBELUM ajax manapun dikirim -
+                // sama seperti perbaikan di create-paymentvoucher.php (dulu
+                // ada 2 pengecekan terpisah yang tidak saling terhubung,
+                // jadi alert sukses bisa muncul padahal header gagal
+                // tersimpan dan no_pv jadi tidak pernah benar-benar maju).
+                if (nama_supp == '' || nama_supp == '-') {
+                    Swal.fire('Warning', 'Please select Supplier', 'warning');
+                    document.getElementById('nama_supp').focus();
+                    return;
+                }
+                if (sup_doc == '') {
+                    Swal.fire('Warning', 'Please Select Support Document', 'warning');
+                    document.getElementById('sup_doc').focus();
+                    return;
+                }
+                if (ctb == '' || ctb == null) {
+                    Swal.fire('Warning', 'Please select Charge to Buyer', 'warning');
+                    document.getElementById('ct_buyer').focus();
+                    return;
+                }
+                if (pay_mth == '' || pay_mth == '-') {
+                    Swal.fire('Warning', 'Please select payment method', 'warning');
+                    document.getElementById('carabayar').focus();
+                    return;
+                }
+                if (curr == '') {
+                    Swal.fire('Warning', 'Please select currency', 'warning');
+                    document.getElementById('curre').focus();
+                    return;
+                }
+                if (forpay == '' || forpay == '-') {
+                    Swal.fire('Warning', 'Please select For payment', 'warning');
+                    document.getElementById('forpay').focus();
+                    return;
+                }
+                if (pay_mth != 'CASH' && (frcc == '' || frcc == '-')) {
+                    Swal.fire('Warning', 'Please select From Account', 'warning');
+                    document.getElementById('frcc').focus();
+                    return;
+                }
+                if (pay_mth != 'CASH' && forpay == 'Pemindah Bukuan Bank' && tocc == '-') {
+                    Swal.fire('Warning', 'Please select To Account', 'warning');
+                    document.getElementById('tocc').focus();
+                    return;
+                }
+                if (total == '') {
+                    Swal.fire('Warning', 'Please Input Amount', 'warning');
+                    return;
+                }
+                if (parseFloat(total) <= 0) {
+                    Swal.fire('Warning', "Amount can't be Minus or Zero", 'warning');
+                    return;
+                }
 
-
+                // Kumpulkan semua baris detail jadi satu array, dikirim
+                // SEKALIGUS bareng header dalam satu request/transaksi -
+                // bukan satu request AJAX per baris seperti sebelumnya.
+                var details = [];
                 $("#mytable input[type=checkbox]:checked").each(function () {
-                    var doc_number = document.getElementById('no_doc').value;        
-                    var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[name=nomor_coa] option').filter(':selected').val(); 
-                    var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val(); 
-                    var no_cc = $(this).closest('tr').find('td:eq(3)').find('select[name=nomor_cc] option').filter(':selected').val();      
-                    var no_ref = $(this).closest('tr').find('td:eq(4) input').val();                               
+                    var no_coa = $(this).closest('tr').find('td:eq(1)').find('select[name=nomor_coa] option').filter(':selected').val();
+                    var prof_ctr = $(this).closest('tr').find('td:eq(2)').find('select[id=prof_ctr] option').filter(':selected').val();
+                    var no_cc = $(this).closest('tr').find('td:eq(3)').find('select[name=nomor_cc] option').filter(':selected').val();
+                    var no_ref = $(this).closest('tr').find('td:eq(4) input').val();
                     var ref_date = $(this).closest('tr').find('td:eq(5) input').val();
-                    var deskripsi = $(this).closest('tr').find('td:eq(6) input').val();                               
+                    var deskripsi = $(this).closest('tr').find('td:eq(6) input').val();
                     var amount = $(this).closest('tr').find('td:eq(7) input').val() || 0;
                     var due_date = $(this).closest('tr').find('td:eq(9) input').val();
                     var ded_add = $(this).closest('tr').find('td:eq(8) input').val() || 0;
-                    var pph = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').val() || 0;
+                    var d_pph = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').val() || 0;
                     var idtax = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').attr('data-idtax');
-                    var ppn = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').val() || document.getElementById('pilih_ppn').value;
+                    var d_ppn = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').val() || document.getElementById('pilih_ppn').value;
                     var id_ppn = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').attr('data-idtax') || document.getElementById('idtax').value;
-                    var total_h = document.getElementById('total_h').value || 0;
-                    var curr = document.getElementById('curre').value; 
-                    var for_pay = $('select[name=forpay] option').filter(':selected').val();
-                    if (for_pay == 'Lainnya') {
-                     var forpay = document.getElementById('pay_for').value;
-                 }else{
-                     var forpay = $('select[name=forpay] option').filter(':selected').val();   
-                 }
-                 var pay_mth = $('select[name=carabayar] option').filter(':selected').val(); 
-                 var nama_supp = $('select[name=nama_supp] option').filter(':selected').val();
-                 var ctb = $('select[name=ct_buyer] option').filter(':selected').val();
-                 var create_user = '<?php echo $user; ?>';
 
-                 if (total_h >= '1' && curr !='' && pay_mth != '' && forpay != '' && ctb != '' && nama_supp != '' && no_coa != '' || total_h >= '1' && curr !='' && pay_mth != '' && forpay != '' && ctb != '' && nama_supp != '' && no_coa != '') { 
-                    $.ajax({
-                        type:'POST',
-                        url:'insertpv.php',
-                        data: {'doc_number':doc_number, 'no_coa':no_coa, 'prof_ctr':prof_ctr, 'no_cc':no_cc, 'no_ref':no_ref, 'ref_date':ref_date, 'deskripsi':deskripsi, 'amount':amount, 'due_date':due_date, 'ded_add':ded_add, 'pph':pph, 'idtax':idtax, 'ppn':ppn, 'id_ppn':id_ppn, 'create_user':create_user},
-                        cache: 'false',
-                        close: function(e){
-                            e.preventDefault();
-                        },
-                        success: function(response){
-                            console.log(response);
-                  // alert(response);
+                    details.push({
+                        prof_ctr: prof_ctr, no_coa: no_coa, no_cc: no_cc, no_ref: no_ref,
+                        ref_date: ref_date, deskripsi: deskripsi, amount: amount,
+                        due_date: due_date, ded_add: ded_add, pph: d_pph, idtax: idtax,
+                        ppn: d_ppn, id_ppn: id_ppn
+                    });
+                });
 
-                  window.location = 'payment-voucher.php';
-              },
-              error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                alert(xhr);
-            }
-        });
-                }
+                $saveBtn.prop('disabled', true);
 
-            }); 
-                if(document.getElementById('nama_supp').value == '' || document.getElementById('nama_supp').value == '-'){
-                    alert("Please select Supplier");
-                    document.getElementById('nama_supp').focus();
-                }else if(document.getElementById('sup_doc').value == ''){
-                    alert("Please Select Support Document");
-                    document.getElementById('sup_doc').focus();
-                }else if(document.getElementById('ct_buyer').value == ''){
-                    alert("Please select Charge to Buyer");
-                    document.getElementById('ct_buyer').focus();
-                }else if($('select[name=carabayar] option').filter(':selected').val() == '' || $('select[name=carabayar] option').filter(':selected').val() == '-'){
-                    alert("Please select payment method");
-                    document.getElementById('carabayar').focus();
-                }else if(document.getElementById('curre').value == ''){
-                    alert("Please select currency");
-                    document.getElementById('curre').focus();
-                }else if(document.getElementById('forpay').value == '' || document.getElementById('forpay').value == '-'){
-                    alert("Please select For payment");
-                    document.getElementById('forpay').focus();
-                }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && $('select[name=frcc] option').filter(':selected').val() == ''){
-                    alert("Please select From Account");
-                    document.getElementById('frcc').focus();
-                }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && document.getElementById('forpay').value == 'Pemindah Bukuan Bank' && $('select[name=frcc] option').filter(':selected').val() == '-'){
-                    alert("Please select From Account");
-                    document.getElementById('frcc').focus();
-                }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && document.getElementById('forpay').value == 'Pemindah Bukuan Bank' && $('select[name=frcc] option').filter(':selected').val() != '-' && $('select[name=tocc] option').filter(':selected').val() == '-'){
-                    alert("Please select To Account");
-                    document.getElementById('tocc').focus();
-                }else if(document.getElementById('total_h').value == ''){
-                    alert("Please Input Amount");
-                }else if(document.getElementById('total_h').value <= '0'){
-                    alert("Amount can't be Minus");
-                }else if(document.getElementById('total_h').value == '0.00'){
-                    alert("Total Amount can't be Zero");
-                }else{               
+                $.ajax({
+                    type:'POST',
+                    url:'insertpv_h.php',
+                    data: {'rat_pv':rat_pv, 'pv_date':pv_date, 'nama_supp':nama_supp, 'sup_doc':sup_doc, 'ctb':ctb, 'pay_date':pay_date, 'pay_mth':pay_mth, 'curr':curr, 'forpay':forpay, 'pv_form_type':'FTR', 'frcc':frcc, 'tocc':tocc, 'no_cek':no_cek, 'cek_date':cek_date, 'ke':ke, 'dari':dari, 'pesan':pesan, 'subtotal':subtotal, 'adjust':adjust, 'pph':pph, 'ppn':ppn, 'total':total, 'pilih_ppn':pilih_ppn, 'pilih_pph':pilih_pph, 'create_user':create_user, 'details': JSON.stringify(details)},
+                    cache: 'false',
+                    success: function(response){
+                        console.log(response);
 
-                    alert("data saved successfully");
-                }
+                        // Nomor asli yang tersimpan digenerate ulang server-side
+                        // (bukan angka preview yang tampil di form) - lihat
+                        // insertpv_h.php.
+                        var savedNoPv = (response || '').trim();
+                        if (savedNoPv === '' || savedNoPv.indexOf('Error') === 0) {
+                            $saveBtn.prop('disabled', false);
+                            Swal.fire('Error', 'Gagal menyimpan Payment Voucher: ' + savedNoPv, 'error');
+                            return;
+                        }
+
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: 'Payment Voucher ' + savedNoPv + ' berhasil disimpan.',
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(function () {
+                            window.location = 'payment-voucher.php';
+                        });
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        console.log(xhr);
+                        $saveBtn.prop('disabled', false);
+                        Swal.fire('Error', 'Gagal menyimpan Payment Voucher: ' + (xhr.responseText || thrownError), 'error');
+                    }
+                });
             });
         </script>
 

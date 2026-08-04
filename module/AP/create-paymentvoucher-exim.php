@@ -1,9 +1,83 @@
 <?php include '../header.php' ?>
 
+<style>
+    /* Tema admin (AdminLTE) ngasih border/box-shadow default ke .box/.box-header/
+       .box-body yang bikin garis pemisah nongol di antara section - di-nol-in
+       semua di sini biar bersih, ganti sama shadow+radius punya .pv-card sendiri. */
+    .pv-card, .pv-card.box, .pv-card .box-header, .pv-card .box-body,
+    .pv-card .box.header, .pv-card .box.body, .pv-card .box.footer {
+        border: 0 !important;
+        box-shadow: none !important;
+    }
+    /* AdminLTE ngasih .box border-top 3px + shadow tipis banget bawaan tema -
+       rgba(0,0,0,.125) ternyata kelihatan nyaris polos di browser, jadi warna
+       border dibikin lebih jelas/gelap supaya tepi card kelihatan tegas. */
+    .pv-card, div.box.pv-card {
+        border-radius: .25rem !important;
+        background: #fff !important;
+        box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.25) !important;
+        overflow: hidden !important;
+        margin-bottom: 20px !important;
+        border: 1px solid #c9ccd1 !important;
+        border-top: 1px solid #c9ccd1 !important;
+    }
+    .pv-card .box.header{ padding:24px 24px 8px; }
+    .pv-card .box.body{ padding:8px 24px 24px; }
+    /* Bug lama: div "box body" (tabel detail + total) ternyata tidak pernah
+       ke-nest di dalam wrapper .pv-card (ada </div> ekstra di area modal
+       Choose Memo yang menutup .pv-card terlalu awal), jadi dia jadi kotak
+       terpisah sendiri dengan style default AdminLTE + jarak 20px dari
+       margin-bottom punya .pv-card. Disatukan di sini secara visual tanpa
+       harus bongkar nesting div yang sudah telanjur berantakan. */
+    .box.body{
+        border: 1px solid #c9ccd1 !important;
+        border-top: 0 !important;
+        border-radius: 0 0 .25rem .25rem !important;
+        background: #fff !important;
+        box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.25) !important;
+        margin-top: -20px !important;
+        padding: 8px 24px 24px;
+    }
+    .total-box{ border:0; border-radius:10px; background:#fff; box-shadow:0 2px 10px rgba(0,0,0,0.08); overflow:hidden; }
+    .total-box .total-box-header{ padding:12px 16px; color:#fff; font-weight:700; font-size:14px; background:linear-gradient(90deg, #4a5578, #6b7699); }
+    .total-box .total-box-body{ padding:16px; display:flex; flex-direction:column; gap:14px; }
+    .total-stat{ display:flex; justify-content:space-between; align-items:flex-end; padding-bottom:12px; border-bottom:1px dashed #e5e5e5; }
+    .total-stat:last-child{ border-bottom:0; padding-bottom:0; }
+    .total-stat-label{ font-size:12px; font-weight:600; color:#8a8a8a; text-transform:uppercase; letter-spacing:.03em; }
+    .total-stat input.total-stat-value{ border:0; background:transparent; padding:0; font-size:19px; font-weight:700; text-align:right; width:auto; max-width:100%; height:auto; color:#212529; }
+
+    /* Catatan: JANGAN kasih width:100% !important ke .select2-container -
+       select2 membuka dropdown-nya dengan container terpisah yang juga
+       pakai class .select2-container, jadi aturan lebar itu ikut membesarkan
+       panel dropdown-nya jadi selebar halaman. Lebar cukup diatur lewat
+       inline style="width:100%" di masing-masing <select>. */
+    .select2-selection--single{ height: calc(1.5em + .75rem + 2px) !important; padding:.375rem .75rem !important; display:flex !important; align-items:center; }
+    .select2-selection--single .select2-selection__rendered{ line-height:1.5 !important; padding-left:0 !important; font-size:14px; }
+    .select2-selection--single .select2-selection__arrow{ height: calc(1.5em + .75rem) !important; top:0 !important; }
+
+    .table-gradient2 th{ background:#3B82F6; color:#fff; text-align:center; vertical-align:middle; white-space:nowrap; }
+
+    /* Modal "Choose Memo" - modernisasi header/date-range/tabel hasil pencarian */
+    #mymodal2 .modal-dialog{ max-width:60%; }
+    #mymodal2 .modal-content{ border:0; border-radius:12px; overflow:hidden; box-shadow:0 1rem 3rem rgba(0,0,0,.2); }
+    #mymodal2 .modal-header{ background:linear-gradient(90deg, #191970, #1e90ff); border-bottom:0; padding:16px 24px; }
+    #mymodal2 .modal-header .modal-title{ color:#fff; font-weight:700; }
+    #mymodal2 .modal-header .close{ color:#fff; opacity:.85; text-shadow:none; }
+    #mymodal2 .modal-header .close:hover{ opacity:1; color:#fff; }
+    #mymodal2 .modal-body{ padding:24px; }
+    #mymodal2 .memo-date-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    #mymodal2 .memo-date-row .form-control{ max-width:160px; }
+    #mymodal2 .memo-date-sep{ font-weight:700; color:#8a8a8a; }
+    #mymodal2 #table-memo thead th{ background:#3B82F6; color:#fff; font-weight:600; border-color:#3B82F6; }
+    #mymodal2 .modal-footer{ border-top:1px solid #eee; padding:16px 24px; }
+</style>
+
     <!-- MAIN -->
     <div class="col p-4">
-        <h2 class="text-center">FORM PAYMENT VOUCHER MEMO EXIM</h2>
-<div class="box">
+<div class="box pv-card">
+    <div class="card-header text-white py-2 px-3" style="background: linear-gradient(90deg, #191970, #1e90ff); margin:-1px -1px 0; border-radius:12px 12px 0 0;">
+        <h5 class="mb-0"><i class="fa fa-file-text-o"></i> FORM PAYMENT VOUCHER MEMO EXIM</h5>
+    </div>
     <div class="box header">
 <form id="form-data" method="post">
         <div style="padding-left: 10px;padding-top: 5px;">
@@ -176,8 +250,8 @@
             
                 <div class="col-md-2 mb-3"> 
                     <label for="carabayar" class="col-form-label" style="width: 150px;">Pay Methods </label>               
-                <select class="form-control selectpicker" name="carabayar" id="carabayar" data-live-search="true">
-                    <option value="" disabled selected="true">Choose pay method</option>  
+                <select class="form-control select2" name="carabayar" id="carabayar" style="width:100%">
+                    <option value="" disabled selected="true">Choose pay method</option>
                     <?php
                 $nama_supp ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -199,8 +273,8 @@
                 </div>
                 <div class="col-md-1 mb-3"> 
                     <label for="carabayar" class="col-form-label" style="width: 150px;">Currency </label>               
-                <select class="form-control selectpicker" name="curre" id="curre" data-live-search="true">
-                    <option value="" disabled selected="true">Curr</option>  
+                <select class="form-control select2" name="curre" id="curre" style="width:100%">
+                    <option value="" disabled selected="true">Curr</option>
                     <?php
                 $nama_supp ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -218,10 +292,10 @@
                     echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
                 }?> 
         
-                </select> 
+                </select>
                 </div>
 
-                <div class="col-md-2 mb-3">            
+                <div class="col-md-2 mb-3">
             <label for="total" class="col-form-label" style="width: 150px;"><b>Payment Date</b></label>
                 <input type="text" style="font-size: 15px;" name="tgl_pay" id="tgl_pay" class="form-control tanggal" 
             value="<?php 
@@ -257,7 +331,7 @@
                 ?>
                 <div class="col-md-2 mb-3" id="div_frcc" style="padding-top: 8px;<?php echo $frccToccHideStyle; ?>">
             <label for="nama_supp"><b>From Account</b></label>
-              <select class="form-control selectpicker" name="frcc" id="frcc" data-dropup-auto="false" data-live-search="true">
+              <select class="form-control select2" name="frcc" id="frcc" style="width:100%">
                 <option value="" disabled selected="true">Select Account</option>
                 <?php
                        $frcc ='';
@@ -288,7 +362,7 @@
             </div>
             <div class="col-md-2 mb-3" id="div_tocc" style="padding-top: 8px;<?php echo $frccToccHideStyle; ?>">
             <label for="nama_supp"><b>To Account</b></label>
-              <select class="form-control selectpicker" name="tocc" id="tocc" data-dropup-auto="false" data-live-search="true">
+              <select class="form-control select2" name="tocc" id="tocc" style="width:100%">
                 <option value="-" disabled selected="true">Select Account</option>
                 <?php
 
@@ -325,6 +399,15 @@
               </select>
 
             </div>
+
+            <div class="col-md-2 mb-3">
+                    <label for="pv_tax_type" class="col-form-label" style="width: 150px;">Payment Voucher Type</label>
+                <select class="form-control select2" name="pv_tax_type" id="pv_tax_type" style="width:100%">
+                    <option value="" disabled selected="selected">Select Type</option>
+                    <option value="Tax">Tax</option>
+                    <option value="Non Tax">Non Tax</option>
+                </select>
+                </div>
 
         
         </div>
@@ -489,18 +572,17 @@
         <div class="modal-dialog">
         <div class="modal-content">
         <div class="modal-header">
+        <h4 class="modal-title" id="Heading"><i class="fa fa-file-text-o"></i> Choose Memo</h4>
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-        <h4 class="modal-title" id="Heading">Choose Memo</h4>
         </div>
           <div class="modal-body">
-          <div class="form-group">
             <form id="modal-form2" method="post">
                 <div class="form-row">
-                    <div class="col-md-12 mb-3">
-                        <label style="padding-left: 10px;" for="nama_supp_memo"><b>Supplier</b></label>
-              <select class="form-control selectpicker" name="nama_supp_memo" id="nama_supp_memo" data-dropup-auto="false" data-live-search="true">
-                <option value="" disabled selected="true">select</option>                
-                <?php 
+                    <div class="col-md-5 mb-3">
+                        <label for="nama_supp_memo"><b>Supplier</b></label>
+              <select class="form-control select2" name="nama_supp_memo" id="nama_supp_memo" style="width:100%">
+                <option value="" disabled selected="true">Select Supplier</option>
+                <?php
                 $sql = mysqli_query($conn1,"select distinct(Supplier),id_supplier from mastersupplier where tipe_sup = 'S' order by Supplier ASC");
                 while ($row = mysqli_fetch_array($sql)) {
                     $data2 = $row['id_supplier'];
@@ -510,17 +592,15 @@
                     }else{
                         $isSelected = '';
                     }
-                    echo '<option value="'.$data2.'"'.$isSelected.'">'. $data .'</option>';    
+                    echo '<option value="'.$data2.'"'.$isSelected.'">'. $data .'</option>';
                 }?>
                 </select>
                     </div>
-              
-                </div>
 
-                <div class="col-md-12 mb-3">
+                    <div class="col-md-7 mb-3">
                      <label><b>Memo Date</b></label>
-                <div class="input-group-append">           
-                <input type="text" style="font-size: 14px;" class="form-control tanggal" id="start_date_memo" name="start_date_memo" 
+                <div class="memo-date-row">
+                <input type="text" style="font-size: 14px;" class="form-control tanggal" id="start_date_memo" name="start_date_memo"
                 value="<?php
                 $start_date_memo ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -531,11 +611,11 @@
                 }
                 else{
                     echo date("d-m-Y");
-                } ?>" 
+                } ?>"
                 placeholder="Tanggal Awal">
 
-                <label class="col-md-1" for="end_date"><b>-</b></label>
-                <input type="text" style="font-size: 14px;" class="form-control tanggal" id="end_date_memo" name="end_date_memo" 
+                <span class="memo-date-sep">-</span>
+                <input type="text" style="font-size: 14px;" class="form-control tanggal" id="end_date_memo" name="end_date_memo"
                 value="<?php
                 $end_date_memo ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -546,34 +626,20 @@
                 }
                 else{
                     echo date("d-m-Y");
-                } ?>" 
+                } ?>"
                 placeholder="Tanggal Akhir">
-                &nbsp;&nbsp;
-                <input 
-                style="border: 0;
-                    line-height: 1;
-                    padding: 10px 10px;
-                    font-size: 1rem;
-                    text-align: center;
-                    color: #fff;
-                    text-shadow: 1px 1px 1px #000;
-                    border-radius: 6px;
-                    background-color: rgb(95, 158, 160);"
-                type="button" id="send2" name="send2" value="Search"> 
+                <button type="button" id="send2" name="send2" class="btn btn-info"><i class="fa fa-search"></i> Search</button>
                 </div>
-                </div>  
-                
-                <div id="details" class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;"></div>
-  
+                    </div>
+                </div>
+
+                <div id="details" style="font-size: 12px;"></div>
+
                 <div class="modal-footer">
-                    <div class="col-md-2 mb-3">
-                    <button type="button" id="savememo" name="savememo" class="btn btn-warning btn-lg" style="width: 100%;"><span class="fa fa-floppy-o" aria-hidden="true"></span>
+                    <button type="button" id="savememo" name="savememo" class="btn btn-primary"><span class="fa fa-floppy-o" aria-hidden="true"></span>
                         Save
                     </button>
                 </div>
-                <div class="col-md-10 mb-3">
-                </div>
-                </div>           
             </form>
         </div>
       </div>
@@ -689,7 +755,7 @@
             <div class="col-md-12" style="overflow-x:auto; width:100%;">
 
             <table id="mytable" class="table table-striped table-bordered table-responsive" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
-                    <thead>
+                    <thead class="table-gradient2">
         <tr><th class="text-center" style="width: 2%">-</th>
             <th class="text-center" style="width: 12%">No Memo</th>
             <th class="text-center" hidden>Jenis Transaksi</th>
@@ -725,45 +791,22 @@
           </tr>
     </tfoot>                   
             </table>                    
-<div class="box footer">   
+<div style="padding:20px 0 0; border:0; box-shadow:none; background:transparent;">
         <form id="form-simpan">
             <div class="form-row col">
             <div class="col-md-3">
                 </br>
 
-<!--             <div class="input-group" >
-                <label for="nama_supp" class="col-form-label" style="width: 80px;"><b>PPH</b></label>
-                 <select class="form-control" name="pilih_pph" id="pilih_pph" data-live-search="true" onchange='changeValueTax(this.value)' required >
-                <option value="" disabled selected="true">Select Account</option>  
-                <option value="0" selected="selected">Non PPH</option>
-                <?php 
-                        $sqlacc = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPH'  GROUP BY idtax ");
-
-                        while ($row = mysqli_fetch_array($sqlacc)) {
-                            $data = $row['percentage'];
-                            $data2 = $row['kriteria2'];
-                            if($row['kriteria2'] == $_POST['pilih_pph']){
-                                $isSelected  = ' selected="selected"';
-                            }else{
-                                $isSelected = '';
-                            }
-                            echo '<option name="pilih_pph" value="'.$data.'"'.$isSelected.'">'. $data2 .'</option>';    
-                            
-                        }
-                        ?>
-                </select>
-            </div>
-        </br> -->
         <div style = "display : none;">
                 <select class="form-control selectpicker" name="pilih_pph" id="pilih_pph" data-dropup-auto="false" data-live-search="true">
                 <option value="-" disabled selected="true">Select Account</option>
                 </select>
                 </div>
-            <div class="input-group" >
-                <label for="nama_supp" class="col-form-label" style="width: 120px;"><b>PPN</b></label>
-                 <select class="form-control" name="pilih_ppn" id="pilih_ppn" data-live-search="true" onchange='changeValueTax2(this.value)' required>
-                <option value="" disabled selected="true">Select PPN</option>  
-                <?php 
+                <div class="mb-2">
+            <label for="pilih_ppn"><b>PPN</b></label>
+            <select class="form-control select2" name="pilih_ppn" id="pilih_ppn" style="width:100%" onchange='changeValueTax2(this.value)' required>
+                <option value="" disabled selected="true">Select PPN</option>
+                <?php
                         $sqlacc = mysqli_query($conn1,"select '0' idtax, 'Non PPN' kriteria, '0' percentage, 'Non PPN' kriteria2
                                                         union
                                                         select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPN'  GROUP BY idtax");
@@ -786,13 +829,12 @@
                 </select>
                 <input type="hidden" name="idtax" id="idtax" value="0">
             </div>
-            </br>
-            <div class="input-group" >
-                <label for="nama_supp" class="col-form-label" style="width: 120px;"><b>Total Memo</b></label>
-                <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="total_memo" name="total_memo" placeholder="0.00" readonly value="<?php 
+            <div class="mb-2">
+                <label for="total_memo" class="col-form-label" style="width: 120px;"><b>Total Memo</b></label>
+                <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="total_memo" name="total_memo" placeholder="0.00" readonly value="<?php
             $sql = mysqli_query($conn2," select sum(biaya) biaya from tbl_pv_memo_temp where user = '$user' ");
             $row = mysqli_fetch_array($sql);
-            $biaya = $row['biaya'];           
+            $biaya = $row['biaya'];
             if(!empty($biaya)) {
                 echo number_format($biaya,2);
             }
@@ -810,9 +852,8 @@
                 echo '';
             }?>">
             </div>
-            </br>
-            <div class="input-group" >
-                <label for="nama_supp" class="col-form-label" style="width: 120px;"><b>Balance</b></label>
+            <div class="mb-2">
+                <label for="balance_memo" class="col-form-label" style="width: 120px;"><b>Balance</b></label>
                 <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="balance_memo" name="balance_memo" placeholder="0.00" readonly>
             </div>
         <!--     <div class="input-group" >
@@ -823,81 +864,50 @@
              
             
             </div>
-            <div class="col-md-6">
+            <div class="col-md-5">
 
             </div>
-            <div class="col-md-3">
-                </br>
-                <div class="input-group" >
-                <label for="nama_supp" class="col-form-label" style="width: 180px;"><b>Total Without Tax</b></label>
-                <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="nomrate1" name="nomrate1" placeholder="0.00" readonly value="<?php 
-            $sql = mysqli_query($conn2," select sum(biaya) biaya from tbl_pv_memo_temp where user = '$user' ");
-            $row = mysqli_fetch_array($sql);
-            $biaya = $row['biaya'];           
-            if(!empty($biaya)) {
-                echo number_format($biaya,2);
-            }
-            else{
-                echo '';
-            }?>">
-                 <input type="hidden" name="nomrate_h" id="nomrate_h" value="<?php 
-            $sql = mysqli_query($conn2," select sum(biaya) biaya from tbl_pv_memo_temp where user = '$user' ");
-            $row = mysqli_fetch_array($sql);
-            $biaya = $row['biaya'];           
-            if(!empty($biaya)) {
-                echo $biaya;
-            }
-            else{
-                echo '';
-            }?>">
+            <div class="col-md-4">
+                <?php
+                $sql = mysqli_query($conn2," select sum(biaya) biaya from tbl_pv_memo_temp where user = '$user' ");
+                $row = mysqli_fetch_array($sql);
+                $biaya = $row['biaya'];
+                $biayaFmt = !empty($biaya) ? number_format($biaya, 2) : '';
+                $biayaRaw = !empty($biaya) ? $biaya : '';
+                ?>
+                <div class="total-box">
+                    <div class="total-box-header"><i class="fa fa-calculator"></i> Total</div>
+                    <div class="total-box-body">
+                        <div class="total-stat">
+                            <span class="total-stat-label">Total Without Tax</span>
+                            <input type="text" class="total-stat-value" id="nomrate1" name="nomrate1" placeholder="0.00" readonly value="<?= $biayaFmt; ?>">
+                            <input type="hidden" name="nomrate_h" id="nomrate_h" value="<?= $biayaRaw; ?>">
+                        </div>
+                        <div class="total-stat">
+                            <span class="total-stat-label">Deduction</span>
+                            <input type="hidden" id="ded_ad" name="ded_ad" placeholder="0.00">
+                            <input type="text" class="total-stat-value" id="ded_ad_h" name="ded_ad_h" placeholder="0.00" readonly>
+                        </div>
+                        <div class="total-stat">
+                            <span class="total-stat-label">Incoming Tax</span>
+                            <input type="text" class="total-stat-value" id="pph" name="pph" placeholder="0.00" readonly>
+                            <input type="hidden" name="pph_h" id="pph_h" value="">
+                            <input type="hidden" name="pph_min" id="pph_min" value="">
+                            <input type="hidden" name="pph_plus" id="pph_plus" value="">
+                        </div>
+                        <div class="total-stat">
+                            <span class="total-stat-label">Value Added Tax</span>
+                            <input type="text" class="total-stat-value" id="ppn" name="ppn" placeholder="0.00" readonly>
+                            <input type="hidden" name="ppn_h" id="ppn_h" value="">
+                        </div>
+                        <div class="total-stat">
+                            <span class="total-stat-label"><b>Total</b></span>
+                            <input type="text" class="total-stat-value" id="total" name="total" placeholder="0.00" readonly value="<?= $biayaFmt; ?>">
+                            <input type="hidden" name="total_h" id="total_h" value="<?= $biayaRaw; ?>">
+                        </div>
+                    </div>
+                </div>
             </div>
-            </br>
-            <div class="input-group" >
-                <label for="nama_supp" class="col-form-label" style="width: 180px;"><b>Deduction</b></label>
-                <input type="hidden" style="font-size: 14px;text-align: right;" class="form-control" id="ded_ad" name="ded_ad" placeholder="0.00" >
-                <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="ded_ad_h" name="ded_ad_h" placeholder="0.00" readonly>
-            </div>
-            </br>
-            <div class="input-group" >
-                <label for="nama_supp" class="col-form-label" style="width: 180px;"><b>Incoming Tax</b></label>
-                <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="pph" name="pph" placeholder="0.00" readonly>
-                <input type="hidden" name="pph_h" id="pph_h" value="">
-                <input type="hidden" name="pph_min" id="pph_min" value="">
-                <input type="hidden" name="pph_plus" id="pph_plus" value="">
-            </div>
-            </br>
-            <div class="input-group" >
-                <label for="nama_supp" class="col-form-label" style="width: 180px;"><b>Value Added Tax</b></label>
-                <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="ppn" name="ppn" placeholder="0.00" readonly>
-                <input type="hidden" name="ppn_h" id="ppn_h" value="">
-            </div>
-            </br>
-            <div class="input-group" >
-                <label for="nama_supp" class="col-form-label" style="width: 180px;"><b>Total</b></label>
-                <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="total" name="total" placeholder="0.00" readonly value="<?php 
-            $sql = mysqli_query($conn2," select sum(biaya) biaya from tbl_pv_memo_temp where user = '$user' ");
-            $row = mysqli_fetch_array($sql);
-            $biaya = $row['biaya'];           
-            if(!empty($biaya)) {
-                echo number_format($biaya,2);
-            }
-            else{
-                echo '';
-            }?>">
-                <input type="hidden" name="total_h" id="total_h" value="<?php 
-            $sql = mysqli_query($conn2," select sum(biaya) biaya from tbl_pv_memo_temp where user = '$user' ");
-            $row = mysqli_fetch_array($sql);
-            $biaya = $row['biaya'];           
-            if(!empty($biaya)) {
-                echo $biaya;
-            }
-            else{
-                echo '';
-            }?>">
-            </div>
-            </br>
-
-             
         </div>
             
             
@@ -1168,21 +1178,29 @@ function addRow(tableID) {
  var rowCount = table.rows.length;
  var row = table.insertRow(rowCount);
 
-$(function() {
-    $('.selectpicker').selectpicker();
-});
-$(document).ready(function () {
-    $('.tanggal').datepicker({
-        format: "dd-mm-yyyy",
-        autoclose:true
-    });
-});
+ var element1 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td hidden><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td hidden><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td hidden><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td hidden><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td hidden><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="100%" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="100%" data-size="5"><option value="-"> - </option><?php $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'"); foreach ($sql3 as $fc) : ?> <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option> <?php endforeach; ?> </select> </td><td ><select class="form-control selectpicker nomor_cc" name="nomor_cc" id="nomor_cc" data-live-search="true" data-width="100%" data-size="5"> <option value="-" > - </option><?php $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name, CONCAT(no_cc,' ',cc_name) as cost_name from b_master_cc where status = 'Active'"); foreach ($sql2 as $cc) : ?> <option value="<?= $cc["code_combine"]; ?>"><?= $cc["cost_name"]; ?> </option><?php endforeach; ?></select></td><td><textarea style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></textarea></td><td><input  style="text-align: right;font-size: 12px;" type="number" min="1" value="" class="form-control"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input  style="text-align: right;font-size: 12px;" type="number" min="1" value="" class="form-control"  oninput="modal_input_dedadd(value)" autocomplete = "off"></td><td><input  type="text" style="font-size: 12px;" name="tgl_tempo" id="tgl_tempo" value="" class="form-control tanggal" autocomplete="off" placeholder="dd-mm-yyyy" ></td><td><select class="form-control select2add" name="pphh" id="pphh" style="width:100%" onchange="input_pph()"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPH' GROUP BY idtax"); foreach ($sql as $pph) : ?> <option data-idtax="<?= $pph["idtax"]; ?>" value="<?= $pph["percentage"]; ?>"><?= $pph["kriteria2"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control select2add ppnn-row" name="ppnn" id="ppnn" style="width:100%" onchange="input_ppn()"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPN' GROUP BY idtax"); foreach ($sql as $ppn) : ?> <option data-idtax="<?= $ppn["idtax"]; ?>" value="<?= $ppn["percentage"]; ?>"><?= $ppn["kriteria2"]; ?> </option><?php endforeach; ?></select></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
 
- $coa = '';
- var element1 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td hidden><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td hidden><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td hidden><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td hidden><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td hidden><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td style="width: 50px"><select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="150px" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="150px" data-size="5"><option value="-"> - </option><?php $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'"); foreach ($sql3 as $fc) : ?> <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option> <?php endforeach; ?> </select> </td><td ><select class="form-control selectpicker nomor_cc" name="nomor_cc" id="nomor_cc" data-live-search="true" data-width="150px" data-size="5"> <option value="-" > - </option><?php $sql2 = mysqli_query($conn1,"select no_cc as code_combine,cc_name, CONCAT(no_cc,' ',cc_name) as cost_name from b_master_cc where status = 'Active'"); foreach ($sql2 as $cc) : ?> <option value="<?= $cc["code_combine"]; ?>"><?= $cc["cost_name"]; ?> </option><?php endforeach; ?></select></td><td><textarea style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></textarea></td><td><input  style="text-align: right;font-size: 12px;" type="number" min="1" value="" class="form-control"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input  style="text-align: right;font-size: 12px;" type="number" min="1" value="" class="form-control"  oninput="modal_input_dedadd(value)" autocomplete = "off"></td><td><input  type="text" style="font-size: 12px;" name="tgl_tempo" id="tgl_tempo" value="" class="form-control tanggal" autocomplete="off" placeholder="dd-mm-yyyy" ></td><td style="width: 50px"><select class="form-control" name="pphh" id="pphh" data-live-search="true" onchange="input_pph()" data-width="120px" data-size="5"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPH' GROUP BY idtax"); foreach ($sql as $pph) : ?> <option data-idtax="<?= $pph["idtax"]; ?>" value="<?= $pph["percentage"]; ?>"><?= $pph["kriteria2"]; ?> </option><?php endforeach; ?></select></td></td><td style="width: 50px"><select class="form-control" name="ppnn" id="ppnn" data-live-search="true" onchange="input_ppn()" data-width="120px" data-size="5"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPN' GROUP BY idtax"); foreach ($sql as $ppn) : ?> <option data-idtax="<?= $ppn["idtax"]; ?>" value="<?= $ppn["percentage"]; ?>"><?= $ppn["kriteria2"]; ?> </option><?php endforeach; ?></select></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
+ row.innerHTML = element1;
 
+ $('.selectpicker').selectpicker();
+ $('.tanggal').datepicker({
+    format: "dd-mm-yyyy",
+    autoclose: true
+ });
+ $('.select2add').select2({
+    theme: 'bootstrap4',
+    dropdownAutoWidth: true,
+    width: '100%'
+ });
 
- row.innerHTML = element1;    
+ // Kalau PPN header sudah dikunci (bukan Non PPN), baris baru ini juga
+ // langsung ikut nilai itu & ikut terkunci.
+ var headerPpnVal = $('#pilih_ppn').val();
+ if (headerPpnVal && headerPpnVal !== '0') {
+    var $newPpnRow = $(row).find('select[name=ppnn]');
+    $newPpnRow.val(headerPpnVal).trigger('change');
+    $newPpnRow.prop('disabled', true);
+ }
     }
     
 function deleteRow(tableID)
@@ -1205,75 +1223,7 @@ function deleteRow(tableID)
                     table.deleteRow(i);
                     rowCount--;
                     i--;
-                    
-    var table = document.getElementById("tbody2");
-    var tota = 0;
-    var tota_ppn = 0;
-    var t_ppn = 0;
-    var tota_amt = 0;
-    var tota_ded = 0;
-    var harga = 0;
-    var totall = 0;
-    var tot_price= 0;
-    var total_ppn= 0;
-    var harga = 0;
-    var harga2 = 0;
-    var total_pv = parseFloat(document.getElementById('nomrate_h').value,10) || 0;
-    var ppn_h = parseFloat(document.getElementById('ppn_h').value,10) || 0;
-    var h_ppn = document.getElementById('pilih_ppn').value || 0;
-    var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0;
-            for (var i = 0; i < (table.rows.length); i++) {
-
-    var price = document.getElementById("tbody2").rows[i].cells[11].children[0].value || 0;
-    var price2 = document.getElementById("tbody2").rows[i].cells[12].children[0].value || 0;
-    var pph = document.getElementById("tbody2").rows[i].cells[14].children[0].value || 0;
-    var ppn = document.getElementById("tbody2").rows[i].cells[15].children[0].value || 0;
-
-    if(price == ''){
-        tot_price = - price2;
-    }else{
-        tot_price = price;
-    }
-
-    if (price == '') {
-        harga = 0;
-    }else{
-        harga = price;
-    }
-
-    if (price2 == '') {
-        harga2 = 0;
-    }else{
-        harga2 = price2;
-    }
-
-
-    tota += tot_price * (pph/100);
-    tota_ppn += tot_price * (ppn/100);
-    tota_amt += parseFloat(harga);
-    tota_ded += parseFloat(- harga2);
-    total_ppn = tota_amt * (h_ppn /100);
-
-    if (tota_ppn == 0) {
-        t_ppn = total_ppn;
-    }else{
-        t_ppn = tota_ppn;
-    }
-
-    var total_h = tota_amt + t_ppn - tota + tota_ded;
-
-
-    document.getElementsByName("ppn_h")[0].value = (t_ppn).toFixed(2);
-    document.getElementsByName("ppn")[0].value = formatMoney(t_ppn.toFixed(2));   
-    document.getElementsByName("pph_h")[0].value = (- tota).toFixed(2);
-    document.getElementsByName("pph")[0].value = formatMoney(- tota.toFixed(2));
-    document.getElementsByName("total_h")[0].value = (total_h).toFixed(2);
-    document.getElementsByName("total")[0].value = formatMoney(total_h.toFixed(2));
-    document.getElementsByName("nomrate_h")[0].value = (tota_amt).toFixed(2);
-    document.getElementsByName("nomrate1")[0].value = formatMoney(tota_amt.toFixed(2));
-    document.getElementsByName("ded_ad")[0].value = (tota_ded).toFixed(2);
-    document.getElementsByName("ded_ad_h")[0].value = formatMoney(tota_ded.toFixed(2));
-}
+                    recalcAllRows();
                     }
                 }
             } catch(e)
@@ -1328,108 +1278,77 @@ function deleteRow(tableID)
  }
 
  function hitungRow(){
-     
+
 }
 </script>
 
 <script type="text/javascript">
+    // Satu-satunya sumber perhitungan Total - dipanggil dari SEMUA trigger
+    // (input Amount, input Deduction, ganti PPH per baris, ganti PPN per
+    // baris, ganti PPN header, delete row), sama seperti perbaikan di
+    // create-paymentvoucher.php. Sebelumnya tiap trigger punya hitungan
+    // sendiri-sendiri yang saling tumpang tindih/tidak sinkron - baris
+    // Deduction pun tidak pernah ikut dihitung PPN/PPH-nya sama sekali.
+    function recalcAllRows(){
+        var table = document.getElementById("tbody2");
+        var subtotal = 0;
+        var dedTotal = 0;
+        var pphTotal = 0;
+        var ppnTotal = 0;
+
+        for (var i = 0; i < table.rows.length; i++) {
+            var amountEl = table.rows[i].cells[11].children[0];
+            var dedEl    = table.rows[i].cells[12].children[0];
+            var pphEl    = table.rows[i].cells[14].children[0];
+            var ppnEl    = table.rows[i].cells[15].children[0];
+
+            var amountVal = amountEl.value;
+            var dedVal    = dedEl.value;
+            var pphPct    = parseFloat(pphEl.value) || 0;
+            var ppnPct    = parseFloat(ppnEl.value) || 0;
+
+            var base;
+            if (amountVal === '') {
+                dedEl.readOnly = false;
+                amountEl.readOnly = (dedVal !== '');
+                var ded = parseFloat(dedVal) || 0;
+                dedTotal += ded;
+                base = -ded;
+            } else {
+                amountEl.readOnly = false;
+                dedEl.readOnly = true;
+                var amt = parseFloat(amountVal) || 0;
+                subtotal += amt;
+                base = amt;
+            }
+
+            pphTotal += base * (pphPct / 100);
+            ppnTotal += base * (ppnPct / 100);
+        }
+
+        var dedAdValue = -dedTotal;
+        var pphDisplay = -pphTotal;
+        var totalH = subtotal + dedAdValue + ppnTotal - pphTotal;
+
+        document.getElementsByName("nomrate_h")[0].value = subtotal.toFixed(2);
+        document.getElementsByName("nomrate1")[0].value = formatMoney(subtotal.toFixed(2));
+        document.getElementsByName("ded_ad")[0].value = dedAdValue.toFixed(2);
+        document.getElementsByName("ded_ad_h")[0].value = formatMoney(dedAdValue.toFixed(2));
+        document.getElementsByName("pph_h")[0].value = pphDisplay.toFixed(2);
+        document.getElementsByName("pph")[0].value = formatMoney(pphDisplay.toFixed(2));
+        document.getElementsByName("ppn_h")[0].value = ppnTotal.toFixed(2);
+        document.getElementsByName("ppn")[0].value = formatMoney(ppnTotal.toFixed(2));
+        document.getElementsByName("total_h")[0].value = totalH.toFixed(2);
+        document.getElementsByName("total")[0].value = formatMoney(totalH.toFixed(2));
+    }
+
     function input_pph(){
-     var table = document.getElementById("tbody2");
-    var tota = 0;
-    var harga = 0;
-    var totall = 0;
-    var tot_price= 0;
-    var tot_min= 0;
-    var tot_plus= 0;
-    var ppn_h = 0;
-    var total_pv = parseFloat(document.getElementById('nomrate_h').value,10) || 0;
-    // var ppn_h = parseFloat(document.getElementById('ppn_h').value,10) || 0;
-    var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0;
-            for (var i = 0; i < (table.rows.length); i++) {
-
-    var price = document.getElementById("tbody2").rows[i].cells[11].children[0].value || 0;
-    var price2 = document.getElementById("tbody2").rows[i].cells[12].children[0].value || 0;
-    var pph = document.getElementById("tbody2").rows[i].cells[14].children[0].value || 0;
-    var ppn = document.getElementById("tbody2").rows[i].cells[15].children[0].value || 0;
-
-    if(price == ''){
-        tot_price = - price2;
-        tot_min += tot_price * (pph/100);
-        document.getElementsByName("pph_min")[0].value = (- tot_min).toFixed(2);
-    }else{
-        tot_price = price;
-        tot_plus += tot_price * (pph/100);
-        document.getElementsByName("pph_plus")[0].value = (- tot_plus).toFixed(2);
+        recalcAllRows();
     }
 
-    tota += tot_price * (pph/100);
-    ppn_h += tot_price * (ppn/100);
-    var total_h = total_pv + ppn_h - tota + ded_ad;
-    
-    document.getElementsByName("pph_h")[0].value = (- tota).toFixed(2);
-    document.getElementsByName("pph")[0].value = formatMoney(- tota.toFixed(2));
-    document.getElementsByName("ppn_h")[0].value = (ppn_h).toFixed(2);
-    document.getElementsByName("ppn")[0].value = formatMoney(ppn_h.toFixed(2));
-    document.getElementsByName("total_h")[0].value = (total_h).toFixed(2);
-    document.getElementsByName("total")[0].value = formatMoney(total_h.toFixed(2));
-    // alert(pph);
-}
-}
-
-
-function input_ppn(){
-     var table = document.getElementById("tbody2");
-    var tota = 0;
-    var harga = 0;
-    var totall = 0;
-    var tot_price= 0;
-    var tot_min= 0;
-    var tot_plus= 0;
-    var id = 0;
-    var pph_h = 0;
-    var total_pv = parseFloat(document.getElementById('nomrate_h').value,10) || 0;
-    // var ppn_h = parseFloat(document.getElementById('ppn_h').value,10) || 0;
-    var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0;
-    $('#pilih_ppn').prop('disabled', false);
-            for (var i = 0; i < (table.rows.length); i++) {
-
-    var price = document.getElementById("tbody2").rows[i].cells[11].children[0].value || 0;
-    var price2 = document.getElementById("tbody2").rows[i].cells[12].children[0].value || 0;
-    var pph = document.getElementById("tbody2").rows[i].cells[14].children[0].value || 0;
-    var ppn = document.getElementById("tbody2").rows[i].cells[15].children[0].value || 0;
-
-    if(price == ''){
-        tot_price = - price2;
-        tot_min += tot_price * (pph/100);
-        document.getElementsByName("pph_min")[0].value = (- tot_min).toFixed(2);
-    }else{
-        tot_price = price;
-        tot_plus += tot_price * (pph/100);
-        document.getElementsByName("pph_plus")[0].value = (- tot_plus).toFixed(2);
+    function input_ppn(){
+        recalcAllRows();
     }
-
-    tota += tot_price * (ppn/100);
-    pph_h += tot_price * (pph/100);
-    var total_h = total_pv - pph_h + tota + ded_ad;
-
-    console.log(total_pv);
-    console.log(ppn_h);
-    console.log(tota);
-    console.log(ded_ad);
-    
-    document.getElementsByName("ppn_h")[0].value = (tota).toFixed(2);
-    document.getElementsByName("ppn")[0].value = formatMoney(tota.toFixed(2));
-    document.getElementsByName("pph_h")[0].value = (- pph_h).toFixed(2);
-    document.getElementsByName("pph")[0].value = formatMoney(- pph_h.toFixed(2));
-    document.getElementsByName("total_h")[0].value = (total_h).toFixed(2);
-    document.getElementsByName("total")[0].value = formatMoney(total_h.toFixed(2));
-    if (ppn > 0) {
-
-    $('#pilih_ppn').prop('disabled', true);
-    $('#pilih_ppn').val('');
-    }
-}
-}
 
 
 function getdate() {
@@ -1461,100 +1380,13 @@ function getdate() {
 </script>
 
 <script type="text/javascript">
-      function modal_input_amt(){ 
-    var pph_h = parseFloat(document.getElementById('pph_h').value,10) || 0;
-    var pph_ded = parseFloat(document.getElementById('pph_min').value,10) || 0;
-    var ppn_h = parseFloat(document.getElementById('ppn_h').value,10) || 0;
-    var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0; 
-    var ppn = parseFloat(document.getElementById('pilih_ppn').value,10) || 0;    
-    var table = document.getElementById("tbody2");
-    var tota = 0;
-    var tota_pph = 0;
-    var total_pph = 0;
-    var tota_ppn = 0;
-    var harga = 0;
-    var totall = 0;
-            for (var i = 0; i < (table.rows.length); i++) {
+      function modal_input_amt(){
+        recalcAllRows();
+      }
 
-    var price = document.getElementById("tbody2").rows[i].cells[11].children[0].value || 0;
-    var price2 = document.getElementById("tbody2").rows[i].cells[12].children[0].value || 0;
-    var pph = document.getElementById("tbody2").rows[i].cells[14].children[0].value || 0;
-    var ppn = document.getElementById("tbody2").rows[i].cells[15].children[0].value || 0;
-
-    if (price == '') {
-        harga = 0;
-        price2.readOnly = false;
-    }else{
-        harga = price;
-        price2.readOnly = true;
-    }
-
-    tota += parseFloat(harga);
-    tota_pph += parseFloat(harga) * (pph/100);
-    total_pph = tota_pph - pph_ded;
-    console.log(price);
-    tota_ppn += parseFloat(harga) * (ppn/100);
-    totall = tota + ded_ad + tota_ppn - total_pph;
-
-
-
-    document.getElementsByName("nomrate_h")[0].value = tota.toFixed(2);
-    document.getElementsByName("nomrate1")[0].value = formatMoney(tota.toFixed(2));
-    document.getElementsByName("total_h")[0].value = totall.toFixed(2);
-    document.getElementsByName("total")[0].value = formatMoney(totall.toFixed(2));
-    // document.getElementsByName("pph_h")[0].value = (- total_pph).toFixed(2);
-    // document.getElementsByName("pph")[0].value = formatMoney(- total_pph.toFixed(2));
-    // document.getElementsByName("ppn_h")[0].value = (tota_ppn).toFixed(2);
-    // document.getElementsByName("ppn")[0].value = formatMoney(tota_ppn.toFixed(2));
-    document.getElementsByName("pph_plus")[0].value = (- tota_pph).toFixed(2);
-}
-}
-
-function modal_input_dedadd(){ 
-    var total_pv = parseFloat(document.getElementById('nomrate_h').value,10) || 0; 
-    var pph_h = parseFloat(document.getElementById('pph_h').value,10) || 0;
-    var pph_amt = parseFloat(document.getElementById('pph_plus').value,10) || 0;
-    var ppn_h = parseFloat(document.getElementById('ppn_h').value,10) || 0;
-    var ded_ad = parseFloat(document.getElementById('ded_ad').value,10) || 0;   
-    var table = document.getElementById("tbody2");
-    var tota = 0;
-    var total = 0;
-    var harga = 0;
-    var harga2 = 0;
-    var totall = 0;
-    var tota_pph = 0;
-    var total_pph = 0;
-            for (var i = 0; i < (table.rows.length); i++) {
-
-    var price = document.getElementById("tbody2").rows[i].cells[12].children[0].value;
-    var price_amt = document.getElementById("tbody2").rows[i].cells[11].children[0];
-    var pph = document.getElementById("tbody2").rows[i].cells[14].children[0].value;
-
-    if (price == '') {
-        harga = 0;
-        harga2 = price_amt;
-        price_amt.readOnly = false;
-    }else{
-        harga = price;
-        harga2 = 0;
-        price_amt.readOnly = true;
-    }
-    tota += parseFloat(- harga);
-    tota_pph += parseFloat(harga) * (pph/100);
-    total_pph = pph_amt + tota_pph;
-    total = total_pv + tota + ppn_h + total_pph;
-
-
-
-    document.getElementsByName("ded_ad")[0].value = tota.toFixed(2);
-    document.getElementsByName("ded_ad_h")[0].value = formatMoney(tota.toFixed(2));
-    document.getElementsByName("total_h")[0].value = total.toFixed(2);
-    document.getElementsByName("total")[0].value = formatMoney(total.toFixed(2));
-    // document.getElementsByName("pph_h")[0].value = (total_pph).toFixed(2);
-    // document.getElementsByName("pph")[0].value = formatMoney(total_pph.toFixed(2));
-    document.getElementsByName("pph_min")[0].value = (tota_pph).toFixed(2);
-}
-}
+      function modal_input_dedadd(){
+        recalcAllRows();
+      }
 
 
 
@@ -1603,17 +1435,14 @@ function changeValueTax(id){
 function changeValueTax2(id){
     document.getElementById('idtax').value = prdName[id].idtax;
 
-    // Samakan PPN di semua baris detail dengan PPN yang baru dipilih di
-    // header ini, lalu hitung ulang total lewat input_ppn() supaya hasilnya
-    // konsisten dengan perhitungan per-baris (termasuk PPH per baris).
-    $('#tbody2 select[name=ppnn]').val(id);
-    input_ppn();
-
-    // input_ppn() otomatis mengosongkan & menonaktifkan #pilih_ppn kalau ada
-    // baris dengan PPN > 0 (asumsinya dipilih manual per baris). Di sini PPN
-    // baris justru berasal dari pilihan header ini, jadi kembalikan supaya
-    // dropdown-nya tetap kelihatan terpilih dan bisa diganti lagi.
-    $('#pilih_ppn').prop('disabled', false).val(id);
+    var $rowPpn = $('#tbody2 select[name=ppnn]');
+    if (id && id !== '0') {
+        $rowPpn.val(id).trigger('change');
+        $rowPpn.prop('disabled', true);
+    } else {
+        $rowPpn.prop('disabled', false);
+    }
+    recalcAllRows();
 }
   </script>
 
@@ -2092,6 +1921,7 @@ $.getJSON('get_coa_wajib_cc.php', function(data){
         var total = document.getElementById('total_h').value;
         var pilih_ppn = document.getElementById('pilih_ppn').value;
         var pilih_pph = document.getElementById('pilih_pph').value;
+        var pv_tax_type = document.getElementById('pv_tax_type').value;
         var create_user = '<?php echo $user; ?>';
 
         // Validasi dulu SEBELUM kirim ajax apapun, supaya data invalid tidak
@@ -2116,6 +1946,10 @@ $.getJSON('get_coa_wajib_cc.php', function(data){
         }else if(document.getElementById('curre').value == ''){
             Swal.fire('Error', 'Please select currency', 'error');
         document.getElementById('curre').focus();
+        return;
+        }else if(pv_tax_type == '' || pv_tax_type == null){
+        Swal.fire('Error', 'Please select Payment Voucher Type', 'error');
+        document.getElementById('pv_tax_type').focus();
         return;
         }else if(document.getElementById('forpay').value == '' || document.getElementById('forpay').value == '-'){
         Swal.fire('Error', 'Please select For payment', 'error');
@@ -2228,7 +2062,7 @@ $.getJSON('get_coa_wajib_cc.php', function(data){
                 'ctb':ctb, 'pay_date':pay_date, 'pay_mth':pay_mth, 'curr':curr, 'forpay':forpay, 'frcc':frcc,
                 'tocc':tocc, 'no_cek':no_cek, 'cek_date':cek_date, 'ke':ke, 'dari':dari, 'pesan':pesan,
                 'subtotal':subtotal, 'adjust':adjust, 'pph':pph, 'ppn':ppn, 'total':total,
-                'pilih_ppn':pilih_ppn, 'pilih_pph':pilih_pph, 'create_user':create_user,
+                'pilih_ppn':pilih_ppn, 'pilih_pph':pilih_pph, 'pv_tax_type':pv_tax_type, 'create_user':create_user,
                 'rows': JSON.stringify(rows)
             },
             cache: 'false',

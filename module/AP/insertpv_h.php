@@ -19,6 +19,10 @@ $pay_mth = $_POST['pay_mth'];
 $curr = $_POST['curr'];
 $forpay = $_POST['forpay'];
 $pv_tax_type = $_POST['pv_tax_type'] ?? '';
+// Menandai dokumen ini dibuat dari form mana (Regular/EXIM/FTR) - dipakai
+// nanti supaya halaman edit tahu template mana yang harus dipakai, karena
+// ketiganya beda alur/field walau nulis ke tabel yang sama.
+$pv_form_type = $_POST['pv_form_type'] ?? 'Regular';
 $frcc = $_POST['frcc'];
 $tocc = $_POST['tocc'];
 $ke = $_POST['ke'];
@@ -65,9 +69,11 @@ try {
     $urutan = (int) ($rowNum['max_urut'] ?? 0) + 1;
     $no_pv = $huruf . sprintf("%05d", $urutan);
 
-    q($conn2, "INSERT INTO tbl_pv_h (no_pv,pv_date,nama_supp,supp_doc,ctb,pay_date,pay_meth,curr,for_pay,pv_tax_type, frm_akun,to_akun,ke,dari,no_cek, cek_date,deskripsi,subtotal,adjust,pph,ppn,total,outstanding,per_ppn,per_pph,rate,create_by,create_date,status)
+    $pv_form_type_esc = mysqli_real_escape_string($conn2, $pv_form_type);
+
+    q($conn2, "INSERT INTO tbl_pv_h (no_pv,pv_date,nama_supp,supp_doc,ctb,pay_date,pay_meth,curr,for_pay,pv_tax_type,pv_form_type, frm_akun,to_akun,ke,dari,no_cek, cek_date,deskripsi,subtotal,adjust,pph,ppn,total,outstanding,per_ppn,per_pph,rate,create_by,create_date,status)
         VALUES
-        ('$no_pv', '$pv_date', '$nama_supp', '$sup_doc', '$ctb', '$pay_date', '$pay_mth', '$curr', '$forpay', '$pv_tax_type_esc', '$frcc', '$tocc', '$ke', '$dari', '$no_cek', '$cek_date', '$pesan', '$subtotal', '$adjust', '$pph', '$ppn', '$total', '$total', '$pilih_ppn', '$pilih_pph', '$rat_pv', '$create_user', '$create_date', '$status')");
+        ('$no_pv', '$pv_date', '$nama_supp', '$sup_doc', '$ctb', '$pay_date', '$pay_mth', '$curr', '$forpay', '$pv_tax_type_esc', '$pv_form_type_esc', '$frcc', '$tocc', '$ke', '$dari', '$no_cek', '$cek_date', '$pesan', '$subtotal', '$adjust', '$pph', '$ppn', '$total', '$total', '$pilih_ppn', '$pilih_pph', '$rat_pv', '$create_user', '$create_date', '$status')");
 
     // Detail baris - bulk insert satu statement, bukan satu INSERT per baris
     // (dulu tiap baris kirim request AJAX terpisah ke insertpv.php, jadi
