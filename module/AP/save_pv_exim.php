@@ -65,6 +65,10 @@ $status = 'Draft';
 mysqli_begin_transaction($conn2);
 
 try {
+    if ($pv_tax_type === '') {
+        throw new Exception('Payment Voucher Type wajib diisi.');
+    }
+
     // pv_form_type = 'EXIM' - menandai dokumen ini dibuat dari
     // create-paymentvoucher-exim.php, dipakai nanti supaya halaman edit
     // tahu template mana yang harus dipakai.

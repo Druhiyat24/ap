@@ -402,7 +402,7 @@
 
             <div class="col-md-2 mb-3">
                     <label for="pv_tax_type" class="col-form-label" style="width: 150px;">Payment Voucher Type</label>
-                <select class="form-control select2" name="pv_tax_type" id="pv_tax_type" style="width:100%">
+                <select class="form-control select2" name="pv_tax_type" id="pv_tax_type" style="width:100%" required>
                     <option value="" disabled selected="selected">Select Type</option>
                     <option value="Tax">Tax</option>
                     <option value="Non Tax">Non Tax</option>
