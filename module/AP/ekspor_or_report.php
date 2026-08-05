@@ -105,7 +105,7 @@ SELECT nm_memo, tgl_memo,no_invoice,supplier,buyer,total_memo from (SELECT b.id,
         $row_mj_b = mysqli_fetch_array($sql_mj_b);
         $val_mj_b = isset($row_mj_b['total']) ? $row_mj_b['total'] : 0;
 
-        if ($val_mj_b > 0) {
+        if ($val_mj_b != 0) {
       if ($row2['nm_memo']== 'MEMO/NAG/2402/01544' && $start_date >= '2026-06-01') {
         $beg_balance = 0; 
       }else{
