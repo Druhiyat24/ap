@@ -41,6 +41,13 @@
     .select2-selection--single .select2-selection__arrow{ height: calc(1.5em + .75rem) !important; top:0 !important; }
 
     .table-gradient2 th{ background:#3B82F6; color:#fff; text-align:center; vertical-align:middle; white-space:nowrap; }
+
+    /* Tab pindah menu Payment Voucher / EXIM / FTR - ganti dari tombol skew
+       jadul jadi pill-tab modern, tab aktif dikasih gradient sama kaya header. */
+    .pv-type-tabs{ display:inline-flex; gap:4px; background:#eef0f4; padding:4px; border-radius:10px; }
+    .pv-type-tabs .pv-type-tab{ border:0; background:transparent; color:#5a6270; font-size:13px; font-weight:600; padding:8px 16px; border-radius:8px; cursor:pointer; transition:background .15s,color .15s; }
+    .pv-type-tabs .pv-type-tab:hover{ background:rgba(0,0,0,.05); color:#212529; }
+    .pv-type-tabs .pv-type-tab.active{ background:linear-gradient(90deg, #191970, #1e90ff); color:#fff; box-shadow:0 2px 6px rgba(30,144,255,.35); }
 </style>
 
     <!-- MAIN -->
@@ -51,10 +58,13 @@
     </div>
     <div class="box header">
 <form id="form-data" method="post">
-    <div style="padding-left: 10px;padding-top: 5px;">
-            <button style="-ms-transform: skew(10deg);-webkit-transform: skew(10deg);transform: skew(15deg);" id="btnpv" type="button" class="btn-primary btn-xs"><span></span> Payment Voucher</button>
-            <button style="-ms-transform: skew(10deg);-webkit-transform: skew(10deg);transform: skew(15deg);" id="btnpve" type="button" class="btn-secondary btn-xs"><span></span>Payment Voucher EXIM</button>
-            <button style="-ms-transform: skew(10deg);-webkit-transform: skew(10deg);transform: skew(15deg);" id="btnpvftr" type="button" class="btn-secondary btn-xs"><span></span>Payment Voucher FTR</button>
+    <div style="padding:5px 10px 10px;">
+            <div class="pv-type-tabs">
+            <button id="btnpv" type="button" class="pv-type-tab active">Payment Voucher</button>
+            <button id="btnpve" type="button" class="pv-type-tab">Payment Voucher EXIM</button>
+            <!-- Payment Voucher FTR sudah tidak dipakai, tab-nya di-hide (bukan dihapus) -->
+            <!-- <button id="btnpvftr" type="button" class="pv-type-tab">Payment Voucher FTR</button> -->
+            </div>
         </div>
         <div class="form-row">
             <div class="col-md-3 mb-3">            
@@ -1905,11 +1915,13 @@ $("#select_all").click(function() {
 };
 </script>
 
+<!-- Tab Payment Voucher FTR di-hide, handler klik-nya ikut dinonaktifkan
 <script type="text/javascript">
     document.getElementById('btnpvftr').onclick = function () {
     location.href = "create-paymentvoucher-ftr.php";
 };
 </script>
+-->
 
 <!-- <script type="text/javascript">     
     $('table tbody tr').on('click', 'td:eq(1)', function(){                
