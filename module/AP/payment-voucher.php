@@ -1,6 +1,84 @@
 <?php include '../header.php' ?>
 
-<style >
+<style type="text/css">
+    label {
+        font-size: 14px;
+    }
+
+    input {
+        font-size: 14px;
+    }
+
+    .table-gradient th {
+        background: #1E3A8A;
+        color: #fff;
+        text-align: center;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    #mytable th:nth-child(3), #mytable td:nth-child(3),
+    #mytable th:nth-child(5), #mytable td:nth-child(5) {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    div.dataTables_wrapper .dataTables_paginate {
+        float: right;
+        margin-top: 10px;
+    }
+
+    div.dataTables_wrapper .dataTables_info {
+        float: left;
+        margin-top: 10px;
+    }
+
+    .kbon-action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .kbon-action-buttons .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: 7px;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        font-size: 12px;
+        box-shadow: 0 2px 5px rgba(15, 23, 42, 0.16);
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .kbon-action-buttons .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 10px rgba(15, 23, 42, 0.24);
+    }
+
+    .kbon-action-buttons .btn-primary {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    }
+
+    .kbon-action-buttons .btn-success {
+        background: linear-gradient(135deg, #16a34a, #15803d);
+    }
+
+    .kbon-action-buttons .btn-warning {
+        color: #fff;
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+
+    .kbon-action-buttons .btn-danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+
     .modal {
       text-align: center;
       padding: 0!important;
@@ -20,70 +98,101 @@
       text-align: left;
       vertical-align: middle;
   }
+
+  /* Detail Payment Voucher */
+  #mymodal .modal-dialog {
+      display: inline-block;
+      width: 94%;
+      max-width: 1120px;
+      margin: 1.75rem auto;
+      vertical-align: middle;
+  }
+
+  #mymodal .modal-content {
+      border: 0;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 16px 42px rgba(15, 23, 42, 0.24);
+  }
+
+  #mymodal .modal-header {
+      padding: 16px 22px;
+      border: 0;
+      background: linear-gradient(135deg, #172554, #2563eb);
+  }
+
+  #mymodal .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+  }
+
+  #mymodal .close {
+      color: #fff;
+      opacity: .9;
+      text-shadow: none;
+  }
+
+  .pv-detail-summary {
+      padding: 16px 20px 8px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+  }
+
+  .pv-detail-field {
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: #475569;
+  }
+
+  .pv-detail-field strong {
+      display: block;
+      margin-top: 2px;
+      color: #0f172a;
+      font-size: 13px;
+      font-weight: 600;
+  }
+
+  #details {
+      padding: 16px 20px 4px;
+  }
+
+  #details .pv-detail-table {
+      margin-bottom: 14px;
+      font-size: 11px;
+  }
+
+  #details .pv-detail-table thead th {
+      background: #eaf1ff;
+      color: #1e3a8a;
+      border-color: #cbd5e1;
+      font-weight: 700;
+      vertical-align: middle;
+      white-space: nowrap;
+  }
+
+  #details .pv-detail-table td {
+      border-color: #e2e8f0;
+      vertical-align: middle;
+  }
+
+  #details .pv-detail-totals {
+      font-size: 12px;
+  }
 </style>
 
-<!-- MAIN -->    
-<div class="col p-4">
-    <h2 class="text-center">LIST PAYMENT VOUCHER</h2>
-    <div class="box">
-        <div class="box header">
+<!-- MAIN -->
+<div class="container-fluid mt-4 p-4">
+    <!-- Card Filter -->
+    <div class="card shadow border-0">
+        <div class="card-header text-white py-2 px-3" style="background: linear-gradient(90deg, #191970, #1e90ff);">
+            <h5 class="mb-0"><i class="fa fa-list-alt" aria-hidden="true"></i> LIST PAYMENT VOUCHER</h5>
+        </div>
+
+        <div class="card-body p-3">
             <form id="form-data" action="payment-voucher.php" method="post">
-                <div class="form-row">
-                    <div class="col-md-5">
-                        <label for="nama_supp"><b>Supplier</b></label>            
-                        <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true" onchange="this.form.submit()">
-                            <?php
-                            $nama_supp = 'ALL';
-                            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : 'ALL';
-                            }
-
-                            $isSelected = ($nama_supp == 'ALL') ? ' selected="selected"' : '';
-                            echo '<option value="ALL"' . $isSelected . '>ALL</option>';
-
-                            $sql = mysqli_query($conn1, "SELECT DISTINCT(Supplier) FROM mastersupplier WHERE tipe_sup = 'S' ORDER BY Supplier ASC");
-                            while ($row = mysqli_fetch_array($sql)) {
-                                $data = $row['Supplier'];
-                                $isSelected = ($data == $nama_supp) ? ' selected="selected"' : '';
-                                echo '<option value="' . $data . '"' . $isSelected . '>' . $data . '</option>';
-                            }
-                            ?>
-                        </select>
-                    </div>  
+                <div class="row g-3">
 
                     <div class="col-md-2">
-                        <label for="nama_supp"><b>Outstanding</b></label>            
-                        <select class="form-control selectpicker" name="ost" id="ost" data-dropup-auto="false" data-live-search="true" onchange="this.form.submit()">
-                            <option value="ALL" <?php
-                            $ost = '';
-                            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                                $ost = isset($_POST['ost']) ? $_POST['ost']: null;
-                            }                 
-                            if($ost == 'ALL'){
-                                $isSelected = ' selected="selected"';
-                            }else{
-                                $isSelected = '';
-                            }
-                            echo $isSelected;
-                            ?>                
-                            >ALL</option>                                        
-                            <option value="0" <?php
-                            $ost = '';
-                            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                                $ost = isset($_POST['ost']) ? $_POST['ost']: null;
-                            }                 
-                            if($ost == '0'){
-                                $isSelected = ' selected="selected"';
-                            }else{
-                                $isSelected = '';
-                            }
-                            echo $isSelected;
-                            ?>                
-                            >Yes</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-3">
                         <label for="nama_supp"><b>Pay Method</b></label>            
                         <select class="form-control selectpicker" name="meth" id="meth" data-dropup-auto="false" data-live-search="true" onchange="this.form.submit()">
                             <option value="ALL" <?php
@@ -117,9 +226,66 @@
                             }?> 
                         </select>
                     </div>
+                    
+                    <div class="col-md-4">
+                        <label for="nama_supp"><b>Supplier</b></label>
+                        <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true">
+                            <?php
+                            $nama_supp = 'ALL';
+                            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : 'ALL';
+                            }
+
+                            $isSelected = ($nama_supp == 'ALL') ? ' selected="selected"' : '';
+                            echo '<option value="ALL"' . $isSelected . '>ALL</option>';
+
+                            $sql = mysqli_query($conn1, "SELECT DISTINCT(Supplier) FROM mastersupplier WHERE tipe_sup = 'S' ORDER BY Supplier ASC");
+                            while ($row = mysqli_fetch_array($sql)) {
+                                $data = $row['Supplier'];
+                                $isSelected = ($data == $nama_supp) ? ' selected="selected"' : '';
+                                echo '<option value="' . $data . '"' . $isSelected . '>' . $data . '</option>';
+                            }
+                            ?>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="nama_supp"><b>Outstanding</b></label>
+                        <select class="form-control selectpicker" name="ost" id="ost" data-dropup-auto="false" data-live-search="true" onchange="this.form.submit()">
+                            <option value="ALL" <?php
+                            $ost = '';
+                            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                                $ost = isset($_POST['ost']) ? $_POST['ost']: null;
+                            }                 
+                            if($ost == 'ALL'){
+                                $isSelected = ' selected="selected"';
+                            }else{
+                                $isSelected = '';
+                            }
+                            echo $isSelected;
+                            ?>                
+                            >ALL</option>                                        
+                            <option value="0" <?php
+                            $ost = '';
+                            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                                $ost = isset($_POST['ost']) ? $_POST['ost']: null;
+                            }                 
+                            if($ost == '0'){
+                                $isSelected = ' selected="selected"';
+                            }else{
+                                $isSelected = '';
+                            }
+                            echo $isSelected;
+                            ?>                
+                            >Yes</option>
+                        </select>
+                    </div>
+
+                    
+                    <div class="col-md-4"></div>
 
 
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label for="status"><b>Status</b></label>            
                         <select class="form-control selectpicker" name="status" id="status" data-dropup-auto="false" data-live-search="true" onchange="this.form.submit()">
                             <option value="ALL" <?php
@@ -190,8 +356,8 @@
                         </select>
                     </div>
 
-                    <div class="col-md-2 mb-3"> 
-                        <label for="start_date"><b>From</b></label>          
+                    <div class="col-md-2">
+                        <label for="start_date"><b>From</b></label>
                         <input type="text" style="font-size: 12px;" class="form-control tanggal" id="start_date" name="start_date" 
                         value="<?php
                         $start_date ='';
@@ -207,8 +373,8 @@
                      placeholder="Tanggal Awal" onchange="this.form.submit()">
                  </div>
 
-                 <div class="col-md-2 mb-3"> 
-                    <label for="end_date"><b>To</b></label>          
+                 <div class="col-md-2">
+                    <label for="end_date"><b>To</b></label>
                     <input type="text" style="font-size: 12px;" class="form-control tanggal" id="end_date" name="end_date" 
                     value="<?php
                     $end_date ='';
@@ -276,52 +442,55 @@
             }elseif($nama_supp == 'ALL' and $meth != 'ALL' and $ost != 'ALL' and $status != 'ALL'){
                 $where = "where a.pay_meth = '$meth' and a.outstanding != '$ost' and a.status = '$status' and a.pv_date between '$start_date' and '$end_date'";
             }else{
-              $where = "where a.nama_supp = '$nama_supp' and a.pay_meth = '$meth' and a.outstanding != '$ost' and a.status = '$status' and a.pv_date between '$start_date' and '$end_date'";  
+              $where = "where a.nama_supp = '$nama_supp' and a.pay_meth = '$meth' and a.outstanding != '$ost' and a.status = '$status' and a.pv_date between '$start_date' and '$end_date'";
           }
+          ?>
 
-          echo '<div class="col-md-2 mb-3"> 
-          <a style="padding-right: 10px;" target="_blank" href="ekspor_payment_voucher.php?where='.$where.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>
-          </div>';
+                    <div class="col-md-3 d-flex align-items-end mt-2">
+                        <button type="submit" class="btn btn-info btn-sm me-2">
+                            <i class="fa fa-search" aria-hidden="true"></i> Search</button>
 
-          ?>       
-      </div>                   
-  </div>
+                        <?php
+                        $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create Bank'");
+                        $rs = mysqli_fetch_array($querys);
+                        $id = isset($rs['id']) ? $rs['id'] : 0;
+
+                        if($id == '37'){
+                            echo '<button id="btncreate" type="button" class="btn btn-primary btn-sm ml-2"><i class="fa fa-plus-circle" aria-hidden="true"></i> Create</button>';
+                        }
+                        ?>
+
+                        <a target="_blank" href="ekspor_payment_voucher.php?where=<?= $where; ?> && start_date=<?= $start_date; ?> && end_date=<?= $end_date; ?>" class="ml-2">
+                            <button type="button" class="btn btn-success btn-sm">
+                                <i class="fa fa-file-excel-o" aria-hidden="true"></i> Excel
+                            </button>
+                        </a>
+                    </div>
+      </div>
 </form>
-<?php
-$querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create Bank'");
-$rs = mysqli_fetch_array($querys);
-$id = isset($rs['id']) ? $rs['id'] : 0;
+</div>
+</div>
 
-if($id == '37'){
-    echo '<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>';
-}else{
-    echo '';
-}
-?>
-<div class="box body">
-    <div class="row">       
-        <div class="col-md-12">
+<!-- Card Table -->
+<div class="card shadow border-0 mt-4">
+    <div class="card-body p-4">
+        <div class="table-responsive">
 
-           <form id="formdata">            
-            <table id="mytable" class="table table-striped table-bordered" role="grid" cellspacing="0" width="100%">
-                <thead>
-                    <tr class="thead-dark">
+           <form id="formdata">
+            <table id="mytable" class="table table-striped table-bordered table-hover table-sm" role="grid" cellspacing="0" width="100%">
+                <thead class="table-gradient">
+                    <tr>
                         <th style="text-align: center;vertical-align: middle;">No Payment Voucher</th>
                         <th style="text-align: center;vertical-align: middle;">PV Date</th>
+                        <th style="text-align: center;vertical-align: middle;width: 180px;">Supplier</th>
+                        <th style="text-align: center;vertical-align: middle;">Payment Method</th>
+                        <th style="text-align: center;vertical-align: middle;">For Payment</th>
                         <th style="text-align: center;vertical-align: middle;">Due Date</th>
                         <th style="text-align: center;vertical-align: middle;">Curreny</th>
                         <th style="text-align: center;vertical-align: middle;">Amount</th>
                         <th style="text-align: center;vertical-align: middle;">Outstanding</th>
                         <th style="text-align: center;vertical-align: middle;">Status</th>
-                        <th style="text-align: center;vertical-align: middle;width: 80px;">Action</th> 
-                        <th style="display: none;">Status</th> 
-                        <th style="display: none;">Status</th>
-                        <th style="display: none;">Status</th> 
-                        <th style="display: none;">Status</th>
-                        <th style="display: none;">Status</th> 
-                        <th style="display: none;">Status</th>
-                        <th style="display: none;">Status</th> 
-                        <th style="display: none;">Status</th>                                                                                                                                                                      
+                        <th style="text-align: center;vertical-align: middle;width: 130px;">Action</th>
                     </tr>
                 </thead>
 
@@ -381,7 +550,7 @@ if($id == '37'){
                       $where = "where a.nama_supp = '$nama_supp' and a.pay_meth = '$meth' and a.outstanding != '$ost' and a.status = '$status' and a.pv_date between '$start_date' and '$end_date'";  
                   }
 
-                  $sql = mysql_query("select a.no_pv,a.pv_date,max(b.due_date) as due_date,a.curr,a.total,a.outstanding,a.status,a.no_cek,a.cek_date, a.nama_supp as pay_to,a.pay_date,a.pay_meth,a.frm_akun, a.to_akun, a.for_pay from tbl_pv_h a inner join tbl_pv b on b.no_pv = a.no_pv $where group by a.no_pv",$conn1);
+                  $sql = mysql_query("select a.no_pv,a.pv_date,max(b.due_date) as due_date,a.curr,a.total,a.outstanding,a.status,a.no_cek,a.cek_date, a.nama_supp as pay_to,a.pay_date,a.pay_meth,a.frm_akun, a.to_akun, a.for_pay, a.pv_form_type from tbl_pv_h a inner join tbl_pv b on b.no_pv = a.no_pv $where group by a.no_pv",$conn1);
 
                   while($row = mysql_fetch_array($sql)){
                     $pay_meth = $row['pay_meth'];
@@ -394,63 +563,74 @@ if($id == '37'){
                     } 
 
                     $duedate = $row['due_date'];
-                    if ($duedate == '' || $duedate == '1970-01-01') { 
+                    if ($duedate == '' || $duedate == '1970-01-01') {
                         $due_date = '-';
                     }else{
-                        $due_date = date("d-m-Y",strtotime($row['due_date'])); 
+                        $due_date = date("d-m-Y",strtotime($row['due_date']));
                     }
-                    
-                    echo'<tr>                       
+
+                    // Edit tampilan/alur beda antara Regular dan EXIM (field-nya
+                    // beda), jadi diarahkan ke halaman edit yang sesuai
+                    // berdasarkan pv_form_type yang disimpan saat create.
+                    $editUrl = ($row['pv_form_type'] === 'EXIM') ? 'edit-paymentvoucher-exim.php' : 'edit-paymentvoucher.php';
+
+                    echo'<tr data-no_cek="'.htmlspecialchars($row['no_cek']).'" data-cek_date="'.htmlspecialchars($cek_date).'" data-pay_to="'.htmlspecialchars($row['pay_to']).'" data-pay_date="'.htmlspecialchars(date("d-M-Y",strtotime($row['pay_date']))).'" data-pay_meth="'.htmlspecialchars($row['pay_meth']).'" data-frm_akun="'.htmlspecialchars($row['frm_akun']).'" data-to_akun="'.htmlspecialchars($row['to_akun']).'" data-for_pay="'.htmlspecialchars($row['for_pay']).'">
                     <td style="width:50px; text-align : center" value="'.$row['no_pv'].'">'.$row['no_pv'].'</td>
-                    <td style="width:100px; text-align : center" value="'.$row['pv_date'].'">'.date("d-M-Y",strtotime($row['pv_date'])).'</td> 
-                    <td style="width:100px; text-align : center" value="'.$due_date.'">'.$due_date.'</td>                                                                                             
+                    <td style="width:100px; text-align : center" value="'.$row['pv_date'].'">'.date("d-M-Y",strtotime($row['pv_date'])).'</td>
+                    <td style="width:180px; text-align : left" value="'.htmlspecialchars($row['pay_to']).'" title="'.htmlspecialchars($row['pay_to']).'">'.htmlspecialchars($row['pay_to']).'</td>
+                    <td style="text-align : center" value="'.htmlspecialchars($row['pay_meth']).'">'.htmlspecialchars($row['pay_meth']).'</td>
+                    <td style="text-align : left" value="'.htmlspecialchars($row['for_pay']).'">'.htmlspecialchars($row['for_pay']).'</td>
+                    <td style="width:100px; text-align : center" value="'.$due_date.'">'.$due_date.'</td>
                     <td style="width:50px; text-align : center" value="'.$row['curr'].'">'.$row['curr'].'</td>
                     <td style="width:50px; text-align : center" value="'.$row['total'].'">'.number_format($row['total'],2).'</td>
                     <td style="width:50px; text-align : center" value="'.$row['outstanding'].'">'.number_format($row['outstanding'],2).'</td>
                     <td style="width:50px; text-align : center" value="'.$row['status'].'">'.$row['status'].'</td>
-                    <td style="width:50px; text-align : center">';
+                    <td style="width:50px; text-align : center"><div class="kbon-action-buttons">';
+                    echo '<button type="button" class="btn btn-sm btn-primary btn-detail-pv" data-pv="'.htmlspecialchars($row['no_pv']).'" title="Detail Payment Voucher"><i class="fa fa-eye" aria-hidden="true"></i></button>';
                     if ($pay_meth == 'CHEQUE/GIRO' && $status != 'Draft') {
-                        echo '<button style="border-radius: 6px" type="button" id="btnupdate" name="btnupdate"  class="btn-xs btn-warning">Update</button>
-                        <a href="pdf_payvoucher.php?no_pv='.$row['no_pv'].'" target="_blank"><button style="border-radius: 6px" type="button" class="btn-xs btn-success"><i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Pdf</i></button></a> 
-                        </td>';
+                        echo '<button type="button" id="btnupdate" name="btnupdate" class="btn btn-sm btn-warning" title="Update Cheque / Giro"><i class="fa fa-pencil" aria-hidden="true"></i></button>
+                        <a href="pdf_payvoucher.php?no_pv='.$row['no_pv'].'" target="_blank" class="btn btn-sm btn-success" title="PDF Payment Voucher"><i class="fa fa-file-pdf-o" aria-hidden="true"></i></a>
+                        </div></td>';
                     }elseif ($pay_meth == 'CHEQUE/GIRO' && $status == 'Draft') {
-                        echo '<button style="border-radius: 6px" type="button" id="btnupdate" name="btnupdate"  class="btn-xs btn-warning">Update</button>
-                        <a href="pdf_payvoucher.php?no_pv='.$row['no_pv'].'" target="_blank"><button style="border-radius: 6px" type="button" class="btn-xs btn-success"><i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Pdf</i></button></a> 
-                        <a href="edit-paymentvoucher.php?no_pv='.base64_encode($row['no_pv']).' "><button style="border-radius: 6px" type="button" class="btn-xs btn-danger"><i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Edit</i></button></a>
-                        </td>';
+                        echo '<button type="button" id="btnupdate" name="btnupdate" class="btn btn-sm btn-warning" title="Update Cheque / Giro"><i class="fa fa-pencil" aria-hidden="true"></i></button>
+                        <a href="pdf_payvoucher.php?no_pv='.$row['no_pv'].'" target="_blank" class="btn btn-sm btn-success" title="PDF Payment Voucher"><i class="fa fa-file-pdf-o" aria-hidden="true"></i></a>
+                        <a href="'.$editUrl.'?no_pv='.base64_encode($row['no_pv']).' " class="btn btn-sm btn-danger" title="Edit Payment Voucher"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                        </div></td>';
                     }elseif ($pay_meth != 'CHEQUE/GIRO' && $status != 'Draft') {
-                        echo '<a href="pdf_payvoucher.php?no_pv='.$row['no_pv'].'" target="_blank"><button style="border-radius: 6px" type="button" class="btn-xs btn-success"><i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Pdf</i></button></a> ';
+                        echo '<a href="pdf_payvoucher.php?no_pv='.$row['no_pv'].'" target="_blank" class="btn btn-sm btn-success" title="PDF Payment Voucher"><i class="fa fa-file-pdf-o" aria-hidden="true"></i></a>';
                         $querys_pv = mysqli_query($conn1,"select maintain_pv from userpassword where username = '$user'");
                         $rs_pv = mysqli_fetch_array($querys_pv);
                         $maintain_pv = isset($rs_pv['maintain_pv']) ? $rs_pv['maintain_pv'] : 0;
                         if ($maintain_pv == '1') {
-                         echo '<button style="border-radius: 6px" type="button" id="btn_maintainpv" name="btn_maintainpv"  class="btn-xs btn-warning"><i class="fa fa-refresh" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Draft</i></button>';
+                         echo '<button type="button" id="btn_maintainpv" name="btn_maintainpv" class="btn btn-sm btn-warning" title="Set ke Draft"><i class="fa fa-refresh" aria-hidden="true"></i></button>';
                      }else{
 
                      }
-                     echo '</td>';
+                     echo '</div></td>';
                  }else{
-                    echo '<a href="pdf_payvoucher.php?no_pv='.$row['no_pv'].'" target="_blank"><button style="border-radius: 6px" type="button" class="btn-xs btn-success"><i class="fa fa-file-pdf-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Pdf</i></button></a> 
-                    <a href="edit-paymentvoucher.php?no_pv='.base64_encode($row['no_pv']).' "><button style="border-radius: 6px" type="button" class="btn-xs btn-danger"><i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Edit</i></button></a>';
+                    echo '<a href="pdf_payvoucher.php?no_pv='.$row['no_pv'].'" target="_blank" class="btn btn-sm btn-success" title="PDF Payment Voucher"><i class="fa fa-file-pdf-o" aria-hidden="true"></i></a>
+                    <a href="'.$editUrl.'?no_pv='.base64_encode($row['no_pv']).' " class="btn btn-sm btn-danger" title="Edit Payment Voucher"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a>
+                    </div></td>';
                 }
-                echo '<td style="display : none;" value="'.$row['no_cek'].'">'.$row['no_cek'].'</td>
-                <td style="display : none;" value="'.$cek_date.'">'.$cek_date.'</td>
-                <td style="display: none; text-align : center" value="'.$row['pay_to'].'">'.$row['pay_to'].'</td>
-                <td style="display: none; text-align : center" value="'.date("d-M-Y",strtotime($row['pay_date'])).'">'.date("d-M-Y",strtotime($row['pay_date'])).'</td>
-                <td style="display: none; text-align : center" value="'.$row['pay_meth'].'">'.$row['pay_meth'].'</td>
-                <td style="display: none; text-align : center" value="'.$row['frm_akun'].'">'.$row['frm_akun'].'</td>
-                <td style="display: none; text-align : center" value="'.$row['to_akun'].'">'.$row['to_akun'].'</td>         
-                <td style="display: none; text-align : center" value="'.$row['for_pay'].'">'.$row['for_pay'].'</td>  
-                </tr>
-                ';
+                echo '</tr>';
 
 
             } ?>
         </tbody>
     </table>
-</form>  
-</div> 
-</div> 
+</form>
+</div>
+<?php
+$jml = 0;
+$ost_total = 0;
+$sqlTotal = mysql_query("select sum(a.total) as nominal, sum(a.outstanding) as outstanding from tbl_pv_h a $where", $conn1);
+$rowTotal = mysql_fetch_array($sqlTotal);
+$jml += $rowTotal['nominal'];
+$ost_total += $rowTotal['outstanding'];
+?>
+<div class="mt-2" style="font-size:13px"><b>Total Amount:</b> <?= number_format($jml, 2); ?> &nbsp; | &nbsp; <b>Total Outstanding:</b> <?= number_format($ost_total, 2); ?></div>
+</div>
+</div>
 
 <!-- if ($pay_meth == 'CHEQUE/GIRO') {
                                 echo '<button style="border-radius: 6px" type="button" id="btnupdate" name="btnupdate"  class="btn-xs btn-warning">Update</button>
@@ -554,122 +734,36 @@ if($id == '37'){
     </div>
 </div>                                   
 
-<div class="modal fade" id="mymodal" data-target="#mymodal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-    <div class="modal-dialog">
+<div class="modal fade" id="mymodal" tabindex="-1" role="dialog" aria-labelledby="pvDetailTitle" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
-            <div class="modal-header bg-dark text-white">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                <h4 class="modal-title" id="txt_bpb"></h4>
+            <div class="modal-header text-white">
+                <h4 class="modal-title" id="pvDetailTitle">Detail Payment Voucher</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
-            <div class="container">
-                <div class="row">
-                  <div id="txt_tglbpb" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                  <div id="txt_no_po" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                  <div id="txt_supp1" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                  <div id="txt_supp" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                  <div id="txt_top" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>         
-                  <div id="txt_curr" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                  <div id="txt_confirm" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                  <div id="txt_confirm1" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                  <div id="txt_confirm2" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>          
-                  <div id="details" class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;"></div>          
-              </div>
-          </div>
+            <div class="modal-body p-0">
+                <div class="pv-detail-summary">
+                    <div class="row">
+                        <div id="txt_tglbpb" class="col-md-4 pv-detail-field"></div>
+                        <div id="txt_no_po" class="col-md-4 pv-detail-field"></div>
+                        <div id="txt_supp1" class="col-md-4 pv-detail-field"></div>
+                        <div id="txt_supp" class="col-md-4 pv-detail-field"></div>
+                        <div id="txt_top" class="col-md-4 pv-detail-field"></div>
+                        <div id="txt_curr" class="col-md-4 pv-detail-field"></div>
+                        <div id="txt_confirm" class="col-md-4 pv-detail-field"></div>
+                        <div id="txt_confirm1" class="col-md-4 pv-detail-field"></div>
+                        <div id="txt_confirm2" class="col-md-4 pv-detail-field"></div>
+                    </div>
+                </div>
+                <div id="details"></div>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-dismiss="modal">Close</button>
+            </div>
       </div>
       <!-- /.modal-content --> 
   </div>
   <!-- /.modal-dialog --> 
-</div>                            
-
-<div class="box footer">   
-    <form id="form-simpan">
-     <div class="form-row col">
-        <div class="col-md-4 mb-2">
-            <h4><i>Total</i></h4>
-            <table >
-                <?php
-                $nama_supp ='';
-                $start_date ='';
-                $end_date ='';
-                $meth ='';
-                $ost =''; 
-                $where =''; 
-                $date_now = date("Y-m-d");           
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                    $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
-                    $meth = isset($_POST['meth']) ? $_POST['meth']: null;
-                    $ost = isset($_POST['ost']) ? $_POST['ost']: null;
-                    $status = isset($_POST['status']) ? $_POST['status']: null;
-                    $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-                    $end_date = date("Y-m-d",strtotime($_POST['end_date']));            
-                }
-
-
-                if($nama_supp == 'ALL' and $meth == 'ALL' and $ost == 'ALL' and $status == 'ALL' and empty($start_date) and empty($end_date)){
-                    $where = "where a.pv_date = '$date_now'";
-                }elseif($nama_supp == 'ALL' and $meth == 'ALL' and $ost == 'ALL' and $status == 'ALL' and !empty($start_date) and !empty($end_date)){
-                    $where = "where a.pv_date between '$start_date' and '$end_date'";
-                }elseif($nama_supp != 'ALL' and $meth == 'ALL' and $ost == 'ALL' and $status == 'ALL'){
-                    $where = "where a.nama_supp = '$nama_supp' and a.pv_date between '$start_date' and '$end_date'";
-                }elseif($nama_supp == 'ALL' and $meth != 'ALL' and $ost == 'ALL' and $status == 'ALL'){
-                    $where = "where a.pay_meth = '$meth' and a.pv_date between '$start_date' and '$end_date'";
-                }elseif($nama_supp == 'ALL' and $meth == 'ALL' and $ost != 'ALL' and $status == 'ALL'){
-                    $where = "where a.outstanding != '$ost' and a.pv_date between '$start_date' and '$end_date'";
-                }elseif($nama_supp == 'ALL' and $meth == 'ALL' and $ost == 'ALL' and $status != 'ALL'){
-                    $where = "where a.status = '$status' and a.pv_date between '$start_date' and '$end_date'";
-                }elseif($nama_supp != 'ALL' and $meth != 'ALL' and $ost == 'ALL' and $status == 'ALL'){
-                    $where = "where a.nama_supp = '$nama_supp' and a.pay_meth = '$meth' and a.pv_date between '$start_date' and '$end_date'";
-                }elseif($nama_supp != 'ALL' and $meth == 'ALL' and $ost != 'ALL' and $status == 'ALL'){
-                    $where = "where a.nama_supp = '$nama_supp' and a.outstanding != '$ost' and a.pv_date between '$start_date' and '$end_date'";
-                }elseif($nama_supp != 'ALL' and $meth == 'ALL' and $ost == 'ALL' and $status != 'ALL'){
-                    $where = "where a.nama_supp = '$nama_supp' and a.status = '$status' and a.pv_date between '$start_date' and '$end_date'";
-                }elseif($nama_supp == 'ALL' and $meth != 'ALL' and $ost != 'ALL' and $status == 'ALL'){
-                    $where = "where a.pay_meth = '$meth' and a.outstanding != '$ost' and a.pv_date between '$start_date' and '$end_date'";
-                }elseif($nama_supp == 'ALL' and $meth != 'ALL' and $ost == 'ALL' and $status != 'ALL'){
-                    $where = "where a.pay_meth = '$meth' and a.status = '$status' and a.pv_date between '$start_date' and '$end_date'";
-                }elseif($nama_supp == 'ALL' and $meth == 'ALL' and $ost != 'ALL' and $status != 'ALL'){
-                    $where = "where a.outstanding != '$ost' and a.status = '$status' and a.pv_date between '$start_date' and '$end_date'";
-                }elseif($nama_supp != 'ALL' and $meth != 'ALL' and $ost != 'ALL' and $status == 'ALL'){
-                    $where = "where a.nama_supp = '$nama_supp' and a.pay_meth = '$meth' and a.outstanding != '$ost' and a.pv_date between '$start_date' and '$end_date'";
-                }elseif($nama_supp != 'ALL' and $meth != 'ALL' and $ost == 'ALL' and $status != 'ALL'){
-                    $where = "where a.nama_supp = '$nama_supp' and a.pay_meth = '$meth' and a.status = '$status' and a.pv_date between '$start_date' and '$end_date'";
-                }elseif($nama_supp != 'ALL' and $meth == 'ALL' and $ost != 'ALL' and $status != 'ALL'){
-                    $where = "where a.nama_supp = '$nama_supp' and a.outstanding != '$ost' and a.status = '$status' and a.pv_date between '$start_date' and '$end_date'";
-                }elseif($nama_supp == 'ALL' and $meth != 'ALL' and $ost != 'ALL' and $status != 'ALL'){
-                    $where = "where a.pay_meth = '$meth' and a.outstanding != '$ost' and a.status = '$status' and a.pv_date between '$start_date' and '$end_date'";
-                }else{
-                  $where = "where a.nama_supp = '$nama_supp' and a.pay_meth = '$meth' and a.outstanding != '$ost' and a.status = '$status' and a.pv_date between '$start_date' and '$end_date'";  
-              }
-
-              $jml = 0;
-              $ost = 0;
-              $sql = mysql_query("select sum(a.total) as nominal, sum(a.outstanding) as outstanding from tbl_pv_h a $where",$conn1);
-
-              $row = mysql_fetch_array($sql);                                                  
-              $jml += $row['nominal'];
-              $ost += $row['outstanding'];
-
-
-              echo'<tr>   
-
-              <th style="text-align: left;vertical-align: middle;">Amount</th>
-              <th style="text-align: left;vertical-align: middle;"> </th>
-              <th style="text-align: center;vertical-align: middle;"><input style="border: 3px solid #555; text-align: center; border-radius: 8px;" value = "'.number_format($jml,2).'" readonly></th>                                                                                                                                                                       
-              </tr>
-              <tr>
-              <th style="text-align: left;vertical-align: middle;">Outstanding</th>
-              <th style="text-align: left;vertical-align: middle;"> </th>
-              <th style="text-align: center;vertical-align: middle;"><input style="border: 3px solid #555; text-align: center; border-radius: 8px;" value = "'.number_format($ost,2).'" readonly></th>                                                                                                                                                                                                                                
-              </tr>';
-
-
-              ?>
-          </table>
-      </div>
-  </div>                                   
-</form>
-
-</div>        
 
 </div><!-- body-row END -->
 </div>
@@ -715,7 +809,30 @@ function SidebarCollapse () {
 
 <script>
     $(document).ready(function() {
-        $('#mytable').dataTable({
+        // Data pendukung modal (no_cek, cek_date, pay_to, dst) sudah dipindah
+        // jadi data-* attribute di <tr>, bukan kolom <td> tersembunyi lagi -
+        // supaya tabel tidak punya kolom "hantu" yang bikin table-responsive
+        // selalu overflow horizontal walau isinya cuma 9 kolom yang kelihatan.
+        $('#mytable').DataTable({
+            ordering: true,
+            paging: true,
+            searching: true,
+            info: true,
+            autoWidth: false,
+            columnDefs: [
+                { targets: 0, width: '155px' }, // No Payment Voucher
+                { targets: 1, width: '95px' },  // PV Date
+                { targets: 2, width: '180px' }, // Supplier
+                { targets: 3, width: '115px' }, // Payment Method
+                { targets: 4, width: '190px' }, // For Payment
+                { targets: 5, width: '95px' },  // Due Date
+                { targets: 6, width: '65px' },  // Currency
+                { targets: 7, width: '110px' }, // Amount
+                { targets: 8, width: '120px' }, // Outstanding
+                { targets: 9, width: '80px' },  // Status
+                { targets: 10, width: '130px' }, // Action
+                { targets: [0, 1, 3, 5, 6, 7, 8, 9, 10], className: 'text-center' }
+            ]
         });
 
         $("[data-toggle=tooltip]").tooltip();
@@ -766,9 +883,10 @@ function SidebarCollapse () {
 <script type="text/javascript">     
     $("#formdata").on("click", "#btnupdate", function(){            
         $('#mymodal2').modal('show');
-        var no_pv = $(this).closest('tr').find('td:eq(0)').attr('value');
-        var txt_cekgiro = $(this).closest('tr').find('td:eq(8)').attr('value');
-        var txt_cekdate = $(this).closest('tr').find('td:eq(9)').attr('value');
+        var $tr = $(this).closest('tr');
+        var no_pv = $tr.find('td:eq(0)').attr('value');
+        var txt_cekgiro = $tr.data('no_cek');
+        var txt_cekdate = $tr.data('cek_date');
 
 
         
@@ -869,18 +987,19 @@ function SidebarCollapse () {
 </script>
 
 <script type="text/javascript">     
-    $('table tbody tr').on('click', 'td:eq(0)', function(){                
+    $('#formdata').on('click', '.btn-detail-pv', function(){
         $('#mymodal').modal('show');
-        var no_pv = $(this).closest('tr').find('td:eq(0)').attr('value');
-        var tgl_pv = $(this).closest('tr').find('td:eq(1)').text();
-        var pay_to = $(this).closest('tr').find('td:eq(10)').attr('value');
-        var pay_date = $(this).closest('tr').find('td:eq(11)').attr('value');
-        var pay_meth = $(this).closest('tr').find('td:eq(12)').attr('value');
-        var f_akun = $(this).closest('tr').find('td:eq(13)').attr('value');
-        var t_akun = $(this).closest('tr').find('td:eq(14)').attr('value');
-        var cek_no = $(this).closest('tr').find('td:eq(8)').attr('value');
-        var cek_date = $(this).closest('tr').find('td:eq(9)').attr('value');
-        var pay_for = $(this).closest('tr').find('td:eq(15)').attr('value');
+        var $tr = $(this).closest('tr');
+        var no_pv = $(this).data('pv');
+        var tgl_pv = $tr.find('td:eq(1)').text();
+        var pay_to = $tr.data('pay_to');
+        var pay_date = $tr.data('pay_date');
+        var pay_meth = $tr.data('pay_meth');
+        var f_akun = $tr.data('frm_akun');
+        var t_akun = $tr.data('to_akun');
+        var cek_no = $tr.data('no_cek');
+        var cek_date = $tr.data('cek_date');
+        var pay_for = $tr.data('for_pay');
 
         $.ajax({
             type : 'post',
@@ -891,16 +1010,16 @@ function SidebarCollapse () {
 }
 });         
         //make your ajax call populate items or what even you need
-        $('#txt_bpb').html(no_pv);
-        $('#txt_tglbpb').html('PV Date : ' + tgl_pv + '');
-        $('#txt_top').html('Payment Method : ' + pay_meth + '');
-        $('#txt_no_po').html('Payment To : ' + pay_to + '');
-        $('#txt_supp1').html('Payment For : ' + pay_for + '');
-        $('#txt_supp').html('Payment Date : ' + pay_date + '');
-        $('#txt_curr').html('From Account : ' + f_akun + '');        
-        $('#txt_confirm').html('To Account : ' + t_akun + '');
-        $('#txt_confirm1').html('Cheque No : ' + cek_no + '');
-        $('#txt_confirm2').html('Cheque Date : ' + cek_date + '');                
+        $('#pvDetailTitle').text('Detail Payment Voucher · ' + no_pv);
+        $('#txt_tglbpb').html('PV Date<strong>' + tgl_pv + '</strong>');
+        $('#txt_top').html('Payment Method<strong>' + pay_meth + '</strong>');
+        $('#txt_no_po').html('Payment To<strong>' + pay_to + '</strong>');
+        $('#txt_supp1').html('Payment For<strong>' + pay_for + '</strong>');
+        $('#txt_supp').html('Payment Date<strong>' + pay_date + '</strong>');
+        $('#txt_curr').html('From Account<strong>' + f_akun + '</strong>');
+        $('#txt_confirm').html('To Account<strong>' + t_akun + '</strong>');
+        $('#txt_confirm1').html('Cheque No<strong>' + cek_no + '</strong>');
+        $('#txt_confirm2').html('Cheque Date<strong>' + cek_date + '</strong>');
     });
 
 </script>

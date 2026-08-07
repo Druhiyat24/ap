@@ -1,4 +1,57 @@
 <?php include '../header.php' ?>
+<?php
+// Halaman EDIT Payment Voucher EXIM - sama seperti edit-paymentvoucher.php,
+// datanya dimuat sekali di sini berdasarkan no_pv dari URL lalu "dituangkan"
+// ke $_POST dengan key yang sama seperti field di create-paymentvoucher-exim.php,
+// supaya markup/JS yang sudah teruji di form Create bisa dipakai apa adanya.
+$no_pv = isset($_GET['no_pv']) ? base64_decode($_GET['no_pv']) : '';
+$pvHeader = null;
+$pvDetails = [];
+
+if ($no_pv !== '' && $_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $no_pv_esc = mysqli_real_escape_string($conn2, $no_pv);
+    $sqlHeader = mysqli_query($conn2, "select * from tbl_pv_h where no_pv = '$no_pv_esc'");
+    $pvHeader = mysqli_fetch_assoc($sqlHeader);
+
+    if ($pvHeader) {
+        $sqlDetails = mysqli_query($conn2, "select * from tbl_pv where no_pv = '$no_pv_esc' order by id");
+        while ($d = mysqli_fetch_assoc($sqlDetails)) {
+            $pvDetails[] = $d;
+        }
+
+        $cekDateVal = '';
+        if (!empty($pvHeader['cek_date']) && $pvHeader['cek_date'] !== '0000-00-00' && strtotime($pvHeader['cek_date']) > 0 && date('Y-m-d', strtotime($pvHeader['cek_date'])) !== '1970-01-01') {
+            $cekDateVal = date('d-m-Y', strtotime($pvHeader['cek_date']));
+        }
+
+        $_POST['nama_supp']  = $pvHeader['nama_supp'];
+        $_POST['sup_doc']    = $pvHeader['supp_doc'];
+        $_POST['ctb']        = $pvHeader['ctb'];
+        $_POST['carabayar']  = $pvHeader['pay_meth'];
+        $_POST['curre']      = $pvHeader['curr'];
+        $_POST['forpay']     = $pvHeader['for_pay'];
+        $_POST['pv_tax_type']= $pvHeader['pv_tax_type'];
+        $_POST['frcc']       = $pvHeader['frm_akun'];
+        $_POST['tocc']       = $pvHeader['to_akun'];
+        $_POST['ke']         = $pvHeader['ke'];
+        $_POST['dari']       = $pvHeader['dari'];
+        $_POST['no_cek']     = $pvHeader['no_cek'];
+        $_POST['cek_date']   = $cekDateVal;
+        $_POST['pesan']      = $pvHeader['deskripsi'];
+        $_POST['tgl_active'] = !empty($pvHeader['pv_date']) ? date('d-m-Y', strtotime($pvHeader['pv_date'])) : date('d-m-Y');
+        $_POST['tgl_pay']    = !empty($pvHeader['pay_date']) ? date('d-m-Y', strtotime($pvHeader['pay_date'])) : date('d-m-Y');
+        $_POST['pilih_ppn']  = $pvHeader['per_ppn'];
+        $_POST['pilih_pph']  = $pvHeader['per_pph'];
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+    }
+}
+
+if ($no_pv === '' || !$pvHeader) {
+    echo '<div class="col p-4"><div class="alert alert-danger">Payment Voucher tidak ditemukan.</div></div></body></html>';
+    exit;
+}
+?>
 
 <style>
     /* Tema admin (AdminLTE) ngasih border/box-shadow default ke .box/.box-header/
@@ -83,33 +136,19 @@
     <div class="col p-4">
 <div class="box pv-card">
     <div class="card-header text-white py-2 px-3" style="background: linear-gradient(90deg, #191970, #1e90ff); margin:-1px -1px 0; border-radius:12px 12px 0 0;">
-        <h5 class="mb-0"><i class="fa fa-file-text-o"></i> FORM PAYMENT VOUCHER MEMO EXIM</h5>
+        <h5 class="mb-0"><i class="fa fa-file-text-o"></i> FORM EDIT PAYMENT VOUCHER MEMO EXIM</h5>
     </div>
     <div class="box header">
 <form id="form-data" method="post">
         <div style="padding:5px 10px 10px;">
-            <div class="pv-type-tabs">
-            <button id="btnpv" type="button" class="pv-type-tab">Payment Voucher</button>
-            <button id="btnpve" type="button" class="pv-type-tab active">Payment Voucher EXIM</button>
-            <!-- Payment Voucher FTR sudah tidak dipakai, tab-nya di-hide (bukan dihapus) -->
-            <!-- <button id="btnpvftr" type="button" class="pv-type-tab">Payment Voucher FTR</button> -->
-            </div>
+            <span class="badge badge-primary" style="font-size:13px;padding:6px 12px;">Editing: Payment Voucher EXIM</span>
         </div>
         <div class="form-row">
-            <div class="col-md-3 mb-3">            
+            <div class="col-md-3 mb-3">
             <label for="pajak" class="col-form-label" style="width: 150px;"><b>No Payment Voucher</b></label>
                 <?php
-            $sql = mysqli_query($conn2,"select max(no_pv) from tbl_pv_h where YEAR(pv_date) = YEAR(CURRENT_DATE())");
-            $row = mysqli_fetch_array($sql);
-            $kodepay = $row['max(no_pv)'];
-            $urutan = (int) substr($kodepay, 12, 5);
-            $urutan++;
-            $bln = date("m");
-            $thn = date("y");
-            $huruf = "PV/NAG/$bln$thn/";
-            $kodepay = $huruf . sprintf("%05s", $urutan);
-
-            echo'<input type="text" readonly style="font-size: 14px;" class="form-control" id="no_doc" name="no_doc" value="'.$kodepay.'">'
+            // Mode EDIT - no_pv sudah ada, tidak regenerate nomor baru.
+            echo '<input type="text" readonly style="font-size: 14px;" class="form-control" id="no_doc" name="no_doc" value="'.htmlspecialchars($no_pv).'">';
             ?>
         </div>
 
@@ -207,15 +246,7 @@
                class="form-control"
                id="sup_doc"
                name="sup_doc"
-               value="<?php
-                    $sql = mysqli_query($conn2,"
-                        SELECT GROUP_CONCAT(ket SEPARATOR ', ') AS sup_doc
-                        FROM supp_doc_temp
-                        WHERE ket != ''
-                    ");
-                    $row = mysqli_fetch_array($sql);
-                    echo $row['sup_doc'];
-               ?>">
+               value="<?= htmlspecialchars($pvHeader['supp_doc'] ?? ''); ?>">
 
         <div class="input-group-append">
             <button type="button"
@@ -417,8 +448,9 @@
                     <label for="pv_tax_type" class="col-form-label" style="width: 150px;">Payment Voucher Type</label>
                 <select class="form-control select2" name="pv_tax_type" id="pv_tax_type" style="width:100%" required>
                     <option value="" disabled selected="selected">Select Type</option>
-                    <option value="Tax">Tax</option>
-                    <option value="Non Tax">Non Tax</option>
+                    <?php $pvTaxTypeVal = ($_SERVER['REQUEST_METHOD'] == 'POST') ? ($_POST['pv_tax_type'] ?? '') : ''; ?>
+                    <option value="Tax"<?= ($pvTaxTypeVal === 'Tax') ? ' selected' : ''; ?>>Tax</option>
+                    <option value="Non Tax"<?= ($pvTaxTypeVal === 'Non Tax') ? ' selected' : ''; ?>>Non Tax</option>
                 </select>
                 </div>
 
@@ -791,7 +823,105 @@
     
     <tbody id="tbody2">
 
-        <?php include 'inc_memo_detail_rows_exim.php'; ?>
+        <?php
+        // Mode EDIT - baris detail dirender dari data tbl_pv yang SUDAH
+        // TERSIMPAN untuk no_pv ini (bukan dari tbl_pv_memo_temp seperti di
+        // create-paymentvoucher-exim.php / inc_memo_detail_rows_exim.php).
+        // Struktur kolom & class select disamakan persis (cell index yang
+        // sama dipakai recalcAllRows(): 11=amount,12=dedadd,14=pph,15=ppn).
+        foreach ($pvDetails as $d) {
+            $dCoa = $d['coa'];
+            $dProfCtr = $d['profit_center'];
+            $dNoCc = $d['no_cc'];
+            $dReffDoc = $d['reff_doc'];
+            $dDeskripsi = $d['deskripsi'];
+            $dAmount = ((float) $d['amount'] !== 0.0) ? $d['amount'] : '';
+            $dDedAdd = ((float) $d['ded_add'] !== 0.0) ? $d['ded_add'] : '';
+            $dDueDate = (!empty($d['due_date']) && $d['due_date'] !== '0000-00-00' && date('Y-m-d', strtotime($d['due_date'])) !== '1970-01-01') ? date('d-m-Y', strtotime($d['due_date'])) : '';
+            $dPph = $d['pph'];
+            $dPpn = $d['ppn'];
+            ?>
+        <tr>
+            <td><input type="checkbox" name="select[]" value="" checked></td>
+            <td>
+                <input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" value="<?= htmlspecialchars($dReffDoc); ?>" placeholder="" autocomplete="off">
+            </td>
+            <td hidden><input style="font-size: 12px" type="text" class="form-control" name="keterangan[]" value="" autocomplete="off"></td>
+            <td hidden><input style="font-size: 12px" type="text" class="form-control" name="keterangan[]" value="" autocomplete="off"></td>
+            <td hidden><input style="font-size: 12px" type="text" class="form-control" name="keterangan[]" value="" autocomplete="off"></td>
+            <td hidden><input style="font-size: 12px" type="text" class="form-control" name="keterangan[]" value="" autocomplete="off"></td>
+            <td hidden><input style="font-size: 12px" type="text" class="form-control" name="keterangan[]" value="" autocomplete="off"></td>
+            <td>
+                <select style="font-size: 12px;" class="form-control selectpicker" name="nomor_coa" id="nomor_coa" data-width="150px" data-live-search="true" data-size="5">
+                    <option value="-"<?= ($dCoa === '' || $dCoa === '-') ? ' selected' : ''; ?>> - </option>
+                    <?php
+                    $sqlCoa = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa,' ', nama_coa) as coa from mastercoa_v2");
+                    foreach ($sqlCoa as $cc) {
+                        $sel = ($cc['id_coa'] == $dCoa) ? ' selected' : '';
+                        echo '<option value="'.$cc['id_coa'].'"'.$sel.'>'.$cc['coa'].'</option>';
+                    }
+                    ?>
+                </select>
+            </td>
+            <td>
+                <select style="font-size: 12px;" class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-width="150px" data-live-search="true" data-size="5">
+                    <option value="-"<?= ($dProfCtr === '' || $dProfCtr === '-') ? ' selected' : ''; ?>> - </option>
+                    <?php
+                    $sqlPc = mysqli_query($conn1, "select kode_pc, id_pc, nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
+                    foreach ($sqlPc as $fc) {
+                        $sel = ($fc['kode_pc'] == $dProfCtr) ? ' selected' : '';
+                        echo '<option value="'.$fc['kode_pc'].'"'.$sel.'>'.$fc['tampil'].'</option>';
+                    }
+                    ?>
+                </select>
+            </td>
+            <td>
+                <select style="font-size: 12px;" class="form-control selectpicker nomor_cc" name="nomor_cc" id="nomor_cc" data-width="150px" data-live-search="true" data-size="5">
+                    <option value="-"<?= ($dNoCc === '' || $dNoCc === '-') ? ' selected' : ''; ?>> - </option>
+                    <?php
+                    $sqlCc = mysqli_query($conn1, "select no_cc, CONCAT(no_cc,' ',cc_name) as cost_name from b_master_cc where status = 'Active'");
+                    foreach ($sqlCc as $ccs) {
+                        $sel = ($ccs['no_cc'] == $dNoCc) ? ' selected' : '';
+                        echo '<option value="'.$ccs['no_cc'].'"'.$sel.'>'.$ccs['cost_name'].'</option>';
+                    }
+                    ?>
+                </select>
+            </td>
+            <td>
+                <textarea style="font-size: 12px" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"><?= htmlspecialchars($dDeskripsi); ?></textarea>
+            </td>
+            <td><input style="text-align: right;font-size: 12px;" type="number" min="1" value="<?= htmlspecialchars($dAmount); ?>" class="form-control" oninput="modal_input_amt(value)" autocomplete="off"<?= ($dAmount === '') ? ' readonly' : ''; ?>></td>
+            <td><input style="text-align: right;font-size: 12px;" type="number" min="1" value="<?= htmlspecialchars($dDedAdd); ?>" class="form-control" oninput="modal_input_dedadd(value)" autocomplete="off"<?= ($dDedAdd === '') ? ' readonly' : ''; ?>></td>
+            <td>
+                <input type="text" style="font-size: 12px;" name="tgl_tempo" value="<?= htmlspecialchars($dDueDate); ?>" class="form-control tanggal" autocomplete="off" placeholder="dd-mm-yyyy">
+            </td>
+            <td>
+                <select style="font-size: 12px;" class="form-control" name="pphh" id="pphh" onchange="input_pph()" data-width="120px" data-live-search="true" data-size="5">
+                    <option data-idtax="0" value="0"> Non PPH </option>
+                    <?php
+                    $sqlPph = mysqli_query($conn1, "select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPH' GROUP BY idtax");
+                    foreach ($sqlPph as $pphOpt) {
+                        $sel = ((string) $pphOpt['percentage'] === (string) $dPph) ? ' selected' : '';
+                        echo '<option data-idtax="'.$pphOpt['idtax'].'" value="'.$pphOpt['percentage'].'"'.$sel.'>'.$pphOpt['kriteria2'].'</option>';
+                    }
+                    ?>
+                </select>
+            </td>
+            <td>
+                <select style="font-size: 12px;" class="form-control" name="ppnn" onchange="input_ppn()" data-width="120px" data-live-search="true" data-size="5">
+                    <option data-idtax="" value=""> Non PPN </option>
+                    <?php
+                    $sqlPpn = mysqli_query($conn1, "select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPN' GROUP BY idtax");
+                    foreach ($sqlPpn as $ppnOpt) {
+                        $sel = ((string) $ppnOpt['percentage'] === (string) $dPpn) ? ' selected' : '';
+                        echo '<option data-idtax="'.$ppnOpt['idtax'].'" value="'.$ppnOpt['percentage'].'"'.$sel.'>'.$ppnOpt['kriteria2'].'</option>';
+                    }
+                    ?>
+                </select>
+            </td>
+            <td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td>
+        </tr>
+        <?php } ?>
     </tbody>
     <tfoot>
           <tr>
@@ -1078,6 +1208,15 @@ for ($x = 1; $x <= 50; $x++) {
 $(function() {
     $('.selectpicker').selectpicker();
 });
+</script>
+
+<script>
+    // Baris detail (dirender server-side dari data tersimpan, bukan lewat
+    // pilih memo) - hitung ulang Total begitu halaman dibuka supaya kartu
+    // Total langsung menampilkan angka yang sesuai.
+    $(document).ready(function () {
+        recalcAllRows();
+    });
 </script>
 
 <!--<script type="text/javascript"> 
@@ -1514,35 +1653,6 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
 </script>
 
 <script type="text/javascript">
-    // Isi ulang opsi #tocc sesuai Supplier yang dipilih, tanpa reload halaman
-    // - sama seperti create-paymentvoucher.php. forpay EXIM selalu "Export -
-    // Import" (bukan Pemindah Bukuan Bank/Cicilan Pinjaman Bank), jadi
-    // get_pv_to_account.php otomatis selalu ambil rekening SUPPLIER, difilter
-    // nama_supp.
-    function refreshToAccount() {
-        var forpay = $('#forpay').val() || '';
-        var nama_supp = $('#nama_supp').val() || '';
-        var $tocc = $('#tocc');
-        var currentVal = $tocc.val();
-
-        $.ajax({
-            url: 'get_pv_to_account.php',
-            type: 'POST',
-            dataType: 'json',
-            data: { forpay: forpay, nama_supp: nama_supp },
-            success: function (response) {
-                $tocc.empty().append('<option value="-" selected="selected">Select Account</option>');
-                $.each(response || [], function (i, acc) {
-                    $tocc.append('<option value="' + acc.value + '">' + acc.text + '</option>');
-                });
-                if (currentVal && $tocc.find('option[value="' + currentVal + '"]').length) {
-                    $tocc.val(currentVal);
-                }
-                $tocc.trigger('change');
-            }
-        });
-    }
-
     // Toggle tampilan From/To Account berdasarkan Pay Methods tanpa submit
     // form/reload halaman. Sebelumnya pakai onchange="this.form.submit()"
     // yang reload seluruh halaman tiap ganti Pay Methods.
@@ -1552,16 +1662,6 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
             $('#div_frcc, #div_tocc').hide();
         } else {
             $('#div_frcc, #div_tocc').show();
-            refreshToAccount();
-        }
-    });
-
-    $(document).on('change', '#nama_supp', function () {
-        // Cek wrapper div-nya, bukan <select> aslinya - select2 selalu
-        // menyembunyikan <select> asli (display:none) meski wrapper-nya
-        // (#div_tocc) tampil, jadi $('#tocc').is(':visible') selalu false.
-        if ($('#div_tocc').is(':visible')) {
-            refreshToAccount();
         }
     });
 </script>
@@ -2074,7 +2174,7 @@ $.getJSON('get_coa_wajib_cc.php', function(data){
 
         $.ajax({
             type: 'POST',
-            url: 'save_pv_exim.php',
+            url: 'update_pv_exim.php',
             dataType: 'json',
             data: {
                 'rat_pv':rat_pv, 'no_pv':no_pv, 'pv_date':pv_date, 'nama_supp':nama_supp, 'sup_doc':sup_doc,
