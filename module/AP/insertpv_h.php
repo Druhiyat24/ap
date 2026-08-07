@@ -136,7 +136,11 @@ try {
         q($conn2, "delete from tbl_pv_memo_temp where no_memo = '$no_ref' and user = '$create_user_esc'");
         q($conn2, "UPDATE memo_h set no_pv = '$no_pv', status='PAYMENT DRAFT' where nm_memo = '$no_ref'");
         q($conn2, "delete from tbl_pv_ftr_temp where no_memo = '$no_ref' and user = '$create_user_esc'");
-        q($conn2, "UPDATE memo_h set status='Paid' where no_payment = '$no_ref'");
+        // "UPDATE memo_h set status='Paid' where no_payment = '$no_ref'" -
+        // memo_h tidak punya kolom no_payment sama sekali, query ini selalu
+        // gagal ("Unknown column") dan bikin seluruh transaksi rollback
+        // begitu ada baris detail dengan Reff Doc terisi. Baris ini memang
+        // sengaja dikomentari juga di save_pv_exim.php (sumber pola ini).
     }
 
     q($conn2, "delete from supp_doc_temp");
