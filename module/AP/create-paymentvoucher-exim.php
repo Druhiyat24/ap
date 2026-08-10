@@ -410,6 +410,10 @@
                         }
                         ?>
               </select>
+              <!-- Untuk Supplier KANTOR PAJAK/KPPBC TMP A BANDUNG, To Account tidak
+                   punya rekening tetap di master_supplier_bank - diganti isian bebas
+                   lewat toggleToccInputMode() (lihat script di bawah). -->
+              <input type="text" class="form-control" id="tocc_manual" name="tocc_manual" style="width:100%; height: calc(1.5em + .75rem + 2px); display:none;" placeholder="Enter To Account" autocomplete="off">
 
             </div>
 
@@ -1514,12 +1518,40 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
 </script>
 
 <script type="text/javascript">
+    // Supplier ini tidak punya rekening tetap di master_supplier_bank (kantor
+    // pajak/bea cukai) - To Account diganti isian bebas, bukan dropdown.
+    var TOCC_MANUAL_SUPPLIERS = ['KANTOR PAJAK', 'KPPBC TMP A BANDUNG'];
+
+    function toggleToccInputMode() {
+        var nama_supp = ($('#nama_supp').val() || '').toUpperCase();
+        var isManual = TOCC_MANUAL_SUPPLIERS.indexOf(nama_supp) !== -1;
+        var $toccSelect = $('#tocc');
+        var $toccSelectWrap = $toccSelect.next('.select2-container');
+        var $toccManual = $('#tocc_manual');
+
+        if (isManual) {
+            $toccSelect.val('-').trigger('change');
+            $toccSelectWrap.hide();
+            $toccManual.show();
+        } else {
+            $toccManual.val('').hide();
+            $toccSelectWrap.show();
+        }
+    }
+
     // Isi ulang opsi #tocc sesuai Supplier yang dipilih, tanpa reload halaman
     // - sama seperti create-paymentvoucher.php. forpay EXIM selalu "Export -
     // Import" (bukan Pemindah Bukuan Bank/Cicilan Pinjaman Bank), jadi
     // get_pv_to_account.php otomatis selalu ambil rekening SUPPLIER, difilter
     // nama_supp.
     function refreshToAccount() {
+        toggleToccInputMode();
+
+        if ($('#tocc_manual').is(':visible')) {
+            // Mode isian bebas aktif - tidak perlu ambil daftar rekening.
+            return;
+        }
+
         var forpay = $('#forpay').val() || '';
         var nama_supp = $('#nama_supp').val() || '';
         var $tocc = $('#tocc');
@@ -1563,6 +1595,10 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
         if ($('#div_tocc').is(':visible')) {
             refreshToAccount();
         }
+    });
+
+    $(document).ready(function () {
+        toggleToccInputMode();
     });
 </script>
 
@@ -1927,8 +1963,10 @@ $.getJSON('get_coa_wajib_cc.php', function(data){
         var curr = document.getElementById('curre').value; 
         var forpay = document.getElementById('forpay').value;   
         var frcc = $('select[name=frcc] option').filter(':selected').val();
-        var tocc = $('select[name=tocc] option').filter(':selected').val();
-        var no_cek = document.getElementById('no_cek').value;        
+        // Supplier kantor pajak/bea cukai (lihat TOCC_MANUAL_SUPPLIERS) pakai
+        // isian bebas #tocc_manual, bukan dropdown #tocc.
+        var tocc = $('#tocc_manual').is(':visible') ? $('#tocc_manual').val() : $('select[name=tocc] option').filter(':selected').val();
+        var no_cek = document.getElementById('no_cek').value;
         var cek_date = document.getElementById('cek_date').value;
         var ke = document.getElementById('ke').value; 
         var dari = document.getElementById('dari').value;        
@@ -1982,9 +2020,9 @@ $.getJSON('get_coa_wajib_cc.php', function(data){
         Swal.fire('Error', 'Please select From Account', 'error');
         document.getElementById('frcc').focus();
         return;
-        }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && document.getElementById('forpay').value == 'Pemindah Bukuan Bank' && $('select[name=frcc] option').filter(':selected').val() != '-' && $('select[name=tocc] option').filter(':selected').val() == '-'){
-        Swal.fire('Error', 'Please select To Account', 'error');
-        document.getElementById('tocc').focus();
+        }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && document.getElementById('forpay').value == 'Pemindah Bukuan Bank' && $('select[name=frcc] option').filter(':selected').val() != '-' && (tocc == '-' || tocc == '' || tocc == null)){
+        Swal.fire('Error', 'Please select/isi To Account', 'error');
+        (($('#tocc_manual').is(':visible')) ? document.getElementById('tocc_manual') : document.getElementById('tocc')).focus();
         return;
         }else if(document.getElementById('total_h').value == ''){
         Swal.fire('Error', 'Please Input Amount', 'error');

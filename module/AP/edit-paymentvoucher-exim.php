@@ -441,6 +441,10 @@ if ($no_pv === '' || !$pvHeader) {
                         }
                         ?>
               </select>
+              <!-- Untuk Supplier KANTOR PAJAK/KPPBC TMP A BANDUNG, To Account tidak
+                   punya rekening tetap di master_supplier_bank - diganti isian bebas
+                   lewat toggleToccInputMode() (lihat script di bawah). -->
+              <input type="text" class="form-control" id="tocc_manual" name="tocc_manual" style="width:100%; height: calc(1.5em + .75rem + 2px); display:none;" placeholder="Enter To Account" autocomplete="off" value="<?= htmlspecialchars($tocc); ?>">
 
             </div>
 
@@ -1653,6 +1657,27 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
 </script>
 
 <script type="text/javascript">
+    // Supplier ini tidak punya rekening tetap di master_supplier_bank (kantor
+    // pajak/bea cukai) - To Account diganti isian bebas, bukan dropdown.
+    var TOCC_MANUAL_SUPPLIERS = ['KANTOR PAJAK', 'KPPBC TMP A BANDUNG'];
+
+    function toggleToccInputMode() {
+        var nama_supp = ($('#nama_supp').val() || '').toUpperCase();
+        var isManual = TOCC_MANUAL_SUPPLIERS.indexOf(nama_supp) !== -1;
+        var $toccSelect = $('#tocc');
+        var $toccSelectWrap = $toccSelect.next('.select2-container');
+        var $toccManual = $('#tocc_manual');
+
+        if (isManual) {
+            $toccSelect.val('-').trigger('change');
+            $toccSelectWrap.hide();
+            $toccManual.show();
+        } else {
+            $toccManual.val('').hide();
+            $toccSelectWrap.show();
+        }
+    }
+
     // Toggle tampilan From/To Account berdasarkan Pay Methods tanpa submit
     // form/reload halaman. Sebelumnya pakai onchange="this.form.submit()"
     // yang reload seluruh halaman tiap ganti Pay Methods.
@@ -1662,7 +1687,16 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
             $('#div_frcc, #div_tocc').hide();
         } else {
             $('#div_frcc, #div_tocc').show();
+            toggleToccInputMode();
         }
+    });
+
+    $(document).on('change', '#nama_supp', function () {
+        toggleToccInputMode();
+    });
+
+    $(document).ready(function () {
+        toggleToccInputMode();
     });
 </script>
 
@@ -2027,8 +2061,10 @@ $.getJSON('get_coa_wajib_cc.php', function(data){
         var curr = document.getElementById('curre').value; 
         var forpay = document.getElementById('forpay').value;   
         var frcc = $('select[name=frcc] option').filter(':selected').val();
-        var tocc = $('select[name=tocc] option').filter(':selected').val();
-        var no_cek = document.getElementById('no_cek').value;        
+        // Supplier kantor pajak/bea cukai (lihat TOCC_MANUAL_SUPPLIERS) pakai
+        // isian bebas #tocc_manual, bukan dropdown #tocc.
+        var tocc = $('#tocc_manual').is(':visible') ? $('#tocc_manual').val() : $('select[name=tocc] option').filter(':selected').val();
+        var no_cek = document.getElementById('no_cek').value;
         var cek_date = document.getElementById('cek_date').value;
         var ke = document.getElementById('ke').value; 
         var dari = document.getElementById('dari').value;        
@@ -2082,9 +2118,9 @@ $.getJSON('get_coa_wajib_cc.php', function(data){
         Swal.fire('Error', 'Please select From Account', 'error');
         document.getElementById('frcc').focus();
         return;
-        }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && document.getElementById('forpay').value == 'Pemindah Bukuan Bank' && $('select[name=frcc] option').filter(':selected').val() != '-' && $('select[name=tocc] option').filter(':selected').val() == '-'){
-        Swal.fire('Error', 'Please select To Account', 'error');
-        document.getElementById('tocc').focus();
+        }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && document.getElementById('forpay').value == 'Pemindah Bukuan Bank' && $('select[name=frcc] option').filter(':selected').val() != '-' && (tocc == '-' || tocc == '' || tocc == null)){
+        Swal.fire('Error', 'Please select/isi To Account', 'error');
+        (($('#tocc_manual').is(':visible')) ? document.getElementById('tocc_manual') : document.getElementById('tocc')).focus();
         return;
         }else if(document.getElementById('total_h').value == ''){
         Swal.fire('Error', 'Please Input Amount', 'error');

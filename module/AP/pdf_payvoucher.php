@@ -362,7 +362,14 @@ $sqlas = "select curr from tbl_pv_h where no_pv = '$no_pv'";
     $rows3 = mysqli_fetch_array($sql3);
     $to_akun = $rows3['to_akun'] ?? '-';
     if ($to_akun == '-') {
-     echo '-'; 
+     // Tidak ketemu di master_supplier_bank/b_masterbank - berarti To Account
+     // ini isian manual (mis. Supplier KANTOR PAJAK/KPPBC TMP A BANDUNG yang
+     // tidak punya rekening tetap), bukan hasil join yang gagal. Ambil
+     // langsung dari tbl_pv_h tanpa join, supaya tidak tampil "-" padahal
+     // sebenarnya sudah diisi.
+     $sqlManual = mysqli_query($conn2, "select UPPER(IFNULL(NULLIF(to_akun,''), '-')) AS to_akun from tbl_pv_h where no_pv = '$no_pv'");
+     $rowManual = mysqli_fetch_array($sqlManual);
+     echo $rowManual['to_akun'] ?? '-';
  }else{
      echo $to_akun;
  }

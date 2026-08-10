@@ -291,6 +291,10 @@
                         }
                         ?>
                     </select>
+                    <!-- Untuk Supplier KANTOR PAJAK/KPPBC TMP A BANDUNG, To Account tidak
+                         punya rekening tetap di master_supplier_bank - diganti isian bebas
+                         lewat toggleToccInputMode() (lihat script di bawah). -->
+                    <input type="text" class="form-control" id="tocc_manual" name="tocc_manual" style="width:100%; height: calc(1.5em + .75rem + 2px); display:none;" placeholder="Enter To Account" autocomplete="off">
                 </div>
         </div>
         </br>
@@ -926,10 +930,38 @@ $(function() {
   </script> -->
 
 <script type="text/javascript">
+    // Supplier ini tidak punya rekening tetap di master_supplier_bank (kantor
+    // pajak/bea cukai) - To Account diganti isian bebas, bukan dropdown.
+    var TOCC_MANUAL_SUPPLIERS = ['KANTOR PAJAK', 'KPPBC TMP A BANDUNG'];
+
+    function toggleToccInputMode() {
+        var nama_supp = ($('#nama_supp').val() || '').toUpperCase();
+        var isManual = TOCC_MANUAL_SUPPLIERS.indexOf(nama_supp) !== -1;
+        var $toccSelect = $('#tocc');
+        var $toccSelectWrap = $toccSelect.next('.select2-container');
+        var $toccManual = $('#tocc_manual');
+
+        if (isManual) {
+            $toccSelect.val('-').trigger('change');
+            $toccSelectWrap.hide();
+            $toccManual.show();
+        } else {
+            $toccManual.val('').hide();
+            $toccSelectWrap.show();
+        }
+    }
+
     // Ganti/isi ulang opsi #tocc sesuai For Payment yang dipilih (bank
     // perusahaan untuk Pemindah Bukuan Bank/Cicilan Pinjaman Bank, atau bank
     // supplier terpilih untuk Lainnya/default) tanpa reload halaman.
     function refreshToAccount() {
+        toggleToccInputMode();
+
+        if ($('#tocc_manual').is(':visible')) {
+            // Mode isian bebas aktif - tidak perlu ambil daftar rekening.
+            return;
+        }
+
         var forpay = $('#forpay').val() || '';
         var nama_supp = $('#nama_supp').val() || '';
         var $tocc = $('#tocc');
@@ -1004,6 +1036,7 @@ $(function() {
     });
 
     $(document).ready(function () {
+        toggleToccInputMode();
         updateForPaymentFields();
     });
 </script>
@@ -1676,8 +1709,10 @@ if (!valid_detail) {
          var forpay = $('select[name=forpay] option').filter(':selected').val();   
         }
         var frcc = $('select[name=frcc] option').filter(':selected').val();
-        var tocc = $('select[name=tocc] option').filter(':selected').val();
-        var no_cek = document.getElementById('no_cek').value;        
+        // Supplier kantor pajak/bea cukai (lihat TOCC_MANUAL_SUPPLIERS) pakai
+        // isian bebas #tocc_manual, bukan dropdown #tocc.
+        var tocc = $('#tocc_manual').is(':visible') ? $('#tocc_manual').val() : $('select[name=tocc] option').filter(':selected').val();
+        var no_cek = document.getElementById('no_cek').value;
         var cek_date = document.getElementById('cek_date').value;
         var ke = document.getElementById('ke').value; 
         var dari = document.getElementById('dari').value;        
@@ -1745,9 +1780,9 @@ if (!valid_detail) {
             document.getElementById('frcc').focus();
             return;
         }
-        if (pay_mth != 'CASH' && for_pay == 'Pemindah Bukuan Bank' && tocc == '-') {
-            Swal.fire('Warning', 'Please select To Account', 'warning');
-            document.getElementById('tocc').focus();
+        if (pay_mth != 'CASH' && for_pay == 'Pemindah Bukuan Bank' && (tocc == '-' || tocc == '' || tocc == null)) {
+            Swal.fire('Warning', 'Please select/isi To Account', 'warning');
+            (($('#tocc_manual').is(':visible')) ? document.getElementById('tocc_manual') : document.getElementById('tocc')).focus();
             return;
         }
         if (total == '' || total == null) {
