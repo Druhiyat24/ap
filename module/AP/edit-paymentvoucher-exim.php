@@ -108,6 +108,11 @@ if ($no_pv === '' || !$pvHeader) {
     .select2-selection--single .select2-selection__rendered{ line-height:1.5 !important; padding-left:0 !important; font-size:14px; }
     .select2-selection--single .select2-selection__arrow{ height: calc(1.5em + .75rem) !important; top:0 !important; }
 
+    /* Input manual pengganti dropdown To Account (Supplier kantor pajak/bea
+       cukai) - disamakan persis tinggi/padding-nya ke .select2-selection--single
+       supaya sejajar rapi dengan dropdown-dropdown lain di baris yang sama. */
+    .tocc-manual-input{ box-sizing:border-box; height: calc(1.5em + .75rem + 2px) !important; padding:.375rem .75rem !important; font-size:14px; line-height:1.5; }
+
     .table-gradient2 th{ background:#3B82F6; color:#fff; text-align:center; vertical-align:middle; white-space:nowrap; }
 
     /* Modal "Choose Memo" - modernisasi header/date-range/tabel hasil pencarian */
@@ -444,7 +449,7 @@ if ($no_pv === '' || !$pvHeader) {
               <!-- Untuk Supplier KANTOR PAJAK/KPPBC TMP A BANDUNG, To Account tidak
                    punya rekening tetap di master_supplier_bank - diganti isian bebas
                    lewat toggleToccInputMode() (lihat script di bawah). -->
-              <input type="text" class="form-control" id="tocc_manual" name="tocc_manual" style="width:100%; height: calc(1.5em + .75rem + 2px); display:none;" placeholder="Enter To Account" autocomplete="off" value="<?= htmlspecialchars($tocc); ?>">
+              <input type="text" class="form-control tocc-manual-input" id="tocc_manual" name="tocc_manual" style="width:100%; display:none;" placeholder="Enter To Account" autocomplete="off" value="<?= htmlspecialchars($tocc); ?>">
 
             </div>
 
