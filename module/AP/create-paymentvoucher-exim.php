@@ -1877,7 +1877,11 @@ function addListener(elm,index){
                 $('#tbody2').html(data.rows_html);
                 $('#tbody2 .selectpicker').selectpicker();
                 $('#tbody2 .tanggal').datepicker({ format: "dd-mm-yyyy", autoclose: true });
-                $('#nama_supp').val(data.nama_supp);
+                // .trigger('change') wajib - .val() doang di select2 ga
+                // mancing listener $(document).on('change', '#nama_supp', ...)
+                // yang nyalain mode To Account manual buat supplier kantor
+                // pajak/bea cukai (lihat TOCC_MANUAL_SUPPLIERS).
+                $('#nama_supp').val(data.nama_supp).trigger('change');
                 $('#ct_buyer').val(data.ct_buyer);
                 $('#total_memo').val(data.biaya_formatted);
                 $('#total_memo_h').val(data.biaya);
