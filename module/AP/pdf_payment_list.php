@@ -181,10 +181,18 @@ while ($d = mysqli_fetch_assoc($sqlDet)) {
 }
 
 // Hitung rowspan & subtotal per group Supplier (rows sudah terurut per nama_supp).
+// Digabung SATU group cuma kalau supplier-nya sama DAN rekening tujuannya
+// juga sama - PV Biaya sekarang bisa isi To Account manual per-PV (lihat
+// TOCC_MANUAL_SUPPLIERS), jadi 2 PV dari supplier yang sama bisa punya
+// rekening tujuan yang beda. Kalau cuma dicek nama_supp saja, rowspan bikin
+// baris kedua "ketutup" dan rekening yang tampil cuma punya baris pertama.
 $groups = [];
 foreach ($rows as $idx => $r) {
     $lastGroup = count($groups) - 1;
-    if ($lastGroup >= 0 && $groups[$lastGroup]['nama_supp'] === $r['nama_supp']) {
+    $sameSupplier = $lastGroup >= 0 && $groups[$lastGroup]['nama_supp'] === $r['nama_supp'];
+    $sameBank = $sameSupplier && ($groups[$lastGroup]['bank']['bank_account'] ?? '') === ($r['bank']['bank_account'] ?? '');
+
+    if ($sameSupplier && $sameBank) {
         $groups[$lastGroup]['rowspan']++;
         $groups[$lastGroup]['total'] += $r['total'];
         $groups[$lastGroup]['end'] = $idx;
