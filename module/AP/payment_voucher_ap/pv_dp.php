@@ -236,9 +236,9 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
                 <div class="collapse show" id="dp_ftr_card_body">
                 <div class="card-body p-2">
                     <div class="table-responsive">
-                        <table id="dp_mytable" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 13px;text-align:center;">
+                        <table id="dp_mytable" class="table table-hover table-bordered" cellspacing="0" width="100%" style="font-size: 13px;text-align:center;">
                             <thead>
-                                <tr style="background-color: #f1f5f9; color: #1e293b;">
+                                <tr style="background: #1E3A8A; color: #fff;">
                                     <th style="width:6%;"><input type="checkbox" id="dp_select_all"></th>
                                     <th style="width:14%;">NO FTR</th>
                                     <th style="width:14%;">NO PO</th>

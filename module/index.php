@@ -168,35 +168,51 @@ if ($user == '') {
   }
 
   .dropdown-submenu>.dropdown-menu {
-      top: 0;
+      top: -6px;
       left: 100%;
-      margin-top: -6px;
-      margin-left: -1px;
-      -webkit-border-radius: 0 6px 6px 6px;
-      -moz-border-radius: 0 6px 6px;
-      border-radius: 0 6px 6px 6px;
+      margin-left: 4px;
+      border: none;
+      padding: 6px;
+      box-shadow: 0 10px 28px rgba(0,0,0,.4);
+      -webkit-border-radius: 10px;
+      -moz-border-radius: 10px;
+      border-radius: 10px;
   }
 
   .dropdown-submenu:hover>.dropdown-menu {
       display: block;
   }
 
-  .dropdown-submenu>a:after {
+  /* Trigger submenu via click/tap too (not just hover) - hover alone is
+     unreliable on touch/Android, needs a double-tap to actually open. */
+  .dropdown-submenu.open-submenu>.dropdown-menu {
       display: block;
-      content: " ";
-      float: right;
-      width: 0;
-      height: 0;
-      border-color: transparent;
-      border-style: solid;
-      border-width: 5px 0 5px 5px;
-      border-left-color: black;
-      margin-top: 5px;
-      margin-right: -10px;
   }
 
-  .dropdown-submenu:hover>a:after {
-      border-left-color: #fff;
+  .dropdown-submenu>a {
+      border-radius: 6px;
+      transition: background-color .12s ease;
+  }
+
+  .dropdown-submenu:hover>a,
+  .dropdown-submenu.open-submenu>a {
+      background-color: rgba(255,255,255,.12);
+  }
+
+  .dropdown-submenu>a:after {
+      content: "\f054";
+      font-family: "Font Awesome 5 Free";
+      font-weight: 900;
+      font-size: 10px;
+      color: rgba(255, 255, 255, .4);
+      margin-left: auto;
+      padding-left: 10px;
+      transition: color .12s ease;
+  }
+
+  .dropdown-submenu:hover>a:after,
+  .dropdown-submenu.open-submenu>a:after {
+      color: #4dabf7;
   }
 
   .dropdown-submenu.pull-left {
@@ -217,12 +233,220 @@ if ($user == '') {
       background-color: black;
   }
 
+  /* Modern top navbar skin - cosmetic only, markup/permission logic untouched */
+  nav.navbar.bg-primary {
+      background: #14161a !important;
+      box-shadow: 0 2px 10px rgba(0,0,0,.35);
+      padding-top: .45rem;
+      padding-bottom: .45rem;
+  }
+
+  .navbar-nav .nav-link {
+      position: relative;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .01em;
+      padding: .6rem .9rem !important;
+      border-radius: 6px;
+      white-space: nowrap;
+      color: rgba(255, 255, 255, .82) !important;
+      transition: background-color .15s ease, color .15s ease;
+  }
+
+  /* Jarak merata antar menu utama (Master, AP, Bank, ...) */
+  .navbar-nav.mr-auto > .nav-item {
+      margin: 0 2px;
+  }
+
+  /* Ikon menu utama senada warna dengan teks (bukan warna beda sendiri) -
+     aksen warna cuma dipakai buat state hover/aktif, bukan dekorasi statis */
+  .navbar-nav.mr-auto > .nav-item > .nav-link > .fa,
+  .navbar-nav.mr-auto > .nav-item > .nav-link > .fas,
+  .navbar-nav.mr-auto > .nav-item > .nav-link > .far {
+      color: inherit;
+      opacity: .85;
+      margin-right: 6px;
+      font-size: 12.5px;
+      transition: opacity .15s ease;
+  }
+
+  /* Garis aksen biru tipis di bawah menu, muncul melebar saat hover/aktif -
+     ini yang jadi "warna" utamanya, bukan ikon */
+  .navbar-nav.mr-auto > .nav-item > .nav-link::before {
+      content: "";
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      bottom: 2px;
+      height: 2px;
+      border-radius: 2px;
+      background: #4dabf7;
+      transform: scaleX(0);
+      transition: transform .18s ease;
+  }
+
+  .navbar-nav.mr-auto > .nav-item > .nav-link:hover,
+  .navbar-nav.mr-auto > .nav-item > .nav-link:focus {
+      color: #fff !important;
+  }
+
+  .navbar-nav.mr-auto > .nav-item > .nav-link:hover::before,
+  .navbar-nav.mr-auto > .nav-item > .nav-link:focus::before,
+  .navbar-nav.mr-auto > .nav-item.show > .nav-link::before {
+      transform: scaleX(1);
+  }
+
+  /* Caret dropdown default Bootstrap (segitiga kecil) diganti chevron
+     yang lebih modern, konsisten dengan panah submenu */
+  .navbar-nav .dropdown-toggle::after {
+      display: inline-block;
+      content: "\f078";
+      font-family: "Font Awesome 5 Free";
+      font-weight: 900;
+      font-size: 8px;
+      border: none;
+      vertical-align: 1px;
+      margin-left: 6px;
+      opacity: .55;
+      transition: opacity .15s ease, transform .15s ease;
+  }
+
+  .navbar-nav .nav-item.dropdown:hover > .nav-link.dropdown-toggle::after,
+  .navbar-nav .nav-item.dropdown.show > .nav-link.dropdown-toggle::after {
+      opacity: 1;
+  }
+
+  /* Grup kanan (Log-out / Home / nama user) dipisah pakai garis tipis dan
+     dirapatkan supaya terasa satu kelompok, bukan tercecer sendiri-sendiri */
+  .navbar-nav.ml-auto {
+      align-items: center;
+      padding-left: 14px;
+      margin-left: 6px;
+      border-left: 1px solid rgba(255, 255, 255, .14);
+  }
+
+  .navbar-nav.ml-auto > .nav-item {
+      margin: 0 2px;
+  }
+
+  .navbar-nav.ml-auto .navbar-text { white-space: nowrap; }
+
+  /* Di bawah breakpoint navbar-expand-xl, navbar-collapse jadi menu vertikal
+     (hamburger) - style grup kanan di atas didesain untuk baris horizontal
+     desktop, align-items:center bikin item malah ke-tengah & border-left
+     jadi salah arah di layout vertikal. Ditimpa di sini biar tetap rapi
+     rata kiri menyatu dengan menu lain, dengan garis PEMISAH horizontal
+     (bukan vertikal) di atasnya. */
+  @media (max-width: 1199.98px) {
+      .navbar-nav.ml-auto {
+          align-items: stretch;
+          padding-left: 0;
+          margin-left: 0;
+          margin-top: 8px;
+          padding-top: 10px;
+          border-left: none;
+          border-top: 1px solid rgba(255, 255, 255, .14);
+      }
+
+      .navbar-nav.ml-auto > .nav-item {
+          margin: 2px 0;
+      }
+
+      .navbar-nav.ml-auto .nav-link,
+      .navbar-nav.ml-auto .navbar-text {
+          display: flex;
+          justify-content: flex-start;
+          border-radius: 6px;
+          width: 100%;
+      }
+  }
+
+  .navbar-nav.ml-auto .nav-item:hover > .nav-link,
+  .navbar-nav.ml-auto .nav-link:hover,
+  .navbar-nav.ml-auto .nav-link:focus {
+      background-color: rgba(255,255,255,.14);
+      color: #fff !important;
+  }
+
+  .navbar-nav .dropdown-menu {
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 10px 28px rgba(0,0,0,.35);
+      padding: 6px;
+      margin-top: 6px;
+  }
+
+  .navbar-nav .dropdown-menu .dropdown-item {
+      display: flex;
+      align-items: center;
+      border-radius: 6px;
+      font-size: 12.5px;
+      line-height: 1.25;
+      padding: 6px 10px;
+      transition: background-color .12s ease;
+  }
+
+  .navbar-nav .dropdown-menu .dropdown-item:hover,
+  .navbar-nav .dropdown-menu .dropdown-item:focus {
+      background-color: #1e90ff !important;
+      color: #fff !important;
+  }
+
+  /* Icon "chip" seragam - dropdown-item lama pakai bermacam-macam fa-icon
+     langsung inline, di sini dibungkus visual bulat berwarna supaya rapi &
+     konsisten tanpa perlu ganti tiap ikon satu-satu di ~30 tempat. */
+  .navbar-nav .dropdown-menu .dropdown-item > .fa,
+  .navbar-nav .dropdown-menu .dropdown-item > .fas,
+  .navbar-nav .dropdown-menu .dropdown-item > .far,
+  .navbar-nav .dropdown-menu .dropdown-item > .fab {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      min-width: 22px;
+      border-radius: 7px;
+      background: rgba(77, 171, 247, .16);
+      color: #4dabf7;
+      font-size: 11px;
+      margin-right: 9px;
+      transition: background-color .12s ease, color .12s ease;
+  }
+
+  .navbar-nav .dropdown-menu .dropdown-item:hover > .fa,
+  .navbar-nav .dropdown-menu .dropdown-item:hover > .fas,
+  .navbar-nav .dropdown-menu .dropdown-item:hover > .far,
+  .navbar-nav .dropdown-menu .dropdown-item:hover > .fab {
+      background: rgba(255, 255, 255, .28);
+      color: #fff;
+  }
+
+  .navbar-nav .dropdown-menu .dropdown-item .menu-collapsed {
+      white-space: nowrap;
+  }
+
+  .navbar-nav.ml-auto .nav-link {
+      font-size: 12px;
+      padding: .5rem .85rem !important;
+      border-radius: 20px;
+  }
+
+  .navbar-nav.ml-auto .nav-link:hover { background-color: rgba(255,255,255,.15); }
+  .navbar-nav.ml-auto .fa { margin-right: 5px; }
+
+  .navbar-nav.ml-auto .navbar-text {
+      background: rgba(255,255,255,.14);
+      padding: .35rem .85rem;
+      border-radius: 20px;
+      font-size: 12px;
+  }
+
   .swal-wide{
       width:400px !important;
       height: 200px !important;
   }
 
-  
+
 
 </style>
 <meta charset="utf-8">
@@ -253,7 +477,7 @@ if ($user == '') {
 
 <body>
     <!-- Bootstrap NavBar -->
-    <nav class="navbar navbar-expand-md navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-xl navbar-dark bg-primary">
       <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
@@ -2369,6 +2593,49 @@ echo '</ul>
         </div>
 
     </nav>
+
+    <script>
+      // Dropdown submenu (.dropdown-submenu) dulu cuma kebuka via CSS :hover -
+      // di Android/touch itu ga reliable (butuh tap dua kali: tap pertama cuma
+      // "hover", baru tap kedua benar-benar jalan). Di sini ditambah trigger
+      // klik/tap murni vanilla JS (bukan jQuery) supaya jalan duluan sebelum
+      // jQuery/bootstrap.bundle.js sempat dimuat di bagian bawah halaman.
+      document.addEventListener('click', function (e) {
+        var trigger = e.target.closest ? e.target.closest('.dropdown-submenu > a') : null;
+
+        if (trigger) {
+          e.preventDefault();
+          // stopPropagation saja tidak cukup - listener auto-close dropdown dari
+          // Bootstrap JUGA terpasang di document (level yang sama persis),
+          // stopPropagation cuma menghentikan event naik ke ancestor, bukan
+          // listener lain di elemen yang sama. Makanya submenu sempat kebuka
+          // lalu langsung ketutup lagi oleh Bootstrap. stopImmediatePropagation
+          // mencegah listener lain di document (termasuk punya Bootstrap) ikut
+          // jalan untuk klik ini.
+          e.stopImmediatePropagation();
+
+          var li = trigger.parentElement;
+          var wasOpen = li.classList.contains('open-submenu');
+          var siblingList = li.parentElement ? li.parentElement.children : [];
+
+          Array.prototype.forEach.call(siblingList, function (sibling) {
+            if (sibling !== li) {
+              sibling.classList.remove('open-submenu');
+            }
+          });
+
+          li.classList.toggle('open-submenu', !wasOpen);
+          return;
+        }
+
+        var openSubmenus = document.querySelectorAll('.dropdown-submenu.open-submenu');
+        Array.prototype.forEach.call(openSubmenus, function (li) {
+          if (!li.contains(e.target)) {
+            li.classList.remove('open-submenu');
+          }
+        });
+      });
+    </script>
 
     <!-- MAIN -->
 

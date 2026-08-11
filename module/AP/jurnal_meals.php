@@ -17,7 +17,7 @@ $db2_name = "signalbit_erp";
 // ==========================
 // TANGGAL H-1
 // ==========================
-$tanggal = date('Y-m-d', strtotime('-1 day'));
+$tanggal = '2026-07-27';
 
 // ==========================
 // KONEKSI DATABASE

@@ -17,6 +17,33 @@ $execute2 = mysqli_query($conn2,$sql2);
 $sql3 = "update bpb set confirm = 'N', confirm_by = '', confirm_date = '', status_maintain = null where bpbno_int = '$no_bpb'";
 $execute3 = mysqli_query($conn2,$sql3);
 
+// Log perubahan data (dashboard) - reverse approve bppb FG/OUT, cuma buat FG/OUT.
+// Ambil total (qty x price) yang lagi approved dulu, per (so_number + product item),
+// sebelum di-reverse ke draft (confirm='N').
+if (substr($no_bpb, 0, 6) == 'FG/OUT') {
+	$cekfgrev = mysqli_query($conn2, "
+		SELECT a.so_no, e.product_item, SUM(c.qty) qty_grup, SUM(c.qty * c.price) total_grup, MAX(c.price) price_grup
+		FROM bppb c
+		INNER JOIN so_det b ON b.id = c.id_so_det
+		INNER JOIN so a ON a.id = b.id_so
+		INNER JOIN act_costing d ON d.id = a.id_cost
+		INNER JOIN masterproduct e ON e.id = d.id_product
+		WHERE c.bppbno_int = '$no_bpb'
+		GROUP BY a.so_no, e.product_item
+	");
+	while ($datafgrev = mysqli_fetch_array($cekfgrev)) {
+		$so_number_log    = mysqli_real_escape_string($conn2, $datafgrev['so_no']);
+		$product_item_log = mysqli_real_escape_string($conn2, $datafgrev['product_item']);
+		$qty_grup   = $datafgrev['qty_grup'];
+		$price_grup = $datafgrev['price_grup'];
+		$total_grup = $datafgrev['total_grup'];
+
+		$sql_log = "INSERT INTO tbl_data_change_log (doc_number, ref_number ,so_number,product_item,source_table,action,field_name,qty_old,qty_new,price_old,price_new,total_old,total_new,profit_center,created_by,created_at)
+			VALUES ('$no_dok', '$no_bpb','$so_number_log','$product_item_log','bppb','Reverse SJ','total','$qty_grup','0','$price_grup','0','$total_grup','0','NAG','$approve_user','$confirm_date')";
+		mysqli_query($conn2, $sql_log);
+	}
+}
+
 $sql4 = "update bppb set confirm = 'N', confirm_by = '', confirm_date = '', status_maintain = null where bppbno_int = '$no_bpb'";
 $execute4 = mysqli_query($conn2,$sql4);
 

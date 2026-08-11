@@ -2,6 +2,31 @@
 $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
 ?>
 
+<!-- select2 JS belum dimuat di create-payment-voucher-ap.php (parent page),
+     path relatif di-resolve terhadap parent page karena fragment ini
+     di-inject lewat AJAX .html(), bukan terhadap file ini sendiri. -->
+<script language="JavaScript" src="../css/4.1.1/select2.full.min.js"></script>
+
+<style>
+    .select2-pph + .select2-container .select2-selection--single {
+        height: calc(1.8125rem + 2px) !important;
+        min-height: calc(1.8125rem + 2px);
+        padding: .25rem .5rem !important;
+        font-size: 13px;
+        display: flex !important;
+        align-items: center;
+    }
+    .select2-pph + .select2-container .select2-selection__rendered {
+        line-height: 1.3 !important;
+        padding-left: 0 !important;
+        font-size: 13px;
+    }
+    .select2-pph + .select2-container .select2-selection__arrow {
+        height: calc(1.8125rem) !important;
+        top: 0 !important;
+    }
+</style>
+
 <div class="container-fluid mt-2 p-3" style="padding-left: 2rem; padding-right: 2rem;">
   <div class="card mb-3" style="border: none; background: transparent;">
   <form id="cbd-form-data" method="post">
@@ -230,16 +255,16 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
                 <div class="collapse show" id="cbd_ftr_card_body">
                 <div class="card-body p-2">
                     <div class="table-responsive">
-                        <table id="cbd_mytable" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 13px;text-align:center;">
+                        <table id="cbd_mytable" class="table table-hover table-bordered" cellspacing="0" width="100%" style="font-size: 13px;text-align:center;">
                             <thead>
-                                <tr style="background-color: #f1f5f9; color: #1e293b;">
+                                <tr style="background: #1E3A8A; color: #fff;">
                                     <th style="width:6%;">-</th>
                                     <th style="width:14%;">NO FTR</th>
                                     <th style="width:14%;">NO PO</th>
                                     <th style="width:12%;">PO Date</th>
                                     <th style="width:15%;">SubTotal</th>
                                     <th style="width:15%;">Tax (PPn)</th>
-                                    <th style="width:100px;display: none;">Tax (PPh)</th>
+                                    <th style="width:15%;">Tax (PPh)</th>
                                     <th style="width:15%;">Total (PO)</th>
                                     <th style="width:100px;display: none;">Supplier</th>
                                     <th style="width:100px;display: none;">Status</th>
@@ -263,7 +288,7 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
                                 $persen = '';
                                 $q = mysqli_query($conn1, "select idtax, kriteria, percentage from mtax where category_tax = 'PPH'");
                                 while ($rs = mysqli_fetch_array($q)) {
-                                    $persen .= '<option data-idtax="' . $rs['idtax'] . '" value="' . $rs['percentage'] . '">' . $rs['kriteria'] . '</option>';
+                                    $persen .= '<option data-idtax="' . $rs['idtax'] . '" value="' . $rs['percentage'] . '">' . $rs['kriteria'] . ' (' . rtrim(rtrim(number_format((float) $rs['percentage'], 2), '0'), '.') . '%)</option>';
                                 }
 
                                 $nama_supp_esc = mysqli_real_escape_string($conn2, (string) $nama_supp);
@@ -288,8 +313,8 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
                                         <td value="' . $row['tgl_po'] . '">' . date("d-M-Y", strtotime($row['tgl_po'])) . '</td>
                                         <td class="dt_price" style="text-align:right;" data-link="1" data-subtotal="' . $sub . '">' . number_format($sub, 2) . '</td>
                                         <td class="dt_tax" style="text-align:right;" data-tax="' . $tax . '">' . number_format($tax, 2) . '</td>
-                                        <td style="display: none;">
-                                        <select name="combo_pph" id="combo_pph" disabled>
+                                        <td>
+                                        <select name="combo_pph" class="form-control form-control-sm select2-pph" style="width:100%" disabled>
                                         <option data-idtax="0" value="0" selected="selected">Non PPH</option>
                                         ' . $persen . '
                                         </select>
@@ -326,8 +351,13 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
                         </div>
                     </div>
 
-                    <input type="hidden" id="cbd_pph" value="">
-                    <input type="hidden" id="cbd_pph_h" value="">
+                    <div class="form-row col mt-3">
+                        <label class="col-form-label" style="width: 150px; font-size: 13px;"><b><u>Tax (PPh)</u></b></label>
+                        <div class="col-md-2 mb-3">
+                            <input type="text" class="form-control form-control-sm" id="cbd_pph" value="" placeholder="0.00" style="font-size: 13px;text-align: right;" readonly>
+                            <input type="hidden" id="cbd_pph_h" value="">
+                        </div>
+                    </div>
 
                     <div class="form-row col mt-3">
                         <label class="col-form-label" style="width: 150px; font-size: 13px;"><b><u>Total</u></b></label>
@@ -446,6 +476,12 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
         });
 
         $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+
+        $('.select2-pph').select2({
+            theme: 'bootstrap4',
+            dropdownAutoWidth: true,
+            dropdownParent: $(document.body)
+        });
     });
 </script>
 

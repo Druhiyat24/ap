@@ -54,7 +54,7 @@ $table = '<div style="overflow-x: auto;">
 
 echo $table;
 
-$sql2 = mysqli_query($conn1,"select no_pv,subtotal,adjust,pph,ppn,total from tbl_pv_h where no_pv = '$no_pv'");
+$sql2 = mysqli_query($conn1,"select no_pv,subtotal,adjust,pph,ppn,total,status,create_by,create_date,approve_by,approve_date,cancel_by,cancel_date,update_by,update_date from tbl_pv_h where no_pv = '$no_pv'");
 $row2 = mysqli_fetch_assoc($sql2);
 
 echo '<table class="pv-detail-totals" width="100%" border="0">
@@ -128,7 +128,63 @@ echo '<table class="pv-detail-totals" width="100%" border="0">
     
 </table>';
 
-// echo '<div id="txt_sub" class="modal-body col-6" style="padding: 0.5rem; margin-left: 65%;"><h7>Subtotal: '.number_format($sub,2).'</h7></div>';
-// echo '<div id="txt_tax" class="modal-body col-6" style="padding: 0.5rem; margin-left: 65%;"><h7>Tax: '.number_format($tax,2).'</h7></div>';
-// echo '<div id="txt_total" class="modal-body col-6" style="padding: 0.5rem; margin-left: 65%;"><h6>Total: '.number_format($total,2).'</h6></div>';
+// Riwayat - dibuat/disetujui/dibatalkan oleh siapa & kapan. Datanya sudah
+// lama tersimpan di tbl_pv_h (diisi oleh insertpv_h.php/update_pv_h.php,
+// approvepv.php, cancelpv.php) - di sini cuma ditampilkan.
+function fmt_log_date($v) {
+    if (empty($v) || strtotime($v) <= 0 || date('Y-m-d', strtotime($v)) === '1970-01-01') {
+        return null;
+    }
+    return date('d-M-Y H:i', strtotime($v));
+}
+
+// icon + warna per jenis aksi, dipakai buat timeline di bawah.
+$logMeta = [
+    'Created'     => ['icon' => 'fa-plus-circle',    'color' => '#2563eb'],
+    'Approved'    => ['icon' => 'fa-check-circle',   'color' => '#16a34a'],
+    'Last Edited' => ['icon' => 'fa-pencil',         'color' => '#f59e0b'],
+    'Cancelled'   => ['icon' => 'fa-times-circle',   'color' => '#dc2626'],
+];
+
+$logRows = [];
+$createdAt = fmt_log_date($row2['create_date'] ?? null);
+if (!empty($row2['create_by']) || $createdAt) {
+    $logRows[] = ['Created', $row2['create_by'] ?? '-', $createdAt ?? '-'];
+}
+$approvedAt = fmt_log_date($row2['approve_date'] ?? null);
+if (!empty($row2['approve_by']) || $approvedAt) {
+    $logRows[] = ['Approved', $row2['approve_by'] ?? '-', $approvedAt ?? '-'];
+}
+$updatedAt = fmt_log_date($row2['update_date'] ?? null);
+if (!empty($row2['update_by']) || $updatedAt) {
+    $logRows[] = ['Last Edited', $row2['update_by'] ?? '-', $updatedAt ?? '-'];
+}
+$cancelledAt = fmt_log_date($row2['cancel_date'] ?? null);
+if (!empty($row2['cancel_by']) || $cancelledAt) {
+    $logRows[] = ['Cancelled', $row2['cancel_by'] ?? '-', $cancelledAt ?? '-'];
+}
+
+if (!empty($logRows)) {
+    echo '<div class="pv-detail-log mt-3" style="border-top:1px solid #e2e8f0; padding-top:14px;">
+        <div style="font-weight:700; font-size:12px; color:#1e3a8a; margin-bottom:12px; letter-spacing:.03em; text-transform:uppercase;"><i class="fa fa-history"></i> History</div>
+        <div class="pv-timeline">';
+    $lastIdx = count($logRows) - 1;
+    foreach ($logRows as $i => $lr) {
+        [$action, $by, $when] = $lr;
+        $meta = $logMeta[$action] ?? ['icon' => 'fa-circle', 'color' => '#64748b'];
+        $isLast = ($i === $lastIdx);
+        echo '<div class="pv-timeline-item" style="display:flex; gap:12px; ' . ($isLast ? '' : 'padding-bottom:16px;') . '">
+            <div style="display:flex; flex-direction:column; align-items:center;">
+                <div style="width:28px; height:28px; border-radius:50%; background:' . $meta['color'] . '; color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; box-shadow:0 2px 6px rgba(0,0,0,.15); flex-shrink:0;"><i class="fa ' . $meta['icon'] . '"></i></div>'
+                . ($isLast ? '' : '<div style="flex:1; width:2px; background:#e2e8f0; margin-top:2px;"></div>') .
+            '</div>
+            <div style="padding-top:3px;">
+                <div style="font-size:12px; font-weight:700; color:#0f172a;">' . htmlspecialchars($action) . '</div>
+                <div style="font-size:11px; color:#64748b;">by <strong style="color:#334155;">' . htmlspecialchars($by) . '</strong> &middot; ' . htmlspecialchars($when) . '</div>
+            </div>
+        </div>';
+    }
+    echo '</div>
+    </div>';
+}
 ?>

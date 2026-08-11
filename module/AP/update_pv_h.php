@@ -110,7 +110,9 @@ try {
         outstanding = '$total',
         per_ppn = '$pilih_ppn',
         per_pph = '$pilih_pph',
-        rate = '$rat_pv'
+        rate = '$rat_pv',
+        update_by = '$update_user_esc',
+        update_date = '$update_date'
         WHERE no_pv = '$no_pv_esc'");
 
     // Baris detail lama dibuang semua, diganti baris yang dikirim sekarang -
