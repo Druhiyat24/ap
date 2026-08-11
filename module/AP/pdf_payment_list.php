@@ -46,17 +46,36 @@ function getDueDateAndBank($conn2, $type_pv, $no_kbon)
     $bank = ['beneficiary_name' => '', 'bank_name' => '', 'bank_account' => '', 'bank_currency' => ''];
 
     if ($type_pv === 'Biaya') {
-        $sql = mysqli_query($conn2, "select max(b.due_date) as due_date, a.to_akun from tbl_pv_h a inner join tbl_pv b on b.no_pv = a.no_pv where a.no_pv = '$no_kbon_esc' group by a.no_pv");
+        $sql = mysqli_query($conn2, "select max(b.due_date) as due_date, a.to_akun, a.nama_supp from tbl_pv_h a inner join tbl_pv b on b.no_pv = a.no_pv where a.no_pv = '$no_kbon_esc' group by a.no_pv");
         $row = mysqli_fetch_assoc($sql);
         $tgl_tempo = $row['due_date'] ?? null;
 
+        // Supplier kantor pajak/bea cukai (lihat TOCC_MANUAL_SUPPLIERS di
+        // create/edit-paymentvoucher(-exim).php) pakai isian bebas To Account,
+        // bukan rekening dari master_supplier_bank/b_masterbank. Dicek
+        // eksplisit dari nama supplier-nya (sama seperti fix di
+        // pdf_payvoucher.php) - bukan "kalau join gagal berarti manual",
+        // supaya isian manual yang kebetulan sama dengan bank_account lain
+        // tidak salah ke-join dan tidak menampilkan kolom kosong.
+        $toccManualSuppliers = ['KANTOR PAJAK', 'KPPBC TMP A BANDUNG'];
+        $isToccManual = in_array(strtoupper(trim($row['nama_supp'] ?? '')), $toccManualSuppliers, true);
+
         if (!empty($row['to_akun'])) {
-            $sqlBank = mysqli_query($conn2, "select * from (select beneficiary_name, bank_name, bank_account, bank_currency from master_supplier_bank where bank_account = '" . mysqli_real_escape_string($conn2, $row['to_akun']) . "'
+            if ($isToccManual) {
+                $bank = [
+                    'beneficiary_name' => '-',
+                    'bank_name' => '-',
+                    'bank_account' => strtoupper($row['to_akun']),
+                    'bank_currency' => '-',
+                ];
+            } else {
+                $sqlBank = mysqli_query($conn2, "select * from (select beneficiary_name, bank_name, bank_account, bank_currency from master_supplier_bank where bank_account = '" . mysqli_real_escape_string($conn2, $row['to_akun']) . "'
 UNION
 select beneficiary_name, upper(bank_name) bank_name, bank_account, curr bank_currency from b_masterbank where bank_account = '" . mysqli_real_escape_string($conn2, $row['to_akun']) . "') t limit 1");
-            $rowBank = mysqli_fetch_assoc($sqlBank);
-            if ($rowBank) {
-                $bank = $rowBank;
+                $rowBank = mysqli_fetch_assoc($sqlBank);
+                if ($rowBank) {
+                    $bank = $rowBank;
+                }
             }
         }
 

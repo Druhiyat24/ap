@@ -356,24 +356,27 @@ $sqlas = "select curr from tbl_pv_h where no_pv = '$no_pv'";
 </td>
 <td colspan="5" style="border-left: none;font-size: 12px;border-top: none;border-right: none;">
     <?php
-    $sql3 = mysqli_query($conn2," select UPPER(IFNULL(NULLIF(to_akun, ''), '-')) AS to_akun from (select CONCAT(beneficiary_name,' - ',bank_name,' - ',to_akun) to_akun from tbl_pv_h a INNER JOIN master_supplier_bank b on b.bank_account = a.to_akun where no_pv = '$no_pv'
-    UNION ALL
-    select CONCAT(beneficiary_name,' - ',bank_name,' ',to_akun) to_akun from tbl_pv_h a INNER JOIN b_masterbank b on b.bank_account = a.to_akun where no_pv = '$no_pv' and b.status = 'Active') a limit 1");
-    $rows3 = mysqli_fetch_array($sql3);
-    $to_akun = $rows3['to_akun'] ?? '-';
-    if ($to_akun == '-') {
-     // Tidak ketemu di master_supplier_bank/b_masterbank - berarti To Account
-     // ini isian manual (mis. Supplier KANTOR PAJAK/KPPBC TMP A BANDUNG yang
-     // tidak punya rekening tetap), bukan hasil join yang gagal. Ambil
-     // langsung dari tbl_pv_h tanpa join, supaya tidak tampil "-" padahal
-     // sebenarnya sudah diisi.
-     $sqlManual = mysqli_query($conn2, "select UPPER(IFNULL(NULLIF(to_akun,''), '-')) AS to_akun from tbl_pv_h where no_pv = '$no_pv'");
-     $rowManual = mysqli_fetch_array($sqlManual);
-     echo $rowManual['to_akun'] ?? '-';
- }else{
-     echo $to_akun;
- }
- ?>
+    // Supplier kantor pajak/bea cukai (lihat TOCC_MANUAL_SUPPLIERS di
+    // create/edit-paymentvoucher(-exim).php) pakai isian bebas To Account,
+    // bukan rekening dari master_supplier_bank/b_masterbank. Dicek eksplisit
+    // dari nama supplier-nya di sini (bukan "kalau join gagal berarti
+    // manual") - sebelumnya kalau isian manual itu KEBETULAN sama dengan
+    // salah satu bank_account yang ada di master (mis. sama-sama berupa
+    // angka), join-nya malah "berhasil" dan menampilkan nama bank/beneficiary
+    // yang salah, bukan teks manual yang sebenarnya diisi.
+    $toccManualSuppliers = ['KANTOR PAJAK', 'KPPBC TMP A BANDUNG'];
+    $isToccManual = in_array(strtoupper(trim($rs['nama_supp'] ?? '')), $toccManualSuppliers, true);
+
+    if ($isToccManual) {
+        echo strtoupper($rs['to_akun'] ?? '') !== '' ? strtoupper($rs['to_akun']) : '-';
+    } else {
+        $sql3 = mysqli_query($conn2," select UPPER(IFNULL(NULLIF(to_akun, ''), '-')) AS to_akun from (select CONCAT(beneficiary_name,' - ',bank_name,' - ',to_akun) to_akun from tbl_pv_h a INNER JOIN master_supplier_bank b on b.bank_account = a.to_akun where no_pv = '$no_pv'
+        UNION ALL
+        select CONCAT(beneficiary_name,' - ',bank_name,' ',to_akun) to_akun from tbl_pv_h a INNER JOIN b_masterbank b on b.bank_account = a.to_akun where no_pv = '$no_pv' and b.status = 'Active') a limit 1");
+        $rows3 = mysqli_fetch_array($sql3);
+        echo $rows3['to_akun'] ?? '-';
+    }
+    ?>
 </td>
 
     <td style="width: 2%;border-left: none; border-top: none;border-bottom: none;">
