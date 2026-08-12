@@ -58,10 +58,16 @@ if (!empty($type_pv)) {
         $rowsAll = array_merge($rowsAll, getDataCbd($conn1, $conn2, $filters, '1', '1', ''));
     }
 
-    // Eligibility: fully approved (SECOND APPROVED or Approved) + status_pvl = APPROVED (Biaya: just Approved)
+    // Eligibility: fully approved (SECOND APPROVED or Approved) + status_pvl = APPROVED.
+    // Biaya tidak melalui PVL sehingga cukup status 'Approved' saja. DP/CBD
+    // cukup status 'SECOND APPROVED' di kontrabon_h_cbd/kontrabon_h_dp, tidak
+    // perlu lagi status_pvl = 'APPROVED' - sama seperti form_payment-list.php.
     $rowsAll = array_filter($rowsAll, function ($r) {
         if ($r['type'] === 'Biaya') {
             return $r['status'] === 'Approved';
+        }
+        if (in_array($r['type'], ['DP', 'CBD'])) {
+            return $r['status'] === 'SECOND APPROVED';
         }
         if (!in_array($r['status'], ['SECOND APPROVED', 'Approved'])) return false;
         return strtoupper(trim($r['status_pvl'] ?? '')) === 'APPROVED';
