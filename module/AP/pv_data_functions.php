@@ -533,6 +533,7 @@ function getDataBiaya($conn2, $filters)
             'profit_center' => $row['profit_center'],
             'no_kbon'     => $row['no_pv'],
             'tgl_kbon'    => !empty($row['pv_date']) ? date('d-M-Y', strtotime($row['pv_date'])) : '-',
+            'tgl_kbon_raw' => $row['pv_date'],
             'nama_supp'   => $row['nama_supp'],
             'curr'        => $row['curr'],
             'total'       => number_format($row['total'], 2),
