@@ -44,6 +44,11 @@ try {
     $rate       = (float) ($header['rate'] ?? 0);
     $eqv        = (float) ($header['eqv'] ?? 0);
     $desc       = mysqli_real_escape_string($conn2, trim($header['desc'] ?? ''));
+    // TODO: fitur Cash Flow Category belum live di production - kode
+    // $cash_flow (validasi + kolom id_cash_flow) SENGAJA dihilangkan
+    // sementara supaya file ini bisa di-deploy terpisah (cuma fix jurnal
+    // dobel + fallback Description adjust). Kembalikan lagi setelah
+    // deploy Cash Flow Category selesai.
 
     if ($akun === '') {
         throw new Exception('Account tidak boleh kosong.');
@@ -191,9 +196,9 @@ try {
             ");
 
         q($conn2,"insert into tbl_list_journal select '' id, '$doc_num' no_journal, '$doc_date' tgl_journal, type_journal, coa, nama_coa, no_cc, COALESCE(cc_name,'-') cc_name, no_pv no_reff, pv_date reff_date, buyer, no_ws, a.curr, IF(rate is null,1,rate) rate, debit, credit, round(debit * IF(rate is null,1,rate),4) debit_idr, round(credit * IF(rate is null,1,rate),4) credit_idr, 'Draft' status, deskripsi, '$user' create_by, CURRENT_TIMESTAMP() create_date, '' approve_by, '' approve_date, '' cancel_by, '' cancel_date, CURRENT_TIMESTAMP() created_at, CURRENT_TIMESTAMP() updated_at, profit_center from
-            (select a.id, 'Payment Voucher' type_journal, d.no_coa coa, d.nama_coa, a.no_cc, b.cc_name,h.no_pv, h.pv_date,  '-' buyer, '-' no_ws, h.curr, amount debit, ded_add credit, a.deskripsi, a.profit_center from tbl_pv a INNER JOIN tbl_pv_h h on h.no_pv = a.no_pv left join b_master_cc b on b.no_cc = a.no_cc INNER JOIN mastercoa_v2 d on d.no_coa = a.coa where a.no_pv = '$pv_number'
+            (select a.id, 'Payment Voucher' type_journal, d.no_coa coa, d.nama_coa, a.no_cc, b.cc_name,h.no_pv, h.pv_date,  '-' buyer, '-' no_ws, h.curr, amount debit, ded_add credit, a.deskripsi, a.profit_center from tbl_pv a INNER JOIN tbl_pv_h h on h.no_pv = a.no_pv left join b_master_cc b on b.no_cc = a.no_cc INNER JOIN mastercoa_v2 d on d.no_coa = a.coa where a.no_pv = '$pv_number' and a.profit_center = '$pv_pc'
             UNION
-            select a.id, 'Payment Voucher' type_journal, d.no_coa, d.nama_coa, a.no_cc, b.cc_name,h.no_pv, h.pv_date,  '-' buyer, '-' no_ws, h.curr, (ded_add * a.pph/100) debit, (amount * a.pph/100) credit, a.deskripsi, a.profit_center from tbl_pv a INNER JOIN tbl_pv_h h on h.no_pv = a.no_pv left join b_master_cc b on b.no_cc = a.no_cc INNER JOIN mtax d on d.idtax = a.id_pph where a.no_pv = '$pv_number'
+            select a.id, 'Payment Voucher' type_journal, d.no_coa, d.nama_coa, a.no_cc, b.cc_name,h.no_pv, h.pv_date,  '-' buyer, '-' no_ws, h.curr, (ded_add * a.pph/100) debit, (amount * a.pph/100) credit, a.deskripsi, a.profit_center from tbl_pv a INNER JOIN tbl_pv_h h on h.no_pv = a.no_pv left join b_master_cc b on b.no_cc = a.no_cc INNER JOIN mtax d on d.idtax = a.id_pph where a.no_pv = '$pv_number' and a.profit_center = '$pv_pc'
             UNION
             select a.id, 'Payment Voucher' type_journal, d.no_coa, d.nama_coa, a.no_cc, b.cc_name,no_pv, pv_date,  '-' buyer, '-' no_ws, curr, (amount * ppn/100) debit, (ded_add * a.ppn/100) credit, deskripsi, a.profit_center from (select id,no_pv, pv_date, a.profit_center, coa, no_cc, reff_doc, reff_date, deskripsi, curr, ded_add, amount, pph, IF(per_ppn = 0,ppn,per_ppn) ppn, IF(per_ppn = 0,id_ppn,id_per_ppn) id_ppn from (select a.*,b.per_ppn, b.pv_date, b.curr, CASE WHEN b.per_ppn BETWEEN 1.09 AND 1.11 THEN 20 WHEN b.per_ppn = 11 THEN 1 WHEN b.per_ppn BETWEEN 1.19 AND 1.21 THEN 23 ELSE 0 END AS id_per_ppn from tbl_pv a INNER JOIN tbl_pv_h b on b.no_pv = a.no_pv where a.no_pv = '$pv_number' and a.profit_center = '$pv_pc') a) a left join b_master_cc b on b.no_cc = a.no_cc INNER JOIN mtax d on d.idtax = a.id_ppn
         ) a LEFT JOIN (select tanggal, curr, rate from ap_masterrate where v_codecurr = 'PAJAK' GROUP BY tanggal) b on b.tanggal = a.pv_date and b.curr = a.curr order by a.id, credit asc");
@@ -347,7 +352,8 @@ try {
         $cc    = trim($rowAdj['cc'] ?? '') ?: '-';
         $debit = (float) ($rowAdj['debit'] ?? 0);
         $credit= (float) ($rowAdj['credit'] ?? 0);
-        $desc2 = mysqli_real_escape_string($conn2, $rowAdj['desc'] ?? '');
+        $descAdjRaw = trim($rowAdj['desc'] ?? '');
+        $desc2 = $descAdjRaw !== '' ? mysqli_real_escape_string($conn2, $descAdjRaw) : $desc;
         $reff  = mysqli_real_escape_string($conn2, $rowAdj['reff_doc'] ?? '-');
         $reff_date = !empty($rowAdj['reff_date']) ? date('Y-m-d', strtotime($rowAdj['reff_date'])) : $doc_date;
 
