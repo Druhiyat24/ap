@@ -46,9 +46,8 @@ try {
     $desc       = mysqli_real_escape_string($conn2, trim($header['desc'] ?? ''));
     // TODO: fitur Cash Flow Category belum live di production - kode
     // $cash_flow (validasi + kolom id_cash_flow) SENGAJA dihilangkan
-    // sementara supaya file ini bisa di-deploy terpisah (cuma fix jurnal
-    // dobel + fallback Description adjust). Kembalikan lagi setelah
-    // deploy Cash Flow Category selesai.
+    // sementara supaya file ini bisa di-deploy terpisah. Kembalikan lagi
+    // setelah deploy Cash Flow Category selesai.
 
     if ($akun === '') {
         throw new Exception('Account tidak boleh kosong.');
@@ -299,8 +298,12 @@ try {
             $pv_coa_nama_esc = mysqli_real_escape_string($conn2, $pv_coa_nama);
             $type_pv_esc = mysqli_real_escape_string($conn2, $type_pv);
 
-            // PPH split: Regular & Installment – jurnal PPH dipisah baris (pola save_lp.php)
-            $bayar_pph = ($type_pv === 'Regular' || $type_pv === 'Installment')
+            // PPH split: Regular, Installment & SaldoAwal - jurnal PPH dipisah
+            // baris (pola save_lp.php). SaldoAwal no_kbon-nya sama dengan
+            // no_kbon di tabel kontrabon (ap_saldo_payment_voucher adalah
+            // snapshot dari kontrabon yang sama), jadi lookup COA PPH di
+            // bawah (cabang else, query ke tabel kontrabon) tetap valid.
+            $bayar_pph = in_array($type_pv, ['Regular', 'Installment', 'SaldoAwal'], true)
                 ? min($pv_pph, (float)$amountPv) : 0;
             $total_dppnya = $amountPv + $bayar_pph;
             $debit_idr = round($total_dppnya * $pv_rate, 4);
