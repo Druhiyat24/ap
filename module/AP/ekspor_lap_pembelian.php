@@ -236,7 +236,7 @@
             <td style="text-align : left;" value = "'.$row['jenis_trans'].'">'.$row['jenis_trans'].'</td>
             <td style="text-align : left;" value = "'.$no_inv.'">'.$no_inv.'</td>
             <td style="text-align : left;" value = "'.$tgl_inv.'">'.$tgl_inv.'</td>
-            <td style="text-align : left;" value = "'.$no_faktur.'">'.$no_faktur.'</td>
+            <td style="text-align : left;mso-number-format:\'\@\';" value = "'.$no_faktur.'">'.$no_faktur.'</td>
             <td style="text-align : left;" value = "'.$tgl_faktur.'">'.$tgl_faktur.'</td>
              </tr>';
         }else{ echo ''; }
