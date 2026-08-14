@@ -109,7 +109,7 @@ select reff_doc, 0 reverse_kontrabon_before, 0 reverse_kontrabon, 0 uang_muka_be
 UNION ALL
 select reff_doc, 0 reverse_kontrabon_before, 0 reverse_kontrabon, 0 uang_muka_before, 0 uang_muka, 0 pph_before, 0 pph, 0 potongan_before, 0 potongan, 0 ded_bank_before, 0 ded_bank, total ded_gm_before, 0 ded_gm, 0 ded_cash, 0 ded_cash_before, 0 ded_nonbank, 0 ded_nonbank_before from ded_gm_before
 UNION ALL
-select reff_doc, 0 reverse_kontrabon_before, 0 reverse_kontrabon, 0 uang_muka_before, 0 uang_muka, 0 pph_before, 0 pph, 0 potongan_before, 0 potongan, 0 ded_bank_before, 0 ded_bank, 0 ded_gm_before, total ded_gm, 0 ded_cash, 0 ded_cash_before, 0 ded_nonbank, 0 ded_nonbank_before from ded_gm_before
+select reff_doc, 0 reverse_kontrabon_before, 0 reverse_kontrabon, 0 uang_muka_before, 0 uang_muka, 0 pph_before, 0 pph, 0 potongan_before, 0 potongan, 0 ded_bank_before, 0 ded_bank, 0 ded_gm_before, total ded_gm, 0 ded_cash, 0 ded_cash_before, 0 ded_nonbank, 0 ded_nonbank_before from ded_gm
 UNION ALL
 select reff_doc, 0 reverse_kontrabon_before, 0 reverse_kontrabon, 0 uang_muka_before, 0 uang_muka, 0 pph_before, 0 pph, 0 potongan_before, 0 potongan, 0 ded_bank_before, 0 ded_bank, 0 ded_gm_before, 0 ded_gm, total ded_cash, 0 ded_cash_before, 0 ded_nonbank, 0 ded_nonbank_before from ded_cash
 UNION ALL
