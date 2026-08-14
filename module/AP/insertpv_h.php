@@ -111,6 +111,17 @@ try {
 
         $no_ref = mysqli_real_escape_string($conn2, $d['no_ref'] ?? '');
         $ref_date = date("Y-m-d", strtotime($d['ref_date'] ?? ''));
+        $faktur_pajak = trim($d['faktur_pajak'] ?? '');
+        // Wajib diisi (tidak boleh kosong/strip) khusus untuk COA 1.52.04.
+        if ($no_coa === '1.52.04' && ($faktur_pajak === '' || $faktur_pajak === '-')) {
+            throw new Exception('COA 1.52.04 wajib isi Faktur Pajak.');
+        }
+        $faktur_pajak = mysqli_real_escape_string($conn2, $faktur_pajak);
+        $tgl_faktur_pajak_raw = trim($d['tgl_faktur_pajak'] ?? '');
+        if ($no_coa === '1.52.04' && $tgl_faktur_pajak_raw === '') {
+            throw new Exception('COA 1.52.04 wajib isi Tgl Faktur Pajak.');
+        }
+        $tgl_faktur_pajak = $tgl_faktur_pajak_raw !== '' ? "'" . date("Y-m-d", strtotime($tgl_faktur_pajak_raw)) . "'" : 'NULL';
         $deskripsi = mysqli_real_escape_string($conn2, $d['deskripsi'] ?? '');
         $due_date = date("Y-m-d", strtotime($d['due_date'] ?? ''));
         $d_pph = mysqli_real_escape_string($conn2, $d['pph'] ?? 0);
@@ -119,7 +130,7 @@ try {
         $id_ppn = mysqli_real_escape_string($conn2, $d['id_ppn'] ?? '');
         $prof_ctr = mysqli_real_escape_string($conn2, $d['prof_ctr'] ?? '');
 
-        $pvValues[] = "('$no_pv', '$no_coa', '$no_cc', '$no_ref', '$ref_date', '$deskripsi', '$amount', '$due_date', '$ded_add', '$d_pph', '$idtax', '$d_ppn', '$id_ppn', '$prof_ctr')";
+        $pvValues[] = "('$no_pv', '$no_coa', '$no_cc', '$no_ref', '$ref_date', '$faktur_pajak', $tgl_faktur_pajak, '$deskripsi', '$amount', '$due_date', '$ded_add', '$d_pph', '$idtax', '$d_ppn', '$id_ppn', '$prof_ctr')";
 
         if ($no_ref !== '' && !isset($noRefsSeen[$no_ref])) {
             $noRefsSeen[$no_ref] = true;
@@ -127,7 +138,7 @@ try {
     }
 
     if (!empty($pvValues)) {
-        q($conn2, "INSERT INTO tbl_pv (no_pv,coa,no_cc,reff_doc,reff_date,deskripsi,amount,due_date,ded_add,pph,id_pph,ppn,id_ppn,profit_center)
+        q($conn2, "INSERT INTO tbl_pv (no_pv,coa,no_cc,reff_doc,reff_date,faktur_pajak,tgl_faktur_pajak,deskripsi,amount,due_date,ded_add,pph,id_pph,ppn,id_ppn,profit_center)
             VALUES " . implode(',', $pvValues));
     }
 

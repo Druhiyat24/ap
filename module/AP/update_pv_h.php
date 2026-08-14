@@ -80,8 +80,8 @@ try {
     q($conn2, "insert into tbl_edit_pv_h (no_pv,pv_date,nama_supp,supp_doc,ctb,pay_date,pay_meth,curr,for_pay,pv_tax_type,frm_akun,to_akun,ke,dari,no_cek,cek_date,deskripsi,subtotal,adjust,pph,ppn,total,outstanding,per_ppn,per_pph,rate,create_by,create_date,status,approve_by,approve_date,cancel_by,cancel_date,update_by,update_date,user_reverse,reverse_date,notes_reverse)
         select no_pv,pv_date,nama_supp,supp_doc,ctb,pay_date,pay_meth,curr,for_pay,pv_tax_type,frm_akun,to_akun,ke,dari,no_cek,cek_date,deskripsi,subtotal,adjust,pph,ppn,total,outstanding,per_ppn,per_pph,rate,create_by,create_date,status,approve_by,approve_date,cancel_by,cancel_date,update_by,update_date,user_reverse,reverse_date,notes_reverse
         from tbl_pv_h where no_pv = '$no_pv_esc'");
-    q($conn2, "insert into tbl_edit_pv (no_pv,coa,no_cc,reff_doc,reff_date,deskripsi,amount,due_date,ded_add,pph,id_pph,ppn,id_ppn,profit_center)
-        select no_pv,coa,no_cc,reff_doc,reff_date,deskripsi,amount,due_date,ded_add,pph,id_pph,ppn,id_ppn,profit_center
+    q($conn2, "insert into tbl_edit_pv (no_pv,coa,no_cc,reff_doc,reff_date,faktur_pajak,tgl_faktur_pajak,deskripsi,amount,due_date,ded_add,pph,id_pph,ppn,id_ppn,profit_center)
+        select no_pv,coa,no_cc,reff_doc,reff_date,faktur_pajak,tgl_faktur_pajak,deskripsi,amount,due_date,ded_add,pph,id_pph,ppn,id_ppn,profit_center
         from tbl_pv where no_pv = '$no_pv_esc'");
 
     $pv_tax_type_esc = mysqli_real_escape_string($conn2, $pv_tax_type);
@@ -152,6 +152,17 @@ try {
 
         $no_ref = mysqli_real_escape_string($conn2, $d['no_ref'] ?? '');
         $ref_date = date("Y-m-d", strtotime($d['ref_date'] ?? ''));
+        $faktur_pajak = trim($d['faktur_pajak'] ?? '');
+        // Wajib diisi (tidak boleh kosong/strip) khusus untuk COA 1.52.04.
+        if ($no_coa === '1.52.04' && ($faktur_pajak === '' || $faktur_pajak === '-')) {
+            throw new Exception('COA 1.52.04 wajib isi Faktur Pajak.');
+        }
+        $faktur_pajak = mysqli_real_escape_string($conn2, $faktur_pajak);
+        $tgl_faktur_pajak_raw = trim($d['tgl_faktur_pajak'] ?? '');
+        if ($no_coa === '1.52.04' && $tgl_faktur_pajak_raw === '') {
+            throw new Exception('COA 1.52.04 wajib isi Tgl Faktur Pajak.');
+        }
+        $tgl_faktur_pajak = $tgl_faktur_pajak_raw !== '' ? "'" . date("Y-m-d", strtotime($tgl_faktur_pajak_raw)) . "'" : 'NULL';
         $deskripsi = mysqli_real_escape_string($conn2, $d['deskripsi'] ?? '');
         $due_date = date("Y-m-d", strtotime($d['due_date'] ?? ''));
         $d_pph = mysqli_real_escape_string($conn2, $d['pph'] ?? 0);
@@ -160,7 +171,7 @@ try {
         $id_ppn = mysqli_real_escape_string($conn2, $d['id_ppn'] ?? '');
         $prof_ctr = mysqli_real_escape_string($conn2, $d['prof_ctr'] ?? '');
 
-        $pvValues[] = "('$no_pv_esc', '$no_coa', '$no_cc', '$no_ref', '$ref_date', '$deskripsi', '$amount', '$due_date', '$ded_add', '$d_pph', '$idtax', '$d_ppn', '$id_ppn', '$prof_ctr')";
+        $pvValues[] = "('$no_pv_esc', '$no_coa', '$no_cc', '$no_ref', '$ref_date', '$faktur_pajak', $tgl_faktur_pajak, '$deskripsi', '$amount', '$due_date', '$ded_add', '$d_pph', '$idtax', '$d_ppn', '$id_ppn', '$prof_ctr')";
 
         if ($no_ref !== '' && !isset($noRefsSeen[$no_ref])) {
             $noRefsSeen[$no_ref] = true;
@@ -171,7 +182,7 @@ try {
         throw new Exception('Minimal harus ada satu baris detail.');
     }
 
-    q($conn2, "INSERT INTO tbl_pv (no_pv,coa,no_cc,reff_doc,reff_date,deskripsi,amount,due_date,ded_add,pph,id_pph,ppn,id_ppn,profit_center)
+    q($conn2, "INSERT INTO tbl_pv (no_pv,coa,no_cc,reff_doc,reff_date,faktur_pajak,tgl_faktur_pajak,deskripsi,amount,due_date,ded_add,pph,id_pph,ppn,id_ppn,profit_center)
         VALUES " . implode(',', $pvValues));
 
     foreach (array_keys($noRefsSeen) as $no_ref) {

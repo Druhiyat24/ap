@@ -1,6 +1,16 @@
 <?php include '../header.php' ?>
 
 <style>
+    /* #mytable pakai table-layout:auto bawaan browser, jadi lebar kolom ikut
+       konten terlebar (termasuk teks opsi select yang lagi dipilih) - begitu
+       user pilih opsi PPH/PPN/COA/Profit Center/Cost Center yang teksnya
+       panjang, kolom itu melebar dan menggeser semua kolom lain. table-layout:
+       fixed bikin lebar kolom murni ikut width % di <th> baris pertama, tidak
+       peduli separo panjang teks konten di baris manapun.
+    */
+    #mytable {
+        table-layout: fixed;
+    }
     /* Tema admin (AdminLTE) ngasih border/box-shadow default ke .box/.box-header/
        .box-body yang bikin garis pemisah nongol di antara section - di-nol-in
        semua di sini biar bersih, ganti sama shadow+radius punya .pv-card sendiri. */
@@ -633,20 +643,23 @@
         
             <div class="col-md-12">
 
-            <table id="mytable" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
+            <div class="table-responsive">
+            <table id="mytable" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;min-width:2050px;">
                     <thead class="table-gradient2">
         <tr><th class="text-center" style="width: 2%">-</th>
-            <th class="text-center" style="width: 12%">COA</th>
-            <th class="text-center" style="width: 10%">Profit Center</th>
-            <th class="text-center" style="width: 10%">Cost Center</th>
-            <th class="text-center" style="width: 9%">Reff Doc</th>
+            <th class="text-center" style="width: 9%">COA</th>
+            <th class="text-center" style="width: 7%">Profit Center</th>
+            <th class="text-center" style="width: 7%">Cost Center</th>
+            <th class="text-center" style="width: 7%">Reff Doc</th>
             <th class="text-center" style="width: 9%">Reff Date</th>
-            <th class="text-center" style="width: 11%">Description</th>
-            <th class="text-center" style="width: 9%">Amount</th>
-            <th class="text-center" style="width: 9%">Deduction</th>
-            <th class="text-center" style="width: 9%">Due date</th>
-            <th class="text-center" style="width: 10%">PPH</th>
-            <th class="text-center" style="width: 10%">PPN</th>
+            <th class="text-center" style="width: 7%">Faktur Pajak</th>
+            <th class="text-center" style="width: 7%">Tgl Faktur Pajak</th>
+            <th class="text-center" style="width: 8%">Description</th>
+            <th class="text-center" style="width: 7%">Amount</th>
+            <th class="text-center" style="width: 7%">Deduction</th>
+            <th class="text-center" style="width: 7%">Due date</th>
+            <th class="text-center" style="width: 7%">PPH</th>
+            <th class="text-center" style="width: 7%">PPN</th>
             <th class="text-center" style="width: 2%"> Action </th>
         </tr>
     </thead>
@@ -669,11 +682,17 @@
                 <input type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete='off'>
             </td>
             <td>
-                <input type="text" style="font-size: 15px;" name="tgl_active" id="tgl_active" class='form-control tanggal' 
+                <input type="text" style="font-size: 15px;" name="tgl_active" id="tgl_active" class='form-control tanggal'
             value='' autocomplete='off' placeholder="dd-mm-yyyy">
             </td>
             <td>
-                <input type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete='off'> 
+                <input type="text" class="form-control faktur_pajak" name="faktur_pajak[]" placeholder="" autocomplete='off'>
+            </td>
+            <td>
+                <input type="text" style="font-size: 15px;" name="tgl_faktur_pajak" class="form-control tanggal tgl_faktur_pajak" value="" autocomplete='off' placeholder="dd-mm-yyyy">
+            </td>
+            <td>
+                <input type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete='off'>
             </td>
             <td>
                 <input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off">
@@ -699,15 +718,16 @@
     </tbody>
     <tfoot>
           <tr>
-            <td colspan="12" align="center">
+            <td colspan="15" align="center">
             <button type="button" class="btn btn-primary" onclick="addRow('tbody2')">Add Row</button>
             <button type="button" class="btn btn-warning" onclick="InsertRow('tbody2')">Interject Row</button>
             <button type="button" class="btn btn-danger" onclick="deleteRow('tbody2')">Delete Row</button>
             <!-- <input  style="margin-right: 15px;border: 0; line-height: 1; padding: 10px 20px; font-size: 1rem; text-align: center; color: #fff; text-shadow: 1px 1px 1px #000; border-radius: 6px; background-color: rgb(30, 144, 255);" id="add" type="button" value="(+) Add">  -->
             </td>
           </tr>
-    </tfoot>                   
-            </table>                    
+    </tfoot>
+            </table>
+            </div>
 <div style="padding:20px 0 0; border:0; box-shadow:none; background:transparent;">
         <form id="form-simpan">
             <div class="form-row col">
@@ -1142,7 +1162,7 @@ function addRow(tableID) {
     var rowCount = table.rows.length;
     var row = table.insertRow(rowCount);
 
- var element1 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td><select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="100%" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="100%" data-size="5"><option value="-"> - </option><?php $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'"); foreach ($sql3 as $fc) : ?> <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option> <?php endforeach; ?> </select> </td> <td> <select class="form-control selectpicker nomor_cc" name="nomor_cc[]" id="nomor_cc" data-live-search="true" data-width="100%" data-size="5"> <option value="-"> - </option> </select> </td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input type="text" style="font-size: 12px;" name="tgl_active" id="tgl_active" class="form-control tanggal" value="" autocomplete="off" placeholder="dd-mm-yyyy"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_dedadd(value)" autocomplete = "off"></td><td><input type="text" style="font-size: 12px;" name="tgl_tempo" id="tgl_tempo" class="form-control tanggal" autocomplete="off" placeholder="dd-mm-yyyy" value="<?= date("d-m-Y"); ?>"></td><td><select class="form-control select2add" name="pphh" style="width:100%" onchange="input_pph()"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPH' GROUP BY idtax"); foreach ($sql as $pph) : ?> <option data-idtax="<?= $pph["idtax"]; ?>" value="<?= $pph["percentage"]; ?>"><?= $pph["kriteria2"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control select2add ppnn-row" name="ppnn" style="width:100%" onchange="input_ppn()"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPN' GROUP BY idtax"); foreach ($sql as $ppn) : ?> <option data-idtax="<?= $ppn["idtax"]; ?>" value="<?= $ppn["percentage"]; ?>"><?= $ppn["kriteria2"]; ?> </option><?php endforeach; ?></select></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
+ var element1 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td><select class="form-control selectpicker no_coa" name="nomor_coa" id="nomor_coa" data-live-search="true" data-width="100%" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa from mastercoa_v2"); foreach ($sql as $coa) : ?> <option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control selectpicker prof_ctr" name="prof_ctr" id="prof_ctr" data-live-search="true" data-width="100%" data-size="5"><option value="-"> - </option><?php $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'"); foreach ($sql3 as $fc) : ?> <option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option> <?php endforeach; ?> </select> </td> <td> <select class="form-control selectpicker nomor_cc" name="nomor_cc[]" id="nomor_cc" data-live-search="true" data-width="100%" data-size="5"> <option value="-"> - </option> </select> </td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input type="text" style="font-size: 12px;" name="tgl_active" id="tgl_active" class="form-control tanggal" value="" autocomplete="off" placeholder="dd-mm-yyyy"></td><td><input style="font-size: 12px;" type="text" class="form-control faktur_pajak" name="faktur_pajak[]" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" name="tgl_faktur_pajak" class="form-control tanggal tgl_faktur_pajak" autocomplete="off" placeholder="dd-mm-yyyy"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="text-align: right;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_credit" name="txt_credit" oninput="modal_input_dedadd(value)" autocomplete = "off"></td><td><input type="text" style="font-size: 12px;" name="tgl_tempo" id="tgl_tempo" class="form-control tanggal" autocomplete="off" placeholder="dd-mm-yyyy" value="<?= date("d-m-Y"); ?>"></td><td><select class="form-control select2add" name="pphh" style="width:100%" onchange="input_pph()"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPH' GROUP BY idtax"); foreach ($sql as $pph) : ?> <option data-idtax="<?= $pph["idtax"]; ?>" value="<?= $pph["percentage"]; ?>"><?= $pph["kriteria2"]; ?> </option><?php endforeach; ?></select></td><td><select class="form-control select2add ppnn-row" name="ppnn" style="width:100%" onchange="input_ppn()"> <option data-idtax="0" value="0"> - </option><?php $sql = mysqli_query($conn1,"select idtax, kriteria, percentage, GROUP_CONCAT(kriteria,' (',percentage,'%)') as kriteria2 from mtax where category_tax = 'PPN' GROUP BY idtax"); foreach ($sql as $ppn) : ?> <option data-idtax="<?= $ppn["idtax"]; ?>" value="<?= $ppn["percentage"]; ?>"><?= $ppn["kriteria2"]; ?> </option><?php endforeach; ?></select></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
 
     row.innerHTML = element1;
 
@@ -1177,7 +1197,7 @@ function deleteRow(tableID)
             for(var i=0; i<rowCount; i++)
                 {
                 var row = table.rows[i];
-                var chkbox = row.cells[12].childNodes[0];
+                var chkbox = row.cells[14].childNodes[0];
                 if (null != chkbox && true == chkbox.checked)
                     {
                     if (rowCount <= 1)
@@ -1205,7 +1225,7 @@ function deleteRow(tableID)
             for(var i=0; i<rowCount; i++)
                 {
                 var row = table.rows[i];
-                var chkbox = row.cells[11].childNodes[0];
+                var chkbox = row.cells[13].childNodes[0];
                 if (null != chkbox && true == chkbox.checked)
                     {
                     var newRow = table.insertRow(i+1);
@@ -1262,10 +1282,10 @@ function deleteRow(tableID)
         var ppnTotal = 0;
 
         for (var i = 1; i < table.rows.length; i++) {
-            var amountEl = table.rows[i].cells[7].children[0];
-            var dedEl    = table.rows[i].cells[8].children[0];
-            var pphEl    = table.rows[i].cells[10].children[0];
-            var ppnEl    = table.rows[i].cells[11].children[0];
+            var amountEl = table.rows[i].cells[9].children[0];
+            var dedEl    = table.rows[i].cells[10].children[0];
+            var pphEl    = table.rows[i].cells[12].children[0];
+            var ppnEl    = table.rows[i].cells[13].children[0];
 
             var amountVal = amountEl.value;
             var dedVal    = dedEl.value;
@@ -1323,7 +1343,7 @@ function getdate() {
     var table = document.getElementById("tbody2");
     for (var i = 1; i < (table.rows.length); i++) {
 
-    var duedate = document.getElementById("tbody2").rows[i].cells[7].children[0];  
+    var duedate = document.getElementById("tbody2").rows[i].cells[9].children[0];
     duedate.value = pay_date;
 }
 }
@@ -1714,6 +1734,24 @@ $("input[type=checkbox]:checked").each(function () {
         valid_detail = false;
         return false;
     }
+
+    // COA 1.52.04 wajib isi Faktur Pajak (tidak boleh kosong atau "-").
+    var faktur_pajak_check = ($(this).closest('tr').find('td:eq(6) input').val() || '').trim();
+    if (no_coa === '1.52.04' && (faktur_pajak_check === '' || faktur_pajak_check === '-')) {
+        Swal.fire('Warning', 'COA 1.52.04 wajib isi Faktur Pajak', 'warning');
+        $(this).closest('tr').find('td:eq(6) input').focus();
+        valid_detail = false;
+        return false;
+    }
+
+    // COA 1.52.04 wajib isi Tgl Faktur Pajak juga.
+    var tgl_faktur_pajak_check = ($(this).closest('tr').find('td:eq(7) input').val() || '').trim();
+    if (no_coa === '1.52.04' && tgl_faktur_pajak_check === '') {
+        Swal.fire('Warning', 'COA 1.52.04 wajib isi Tgl Faktur Pajak', 'warning');
+        $(this).closest('tr').find('td:eq(7) input').focus();
+        valid_detail = false;
+        return false;
+    }
 });
 
 if (!valid_detail) {
@@ -1835,20 +1873,22 @@ if (!valid_detail) {
             var no_cc = $(this).closest('tr').find('td:eq(3)').find('select[id=nomor_cc] option').filter(':selected').val();
             var no_ref = $(this).closest('tr').find('td:eq(4) input').val();
             var ref_date = $(this).closest('tr').find('td:eq(5) input').val();
-            var deskripsi = $(this).closest('tr').find('td:eq(6) input').val();
-            var amount = $(this).closest('tr').find('td:eq(7) input').val() || 0;
-            var due_date = $(this).closest('tr').find('td:eq(9) input').val();
-            var ded_add = $(this).closest('tr').find('td:eq(8) input').val() || 0;
-            var d_pph = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').val() || 0;
-            var idtax = $(this).closest('tr').find('td:eq(10)').find('select[name=pphh] option').filter(':selected').attr('data-idtax');
-            var ppn_val = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').val() || document.getElementById('pilih_ppn').value;
+            var faktur_pajak = $(this).closest('tr').find('td:eq(6) input').val();
+            var tgl_faktur_pajak = $(this).closest('tr').find('td:eq(7) input').val();
+            var deskripsi = $(this).closest('tr').find('td:eq(8) input').val();
+            var amount = $(this).closest('tr').find('td:eq(9) input').val() || 0;
+            var due_date = $(this).closest('tr').find('td:eq(11) input').val();
+            var ded_add = $(this).closest('tr').find('td:eq(10) input').val() || 0;
+            var d_pph = $(this).closest('tr').find('td:eq(12)').find('select[name=pphh] option').filter(':selected').val() || 0;
+            var idtax = $(this).closest('tr').find('td:eq(12)').find('select[name=pphh] option').filter(':selected').attr('data-idtax');
+            var ppn_val = $(this).closest('tr').find('td:eq(13)').find('select[name=ppnn] option').filter(':selected').val() || document.getElementById('pilih_ppn').value;
             var d_ppn = (ppn_val === '0' || ppn_val === '' || ppn_val === null) ? document.getElementById('pilih_ppn').value : ppn_val;
-            var idppn_val = $(this).closest('tr').find('td:eq(11)').find('select[name=ppnn] option').filter(':selected').attr('data-idtax') || document.getElementById('idtax').value;
+            var idppn_val = $(this).closest('tr').find('td:eq(13)').find('select[name=ppnn] option').filter(':selected').attr('data-idtax') || document.getElementById('idtax').value;
             var id_ppn = (ppn_val === '0' || ppn_val === '' || ppn_val === null) ? document.getElementById('idtax').value : idppn_val;
 
             details.push({
                 prof_ctr: prof_ctr, no_coa: no_coa, no_cc: no_cc, no_ref: no_ref,
-                ref_date: ref_date, deskripsi: deskripsi, amount: amount,
+                ref_date: ref_date, faktur_pajak: faktur_pajak, tgl_faktur_pajak: tgl_faktur_pajak, deskripsi: deskripsi, amount: amount,
                 due_date: due_date, ded_add: ded_add, pph: d_pph, idtax: idtax,
                 ppn: d_ppn, id_ppn: id_ppn
             });
