@@ -102,14 +102,37 @@ $no_bk_now = $row_bk['no_reff'] ?? '';
                 ?>
               </select>
             </div>
+            <div class="col-md-3 mb-2"></div>
 
+            
+            <?php $profit_center = $row['profit_center']; ?>
+            <input type="hidden" name="profit_center" id="profit_center" value="<?= $profit_center; ?>">
+
+            <div class="col-md-3 mb-2">
+              <label><b>Cash Flow Category</b></label>
+              <input type="text" class="form-control" value="PEMINDAHBUKUAN INTERNAL" readonly>
+              <input type="hidden" name="cash_flow" id="cash_flow" value="6">
+            </div>
+
+            <div class="col-md-2 mb-2">
+              <label><b>Bank Out</b></label>
+              <select class="form-control select2" name="no_bk" id="no_bk" data-live-search="true">
+                <option value="<?= $no_bk_now; ?>" selected="selected"><?= $no_bk_now; ?></option>
+                <?php
+                $sql_bko = mysqli_query($conn1,"select no_bankout from b_bankout_h where status = 'Approved' and stat_bi != 'Y' and nama_supp = 'PT. NIRWANA ALABARE GARMENT' and no_bankout != '$no_bk_now'");
+                while ($row_bko = mysqli_fetch_array($sql_bko)) {
+                    echo '<option value="'.$row_bko['no_bankout'].'">'.$row_bko['no_bankout'].'</option>';
+                }
+                ?>
+              </select>
+            </div>
             <div class="col-md-2 mb-2">
               <label><b>Reference</b></label>
               <input type="text" readonly class="form-control" id="ref_data" name="ref_data" value="<?= $row['ref_data']; ?>">
             </div>
 
-            <?php $profit_center = $row['profit_center']; ?>
-            <input type="hidden" name="profit_center" id="profit_center" value="<?= $profit_center; ?>">
+            
+            <div class="col-md-3 mb-2"></div>
 
             <div class="col-md-3 mb-2">
               <label><b>Account</b></label>
@@ -139,20 +162,6 @@ $no_bk_now = $row_bk['no_reff'] ?? '';
             <div class="col-md-5 mb-2"></div>
 
             <div class="col-md-3 mb-2">
-              <label><b>Bank Out</b></label>
-              <select class="form-control select2" name="no_bk" id="no_bk" data-live-search="true">
-                <option value="<?= $no_bk_now; ?>" selected="selected"><?= $no_bk_now; ?></option>
-                <?php
-                $sql_bko = mysqli_query($conn1,"select no_bankout from b_bankout_h where status = 'Approved' and stat_bi != 'Y' and nama_supp = 'PT. NIRWANA ALABARE GARMENT' and no_bankout != '$no_bk_now'");
-                while ($row_bko = mysqli_fetch_array($sql_bko)) {
-                    echo '<option value="'.$row_bko['no_bankout'].'">'.$row_bko['no_bankout'].'</option>';
-                }
-                ?>
-              </select>
-            </div>
-            <div class="col-md-5 mb-2"></div>
-
-            <div class="col-md-3 mb-2">
               <label><b>Amount</b></label>
               <input type="text" class="form-control angka" id="amount" name="amount" style="text-align: right;" placeholder="0.00" value="<?= number_format($row['amount'], 2); ?>">
             </div>
@@ -168,9 +177,11 @@ $no_bk_now = $row_bk['no_reff'] ?? '';
             </div>
             <div class="col-md-5 mb-2"></div>
 
+            
+
             <div class="col-md-8 mb-2">
               <label><b>Description</b></label>
-              <textarea class="form-control" style="text-align: left;" cols="30" rows="3" name="pesan" id="pesan" placeholder="descriptions..." required><?= $row['deskripsi']; ?></textarea>
+              <textarea class="form-control" style="text-align: left;" cols="30" rows="2" name="pesan" id="pesan" placeholder="descriptions..." required><?= $row['deskripsi']; ?></textarea>
             </div>
 
           </div>
@@ -422,6 +433,12 @@ $no_bk_now = $row_bk['no_reff'] ?? '';
             return;
         }
 
+        let cash_flow = $('#cash_flow').val();
+        if (!cash_flow || cash_flow === '') {
+            Swal.fire('Warning', 'Cash Flow Category tidak boleh kosong', 'warning');
+            return;
+        }
+
         let tableData = datatable.rows().data().toArray();
 
         if (tableData.length === 0) {
@@ -461,6 +478,7 @@ $no_bk_now = $row_bk['no_reff'] ?? '';
                         create_user: create_user,
                         kode_bank_acc: kode_bank_acc,
                         pc_bank_acc: pc_bank_acc,
+                        cash_flow: cash_flow,
                         no_bk: no_bk,
                         no_journal: refRow.no_journal,
                         tgl_journal: refRow.tgl_journal,

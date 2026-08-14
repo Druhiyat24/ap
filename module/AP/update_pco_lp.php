@@ -21,6 +21,7 @@ $akun = mysqli_real_escape_string($conn2, $_POST['akun'] ?? '');
 $amount = floatval($_POST['amount'] ?? 0);
 $rate = floatval($_POST['rate'] ?? 0) ?: 1;
 $deskripsi = mysqli_real_escape_string($conn2, $_POST['deskripsi'] ?? '');
+$cash_flow = $_POST['cash_flow'] ?? '';
 $create_user = mysqli_real_escape_string($conn2, $_POST['create_user'] ?? 'system');
 $create_date = date("Y-m-d H:i:s");
 
@@ -30,6 +31,12 @@ if (!$doc_num_raw) {
     echo "Invalid data";
     exit;
 }
+
+if ($cash_flow === '') {
+    echo "Cash Flow Category tidak boleh kosong.";
+    exit;
+}
+$cash_flow = (int) $cash_flow;
 
 $doc_num = mysqli_real_escape_string($conn2, $doc_num_raw);
 
@@ -86,9 +93,9 @@ try {
 
     dbExec($conn2, "UPDATE tbl_list_journal set status = 'Updated' where no_journal = '$doc_num' and status = 'Draft'");
 
-    dbExec($conn2, "UPDATE c_petty_cashout_h SET tgl_pco = '$date', nama_supp = '$customer', profit_center = '$profit_center', amount = '$amount', deskripsi = '$deskripsi' WHERE no_pco = '$doc_num'");
+    dbExec($conn2, "UPDATE c_petty_cashout_h SET tgl_pco = '$date', nama_supp = '$customer', profit_center = '$profit_center', amount = '$amount', deskripsi = '$deskripsi', id_cash_flow = '$cash_flow' WHERE no_pco = '$doc_num'");
 
-    dbExec($conn2, "UPDATE c_report_pettycash set transaksi_date = '$date', credit = '$amount', deskripsi = '$deskripsi' where no_doc = '$doc_num'");
+    dbExec($conn2, "UPDATE c_report_pettycash set transaksi_date = '$date', credit = '$amount', deskripsi = '$deskripsi', id_cash_flow = '$cash_flow' where no_doc = '$doc_num'");
 
     // Baris-baris tbl_list_journal / c_petty_cashout_adj_det dikumpulkan dulu
     // ke array, baru di-insert sekali per tabel (bulk insert) di akhir.

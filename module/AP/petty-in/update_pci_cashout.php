@@ -25,6 +25,12 @@ $curr      = mysqli_real_escape_string($conn2, $_POST['currency1']);
 $reff_doc  = mysqli_real_escape_string($conn2, $_POST['reff_number1']);
 $oth_doc   = mysqli_real_escape_string($conn2, $_POST['oth_doc1'] ?? '-');
 $desc      = mysqli_real_escape_string($conn2, $_POST['pesan1'] ?? '-');
+$cash_flow = $_POST['cash_flow1'] ?? '';
+
+if ($cash_flow === '') {
+    throw new Exception('Cash Flow Category tidak boleh kosong.');
+}
+$cash_flow = (int) $cash_flow;
 
 $amount = str_replace(',','',$_POST['amount_kas1']);
 
@@ -108,13 +114,13 @@ dbExec($conn2,"DELETE FROM c_petty_cashin_none WHERE no_pci = '$doc_num'");
 
 dbExec($conn2,"
 UPDATE c_petty_cashin_h
-SET tgl_pci = '$doc_date', oth_doc = '$oth_doc', coa_akun = '$akun', curr = '$curr', amount = '$amount', deskripsi = '$desc'
+SET tgl_pci = '$doc_date', oth_doc = '$oth_doc', coa_akun = '$akun', curr = '$curr', amount = '$amount', deskripsi = '$desc', id_cash_flow = '$cash_flow'
 WHERE no_pci = '$doc_num'
 ");
 
 dbExec($conn2,"
 UPDATE c_report_pettycash
-SET transaksi_date = '$doc_date', debit = '$amount', deskripsi = '$desc'
+SET transaksi_date = '$doc_date', debit = '$amount', deskripsi = '$desc', id_cash_flow = '$cash_flow'
 WHERE no_doc = '$doc_num'
 ");
 

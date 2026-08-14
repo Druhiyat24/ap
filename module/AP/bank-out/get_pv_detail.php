@@ -6,7 +6,9 @@ $type_pv = !empty($_POST['type_pv']) ? $_POST['type_pv'] : 'Biaya';
 $no_pv_esc = mysqli_real_escape_string($conn2, $no_pv);
 
 if ($type_pv === 'Biaya') {
-    $sql = mysqli_query($conn2, "select kode_pc, CONCAT(id_pc,' - ',nama_pc) nama_pc, b.bank_account, b.bank_name, b.curr, b.b_code from tbl_pv_h a INNER JOIN b_masterbank b on b.bank_account = a.frm_akun INNER JOIN master_pc c on c.kode_pc = b.profit_center_bank where no_pv = '$no_pv_esc'");
+    // id_cash_flow ikut ditarik supaya Bank Out bisa auto-isi Cash Flow
+    // Category dari PV-nya langsung (lihat handler .chk_pv di create-out-bank.php).
+    $sql = mysqli_query($conn2, "select kode_pc, CONCAT(id_pc,' - ',nama_pc) nama_pc, b.bank_account, b.bank_name, b.curr, b.b_code, a.id_cash_flow from tbl_pv_h a INNER JOIN b_masterbank b on b.bank_account = a.frm_akun INNER JOIN master_pc c on c.kode_pc = b.profit_center_bank where no_pv = '$no_pv_esc'");
 } elseif ($type_pv === 'Installment') {
     // No_pv di sini adalah no_kbon_det (cicilan) - from_account/profit_center
     // disimpan di kontrabon_h induknya, bukan di baris cicilan.
@@ -39,5 +41,6 @@ echo json_encode([
     'currency'       => $row['curr'] ?? '',
     'nama_pc'        => $row['nama_pc'] ?? '',
     'profit_center'  => $row['kode_pc'] ?? '',
-    'b_code'         => $row['b_code'] ?? ''
+    'b_code'         => $row['b_code'] ?? '',
+    'id_cash_flow'   => $row['id_cash_flow'] ?? ''
 ]);

@@ -1574,6 +1574,15 @@ $(document).on('change', '.chk_pv', function(){
         $('#profit_center_bank2').val(data.profit_center);
         $('#profit_center_bank_show').val(data.nama_pc);
 
+        // Type PV (Biaya, dari tbl_pv_h/create-paymentvoucher.php) sudah
+        // punya Cash Flow Category sendiri (id_cash_flow) - simpan di baris
+        // supaya bisa dicek ulang tiap ada perubahan centang (lihat
+        // updateCashFlowFromPv()). Type lain (Regular/Installment/DP/CBD/
+        // SaldoAwal, dari sistem kontrabon) tidak punya id_cash_flow sama
+        // sekali.
+        tr.data('idcashflow', data.id_cash_flow || '');
+        updateCashFlowFromPv();
+
         loadRate();
         hitungTotalPV();
 
@@ -1587,6 +1596,8 @@ $(document).on('change', '.chk_pv', function(){
     input_idr.prop('disabled', true);
     input_idr.val('');
     tr.removeData('idr_rate');
+    tr.removeData('idcashflow');
+    updateCashFlowFromPv();
 
     if(getAllCheckedPv().length === 0){
 
@@ -1610,6 +1621,40 @@ $(document).on('change', '.chk_pv', function(){
   }
 
 });
+
+// Cash Flow Category cuma di-auto-isi kalau SEMUA PV Biaya yang sedang
+// dicentang punya id_cash_flow yang SAMA (tidak ambigu). Kalau ada PV yang
+// belum punya id_cash_flow (data lama) atau kategori PV yang dicentang
+// beda-beda, field dikosongkan lagi supaya diisi manual - tidak
+// menebak-nebak salah satu.
+function updateCashFlowFromPv() {
+  let values = [];
+  $('.chk_pv:checked').each(function () {
+    let tr = $(this).closest('tr');
+    if (tr.find('.no_pv').data('typepv') !== 'Biaya') {
+      return;
+    }
+    let v = tr.data('idcashflow');
+    if (v) {
+      values.push(String(v));
+    }
+  });
+
+  let distinct = values.filter(function (v, i) { return values.indexOf(v) === i; });
+
+  if (distinct.length === 1) {
+    $('#cash_flow2').val(distinct[0]).trigger('change');
+    window.cfAutoValue = distinct[0];
+  } else {
+    // Ambigu (0 atau >1 kategori berbeda) - cuma kosongkan lagi kalau value
+    // sekarang memang hasil auto-fill kita sebelumnya. Kalau user sudah
+    // sempat pilih manual, jangan ditimpa.
+    if ($('#cash_flow2').val() === (window.cfAutoValue || '')) {
+      $('#cash_flow2').val('').trigger('change');
+    }
+    window.cfAutoValue = null;
+  }
+}
 
 
 // ===============================
@@ -1900,11 +1945,19 @@ function hitungTotalPV(){
     let tr = $(this);
 
     let pc = (tr.find('select.prof_ctr2').first().val() || '').trim().toUpperCase();
+    let rowCurr = (tr.find('select[name="currenc2[]"]').first().val() || 'IDR').trim().toUpperCase();
 
     let debit  = getNumber(tr.find('input[name="txt_amount2[]"]').val());
     let credit = getNumber(tr.find('input[name="txt_credit2[]"]').val());
 
-    console.log('ADJUST ROW:', index+2, 'PC:', pc, 'Debit:', debit, 'Credit:', credit);
+    // 🔥 Baris adjustment USD dikonversi pakai rate header (rate_bank2) supaya
+    // total per-PC (NAG/NAK) tetap konsisten dalam IDR seperti baris PV di atas.
+    if(rowCurr === 'USD'){
+      debit  = debit  * rate_bank;
+      credit = credit * rate_bank;
+    }
+
+    console.log('ADJUST ROW:', index+2, 'PC:', pc, 'CURR:', rowCurr, 'Debit:', debit, 'Credit:', credit);
 
     if(pc === 'NAG'){
       nag_debit  += debit;
@@ -1996,8 +2049,11 @@ $('#amount_bank2, #rate_bank2').on('keyup change', function(){
 // ===============================
 // EVENT ADJUST TABLE
 // ===============================
-$(document).on('keyup change', 
-  'input[name="txt_amount2[]"], input[name="txt_credit2[]"], .prof_ctr2', 
+// curr_det2 (dropdown Currency per baris) SENGAJA ikut di-listen - ganti IDR<->USD
+// di satu baris harus langsung memicu hitung ulang total NAG/NAK, bukan cuma pas
+// user ngedit ulang angka Debit/Credit-nya.
+$(document).on('keyup change',
+  'input[name="txt_amount2[]"], input[name="txt_credit2[]"], .prof_ctr2, .curr_det2',
   function(){
     hitungTotalPV();
   });
@@ -2189,6 +2245,7 @@ $(document).on('change', '.no_coa2', function() {
       <td>
       <select class="form-control selectpicker curr_det2" name="currenc2[]">
       <option value="IDR">IDR</option>
+      <option value="USD">USD</option>
       </select>
       </td>
 
@@ -2346,6 +2403,7 @@ $(document).on('change', '.no_coa2', function() {
             <td>
             <select class="form-control selectpicker curr_det2" name="currenc2[]">
             <option value="IDR">IDR</option>
+            <option value="USD">USD</option>
             </select>
             </td>
 
@@ -2427,7 +2485,8 @@ $(document).on('change', '.no_coa2', function() {
     rate       : getNumber($('#rate_bank2').val()),
     eqv        : getNumber($('#eqv_idr_bank2').val()),
     desc       : $('#pesan2').val(),
-    kode_bank  : $('#kode_bank2').val()
+    kode_bank  : $('#kode_bank2').val(),
+    cash_flow  : $('#cash_flow2').val()
   };
 
   console.log("HEADER:", header);
@@ -2457,6 +2516,11 @@ $(document).on('change', '.no_coa2', function() {
 
   if(!header.desc || !header.desc.trim()){
     Swal.fire('Warning','Description tidak boleh kosong','warning');
+    return;
+  }
+
+  if(!header.cash_flow){
+    Swal.fire('Warning','Cash Flow Category tidak boleh kosong','warning');
     return;
   }
 
@@ -3390,6 +3454,11 @@ $('#simpan3').on('click', function () {
 
   if(desc3 == ''){
     Swal.fire('Warning','Description tidak boleh kosong','warning');
+    return;
+  }
+
+  if($('#cash_flow3').val() == ''){
+    Swal.fire('Warning','Cash Flow Category tidak boleh kosong','warning');
     return;
   }
 

@@ -171,13 +171,27 @@ $row = mysqli_fetch_array($sql);
                 <input type="text" class="form-control" id="currency1" name="currency1" value="<?= htmlspecialchars($row['curr']); ?>" readonly>
               </div>
 
+              <div class="col-md-3 mb-2">
+                <label><b>Cash Flow Category</b></label>
+                <select class="form-control select2" name="cash_flow1" id="cash_flow1" data-live-search="true">
+                    <option value="">Select Cash Flow Category</option>
+                    <?php
+                    $id_cash_flow1 = $row['id_cash_flow'] ?? '';
+                    $sqlCf1 = mysqli_query($conn2, "select id, show_subcategory from master_cash_flow where type_cashflow = 'Cash In' and status = 'Y' order by nama_category asc, urutan asc");
+                    while ($rowCf1 = mysqli_fetch_assoc($sqlCf1)) {
+                        $selectedCf1 = ($rowCf1['id'] == $id_cash_flow1) ? ' selected="selected"' : '';
+                        echo '<option value="'.$rowCf1['id'].'"'.$selectedCf1.'>'.$rowCf1['show_subcategory'].'</option>';
+                    }
+                    ?>
+                </select>
+              </div>
 
               <div class="col-md-2 mb-2">
                 <label><b>Amount</b></label>
                 <input type="text" class="form-control angka" id="amount_kas1" name="amount_kas1" value="<?= number_format($row['amount'], 0); ?>">
               </div>
 
-              <div class="col-md-3 mb-2"> </div>
+              <div class="col-md-2 mb-2"> </div>
 
               <div class="col-md-8 mb-2">
                 <label><b>Description</b></label>
@@ -706,6 +720,11 @@ foreach ($sql3 as $fc) : ?>
 
     if (!$('#pesan1').val().trim()) {
       Swal.fire('Warning', 'Description tidak boleh kosong', 'warning');
+      return;
+    }
+
+    if (!$('#cash_flow1').val()) {
+      Swal.fire('Warning', 'Cash Flow Category tidak boleh kosong', 'warning');
       return;
     }
 

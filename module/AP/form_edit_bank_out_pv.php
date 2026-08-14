@@ -172,12 +172,14 @@ $row = mysqli_fetch_array($sql);
               </select>
             </div>
 
-            <div class="col-md-2 mb-2">
+            
+
+            <div class="col-md-4 mb-2"></div>
+
+            <div class="col-md-3 mb-2">
               <label><b>Reference</b></label>
               <input type="text" readonly class="form-control" id="reff_doc" name="reff_doc" value="<?= $row['reff_doc']; ?>">
             </div>
-
-            <div class="col-md-2 mb-2"></div>
 
             <div class="col-md-2 mb-2">
               <label><b>Reff Date</b></label>
@@ -190,7 +192,7 @@ $row = mysqli_fetch_array($sql);
             <div class="col-md-2 mb-2 d-flex align-items-end">
               <button type="button" id="btn_tarik_pv" class="btn btn-primary"><i class="fas fa-search"></i> Search</button>
             </div>
-            <div class="col-md-6 mb-2"></div>
+            <div class="col-md-3 mb-2"></div>
 
             <?php $profit_center = $row['profit_center']; ?>
             <input type="hidden" name="profit_center" id="profit_center" value="<?= $profit_center; ?>">
@@ -229,9 +231,24 @@ $row = mysqli_fetch_array($sql);
             </div>
             <div class="col-md-5 mb-2"></div>
 
-            <div class="col-md-8 mb-2">
+            <div class="col-md-3 mb-2">
+              <label><b>Cash Flow Category</b></label>
+              <select class="form-control select2" name="cash_flow" id="cash_flow" data-live-search="true">
+                <option value="">Select Cash Flow Category</option>
+                <?php
+                $id_cash_flow = $row['id_cash_flow'] ?? '';
+                $sqlCf = mysqli_query($conn2, "select id, show_subcategory from master_cash_flow where type_cashflow = 'Cash Out' and status = 'Y' order by nama_category asc, urutan asc");
+                while ($rowCf = mysqli_fetch_assoc($sqlCf)) {
+                    $selectedCf = ($rowCf['id'] == $id_cash_flow) ? ' selected="selected"' : '';
+                    echo '<option value="'.$rowCf['id'].'"'.$selectedCf.'>'.$rowCf['show_subcategory'].'</option>';
+                }
+                ?>
+              </select>
+            </div>
+
+            <div class="col-md-5 mb-2">
               <label><b>Description</b></label>
-              <textarea class="form-control" style="text-align: left;" cols="30" rows="3" name="pesan" id="pesan" placeholder="descriptions..." required><?= $row['deskripsi']; ?></textarea>
+              <textarea class="form-control" style="text-align: left;height: 40px;" cols="30" name="pesan" id="pesan" placeholder="descriptions..." required><?= $row['deskripsi']; ?></textarea>
             </div>
 
           </div>
@@ -275,6 +292,7 @@ $row = mysqli_fetch_array($sql);
                     <th>Cost Center</th>
                     <th>Reff Document</th>
                     <th>Reff Date</th>
+                    <th style="width:80px;">Currency</th>
                     <th style="width:120px;">Debit</th>
                     <th style="width:120px;">Credit</th>
                     <th>Description</th>
@@ -284,7 +302,7 @@ $row = mysqli_fetch_array($sql);
 
                 <tbody id="tbody2">
                   <?php
-                  $sql_none = mysqli_query($conn2,"select no_bankout no_doc, a.id_coa, a.no_cc id_cost_center, reff_doc, reff_date, t_debit, t_credit, a.deskripsi keterangan, a.profit_center, concat(b.no_coa,' ', b.nama_coa) as nama_coa, CONCAT(a.no_cc,' - ',d.cc_name) cc_name, CONCAT(mp.id_pc,' - ',nama_pc) nama_pc from b_bankout_adj_det a left join mastercoa_v2 b on b.no_coa = a.id_coa left join b_master_cc d on d.no_cc = a.no_cc LEFT JOIN master_pc mp on mp.kode_pc = a.profit_center where no_bankout = '$doc_num'");
+                  $sql_none = mysqli_query($conn2,"select no_bankout no_doc, a.id_coa, a.no_cc id_cost_center, reff_doc, reff_date, t_debit, t_credit, a.curr, a.deskripsi keterangan, a.profit_center, concat(b.no_coa,' ', b.nama_coa) as nama_coa, CONCAT(a.no_cc,' - ',d.cc_name) cc_name, CONCAT(mp.id_pc,' - ',nama_pc) nama_pc from b_bankout_adj_det a left join mastercoa_v2 b on b.no_coa = a.id_coa left join b_master_cc d on d.no_cc = a.no_cc LEFT JOIN master_pc mp on mp.kode_pc = a.profit_center where no_bankout = '$doc_num'");
 
                   while($rowDet = mysqli_fetch_array($sql_none)){
                       $id_coa = $rowDet['id_coa'];
@@ -292,6 +310,7 @@ $row = mysqli_fetch_array($sql);
                       $t_debit = $rowDet['t_debit'];
                       $t_credit = $rowDet['t_credit'];
                       $profitCenterDet = $rowDet['profit_center'];
+                      $rowCurrDet = $rowDet['curr'] ?: 'IDR';
 
                       echo '<tr>
                       <td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>
@@ -330,7 +349,14 @@ $row = mysqli_fetch_array($sql);
                       </td>
 
                       <td><input style="text-align:left;font-size:14px;" type="text" class="form-control" name="refferensi" value="'.$rowDet['reff_doc'].'" autocomplete="off"></td>
-                      <td><input style="text-align:left;font-size:14px;" type="text" class="form-control tanggal_det" name="tgl_refferensi" value="'.($rowDet['reff_date'] == '1970-01-01' ? '' : $rowDet['reff_date']).'" autocomplete="off"></td>';
+                      <td><input style="text-align:left;font-size:14px;" type="text" class="form-control tanggal_det" name="tgl_refferensi" value="'.($rowDet['reff_date'] == '1970-01-01' ? '' : $rowDet['reff_date']).'" autocomplete="off"></td>
+
+                      <td>
+                      <select class="form-control selectpicker curr_det" name="curr_det">
+                      <option value="IDR"'.($rowCurrDet === 'IDR' ? ' selected' : '').'>IDR</option>
+                      <option value="USD"'.($rowCurrDet === 'USD' ? ' selected' : '').'>USD</option>
+                      </select>
+                      </td>';
 
                       if ($t_debit == '0') {
                           echo '<td><input style="text-align:right;font-size:14px;" type="number" min="1" class="form-control" name="txt_amount" oninput="modal_input_amt(this)" autocomplete="off" readonly></td>';
@@ -474,7 +500,12 @@ $row = mysqli_fetch_array($sql);
     }
 
     let tablePV;
-    let isManualAmountPV = false;
+    // Mulai TRUE (bukan false seperti di create) - Amount di halaman Edit sudah
+    // ke-load dari nilai tersimpan (bisa saja hasil input manual yang beda tipis
+    // dari total PV ter-link, mis. 4479.00 vs PV 4478.10). Kalau mulai dari false,
+    // hitungTotalPV() yang otomatis jalan pas PV ter-link dimuat (loadLinkedPvOnly)
+    // akan langsung menimpa Amount manual itu dengan hasil hitung ulang dari PV.
+    let isManualAmountPV = true;
 
     function initTablePV(){
         if ($.fn.DataTable.isDataTable('#table-pv')) {
@@ -737,6 +768,11 @@ $row = mysqli_fetch_array($sql);
         hitungTotalPV();
     });
 
+    /* Ganti Currency (IDR/USD) di baris Adjust juga harus ikut menghitung ulang total. */
+    $(document).on('change', '#tbody2 select[name="curr_det"]', function(){
+        hitungTotalPV();
+    });
+
     function modal_input_amt(el){
         let row = $(el).closest('tr');
         let debit = parseFloat($(el).val()) || 0;
@@ -812,8 +848,15 @@ $row = mysqli_fetch_array($sql);
 
         $('#tbody2 tr').each(function(){
             let pc = ($(this).find('select[name="prof_ctr"]').first().val() || $(this).find('.prof_ctr').first().val() || '').trim().toUpperCase();
+            let rowCurr = ($(this).find('select[name="curr_det"]').first().val() || $(this).find('.curr_det').first().val() || 'IDR').trim().toUpperCase();
             let debit = parseFloat($(this).find('input[name="txt_amount"]').val()) || 0;
             let credit = parseFloat($(this).find('input[name="txt_credit"]').val()) || 0;
+
+            // Baris adjustment USD dikonversi pakai rate header, sama seperti di create.
+            if (rowCurr === 'USD') {
+                debit = debit * rate_bank;
+                credit = credit * rate_bank;
+            }
 
             if (pc === 'NAG') { debit_nag += debit; credit_nag += credit; }
             if (pc === 'NAK') { debit_nak += debit; credit_nak += credit; }
@@ -875,6 +918,12 @@ $row = mysqli_fetch_array($sql);
         </td>
         <td><input style="font-size: 12px;" type="text" class="form-control" name="refferensi" autocomplete="off"></td>
         <td><input style="font-size: 12px;" type="text" class="form-control tanggal_det" name="tgl_refferensi" autocomplete="off"></td>
+        <td>
+        <select class="form-control selectpicker curr_det" name="curr_det">
+        <option value="IDR">IDR</option>
+        <option value="USD">USD</option>
+        </select>
+        </td>
         <td><input style="text-align: right;" type="number" min="1" class="form-control" name="txt_amount" oninput="modal_input_amt(this)" autocomplete="off"></td>
         <td><input style="text-align: right;" type="number" min="1" class="form-control" name="txt_credit" oninput="modal_input_cre(this)" autocomplete="off"></td>
         <td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan" autocomplete="off"></td>
@@ -964,6 +1013,12 @@ $row = mysqli_fetch_array($sql);
                     </td>
                     <td><input style="font-size: 12px;" type="text" class="form-control" name="refferensi" autocomplete="off"></td>
                     <td><input style="font-size: 12px;" type="text" class="form-control tanggal_det" name="tgl_refferensi" autocomplete="off"></td>
+                    <td>
+                    <select class="form-control selectpicker curr_det" name="curr_det">
+                    <option value="IDR">IDR</option>
+                    <option value="USD">USD</option>
+                    </select>
+                    </td>
                     <td><input style="text-align: right;" type="number" min="1" class="form-control" name="txt_amount" oninput="modal_input_amt(this)" autocomplete="off"></td>
                     <td><input style="text-align: right;" type="number" min="1" class="form-control" name="txt_credit" oninput="modal_input_cre(this)" autocomplete="off"></td>
                     <td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan" autocomplete="off"></td>
@@ -1091,6 +1146,12 @@ $row = mysqli_fetch_array($sql);
             return;
         }
 
+        let cash_flow = $('#cash_flow').val();
+        if (!cash_flow || cash_flow === '') {
+            Swal.fire('Warning', 'Cash Flow Category tidak boleh kosong', 'warning');
+            return;
+        }
+
         if (Math.abs(parseFloat(h_tot_debit_nag) - parseFloat(h_tot_credit_nag)) > 1) {
             Swal.fire('Warning', 'Journal PT Nirwana Alabare Garment tidak balance', 'warning');
             return;
@@ -1129,6 +1190,7 @@ $row = mysqli_fetch_array($sql);
             let debit      = parseFloat($(this).find("input[name='txt_amount']").val()) || 0;
             let credit     = parseFloat($(this).find("input[name='txt_credit']").val()) || 0;
             let keterangan = $(this).find("input[name='keterangan']").val();
+            let curr       = $(this).find("select[name='curr_det']").first().val() || $(this).find('.curr_det').first().val() || 'IDR';
 
             coa = (coa || '').trim();
             prof_ctr = (prof_ctr || '').trim();
@@ -1172,7 +1234,8 @@ $row = mysqli_fetch_array($sql);
                 tgl_refferensi: tgl_refferensi,
                 debit: debit,
                 credit: credit,
-                keterangan: keterangan
+                keterangan: keterangan,
+                curr: curr
             });
         });
 
@@ -1209,6 +1272,7 @@ $row = mysqli_fetch_array($sql);
                         create_user: create_user,
                         kode_bank_acc: kode_bank_acc,
                         pc_bank_acc: pc_bank_acc,
+                        cash_flow: cash_flow,
                         pv_rows: JSON.stringify(pv_rows),
                         details: JSON.stringify(details)
                     },

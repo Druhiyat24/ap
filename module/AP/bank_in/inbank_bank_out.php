@@ -70,9 +70,16 @@
                     <label><b>Equivalent IDR</b></label>
                     <input type="text" class="form-control angka" id="eqv_idr_bank2" name="eqv_idr_bank2" readonly>
                 </div>
-                <div class="col-md-5 mb-2"> </div>
+
+                <div class="col-md-5 mb-2"></div>
 
                 <div class="col-md-3 mb-2">
+                    <label><b>Cash Flow Category</b></label>
+                    <input type="text" class="form-control" value="PEMINDAHBUKUAN INTERNAL" readonly>
+                    <input type="hidden" name="cash_flow2" id="cash_flow2" value="6">
+                </div>
+
+                <div class="col-md-4 mb-2">
                     <label><b>Bank Out</b></label>
                     <select class="form-control select2" name="no_bk" id="no_bk" data-live-search="true">
                         <option value="">Select Bank Out</option>
@@ -86,10 +93,11 @@
                         ?>
                     </select>
                 </div>
+                <div class="col-md-5 mb-2"></div>
 
-                <div class="col-md-5 mb-2">
+                <div class="col-md-8 mb-2">
                     <label><b>Description</b></label>
-                    <textarea style="font-size: 15px; text-align: left;height: 40px;" cols="30" type="text" class="form-control " name="pesan2" id="pesan2" value="" placeholder="descriptions..." required></textarea>
+                    <textarea style="font-size: 15px; text-align: left;" cols="30" rows="2" type="text" class="form-control " name="pesan2" id="pesan2" value="" placeholder="descriptions..." required></textarea>
                 </div>
 
             </div>

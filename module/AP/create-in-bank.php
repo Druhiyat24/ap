@@ -527,6 +527,12 @@
         return;
       }
 
+      if ($('#cash_flow').val() == '') {
+        Swal.fire('Warning', 'Cash Flow Category tidak boleh kosong', 'warning');
+        $('#cash_flow').focus();
+        return;
+      }
+
       let btn = $(this);
       btn.prop('disabled', true);
 
@@ -848,6 +854,12 @@
       if (desc2 == '') {
         Swal.fire('Warning', 'Description tidak boleh kosong', 'warning');
         $('#pesan2').focus();
+        return;
+      }
+
+      if ($('#cash_flow2').val() == '') {
+        Swal.fire('Warning', 'Cash Flow Category tidak boleh kosong', 'warning');
+        $('#cash_flow2').focus();
         return;
       }
 
@@ -1681,6 +1693,11 @@ $('#simpan3').on('click', function () {
 
     if($('#pesan3').val().trim() == ''){
         Swal.fire('Warning','Description tidak boleh kosong','warning');
+        return;
+    }
+
+    if($('#cash_flow3').val() == ''){
+        Swal.fire('Warning','Cash Flow Category tidak boleh kosong','warning');
         return;
     }
 

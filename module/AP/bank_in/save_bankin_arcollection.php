@@ -35,6 +35,7 @@ $pc_bank   = $_POST['profit_center_bank'];
 $coa       = $_POST['coa'] ?? '';
 $cost      = $_POST['cost'] ?? '-';
 $desc      = trim($_POST['pesan'] ?? '');
+$cash_flow = $_POST['cash_flow'] ?? '';
 
 if ($akun === '') {
     throw new Exception('Account tidak boleh kosong.');
@@ -51,6 +52,11 @@ if ($pc === '') {
 if ($desc === '') {
     throw new Exception('Description tidak boleh kosong.');
 }
+
+if ($cash_flow === '') {
+    throw new Exception('Cash Flow Category tidak boleh kosong.');
+}
+$cash_flow = (int) $cash_flow;
 
 $amount = str_replace(',','',$_POST['amount_bank']);
 $rate   = str_replace(',','',$_POST['rate_bank']);
@@ -147,18 +153,18 @@ $nama_cc = $nama_cc ?: '-';
 q($conn2,"
 INSERT INTO tbl_bankin_arcollection
 (
-doc_num,date,ref_data,customer,akun,bank,curr,id_coa,id_cost_center, amount,rate,eqv_idr, outstanding,deskripsi, status,create_by,create_date, profit_center
+doc_num,date,ref_data,customer,akun,bank,curr,id_coa,id_cost_center, amount,rate,eqv_idr, outstanding,deskripsi, status,create_by,create_date, profit_center, id_cash_flow
 )
 VALUES
-('$doc_num', '$doc_date', 'AR Collection', '$supp', '$akun', '$bank', '$curr', '$coa', '$cost', '$amount', '$rate', '$eqv', '$amount', '$desc', '$status', '$user', '$create_date', '$pc_bank')
+('$doc_num', '$doc_date', 'AR Collection', '$supp', '$akun', '$bank', '$curr', '$coa', '$cost', '$amount', '$rate', '$eqv', '$amount', '$desc', '$status', '$user', '$create_date', '$pc_bank', '$cash_flow')
 ");
 
 
 q($conn2,"
 INSERT INTO b_reportbank
-(transaksi_date,no_doc,deskripsi,akun,categori,cf_categori,curr,debit,credit, balance,status)
+(transaksi_date,no_doc,deskripsi,akun,categori,cf_categori,curr,debit,credit, balance,status,id_cash_flow)
 VALUES
-('$doc_date', '$doc_num', '$desc', '$akun', '', '', '$curr','$amount', '0', '$amount', '$status')
+('$doc_date', '$doc_num', '$desc', '$akun', '', '', '$curr','$amount', '0', '$amount', '$status', '$cash_flow')
 ");
 
 

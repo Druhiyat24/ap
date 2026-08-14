@@ -195,9 +195,15 @@ $pc_bank_now = $row_acc_now['kode_pc'] ?? '';
             </div>
             <div class="col-md-5 mb-2"></div>
 
-            <div class="col-md-8 mb-2">
+            <div class="col-md-3 mb-2">
+              <label><b>Cash Flow Category</b></label>
+              <input type="text" class="form-control" value="PIUTANG USAHA" readonly>
+              <input type="hidden" name="cash_flow" id="cash_flow" value="1">
+            </div>
+
+            <div class="col-md-4 mb-2">
               <label><b>Description</b></label>
-              <textarea class="form-control" style="text-align: left;" cols="30" rows="3" name="pesan" id="pesan" placeholder="descriptions..." required><?= $row['deskripsi']; ?></textarea>
+              <textarea class="form-control" style="text-align: left;height: 40px;" cols="30" name="pesan" id="pesan" placeholder="descriptions..." required><?= $row['deskripsi']; ?></textarea>
             </div>
 
           </div>
@@ -354,6 +360,12 @@ $pc_bank_now = $row_acc_now['kode_pc'] ?? '';
             return;
         }
 
+        let cash_flow = $('#cash_flow').val();
+        if (!cash_flow || cash_flow === '') {
+            Swal.fire('Warning', 'Cash Flow Category tidak boleh kosong', 'warning');
+            return;
+        }
+
         Swal.fire({
             title: "Are you sure?",
             text: "The data will be updated.",
@@ -384,6 +396,7 @@ $pc_bank_now = $row_acc_now['kode_pc'] ?? '';
                         deskripsi: deskripsi,
                         kode_bank_acc: kode_bank_acc,
                         pc_bank_acc: pc_bank_acc,
+                        cash_flow: cash_flow,
                         create_user: create_user
                     },
                     success: function (res) {

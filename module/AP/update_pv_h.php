@@ -24,6 +24,7 @@ $pay_date = date("Y-m-d", strtotime($_POST['pay_date']));
 $pay_mth = $_POST['pay_mth'];
 $curr = $_POST['curr'];
 $forpay = $_POST['forpay'];
+$id_cash_flow = !empty($_POST['id_cash_flow']) ? (int) $_POST['id_cash_flow'] : null;
 $pv_tax_type = $_POST['pv_tax_type'] ?? '';
 $frcc = $_POST['frcc'];
 $tocc = $_POST['tocc'];
@@ -84,6 +85,7 @@ try {
         from tbl_pv where no_pv = '$no_pv_esc'");
 
     $pv_tax_type_esc = mysqli_real_escape_string($conn2, $pv_tax_type);
+    $id_cash_flow_sql = $id_cash_flow !== null ? $id_cash_flow : 'NULL';
 
     q($conn2, "UPDATE tbl_pv_h SET
         pv_date = '$pv_date',
@@ -94,6 +96,7 @@ try {
         pay_meth = '$pay_mth',
         curr = '$curr',
         for_pay = '$forpay',
+        id_cash_flow = $id_cash_flow_sql,
         pv_tax_type = '$pv_tax_type_esc',
         frm_akun = '$frcc',
         to_akun = '$tocc',

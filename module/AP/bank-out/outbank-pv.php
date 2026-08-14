@@ -83,9 +83,22 @@
             </div>
             <div class="col-md-5 mb-2"> </div>
 
-            <div class="col-md-8 mb-2">
+            <div class="col-md-3 mb-2">
+                <label><b>Cash Flow Category</b></label>
+                <select class="form-control select2" name="cash_flow2" id="cash_flow2" data-live-search="true">
+                    <option value="">Select Cash Flow Category</option>
+                    <?php
+                    $sqlCf2 = mysqli_query($conn2, "select id, show_subcategory from master_cash_flow where type_cashflow = 'Cash Out' and status = 'Y' order by nama_category asc, urutan asc");
+                    while ($rowCf2 = mysqli_fetch_assoc($sqlCf2)) {
+                        echo "<option value='" . $rowCf2['id'] . "'>" . $rowCf2['show_subcategory'] . "</option>";
+                    }
+                    ?>
+                </select>
+            </div>
+
+            <div class="col-md-5 mb-2">
                 <label><b>Description</b></label>
-                <textarea style="font-size: 15px; text-align: left;" cols="30" rows="3" type="text" class="form-control " name="pesan2" id="pesan2" value="" placeholder="descriptions..." required></textarea>
+                <textarea style="font-size: 15px; text-align: left;height: 40px;" cols="30"  type="text" class="form-control " name="pesan2" id="pesan2" value="" placeholder="descriptions..." required></textarea>
             </div>
 
         </div>

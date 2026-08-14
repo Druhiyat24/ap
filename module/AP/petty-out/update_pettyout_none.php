@@ -65,8 +65,14 @@ try {
     $pc_kas    = mysqli_real_escape_string($conn2, $header['pc_header']);
     $amount    = $header['amount'];
     $desc      = mysqli_real_escape_string($conn2, $header['desc']);
+    $cash_flow = $header['cash_flow'] ?? '';
     $user      = $_SESSION['username'] ?? 'system';
     $edit_date = date("Y-m-d H:i:s");
+
+    if ($cash_flow === '') {
+        throw new Exception('Cash Flow Category tidak boleh kosong.');
+    }
+    $cash_flow = (int) $cash_flow;
 
     $sqlcoa = dbExec($conn2, "select nama_coa from mastercoa_v2 where no_coa = '$akun'");
     $rowcoa = mysqli_fetch_array($sqlcoa);
@@ -124,13 +130,13 @@ try {
     // =========================
     dbExec($conn2, "
         UPDATE c_petty_cashout_h
-        SET tgl_pco = '$doc_date', nama_supp = '$nama_supp', coa_akun = '$akun', curr = '$curr', amount = '$amount', deskripsi = '$desc'
+        SET tgl_pco = '$doc_date', nama_supp = '$nama_supp', coa_akun = '$akun', curr = '$curr', amount = '$amount', deskripsi = '$desc', id_cash_flow = '$cash_flow'
         WHERE no_pco = '$doc_num_esc'
         ");
 
     dbExec($conn2, "
         UPDATE c_report_pettycash
-        SET transaksi_date = '$doc_date', credit = '$amount', balance = '$amount', deskripsi = '$desc'
+        SET transaksi_date = '$doc_date', credit = '$amount', balance = '$amount', deskripsi = '$desc', id_cash_flow = '$cash_flow'
         WHERE no_doc = '$doc_num_esc'
         ");
 

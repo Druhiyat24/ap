@@ -247,36 +247,58 @@ $pc_bank_now = $row_acc_now['kode_pc'] ?? '';
                 ?>">
                 </div>
 
-                <div class="col-md-2 mb-2">
-                    <label><b>Currency</b></label>
-                    <input type="text" readonly class="form-control" id="valuta" name="valuta" value="<?php
-                    if(!empty($doc_num)) {
-                        echo $row['curr'];
-                    }
-                    else{
-                        echo '';
-                    }
-                ?>">
+                <div class="col-md-3 mb-2">
+                    <div class="d-flex">
+                        <label style="flex:0 0 38%;"><b>Currency</b></label>
+                        <label style="flex:1;"><b>Rate</b></label>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" readonly class="form-control" id="valuta" name="valuta" style="max-width:38%;" value="<?php
+                        if(!empty($doc_num)) {
+                            echo $row['curr'];
+                        }
+                        else{
+                            echo '';
+                        }
+                    ?>">
+                        <input type="text" class="form-control angka" id="rate" name="rate" style="text-align: right;" placeholder="0.00"
+                        value="<?php echo !empty($doc_num) ? number_format($row['rate'], 2) : ''; ?>" <?php echo ($row['curr'] === 'IDR') ? 'readonly' : ''; ?>>
+                    </div>
                 </div>
-                <div class="col-md-5 mb-2"> </div>
+
+            </div>
+
+            <div class="form-row">
 
                 <div class="col-md-3 mb-2">
+                    <label><b>Cash Flow Category</b></label>
+                    <select class="form-control select2" name="cash_flow" id="cash_flow" data-live-search="true">
+                        <option value="">Select Cash Flow Category</option>
+                        <?php
+                        $id_cash_flow = $row['id_cash_flow'] ?? '';
+                        $sqlCf = mysqli_query($conn2, "select id, show_subcategory from master_cash_flow where type_cashflow = 'Cash In' and status = 'Y' order by nama_category asc, urutan asc");
+                        while ($rowCf = mysqli_fetch_assoc($sqlCf)) {
+                            $selectedCf = ($rowCf['id'] == $id_cash_flow) ? ' selected="selected"' : '';
+                            echo '<option value="'.$rowCf['id'].'"'.$selectedCf.'>'.$rowCf['show_subcategory'].'</option>';
+                        }
+                        ?>
+                    </select>
+                </div>
+
+                <div class="col-md-2 mb-2">
                     <label><b>Amount</b></label>
                     <input type="text" class="form-control angka" id="amount" name="amount" style="text-align: right;" placeholder="0.00"
                     value="<?php echo !empty($doc_num) ? number_format($row['amount'], 2) : ''; ?>">
                 </div>
 
-                <div class="col-md-2 mb-2">
-                    <label><b>Rate</b></label>
-                    <input type="text" class="form-control angka" id="rate" name="rate" style="text-align: right;" placeholder="0.00"
-                    value="<?php echo !empty($doc_num) ? number_format($row['rate'], 2) : ''; ?>" <?php echo ($row['curr'] === 'IDR') ? 'readonly' : ''; ?>>
-                </div>
-
-                <div class="col-md-2 mb-2">
+                <div class="col-md-3 mb-2">
                     <label><b>Equivalent IDR</b></label>
                     <input type="text" class="form-control" id="eqv_idr" name="eqv_idr" style="text-align: right;" value="<?php echo !empty($doc_num) ? number_format($row['eqv_idr'], 2) : ''; ?>" placeholder="0.00" readonly>
                 </div>
-                <div class="col-md-5 mb-2"> </div>
+
+            </div>
+
+            <div class="form-row">
 
                 <div class="col-md-8 mb-2">
                     <label><b>Description</b></label>
@@ -1158,6 +1180,12 @@ function hitung_total_pc() {
             return;
         }
 
+        let cash_flow = $('#cash_flow').val();
+        if (!cash_flow || cash_flow === '') {
+            Swal.fire('Warning', 'Cash Flow Category tidak boleh kosong', 'warning');
+            return;
+        }
+
         if (h_tot_debit != h_tot_credit) {
             Swal.fire({
                 icon: "warning",
@@ -1277,6 +1305,7 @@ function hitung_total_pc() {
                         h_tot_credit: h_tot_credit,
                         kode_bank_acc: kode_bank_acc,
                         pc_bank_acc: pc_bank_acc,
+                        cash_flow: cash_flow,
                         create_user: create_user,
                         total_nak: total_nak,
                         total_nag: total_nag,

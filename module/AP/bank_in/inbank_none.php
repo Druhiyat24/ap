@@ -49,30 +49,47 @@
                     <input type="text" class="form-control" id="bank3" name="bank3" readonly>
                 </div>
 
-                <div class="col-md-2 mb-2">
-                    <label><b>Currency</b></label>
-                    <input type="text" class="form-control" id="currency3" name="currency3" readonly>
-                    <input type="hidden" class="form-control" id="profit_center_bank3" name="profit_center_bank3" readonly>
-                    <input type="hidden" class="form-control" id="kode_bank3" name="kode_bank3" readonly>
-                </div>
-                <div class="col-md-5 mb-2"> </div>
-
                 <div class="col-md-3 mb-2">
+                    <div class="d-flex">
+                        <label style="flex:0 0 38%;"><b>Currency</b></label>
+                        <label style="flex:1;"><b>Rate</b></label>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="currency3" name="currency3" readonly style="max-width:38%;">
+                        <input type="text" class="form-control angka" id="rate_bank3" name="rate_bank3">
+                        <input type="hidden" class="form-control" id="profit_center_bank3" name="profit_center_bank3" readonly>
+                        <input type="hidden" class="form-control" id="kode_bank3" name="kode_bank3" readonly>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="form-row">
+                <div class="col-md-3 mb-2">
+                    <label><b>Cash Flow Category</b></label>
+                    <select class="form-control select2" name="cash_flow3" id="cash_flow3" data-live-search="true">
+                        <option value="">Select Cash Flow Category</option>
+                        <?php
+                        $sqlCf3 = mysqli_query($conn2, "select id, nama_category, show_subcategory from master_cash_flow where type_cashflow = 'Cash In' and status = 'Y' order by nama_category asc, urutan asc");
+                        while ($rowCf3 = mysqli_fetch_assoc($sqlCf3)) {
+                            echo "<option value='" . $rowCf3['id'] . "'>" . $rowCf3['show_subcategory'] . "</option>";
+                        }
+                        ?>
+                    </select>
+                </div>
+
+                <div class="col-md-2 mb-2">
                     <label><b>Amount</b></label>
                     <input type="text" class="form-control angka" id="amount_bank3" name="amount_bank3">
                 </div>
 
-                <div class="col-md-2 mb-2">
-                    <label><b>Rate</b></label>
-                    <input type="text" class="form-control angka" id="rate_bank3" name="rate_bank3">
-                </div>
-
-                <div class="col-md-2 mb-2">
+                <div class="col-md-3 mb-2">
                     <label><b>Equivalent IDR</b></label>
                     <input type="text" class="form-control angka" id="eqv_idr_bank3" name="eqv_idr_bank3" readonly>
                 </div>
-                <div class="col-md-5 mb-2"> </div>
+            </div>
 
+            <div class="form-row">
                 <div class="col-md-8 mb-2">
                     <label><b>Description</b></label>
                     <textarea style="font-size: 15px; text-align: left;" cols="30" rows="3" type="text" class="form-control " name="pesan3" id="pesan3" value="" placeholder="descriptions..." required></textarea>

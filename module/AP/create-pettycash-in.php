@@ -1216,6 +1216,11 @@ $('#simpan2').on('click', function () {
         return;
     }
 
+    if(!$('#cash_flow2').val()){
+        Swal.fire('Warning','Cash Flow Category tidak boleh kosong','warning');
+        return;
+    }
+
     let debitNAG  = 0;
     let creditNAG = 0;
     let debitNAK  = 0;
@@ -1984,6 +1989,11 @@ $('#simpan1').on('click', function () {
 
     if(!$('#pesan1').val().trim()){
         Swal.fire('Warning','Description tidak boleh kosong','warning');
+        return;
+    }
+
+    if(!$('#cash_flow1').val()){
+        Swal.fire('Warning','Cash Flow Category tidak boleh kosong','warning');
         return;
     }
 
@@ -2803,6 +2813,11 @@ $('#simpan3').on('click', function () {
 
     if(!$('#pesan3').val().trim()){
         Swal.fire('Warning','Description tidak boleh kosong','warning');
+        return;
+    }
+
+    if(!$('#cash_flow3').val()){
+        Swal.fire('Warning','Cash Flow Category tidak boleh kosong','warning');
         return;
     }
 

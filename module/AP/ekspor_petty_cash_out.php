@@ -8,6 +8,7 @@
             font-family: sans-serif;
         }
         table{
+            width: 100%;
             margin: 20px auto;
             border-collapse: collapse;
         }
@@ -42,6 +43,7 @@
             <th style="text-align: center;vertical-align: middle;">Document Number</th>
             <th style="text-align: center;vertical-align: middle;">Date</th>
             <th style="text-align: center;vertical-align: middle;">Reference</th>
+            <th style="text-align: center;vertical-align: middle;">Cash Flow Category</th>
             <th style="text-align: center;vertical-align: middle;">Supplier</th>
             <th style="text-align: center;vertical-align: middle;">Account</th>
             <th style="text-align: center;vertical-align: middle;">Curr</th>
@@ -71,7 +73,7 @@
         }
         $where = count($conditions) ? ('where ' . implode(' and ', $conditions)) : '';
 
-        $sql = mysqli_query($conn1,"select a.no_pco,a.tgl_pco,a.reff,a.nama_supp,b.nama_coa,a.curr, a.amount,a.deskripsi,a.status, a.create_by, a.create_date from c_petty_cashout_h a left join mastercoa_v2 b on b.no_coa = a.coa_akun $where group by a.no_pco order by a.tgl_pco desc, a.no_pco desc");
+        $sql = mysqli_query($conn1,"select a.no_pco,a.tgl_pco,a.reff,a.nama_supp,b.nama_coa,a.curr, a.amount,a.deskripsi,a.status, a.create_by, a.create_date, cf.show_subcategory as cash_flow_category from c_petty_cashout_h a left join mastercoa_v2 b on b.no_coa = a.coa_akun left join master_cash_flow cf on cf.id = a.id_cash_flow $where group by a.no_pco order by a.tgl_pco desc, a.no_pco desc");
 
         // echo "select a.no_pci,a.tgl_pci,a.reff,if(a.reff_doc = '','-',a.reff_doc) as reff_doc,if(a.oth_doc = '','-',a.oth_doc) as oth_doc, a.curr, b.nama_coa,a.amount,if(a.deskripsi = '','-',a.deskripsi) as deskripsi,a.status, a.create_by, a.create_date from c_petty_cashin_h a left join mastercoa_v2 b on b.no_coa = a.coa_akun $where group by a.no_pci";
 
@@ -84,6 +86,7 @@
             <td style="" value = "'.$row['no_pco'].'">'.$row['no_pco'].'</td>
             <td style="" value = "'.$row['tgl_pco'].'">'.date("d-M-Y",strtotime($row['tgl_pco'])).'</td>
             <td style="" value = "'.$row['reff'].'">'.$row['reff'].'</td>
+            <td style="" value = "'.$row['cash_flow_category'].'">'.(!empty($row['cash_flow_category']) ? $row['cash_flow_category'] : '-').'</td>
             <td style="" value = "'.$row['nama_supp'].'">'.$row['nama_supp'].'</td>
             <td style="" value = "'.$row['nama_coa'].'">'.$row['nama_coa'].'</td>
             <td style="" value = "'.$row['curr'].'">'.$row['curr'].'</td>

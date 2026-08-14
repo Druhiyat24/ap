@@ -26,6 +26,12 @@ $akun      = mysqli_real_escape_string($conn2, $_POST['account3']);
 $curr      = mysqli_real_escape_string($conn2, $_POST['currency3']);
 $kode_kas  = $_POST['kode_kas3'];
 $desc      = mysqli_real_escape_string($conn2, $_POST['pesan3'] ?? '-');
+$cash_flow = $_POST['cash_flow3'] ?? '';
+
+if ($cash_flow === '') {
+    throw new Exception('Cash Flow Category tidak boleh kosong.');
+}
+$cash_flow = (int) $cash_flow;
 
 $amount = str_replace(',','',$_POST['amount_kas3']);
 
@@ -87,16 +93,16 @@ INSERT HEADER
 
 
 dbExec($conn2,"
-INSERT INTO c_petty_cashin_h (no_pci,tgl_pci,reff,reff_doc,oth_doc,coa_akun,curr,amount,status, create_by,create_date,deskripsi)
+INSERT INTO c_petty_cashin_h (no_pci,tgl_pci,reff,reff_doc,oth_doc,coa_akun,curr,amount,status, create_by,create_date,deskripsi,id_cash_flow)
 VALUES
-('$doc_num', '$doc_date', '$ref_num', '-', '-', '$akun', '$curr', '$amount', '$status', '$user', '$create_date', '$desc')
+('$doc_num', '$doc_date', '$ref_num', '-', '-', '$akun', '$curr', '$amount', '$status', '$user', '$create_date', '$desc', '$cash_flow')
 ");
 
 
 dbExec($conn2,"
-INSERT INTO c_report_pettycash (transaksi_date,no_doc,deskripsi,akun,categori,cf_categori,curr,debit,credit, balance, status)
+INSERT INTO c_report_pettycash (transaksi_date,no_doc,deskripsi,akun,categori,cf_categori,curr,debit,credit, balance, status,id_cash_flow)
 VALUES
-('$doc_date', '$doc_num', '$desc', '$akun', '', '', '$curr','$amount', '0', '$amount', '$status')
+('$doc_date', '$doc_num', '$desc', '$akun', '', '', '$curr','$amount', '0', '$amount', '$status', '$cash_flow')
 ");
 
 

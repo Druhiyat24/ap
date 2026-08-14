@@ -21,8 +21,11 @@ $execute3 = mysqli_query($conn2,$sql3);
 // Ambil total (qty x price) yang lagi approved dulu, per (so_number + product item),
 // sebelum di-reverse ke draft (confirm='N').
 if (substr($no_bpb, 0, 6) == 'FG/OUT') {
-	$cekfgrev = mysqli_query($conn2, "
-		SELECT a.so_no, e.product_item, SUM(c.qty) qty_grup, SUM(c.qty * c.price) total_grup, MAX(c.price) price_grup
+	// PENTING: $conn2 itu resource dari mysql_connect() (bukan mysqli_connect()),
+	// jadi harus pakai fungsi mysql_* (bukan mysqli_*) - kalau tercampur, mysqli_query()
+	// balikin NULL diam-diam (gagal tanpa error) dan datanya nggak pernah ke-insert.
+	$cekfgrev = mysql_query("
+		SELECT a.so_no, e.product_item, a.curr, SUM(c.qty) qty_grup, SUM(c.qty * c.price) total_grup, MAX(c.price) price_grup
 		FROM bppb c
 		INNER JOIN so_det b ON b.id = c.id_so_det
 		INNER JOIN so a ON a.id = b.id_so
@@ -30,17 +33,18 @@ if (substr($no_bpb, 0, 6) == 'FG/OUT') {
 		INNER JOIN masterproduct e ON e.id = d.id_product
 		WHERE c.bppbno_int = '$no_bpb'
 		GROUP BY a.so_no, e.product_item
-	");
-	while ($datafgrev = mysqli_fetch_array($cekfgrev)) {
-		$so_number_log    = mysqli_real_escape_string($conn2, $datafgrev['so_no']);
-		$product_item_log = mysqli_real_escape_string($conn2, $datafgrev['product_item']);
+	", $conn2);
+	while ($datafgrev = mysql_fetch_array($cekfgrev)) {
+		$so_number_log    = mysql_real_escape_string($datafgrev['so_no'], $conn2);
+		$product_item_log = mysql_real_escape_string($datafgrev['product_item'], $conn2);
+		$curr_log   = mysql_real_escape_string($datafgrev['curr'], $conn2);
 		$qty_grup   = $datafgrev['qty_grup'];
 		$price_grup = $datafgrev['price_grup'];
 		$total_grup = $datafgrev['total_grup'];
 
-		$sql_log = "INSERT INTO tbl_data_change_log (doc_number, ref_number ,so_number,product_item,source_table,action,field_name,qty_old,qty_new,price_old,price_new,total_old,total_new,profit_center,created_by,created_at)
-			VALUES ('$no_dok', '$no_bpb','$so_number_log','$product_item_log','bppb','Reverse SJ','total','$qty_grup','0','$price_grup','0','$total_grup','0','NAG','$approve_user','$confirm_date')";
-		mysqli_query($conn2, $sql_log);
+		$sql_log = "INSERT INTO tbl_data_change_log (doc_number, ref_number ,so_number,product_item,source_table,action,field_name,qty_old,qty_new,price_old,price_new,total_old,total_new,curr,profit_center,created_by,created_at)
+			VALUES ('$no_dok', '$no_bpb','$so_number_log','$product_item_log','bppb','Reverse SJ','total','$qty_grup','0','$price_grup','0','$total_grup','0','$curr_log','NAG','$approve_user','$confirm_date')";
+		mysql_query($sql_log, $conn2);
 	}
 }
 

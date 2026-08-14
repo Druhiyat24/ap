@@ -33,6 +33,7 @@ if ($no_pv !== '' && $_SERVER['REQUEST_METHOD'] !== 'POST') {
         $_POST['carabayar']  = $pvHeader['pay_meth'];
         $_POST['curre']      = $pvHeader['curr'];
         $_POST['forpay']     = $pvHeader['for_pay'];
+        $_POST['id_cash_flow'] = $pvHeader['id_cash_flow'] ?? '';
         $_POST['pv_tax_type']= $pvHeader['pv_tax_type'];
         $_POST['frcc']       = $pvHeader['frm_akun'];
         $_POST['tocc']       = $pvHeader['to_akun'];
@@ -353,28 +354,40 @@ if ($no_pv === '' || !$pvHeader) {
         </br>
 <div class="form-row">
     <div class="col-md-3 mb-3" style="padding-top: 8px;">
-            <label for="nama_supp"><b>For Payment</b></label>
+            <label for="nama_supp"><b>Payment For</b></label>
               <select class="form-control select2" name="forpay" id="forpay" style="width:100%">
-                <option value="-" disabled selected="true">Select For Payment</option>
+                <option value="-" disabled selected="true">Select Payment For</option>
                 <?php
+                // Sumber data sama seperti create-paymentvoucher.php:
+                // master_cash_flow (Cash Out). Value option tetap teks
+                // (show_subcategory) supaya for_pay tetap human-readable,
+                // id master_cash_flow-nya dibaca lewat data-id (lihat
+                // getForpayId() di script bawah).
                 $forpay ='';
+                $idCashFlowSel = '';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $forpay = isset($_POST['forpay']) ? $_POST['forpay']: null;
+                $idCashFlowSel = isset($_POST['id_cash_flow']) ? $_POST['id_cash_flow'] : '';
                 }
-                // Kalau for_pay yang tersimpan bukan salah satu opsi baku (di
-                // create-mode ini berarti user pilih "Lainnya" lalu ketik teks
-                // bebas, dan teks bebas ITU yang disimpan ke kolom for_pay,
-                // bukan literal "Lainnya") - dropdown-nya diarahkan ke opsi
-                // "Lainnya" dan teksnya dituangkan ke field "For payment Other".
-                $forpayOptions = [];
-                $sql = mysqli_query($conn1,"select ref_doc from master_forpay where ket = '1'");
+                // Pilih option berdasarkan id_cash_flow yang tersimpan (kalau
+                // ada) supaya kategori Lain-lain tetap ketahuan meski for_pay
+                // isinya teks bebas manual (bukan label "LAIN-LAIN" lagi). Kalau
+                // for_pay tersimpan beda dari label kategori yang match - berarti
+                // itu teks bebas manual, dituangkan lagi ke Payment For Other.
+                $payForOtherVal = '';
+                $sql = mysqli_query($conn2,"select id, show_subcategory from master_cash_flow where type_cashflow = 'Cash Out' and status = 'Y' order by nama_category asc, urutan asc");
                 while ($row = mysqli_fetch_array($sql)) {
-                    $forpayOptions[] = $row['ref_doc'];
-                }
-                $forpayIsCustom = ($forpay !== '' && $forpay !== null && !in_array($forpay, $forpayOptions, true));
-                foreach ($forpayOptions as $data) {
-                    $isSelected = ($forpayIsCustom && $data === 'Lainnya') ? ' selected="selected"' : (($data == $forpay) ? ' selected="selected"' : '');
-                    echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';
+                    $data = $row['show_subcategory'];
+                    if ($idCashFlowSel !== '' && $idCashFlowSel !== null) {
+                        $isSelectedBool = ((string) $row['id'] === (string) $idCashFlowSel);
+                    } else {
+                        $isSelectedBool = ($data == $forpay);
+                    }
+                    if ($isSelectedBool && $forpay !== null && $data != $forpay) {
+                        $payForOtherVal = $forpay;
+                    }
+                    $isSelected = $isSelectedBool ? ' selected="selected"' : '';
+                    echo '<option value="'.htmlspecialchars($data, ENT_QUOTES).'" data-id="'.$row['id'].'"'.$isSelected.'">'. $row['show_subcategory'] .'</option>';
                 }?>
                 </select>
 
@@ -433,8 +446,8 @@ if ($no_pv === '' || !$pvHeader) {
         </div>
 
         <div class="col-md-2 mb-3" id="div_payfor">
-            <label for="pay_for" class="col-form-label" style="width: 150px;"><b>For payment Other</b></label>
-            <input type="text" style="font-size: 14px;" class="form-control" id="pay_for" name="pay_for" value="<?= $forpayIsCustom ? htmlspecialchars($forpay) : ''; ?>" autocomplete="off">
+            <label for="pay_for" class="col-form-label" style="width: 150px;"><b>Payment For Other</b></label>
+            <input type="text" style="font-size: 14px;" class="form-control" id="pay_for" name="pay_for" value="<?= htmlspecialchars($payForOtherVal ?? ''); ?>" autocomplete="off">
         </div>
 
         <input type="hidden" style="font-size: 14px;" class="form-control" id="no_cek" name="no_cek" value="<?= htmlspecialchars($pvHeader['no_cek'] ?? ''); ?>" autocomplete="off">
@@ -1129,9 +1142,25 @@ $(function() {
         }
     }
 
+    // Cash Flow Category (master_cash_flow, Cash Out) id yang jadi padanan
+    // For Payment lama: 38 = Pemindahbukuan Internal (dulu "Pemindah Bukuan
+    // Bank"), 47 = Pinjaman Bank (dulu "Cicilan Pinjaman Bank"), 39 =
+    // Lain-lain (dulu "Lainnya"). Tidak ada padanan utk "Cicilan Aktiva
+    // Tetap" jadi Ke/Dari hanya dipicu oleh id 47.
+    var CF_PEMINDAHBUKUAN_ID = '38';
+    var CF_PINJAMAN_BANK_ID = '47';
+    var CF_LAIN_LAIN_ID = '39';
+
+    // #forpay value-nya teks (show_subcategory) supaya kolom for_pay tetap
+    // human-readable - id master_cash_flow-nya disimpan di atribut data-id
+    // tiap <option>, dibaca lewat helper ini.
+    function getForpayId() {
+        return $('#forpay option:selected').data('id') ? String($('#forpay option:selected').data('id')) : '';
+    }
+
     // Ganti/isi ulang opsi #tocc sesuai For Payment yang dipilih (bank
-    // perusahaan untuk Pemindah Bukuan Bank/Cicilan Pinjaman Bank, atau bank
-    // supplier terpilih untuk Lainnya/default) tanpa reload halaman.
+    // perusahaan untuk Pemindahbukuan Internal/Pinjaman Bank, atau bank
+    // supplier terpilih untuk kategori lain/default) tanpa reload halaman.
     function refreshToAccount() {
         toggleToccInputMode();
 
@@ -1141,15 +1170,17 @@ $(function() {
         }
 
         var forpay = $('#forpay').val() || '';
+        var forpayId = getForpayId();
         var nama_supp = $('#nama_supp').val() || '';
         var $tocc = $('#tocc');
         var currentVal = $tocc.val();
+        var to_source = (forpayId === CF_PEMINDAHBUKUAN_ID || forpayId === CF_PINJAMAN_BANK_ID) ? 'company' : 'supplier';
 
         $.ajax({
             url: 'get_pv_to_account.php',
             type: 'POST',
             dataType: 'json',
-            data: { forpay: forpay, nama_supp: nama_supp },
+            data: { forpay: forpay, nama_supp: nama_supp, to_source: to_source },
             success: function (response) {
                 $tocc.empty().append('<option value="-" selected="selected">Select Account</option>');
                 $.each(response || [], function (i, acc) {
@@ -1168,21 +1199,20 @@ $(function() {
     // PHP dan trigger-nya reload seluruh halaman (onchange="this.form.submit()").
     function updateForPaymentFields() {
         var cb = $('#carabayar').val() || '';
-        var ref = $('#forpay').val() || '';
+        var ref = getForpayId();
 
         var isCash = (cb === 'CASH');
-        var isPinjamanBank = (ref === 'Cicilan Pinjaman Bank');
-        var isAktivaTetap = (ref === 'Cicilan Aktiva Tetap');
-        var isLainnya = (ref === 'Lainnya');
+        var isPinjamanBank = (ref === CF_PINJAMAN_BANK_ID);
+        var isLainnya = (ref === CF_LAIN_LAIN_ID);
 
         // Dulu (kode PHP lama) From Account/To Account tetap tampil untuk
         // SEMUA For Payment selama Pay Methods bukan CASH - termasuk Cicilan
-        // Pinjaman Bank & Cicilan Aktiva Tetap (jadi Ke/Dari itu TAMBAHAN,
-        // bukan pengganti Account). Sebelumnya field ini malah disembunyikan
-        // untuk 2 For Payment itu, jadi hilang padahal sebelumnya ada.
+        // Pinjaman Bank (jadi Ke/Dari itu TAMBAHAN, bukan pengganti Account).
+        // Ke/Dari & Pay For sekarang bukan isian wajib (opsional saja, kecuali
+        // Pay For yang tetap wajib khusus utk kategori Lain-lain).
         var showFrom = !isCash;
         var showTo = !isCash;
-        var showKeDari = (isPinjamanBank || isAktivaTetap);
+        var showKeDari = isPinjamanBank;
         var showPayFor = isLainnya;
 
         $('#div_frcc').toggle(showFrom);
@@ -1881,19 +1911,20 @@ if (!valid_detail) {
         var pay_mth = $('select[name=carabayar] option').filter(':selected').val(); 
         var curr = document.getElementById('curre').value; 
         var for_pay = $('select[name=forpay] option').filter(':selected').val();
-        if (for_pay == 'Lainnya') {
-         var forpay = document.getElementById('pay_for').value;
-        }else{
-         var forpay = $('select[name=forpay] option').filter(':selected').val();   
-        }
+        var id_cash_flow = getForpayId();
+        var pay_for = document.getElementById('pay_for').value;
+        // Kolom for_pay: kalau kategori Lain-lain, simpan langsung teks bebas
+        // dari Payment For Other (bukan label "LAIN-LAIN") - id_cash_flow
+        // tetap tersimpan terpisah jadi tetap ketahuan ini kategori Lain-lain.
+        var forpay = (id_cash_flow === CF_LAIN_LAIN_ID && pay_for !== '') ? pay_for : for_pay;
         var frcc = $('select[name=frcc] option').filter(':selected').val();
         // Supplier kantor pajak/bea cukai (lihat TOCC_MANUAL_SUPPLIERS) pakai
         // isian bebas #tocc_manual, bukan dropdown #tocc.
         var tocc = $('#tocc_manual').is(':visible') ? $('#tocc_manual').val() : $('select[name=tocc] option').filter(':selected').val();
         var no_cek = document.getElementById('no_cek').value;
         var cek_date = document.getElementById('cek_date').value;
-        var ke = document.getElementById('ke').value; 
-        var dari = document.getElementById('dari').value;        
+        var ke = document.getElementById('ke').value;
+        var dari = document.getElementById('dari').value;
         var pesan = document.getElementById('pesan').value;
         var subtotal = document.getElementById('nomrate_h').value || 0;
         var adjust = document.getElementById('ded_ad').value;
@@ -1944,12 +1975,12 @@ if (!valid_detail) {
             return;
         }
         if (for_pay == '' || for_pay == '-') {
-            Swal.fire('Warning', 'Please select For payment', 'warning');
+            Swal.fire('Warning', 'Please select Payment For', 'warning');
             document.getElementById('forpay').focus();
             return;
         }
-        if (for_pay == 'Lainnya' && document.getElementById('pay_for').value == '') {
-            Swal.fire('Warning', 'Please Input For payment', 'warning');
+        if (id_cash_flow == CF_LAIN_LAIN_ID && pay_for == '') {
+            Swal.fire('Warning', 'Please Input Payment For Other', 'warning');
             document.getElementById('pay_for').focus();
             return;
         }
@@ -1958,7 +1989,7 @@ if (!valid_detail) {
             document.getElementById('frcc').focus();
             return;
         }
-        if (pay_mth != 'CASH' && for_pay == 'Pemindah Bukuan Bank' && (tocc == '-' || tocc == '' || tocc == null)) {
+        if (pay_mth != 'CASH' && id_cash_flow == CF_PEMINDAHBUKUAN_ID && (tocc == '-' || tocc == '' || tocc == null)) {
             Swal.fire('Warning', 'Please select/isi To Account', 'warning');
             (($('#tocc_manual').is(':visible')) ? document.getElementById('tocc_manual') : document.getElementById('tocc')).focus();
             return;
@@ -2009,7 +2040,7 @@ if (!valid_detail) {
         $.ajax({
             type:'POST',
             url:'update_pv_h.php',
-            data: {'no_pv':no_pv, 'rat_pv':rat_pv, 'pv_date':pv_date, 'nama_supp':nama_supp, 'sup_doc':sup_doc, 'ctb':ctb, 'pay_date':pay_date, 'pay_mth':pay_mth, 'curr':curr, 'forpay':forpay, 'pv_tax_type':pv_tax_type, 'frcc':frcc, 'tocc':tocc, 'no_cek':no_cek, 'cek_date':cek_date, 'ke':ke, 'dari':dari, 'pesan':pesan, 'subtotal':subtotal, 'adjust':adjust, 'pph':pph, 'ppn':ppn, 'total':total, 'pilih_ppn':pilih_ppn, 'pilih_pph':pilih_pph, 'create_user':create_user, 'details': JSON.stringify(details)},
+            data: {'no_pv':no_pv, 'rat_pv':rat_pv, 'pv_date':pv_date, 'nama_supp':nama_supp, 'sup_doc':sup_doc, 'ctb':ctb, 'pay_date':pay_date, 'pay_mth':pay_mth, 'curr':curr, 'forpay':forpay, 'id_cash_flow':id_cash_flow, 'pv_tax_type':pv_tax_type, 'frcc':frcc, 'tocc':tocc, 'no_cek':no_cek, 'cek_date':cek_date, 'ke':ke, 'dari':dari, 'pesan':pesan, 'subtotal':subtotal, 'adjust':adjust, 'pph':pph, 'ppn':ppn, 'total':total, 'pilih_ppn':pilih_ppn, 'pilih_pph':pilih_pph, 'create_user':create_user, 'details': JSON.stringify(details)},
             cache: 'false',
             success: function(response){
                 console.log(response);

@@ -211,11 +211,27 @@ $rowPcAkun = mysqli_fetch_assoc($sqlPcAkun);
                     <label><b>Amount</b></label>
                     <input type="text" class="form-control angka" id="amount_kas1" name="amount_kas1" value="<?= number_format($rowH['amount'], 2); ?>">
                 </div>
-                <div class="col-md-5 mb-2"> </div>
 
-                <div class="col-md-8 mb-2">
+                <div class="col-md-2 mb-2"> </div>
+
+                <div class="col-md-3 mb-2">
+                    <label><b>Cash Flow Category</b></label>
+                    <select class="form-control select2" name="cash_flow1" id="cash_flow1" data-live-search="true">
+                        <option value="">Select Cash Flow Category</option>
+                        <?php
+                        $id_cash_flow1 = $rowH['id_cash_flow'] ?? '';
+                        $sqlCf1 = mysqli_query($conn2, "select id, show_subcategory from master_cash_flow where type_cashflow = 'Cash Out' and status = 'Y' order by nama_category asc, urutan asc");
+                        while ($rowCf1 = mysqli_fetch_assoc($sqlCf1)) {
+                            $selectedCf1 = ($rowCf1['id'] == $id_cash_flow1) ? ' selected="selected"' : '';
+                            echo '<option value="'.$rowCf1['id'].'"'.$selectedCf1.'>'.$rowCf1['show_subcategory'].'</option>';
+                        }
+                        ?>
+                    </select>
+                </div>
+
+                <div class="col-md-7 mb-2">
                     <label><b>Description</b></label>
-                    <textarea style="font-size: 15px; text-align: left;" cols="30" rows="3" type="text" class="form-control " name="pesan1" id="pesan1" placeholder="descriptions..." required><?= htmlspecialchars($rowH['deskripsi']); ?></textarea>
+                    <textarea style="font-size: 15px; text-align: left;height: 40px;" cols="30" type="text" class="form-control " name="pesan1" id="pesan1" placeholder="descriptions..." required><?= htmlspecialchars($rowH['deskripsi']); ?></textarea>
                 </div>
 
             </div>
@@ -869,6 +885,11 @@ $('#simpan1').on('click', function () {
         return;
     }
 
+    if(!$('#cash_flow1').val()){
+        Swal.fire('Warning','Cash Flow Category tidak boleh kosong','warning');
+        return;
+    }
+
     let debitNAG  = 0;
     let creditNAG = 0;
     let debitNAK  = 0;
@@ -964,7 +985,8 @@ $('#simpan1').on('click', function () {
       kode_kas  : $('#kode_kas1').val(),
       pc_header : $('#profit_center_kas1').val(),
       amount    : header_debit,
-      desc      : $('#pesan1').val()
+      desc      : $('#pesan1').val(),
+      cash_flow : $('#cash_flow1').val()
     };
 
     let finalData = { header, detail };

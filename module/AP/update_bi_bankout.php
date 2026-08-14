@@ -33,6 +33,7 @@ try {
 	$rate = $_POST['rate'] ?? 0;
 	$eqv_idr = $_POST['eqv_idr'] ?? 0;
 	$deskripsi = trim($_POST['deskripsi'] ?? '');
+	$cash_flow = $_POST['cash_flow'] ?? '';
 	$create_user = $_POST['create_user'];
 	$create_date = date("Y-m-d H:i:s");
 
@@ -66,6 +67,11 @@ try {
 	if ($deskripsi === '') {
 		throw new Exception('Description tidak boleh kosong.');
 	}
+
+	if ($cash_flow === '') {
+		throw new Exception('Cash Flow Category tidak boleh kosong.');
+	}
+	$cash_flow = (int) $cash_flow;
 
 	$sqlOld = q($conn2, "select akun from tbl_bankin_arcollection where doc_num = '".mysqli_real_escape_string($conn2, $old_doc_num)."'");
 	$rowOld = mysqli_fetch_assoc($sqlOld);
@@ -164,7 +170,7 @@ try {
 
 	q($conn2, "UPDATE tbl_list_journal set status = 'Updated' where no_journal = '".mysqli_real_escape_string($conn2, $old_doc_num)."'");
 
-	q($conn2, "UPDATE tbl_bankin_arcollection SET doc_num = '".mysqli_real_escape_string($conn2, $doc_num)."', date = '$date', customer = '".mysqli_real_escape_string($conn2, $customer)."', akun = '".mysqli_real_escape_string($conn2, $akun)."', bank = '".mysqli_real_escape_string($conn2, $bank)."', curr = '".mysqli_real_escape_string($conn2, $curr)."', profit_center = '".mysqli_real_escape_string($conn2, $profit_center)."', amount = '$amount', outstanding = '$amount', rate = '$rate', eqv_idr = '$eqv_idr', deskripsi = '".mysqli_real_escape_string($conn2, $deskripsi)."' WHERE doc_num = '".mysqli_real_escape_string($conn2, $old_doc_num)."'");
+	q($conn2, "UPDATE tbl_bankin_arcollection SET doc_num = '".mysqli_real_escape_string($conn2, $doc_num)."', date = '$date', customer = '".mysqli_real_escape_string($conn2, $customer)."', akun = '".mysqli_real_escape_string($conn2, $akun)."', bank = '".mysqli_real_escape_string($conn2, $bank)."', curr = '".mysqli_real_escape_string($conn2, $curr)."', profit_center = '".mysqli_real_escape_string($conn2, $profit_center)."', amount = '$amount', outstanding = '$amount', rate = '$rate', eqv_idr = '$eqv_idr', deskripsi = '".mysqli_real_escape_string($conn2, $deskripsi)."', id_cash_flow = '$cash_flow' WHERE doc_num = '".mysqli_real_escape_string($conn2, $old_doc_num)."'");
 
 	q($conn2, "UPDATE b_reportbank set no_doc = '".mysqli_real_escape_string($conn2, $doc_num)."', transaksi_date = '$date', debit = '$amount', deskripsi = '".mysqli_real_escape_string($conn2, $deskripsi)."' where no_doc = '".mysqli_real_escape_string($conn2, $old_doc_num)."'");
 

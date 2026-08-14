@@ -164,25 +164,21 @@ $rowPcAkun = mysqli_fetch_assoc($sqlPcAkun);
                     <label><b>Date</b></label>
                     <input type="text" name="tgl_active2" id="tgl_active2" class="form-control tanggal" value="<?= date("d-m-Y", strtotime($rowH['tgl_pco'])); ?>" autocomplete="off">
                 </div>
-
-                <div class="col-md-2 mb-2">
-                    <label><b>Reference</b></label>
-                    <input type="text" name="ref_num2" id="ref_num2" class="form-control" value="Settlement" readonly>
-                </div>
-
-                <div class="col-md-5 mb-2"> </div>
-
                 <div class="col-md-3 mb-2">
                     <label><b>Profit Center</b></label>
                     <input type="text" class="form-control angka" id="profit_center_kas_show2" name="profit_center_kas_show2" value="<?= htmlspecialchars($rowPcAkun['nama_pc'] ?? ''); ?>" readonly>
                 </div>
 
                 <div class="col-md-2 mb-2">
-                    <label><b>Reff Document</b></label>
-                    <input type="text" class="form-control" id="reff_number" name="reff_number" value="<?= htmlspecialchars($rowH['reff_doc']); ?>" readonly>
+                    <label><b>Reference</b></label>
+                    <input type="text" name="ref_num2" id="ref_num2" class="form-control" value="Settlement" readonly>
                 </div>
 
-                <div class="col-md-7 mb-2"> </div>
+                <div class="col-md-2 mb-2"> </div>
+
+                
+
+                
 
                 <div class="col-md-3 mb-2">
                     <label><b>Account</b></label>
@@ -211,11 +207,36 @@ $rowPcAkun = mysqli_fetch_assoc($sqlPcAkun);
                     <label><b>Amount</b></label>
                     <input type="text" class="form-control angka" id="amount_kas2" name="amount_kas2" value="<?= number_format($rowH['amount'], 2); ?>">
                 </div>
+
                 <div class="col-md-5 mb-2"> </div>
 
-                <div class="col-md-7 mb-2">
+                <div class="col-md-3 mb-2">
+                    <label><b>Cash Flow Category</b></label>
+                    <select class="form-control select2" name="cash_flow2" id="cash_flow2" data-live-search="true">
+                        <option value="">Select Cash Flow Category</option>
+                        <?php
+                        $id_cash_flow2 = $rowH['id_cash_flow'] ?? '';
+                        $sqlCf2 = mysqli_query($conn2, "select id, show_subcategory from master_cash_flow where type_cashflow = 'Cash Out' and status = 'Y' order by nama_category asc, urutan asc");
+                        while ($rowCf2 = mysqli_fetch_assoc($sqlCf2)) {
+                            $selectedCf2 = ($rowCf2['id'] == $id_cash_flow2) ? ' selected="selected"' : '';
+                            echo '<option value="'.$rowCf2['id'].'"'.$selectedCf2.'>'.$rowCf2['show_subcategory'].'</option>';
+                        }
+                        ?>
+                    </select>
+                </div>
+
+                <div class="col-md-2 mb-2">
+                    <label><b>Reff Document</b></label>
+                    <input type="text" class="form-control" id="reff_number" name="reff_number" value="<?= htmlspecialchars($rowH['reff_doc']); ?>" readonly>
+                </div>
+
+                <div class="col-md-5 mb-2"> </div>
+
+                
+
+                <div class="col-md-8 mb-2">
                     <label><b>Description</b></label>
-                    <textarea style="font-size: 15px; text-align: left;" cols="30" rows="3" type="text" class="form-control " name="pesan2" id="pesan2" placeholder="descriptions..." required><?= htmlspecialchars($rowH['deskripsi']); ?></textarea>
+                    <textarea style="font-size: 15px; text-align: left;" cols="30" rows="2" type="text" class="form-control " name="pesan2" id="pesan2" placeholder="descriptions..." required><?= htmlspecialchars($rowH['deskripsi']); ?></textarea>
                 </div>
 
             </div>
@@ -861,6 +882,11 @@ $('#simpan2').on('click', function () {
         return;
     }
 
+    if(!$('#cash_flow2').val()){
+        Swal.fire('Warning','Cash Flow Category tidak boleh kosong','warning');
+        return;
+    }
+
     let debitNAG  = 0;
     let creditNAG = 0;
     let debitNAK  = 0;
@@ -955,7 +981,8 @@ $('#simpan2').on('click', function () {
       kode_kas  : $('#kode_kas2').val(),
       pc_header : $('#profit_center_kas2').val(),
       amount    : header_debit,
-      desc      : $('#pesan2').val()
+      desc      : $('#pesan2').val(),
+      cash_flow : $('#cash_flow2').val()
     };
 
     let finalData = { header, detail };

@@ -91,6 +91,8 @@
                         <option value="" disabled selected="true">Select Cost Center</option>
                     </select>
                 </div>
+
+                
                 <div class="col-md-5 mb-2"> </div>
 
                 <div class="col-md-3 mb-2">
@@ -108,19 +110,27 @@
                     <input type="text" class="form-control angka" id="eqv_idr_bank" name="eqv_idr_bank" readonly>
                 </div>
 
+                <div class="col-md-5 mb-2"> </div>
 
-                <div class="col-md-8 mb-2">
+                <div class="col-md-3 mb-2">
+                    <label><b>Cash Flow Category</b></label>
+                    <input type="text" class="form-control" value="PIUTANG USAHA" readonly>
+                    <input type="hidden" name="cash_flow" id="cash_flow" value="1">
+                </div>
+
+
+                <div class="col-md-5 mb-2">
                     <label><b>Description</b></label>
-                    <textarea style="font-size: 15px; text-align: left;" cols="30" rows="3" type="text" class="form-control " name="pesan" id="pesan" value="" placeholder="descriptions..." required></textarea>
+                    <textarea style="font-size: 15px; text-align: left;height: 40px;" cols="30"  type="text" class="form-control " name="pesan" id="pesan" value="" placeholder="descriptions..." required></textarea>
                 </div>
 
             </div>
             <div class="form-row">
-                <div class="col-md-3 mt-3 mb-2">                              
-                    <button type="button" style="border-radius: 6px" class="btn-outline-primary btn-sm" name="simpan" id="simpan"><span class="fa fa-floppy-o"></span> Save</button>                
-                    <button type="button" style="border-radius: 6px" class="btn-outline-danger btn-sm" name="batal" id="batal" onclick="location.href='bank-in.php'"><span class="fa fa-angle-double-left"></span> Back</button>           
+                <div class="col-md-3 mt-3 mb-2">
+                    <button type="button" style="border-radius: 6px" class="btn-outline-primary btn-sm" name="simpan" id="simpan"><span class="fa fa-floppy-o"></span> Save</button>
+                    <button type="button" style="border-radius: 6px" class="btn-outline-danger btn-sm" name="batal" id="batal" onclick="location.href='bank-in.php'"><span class="fa fa-angle-double-left"></span> Back</button>
                 </div>
-            </div> 
+            </div>
         </div>
     </div>
 </form>

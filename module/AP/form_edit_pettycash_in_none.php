@@ -164,9 +164,24 @@ $row = mysqli_fetch_array($sql);
 
               <div class="col-md-5 mb-2"> </div>
 
-              <div class="col-md-8 mb-2">
+              <div class="col-md-3 mb-2">
+                <label><b>Cash Flow Category</b></label>
+                <select class="form-control select2" name="cash_flow3" id="cash_flow3" data-live-search="true">
+                    <option value="">Select Cash Flow Category</option>
+                    <?php
+                    $id_cash_flow3 = $row['id_cash_flow'] ?? '';
+                    $sqlCf3 = mysqli_query($conn2, "select id, show_subcategory from master_cash_flow where type_cashflow = 'Cash In' and status = 'Y' order by nama_category asc, urutan asc");
+                    while ($rowCf3 = mysqli_fetch_assoc($sqlCf3)) {
+                        $selectedCf3 = ($rowCf3['id'] == $id_cash_flow3) ? ' selected="selected"' : '';
+                        echo '<option value="'.$rowCf3['id'].'"'.$selectedCf3.'>'.$rowCf3['show_subcategory'].'</option>';
+                    }
+                    ?>
+                </select>
+              </div>
+
+              <div class="col-md-7 mb-2">
                 <label><b>Description</b></label>
-                <textarea style="font-size: 15px; text-align: left;" cols="30" rows="3" class="form-control" name="pesan3" id="pesan3" placeholder="descriptions..." required><?= htmlspecialchars($row['deskripsi']); ?></textarea>
+                <textarea style="font-size: 15px; text-align: left;height: 40px;" cols="30"  class="form-control" name="pesan3" id="pesan3" placeholder="descriptions..." required><?= htmlspecialchars($row['deskripsi']); ?></textarea>
               </div>
 
             </div>
@@ -691,6 +706,11 @@ foreach ($sql3 as $fc) : ?>
 
     if (!$('#pesan3').val().trim()) {
       Swal.fire('Warning', 'Description tidak boleh kosong', 'warning');
+      return;
+    }
+
+    if (!$('#cash_flow3').val()) {
+      Swal.fire('Warning', 'Cash Flow Category tidak boleh kosong', 'warning');
       return;
     }
 

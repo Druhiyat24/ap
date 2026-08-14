@@ -43,8 +43,9 @@
         <tr>
             <th style="text-align: center;vertical-align: middle;">No</th>
             <th style="text-align: center;vertical-align: middle;">No Bank Out</th>
-            <th style="text-align: center;vertical-align: middle;">Source</th>
             <th style="text-align: center;vertical-align: middle;">Date</th>
+            <th style="text-align: center;vertical-align: middle;">Source</th>
+            <th style="text-align: center;vertical-align: middle;">Cash Flow Category</th>
             <th style="text-align: center;vertical-align: middle;">Curreny</th>
             <th style="text-align: center;vertical-align: middle;">Amount</th>
             <th style="text-align: center;vertical-align: middle;">Status</th>
@@ -81,7 +82,12 @@
         // menampilkan data pegawai
   
 
-        $sql = mysqli_query($conn2,"select no_bankout,bankout_date,nama_supp,curr, amount, outstanding,IF(reff_doc = 'Payment','List Payment',reff_doc) as reff_doc, akun, bank,status,IF(deskripsi = '','-',deskripsi) as deskripsi,create_by,create_date,approve_by,approve_date, user_upload, tgl_upload from b_bankout_h a left join (select no_bankout nobank, created_by user_upload, MAX(created_date) tgl_upload from b_bankout_dok where status is null GROUP BY no_bankout) b on b.nobank = a.no_bankout $where");
+        $sql = mysqli_query($conn2,"select a.no_bankout,a.bankout_date,a.nama_supp,a.curr, a.amount, a.outstanding,IF(a.reff_doc = 'Payment','List Payment',a.reff_doc) as reff_doc, a.akun, a.bank,a.status,IF(a.deskripsi = '','-',a.deskripsi) as deskripsi,a.create_by,a.create_date,a.approve_by,a.approve_date, user_upload, tgl_upload,
+            cf.show_subcategory as cash_flow_category
+            from b_bankout_h a
+            left join (select no_bankout nobank, created_by user_upload, MAX(created_date) tgl_upload from b_bankout_dok where status is null GROUP BY no_bankout) b on b.nobank = a.no_bankout
+            left join master_cash_flow cf on cf.id = a.id_cash_flow
+            $where");
 
         $no = 1;
 
@@ -108,8 +114,9 @@
         echo '<tr style="font-size:12px;text-align:center;">
             <td >'.$no++.'</td>
             <td style=" text-align : left" value="'.$row['no_bankout'].'">'.$row['no_bankout'].'</td>
+            <td style=" text-align : left" value="'.$row['bankout_date'].'">'.date("d-M-Y",strtotime($row['bankout_date'])).'</td>
             <td style=" text-align : left" value="'.$row['nama_supp'].'">'.$row['nama_supp'].'</td>
-            <td style=" text-align : left" value="'.$row['bankout_date'].'">'.date("d-M-Y",strtotime($row['bankout_date'])).'</td>                                                                                             
+            <td style=" text-align : left" value="'.$row['cash_flow_category'].'">'.(!empty($row['cash_flow_category']) ? $row['cash_flow_category'] : '-').'</td>
             <td style=" text-align : left" value="'.$row['curr'].'">'.$row['curr'].'</td>
             <td style=" text-align : right" value="'.$row['amount'].'">'.number_format($row['amount'],2).'</td>
             <td style=" text-align : left" value="'.$row['status'].'">'.$row['status'].'</td>

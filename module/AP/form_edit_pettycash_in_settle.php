@@ -160,6 +160,23 @@ $row = mysqli_fetch_array($sql);
               </div>
 
               <div class="col-md-3 mb-2">
+                <label><b>Cash Flow Category</b></label>
+                <select class="form-control select2" name="cash_flow2" id="cash_flow2" data-live-search="true">
+                    <option value="">Select Cash Flow Category</option>
+                    <?php
+                    $id_cash_flow2 = $row['id_cash_flow'] ?? '';
+                    $sqlCf2 = mysqli_query($conn2, "select id, show_subcategory from master_cash_flow where type_cashflow = 'Cash In' and status = 'Y' order by nama_category asc, urutan asc");
+                    while ($rowCf2 = mysqli_fetch_assoc($sqlCf2)) {
+                        $selectedCf2 = ($rowCf2['id'] == $id_cash_flow2) ? ' selected="selected"' : '';
+                        echo '<option value="'.$rowCf2['id'].'"'.$selectedCf2.'>'.$rowCf2['show_subcategory'].'</option>';
+                    }
+                    ?>
+                </select>
+              </div>
+
+              <div class="col-md-4 mb-2"> </div>
+
+              <div class="col-md-3 mb-2">
                 <label><b>Reff Document</b></label>
                 <input type="text" class="form-control" value="<?= htmlspecialchars($row['oth_doc']); ?>" readonly>
                 <input type="hidden" id="reff_number" name="reff_number" value="<?= htmlspecialchars($row['oth_doc']); ?>">
@@ -699,6 +716,11 @@ foreach ($sql3 as $fc) : ?>
 
     if (!$('#pesan2').val().trim()) {
       Swal.fire('Warning', 'Description tidak boleh kosong', 'warning');
+      return;
+    }
+
+    if (!$('#cash_flow2').val()) {
+      Swal.fire('Warning', 'Cash Flow Category tidak boleh kosong', 'warning');
       return;
     }
 

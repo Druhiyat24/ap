@@ -27,6 +27,12 @@ $curr      = $_POST['currency2'];
 $kode_kas  = $_POST['kode_kas2'];
 $reff_number = $_POST['reff_number'];
 $desc      = $_POST['pesan2'] ?? '-';
+$cash_flow = $_POST['cash_flow2'] ?? '';
+
+if ($cash_flow === '') {
+    throw new Exception('Cash Flow Category tidak boleh kosong.');
+}
+$cash_flow = (int) $cash_flow;
 
 $amount = str_replace(',','',$_POST['amount_kas2']);
 
@@ -92,16 +98,16 @@ INSERT HEADER
 
 
 dbExec($conn2,"
-INSERT INTO c_petty_cashout_h (no_pco,tgl_pco,reff,nama_supp,coa_akun,curr,amount,deskripsi,status, create_by,create_date, reff_doc)
+INSERT INTO c_petty_cashout_h (no_pco,tgl_pco,reff,nama_supp,coa_akun,curr,amount,deskripsi,status, create_by,create_date, reff_doc, id_cash_flow)
 VALUES
-('$doc_num', '$doc_date', '$ref_num', '$nama_supp', '$akun', '$curr', '$amount','$desc', '$status', '$user', '$create_date', '$reff_number')
+('$doc_num', '$doc_date', '$ref_num', '$nama_supp', '$akun', '$curr', '$amount','$desc', '$status', '$user', '$create_date', '$reff_number', '$cash_flow')
 ");
 
 
 dbExec($conn2,"
-INSERT INTO c_report_pettycash (transaksi_date,no_doc,deskripsi,akun,categori,cf_categori,curr,debit,credit, balance, status)
+INSERT INTO c_report_pettycash (transaksi_date,no_doc,deskripsi,akun,categori,cf_categori,curr,debit,credit, balance, status,id_cash_flow)
 VALUES
-('$doc_date', '$doc_num', '$desc', '$akun', '', '', '$curr', '0', '$amount', '$amount', '$status')
+('$doc_date', '$doc_num', '$desc', '$akun', '', '', '$curr', '0', '$amount', '$amount', '$status', '$cash_flow')
 ");
 
 

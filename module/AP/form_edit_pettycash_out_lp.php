@@ -182,10 +182,26 @@ $row = mysqli_fetch_array($sql);                        ;
                 <input type="hidden" style="font-size: 13px;text-align: right;" class="form-control" id="eqv_idr" name="eqv_idr" value="<?php echo !empty($doc_num) ? number_format($row['amount'], 2) : ''; ?>" placeholder="0.00" readonly>
             </div>
         </div>
-        <div class="col-md-4 mb-3"></div>
 
-        <div class="col-md-5 mb-3"> 
-            <label for="nama_supp"><b>Descriptions</b></label>         
+        <div class="col-md-2 mb-3"></div>
+
+        <div class="col-md-3 mb-3">
+            <label><b>Cash Flow Category</b></label>
+            <select class="form-control select2" name="cash_flow" id="cash_flow" data-live-search="true">
+                <option value="">Select Cash Flow Category</option>
+                <?php
+                $id_cash_flow = $row['id_cash_flow'] ?? '';
+                $sqlCf = mysqli_query($conn2, "select id, show_subcategory from master_cash_flow where type_cashflow = 'Cash Out' and status = 'Y' order by nama_category asc, urutan asc");
+                while ($rowCf = mysqli_fetch_assoc($sqlCf)) {
+                    $selectedCf = ($rowCf['id'] == $id_cash_flow) ? ' selected="selected"' : '';
+                    echo '<option value="'.$rowCf['id'].'"'.$selectedCf.'>'.$rowCf['show_subcategory'].'</option>';
+                }
+                ?>
+            </select>
+        </div>
+
+        <div class="col-md-5 mb-3">
+            <label for="nama_supp"><b>Descriptions</b></label>
             <div class="d-flex">
                 <textarea 
                 class="form-control me-2"
@@ -927,6 +943,7 @@ if (headerPC) {
         let rate            = $("#rate").val().replace(/,/g, '');
         let eqv_idr         = $("#eqv_idr").val().replace(/,/g, '');
         let deskripsi       = $("#pesan").val();
+        let cash_flow       = $("#cash_flow").val();
         let h_tot_debit     = $("#h_tot_debit").val();
         let h_tot_credit    = $("#h_tot_credit").val();
         var create_user     = '<?php echo $user; ?>';
@@ -949,6 +966,11 @@ if (headerPC) {
 
         if (!deskripsi || !deskripsi.trim()) {
             Swal.fire('Warning', 'Description tidak boleh kosong', 'warning');
+            return;
+        }
+
+        if (!cash_flow) {
+            Swal.fire('Warning', 'Cash Flow Category tidak boleh kosong', 'warning');
             return;
         }
 
@@ -1019,6 +1041,7 @@ if (headerPC) {
                     rate: rate,
                     eqv_idr: eqv_idr,
                     deskripsi: deskripsi,
+                    cash_flow: cash_flow,
                     h_tot_debit: h_tot_debit,
                     h_tot_credit: h_tot_credit,
                     create_user: create_user,

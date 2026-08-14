@@ -247,11 +247,27 @@ function getRateByCurrDate($conn2, $curr, $tgl)
                     <label><b>Amount</b></label>
                     <input type="text" class="form-control angka" id="amount_kas5" name="amount_kas5" value="<?= number_format($rowH['amount'], 2); ?>">
                 </div>
-            <div class="col-md-5 mb-2"> </div>
 
-            <div class="col-md-8 mb-2">
+            <div class="col-md-2 mb-2"> </div>
+
+            <div class="col-md-3 mb-2">
+                <label><b>Cash Flow Category</b></label>
+                <select class="form-control select2" name="cash_flow5" id="cash_flow5" data-live-search="true">
+                    <option value="">Select Cash Flow Category</option>
+                    <?php
+                    $id_cash_flow5 = $rowH['id_cash_flow'] ?? '';
+                    $sqlCf5 = mysqli_query($conn2, "select id, show_subcategory from master_cash_flow where type_cashflow = 'Cash Out' and status = 'Y' order by nama_category asc, urutan asc");
+                    while ($rowCf5 = mysqli_fetch_assoc($sqlCf5)) {
+                        $selectedCf5 = ($rowCf5['id'] == $id_cash_flow5) ? ' selected="selected"' : '';
+                        echo '<option value="'.$rowCf5['id'].'"'.$selectedCf5.'>'.$rowCf5['show_subcategory'].'</option>';
+                    }
+                    ?>
+                </select>
+            </div>
+
+            <div class="col-md-7 mb-2">
                 <label><b>Description</b></label>
-                <textarea style="font-size: 15px; text-align: left;" cols="30" rows="3" type="text" class="form-control " name="pesan5" id="pesan5" placeholder="descriptions..." required><?= htmlspecialchars($rowH['deskripsi']); ?></textarea>
+                <textarea style="font-size: 15px; text-align: left;height: 40px;" cols="30" type="text" class="form-control " name="pesan5" id="pesan5" placeholder="descriptions..." required><?= htmlspecialchars($rowH['deskripsi']); ?></textarea>
             </div>
 
         </div>
@@ -1182,7 +1198,8 @@ $('#simpan5').on('click', function(){
     kode_kas   : $('#kode_kas5').val(),
     pc_header  : $('#profit_center_kas5').val(),
     amount     : getNumber($('#amount_kas5').val()),
-    desc       : $('#pesan5').val()
+    desc       : $('#pesan5').val(),
+    cash_flow  : $('#cash_flow5').val()
   };
 
   if(!header.tgl){
@@ -1202,6 +1219,11 @@ $('#simpan5').on('click', function(){
 
   if(!header.desc || !header.desc.trim()){
     Swal.fire('Warning','Description tidak boleh kosong','warning');
+    return;
+  }
+
+  if(!header.cash_flow){
+    Swal.fire('Warning','Cash Flow Category tidak boleh kosong','warning');
     return;
   }
 

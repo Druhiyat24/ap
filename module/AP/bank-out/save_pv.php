@@ -44,10 +44,7 @@ try {
     $rate       = (float) ($header['rate'] ?? 0);
     $eqv        = (float) ($header['eqv'] ?? 0);
     $desc       = mysqli_real_escape_string($conn2, trim($header['desc'] ?? ''));
-    // TODO: fitur Cash Flow Category belum live di production - kode
-    // $cash_flow (validasi + kolom id_cash_flow) SENGAJA dihilangkan
-    // sementara supaya file ini bisa di-deploy terpisah. Kembalikan lagi
-    // setelah deploy Cash Flow Category selesai.
+    $cash_flow  = $header['cash_flow'] ?? '';
 
     if ($akun === '') {
         throw new Exception('Account tidak boleh kosong.');
@@ -56,6 +53,11 @@ try {
     if ($desc === '') {
         throw new Exception('Description tidak boleh kosong.');
     }
+
+    if ($cash_flow === '') {
+        throw new Exception('Cash Flow Category tidak boleh kosong.');
+    }
+    $cash_flow = (int) $cash_flow;
 
     if ($amount <= 0) {
         throw new Exception('Amount tidak boleh kosong.');
@@ -132,18 +134,18 @@ try {
     q($conn2,"
         INSERT INTO b_bankout_h
         (
-        no_bankout, bankout_date, reff_doc, nama_supp, akun, bank, curr, amount, outstanding, rate, eqv_idr, deskripsi, status, create_by, create_date, stat_bi
+        no_bankout, bankout_date, reff_doc, nama_supp, akun, bank, curr, amount, outstanding, rate, eqv_idr, deskripsi, status, create_by, create_date, stat_bi, id_cash_flow
         )
         VALUES
-        ('$doc_num', '$doc_date', 'Payment Voucher', '$supp', '$akun', '$bank', '$curr', '$amount', '$amount', '$rate', '$eqv', '$desc', '$status', '$user', '$create_date', 'N')
+        ('$doc_num', '$doc_date', 'Payment Voucher', '$supp', '$akun', '$bank', '$curr', '$amount', '$amount', '$rate', '$eqv', '$desc', '$status', '$user', '$create_date', 'N', '$cash_flow')
         ");
 
 
     q($conn2,"
         INSERT INTO b_reportbank
-        (transaksi_date,no_doc,deskripsi,akun,categori,cf_categori,curr,debit,credit, balance,status)
+        (transaksi_date,no_doc,deskripsi,akun,categori,cf_categori,curr,debit,credit, balance,status,id_cash_flow)
         VALUES
-        ('$doc_date', '$doc_num', '$desc', '$akun', '', '', '$curr', '0', '$amount', '$amount', '$status')
+        ('$doc_date', '$doc_num', '$desc', '$akun', '', '', '$curr', '0', '$amount', '$amount', '$status', '$cash_flow')
         ");
 
     q($conn2,"
@@ -355,6 +357,13 @@ try {
         $cc    = trim($rowAdj['cc'] ?? '') ?: '-';
         $debit = (float) ($rowAdj['debit'] ?? 0);
         $credit= (float) ($rowAdj['credit'] ?? 0);
+        // Baris adjustment boleh IDR atau USD - USD dikonversi pakai rate header
+        // (sama seperti PV/PPh di atas), IDR tetap rate 1 apa adanya.
+        $rowCurr = strtoupper(trim($rowAdj['curr'] ?? 'IDR')) ?: 'IDR';
+        $rowRate = ($rowCurr === 'IDR') ? 1 : $rate;
+        $debit_idr_adj = round($debit * $rowRate, 4);
+        $credit_idr_adj = round($credit * $rowRate, 4);
+        $rowCurrEsc = mysqli_real_escape_string($conn2, $rowCurr);
         $descAdjRaw = trim($rowAdj['desc'] ?? '');
         $desc2 = $descAdjRaw !== '' ? mysqli_real_escape_string($conn2, $descAdjRaw) : $desc;
         $reff  = mysqli_real_escape_string($conn2, $rowAdj['reff_doc'] ?? '-');
@@ -396,14 +405,14 @@ try {
         }
         $nama_cc = mysqli_real_escape_string($conn2, $nama_cc ?: '-');
 
-        $adjDetValues[] = "('$doc_num', '$coaEsc', '$ccEsc', '$reff', '$reff_date', '$desc2', '$debit', '$credit', '$pcEsc')";
+        $adjDetValues[] = "('$doc_num', '$coaEsc', '$ccEsc', '$reff', '$reff_date', '$desc2', '$debit', '$credit', '$rowCurrEsc', '$pcEsc')";
 
-        $adjJournalValues[] = "('$doc_num', '$doc_date', 'Payment Voucher', '$coaEsc', '$nama_coa_adj', '$ccEsc', '$nama_cc', '$reff', '$reff_date', '-', '-', 'IDR', '1', '$debit', '$credit', '$debit', '$credit', 'Draft', '$desc2', '$user', '$create_date', '', '', '', '', '$pcEsc')";
+        $adjJournalValues[] = "('$doc_num', '$doc_date', 'Payment Voucher', '$coaEsc', '$nama_coa_adj', '$ccEsc', '$nama_cc', '$reff', '$reff_date', '-', '-', '$rowCurrEsc', '$rowRate', '$debit', '$credit', '$debit_idr_adj', '$credit_idr_adj', 'Draft', '$desc2', '$user', '$create_date', '', '', '', '', '$pcEsc')";
     }
 
     if (!empty($adjDetValues)) {
         q($conn2, "INSERT INTO b_bankout_adj_det
-            (no_bankout,id_coa,no_cc,reff_doc,reff_date,deskripsi,t_debit,t_credit, profit_center)
+            (no_bankout,id_coa,no_cc,reff_doc,reff_date,deskripsi,t_debit,t_credit,curr, profit_center)
             VALUES " . implode(',', $adjDetValues));
 
         q($conn2, "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)

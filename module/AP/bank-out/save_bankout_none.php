@@ -25,6 +25,7 @@ $kode_bank = $_POST['kode_bank3'] ?? '';
 $curr      = $_POST['currency3'] ?? '';
 $pc_bank   = $_POST['profit_center_bank3'] ?? '';
 $desc      = trim($_POST['pesan3'] ?? '');
+$cash_flow = $_POST['cash_flow3'] ?? '';
 
 if ($supp === '') {
     throw new Exception('Supplier tidak boleh kosong.');
@@ -37,6 +38,11 @@ if ($akun === '') {
 if ($desc === '') {
     throw new Exception('Description tidak boleh kosong.');
 }
+
+if ($cash_flow === '') {
+    throw new Exception('Cash Flow Category tidak boleh kosong.');
+}
+$cash_flow = (int) $cash_flow;
 
 $amount = str_replace(',','',$_POST['amount_bank3']);
 $rate   = str_replace(',','',$_POST['rate_bank3']);
@@ -123,18 +129,18 @@ INSERT HEADER
 q($conn2,"
 INSERT INTO b_bankout_h
 (
-no_bankout, bankout_date, reff_doc, nama_supp, akun, bank, curr, amount, outstanding, rate, eqv_idr, deskripsi, status, create_by, create_date, stat_bi
+no_bankout, bankout_date, reff_doc, nama_supp, akun, bank, curr, amount, outstanding, rate, eqv_idr, deskripsi, status, create_by, create_date, stat_bi, id_cash_flow
 )
 VALUES
-('$doc_num', '$doc_date', '$refNumEsc', '$suppEsc', '$akunEsc', '$bankEsc', '$currEsc', '$amount', '$amount', '$rate', '$eqv', '$descEsc', '$status', '$userEsc', '$create_date', 'N')
+('$doc_num', '$doc_date', '$refNumEsc', '$suppEsc', '$akunEsc', '$bankEsc', '$currEsc', '$amount', '$amount', '$rate', '$eqv', '$descEsc', '$status', '$userEsc', '$create_date', 'N', '$cash_flow')
 ");
 
 
 q($conn2,"
 INSERT INTO b_reportbank
-(transaksi_date,no_doc,deskripsi,akun,categori,cf_categori,curr,debit,credit, balance,status)
+(transaksi_date,no_doc,deskripsi,akun,categori,cf_categori,curr,debit,credit, balance,status,id_cash_flow)
 VALUES
-('$doc_date', '$doc_num', '$descEsc', '$akunEsc', '', '', '$currEsc', '0', '$amount', '$amount', '$status')
+('$doc_date', '$doc_num', '$descEsc', '$akunEsc', '', '', '$currEsc', '0', '$amount', '$amount', '$status', '$cash_flow')
 ");
 
 /* =========================

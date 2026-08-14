@@ -1015,6 +1015,11 @@ $('#simpan1').on('click', function () {
     return;
   }
 
+  if(!$('#cash_flow1').val()){
+    Swal.fire('Warning','Cash Flow Category tidak boleh kosong','warning');
+    return;
+  }
+
     let debitNAG  = 0;
     let creditNAG = 0;
     let debitNAK  = 0;
@@ -1936,6 +1941,11 @@ $('#simpan3').on('click', function () {
 
   if(!$('#pesan3').val().trim()){
     Swal.fire('Warning','Description tidak boleh kosong','warning');
+    return;
+  }
+
+  if(!$('#cash_flow3').val()){
+    Swal.fire('Warning','Cash Flow Category tidak boleh kosong','warning');
     return;
   }
 
@@ -2881,6 +2891,11 @@ $('#simpan2').on('click', function () {
 
     if(!$('#pesan2').val().trim()){
         Swal.fire('Warning','Description tidak boleh kosong','warning');
+        return;
+    }
+
+    if(!$('#cash_flow2').val()){
+        Swal.fire('Warning','Cash Flow Category tidak boleh kosong','warning');
         return;
     }
 
@@ -3937,7 +3952,8 @@ $('#simpan4').on('click', function(){
     kode_kas   : $('#kode_kas4').val(),
     pc_header   : $('#profit_center_kas4').val(),
     amount     : getNumber($('#amount_kas4').val()),
-    desc       : $('#pesan4').val()
+    desc       : $('#pesan4').val(),
+    cash_flow  : $('#cash_flow4').val()
   };
 
   console.log("HEADER:", header);
@@ -3962,6 +3978,11 @@ $('#simpan4').on('click', function(){
 
   if(!header.desc || !header.desc.trim()){
     Swal.fire('Warning','Description tidak boleh kosong','warning');
+    return;
+  }
+
+  if(!header.cash_flow){
+    Swal.fire('Warning','Cash Flow Category tidak boleh kosong','warning');
     return;
   }
 
@@ -4834,7 +4855,8 @@ $('#simpan5').on('click', function(){
     kode_kas   : $('#kode_kas5').val(),
     pc_header  : $('#profit_center_kas5').val(),
     amount     : getNumber($('#amount_kas5').val()),
-    desc       : $('#pesan5').val()
+    desc       : $('#pesan5').val(),
+    cash_flow  : $('#cash_flow5').val()
   };
 
   if(!header.tgl){
@@ -4854,6 +4876,11 @@ $('#simpan5').on('click', function(){
 
   if(!header.desc || !header.desc.trim()){
     Swal.fire('Warning','Description tidak boleh kosong','warning');
+    return;
+  }
+
+  if(!header.cash_flow){
+    Swal.fire('Warning','Cash Flow Category tidak boleh kosong','warning');
     return;
   }
 

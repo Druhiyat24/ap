@@ -12,9 +12,20 @@ $forpay = $_POST['forpay'] ?? '';
 $nama_supp = $_POST['nama_supp'] ?? '';
 $nama_supp_esc = mysqli_real_escape_string($conn2, $nama_supp);
 
+// to_source (opsional) dikirim oleh create-paymentvoucher.php sejak For
+// Payment-nya pakai master_cash_flow (id numerik, bukan teks lagi) supaya
+// endpoint ini tidak perlu tahu id mana yang berarti "rekening perusahaan".
+// Caller lama (create-paymentvoucher-exim.php, edit-paymentvoucher.php)
+// tidak mengirim param ini sehingga tetap pakai perbandingan teks lama.
+$to_source = $_POST['to_source'] ?? '';
+
 $data = [];
 
-if ($forpay === 'Pemindah Bukuan Bank' || $forpay === 'Cicilan Pinjaman Bank') {
+$useCompanyAccount = ($to_source !== '')
+    ? ($to_source === 'company')
+    : ($forpay === 'Pemindah Bukuan Bank' || $forpay === 'Cicilan Pinjaman Bank');
+
+if ($useCompanyAccount) {
     $sql = mysqli_query($conn1, "select coa_name as bank, bank_account as akun from b_masterbank where status = 'Active' group by id");
     while ($row = mysqli_fetch_assoc($sql)) {
         $data[] = ['value' => $row['akun'], 'text' => $row['bank']];

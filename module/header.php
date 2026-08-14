@@ -531,8 +531,12 @@ input[type=number] {
               echo '
               <a href="../AP/master-cash-flow.php" class="dropdown-item bg-dark text-white">
               <span class="fa fa-paperclip fa-fw"></span>
-              <span class="menu-collapsed">Cash Flow</span>
+              <span class="menu-collapsed">Cash Flow - Accounting</span>
 
+              </a>
+              <a href="../AP/master-cash-flow-mapping.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-random fa-fw"></span>
+              <span class="menu-collapsed">Cash Flow - Finance</span>
               </a>
               <a href="../AP/master-coa-category1.php" class="dropdown-item bg-dark text-white">
               <span class="fa fa-paperclip fa-fw "></span>
@@ -1461,10 +1465,22 @@ echo'</ul>
           <span class="fa fa-money fa-fw mr-3"></span>
           <span class="menu-collapsed">Payment Voucher</span>
           </a>
+          <li class="dropdown-submenu ">
+          <a class="dropdown-item bg-dark text-white" href="#">
+          <span class="fa fa-file-excel-o fa-fw"></span>
+          <span class="menu-collapsed">Report</span>
+          </a>
+          <ul class="dropdown-menu bg-dark text-white" role="menu">
           <a href="../AP/bankreport.php" class="dropdown-item bg-dark text-white">
           <span class="fa fa-file-excel-o fa-fw mr-3"></span>
-          <span class="menu-collapsed">Report</span>
-          </a>';
+          <span class="menu-collapsed">Report Bank</span>
+          </a>
+          <a href="../AP/report-cashflow-realisation.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-line-chart fa-fw mr-3"></span>
+          <span class="menu-collapsed">Report Cash Flow Realisation</span>
+          </a>
+          </ul>
+          </li>';
       }
 
       if($id2 == '62'){

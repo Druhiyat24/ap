@@ -34,6 +34,7 @@ try {
 	$rate = $_POST['rate'] ?? 0;
 	$eqv_idr = $_POST['eqv_idr'] ?? 0;
 	$deskripsi = trim($_POST['deskripsi'] ?? '');
+	$cash_flow = $_POST['cash_flow'] ?? '';
 	$create_user = $_POST['create_user'];
 	$create_date = date("Y-m-d H:i:s");
 
@@ -44,6 +45,11 @@ try {
 	if ($deskripsi === '') {
 		throw new Exception('Description tidak boleh kosong.');
 	}
+
+	if ($cash_flow === '') {
+		throw new Exception('Cash Flow Category tidak boleh kosong.');
+	}
+	$cash_flow = (int) $cash_flow;
 
 	if ($curr !== 'IDR' && ((float) $rate === 0.0 || (float) $rate === 1.0)) {
 		throw new Exception('Currency non IDR harus memiliki rate diisi dan tidak boleh 1.');
@@ -141,7 +147,7 @@ try {
 
 	q($conn2, "UPDATE tbl_list_journal set status = 'Updated' where no_journal = '".mysqli_real_escape_string($conn2, $old_doc_num)."'");
 
-	q($conn2, "UPDATE b_bankout_h SET no_bankout = '".mysqli_real_escape_string($conn2, $doc_num)."', bankout_date = '$date', nama_supp = '".mysqli_real_escape_string($conn2, $customer)."', akun = '".mysqli_real_escape_string($conn2, $akun)."', bank = '".mysqli_real_escape_string($conn2, $bank)."', curr = '".mysqli_real_escape_string($conn2, $curr)."', profit_center = '".mysqli_real_escape_string($conn2, $profit_center)."', amount = '$amount', outstanding = '$amount', rate = '$rate', eqv_idr = '$eqv_idr', deskripsi = '".mysqli_real_escape_string($conn2, $deskripsi)."' WHERE no_bankout = '".mysqli_real_escape_string($conn2, $old_doc_num)."'");
+	q($conn2, "UPDATE b_bankout_h SET no_bankout = '".mysqli_real_escape_string($conn2, $doc_num)."', bankout_date = '$date', nama_supp = '".mysqli_real_escape_string($conn2, $customer)."', akun = '".mysqli_real_escape_string($conn2, $akun)."', bank = '".mysqli_real_escape_string($conn2, $bank)."', curr = '".mysqli_real_escape_string($conn2, $curr)."', profit_center = '".mysqli_real_escape_string($conn2, $profit_center)."', amount = '$amount', outstanding = '$amount', rate = '$rate', eqv_idr = '$eqv_idr', deskripsi = '".mysqli_real_escape_string($conn2, $deskripsi)."', id_cash_flow = '$cash_flow' WHERE no_bankout = '".mysqli_real_escape_string($conn2, $old_doc_num)."'");
 
 	q($conn2, "UPDATE b_reportbank set no_doc = '".mysqli_real_escape_string($conn2, $doc_num)."', transaksi_date = '$date', credit = '$amount', deskripsi = '".mysqli_real_escape_string($conn2, $deskripsi)."' where no_doc = '".mysqli_real_escape_string($conn2, $old_doc_num)."'");
 
@@ -175,6 +181,13 @@ try {
 		$debit  = (float) ($d['debit'] ?? 0);
 		$credit = (float) ($d['credit'] ?? 0);
 		$ket    = trim($d['keterangan'] ?? '');
+		// Baris adjustment boleh IDR atau USD - USD dikonversi pakai rate header
+		// (sama seperti PV/PPh di atas), IDR tetap rate 1 apa adanya.
+		$rowCurr = strtoupper(trim($d['curr'] ?? 'IDR')) ?: 'IDR';
+		$rowRate = ($rowCurr === 'IDR') ? 1 : (float) $rate;
+		$debit_idr_adj = round($debit * $rowRate, 4);
+		$credit_idr_adj = round($credit * $rowRate, 4);
+		$rowCurrEsc = mysqli_real_escape_string($conn2, $rowCurr);
 
 		if ($ket === '') {
 			$ket = $deskripsi;
@@ -218,13 +231,13 @@ try {
 		}
 		$nama_cc = mysqli_real_escape_string($conn2, $nama_cc ?: '-');
 
-		$adjValues[] = "('$doc_num', '$coaEsc', '$ccEsc', '$reffEsc', '$tgl_refferensi', '$ketEsc', '$debit', '$credit', '$pcEsc')";
+		$adjValues[] = "('$doc_num', '$coaEsc', '$ccEsc', '$reffEsc', '$tgl_refferensi', '$ketEsc', '$debit', '$credit', '$rowCurrEsc', '$pcEsc')";
 
-		$adjJournalValues[] = "('$doc_num', '$date', '".mysqli_real_escape_string($conn2, $type_journal)."', '$coaEsc', '$nama_coa', '$ccEsc', '$nama_cc', '$reffEsc', '$tgl_refferensi', '-', '-', 'IDR', '1', '$debit', '$credit', '$debit', '$credit', 'Draft', '$ketEsc', '".mysqli_real_escape_string($conn2, $create_user)."', '$create_date', '', '', '', '', '$pcEsc')";
+		$adjJournalValues[] = "('$doc_num', '$date', '".mysqli_real_escape_string($conn2, $type_journal)."', '$coaEsc', '$nama_coa', '$ccEsc', '$nama_cc', '$reffEsc', '$tgl_refferensi', '-', '-', '$rowCurrEsc', '$rowRate', '$debit', '$credit', '$debit_idr_adj', '$credit_idr_adj', 'Draft', '$ketEsc', '".mysqli_real_escape_string($conn2, $create_user)."', '$create_date', '', '', '', '', '$pcEsc')";
 	}
 
 	if (!empty($adjValues)) {
-		q($conn2, "INSERT INTO b_bankout_adj_det (no_bankout,id_coa,no_cc,reff_doc,reff_date,deskripsi,t_debit,t_credit, profit_center)
+		q($conn2, "INSERT INTO b_bankout_adj_det (no_bankout,id_coa,no_cc,reff_doc,reff_date,deskripsi,t_debit,t_credit,curr, profit_center)
 			VALUES " . implode(',', $adjValues));
 
 		q($conn2, "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
