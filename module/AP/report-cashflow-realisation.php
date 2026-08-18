@@ -63,25 +63,27 @@
     /* Freeze header (horizontal) - dipakai bareng dengan freeze kolom 1 di
        atas (vertical). Karena ini sticky di TABLE YANG SAMA (bukan tabel
        salinan/clone terpisah), lebar & posisi kolom header otomatis selalu
-       identik dengan body-nya. Hanya 2 baris biru (judul kolom + nama bank)
-       yang dibikin freeze - baris SALDO AWAL sengaja TIDAK dibuat freeze:
-       sticky di tabel HTML biasa hanya konsisten kalau diterapkan ke <th>
-       satu baris header saja; begitu dicoba untuk baris ke-3 (macam-macam
-       teknik: sticky di <thead> sekaligus, top per-baris manual) hasilnya
-       malah baris itu jadi kosong/tidak muncul di beberapa browser. */
+       identik dengan body-nya. Ketiga baris di thead (judul kolom, nama
+       bank, SALDO AWAL) dibuat freeze - nilai `top` baris ke-2/ke-3 di-set
+       lewat JS (bukan di-hardcode di sini) karena baris pertama pakai
+       rowspan=2 sehingga tingginya tidak otomatis kehitung CSS untuk baris
+       di bawahnya. */
     #cfr-table thead tr:nth-child(1) th,
-    #cfr-table thead tr.account-header-row th {
+    #cfr-table thead tr.account-header-row th,
+    #cfr-table thead tr#cfr-saldo-awal-row td {
         position: sticky;
         z-index: 2;
         top: 0;
     }
-    #cfr-table thead tr.account-header-row th { top: 26px; }
-    /* Sel pojok (kolom DESCRIPTIONS di baris header) butuh z-index lebih
-       tinggi supaya tidak ketutup kolom sticky-left baris body yang lewat
-       di bawahnya saat discroll. */
+    /* Sel pojok (kolom DESCRIPTIONS di tiap baris header) butuh z-index
+       lebih tinggi supaya tidak ketutup kolom sticky-left baris body yang
+       lewat di bawahnya saat discroll. */
     #cfr-table thead tr:nth-child(1) th:nth-child(1) {
         z-index: 3;
         background: #1E3A8A;
+    }
+    #cfr-table thead tr#cfr-saldo-awal-row td:nth-child(1) {
+        z-index: 3;
     }
     /* Baris judul section yang di-merge (CASH RECEIPTS, 1. OPERATING
        ACTIVITIES, dst - pakai <td colspan>) melebar sepanjang baris, dan
@@ -122,7 +124,7 @@
     #cfr-table td:not([colspan]):nth-child(1) {
         box-shadow: 2px 0 4px -2px rgba(0, 0, 0, 0.2);
     }
-    #cfr-table thead tr.account-header-row th {
+    #cfr-table thead tr#cfr-saldo-awal-row td {
         box-shadow: 0 2px 4px -2px rgba(0, 0, 0, 0.3);
     }
 
@@ -438,25 +440,34 @@ $doSearch   = true;
         });
     });
 
-    // Baris ke-2 header (nama bank) numpuk pas di bawah baris pertama - tinggi
-    // baris pertama dihitung dari hasil render (bukan di-hardcode) supaya
-    // tetap presisi walau ukuran font berubah.
+    // Baris ke-2 (nama bank) & ke-3 (SALDO AWAL) di thead numpuk berurutan di
+    // bawah baris sebelumnya - tinggi tiap baris dihitung dari hasil render
+    // (bukan di-hardcode) supaya tetap presisi walau ukuran font berubah, lalu
+    // di-set sebagai inline style top per sel (paling reliable, menang dari
+    // aturan CSS manapun tanpa tergantung urutan/spesifisitas selector).
     (function () {
         var table = document.getElementById('cfr-table');
         if (!table) return;
         var row1 = table.querySelector('thead tr:first-child');
         var row2 = table.querySelector('thead tr.account-header-row');
-        if (!row1 || !row2) return;
+        var row3 = table.querySelector('thead tr#cfr-saldo-awal-row');
+        if (!row1 || !row2 || !row3) return;
 
-        function updateRow2Top() {
-            var h1 = row1.getBoundingClientRect().height;
-            for (var i = 0; i < row2.children.length; i++) {
-                row2.children[i].style.top = h1 + 'px';
+        function setRowTop(row, top) {
+            for (var i = 0; i < row.children.length; i++) {
+                row.children[i].style.top = top + 'px';
             }
         }
 
-        updateRow2Top();
-        window.addEventListener('resize', updateRow2Top);
+        function updateStickyOffsets() {
+            var h1 = row1.getBoundingClientRect().height;
+            var h2 = row2.getBoundingClientRect().height;
+            setRowTop(row2, h1);
+            setRowTop(row3, h1 + h2);
+        }
+
+        updateStickyOffsets();
+        window.addEventListener('resize', updateStickyOffsets);
     })();
 
     // Bungkus teks baris judul section (CASH RECEIPTS, 1. OPERATING
