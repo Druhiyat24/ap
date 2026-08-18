@@ -1467,7 +1467,7 @@ echo'</ul>
           </a>
           <li class="dropdown-submenu ">
           <a class="dropdown-item bg-dark text-white" href="#">
-          <span class="fa fa-file-excel-o fa-fw"></span>
+          <span class="fa fa-file-excel-o fa-fw mr-3"></span>
           <span class="menu-collapsed">Report</span>
           </a>
           <ul class="dropdown-menu bg-dark text-white" role="menu">
@@ -1977,6 +1977,10 @@ if($user == 'indro' || $user == 'willy' || $user == 'steven'){
    <a href="../AP/financial_statement_ytd.php" class="dropdown-item bg-dark text-white">
    <span class="fa fa-calendar fa-fw mr-3"></span>
    <span class="menu-collapsed">Year To Date</span>
+   </a>
+   <a href="../AP/financial_statement_monthly.php" class="dropdown-item bg-dark text-white">
+   <span class="fa fa-calendar-o fa-fw mr-3"></span>
+   <span class="menu-collapsed">Monthly</span>
    </a>
    </ul>
    </li>';
