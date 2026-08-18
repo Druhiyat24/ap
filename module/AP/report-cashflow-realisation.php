@@ -18,32 +18,82 @@
     #cfr-table td.num {
         text-align: right;
     }
-    /* Freeze Descriptions/Projection/Realisation/Variance (kolom 1-4) supaya
-       tetap kelihatan saat scroll horizontal - sengaja dikecualikan dari sel
-       yang punya colspan (baris judul section/spacer), karena sel itu
-       melebar ke seluruh baris jadi tidak cocok di-freeze sebagian. */
-    #cfr-table th:nth-child(-n+4),
-    #cfr-table td:not([colspan]):nth-child(-n+4) {
+    /* Area tabel dibatasi tinggi biar bisa di-scroll di dalam kotaknya
+       sendiri (bukan scroll seluruh halaman). */
+    #cfr-table-wrapper {
+        max-height: 65vh;
+        overflow-y: auto;
+        position: relative;
+    }
+    /* Freeze kolom DESCRIPTIONS (kolom 1 saja) supaya tetap kelihatan saat
+       scroll horizontal - sengaja dikecualikan dari sel yang punya colspan
+       (baris judul section/spacer), karena sel itu melebar ke seluruh baris
+       jadi tidak cocok di-freeze. */
+    #cfr-table th:nth-child(1),
+    #cfr-table td:not([colspan]):nth-child(1) {
         position: sticky;
+        left: 0;
+        width: 220px;
+        min-width: 220px;
         background: #fff;
         z-index: 2;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
-    #cfr-table th:nth-child(1), #cfr-table td:not([colspan]):nth-child(1) { left: 0; width: 220px; min-width: 220px; }
-    #cfr-table th:nth-child(2), #cfr-table td:not([colspan]):nth-child(2) { left: 220px; width: 90px; min-width: 90px; }
-    #cfr-table th:nth-child(3), #cfr-table td:not([colspan]):nth-child(3) { left: 310px; width: 90px; min-width: 90px; }
-    #cfr-table th:nth-child(4), #cfr-table td:not([colspan]):nth-child(4) { left: 400px; width: 90px; min-width: 90px; }
-    #cfr-table thead th:nth-child(-n+4) { z-index: 3; background: #1E3A8A; }
-    #cfr-table tr.grand-row td:not([colspan]):nth-child(-n+4) { background: #eef2f9; }
-    /* Baris kedua header (nama-nama akun bank/kas) child-nya sendiri dihitung
-       dari 1 lagi oleh browser (rowspan dari baris pertama tidak ikut
-       dihitung) - jadi tanpa override ini, 4 kolom bank/kas PERTAMA malah
-       ketimpa jadi ikut freeze mengikuti aturan th:nth-child(-n+4) di atas. */
-    #cfr-table thead tr.account-header-row th {
-        position: static;
+    #cfr-table tr.grand-row td:not([colspan]):nth-child(1) { background: #eef2f9; }
+    /* Baris nama bank (account-header-row) TIDAK punya sel untuk kolom 1-4
+       sama sekali di DOM-nya (kolom itu sudah "diisi" rowspan=2 dari baris
+       header pertama) - jadi th PERTAMA di baris ini sebenarnya kolom bank
+       ke-1 (visual), BUKAN kolom DESCRIPTIONS, walau sama-sama nth-child(1).
+       Tanpa override ini dia ikut ke-freeze di left:0 seolah-olah kolom
+       DESCRIPTIONS, jadi ketutup/hilang di belakang kolom itu. */
+    #cfr-table thead tr.account-header-row th:nth-child(1) {
+        /* Tetap sticky (biar tetap nempel di bawah header saat discroll
+           VERTIKAL, sama seperti sel header lainnya) - cuma left/width-nya
+           yang direset supaya tidak ikut freeze HORIZONTAL seperti kolom
+           DESCRIPTIONS. */
+        position: sticky;
+        left: auto;
         width: auto;
         min-width: 90px;
-        left: auto;
-        z-index: auto;
+        background: #1E3A8A;
+        overflow: visible;
+        text-overflow: clip;
+    }
+    /* Freeze header (horizontal) - dipakai bareng dengan freeze kolom 1 di
+       atas (vertical). Karena ini sticky di TABLE YANG SAMA (bukan tabel
+       salinan/clone terpisah), lebar & posisi kolom header otomatis selalu
+       identik dengan body-nya. Hanya 2 baris biru (judul kolom + nama bank)
+       yang dibikin freeze - baris SALDO AWAL sengaja TIDAK dibuat freeze:
+       sticky di tabel HTML biasa hanya konsisten kalau diterapkan ke <th>
+       satu baris header saja; begitu dicoba untuk baris ke-3 (macam-macam
+       teknik: sticky di <thead> sekaligus, top per-baris manual) hasilnya
+       malah baris itu jadi kosong/tidak muncul di beberapa browser. */
+    #cfr-table thead tr:nth-child(1) th,
+    #cfr-table thead tr.account-header-row th {
+        position: sticky;
+        z-index: 2;
+        top: 0;
+    }
+    #cfr-table thead tr.account-header-row th { top: 26px; }
+    /* Sel pojok (kolom DESCRIPTIONS di baris header) butuh z-index lebih
+       tinggi supaya tidak ketutup kolom sticky-left baris body yang lewat
+       di bawahnya saat discroll. */
+    #cfr-table thead tr:nth-child(1) th:nth-child(1) {
+        z-index: 3;
+        background: #1E3A8A;
+    }
+    /* Baris judul section yang di-merge (CASH RECEIPTS, 1. OPERATING
+       ACTIVITIES, dst - pakai <td colspan>) melebar sepanjang baris, dan
+       sticky langsung di <td> selebar itu ternyata tidak konsisten nempel di
+       semua kondisi. Jadi dipakai teknik yang lebih pasti jalan: teks di
+       dalamnya dibungkus <span> (lihat script di bawah), lalu SPAN itu yang
+       di-sticky - caranya lebih reliable karena elemen yang di-sticky-kan
+       kecil (selebar teksnya saja), bukan sel yang selebar seluruh baris. */
+    #cfr-table td[colspan] > span.cfr-sticky-label {
+        position: sticky;
+        left: 8px;
+        display: inline-block;
     }
     #cfr-table tr.section-title td {
         font-weight: bold;
@@ -59,9 +109,45 @@
         font-weight: bold;
         background: #eef2f9;
     }
+
     #cfr-table tr.disbursement-header td {
         font-weight: bold;
         color: #b91c1c;
+    }
+
+    /* Shadow tipis di tepi kolom/baris yang freeze - sinyal visual standar
+       bahwa area itu "mengambang" di atas konten yang discroll di
+       bawah/sampingnya. */
+    #cfr-table th:nth-child(1),
+    #cfr-table td:not([colspan]):nth-child(1) {
+        box-shadow: 2px 0 4px -2px rgba(0, 0, 0, 0.2);
+    }
+    #cfr-table thead tr.account-header-row th {
+        box-shadow: 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Highlight baris saat di-hover - baris section-title/total/grand/
+       disbursement-header dikecualikan karena sudah punya warna penekanan
+       sendiri (biar tidak "bertabrakan" saat di-hover). */
+    #cfr-table tbody tr:not(.section-title):not(.total-row):not(.grand-row):not(.disbursement-header):hover td:not([colspan]) {
+        background: #eaf1ff;
+    }
+
+    /* Baris data selang-seling (zebra) - dikasih lewat class .cfr-row-alt
+       yang di-set oleh JS (lihat script di bawah), bukan CSS :nth-child
+       biasa, karena banyak baris spacer/section-title/total di antara baris
+       data yang bikin pola :nth-child jadi tidak rapi kalau dihitung dari
+       urutan DOM mentah. */
+    #cfr-table tbody tr.cfr-row-alt td:not([colspan]) {
+        background: #f7f9fc;
+    }
+
+    /* Angka negatif (format "(1.234,56)" dari cfrFmt) ditandai merah -
+       konvensi umum laporan keuangan. Class ditambahkan lewat JS karena
+       cfrFmt() cuma menghasilkan teks polos, tidak ada penanda negatif di
+       markup-nya. */
+    #cfr-table td.cfr-negative {
+        color: #c00000;
     }
 </style>
 
@@ -109,24 +195,28 @@ $doSearch   = true;
 
     <div class="card shadow border-0 mt-4">
         <div class="card-body p-4">
-            <div class="table-responsive">
-                <?php if (!$doSearch) { ?>
-                    <p class="text-muted mb-0">Pilih periode lalu klik Search untuk menampilkan laporan.</p>
-                <?php } else {
+            <?php if (!$doSearch) { ?>
+                <p class="text-muted mb-0">Pilih periode lalu klik Search untuk menampilkan laporan.</p>
+            <?php } else {
 
-                // =========================
-                // HITUNG SEMUA DATA REPORT (akun, saldo awal/akhir, kategori,
-                // realisasi, penerimaan/pelunasan pinjaman bank dedicated)
-                // =========================
-                extract(cfrComputeReportData($conn2, $start_date, $end_date));
-                ?>
+            // =========================
+            // HITUNG SEMUA DATA REPORT (akun, saldo awal/akhir, kategori,
+            // realisasi, penerimaan/pelunasan pinjaman bank dedicated)
+            // =========================
+            extract(cfrComputeReportData($conn2, $start_date, $end_date));
+            ?>
 
-                <div class="mb-3">
-                    <div><b>PT NIRWANA ALABARE GARMENT</b></div>
-                    <div><b>CASH FLOW REALISATION</b></div>
-                    <div>FOR PERIOD <?= strtoupper(date('d M Y', strtotime($start_date))); ?> - <?= strtoupper(date('d M Y', strtotime($end_date))); ?></div>
-                </div>
+            <!-- Judul laporan (nama PT/periode) sengaja DILUAR
+                 #cfr-table-wrapper (bukan di dalamnya) supaya tidak ikut
+                 kepotong saat tabel di-scroll ke samping - judul ini statis,
+                 tidak perlu freeze karena memang tidak pernah scroll. -->
+            <div class="mb-3">
+                <div><b>PT NIRWANA ALABARE GARMENT</b></div>
+                <div><b>CASH FLOW REALISATION</b></div>
+                <div>FOR PERIOD <?= strtoupper(date('d M Y', strtotime($start_date))); ?> - <?= strtoupper(date('d M Y', strtotime($end_date))); ?></div>
+            </div>
 
+            <div class="table-responsive" id="cfr-table-wrapper">
                 <table id="cfr-table" class="table table-bordered table-sm">
                     <thead class="table-gradient">
                         <tr>
@@ -141,9 +231,11 @@ $doSearch   = true;
                                 <th><?= htmlspecialchars($acc['label']); ?></th>
                             <?php } ?>
                         </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="grand-row">
+                        <!-- Baris "SALDO AWAL" sengaja DIPINDAH ke dalam <thead> (bukan baris
+                             <tbody> biasa yang "dipaksa" ikut sticky) - lebih stabil karena
+                             perilaku sticky untuk baris thead jauh lebih konsisten di semua
+                             browser dibanding baris tbody yang top-nya dihitung manual lewat JS. -->
+                        <tr class="grand-row" id="cfr-saldo-awal-row">
                             <td>SALDO AWAL KAS DAN BANK</td>
                             <td class="num">-</td>
                             <td class="num"><?= cfrFmt($totalBegin); ?></td>
@@ -152,6 +244,8 @@ $doSearch   = true;
                                 <td class="num"><?= cfrFmt($beginBalance[$acc['account']]); ?></td>
                             <?php } ?>
                         </tr>
+                    </thead>
+                    <tbody>
                         <tr><td colspan="<?= 4 + $colspanAccounts; ?>">&nbsp;</td></tr>
 
                         <tr class="section-title"><td colspan="<?= 4 + $colspanAccounts; ?>">CASH RECEIPTS :</td></tr>
@@ -284,8 +378,8 @@ $doSearch   = true;
                         </tr>
                     </tbody>
                 </table>
-                <?php } ?>
             </div>
+            <?php } ?>
         </div>
     </div>
 </div>
@@ -343,6 +437,73 @@ $doSearch   = true;
             autoclose: true
         });
     });
+
+    // Baris ke-2 header (nama bank) numpuk pas di bawah baris pertama - tinggi
+    // baris pertama dihitung dari hasil render (bukan di-hardcode) supaya
+    // tetap presisi walau ukuran font berubah.
+    (function () {
+        var table = document.getElementById('cfr-table');
+        if (!table) return;
+        var row1 = table.querySelector('thead tr:first-child');
+        var row2 = table.querySelector('thead tr.account-header-row');
+        if (!row1 || !row2) return;
+
+        function updateRow2Top() {
+            var h1 = row1.getBoundingClientRect().height;
+            for (var i = 0; i < row2.children.length; i++) {
+                row2.children[i].style.top = h1 + 'px';
+            }
+        }
+
+        updateRow2Top();
+        window.addEventListener('resize', updateRow2Top);
+    })();
+
+    // Bungkus teks baris judul section (CASH RECEIPTS, 1. OPERATING
+    // ACTIVITIES, dst - sel <td colspan> yang melebar sepanjang baris)
+    // dengan <span> supaya bisa di-sticky lewat CSS (lihat aturan
+    // #cfr-table td[colspan] > span.cfr-sticky-label) - tetap kelihatan di
+    // tepi kiri area yang keliatan walau baris itu discroll ke samping.
+    (function () {
+        var table = document.getElementById('cfr-table');
+        if (!table) return;
+        var cells = table.querySelectorAll('td[colspan]');
+        for (var i = 0; i < cells.length; i++) {
+            var td = cells[i];
+            var span = document.createElement('span');
+            span.className = 'cfr-sticky-label';
+            span.innerHTML = td.innerHTML;
+            td.innerHTML = '';
+            td.appendChild(span);
+        }
+    })();
+
+    // Zebra striping (.cfr-row-alt) + tandai angka negatif (.cfr-negative).
+    // Dilakukan di JS (bukan CSS :nth-child) supaya baris spacer/judul
+    // section/total/grand tidak ikut kehitung dalam pola selang-seling -
+    // yang di-zebra cuma baris data biasa.
+    (function () {
+        var table = document.getElementById('cfr-table');
+        if (!table) return;
+
+        var rows = table.querySelectorAll('tbody tr');
+        var alt = false;
+        for (var i = 0; i < rows.length; i++) {
+            var tr = rows[i];
+            if (tr.querySelector('td[colspan]')) continue;
+            if (tr.classList.contains('grand-row') || tr.classList.contains('total-row') ||
+                tr.classList.contains('disbursement-header')) continue;
+            if (alt) tr.classList.add('cfr-row-alt');
+            alt = !alt;
+        }
+
+        var numCells = table.querySelectorAll('td.num');
+        for (var j = 0; j < numCells.length; j++) {
+            if (numCells[j].textContent.trim().charAt(0) === '(') {
+                numCells[j].classList.add('cfr-negative');
+            }
+        }
+    })();
 </script>
 
 </body>
