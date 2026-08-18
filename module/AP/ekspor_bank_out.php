@@ -45,6 +45,7 @@
             <th style="text-align: center;vertical-align: middle;">No Bank Out</th>
             <th style="text-align: center;vertical-align: middle;">Date</th>
             <th style="text-align: center;vertical-align: middle;">Source</th>
+            <th style="text-align: center;vertical-align: middle;">Account</th>
             <th style="text-align: center;vertical-align: middle;">Cash Flow Category</th>
             <th style="text-align: center;vertical-align: middle;">Curreny</th>
             <th style="text-align: center;vertical-align: middle;">Amount</th>
@@ -116,6 +117,7 @@
             <td style=" text-align : left" value="'.$row['no_bankout'].'">'.$row['no_bankout'].'</td>
             <td style=" text-align : left" value="'.$row['bankout_date'].'">'.date("d-M-Y",strtotime($row['bankout_date'])).'</td>
             <td style=" text-align : left" value="'.$row['nama_supp'].'">'.$row['nama_supp'].'</td>
+            <td style=" text-align : left" value="'.$row['akun'].'">'.$row['akun'].'</td>
             <td style=" text-align : left" value="'.$row['cash_flow_category'].'">'.(!empty($row['cash_flow_category']) ? $row['cash_flow_category'] : '-').'</td>
             <td style=" text-align : left" value="'.$row['curr'].'">'.$row['curr'].'</td>
             <td style=" text-align : right" value="'.$row['amount'].'">'.number_format($row['amount'],2).'</td>
