@@ -111,8 +111,10 @@ $period_label = ($start_date !== '' && $end_date !== '')
             <th style="text-align: center; vertical-align: middle;">Status</th>
             <th style="text-align: center; vertical-align: middle;">Create By</th>
             <th style="text-align: center; vertical-align: middle;">Create Date</th>
-            <th style="text-align: center; vertical-align: middle;">Approved By</th>
-            <th style="text-align: center; vertical-align: middle;">Approved Date</th>
+            <th style="text-align: center; vertical-align: middle;">First Approval By</th>
+            <th style="text-align: center; vertical-align: middle;">First Approval Date</th>
+            <th style="text-align: center; vertical-align: middle;">Second Approval By</th>
+            <th style="text-align: center; vertical-align: middle;">Second Approval Date</th>
         </tr>
         <?php $no = 1; foreach ($data as $row): ?>
         <tr style="font-size:12px;text-align:center;">
@@ -134,8 +136,10 @@ $period_label = ($start_date !== '' && $end_date !== '')
             <td><?php echo htmlspecialchars($row['status_label'] ?? $row['status']); ?></td>
             <td><?php echo htmlspecialchars($row['create_user']); ?></td>
             <td><?php echo htmlspecialchars($row['create_date']); ?></td>
-            <td><?php echo htmlspecialchars($row['confirm_user']); ?></td>
-            <td><?php echo htmlspecialchars($row['confirm_date']); ?></td>
+            <td><?php echo htmlspecialchars($row['first_approve_user'] ?? '-'); ?></td>
+            <td><?php echo htmlspecialchars($row['first_approve_date'] ?? '-'); ?></td>
+            <td><?php echo htmlspecialchars($row['second_approve_user'] ?? '-'); ?></td>
+            <td><?php echo htmlspecialchars($row['second_approve_date'] ?? '-'); ?></td>
         </tr>
         <?php endforeach; ?>
     </table>
