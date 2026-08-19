@@ -151,6 +151,85 @@
     #cfr-table td.cfr-negative {
         color: #c00000;
     }
+
+    /* Filter "Account" (dropdown REALISATION BY BANK) - gaya toggle switch
+       yang sama seperti panel "Manage Role" di userrole.php, biar konsisten
+       di seluruh aplikasi. */
+    #cfrAccountDropdownMenu {
+        min-width: 320px;
+        max-height: 320px;
+        overflow-y: auto;
+    }
+    .cfr-acc-panel {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    .cfr-acc-all-row {
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 8px;
+        padding-bottom: 8px;
+    }
+    .cfr-acc-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 8px 10px;
+        font-size: 12.5px;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        transition: box-shadow .15s ease, border-color .15s ease;
+    }
+    .cfr-acc-row:hover {
+        border-color: #93c5fd;
+        box-shadow: 0 2px 6px rgba(37, 99, 235, .15);
+    }
+    .cfr-acc-label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .cfr-acc-all-row .cfr-acc-label {
+        font-weight: 700;
+    }
+
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 38px;
+        height: 21px;
+        flex-shrink: 0;
+    }
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #cbd5e1;
+        transition: background-color .2s ease;
+        border-radius: 21px;
+    }
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 15px;
+        width: 15px;
+        left: 3px;
+        bottom: 3px;
+        background-color: #fff;
+        transition: transform .2s ease;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, .35);
+    }
+    .toggle-switch input:checked + .toggle-slider { background-color: #1E3A8A; }
+    .toggle-switch input:checked + .toggle-slider:before { transform: translateX(17px); }
+    .toggle-switch input:focus + .toggle-slider { box-shadow: 0 0 0 3px rgba(30, 58, 138, .25); }
 </style>
 
 <?php
@@ -163,6 +242,12 @@ require __DIR__ . '/cfr_functions.php';
 $start_date = isset($_POST['start_date']) && $_POST['start_date'] !== '' ? date('Y-m-d', strtotime($_POST['start_date'])) : date('Y-m-d');
 $end_date   = isset($_POST['end_date']) && $_POST['end_date'] !== '' ? date('Y-m-d', strtotime($_POST['end_date'])) : date('Y-m-d');
 $doSearch   = true;
+
+// Filter kolom "REALISATION BY BANK" - pilih akun mana yang mau ditampilkan
+// (minimal 1, dipaksa lewat JS di form). Kosong (belum pernah submit/pertama
+// buka halaman) berarti tampilkan SEMUA akun - lihat cfrComputeReportData().
+$cfrAllAccounts = cfrGetAllAccounts($conn2);
+$cfrSelectedAccounts = isset($_POST['accounts']) ? (array) $_POST['accounts'] : [];
 ?>
 
 <!-- MAIN -->
@@ -181,6 +266,41 @@ $doSearch   = true;
                     <div class="col-md-2">
                         <label for="end_date" class="form-label"><b>To</b></label>
                         <input type="text" class="form-control form-control-sm tanggal" id="end_date" name="end_date" value="<?= date('d-m-Y', strtotime($end_date)); ?>" placeholder="End Date" autocomplete="off">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label"><b>Account</b></label>
+                        <!-- Filter kolom "REALISATION BY BANK" - dropdown berisi kartu toggle
+                             switch (gaya sama seperti "Manage Role" di userrole.php), bukan
+                             checkbox Bootstrap biasa. Minimal 1 akun harus tetap ON - dipaksa
+                             lewat JS di bawah (lihat #cfrAccountDropdownMenu). -->
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-outline-secondary btn-sm form-control text-start dropdown-toggle" id="cfrAccountDropdownBtn" data-toggle="dropdown" aria-expanded="false">
+                                All Accounts
+                            </button>
+                            <div class="dropdown-menu p-2" id="cfrAccountDropdownMenu">
+                                <div class="cfr-acc-row cfr-acc-all-row">
+                                    <span class="cfr-acc-label">ALL ACCOUNTS</span>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="cfr-acc-all" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="cfr-acc-panel">
+                                    <?php foreach ($cfrAllAccounts as $acc) {
+                                        $accId = 'cfr-acc-' . md5($acc['account']);
+                                        $checked = empty($cfrSelectedAccounts) || in_array($acc['account'], $cfrSelectedAccounts, true);
+                                    ?>
+                                    <div class="cfr-acc-row">
+                                        <span class="cfr-acc-label"><?= htmlspecialchars($acc['label']); ?></span>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" class="cfr-acc-item" name="accounts[]" value="<?= htmlspecialchars($acc['account']); ?>" id="<?= $accId; ?>"<?= $checked ? ' checked' : ''; ?>>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                    <?php } ?>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="col-md-3 d-flex align-items-end">
                         <button type="submit" id="submit" class="btn btn-info btn-sm me-2">
@@ -205,7 +325,7 @@ $doSearch   = true;
             // HITUNG SEMUA DATA REPORT (akun, saldo awal/akhir, kategori,
             // realisasi, penerimaan/pelunasan pinjaman bank dedicated)
             // =========================
-            extract(cfrComputeReportData($conn2, $start_date, $end_date));
+            extract(cfrComputeReportData($conn2, $start_date, $end_date, $cfrSelectedAccounts));
             ?>
 
             <!-- Judul laporan (nama PT/periode) sengaja DILUAR
@@ -397,6 +517,70 @@ $doSearch   = true;
         return `${p[2]}-${p[1]}-${p[0]}`;
     }
 
+    // ====== FILTER AKUN "REALISATION BY BANK" (dropdown checkbox) ======
+    // Klik "ALL" nyentang/lepas semua sekaligus; klik salah satu akun otomatis
+    // sinkron balik status "ALL" (tercentang penuh/indeterminate). Minimal 1
+    // akun harus tetap tercentang - kalau user coba lepas centang terakhir,
+    // dibatalkan (balik tercentang).
+    (function () {
+        var allCheckbox = document.getElementById('cfr-acc-all');
+        var itemCheckboxes = Array.prototype.slice.call(document.querySelectorAll('.cfr-acc-item'));
+        var dropdownBtn = document.getElementById('cfrAccountDropdownBtn');
+        var dropdownMenu = document.getElementById('cfrAccountDropdownMenu');
+        if (!allCheckbox || !itemCheckboxes.length || !dropdownBtn || !dropdownMenu) return;
+
+        function updateSummary() {
+            var checked = itemCheckboxes.filter(function (cb) { return cb.checked; });
+            if (checked.length === itemCheckboxes.length) {
+                dropdownBtn.textContent = 'All Accounts';
+            } else if (checked.length === 1) {
+                dropdownBtn.textContent = checked[0].closest('.cfr-acc-row').querySelector('.cfr-acc-label').textContent;
+            } else {
+                dropdownBtn.textContent = checked.length + ' Accounts Selected';
+            }
+        }
+
+        function updateAllCheckboxState() {
+            var checkedCount = itemCheckboxes.filter(function (cb) { return cb.checked; }).length;
+            allCheckbox.checked = checkedCount === itemCheckboxes.length;
+            allCheckbox.indeterminate = checkedCount > 0 && checkedCount < itemCheckboxes.length;
+        }
+
+        allCheckbox.addEventListener('change', function () {
+            itemCheckboxes.forEach(function (cb) { cb.checked = allCheckbox.checked; });
+            if (!allCheckbox.checked) {
+                // "ALL" tidak boleh sampai bikin semua ke-uncheck - minimal 1
+                // akun harus tetap tercentang.
+                itemCheckboxes[0].checked = true;
+                allCheckbox.indeterminate = true;
+            }
+            updateSummary();
+        });
+
+        itemCheckboxes.forEach(function (cb) {
+            cb.addEventListener('change', function () {
+                var checkedCount = itemCheckboxes.filter(function (c) { return c.checked; }).length;
+                if (checkedCount === 0) {
+                    cb.checked = true; // batalkan uncheck terakhir
+                    return;
+                }
+                updateAllCheckboxState();
+                updateSummary();
+            });
+        });
+
+        // Klik checkbox/label di dalam dropdown tidak boleh menutup dropdown-nya -
+        // biar bisa centang beberapa akun sekaligus tanpa dropdown ketutup tiap klik.
+        dropdownMenu.addEventListener('click', function (e) { e.stopPropagation(); });
+
+        updateSummary();
+        updateAllCheckboxState();
+    })();
+
+    function cfrSelectedAccounts() {
+        return Array.prototype.slice.call(document.querySelectorAll('.cfr-acc-item:checked')).map(function (cb) { return cb.value; });
+    }
+
     document.getElementById('btnExportExcel').addEventListener('click', function () {
         let sd = cfrToYmd(document.getElementById('start_date').value);
         let ed = cfrToYmd(document.getElementById('end_date').value);
@@ -409,7 +593,10 @@ $doSearch   = true;
             didOpen: () => { Swal.showLoading(); }
         });
 
-        fetch(`ekspor_cashflow_realisation.php?start_date=${sd}&end_date=${ed}`)
+        let params = new URLSearchParams({ start_date: sd, end_date: ed });
+        cfrSelectedAccounts().forEach(function (a) { params.append('accounts[]', a); });
+
+        fetch(`ekspor_cashflow_realisation.php?${params.toString()}`)
             .then(async (res) => {
                 const contentType = res.headers.get('Content-Type') || '';
                 if (contentType.indexOf('json') !== -1) {

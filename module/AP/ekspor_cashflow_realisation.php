@@ -14,8 +14,11 @@ try {
 
     $start_date = isset($_GET['start_date']) && $_GET['start_date'] !== '' ? date('Y-m-d', strtotime($_GET['start_date'])) : date('Y-m-01');
     $end_date   = isset($_GET['end_date']) && $_GET['end_date'] !== '' ? date('Y-m-d', strtotime($_GET['end_date'])) : date('Y-m-d');
+    // Sama seperti report-cashflow-realisation.php - filter kolom akun yang
+    // diekspor, kosong berarti semua akun.
+    $selectedAccounts = isset($_GET['accounts']) ? (array) $_GET['accounts'] : [];
 
-    extract(cfrComputeReportData($conn2, $start_date, $end_date));
+    extract(cfrComputeReportData($conn2, $start_date, $end_date, $selectedAccounts));
 
     $GREEN = '90EE90';
     $BLUE = '0070C0';
