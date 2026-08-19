@@ -19,6 +19,22 @@ if ($no_pv !== '' && $_SERVER['REQUEST_METHOD'] !== 'POST') {
             $pvDetails[] = $d;
         }
 
+        // Dulu "Total Memo"/Balance di halaman ini dihitung dari
+        // tbl_pv_memo_temp (staging area per-user waktu CREATE, kosong lagi
+        // begitu PV sudah tersimpan) - di halaman EDIT itu SELALU kosong buat
+        // PV manapun (bukan punya user yang lagi login sekarang), jadi
+        // Balance selalu keliatan minus sebesar Total PV meski belum ada yang
+        // diubah, dan tombol Save jadi terkunci terus (guard Balance harus 0
+        // di #simpan). PV yang sudah tersimpan juga tidak punya kolom
+        // tersendiri buat "total memo aslinya" (tidak pernah dipersist).
+        // Anchor paling masuk akal: total SEMUA baris detail seperti
+        // tersimpan saat halaman ini dibuka (bukan yang lagi di-edit live) -
+        // ini otomatis samakan Balance ke 0 selama user belum ubah nilai
+        // apapun, dan tetap "menangkap" kalau user mengubah Amount baris
+        // tanpa menyesuaikan total (sama semangatnya dengan validasi di
+        // CREATE, cuma anchor-nya dari data tersimpan, bukan dari memo asal).
+        $pvTotalMemoAnchor = array_sum(array_column($pvDetails, 'amount'));
+
         $cekDateVal = '';
         if (!empty($pvHeader['cek_date']) && $pvHeader['cek_date'] !== '0000-00-00' && strtotime($pvHeader['cek_date']) > 0 && date('Y-m-d', strtotime($pvHeader['cek_date'])) !== '1970-01-01') {
             $cekDateVal = date('d-m-Y', strtotime($pvHeader['cek_date']));
@@ -198,21 +214,14 @@ if ($no_pv === '' || !$pvHeader) {
                     echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
                 }?>
                 </select> -->
-                <input type="text" style="font-size: 14px;" class="form-control" id="nama_supp" name="nama_supp" readonly value="<?php 
-            $sql = mysqli_query($conn2,"select DISTINCT ms.supplier supplier from memo_h a
-          inner join mastersupplier ms on a.id_supplier = ms.id_supplier
-          inner join mastersupplier mb on a.id_buyer = mb.id_supplier
-                    inner join memo_det mdet on mdet.id_h = a.id_h
-                    inner join tbl_pv_memo_temp mtemp on mtemp.no_memo = a.nm_memo
-                    where mdet.cancel = 'N' and mdet.nm_sub_ctg != 'VAT' and mtemp.user = '$user' GROUP BY nm_memo order by a.id_h desc limit 1");
-            $row = mysqli_fetch_array($sql);
-            $supplier = isset($row['supplier']) ? $row['supplier'] : null;           
-            if(!empty($supplier)) {
-                echo $supplier;
-            }
-            else{
-                echo '';
-            }?>">
+                <!-- Beda dari create-paymentvoucher-exim.php: di situ Supplier memang
+                     diturunkan dari memo yang lagi dipilih user (tbl_pv_memo_temp),
+                     karena PV baru belum punya suppliernya sendiri. Di halaman EDIT,
+                     PV-nya sudah tersimpan dan sudah punya nama_supp sendiri (dimuat
+                     ke $_POST di atas dari tbl_pv_h) - query tbl_pv_memo_temp di sini
+                     salah sumber (isinya staging punya user yang lagi login SEKARANG,
+                     bukan punya PV yang dibuka), jadi field ini selalu kosong. -->
+                <input type="text" style="font-size: 14px;" class="form-control" id="nama_supp" name="nama_supp" readonly value="<?= htmlspecialchars($_POST['nama_supp'] ?? ''); ?>">
                 </div>
 
                 <input type="hidden" style="font-size: 14px;text-align: right;" class="form-control" id="rat_pv" name="rat_pv" 
@@ -412,17 +421,17 @@ if ($no_pv === '' || !$pvHeader) {
             <div class="col-md-2 mb-3" id="div_tocc" style="padding-top: 8px;<?php echo $frccToccHideStyle; ?>">
             <label for="nama_supp"><b>To Account</b></label>
               <select class="form-control select2" name="tocc" id="tocc" style="width:100%">
-                <option value="-" disabled selected="true">Select Account</option>
+                <option value="" disabled selected="true">Select Account</option>
                 <?php
 
-                $sql = mysqli_query($conn2,"select DISTINCT ms.supplier supplier from memo_h a
-          inner join mastersupplier ms on a.id_supplier = ms.id_supplier
-          inner join mastersupplier mb on a.id_buyer = mb.id_supplier
-                    inner join memo_det mdet on mdet.id_h = a.id_h
-                    inner join tbl_pv_memo_temp mtemp on mtemp.no_memo = a.nm_memo
-                    where mdet.cancel = 'N' and mdet.nm_sub_ctg != 'VAT' and mtemp.user = '$user' GROUP BY nm_memo order by a.id_h desc limit 1");
-            $row = mysqli_fetch_array($sql);
-            $nama_supp_tocc = isset($row['supplier']) ? $row['supplier'] : null;
+                // Beda dari create-paymentvoucher-exim.php (di situ diturunkan dari
+                // memo yang lagi dipilih user di tbl_pv_memo_temp, karena PV baru
+                // memang belum punya suppliernya sendiri) - PV yang sedang di-EDIT
+                // sudah punya nama_supp tersimpan sendiri ($_POST['nama_supp'],
+                // dimuat dari tbl_pv_h di atas), jadi daftar rekening difilter
+                // berdasarkan itu langsung, bukan query tbl_pv_memo_temp yang salah
+                // sumber (isinya staging punya user yang lagi login sekarang).
+                $nama_supp_tocc = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
 
                        $tocc ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -433,17 +442,21 @@ if ($no_pv === '' || !$pvHeader) {
                 }else{
                     $sql = mysqli_query($conn2,"SELECT ms.Supplier AS supplier, CONCAT(UPPER(TRIM(m.bank_name)),' ',UPPER(TRIM(m.bank_account))) AS bank, UPPER(TRIM(m.bank_account)) AS akun FROM master_supplier_bank m JOIN mastersupplier ms ON ms.id_supplier = m.id_supplier WHERE m.status = 'Active' AND m.tipe_sup = 'S' AND ms.Supplier = '$nama_supp_tocc' ORDER BY m.bank_name");
                 }
+                $toccRows = [];
                 while ($row = mysqli_fetch_array($sql)) {
+                    $toccRows[] = $row;
+                }
+                // Opsi "- No Account -" (value tetap "-") CUMA muncul kalau memang
+                // tidak ada pilihan rekening sama sekali buat supplier ini.
+                if (empty($toccRows)) {
+                    echo '<option value="-">- No Account -</option>';
+                }
+                foreach ($toccRows as $row) {
                     $data = $row['bank'];
                     $indata = $row['akun'];
-                    if($row['akun'] == $tocc){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
-
-                    }
+                    $isSelected = ($row['akun'] == $tocc) ? ' selected="selected"' : '';
                     echo '<option value="'.$indata.'"'.$isSelected.'">'. $data .'</option>';
-                        }
+                }
                         ?>
               </select>
               <!-- Untuk Supplier KANTOR PAJAK/KPPBC TMP A BANDUNG, To Account tidak
@@ -983,26 +996,12 @@ if ($no_pv === '' || !$pvHeader) {
             </div>
             <div class="mb-2">
                 <label for="total_memo" class="col-form-label" style="width: 120px;"><b>Total Memo</b></label>
-                <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="total_memo" name="total_memo" placeholder="0.00" readonly value="<?php
-            $sql = mysqli_query($conn2," select sum(biaya) biaya from tbl_pv_memo_temp where user = '$user' ");
-            $row = mysqli_fetch_array($sql);
-            $biaya = $row['biaya'];
-            if(!empty($biaya)) {
-                echo number_format($biaya,2);
-            }
-            else{
-                echo '';
-            }?>">
-                 <input type="hidden" name="total_memo_h" id="total_memo_h" value="<?php
-            $sql = mysqli_query($conn2," select sum(biaya) biaya from tbl_pv_memo_temp where user = '$user' ");
-            $row = mysqli_fetch_array($sql);
-            $biaya = $row['biaya'];
-            if(!empty($biaya)) {
-                echo $biaya;
-            }
-            else{
-                echo '';
-            }?>">
+                <!-- Anchor-nya $pvTotalMemoAnchor (total baris detail seperti
+                     tersimpan waktu halaman dibuka - lihat catatan di atas dekat
+                     $pvDetails), bukan lagi query tbl_pv_memo_temp yang salah
+                     sumber untuk halaman EDIT. -->
+                <input type="text" style="font-size: 14px;text-align: right;" class="form-control" id="total_memo" name="total_memo" placeholder="0.00" readonly value="<?= $pvTotalMemoAnchor != 0 ? number_format($pvTotalMemoAnchor, 2) : ''; ?>">
+                 <input type="hidden" name="total_memo_h" id="total_memo_h" value="<?= $pvTotalMemoAnchor != 0 ? $pvTotalMemoAnchor : ''; ?>">
             </div>
             <div class="mb-2">
                 <label for="balance_memo" class="col-form-label" style="width: 120px;"><b>Balance</b></label>
@@ -1674,7 +1673,7 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
         var $toccManual = $('#tocc_manual');
 
         if (isManual) {
-            $toccSelect.val('-').trigger('change');
+            $toccSelect.val('').trigger('change');
             $toccSelectWrap.hide();
             $toccManual.show();
         } else {
@@ -2123,7 +2122,20 @@ $.getJSON('get_coa_wajib_cc.php', function(data){
         Swal.fire('Error', 'Please select From Account', 'error');
         document.getElementById('frcc').focus();
         return;
-        }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && document.getElementById('forpay').value == 'Pemindah Bukuan Bank' && $('select[name=frcc] option').filter(':selected').val() != '-' && (tocc == '-' || tocc == '' || tocc == null)){
+        }else if((function () {
+            // To Account wajib diisi tiap kali fieldnya tampil (pay method
+            // bukan CASH - lihat toggle di atas), tidak lagi dibatasi cuma
+            // untuk kategori Pemindah Bukuan Bank saja. "-" (dipilih lewat
+            // opsi "- No Account -" di dropdown, atau diketik manual di
+            // tocc_manual) SENGAJA dianggap VALID - artinya supplier memang
+            // tidak punya rekening bank, bukan berarti belum diisi.
+            // Placeholder dropdown yang benar-benar berarti "belum dipilih"
+            // pakai value="" (beda dari "-"), jadi cuma string kosong yang
+            // ditolak di sini.
+            if ($('select[name=carabayar] option').filter(':selected').val() == 'CASH') { return false; }
+            var trimmed = (tocc || '').trim();
+            return trimmed === '';
+        })()){
         Swal.fire('Error', 'Please select/isi To Account', 'error');
         (($('#tocc_manual').is(':visible')) ? document.getElementById('tocc_manual') : document.getElementById('tocc')).focus();
         return;

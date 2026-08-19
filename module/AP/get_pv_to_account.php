@@ -21,9 +21,19 @@ $to_source = $_POST['to_source'] ?? '';
 
 $data = [];
 
-$useCompanyAccount = ($to_source !== '')
-    ? ($to_source === 'company')
-    : ($forpay === 'Pemindah Bukuan Bank' || $forpay === 'Cicilan Pinjaman Bank');
+// Supplier "PT. NIRWANA ALABARE GARMENT" adalah PT sendiri (internal), bukan
+// supplier eksternal - tidak akan pernah ada rekeningnya di
+// master_supplier_bank, jadi To Account-nya disamakan dengan From Account
+// (rekening PERUSAHAAN di b_masterbank), sama seperti kategori Pemindahbukuan/
+// Pinjaman Bank di bawah. Dicek lebih dulu supaya menang di atas to_source/
+// forpay apapun yang dikirim caller.
+$OWN_COMPANY_SUPPLIER = 'PT. NIRWANA ALABARE GARMENT';
+
+$useCompanyAccount = (trim($nama_supp) === $OWN_COMPANY_SUPPLIER)
+    ? true
+    : (($to_source !== '')
+        ? ($to_source === 'company')
+        : ($forpay === 'Pemindah Bukuan Bank' || $forpay === 'Cicilan Pinjaman Bank'));
 
 if ($useCompanyAccount) {
     $sql = mysqli_query($conn1, "select coa_name as bank, bank_account as akun from b_masterbank where status = 'Active' group by id");

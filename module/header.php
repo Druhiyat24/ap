@@ -566,6 +566,10 @@ input[type=number] {
               <span class="fa fa-university fa-fw "></span>
               <span class="menu-collapsed">Master Bank Supplier</span>
               </a>
+              <a href="../AP/master-pilihan-bank.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-university fa-fw "></span>
+              <span class="menu-collapsed">Master Pilihan Bank</span>
+              </a>
               <a href="../AP/master-rate.php" class="dropdown-item bg-dark text-white">
               <span class="fa fa-paperclip fa-fw "></span>
               <span class="menu-collapsed">Rate</span>

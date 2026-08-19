@@ -555,6 +555,10 @@ if ($user == '') {
               <span class="fa fa-university fa-fw "></span>
               <span class="menu-collapsed">Master Bank Supplier</span>
               </a>
+            <a href="AP/master-pilihan-bank.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-university fa-fw "></span>
+              <span class="menu-collapsed">Master Pilihan Bank</span>
+              </a>
             <a href="AP/master-rate.php" class="dropdown-item bg-dark text-white">
               <span class="fa fa-paperclip fa-fw "></span>
               <span class="menu-collapsed">Rate</span>
@@ -1458,7 +1462,7 @@ if($id == '78'){
         </a>
         <li class="dropdown-submenu ">
         <a class="dropdown-item bg-dark text-white" href="#">
-        <span class="fa fa-file-excel-o fa-fw"></span>
+        <span class="fa fa-file-excel-o fa-fw mr-3"></span>
         <span class="menu-collapsed">Report</span>
         </a>
         <ul class="dropdown-menu bg-dark text-white" role="menu">

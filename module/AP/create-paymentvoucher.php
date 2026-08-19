@@ -298,10 +298,21 @@
                 <div class="col-md-2 mb-3" id="div_tocc" style="padding-top: 8px;">
                     <label for="tocc"><b>To Account</b></label>
                     <select class="form-control select2" name="tocc" id="tocc" style="width:100%">
-                        <option value="-" selected="selected">Select Account</option>
+                        <option value="" selected="selected">Select Account</option>
                         <?php
                         $sql = mysqli_query($conn2, "SELECT ms.Supplier AS supplier, CONCAT(UPPER(TRIM(m.bank_name)),' ',UPPER(TRIM(m.bank_account))) AS bank, UPPER(TRIM(m.bank_account)) AS akun FROM master_supplier_bank m JOIN mastersupplier ms ON ms.id_supplier = m.id_supplier WHERE m.status = 'Active' AND m.tipe_sup = 'S' ORDER BY ms.Supplier, m.bank_name");
+                        $toccRows = [];
                         while ($row = mysqli_fetch_array($sql)) {
+                            $toccRows[] = $row;
+                        }
+                        // Opsi "- No Account -" (value tetap "-", sama seperti yang
+                        // tersimpan ke database sebelumnya) CUMA muncul kalau memang
+                        // tidak ada pilihan rekening sama sekali - kalau ada rekening
+                        // beneran, tidak perlu ditawarkan opsi "tidak ada akun".
+                        if (empty($toccRows)) {
+                            echo '<option value="-">- No Account -</option>';
+                        }
+                        foreach ($toccRows as $row) {
                             echo '<option value="' . $row['akun'] . '">' . $row['bank'] . '</option>';
                         }
                         ?>
@@ -973,7 +984,7 @@ $(function() {
         var $toccManual = $('#tocc_manual');
 
         if (isManual) {
-            $toccSelect.val('-').trigger('change');
+            $toccSelect.val('').trigger('change');
             $toccSelectWrap.hide();
             $toccManual.show();
         } else {
@@ -1022,7 +1033,12 @@ $(function() {
             dataType: 'json',
             data: { forpay: forpay, nama_supp: nama_supp, to_source: to_source },
             success: function (response) {
-                $tocc.empty().append('<option value="-" selected="selected">Select Account</option>');
+                $tocc.empty().append('<option value="" selected="selected">Select Account</option>');
+                // "- No Account -" cuma ditawarkan kalau memang tidak ada pilihan
+                // rekening sama sekali buat supplier/kategori ini.
+                if (!response || !response.length) {
+                    $tocc.append('<option value="-">- No Account -</option>');
+                }
                 $.each(response || [], function (i, acc) {
                     $tocc.append('<option value="' + acc.value + '">' + acc.text + '</option>');
                 });
@@ -1060,7 +1076,7 @@ $(function() {
         $('#div_payfor').toggle(showPayFor);
 
         if (!showFrom) { $('#frcc').val('-').trigger('change'); }
-        if (!showTo) { $('#tocc').val('-').trigger('change'); }
+        if (!showTo) { $('#tocc').val('').trigger('change'); }
         if (!showKeDari) { $('#ke').val(''); $('#dari').val(''); }
         if (!showPayFor) { $('#pay_for').val(''); }
 
@@ -1846,9 +1862,20 @@ if (!valid_detail) {
             document.getElementById('frcc').focus();
             return;
         }
-        if (pay_mth != 'CASH' && id_cash_flow == CF_PEMINDAHBUKUAN_ID && (tocc == '-' || tocc == '' || tocc == null)) {
+        // To Account wajib diisi tiap kali fieldnya tampil (pay method bukan
+        // CASH - lihat showTo di updateForPaymentFields), tidak lagi dibatasi
+        // cuma untuk kategori Pemindahbukuan saja. "-" (baik dipilih lewat
+        // opsi "- No Account -" di dropdown, atau diketik manual di
+        // tocc_manual) SENGAJA dianggap VALID - artinya supplier memang
+        // tidak punya rekening bank, bukan berarti belum diisi. Placeholder
+        // dropdown yang benar-benar berarti "belum dipilih" pakai value=""
+        // (beda dari "-"), jadi cuma string kosong yang ditolak di sini.
+        var isToccManual = $('#tocc_manual').is(':visible');
+        var toccTrimmed = (tocc || '').trim();
+        var toccInvalid = (toccTrimmed === '');
+        if (pay_mth != 'CASH' && toccInvalid) {
             Swal.fire('Warning', 'Please select/isi To Account', 'warning');
-            (($('#tocc_manual').is(':visible')) ? document.getElementById('tocc_manual') : document.getElementById('tocc')).focus();
+            (isToccManual ? document.getElementById('tocc_manual') : document.getElementById('tocc')).focus();
             return;
         }
         if (total == '' || total == null) {

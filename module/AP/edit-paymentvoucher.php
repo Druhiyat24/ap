@@ -1149,6 +1149,19 @@ $(function() {
     // pajak/bea cukai) - To Account diganti isian bebas, bukan dropdown.
     var TOCC_MANUAL_SUPPLIERS = ['KANTOR PAJAK', 'KPPBC TMP A BANDUNG'];
 
+    // To Account yang TERSIMPAN untuk PV ini (dari tbl_pv_h, lihat $toccVal di
+    // atas) - dipakai sekali di awal supaya refreshToAccount() bisa
+    // me-reselect nilai aslinya begitu daftar rekening (yang bener) selesai
+    // dimuat lewat AJAX. Perlu disimpan terpisah begini karena markup awal
+    // <select> cuma memuat rekening dari master_supplier_bank punya supplier
+    // ini - kalau suppliernya tidak punya rekening di situ (misal PT sendiri,
+    // yang rekeningnya ada di b_masterbank bukan master_supplier_bank), value
+    // asli itu TIDAK PERNAH ada sebagai <option> di render awal, jadi begitu
+    // JS baca $('#tocc').val() nilainya sudah kepalang balik ke placeholder -
+    // nilai aslinya sudah "hilang" sebelum refreshToAccount() sempat jalan.
+    var TOCC_INITIAL_VAL = <?php echo json_encode($toccVal); ?>;
+    var toccInitialApplied = false;
+
     function toggleToccInputMode() {
         var nama_supp = ($('#nama_supp').val() || '').toUpperCase();
         var isManual = TOCC_MANUAL_SUPPLIERS.indexOf(nama_supp) !== -1;
@@ -1198,6 +1211,16 @@ $(function() {
         var nama_supp = $('#nama_supp').val() || '';
         var $tocc = $('#tocc');
         var currentVal = $tocc.val();
+        // Panggilan PERTAMA (begitu halaman edit dibuka) pakai nilai asli dari
+        // server, bukan dari DOM (lihat catatan di TOCC_INITIAL_VAL) -
+        // panggilan berikutnya (user ganti Supplier/For Payment sendiri)
+        // tetap pakai nilai DOM yang sedang berjalan seperti biasa.
+        if (!toccInitialApplied) {
+            toccInitialApplied = true;
+            if (TOCC_INITIAL_VAL) {
+                currentVal = TOCC_INITIAL_VAL;
+            }
+        }
         var to_source = (forpayId === CF_PEMINDAHBUKUAN_ID || forpayId === CF_PINJAMAN_BANK_ID) ? 'company' : 'supplier';
 
         $.ajax({

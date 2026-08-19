@@ -381,7 +381,7 @@
             <div class="col-md-2 mb-3" id="div_tocc" style="padding-top: 8px;<?php echo $frccToccHideStyle; ?>">
             <label for="nama_supp"><b>To Account</b></label>
               <select class="form-control select2" name="tocc" id="tocc" style="width:100%">
-                <option value="-" disabled selected="true">Select Account</option>
+                <option value="" disabled selected="true">Select Account</option>
                 <?php
 
                 $sql = mysqli_query($conn2,"select DISTINCT ms.supplier supplier from memo_h a
@@ -402,17 +402,21 @@
                 }else{
                     $sql = mysqli_query($conn2,"SELECT ms.Supplier AS supplier, CONCAT(UPPER(TRIM(m.bank_name)),' ',UPPER(TRIM(m.bank_account))) AS bank, UPPER(TRIM(m.bank_account)) AS akun FROM master_supplier_bank m JOIN mastersupplier ms ON ms.id_supplier = m.id_supplier WHERE m.status = 'Active' AND m.tipe_sup = 'S' AND ms.Supplier = '$nama_supp_tocc' ORDER BY m.bank_name");
                 }
+                $toccRows = [];
                 while ($row = mysqli_fetch_array($sql)) {
+                    $toccRows[] = $row;
+                }
+                // Opsi "- No Account -" (value tetap "-") CUMA muncul kalau memang
+                // tidak ada pilihan rekening sama sekali buat supplier ini.
+                if (empty($toccRows)) {
+                    echo '<option value="-">- No Account -</option>';
+                }
+                foreach ($toccRows as $row) {
                     $data = $row['bank'];
                     $indata = $row['akun'];
-                    if($row['akun'] == $tocc){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
-
-                    }
+                    $isSelected = ($row['akun'] == $tocc) ? ' selected="selected"' : '';
                     echo '<option value="'.$indata.'"'.$isSelected.'">'. $data .'</option>';
-                        }
+                }
                         ?>
               </select>
               <!-- Untuk Supplier KANTOR PAJAK/KPPBC TMP A BANDUNG, To Account tidak
@@ -1535,7 +1539,7 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
         var $toccManual = $('#tocc_manual');
 
         if (isManual) {
-            $toccSelect.val('-').trigger('change');
+            $toccSelect.val('').trigger('change');
             $toccSelectWrap.hide();
             $toccManual.show();
         } else {
@@ -1568,7 +1572,12 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
             dataType: 'json',
             data: { forpay: forpay, nama_supp: nama_supp },
             success: function (response) {
-                $tocc.empty().append('<option value="-" selected="selected">Select Account</option>');
+                $tocc.empty().append('<option value="" selected="selected">Select Account</option>');
+                // "- No Account -" cuma ditawarkan kalau memang tidak ada pilihan
+                // rekening sama sekali buat supplier ini.
+                if (!response || !response.length) {
+                    $tocc.append('<option value="-">- No Account -</option>');
+                }
                 $.each(response || [], function (i, acc) {
                     $tocc.append('<option value="' + acc.value + '">' + acc.text + '</option>');
                 });
@@ -2029,7 +2038,20 @@ $.getJSON('get_coa_wajib_cc.php', function(data){
         Swal.fire('Error', 'Please select From Account', 'error');
         document.getElementById('frcc').focus();
         return;
-        }else if($('select[name=carabayar] option').filter(':selected').val() != 'CASH' && document.getElementById('forpay').value == 'Pemindah Bukuan Bank' && $('select[name=frcc] option').filter(':selected').val() != '-' && (tocc == '-' || tocc == '' || tocc == null)){
+        }else if((function () {
+            // To Account wajib diisi tiap kali fieldnya tampil (pay method
+            // bukan CASH - lihat toggle di atas), tidak lagi dibatasi cuma
+            // untuk kategori Pemindah Bukuan Bank saja. "-" (dipilih lewat
+            // opsi "- No Account -" di dropdown, atau diketik manual di
+            // tocc_manual) SENGAJA dianggap VALID - artinya supplier memang
+            // tidak punya rekening bank, bukan berarti belum diisi.
+            // Placeholder dropdown yang benar-benar berarti "belum dipilih"
+            // pakai value="" (beda dari "-"), jadi cuma string kosong yang
+            // ditolak di sini.
+            if ($('select[name=carabayar] option').filter(':selected').val() == 'CASH') { return false; }
+            var trimmed = (tocc || '').trim();
+            return trimmed === '';
+        })()){
         Swal.fire('Error', 'Please select/isi To Account', 'error');
         (($('#tocc_manual').is(':visible')) ? document.getElementById('tocc_manual') : document.getElementById('tocc')).focus();
         return;
