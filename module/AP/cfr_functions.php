@@ -292,15 +292,26 @@ function cfrGetAllAccounts($conn) {
 // satu fungsi ini dipakai bareng oleh halaman report (report-cashflow-realisation.php) dan
 // export Excel (ekspor_cashflow_realisation.php) supaya logikanya cuma ada di satu tempat.
 //
-// $selectedAccounts (opsional) = array kode akun yang user pilih untuk DITAMPILKAN
-// (filter kolom "REALISATION BY BANK" - null/kosong berarti tampilkan semua). Filter
-// ini CUMA mempengaruhi kolom mana yang dirender - SALDO AWAL/AKHIR total dan
-// REALISATION/PROJECTION/VARIANCE tetap dihitung dari SEMUA akun (bukan cuma yang
-// dipilih), supaya angka grand total-nya tetap benar apa pun kolom yang ditampilkan.
+// $selectedAccounts (opsional) = array kode akun yang user pilih (filter "Account" -
+// null/kosong berarti semua akun). Filter ini men-scope SELURUH perhitungan (bukan cuma
+// kolom mana yang dirender) - SALDO AWAL/AKHIR total dan REALISATION/PROJECTION/VARIANCE
+// dihitung HANYA dari akun yang dipilih, seolah-olah akun lain tidak ada. Fallback ke
+// semua akun kalau hasil filternya kosong (mis. kode akun yang dikirim sudah tidak ada
+// lagi di master) - baris "REALISATION BY BANK" tidak boleh sampai kosong sama sekali.
 function cfrComputeReportData($conn, $start_date, $end_date, $selectedAccounts = null) {
     global $penerimaanPinjamanBank, $pembayaranPinjamanBank;
 
     $allAccounts = cfrGetAllAccounts($conn);
+    $accounts = $allAccounts;
+    if (!empty($selectedAccounts)) {
+        $selectedSet = array_flip($selectedAccounts);
+        $filtered = array_values(array_filter($allAccounts, function ($acc) use ($selectedSet) {
+            return isset($selectedSet[$acc['account']]);
+        }));
+        if (!empty($filtered)) {
+            $accounts = $filtered;
+        }
+    }
 
     $dateBefore = date('Y-m-d', strtotime($start_date . ' -1 day'));
 
@@ -309,7 +320,7 @@ function cfrComputeReportData($conn, $start_date, $end_date, $selectedAccounts =
     // (kurs "hari ini", bukan kurs historis per transaksi).
     $rateIdr = cfrGetRate($conn, $end_date);
     $rateMap = [];
-    foreach ($allAccounts as $acc) {
+    foreach ($accounts as $acc) {
         $rateMap[$acc['account']] = ($acc['curr'] === 'IDR') ? 1 : $rateIdr;
     }
 
@@ -323,10 +334,11 @@ function cfrComputeReportData($conn, $start_date, $end_date, $selectedAccounts =
     $kasBeginIdr = cfrGetKasBeginBalances($conn, $start_date);
 
     // Saldo Awal per akun (kas kecil dihitung native lalu dikonversi $rateMap;
-    // rekening bank pakai $bankBeginIdr di atas).
+    // rekening bank pakai $bankBeginIdr di atas). Cuma akun yang DIPILIH ($accounts,
+    // bukan $allAccounts) supaya totalBegin ikut menyusut sesuai filter.
     $beginBalance = [];
     $totalBegin = 0;
-    foreach ($allAccounts as $acc) {
+    foreach ($accounts as $acc) {
         $rate = $rateMap[$acc['account']];
         if (isset($bankBeginIdr[$acc['account']])) {
             $beginIdr = $bankBeginIdr[$acc['account']];
@@ -357,11 +369,16 @@ function cfrComputeReportData($conn, $start_date, $end_date, $selectedAccounts =
     // per akun, dicari di tanggal AKHIR filter/$end_date, sama seperti yang dipakai untuk
     // Saldo Awal akun non-bank di atas) - bukan lagi kurs PAJAK per tanggal transaksi
     // masing-masing baris. Konversi dilakukan di PHP (bukan query) supaya satu kurs per
-    // akun konsisten dipakai untuk seluruh transaksi dalam periode.
+    // akun konsisten dipakai untuk seluruh transaksi dalam periode. Dibatasi ke akun yang
+    // DIPILIH ($accounts) lewat "akun IN (...)" supaya REALISATION/PROJECTION/VARIANCE ikut
+    // menyusut sesuai filter - akun yang tidak dipilih dianggap tidak ada sama sekali.
+    $akunList = implode(',', array_map(function ($acc) use ($conn) {
+        return "'" . mysqli_real_escape_string($conn, $acc['account']) . "'";
+    }, $accounts));
     $sqlReal = mysqli_query($conn, "select id_cash_flow, akun, coalesce(sum(debit),0) d, coalesce(sum(credit),0) c from (
-        select id_cash_flow, akun, debit, credit from b_reportbank where status != 'Cancel' and transaksi_date between '$start_date' and '$end_date' and id_cash_flow is not null
+        select id_cash_flow, akun, debit, credit from b_reportbank where status != 'Cancel' and transaksi_date between '$start_date' and '$end_date' and id_cash_flow is not null and akun in ($akunList)
         union all
-        select id_cash_flow, akun, debit, credit from c_report_pettycash where status != 'Cancel' and transaksi_date between '$start_date' and '$end_date' and id_cash_flow is not null
+        select id_cash_flow, akun, debit, credit from c_report_pettycash where status != 'Cancel' and transaksi_date between '$start_date' and '$end_date' and id_cash_flow is not null and akun in ($akunList)
     ) x group by id_cash_flow, akun");
     $realisasi = [];
     while ($r = mysqli_fetch_assoc($sqlReal)) {
@@ -384,7 +401,7 @@ function cfrComputeReportData($conn, $start_date, $end_date, $selectedAccounts =
     // langsung (TIDAK dikurangi lagi) supaya tidak dobel-hitung.
     $endBalance = [];
     $totalEnd = 0;
-    foreach ($allAccounts as $acc) {
+    foreach ($accounts as $acc) {
         $receiptTotal = 0;
         foreach ($categories['Cash In'] as $rows) {
             foreach ($rows as $row) {
@@ -400,24 +417,6 @@ function cfrComputeReportData($conn, $start_date, $end_date, $selectedAccounts =
         $endIdr = $beginBalance[$acc['account']] + $receiptTotal + $disbTotal;
         $endBalance[$acc['account']] = $endIdr;
         $totalEnd += $endIdr;
-    }
-
-    // Filter kolom yang DITAMPILKAN sesuai pilihan user - dilakukan PALING AKHIR
-    // (setelah semua total di atas selesai dihitung dari $allAccounts) supaya
-    // SALDO AWAL/AKHIR & REALISATION/PROJECTION/VARIANCE tetap grand total yang
-    // benar, tidak ikut menyusut walau kolom yang ditampilkan cuma sebagian.
-    // Fallback ke semua akun kalau hasil filternya kosong (mis. kode akun yang
-    // dikirim sudah tidak ada lagi di master) - baris "REALISATION BY BANK"
-    // tidak boleh sampai kosong sama sekali.
-    $accounts = $allAccounts;
-    if (!empty($selectedAccounts)) {
-        $selectedSet = array_flip($selectedAccounts);
-        $filtered = array_values(array_filter($allAccounts, function ($acc) use ($selectedSet) {
-            return isset($selectedSet[$acc['account']]);
-        }));
-        if (!empty($filtered)) {
-            $accounts = $filtered;
-        }
     }
 
     return [
