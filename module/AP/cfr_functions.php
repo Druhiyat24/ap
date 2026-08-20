@@ -353,30 +353,20 @@ function cfrComputeReportData($conn, $start_date, $end_date, $selectedAccounts =
         $categories[$r['type_cashflow']][$r['nama_category']][] = $r;
     }
 
-    // Realisasi per kategori x akun - beda dengan Saldo Awal (satu kurs per akun untuk
-    // seluruh saldo), tiap TRANSAKSI bank non-IDR dikonversi ke IDR pakai kurs PAJAK di
-    // tanggal transaksinya SENDIRI (transaksi_date), bukan satu kurs HARIAN di $end_date
-    // untuk semua transaksi - konversi dilakukan di query (bukan PHP) supaya per-baris.
-    // Petty cash selalu IDR jadi tidak butuh konversi.
+    // Realisasi per kategori x akun - dikonversi ke IDR pakai $rateMap (satu kurs HARIAN
+    // per akun, dicari di tanggal AKHIR filter/$end_date, sama seperti yang dipakai untuk
+    // Saldo Awal akun non-bank di atas) - bukan lagi kurs PAJAK per tanggal transaksi
+    // masing-masing baris. Konversi dilakukan di PHP (bukan query) supaya satu kurs per
+    // akun konsisten dipakai untuk seluruh transaksi dalam periode.
     $sqlReal = mysqli_query($conn, "select id_cash_flow, akun, coalesce(sum(debit),0) d, coalesce(sum(credit),0) c from (
-        select r.id_cash_flow, r.akun,
-            r.debit * IF(m.curr = 'IDR', 1, COALESCE(
-                (select mr.rate from masterrate mr where mr.curr = m.curr and mr.v_codecurr = 'PAJAK' and mr.tanggal <= r.transaksi_date order by mr.tanggal desc limit 1),
-                1
-            )) as debit,
-            r.credit * IF(m.curr = 'IDR', 1, COALESCE(
-                (select mr.rate from masterrate mr where mr.curr = m.curr and mr.v_codecurr = 'PAJAK' and mr.tanggal <= r.transaksi_date order by mr.tanggal desc limit 1),
-                1
-            )) as credit
-        from b_reportbank r
-        join b_masterbank m on m.bank_account = r.akun
-        where r.status != 'Cancel' and r.transaksi_date between '$start_date' and '$end_date' and r.id_cash_flow is not null
+        select id_cash_flow, akun, debit, credit from b_reportbank where status != 'Cancel' and transaksi_date between '$start_date' and '$end_date' and id_cash_flow is not null
         union all
         select id_cash_flow, akun, debit, credit from c_report_pettycash where status != 'Cancel' and transaksi_date between '$start_date' and '$end_date' and id_cash_flow is not null
     ) x group by id_cash_flow, akun");
     $realisasi = [];
     while ($r = mysqli_fetch_assoc($sqlReal)) {
-        $realisasi[$r['id_cash_flow']][$r['akun']] = ['debit' => (float) $r['d'], 'credit' => (float) $r['c']];
+        $rate = isset($rateMap[$r['akun']]) ? $rateMap[$r['akun']] : 1;
+        $realisasi[$r['id_cash_flow']][$r['akun']] = ['debit' => (float) $r['d'] * $rate, 'credit' => (float) $r['c'] * $rate];
     }
 
     // "Penerimaan Pinjaman Bank" (id master_cash_flow = 9) & "Pelunasan Pinjaman Bank"
