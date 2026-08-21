@@ -2615,6 +2615,15 @@ echo '</ul>
 </li>
 <!-- END Menu Other Menu -->
 
+<?php if ($user == 'indro'): ?>
+<li class="nav-item active">
+  <a href="../AP/project.php" class="nav-link">
+    <span class="fa fa-rocket mr-1"></span> Project
+  </a>
+</li>
+<?php endif; ?>
+<!-- END Menu Project -->
+
       <!-- <li class="nav-item dropdown active">
           <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown">Proses<span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
