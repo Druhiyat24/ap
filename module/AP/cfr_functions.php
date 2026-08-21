@@ -57,28 +57,30 @@ function cfrGetRate($conn, $date, $type = 'HARIAN') {
     return $row3 ? (float) $row3['rate'] : 1;
 }
 
-// Saldo Awal per rekening bank, sudah dalam IDR & clamp minus ke 0 - persis pola yang
-// dipakai user: saldo_awal_native + mutasi_native sebelum $startDate, dikonversi pakai
-// kurs PAJAK pada tanggal transaksi terakhir sebelum $startDate (fallback ke $startDate
-// itu sendiri kalau belum pernah ada transaksi). Return: [bank_account => saldo_idr].
+// Saldo Awal per rekening bank, sudah dalam IDR & clamp minus ke 0: saldo_awal_native +
+// mutasi_native sebelum $startDate, dikonversi pakai kurs HARIAN di (startDate - 1 hari) -
+// kurs tetap 1 titik per periode, persis konvensi bankreport.php/auto-jurnal-selisih-kurs.
+// Baris penyesuaian selisih kurs (no_doc "FX/...") dikecualikan dari mutasi native -
+// itu murni penyesuaian nilai IDR, bukan pergerakan saldo native asli (persis fix yang
+// sama di bankreport.php - kalau tidak dikecualikan, saldo awal jadi salah begitu ada
+// jurnal FX yang tanggalnya sebelum start_date).
+// Return: [bank_account => saldo_idr].
 function cfrGetBankBeginBalances($conn, $startDate) {
     $d = mysqli_real_escape_string($conn, $startDate);
+    $dateBefore = date('Y-m-d', strtotime($startDate . ' -1 day'));
+    $dBeforeEsc = mysqli_real_escape_string($conn, $dateBefore);
     $sql = mysqli_query($conn, "select bank_account, round(if(bal < 0, 0, bal), 2) total from (
         select m.bank_account,
             (coalesce(s.amount,0) + coalesce(sum(r.debit - r.credit),0))
             * if(m.curr = 'IDR', 1,
                 (select mr.rate from masterrate mr
-                 where mr.curr = m.curr and mr.v_codecurr = 'PAJAK'
-                   and mr.tanggal <= coalesce(
-                       (select max(r2.transaksi_date) from b_reportbank r2
-                        where r2.akun = m.bank_account and r2.transaksi_date < '$d' and r2.status != 'Cancel'),
-                       '$d'
-                   )
+                 where mr.curr = m.curr and mr.v_codecurr = 'HARIAN'
+                   and mr.tanggal <= '$dBeforeEsc'
                  order by mr.tanggal desc limit 1)
             ) as bal
         from b_masterbank m
         left join b_saldoawal_bank s on s.account = m.bank_account
-        left join b_reportbank r on r.akun = m.bank_account and r.status != 'Cancel' and r.transaksi_date < '$d'
+        left join b_reportbank r on r.akun = m.bank_account and r.status != 'Cancel' and r.transaksi_date < '$d' and r.no_doc not like 'FX/%'
         where m.status = 'Active'
         group by m.bank_account, s.amount
     ) pa");
@@ -87,6 +89,63 @@ function cfrGetBankBeginBalances($conn, $startDate) {
         $out[$row['bank_account']] = (float) $row['total'];
     }
     return $out;
+}
+
+// Saldo akhir NATIVE (mata uang asli, bukan IDR) 1 rekening bank per $endDate -
+// saldo_awal_native + seluruh mutasi native s.d. $endDate, baris selisih kurs
+// (no_doc "FX/...") dikecualikan (bukan pergerakan native asli). Dipakai utk cek
+// "apakah akun ini beneran positif" independen dari perhitungan selisih kurs itu
+// sendiri (supaya tidak sirkular).
+function cfrGetBankNativeEndBalance($conn, $account, $endDate) {
+    $accEsc = mysqli_real_escape_string($conn, $account);
+    $dEsc = mysqli_real_escape_string($conn, $endDate);
+    $sql = mysqli_query($conn, "select
+            coalesce((select amount from b_saldoawal_bank where account = '$accEsc'), 0)
+            + coalesce((select sum(debit - credit) from b_reportbank
+                        where akun = '$accEsc' and status != 'Cancel' and no_doc not like 'FX/%'
+                          and transaksi_date <= '$dEsc'), 0)
+            as bal");
+    $row = mysqli_fetch_assoc($sql);
+    return $row ? (float) $row['bal'] : 0.0;
+}
+
+// Saldo Awal RAW (TIDAK di-clamp ke 0) 1 akun bank, dalam IDR, kurs HARIAN di
+// (startDate - 1 hari) - kebalikan dari cfrGetBankBeginBalances(): di sana nilai
+// negatif di-floor ke 0 (dianggap "tidak ada saldo kas"), di sini JUSTRU cuma
+// nilai NEGATIF yang relevan (merepresentasikan pinjaman/overdraft) - dipakai
+// khusus baris SALDO AWAL PINJAMAN BANK.
+function cfrGetBankRawBeginBalanceIdr($conn, $account, $startDate) {
+    $accEsc = mysqli_real_escape_string($conn, $account);
+    $dEsc = mysqli_real_escape_string($conn, $startDate);
+    $dateBefore = date('Y-m-d', strtotime($startDate . ' -1 day'));
+    $sql = mysqli_query($conn, "select
+            coalesce((select amount from b_saldoawal_bank where account = '$accEsc'), 0)
+            + coalesce((select sum(debit - credit) from b_reportbank
+                        where akun = '$accEsc' and status != 'Cancel' and no_doc not like 'FX/%'
+                          and transaksi_date < '$dEsc'), 0)
+            as native_bal");
+    $row = mysqli_fetch_assoc($sql);
+    $native = $row ? (float) $row['native_bal'] : 0.0;
+
+    $sqlAcc = mysqli_query($conn, "select curr from b_masterbank where bank_account = '$accEsc'");
+    $rowAcc = mysqli_fetch_assoc($sqlAcc);
+    $curr = $rowAcc ? $rowAcc['curr'] : 'IDR';
+    $rate = ($curr === 'IDR') ? 1 : cfrGetRate($conn, $dateBefore);
+    return $native * $rate;
+}
+
+// Limit fasilitas pinjaman (b_masterbank.fac_limit) 1 akun bank, dikonversi ke
+// IDR (kurs HARIAN di $endDate kalau akunnya bukan IDR - persis konvensi
+// "nilai pasar saat ini" yang dipakai Saldo Akhir/Ending Balance).
+function cfrGetLoanLimitIdr($conn, $account, $endDate) {
+    $accEsc = mysqli_real_escape_string($conn, $account);
+    $sql = mysqli_query($conn, "select fac_limit, curr from b_masterbank where bank_account = '$accEsc'");
+    $row = mysqli_fetch_assoc($sql);
+    if (!$row) {
+        return 0.0;
+    }
+    $rate = ($row['curr'] === 'IDR') ? 1 : cfrGetRate($conn, $endDate);
+    return (float) $row['fac_limit'] * $rate;
 }
 
 // Saldo Awal per akun kas kecil, sudah dalam IDR & clamp minus ke 0 - pola sama seperti
@@ -233,7 +292,7 @@ function cfrFmtXls($num) {
 // per akun (008-997-1979 & 008-998-1982) supaya penjumlahan per-akun (subtotal & grand
 // total) tetap konsisten/nyambung dengan kolom Realisation.
 function cfrRowValue($realisasi, $catId, $account, $isCashIn) {
-    global $penerimaanPinjamanBank, $pembayaranPinjamanBank;
+    global $penerimaanPinjamanBank, $pembayaranPinjamanBank, $cfrSuppressFxAccounts;
     if ($catId == 9) {
         return isset($penerimaanPinjamanBank[cfrAkunKey($account)]) ? $penerimaanPinjamanBank[cfrAkunKey($account)] : 0;
     }
@@ -244,6 +303,19 @@ function cfrRowValue($realisasi, $catId, $account, $isCashIn) {
         return 0;
     }
     $v = $realisasi[$catId][$account];
+    // id_cash_flow 55 = "Pengakuan Kerugian Selisih Kurs" (dari auto-jurnal-selisih-
+    // kurs) - kategori ini cuma ADA di section Cash Out, tapi baris jurnalnya sendiri
+    // bisa DEBIT (untung) atau CREDIT (rugi) tergantung tanda selisih hari itu - harus
+    // di-net (debit - credit), bukan cuma -credit spt kategori Cash Out biasa (yang
+    // baris sumbernya memang cuma pernah berisi credit). Khusus akun yang masuk
+    // $cfrSuppressFxAccounts (saldo akhir native-nya <= 0, lihat cfrComputeReportData),
+    // nilainya dianggap 0 - tidak bermakna secara ekonomi selama akun itu masih minus.
+    if ($catId == 55) {
+        if (!empty($cfrSuppressFxAccounts[$account])) {
+            return 0;
+        }
+        return $v['debit'] - $v['credit'];
+    }
     return $isCashIn ? $v['debit'] : -$v['credit'];
 }
 function cfrAkunKey($account) {
@@ -252,7 +324,7 @@ function cfrAkunKey($account) {
     return null;
 }
 function cfrRowTotal($realisasi, $catId, $isCashIn) {
-    global $penerimaanPinjamanBank, $pembayaranPinjamanBank;
+    global $penerimaanPinjamanBank, $pembayaranPinjamanBank, $cfrSuppressFxAccounts;
     if ($catId == 9) {
         return $penerimaanPinjamanBank['total'];
     }
@@ -263,8 +335,12 @@ function cfrRowTotal($realisasi, $catId, $isCashIn) {
         return 0;
     }
     $total = 0;
-    foreach ($realisasi[$catId] as $v) {
-        $total += $isCashIn ? $v['debit'] : -$v['credit'];
+    foreach ($realisasi[$catId] as $account => $v) {
+        if ($catId == 55) {
+            $total += empty($cfrSuppressFxAccounts[$account]) ? ($v['debit'] - $v['credit']) : 0;
+        } else {
+            $total += $isCashIn ? $v['debit'] : -$v['credit'];
+        }
     }
     return $total;
 }
@@ -299,7 +375,7 @@ function cfrGetAllAccounts($conn) {
 // semua akun kalau hasil filternya kosong (mis. kode akun yang dikirim sudah tidak ada
 // lagi di master) - baris "REALISATION BY BANK" tidak boleh sampai kosong sama sekali.
 function cfrComputeReportData($conn, $start_date, $end_date, $selectedAccounts = null) {
-    global $penerimaanPinjamanBank, $pembayaranPinjamanBank;
+    global $penerimaanPinjamanBank, $pembayaranPinjamanBank, $cfrSuppressFxAccounts;
 
     $allAccounts = cfrGetAllAccounts($conn);
     $accounts = $allAccounts;
@@ -313,38 +389,45 @@ function cfrComputeReportData($conn, $start_date, $end_date, $selectedAccounts =
         }
     }
 
-    $dateBefore = date('Y-m-d', strtotime($start_date . ' -1 day'));
-
-    // Semua akun non-IDR (saat ini cuma USD) dikonversi ke IDR pakai satu kurs -
-    // dicari sekali di tanggal akhir periode, sama seperti pendekatan bankreport.php
-    // (kurs "hari ini", bukan kurs historis per transaksi).
-    $rateIdr = cfrGetRate($conn, $end_date);
-    $rateMap = [];
-    foreach ($accounts as $acc) {
-        $rateMap[$acc['account']] = ($acc['curr'] === 'IDR') ? 1 : $rateIdr;
+    // Khusus akun 008-998-1982: baris "Pengakuan Kerugian Selisih Kurs" (id_cash_flow
+    // 55) cuma ditampilkan kalau saldo akhir NATIVE akun ini > 0 - kalau akun sedang
+    // minus (spt yang sering terjadi krn transaksinya banyak masih Draft), nilai
+    // selisih kurs-nya tidak bermakna secara ekonomi - jadi dianggap 0. Dicek dari
+    // saldo native ASLI (independen dari hasil cfrRowValue itu sendiri, supaya tidak
+    // sirkular), lihat cfrRowValue/cfrRowTotal.
+    $cfrSuppressFxAccounts = [];
+    if (cfrGetBankNativeEndBalance($conn, '008-998-1982', $end_date) <= 0) {
+        $cfrSuppressFxAccounts['008-998-1982'] = true;
     }
 
-    // Saldo Awal rekening bank - pakai query resmi (saldo_awal_native + mutasi
-    // native sebelum start_date, dikonversi kurs PAJAK di tanggal transaksi
-    // terakhir sebelum start_date, clamp minus ke 0).
+    $dateBefore = date('Y-m-d', strtotime($start_date . ' -1 day'));
+
+    // Kurs Saldo Awal = HARIAN di (start_date - 1 hari) - 1 titik kurs tetap per
+    // periode, dipakai utk akun non-bank/non-kas (jalur fallback di bawah) supaya
+    // konsisten dgn cfrGetBankBeginBalances/cfrGetKasBeginBalances yang keduanya
+    // sudah pakai HARIAN di tanggal yang sama.
+    $beginRate = cfrGetRate($conn, $dateBefore);
+
+    // Saldo Awal rekening bank - saldo_awal_native + mutasi native sebelum
+    // start_date, dikonversi kurs HARIAN di (start_date - 1 hari), clamp minus ke 0.
     $bankBeginIdr = cfrGetBankBeginBalances($conn, $start_date);
 
-    // Saldo Awal akun kas kecil - pakai query resmi yang sama polanya
-    // (kurs HARIAN, default IDR kalau belum ada baris b_saldoawal_pettycash).
+    // Saldo Awal akun kas kecil - pola sama (kurs HARIAN di start_date - 1 hari,
+    // default IDR kalau belum ada baris b_saldoawal_pettycash).
     $kasBeginIdr = cfrGetKasBeginBalances($conn, $start_date);
 
-    // Saldo Awal per akun (kas kecil dihitung native lalu dikonversi $rateMap;
-    // rekening bank pakai $bankBeginIdr di atas). Cuma akun yang DIPILIH ($accounts,
-    // bukan $allAccounts) supaya totalBegin ikut menyusut sesuai filter.
+    // Saldo Awal per akun (rekening bank pakai $bankBeginIdr, kas kecil pakai
+    // $kasBeginIdr, sisanya fallback native x $beginRate). Cuma akun yang DIPILIH
+    // ($accounts, bukan $allAccounts) supaya totalBegin ikut menyusut sesuai filter.
     $beginBalance = [];
     $totalBegin = 0;
     foreach ($accounts as $acc) {
-        $rate = $rateMap[$acc['account']];
         if (isset($bankBeginIdr[$acc['account']])) {
             $beginIdr = $bankBeginIdr[$acc['account']];
         } elseif (isset($kasBeginIdr[$acc['account']])) {
             $beginIdr = $kasBeginIdr[$acc['account']];
         } else {
+            $rate = ($acc['curr'] === 'IDR') ? 1 : $beginRate;
             $base = cfrGetSaldoAwalMaster($conn, $acc['account']);
             $mutBefore = cfrGetMutasi($conn, $acc['account'], null, $dateBefore);
             $begin = $base + $mutBefore['debit'] - $mutBefore['credit'];
@@ -365,25 +448,36 @@ function cfrComputeReportData($conn, $start_date, $end_date, $selectedAccounts =
         $categories[$r['type_cashflow']][$r['nama_category']][] = $r;
     }
 
-    // Realisasi per kategori x akun - dikonversi ke IDR pakai $rateMap (satu kurs HARIAN
-    // per akun, dicari di tanggal AKHIR filter/$end_date, sama seperti yang dipakai untuk
-    // Saldo Awal akun non-bank di atas) - bukan lagi kurs PAJAK per tanggal transaksi
-    // masing-masing baris. Konversi dilakukan di PHP (bukan query) supaya satu kurs per
-    // akun konsisten dipakai untuk seluruh transaksi dalam periode. Dibatasi ke akun yang
-    // DIPILIH ($accounts) lewat "akun IN (...)" supaya REALISATION/PROJECTION/VARIANCE ikut
-    // menyusut sesuai filter - akun yang tidak dipilih dianggap tidak ada sama sekali.
+    // Realisasi per kategori x akun - tiap TRANSAKSI dikonversi ke IDR pakai kurs
+    // PAJAK di TANGGAL TRANSAKSI itu sendiri (bukan 1 kurs per akun lagi) - rate
+    // yang sesungguhnya dipakai saat transaksi diposting ke GL, konsisten dgn
+    // auto-jurnal-selisih-kurs/bankreport.php. Baris TIDAK di-GROUP BY di SQL lagi
+    // (perlu tanggal per baris utk cari rate-nya), akumulasi debit/credit_idr
+    // dilakukan di PHP. Dibatasi ke akun yang DIPILIH ($accounts) lewat
+    // "akun IN (...)" supaya REALISATION/PROJECTION/VARIANCE ikut menyusut sesuai
+    // filter - akun yang tidak dipilih dianggap tidak ada sama sekali.
     $akunList = implode(',', array_map(function ($acc) use ($conn) {
         return "'" . mysqli_real_escape_string($conn, $acc['account']) . "'";
     }, $accounts));
-    $sqlReal = mysqli_query($conn, "select id_cash_flow, akun, coalesce(sum(debit),0) d, coalesce(sum(credit),0) c from (
-        select id_cash_flow, akun, debit, credit from b_reportbank where status != 'Cancel' and transaksi_date between '$start_date' and '$end_date' and id_cash_flow is not null and akun in ($akunList)
+    // curr diambil per BARIS (bukan curr akun) - baris penyesuaian selisih kurs
+    // (dari auto-jurnal-selisih-kurs) punya curr='IDR' walau akunnya sendiri USD,
+    // nilainya SUDAH dalam IDR jadi rate=1 (jangan dikonversi PAJAK lagi, dobel
+    // konversi -> nilainya bisa meledak jadi ratusan miliar salah).
+    $sqlReal = mysqli_query($conn, "select id_cash_flow, akun, curr, transaksi_date, debit, credit from (
+        select id_cash_flow, akun, curr, transaksi_date, debit, credit from b_reportbank where status != 'Cancel' and transaksi_date between '$start_date' and '$end_date' and id_cash_flow is not null and akun in ($akunList)
         union all
-        select id_cash_flow, akun, debit, credit from c_report_pettycash where status != 'Cancel' and transaksi_date between '$start_date' and '$end_date' and id_cash_flow is not null and akun in ($akunList)
-    ) x group by id_cash_flow, akun");
+        select id_cash_flow, akun, curr, transaksi_date, debit, credit from c_report_pettycash where status != 'Cancel' and transaksi_date between '$start_date' and '$end_date' and id_cash_flow is not null and akun in ($akunList)
+    ) x");
     $realisasi = [];
     while ($r = mysqli_fetch_assoc($sqlReal)) {
-        $rate = isset($rateMap[$r['akun']]) ? $rateMap[$r['akun']] : 1;
-        $realisasi[$r['id_cash_flow']][$r['akun']] = ['debit' => (float) $r['d'] * $rate, 'credit' => (float) $r['c'] * $rate];
+        $akun = $r['akun'];
+        $idCf = $r['id_cash_flow'];
+        $rate = ($r['curr'] === 'IDR') ? 1 : cfrGetRate($conn, $r['transaksi_date'], 'PAJAK');
+        if (!isset($realisasi[$idCf][$akun])) {
+            $realisasi[$idCf][$akun] = ['debit' => 0.0, 'credit' => 0.0];
+        }
+        $realisasi[$idCf][$akun]['debit'] += (float) $r['debit'] * $rate;
+        $realisasi[$idCf][$akun]['credit'] += (float) $r['credit'] * $rate;
     }
 
     // "Penerimaan Pinjaman Bank" (id master_cash_flow = 9) & "Pelunasan Pinjaman Bank"

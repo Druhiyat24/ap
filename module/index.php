@@ -2574,6 +2574,15 @@ echo '</ul>
 </li>
 <!-- END Menu Other Menu -->
 
+<?php if ($user == 'indro'): ?>
+<li class="nav-item active">
+  <a href="AP/project.php" class="nav-link">
+    <span class="fa fa-rocket mr-1"></span> Project
+  </a>
+</li>
+<?php endif; ?>
+<!-- END Menu Project -->
+
 
       <!-- <li class="nav-item dropdown active">
           <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown">Proses<span class="caret"></span></a>
@@ -2816,7 +2825,7 @@ function SidebarCollapse () {
                                     WHERE mr.curr=m.curr AND mr.v_codecurr='PAJAK'
                                       AND mr.tanggal <= COALESCE(
                                           (SELECT MAX(r2.transaksi_date) FROM b_reportbank r2
-                                           WHERE r2.akun = m.bank_account AND r2.transaksi_date <= LEAST(mo.month_end, CURDATE()) AND r2.status != 'Cancel'),
+                                           WHERE r2.akun = m.bank_account AND r2.transaksi_date <= LEAST(mo.month_end, CURDATE()) AND r2.status != 'Cancel' AND r2.no_doc NOT LIKE 'FX/%'),
                                           LEAST(mo.month_end, CURDATE())
                                       )
                                     ORDER BY mr.tanggal DESC LIMIT 1)
@@ -2828,7 +2837,7 @@ function SidebarCollapse () {
                                   UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12) nn
                         ) mo
                         LEFT JOIN b_saldoawal_bank s ON s.account = m.bank_account
-                        LEFT JOIN b_reportbank r ON r.akun = m.bank_account
+                        LEFT JOIN b_reportbank r ON r.akun = m.bank_account AND r.no_doc NOT LIKE 'FX/%'
                         GROUP BY m.bank_account, mo.bln, mo.month_end, s.amount
 
                         UNION ALL
@@ -3046,7 +3055,7 @@ chart.render();
                                     WHERE mr.curr=m.curr AND mr.v_codecurr='PAJAK'
                                       AND mr.tanggal <= COALESCE(
                                           (SELECT MAX(r2.transaksi_date) FROM b_reportbank r2
-                                           WHERE r2.akun = m.bank_account AND r2.transaksi_date <= LEAST(mo.month_end, CURDATE()) AND r2.status != 'Cancel'),
+                                           WHERE r2.akun = m.bank_account AND r2.transaksi_date <= LEAST(mo.month_end, CURDATE()) AND r2.status != 'Cancel' AND r2.no_doc NOT LIKE 'FX/%'),
                                           LEAST(mo.month_end, CURDATE())
                                       )
                                     ORDER BY mr.tanggal DESC LIMIT 1)
@@ -3058,7 +3067,7 @@ chart.render();
                                   UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12) nn
                         ) mo
                         LEFT JOIN b_saldoawal_bank s ON s.account = m.bank_account
-                        LEFT JOIN b_reportbank r ON r.akun = m.bank_account
+                        LEFT JOIN b_reportbank r ON r.akun = m.bank_account AND r.no_doc NOT LIKE 'FX/%'
                         GROUP BY m.bank_account, mo.bln, mo.month_end, s.amount
                     ) pa
                     GROUP BY pa.bln

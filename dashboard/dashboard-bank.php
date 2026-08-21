@@ -552,14 +552,14 @@ $bank_updated_at = (new DateTime('now', new DateTimeZone('Asia/Jakarta')))->form
                                              WHERE mr.curr=m.curr AND mr.v_codecurr='PAJAK'
                                                AND mr.tanggal <= COALESCE(
                                                    (SELECT MAX(r2.transaksi_date) FROM b_reportbank r2
-                                                    WHERE r2.akun = m.bank_account AND r2.transaksi_date <= CURDATE() AND r2.status != 'Cancel'),
+                                                    WHERE r2.akun = m.bank_account AND r2.transaksi_date <= CURDATE() AND r2.status != 'Cancel' AND r2.no_doc NOT LIKE 'FX/%'),
                                                    CURDATE()
                                                )
                                              ORDER BY mr.tanggal DESC LIMIT 1)
                                         ) AS bal
                                     FROM b_masterbank m
                                     LEFT JOIN b_saldoawal_bank s ON s.account = m.bank_account
-                                    LEFT JOIN b_reportbank r ON r.akun = m.bank_account
+                                    LEFT JOIN b_reportbank r ON r.akun = m.bank_account AND r.no_doc NOT LIKE 'FX/%'
                                     GROUP BY m.bank_account, s.amount
                                 ) pa
                             ");
@@ -610,14 +610,14 @@ $bank_updated_at = (new DateTime('now', new DateTimeZone('Asia/Jakarta')))->form
 
                                 $sqlswl4_ = mysqli_query($conn1,"select nomor,saldo_akhir saldoawal from (SELECT (@runnum :=@runnum + 1) AS nomor,q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
                                     FROM
-                                    (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '008-997-1979' and transaksi_date < CURRENT_DATE() and status != 'Cancel') AS q1 JOIN
+                                    (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '008-997-1979' and transaksi_date < CURRENT_DATE() and status != 'Cancel' and no_doc not like 'FX/%') AS q1 JOIN
                                     (SELECT @runtot:= $salawal_ ,@runnum:= 0) runtot) a ORDER BY a.nomor desc limit 1");
                                 $rowswl4_ = mysqli_fetch_array($sqlswl4_);
                                 $saldoswal2_ = isset($rowswl4_['saldoawal']) ? $rowswl4_['saldoawal'] : 0;
 
                                 $sql6_ = mysqli_query($conn1, "select nomor,date,saldo_akhir from (SELECT (@runnum :=@runnum + 1) AS nomor,q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
                                     FROM
-                                    (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '008-997-1979' and transaksi_date between CURRENT_DATE() and CURRENT_DATE() and status != 'Cancel') AS q1 JOIN
+                                    (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '008-997-1979' and transaksi_date between CURRENT_DATE() and CURRENT_DATE() and status != 'Cancel' and no_doc not like 'FX/%') AS q1 JOIN
                                     (SELECT @runtot:= $saldoswal2_,@runnum:=0) runtot) a ORDER BY a.nomor desc limit 1");
                                 $rows6_ = mysqli_fetch_array($sql6_);
                                 $total_bli = isset($rows6_['saldo_akhir']) ? $rows6_['saldo_akhir'] : $saldoswal2_;
@@ -673,14 +673,14 @@ $bank_updated_at = (new DateTime('now', new DateTimeZone('Asia/Jakarta')))->form
 
                                     $sqlswl4 = mysqli_query($conn1,"select nomor,saldo_akhir saldoawal from (SELECT (@runnum :=@runnum + 1) AS nomor,q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
                                         FROM
-                                        (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '008-998-1982' and transaksi_date < CURRENT_DATE() and status != 'Cancel') AS q1 JOIN
+                                        (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '008-998-1982' and transaksi_date < CURRENT_DATE() and status != 'Cancel' and no_doc not like 'FX/%') AS q1 JOIN
                                         (SELECT @runtot:= $salawal ,@runnum:= 0) runtot) a ORDER BY a.nomor desc limit 1");
                                     $rowswl4 = mysqli_fetch_array($sqlswl4);
                                     $saldoswal2 = isset($rowswl4['saldoawal']) ? $rowswl4['saldoawal'] : 0;
 
                                     $sql6 = mysqli_query($conn1, "select nomor,date,saldo_akhir from (SELECT (@runnum :=@runnum + 1) AS nomor,q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
                                         FROM
-                                        (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '008-998-1982' and transaksi_date between CURRENT_DATE() and CURRENT_DATE() and status != 'Cancel') AS q1 JOIN
+                                        (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '008-998-1982' and transaksi_date between CURRENT_DATE() and CURRENT_DATE() and status != 'Cancel' and no_doc not like 'FX/%') AS q1 JOIN
                                         (SELECT @runtot:= $saldoswal2,@runnum:=0) runtot) a ORDER BY a.nomor desc limit 1");
                                     $rows6 = mysqli_fetch_array($sql6);
                                     if ((isset($rows6['saldo_akhir']) ? $rows6['saldo_akhir'] : $saldoswal2) > 0) {
@@ -944,7 +944,7 @@ $bank_updated_at = (new DateTime('now', new DateTimeZone('Asia/Jakarta')))->form
                                     WHERE mr.curr=m.curr AND mr.v_codecurr='PAJAK'
                                       AND mr.tanggal <= COALESCE(
                                           (SELECT MAX(r2.transaksi_date) FROM b_reportbank r2
-                                           WHERE r2.akun = m.bank_account AND r2.transaksi_date <= LEAST(mo.month_end, CURDATE()) AND r2.status != 'Cancel'),
+                                           WHERE r2.akun = m.bank_account AND r2.transaksi_date <= LEAST(mo.month_end, CURDATE()) AND r2.status != 'Cancel' AND r2.no_doc NOT LIKE 'FX/%'),
                                           LEAST(mo.month_end, CURDATE())
                                       )
                                     ORDER BY mr.tanggal DESC LIMIT 1)
@@ -956,7 +956,7 @@ $bank_updated_at = (new DateTime('now', new DateTimeZone('Asia/Jakarta')))->form
                                   UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12) nn
                         ) mo
                         LEFT JOIN b_saldoawal_bank s ON s.account = m.bank_account
-                        LEFT JOIN b_reportbank r ON r.akun = m.bank_account
+                        LEFT JOIN b_reportbank r ON r.akun = m.bank_account AND r.no_doc NOT LIKE 'FX/%'
                         GROUP BY m.bank_account, mo.bln, mo.month_end, s.amount
 
                         UNION ALL
@@ -1177,7 +1177,7 @@ chart.render();
                                     WHERE mr.curr=m.curr AND mr.v_codecurr='PAJAK'
                                       AND mr.tanggal <= COALESCE(
                                           (SELECT MAX(r2.transaksi_date) FROM b_reportbank r2
-                                           WHERE r2.akun = m.bank_account AND r2.transaksi_date <= LEAST(mo.month_end, CURDATE()) AND r2.status != 'Cancel'),
+                                           WHERE r2.akun = m.bank_account AND r2.transaksi_date <= LEAST(mo.month_end, CURDATE()) AND r2.status != 'Cancel' AND r2.no_doc NOT LIKE 'FX/%'),
                                           LEAST(mo.month_end, CURDATE())
                                       )
                                     ORDER BY mr.tanggal DESC LIMIT 1)
@@ -1189,7 +1189,7 @@ chart.render();
                                   UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION SELECT 11 UNION SELECT 12) nn
                         ) mo
                         LEFT JOIN b_saldoawal_bank s ON s.account = m.bank_account
-                        LEFT JOIN b_reportbank r ON r.akun = m.bank_account
+                        LEFT JOIN b_reportbank r ON r.akun = m.bank_account AND r.no_doc NOT LIKE 'FX/%'
                         GROUP BY m.bank_account, mo.bln, mo.month_end, s.amount
                     ) pa
                     GROUP BY pa.bln
