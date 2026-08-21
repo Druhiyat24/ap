@@ -1982,10 +1982,7 @@ if($user == 'indro' || $user == 'willy' || $user == 'steven'){
    <span class="fa fa-calendar fa-fw mr-3"></span>
    <span class="menu-collapsed">Year To Date</span>
    </a>
-   <a href="../AP/financial_statement_monthly.php" class="dropdown-item bg-dark text-white">
-   <span class="fa fa-calendar-o fa-fw mr-3"></span>
-   <span class="menu-collapsed">Monthly</span>
-   </a>
+  
    </ul>
    </li>';
 }
