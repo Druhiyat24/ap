@@ -30,6 +30,7 @@ function getDataRegular($conn1, $conn2, $filters, $fin, $app, $group)
         a.no_faktur, a.supp_inv, a.tgl_inv, a.pph_code, SUM(a.pph_value) as pph_value, a.dp_value,
         d.tgl_kbon2, d.confirm_user, d.confirm_date, d.create_date, d.profit_center, b.jml_return, b.jml_potong,
         b.potongan_ppn, b.potongan_pph, d.total,
+        d.first_approve_user, d.first_approve_date, d.second_approve_user, d.second_approve_date,
         d.status_pl, d.status_pvl, d.no_coa, d.nama_coa, d.rate, d.from_account, d.from_bank, d.from_bank_curr
         from kontrabon a
         inner join potongan b on b.no_kbon = a.no_kbon
@@ -103,6 +104,10 @@ function getDataRegular($conn1, $conn2, $filters, $fin, $app, $group)
             'create_date' => !empty($row['create_date']) ? date('Y-m-d H:i:s', strtotime($row['create_date'])) : '-',
             'confirm_user' => $row['confirm_user'],
             'confirm_date' => !empty($row['confirm_date']) && $row['confirm_date'] != '0000-00-00' ? date('Y-m-d', strtotime($row['confirm_date'])) : '-',
+            'first_approve_user' => $row['first_approve_user'],
+            'first_approve_date' => !empty($row['first_approve_date']) && $row['first_approve_date'] != '0000-00-00' ? date('Y-m-d H:i:s', strtotime($row['first_approve_date'])) : '-',
+            'second_approve_user' => $row['second_approve_user'],
+            'second_approve_date' => !empty($row['second_approve_date']) && $row['second_approve_date'] != '0000-00-00' ? date('Y-m-d H:i:s', strtotime($row['second_approve_date'])) : '-',
             'no_faktur'   => $row['no_faktur'],
             'supp_inv'    => $row['supp_inv'],
             'tgl_inv'     => !empty($row['tgl_inv']) ? date('d-M-Y', strtotime($row['tgl_inv'])) : '-',
@@ -174,6 +179,7 @@ function getDataInstallment($conn1, $conn2, $filters, $fin, $app, $group)
 
     $sql = mysqli_query($conn2, "select d.no_kbon, d.no_kbon_det, d.cicilan_ke, d.total_cicilan, d.tgl_tempo, d.dpp, d.ppn, d.pph, d.ro, d.ftr, d.potongan, d.total, d.status_pl, d.status_pvl,
         h.tgl_kbon, h.nama_supp, h.curr, h.create_user, h.create_date, h.status, h.no_faktur, h.supp_inv, h.tgl_inv, h.confirm_user, h.confirm_date, h.profit_center,
+        h.first_approve_user, h.first_approve_date, h.second_approve_user, h.second_approve_date,
         h.no_coa, h.nama_coa, h.rate, h.from_account, h.from_bank, h.from_bank_curr
         from kontrabon_h_installment_detail d
         inner join kontrabon_h h on h.no_kbon = d.no_kbon
@@ -234,6 +240,10 @@ function getDataInstallment($conn1, $conn2, $filters, $fin, $app, $group)
             'create_date' => !empty($row['create_date']) ? date('Y-m-d H:i:s', strtotime($row['create_date'])) : '-',
             'confirm_user' => $row['confirm_user'],
             'confirm_date' => !empty($row['confirm_date']) && $row['confirm_date'] != '0000-00-00' ? date('Y-m-d', strtotime($row['confirm_date'])) : '-',
+            'first_approve_user' => $row['first_approve_user'],
+            'first_approve_date' => !empty($row['first_approve_date']) && $row['first_approve_date'] != '0000-00-00' ? date('Y-m-d H:i:s', strtotime($row['first_approve_date'])) : '-',
+            'second_approve_user' => $row['second_approve_user'],
+            'second_approve_date' => !empty($row['second_approve_date']) && $row['second_approve_date'] != '0000-00-00' ? date('Y-m-d H:i:s', strtotime($row['second_approve_date'])) : '-',
             'no_faktur'   => $row['no_faktur'],
             'supp_inv'    => $row['supp_inv'],
             'tgl_inv'     => !empty($row['tgl_inv']) ? date('d-M-Y', strtotime($row['tgl_inv'])) : '-',
@@ -290,6 +300,7 @@ function getDataDp($conn1, $conn2, $filters, $fin, $app, $group)
 
     $sql = mysqli_query($conn2, "select no_kbon, tgl_kbon, nama_supp, subtotal, dp_value, pph, total, curr, status,
         create_user, create_date, confirm_user, confirm_date, no_faktur, supp_inv, tgl_inv, tgl_tempo, profit_center,
+        first_approve_user, first_approve_date, second_approve_user, second_approve_date,
         status_pl, status_pvl, from_account, from_bank, from_bank_curr, item_type, no_coa, nama_coa
         from kontrabon_h_dp
         where $where
@@ -348,6 +359,10 @@ function getDataDp($conn1, $conn2, $filters, $fin, $app, $group)
             'create_date' => !empty($row['create_date']) ? date('Y-m-d H:i:s', strtotime($row['create_date'])) : '-',
             'confirm_user' => $row['confirm_user'],
             'confirm_date' => !empty($row['confirm_date']) && $row['confirm_date'] != '0000-00-00' ? date('Y-m-d', strtotime($row['confirm_date'])) : '-',
+            'first_approve_user' => $row['first_approve_user'],
+            'first_approve_date' => !empty($row['first_approve_date']) && $row['first_approve_date'] != '0000-00-00' ? date('Y-m-d H:i:s', strtotime($row['first_approve_date'])) : '-',
+            'second_approve_user' => $row['second_approve_user'],
+            'second_approve_date' => !empty($row['second_approve_date']) && $row['second_approve_date'] != '0000-00-00' ? date('Y-m-d H:i:s', strtotime($row['second_approve_date'])) : '-',
             'no_faktur'   => $row['no_faktur'],
             'supp_inv'    => $row['supp_inv'],
             'tgl_inv'     => !empty($row['tgl_inv']) ? date('d-M-Y', strtotime($row['tgl_inv'])) : '-',
@@ -403,6 +418,7 @@ function getDataCbd($conn1, $conn2, $filters, $fin, $app, $group)
 
     $sql = mysqli_query($conn2, "select no_kbon, tgl_kbon, nama_supp, subtotal, tax, pph, total, curr, status,
         create_user, create_date, confirm_user, confirm_date, no_faktur, supp_inv, tgl_inv, tgl_tempo, profit_center,
+        first_approve_user, first_approve_date, second_approve_user, second_approve_date,
         status_pl, status_pvl, from_account, from_bank, from_bank_curr, item_type, no_coa, nama_coa
         from kontrabon_h_cbd
         where $where
@@ -460,6 +476,10 @@ function getDataCbd($conn1, $conn2, $filters, $fin, $app, $group)
             'create_date' => !empty($row['create_date']) ? date('Y-m-d H:i:s', strtotime($row['create_date'])) : '-',
             'confirm_user' => $row['confirm_user'],
             'confirm_date' => !empty($row['confirm_date']) && $row['confirm_date'] != '0000-00-00' ? date('Y-m-d', strtotime($row['confirm_date'])) : '-',
+            'first_approve_user' => $row['first_approve_user'],
+            'first_approve_date' => !empty($row['first_approve_date']) && $row['first_approve_date'] != '0000-00-00' ? date('Y-m-d H:i:s', strtotime($row['first_approve_date'])) : '-',
+            'second_approve_user' => $row['second_approve_user'],
+            'second_approve_date' => !empty($row['second_approve_date']) && $row['second_approve_date'] != '0000-00-00' ? date('Y-m-d H:i:s', strtotime($row['second_approve_date'])) : '-',
             'no_faktur'   => $row['no_faktur'],
             'supp_inv'    => $row['supp_inv'],
             'tgl_inv'     => !empty($row['tgl_inv']) ? date('d-M-Y', strtotime($row['tgl_inv'])) : '-',
