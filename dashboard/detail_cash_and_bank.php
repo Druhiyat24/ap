@@ -42,7 +42,7 @@ $sql = mysqli_query($conn1, "
                         WHERE mr.curr=m.curr AND mr.v_codecurr='PAJAK'
                           AND mr.tanggal <= COALESCE(
                               (SELECT MAX(r2.transaksi_date) FROM b_reportbank r2
-                               WHERE r2.akun = m.bank_account AND r2.transaksi_date <= LEAST(mo.month_end, CURDATE()) AND r2.status != 'Cancel'),
+                               WHERE r2.akun = m.bank_account AND r2.transaksi_date <= LEAST(mo.month_end, CURDATE()) AND r2.status != 'Cancel' AND r2.no_doc NOT LIKE 'FX/%'),
                               LEAST(mo.month_end, CURDATE())
                           )
                         ORDER BY mr.tanggal DESC LIMIT 1)
@@ -51,7 +51,7 @@ $sql = mysqli_query($conn1, "
         FROM b_masterbank m
         CROSS JOIN (SELECT LAST_DAY(MAKEDATE(YEAR(CURDATE()),1) + INTERVAL ($bulanKe-1) MONTH) AS month_end) mo
         LEFT JOIN b_saldoawal_bank s ON s.account = m.bank_account
-        LEFT JOIN b_reportbank r ON r.akun = m.bank_account
+        LEFT JOIN b_reportbank r ON r.akun = m.bank_account AND r.no_doc NOT LIKE 'FX/%'
         GROUP BY m.bank_account, m.sob, m.curr, mo.month_end, s.amount
 
         UNION ALL

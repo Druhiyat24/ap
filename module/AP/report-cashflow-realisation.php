@@ -498,6 +498,138 @@ $cfrSelectedAccounts = isset($_POST['accounts']) ? (array) $_POST['accounts'] : 
                                 <td class="num"><?= cfrFmt($endBalance[$acc['account']]); ?></td>
                             <?php } ?>
                         </tr>
+                        <tr><td colspan="<?= 4 + $colspanAccounts; ?>">&nbsp;</td></tr>
+
+                        <?php
+                        // Section "Pinjaman Bank" - khusus akun 008-997-1979 & 008-998-1982
+                        // (satu-satunya akun dengan bank_loan='Yes' di b_masterbank); akun
+                        // lain otomatis 0 krn cfrRowValue(9/47/55) & cfrGetLoanLimitIdr
+                        // memang cuma berisi data utk 2 akun itu.
+                        // PROJECTION & VARIANCE sengaja "-" dulu (belum ada sumber data
+                        // proyeksi yang dipakai - sama seperti kolom PROJECTION/VARIANCE di
+                        // seluruh laporan ini yang juga masih placeholder "-").
+                        $loanBegin = [];
+                        $loanAdd = [];
+                        $loanPay = [];
+                        $loanFx = [];
+                        $loanEnd = [];
+                        $loanLimit = [];
+                        $loanRemain = [];
+                        $totalLoanBegin = 0;
+                        $totalLoanAdd = 0;
+                        $totalLoanPay = 0;
+                        $totalLoanFx = 0;
+                        $totalLoanEnd = 0;
+                        $totalLoanLimit = 0;
+                        $totalLoanRemain = 0;
+                        foreach ($accounts as $acc) {
+                            $a = $acc['account'];
+                            $rawBegin = cfrGetBankRawBeginBalanceIdr($conn2, $a, $start_date);
+                            $loanBegin[$a] = $rawBegin < 0 ? $rawBegin : 0;
+                            // Dibalik tanda (-1x) dari cfrRowValue(9/47) apa adanya - di baris
+                            // "9 Penerimaan Pinjaman Bank"/"47 Pelunasan Pinjaman Bank" biasa,
+                            // tandanya merepresentasikan efek ke ARUS KAS. Di section Pinjaman
+                            // Bank ini yang direpresentasikan adalah SALDO PINJAMAN (utang) -
+                            // nambah pinjaman = utang tambah besar (makin negatif), bayar
+                            // pinjaman = utang berkurang (makin ke 0) - kebalikan dari makna
+                            // arus kas makanya tandanya dibalik.
+                            $loanAdd[$a] = -cfrRowValue($realisasi, 9, $a, true);
+                            $loanPay[$a] = -cfrRowValue($realisasi, 47, $a, false);
+                            // Selisih kurs section Pinjaman Bank khusus akun 1982 - KEBALIKAN
+                            // dari kondisi baris "97 Pengakuan Kerugian Selisih Kurs" di
+                            // section Cash Out biasa: di sana muncul kalau saldo akhir native
+                            // > 0 (uang riil), di sini JUSTRU muncul kalau saldo akhir native
+                            // <= 0 (murni pinjaman/overdraft). Pakai flag $cfrSuppressFxAccounts
+                            // yang sama (di-set di cfrComputeReportData) supaya 2 baris ini
+                            // selalu saling eksklusif - tidak pernah dobel muncul, tidak pernah
+                            // kosong berdua. TIDAK lewat cfrRowValue() - fungsi itu SENGAJA
+                            // sudah men-nol-kan nilainya sendiri kalau flag ini true (itu yang
+                            // bikin baris "97 Pengakuan Kerugian Selisih Kurs" biasa suppress) -
+                            // kalau dipanggil dari sini juga bakal ke-nol-kan dobel. Baca
+                            // $realisasi mentah langsung supaya dapat nilai aslinya.
+                            $loanFx[$a] = 0;
+                            if (!empty($GLOBALS['cfrSuppressFxAccounts'][$a]) && isset($realisasi[55][$a])) {
+                                $loanFx[$a] = $realisasi[55][$a]['debit'] - $realisasi[55][$a]['credit'];
+                            }
+                            $loanEnd[$a] = $loanBegin[$a] + $loanAdd[$a] + $loanPay[$a] + $loanFx[$a];
+                            $loanLimit[$a] = cfrGetLoanLimitIdr($conn2, $a, $end_date);
+                            $loanRemain[$a] = $loanLimit[$a] + $loanEnd[$a];
+
+                            $totalLoanBegin += $loanBegin[$a];
+                            $totalLoanAdd += $loanAdd[$a];
+                            $totalLoanPay += $loanPay[$a];
+                            $totalLoanFx += $loanFx[$a];
+                            $totalLoanEnd += $loanEnd[$a];
+                            $totalLoanLimit += $loanLimit[$a];
+                            $totalLoanRemain += $loanRemain[$a];
+                        }
+                        ?>
+                        <tr class="section-title"><td colspan="<?= 4 + $colspanAccounts; ?>">PINJAMAN BANK</td></tr>
+                        <tr class="grand-row">
+                            <td>SALDO AWAL PINJAMAN BANK</td>
+                            <td class="num">-</td>
+                            <td class="num"><?= cfrFmt($totalLoanBegin); ?></td>
+                            <td class="num">-</td>
+                            <?php foreach ($accounts as $acc) { ?>
+                                <td class="num"><?= cfrFmt($loanBegin[$acc['account']]); ?></td>
+                            <?php } ?>
+                        </tr>
+                        <tr><td colspan="<?= 4 + $colspanAccounts; ?>">&nbsp;</td></tr>
+                        <tr>
+                            <td>PENAMBAHAN PINJAMAN</td>
+                            <td class="num">-</td>
+                            <td class="num"><?= cfrFmt($totalLoanAdd); ?></td>
+                            <td class="num">-</td>
+                            <?php foreach ($accounts as $acc) { ?>
+                                <td class="num"><?= cfrFmt($loanAdd[$acc['account']]); ?></td>
+                            <?php } ?>
+                        </tr>
+                        <tr>
+                            <td>PELUNASAN PINJAMAN</td>
+                            <td class="num">-</td>
+                            <td class="num"><?= cfrFmt($totalLoanPay); ?></td>
+                            <td class="num">-</td>
+                            <?php foreach ($accounts as $acc) { ?>
+                                <td class="num"><?= cfrFmt($loanPay[$acc['account']]); ?></td>
+                            <?php } ?>
+                        </tr>
+                        <tr>
+                            <td>PENGAKUAN LABA / (RUGI) SELISIH KURS</td>
+                            <td class="num">-</td>
+                            <td class="num"><?= cfrFmt($totalLoanFx); ?></td>
+                            <td class="num">-</td>
+                            <?php foreach ($accounts as $acc) { ?>
+                                <td class="num"><?= cfrFmt($loanFx[$acc['account']]); ?></td>
+                            <?php } ?>
+                        </tr>
+                        <tr><td colspan="<?= 4 + $colspanAccounts; ?>">&nbsp;</td></tr>
+                        <tr class="grand-row">
+                            <td>SALDO AKHIR PINJAMAN BANK</td>
+                            <td class="num">-</td>
+                            <td class="num"><?= cfrFmt($totalLoanEnd); ?></td>
+                            <td class="num">-</td>
+                            <?php foreach ($accounts as $acc) { ?>
+                                <td class="num"><?= cfrFmt($loanEnd[$acc['account']]); ?></td>
+                            <?php } ?>
+                        </tr>
+                        <tr>
+                            <td>LIMIT</td>
+                            <td class="num">-</td>
+                            <td class="num"><?= cfrFmt($totalLoanLimit); ?></td>
+                            <td class="num">-</td>
+                            <?php foreach ($accounts as $acc) { ?>
+                                <td class="num"><?= cfrFmt($loanLimit[$acc['account']]); ?></td>
+                            <?php } ?>
+                        </tr>
+                        <tr class="grand-row">
+                            <td>SISA / (KELEBIHAN) LIMIT</td>
+                            <td class="num">-</td>
+                            <td class="num"><?= cfrFmt($totalLoanRemain); ?></td>
+                            <td class="num">-</td>
+                            <?php foreach ($accounts as $acc) { ?>
+                                <td class="num"><?= cfrFmt($loanRemain[$acc['account']]); ?></td>
+                            <?php } ?>
+                        </tr>
                     </tbody>
                 </table>
             </div>

@@ -19,19 +19,27 @@
   text-align: left;
   vertical-align: middle;
 }
+
+.table-gradient th {
+    background: #1E3A8A;
+    color: #fff;
+    text-align: center;
+    vertical-align: middle;
+}
 </style>
     <!-- MAIN -->
-    <div class="col p-4">
-        <h2 class="text-center">LIST JOURNAL</h2>
-<div class="box">
-    <div class="box header">
+    <div class="container-fluid mt-4 p-4">
+    <div class="card shadow border-0">
+        <div class="card-header text-white py-2 px-3" style="background: linear-gradient(90deg, #191970, #1e90ff);">
+            <h5 class="mb-0"><i class="fa fa-book" aria-hidden="true"></i> LIST JOURNAL</h5>
+        </div>
+        <div class="card-body p-3">
+        <form id="form-data" action="list-journal.php" method="post">
+        <div class="row g-3">
 
-        <form id="form-data" action="list-journal.php" method="post">        
-        <div class="form-row">
-
-            <div class="col-md-2 mb-3"> 
-            <label for="start_date"><b>From</b></label>          
-            <input type="text" style="font-size: 12px;" class="form-control tanggal" id="start_date" name="start_date" 
+            <div class="col-md-2">
+            <label for="start_date" class="form-label"><b>From</b></label>
+            <input type="text" style="font-size: 12px;" class="form-control form-control-sm tanggal" id="start_date" name="start_date"
             value="<?php
             $start_date ='';
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -42,13 +50,13 @@
             }
             else{
                echo date("d-m-Y");
-            } ?>" 
+            } ?>"
             placeholder="Tanggal Awal">
             </div>
 
-            <div class="col-md-2 mb-3"> 
-            <label for="end_date"><b>To</b></label>          
-            <input type="text" style="font-size: 12px;" class="form-control tanggal" id="end_date" name="end_date" 
+            <div class="col-md-2">
+            <label for="end_date" class="form-label"><b>To</b></label>
+            <input type="text" style="font-size: 12px;" class="form-control form-control-sm tanggal" id="end_date" name="end_date"
             value="<?php
             $end_date ='';
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -59,56 +67,41 @@
             }
             else{
                echo date("d-m-Y");
-            } ?>" 
+            } ?>"
             placeholder="Tanggal Awal">
             </div>
-            <div class="input-group-append col">                                   
-            <button  type="submit" id="submit" value=" Search " style="height: 35px; margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
-    line-height: 1;
-    padding: -2px 8px;
-    font-size: 1rem;
-    text-align: center;
-    color: #fff;
-    text-shadow: 1px 1px 1px #000;
-    border-radius: 6px;
-    background-color: rgb(46, 139, 87);"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
-            <button type="button" id="reset" value=" Reset " style="height: 35px; margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
-    line-height: 1;
-    padding: -2px 8px;
-    font-size: 1rem;
-    text-align: center;
-    color: #fff;
-    text-shadow: 1px 1px 1px #000;
-    border-radius: 6px;
-    background-color:rgb(250, 69, 1)"><i class="fa fa-repeat" aria-hidden="true"></i> Reset </button>
+            <div class="col-md-4 d-flex align-items-end">
+            <button  type="submit" id="submit" value=" Search " class="btn btn-info btn-sm mr-2">
+                <i class="fa fa-search" aria-hidden="true"></i> Search</button>
+           
 
 <?php
         // $status = isset($_POST['status']) ? $_POST['status']: null;
         $start_date = isset($_POST['start_date']) ? $_POST['start_date'] : null;
         $end_date = isset($_POST['end_date']) ? $_POST['end_date'] : null;
 
-        echo '<a target="_blank" href="ekspor_list_journal.php?start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
+        echo '<a target="_blank" href="ekspor_list_journal.php?start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success btn-sm"><i class="fa fa-file-excel-o" aria-hidden="true"> Excel</i></button></a>';
 
         // if($status == 'ALL'){
         //     echo '<a target="_blank" href="ekspor_lp_all.php?nama_supp='.$nama_supp.' && status='.$status.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
         // }elseif($status == 'draft'){
-        //     echo '<a target="_blank" href="ekspor_lp_draft.php?nama_supp='.$nama_supp.' && status='.$status.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>'; 
+        //     echo '<a target="_blank" href="ekspor_lp_draft.php?nama_supp='.$nama_supp.' && status='.$status.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
         // }elseif($status == 'Approved'){
         //     echo '<a target="_blank" href="ekspor_lp_app.php?nama_supp='.$nama_supp.' && status='.$status.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
         // }elseif($status == 'Cancel'){
-        //     echo '<a target="_blank" href="ekspor_lp_cancel.php?nama_supp='.$nama_supp.' && status='.$status.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>'; 
+        //     echo '<a target="_blank" href="ekspor_lp_cancel.php?nama_supp='.$nama_supp.' && status='.$status.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
         // }elseif($status == 'Closed'){
-        //     echo '<a target="_blank" href="ekspor_lp_closed.php?nama_supp='.$nama_supp.' && status='.$status.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>'; 
+        //     echo '<a target="_blank" href="ekspor_lp_closed.php?nama_supp='.$nama_supp.' && status='.$status.' && start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
         // }else{
-        //     $filterr = ""; 
+        //     $filterr = "";
         // }
-        ?>  
+        ?>
 
-            </div>                                                            
+            </div>
+        </div>
+        </form>
+        </div>
     </div>
-<br/>
-</div>
-</form> 
 
 <!-- <?php
         $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create List payment'");
@@ -122,14 +115,15 @@
     echo '';
     }
 ?> -->
-    <div class="box body">
-        <div class="row">       
+    <div class="card shadow border-0 mt-4">
+        <div class="card-body p-4">
+        <div class="row">
             <div class="col-md-12">
 
             
 <table id="datatable" class="table table-striped table-bordered display nowrap" role="grid" cellspacing="0" width="100%">
-    <thead>
-        <tr class="thead-dark">
+    <thead class="table-gradient">
+        <tr>
             <th style="text-align: center;vertical-align: middle;">No Journal</th>
             <th style="text-align: center;vertical-align: middle;">Date</th>
             <th style="text-align: center;vertical-align: middle;">Type</th>
@@ -233,12 +227,13 @@ WHERE  tbl_list_journal.create_by = '' and tbl_log.activity = 'Create invoice Ma
             echo '</tr>';
         }
 }?>
-</tbody>                    
+</tbody>
 </table>
 </div>
-   
+
     </div>
     </div>
+</div>
 </div>
 </div><!-- body-row END -->
 </div>

@@ -275,6 +275,71 @@ try {
 
     // ================= SALDO AKHIR =================
     $writePlainRow('SALDO AKHIR KAS DAN BANK', $totalEnd, $endBalance, true);
+    $row++; // baris kosong
+
+    // ================= PINJAMAN BANK =================
+    // Sama persis dengan section "PINJAMAN BANK" di report-cashflow-realisation.php -
+    // khusus akun 1979/1982 (satu-satunya akun bank_loan='Yes'), akun lain otomatis 0.
+    // PROJECTION & VARIANCE masih "-" (belum ada sumber data proyeksi).
+    $loanBegin = [];
+    $loanAdd = [];
+    $loanPay = [];
+    $loanFx = [];
+    $loanEnd = [];
+    $loanLimit = [];
+    $loanRemain = [];
+    $totalLoanBegin = 0;
+    $totalLoanAdd = 0;
+    $totalLoanPay = 0;
+    $totalLoanFx = 0;
+    $totalLoanEnd = 0;
+    $totalLoanLimit = 0;
+    $totalLoanRemain = 0;
+    foreach ($accounts as $acc) {
+        $a = $acc['account'];
+        $rawBegin = cfrGetBankRawBeginBalanceIdr($conn2, $a, $start_date);
+        $loanBegin[$a] = $rawBegin < 0 ? $rawBegin : 0;
+        // Dibalik tanda (-1x) dari cfrRowValue(9/47) apa adanya - baris "9"/"47" biasa
+        // merepresentasikan efek ke ARUS KAS, di sini yang direpresentasikan adalah
+        // SALDO PINJAMAN (utang) - nambah pinjaman = utang makin negatif, bayar
+        // pinjaman = utang berkurang - kebalikan dari makna arus kas.
+        $loanAdd[$a] = -cfrRowValue($realisasi, 9, $a, true);
+        $loanPay[$a] = -cfrRowValue($realisasi, 47, $a, false);
+        // Selisih kurs khusus akun 1982 - KEBALIKAN dari kondisi baris "97 Pengakuan
+        // Kerugian Selisih Kurs" biasa (muncul kalau saldo akhir native > 0, di sini
+        // JUSTRU kalau <= 0). Baca $realisasi mentah langsung (BUKAN lewat
+        // cfrRowValue()) - fungsi itu sendiri sudah men-nol-kan nilainya kalau flag
+        // ini true (itu yang bikin baris "97" biasa suppress), jadi kalau dipanggil
+        // dari sini juga akan ke-nol-kan dobel.
+        $loanFx[$a] = 0;
+        if (!empty($GLOBALS['cfrSuppressFxAccounts'][$a]) && isset($realisasi[55][$a])) {
+            $loanFx[$a] = $realisasi[55][$a]['debit'] - $realisasi[55][$a]['credit'];
+        }
+        $loanEnd[$a] = $loanBegin[$a] + $loanAdd[$a] + $loanPay[$a] + $loanFx[$a];
+        $loanLimit[$a] = cfrGetLoanLimitIdr($conn2, $a, $end_date);
+        $loanRemain[$a] = $loanLimit[$a] + $loanEnd[$a];
+
+        $totalLoanBegin += $loanBegin[$a];
+        $totalLoanAdd += $loanAdd[$a];
+        $totalLoanPay += $loanPay[$a];
+        $totalLoanFx += $loanFx[$a];
+        $totalLoanEnd += $loanEnd[$a];
+        $totalLoanLimit += $loanLimit[$a];
+        $totalLoanRemain += $loanRemain[$a];
+    }
+
+    $sectionTitle('PINJAMAN BANK', null, false);
+    $tr3 = $writePlainRow('SALDO AWAL PINJAMAN BANK', $totalLoanBegin, $loanBegin, true);
+    $row++;
+    $writeDetailRow('', 'PENAMBAHAN PINJAMAN', $totalLoanAdd, $loanAdd);
+    $writeDetailRow('', 'PELUNASAN PINJAMAN', $totalLoanPay, $loanPay);
+    $writeDetailRow('', 'PENGAKUAN LABA / (RUGI) SELISIH KURS', $totalLoanFx, $loanFx);
+    $row++;
+    $tr4 = $writePlainRow('SALDO AKHIR PINJAMAN BANK', $totalLoanEnd, $loanEnd, true);
+    $totalRuleUnder($tr4);
+    $writeDetailRow('', 'LIMIT', $totalLoanLimit, $loanLimit);
+    $tr5 = $writePlainRow('SISA / (KELEBIHAN) LIMIT', $totalLoanRemain, $loanRemain, true);
+    $totalRuleUnder($tr5);
 
     $lastRow = $row - 1;
 

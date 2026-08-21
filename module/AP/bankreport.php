@@ -173,30 +173,26 @@ $rowxss2 = mysqli_fetch_array($sqlxss2);
 $curren1 = isset($rowxss2['curr']) ? $rowxss2['curr'] : null;
 
 
+// Baris penyesuaian selisih kurs (curr = IDR, dari auto jurnal selisih kurs)
+// TIDAK ikut menambah/mengurangi saldo NATIVE (mata uang asli) - itu murni
+// penyesuaian nilai IDR, tidak ada USD yang benar-benar berpindah. Debit &
+// credit di-nol-kan dulu (IF curr = curr asli akun) sebelum masuk running
+// total saldo native, supaya saldo native tidak ikut "termakan" nilai IDR
+// yang jauh lebih besar.
 $sqlyss1 = mysqli_query($conn1,"select nomor,date,saldo_akhir saldoawal from (SELECT (@runnum :=@runnum + 1) AS nomor,q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
 FROM
-   (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '$accountid' and transaksi_date < '$start_date' and status != 'Cancel') AS q1 JOIN
+   (select transaksi_date as date, no_doc as doc_num,deskripsi,curr, IF(no_doc like 'FX/%', 0, debit) as debit, IF(no_doc like 'FX/%', 0, credit) as credit from b_reportbank where akun = '$accountid' and transaksi_date < '$start_date' and status != 'Cancel') AS q1 JOIN
      (SELECT @runtot:= $salawal ,@runnum:= 0) runtot) a ORDER BY a.nomor desc limit 1");
 $rowyss1 = mysqli_fetch_array($sqlyss1);
 $saldoawal = isset($rowyss1['saldoawal']) ? $rowyss1['saldoawal'] : 0;
-$dateswal = isset($rowyss1['date']) ? $rowyss1['date'] : null;
 
 
-$sqlrates = mysqli_query($conn1,"select id,rate FROM masterrate where v_codecurr = 'PAJAK' and tanggal = '$dateswal'");
+// Kurs Saldo Awal (Beginning Balance) = HARIAN, di tanggal SEBELUM start_date (rate
+// HARIAN terdekat yang tersedia sebelum start_date, bukan PAJAK persis di tanggal
+// transaksi terakhir seperti sebelumnya).
+$sqlrates = mysqli_query($conn1,"select rate FROM masterrate where v_codecurr = 'HARIAN' and tanggal < '$start_date' order by tanggal desc limit 1");
 $rowrates = mysqli_fetch_array($sqlrates);
-$maxidrate = isset($rowrates['id']) ? $rowrates['id'] : null;
-
-if ($maxidrate != null) {
-    $rates = $rowrates['rate'];
-}else{
-$sqlxss = mysqli_query($conn1,"select max(id) as id FROM masterrate where v_codecurr = 'PAJAK'");
-$rowxss = mysqli_fetch_array($sqlxss);
-$maxidss = $rowxss['id'];
-
-$sqlyss = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where id = '$maxidss' and v_codecurr = 'HARIAN'");
-$rowyss = mysqli_fetch_array($sqlyss);
-$rates = isset($rowyss['rate']) ? $rowyss['rate'] : 0;
-}
+$rates = isset($rowrates['rate']) ? $rowrates['rate'] : 1;
 
 $sqlsaldoidr = mysqli_query($conn1,"select eqv_idr from b_saldoawal_bank where account = '$accountid'");
 $rowsaldoidr = mysqli_fetch_array($sqlsaldoidr);
@@ -250,22 +246,25 @@ $saldo__ = $saldoawal * $rates;
             <th style="text-align: center;vertical-align: middle;width: 15%;">Benefficiary Name</th>
             <th colspan="2" style="text-align: left;vertical-align: middle;width: 15%;">: PT Nirwana Alabare Garment</th>
             <th style="text-align: center;vertical-align: middle;width: 10%;">Currency</th>
-            <th colspan="2" style="text-align: left;vertical-align: middle;width: 20%;">: ';?><?php echo $curren1; ?><?php echo'</th>
+            <th colspan="4" style="text-align: left;vertical-align: middle;width: 20%;">: ';?><?php echo $curren1; ?><?php echo'</th>
         </tr>
         <tr>
-            <th style="text-align: center;vertical-align: middle;width: 10%;">Transaction Date</th>
-            <th style="text-align: center;vertical-align: middle;width: 10%;">Journal No</th>
-            <th colspan="3" style="text-align: center;vertical-align: middle;width: 28%;">Description</th>
-            <th style="text-align: center;vertical-align: middle;width: 12%;">Category</th>
-            <th style="text-align: center;vertical-align: middle;width: 10%;">Debit</th>
-            <th style="text-align: center;vertical-align: middle;width: 10%;">Credit</th>
-            <th style="text-align: center;vertical-align: middle;width: 10%;">Balance</th>
+            <th style="text-align: center;vertical-align: middle;width: 9%;">Transaction Date</th>
+            <th style="text-align: center;vertical-align: middle;width: 9%;">Journal No</th>
+            <th colspan="3" style="text-align: center;vertical-align: middle;width: 22%;">Description</th>
+            <th style="text-align: center;vertical-align: middle;width: 10%;">Category</th>
+            <th style="text-align: center;vertical-align: middle;width: 8%;">Debit</th>
+            <th style="text-align: center;vertical-align: middle;width: 8%;">Credit</th>
+            <th style="text-align: center;vertical-align: middle;width: 8%;">Balance</th>
+            <th style="text-align: center;vertical-align: middle;width: 8%;">Debit IDR</th>
+            <th style="text-align: center;vertical-align: middle;width: 8%;">Credit IDR</th>
             <th style="text-align: center;vertical-align: middle;width: 10%;">Balance Eq IDR</th>
         </tr>
         <tr class="crr2-beginend">
-            <th style="text-align: center;vertical-align: middle;width: 10%;">Beginning Balance</th>
-            <th colspan="7" style="text-align: center;vertical-align: middle;width: 70%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 10%;">';?><?php echo number_format($saldoawal,2); ?> <?php echo'</th>
+            <th style="text-align: center;vertical-align: middle;width: 9%;">Beginning Balance</th>
+            <th colspan="7" style="text-align: center;vertical-align: middle;width: 57%;"></th>
+            <th style="text-align: right;vertical-align: middle;width: 8%;">';?><?php echo number_format($saldoawal,2); ?> <?php echo'</th>
+            <th colspan="2" style="text-align: center;vertical-align: middle;width: 16%;"></th>
             <th style="text-align: right;vertical-align: middle;width: 10%;">';?><?php echo number_format($saldo__,2); ?> <?php echo'</th>
         </tr>
     </thead>';
@@ -295,43 +294,59 @@ $saldo__ = $saldoawal * $rates;
     
      $sqlswl2 = mysqli_query($conn1,"select nomor,saldo_akhir saldoawal from (SELECT (@runnum :=@runnum + 1) AS nomor,q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
         FROM
-        (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '$accountid' and transaksi_date < '$start_date' and status != 'Cancel') AS q1 JOIN
+        (select transaksi_date as date, no_doc as doc_num,deskripsi,curr, IF(no_doc like 'FX/%', 0, debit) as debit, IF(no_doc like 'FX/%', 0, credit) as credit from b_reportbank where akun = '$accountid' and transaksi_date < '$start_date' and status != 'Cancel') AS q1 JOIN
         (SELECT @runtot:= $salawal ,@runnum:= 0) runtot) a ORDER BY a.nomor desc limit 1");
      $rowswl2 = mysqli_fetch_array($sqlswl2);
      $saldoswal = isset($rowswl2['saldoawal']) ? $rowswl2['saldoawal'] : 0;
 
 
-     $sql = mysqli_query($conn1," SELECT '',q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
+     // orig_debit/orig_credit = nilai ASLI di kolom debit/credit (sebelum
+     // di-nol-kan) - dipakai utk baris selisih kurs (no_doc "FX/...") yang
+     // nilainya SUDAH dalam IDR, tidak perlu dikonversi lagi. debit/credit
+     // (di-nol-kan kalau no_doc "FX/...") dipakai utk saldo NATIVE
+     // (saldo_akhir) supaya baris selisih kurs tidak ikut mengubah saldo
+     // mata uang asli. Exclude berdasarkan no_doc (BUKAN curr) - pernah
+     // ketemu baris transaksi asli yang curr-nya kosong/salah input (data
+     // lama), exclude via curr jadi ikut membuang transaksi asli itu;
+     // no_doc "FX/..." cuma cocok dgn baris yang benar-benar dibuat auto
+     // jurnal selisih kurs, jadi lebih aman.
+     $sql = mysqli_query($conn1," SELECT '',q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit,q1.orig_credit,q1.orig_debit, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
 FROM
-   (select id, transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '$accountid' and transaksi_date between '$start_date' and '$end_date' and status != 'Cancel' order by transaksi_date asc) AS q1 JOIN
+   (select id, transaksi_date as date, no_doc as doc_num,deskripsi,curr,
+           debit as orig_debit, credit as orig_credit,
+           IF(no_doc like 'FX/%', 0, debit) as debit,
+           IF(no_doc like 'FX/%', 0, credit) as credit
+    from b_reportbank where akun = '$accountid' and transaksi_date between '$start_date' and '$end_date' and status != 'Cancel' order by transaksi_date asc) AS q1 JOIN
      (SELECT @runtot:= $saldoswal) runtot order by date,id asc");
     }
 
 
+   // "Balance Eq IDR" per baris = saldo BUKU, running - numpuk dari Beginning
+   // Balance Eq IDR ($saldo__). Transaksi NATIVE (curr = curren1) dikonversi
+   // pakai kurs PAJAK di tanggal transaksinya sendiri (rate yang sesungguhnya
+   // dipakai saat transaksi diposting ke GL - diverifikasi langsung ke
+   // tbl_list_journal). Baris selisih kurs (curr = IDR, dari auto jurnal
+   // selisih kurs) nilainya SUDAH dalam IDR - langsung dipakai apa adanya,
+   // tanpa dikonversi lagi - ini yang "meng-crystallize" saldo buku jadi
+   // saldo pasar (HARIAN) tiap kali selisih kurs sudah dijurnal.
+   $runningBalanceIdr = $saldo__;
    while($row = mysqli_fetch_array($sql)){
     $debit = $row['debit'];
     $credit = $row['credit'];
-    $credit = $row['credit'];
+    $isFxRow = (strpos($row['doc_num'], 'FX/') === 0);
 
+    if ($isFxRow) {
+        $debitIdr = (float) $row['orig_debit'];
+        $creditIdr = (float) $row['orig_credit'];
+    } else {
+        $sqlratespjk = mysqli_query($conn1,"select rate FROM masterrate where v_codecurr = 'PAJAK' and tanggal <= '".$row['date']."' order by tanggal desc limit 1");
+        $rowratespjk = mysqli_fetch_array($sqlratespjk);
+        $ratepjk = isset($rowratespjk['rate']) ? $rowratespjk['rate'] : 1;
+        $debitIdr = (float) $debit * $ratepjk;
+        $creditIdr = (float) $credit * $ratepjk;
+    }
 
-    $sqlrates2 = mysqli_query($conn1,"select id,rate FROM masterrate where v_codecurr = 'PAJAK' and tanggal = '$dateswal'");
-$rowrates2 = mysqli_fetch_array($sqlrates2);
-$maxidrate2 = isset($rowrates2['id']) ? $rowrates2['id'] : null;
-
-if ($maxidrate2 != null) {
-    $rates2 = $rowrates2['rate'];
-}else{
-$sqlxss2 = mysqli_query($conn1,"select max(id) as id FROM masterrate where v_codecurr = 'PAJAK'");
-$rowxss2 = mysqli_fetch_array($sqlxss2);
-$maxidss2 = $rowxss2['id'];
-
-$sqlyss2 = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where id = '$maxidss' and v_codecurr = 'HARIAN'");
-$rowyss2 = mysqli_fetch_array($sqlyss2);
-$rates2 = isset($rowyss2['rate']) ? $rowyss2['rate'] : 1;
-}
-
-    // $balanc = $saldo_awal + $blc;
-    // $balanceidr =  $saldo_ + ($blc* $rates);
+    $runningBalanceIdr += $debitIdr - $creditIdr;
 
     if($debit == '0'){
         $t_debit = '';
@@ -344,29 +359,34 @@ $rates2 = isset($rowyss2['rate']) ? $rowyss2['rate'] : 1;
     }else{
         $t_credit = number_format($row['credit'],2);
     }
-    
+
+    $t_debit_idr = $debitIdr == 0 ? '' : number_format($debitIdr,2);
+    $t_credit_idr = $creditIdr == 0 ? '' : number_format($creditIdr,2);
+
  		if($curren1 == 'IDR'){
         echo '<tr style="font-size:12px;text-align:center;">
-            <td value="'.$row['date'].'">'.date("d-M-Y",strtotime($row['date'])).'</td>                            
+            <td value="'.$row['date'].'">'.date("d-M-Y",strtotime($row['date'])).'</td>
             <td value = "'.$row['doc_num'].'">'.$row['doc_num'].'</td>
             <td colspan="3" value="'.$row['deskripsi'].'">'.$row['deskripsi'].'</td>
-            <td value=""></td>                            
+            <td value=""></td>
             <td style="text-align:right;" value = "'.$t_debit.'">'.$t_debit.'</td>
             <td style="text-align:right;" value = "'.$t_credit.'">'.$t_credit.'</td>
-            <td style="text-align:right;" value = "'.$row['saldo_akhir'].'">'.number_format($row['saldo_akhir'],2).'</td>         
+            <td style="text-align:right;" value = "'.$row['saldo_akhir'].'">'.number_format($row['saldo_akhir'],2).'</td>
              ';
-            
+
         }else{
         echo '<tr style="font-size:12px;text-align:center;">
-            <td value="'.$row['date'].'">'.date("d-M-Y",strtotime($row['date'])).'</td>                            
+            <td value="'.$row['date'].'">'.date("d-M-Y",strtotime($row['date'])).'</td>
             <td value = "'.$row['doc_num'].'">'.$row['doc_num'].'</td>
             <td colspan="3" value="'.$row['deskripsi'].'">'.$row['deskripsi'].'</td>
-            <td value=""></td>                           
+            <td value=""></td>
             <td style="text-align:right;" value = "'.$t_debit.'">'.$t_debit.'</td>
-            <td style="text-align:right;" value = "'.$t_credit.'">'.$t_credit.'</td>         
-            <td style="text-align:right;" value = "'.$row['saldo_akhir'].'">'.number_format($row['saldo_akhir'],2).'</td>  
-            <td style="text-align:right;" value = "'.$row['saldo_akhir'].'">'.number_format(($row['saldo_akhir'] * $rates2),2).'</td>        
-             ';	
+            <td style="text-align:right;" value = "'.$t_credit.'">'.$t_credit.'</td>
+            <td style="text-align:right;" value = "'.$row['saldo_akhir'].'">'.number_format($row['saldo_akhir'],2).'</td>
+            <td style="text-align:right;" value = "'.$debitIdr.'">'.$t_debit_idr.'</td>
+            <td style="text-align:right;" value = "'.$creditIdr.'">'.$t_credit_idr.'</td>
+            <td style="text-align:right;" value = "'.$runningBalanceIdr.'">'.number_format($runningBalanceIdr,2).'</td>
+             ';
         }
 
 
@@ -378,34 +398,25 @@ $rates2 = isset($rowyss2['rate']) ? $rowyss2['rate'] : 1;
     
      $sqlswl4 = mysqli_query($conn1,"select nomor,saldo_akhir saldoawal from (SELECT (@runnum :=@runnum + 1) AS nomor,q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
         FROM
-        (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '$accountid' and transaksi_date < '$start_date' and status != 'Cancel') AS q1 JOIN
+        (select transaksi_date as date, no_doc as doc_num,deskripsi,curr, IF(no_doc like 'FX/%', 0, debit) as debit, IF(no_doc like 'FX/%', 0, credit) as credit from b_reportbank where akun = '$accountid' and transaksi_date < '$start_date' and status != 'Cancel') AS q1 JOIN
         (SELECT @runtot:= $salawal ,@runnum:= 0) runtot) a ORDER BY a.nomor desc limit 1");
      $rowswl4 = mysqli_fetch_array($sqlswl4);
      $saldoswal2 = isset($rowswl4['saldoawal']) ? $rowswl4['saldoawal'] : 0;
 
      $sql6 = mysqli_query($conn1, "select nomor,date,saldo_akhir from (SELECT (@runnum :=@runnum + 1) AS nomor,q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
         FROM
-        (select transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '$accountid' and transaksi_date between '$start_date' and '$end_date' and status != 'Cancel') AS q1 JOIN
+        (select transaksi_date as date, no_doc as doc_num,deskripsi,curr, IF(no_doc like 'FX/%', 0, debit) as debit, IF(no_doc like 'FX/%', 0, credit) as credit from b_reportbank where akun = '$accountid' and transaksi_date between '$start_date' and '$end_date' and status != 'Cancel') AS q1 JOIN
         (SELECT @runtot:= $saldoswal2,@runnum:=0) runtot) a ORDER BY a.nomor desc limit 1");
      $rows6 = mysqli_fetch_array($sql6);
      $saldoakhir = isset($rows6['saldo_akhir']) ? $rows6['saldo_akhir'] : $saldoswal2;
-     $dateakhir = isset($rows6['date']) ? $rows6['date'] : null;
 
-     $sqlrates3 = mysqli_query($conn1,"select id,rate FROM masterrate where v_codecurr = 'HARIAN' and tanggal = '$dateakhir'");
-$rowrates3 = mysqli_fetch_array($sqlrates3);
-$maxidrate3 = isset($rowrates3['id']) ? $rowrates3['id'] : null;
-
-if ($maxidrate3 != null) {
-    $rates3 = $rowrates3['rate'];
-}else{
-$sqlxss3 = mysqli_query($conn1,"select max(id) as id FROM masterrate where v_codecurr = 'PAJAK'");
-$rowxss3 = mysqli_fetch_array($sqlxss3);
-$maxidss3 = isset($rowxss3['id']) ? $rowxss3['id'] : null;
-
-$sqlyss3 = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where id = '$maxidss3' and v_codecurr = 'HARIAN'");
-$rowyss3 = mysqli_fetch_array($sqlyss3);
-$rates3 = isset($rowyss3['rate']) ? $rowyss3['rate'] : 1;
-}
+     // Kurs Saldo Akhir (Ending Balance) = HARIAN, di tanggal AKHIR FILTER ($end_date) -
+     // bukan tanggal transaksi terakhir dalam periode seperti sebelumnya. $saldoakhir di
+     // atas tetap saldo mata uang ASLI (original curr, native, hasil running total) -
+     // dikali kurs ini di baris echo Ending Balance di bawah.
+     $sqlrates3 = mysqli_query($conn1,"select rate FROM masterrate where v_codecurr = 'HARIAN' and tanggal <= '$end_date' order by tanggal desc limit 1");
+     $rowrates3 = mysqli_fetch_array($sqlrates3);
+     $rates3 = isset($rowrates3['rate']) ? $rowrates3['rate'] : 1;
 
 
 if($curren1 == 'IDR'){
@@ -418,11 +429,12 @@ echo '
 }else{
 echo '
             <tr >
-            <th style="text-align: center;vertical-align: middle;width: 10%;">Ending Balance</th>
-            <th colspan="7" style="text-align: center;vertical-align: middle;width: 70%;"></th>
-            <th style="text-align: right;vertical-align: middle;width: 10%;">'.number_format($saldoakhir,2).'</th></th>
-            <th style="text-align: right;vertical-align: middle;width: 10%;">'.number_format(($saldoakhir * $rates3),2).'</th></th>                                                                            
-        </tr>';	
+            <th style="text-align: center;vertical-align: middle;width: 9%;">Ending Balance</th>
+            <th colspan="7" style="text-align: center;vertical-align: middle;width: 57%;"></th>
+            <th style="text-align: right;vertical-align: middle;width: 8%;">'.number_format($saldoakhir,2).'</th></th>
+            <th colspan="2" style="text-align: center;vertical-align: middle;width: 16%;"></th>
+            <th style="text-align: right;vertical-align: middle;width: 10%;">'.number_format(($saldoakhir * $rates3),2).'</th></th>
+        </tr>';
 }
 ?>
 
