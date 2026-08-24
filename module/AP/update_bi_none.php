@@ -143,7 +143,7 @@ try {
 
 	q($conn2, "UPDATE tbl_bankin_arcollection SET doc_num = '".mysqli_real_escape_string($conn2, $doc_num)."', date = '$date', customer = '".mysqli_real_escape_string($conn2, $customer)."', akun = '".mysqli_real_escape_string($conn2, $akun)."', bank = '".mysqli_real_escape_string($conn2, $bank)."', curr = '".mysqli_real_escape_string($conn2, $curr)."', profit_center = '".mysqli_real_escape_string($conn2, $profit_center)."', amount = '$amount', outstanding = '$amount', rate = '$rate', eqv_idr = '$eqv_idr', deskripsi = '".mysqli_real_escape_string($conn2, $deskripsi)."', id_cash_flow = '$cash_flow' WHERE doc_num = '".mysqli_real_escape_string($conn2, $old_doc_num)."'");
 
-	q($conn2, "UPDATE b_reportbank set no_doc = '".mysqli_real_escape_string($conn2, $doc_num)."', transaksi_date = '$date', debit = '$amount', deskripsi = '".mysqli_real_escape_string($conn2, $deskripsi)."' where no_doc = '".mysqli_real_escape_string($conn2, $old_doc_num)."'");
+	q($conn2, "UPDATE b_reportbank set no_doc = '".mysqli_real_escape_string($conn2, $doc_num)."', transaksi_date = '$date', debit = '$amount', deskripsi = '".mysqli_real_escape_string($conn2, $deskripsi)."', id_cash_flow = '$cash_flow' where no_doc = '".mysqli_real_escape_string($conn2, $old_doc_num)."'");
 
 	if ($total_nag != 0) {
 		$total_nag_idr = $total_nag * $rate;
