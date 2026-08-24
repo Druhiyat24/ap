@@ -2054,7 +2054,10 @@ if (!valid_detail) {
             document.getElementById('frcc').focus();
             return;
         }
-        if (pay_mth != 'CASH' && id_cash_flow == CF_PEMINDAHBUKUAN_ID && (tocc == '-' || tocc == '' || tocc == null)) {
+        // CHEQUE/GIRO dikecualikan: pembayaran pakai cek/giro fisik yang
+        // diserahkan ke supplier, jadi rekening tujuan tidak diperlukan ->
+        // To Account TIDAK wajib meski kategorinya Pemindahbukuan.
+        if (pay_mth != 'CASH' && pay_mth != 'CHEQUE/GIRO' && id_cash_flow == CF_PEMINDAHBUKUAN_ID && (tocc == '-' || tocc == '' || tocc == null)) {
             Swal.fire('Warning', 'Please select/isi To Account', 'warning');
             (($('#tocc_manual').is(':visible')) ? document.getElementById('tocc_manual') : document.getElementById('tocc')).focus();
             return;

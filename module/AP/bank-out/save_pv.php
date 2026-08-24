@@ -300,12 +300,14 @@ try {
             $pv_coa_nama_esc = mysqli_real_escape_string($conn2, $pv_coa_nama);
             $type_pv_esc = mysqli_real_escape_string($conn2, $type_pv);
 
-            // PPH split: Regular, Installment & SaldoAwal - jurnal PPH dipisah
-            // baris (pola save_lp.php). SaldoAwal no_kbon-nya sama dengan
-            // no_kbon di tabel kontrabon (ap_saldo_payment_voucher adalah
+            // PPH split: Regular, Installment, SaldoAwal & CBD - jurnal PPH
+            // dipisah baris (pola save_lp.php). SaldoAwal no_kbon-nya sama
+            // dengan no_kbon di tabel kontrabon (ap_saldo_payment_voucher adalah
             // snapshot dari kontrabon yang sama), jadi lookup COA PPH di
             // bawah (cabang else, query ke tabel kontrabon) tetap valid.
-            $bayar_pph = in_array($type_pv, ['Regular', 'Installment', 'SaldoAwal'], true)
+            // CBD: nilai PPH dari kontrabon_h_cbd.pph, COA PPH di-lookup dari
+            // idtax pada tabel detail kontrabon_cbd (lihat cabang CBD di bawah).
+            $bayar_pph = in_array($type_pv, ['Regular', 'Installment', 'SaldoAwal', 'CBD'], true)
                 ? min($pv_pph, (float)$amountPv) : 0;
             $total_dppnya = $amountPv + $bayar_pph;
             $debit_idr = round($total_dppnya * $pv_rate, 4);
@@ -325,6 +327,8 @@ try {
             if ($bayar_pph > 0) {
                 if ($type_pv === 'Installment') {
                     $sqlpph = q($conn2, "SELECT no_coa, nama_coa FROM mtax WHERE idtax = (SELECT MAX(k.idtax) FROM kontrabon k INNER JOIN kontrabon_h_installment_detail d ON d.no_kbon = k.no_kbon WHERE d.no_kbon_det = '$no_kbon_esc')");
+                } elseif ($type_pv === 'CBD') {
+                    $sqlpph = q($conn2, "SELECT no_coa, nama_coa FROM mtax WHERE idtax = (SELECT MAX(idtax) FROM kontrabon_cbd WHERE no_kbon = '$no_kbon_esc')");
                 } else {
                     $sqlpph = q($conn2, "SELECT no_coa, nama_coa FROM mtax WHERE idtax = (SELECT MAX(idtax) FROM kontrabon WHERE no_kbon = '$no_kbon_esc')");
                 }

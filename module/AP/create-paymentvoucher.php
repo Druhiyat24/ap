@@ -1870,10 +1870,13 @@ if (!valid_detail) {
         // tidak punya rekening bank, bukan berarti belum diisi. Placeholder
         // dropdown yang benar-benar berarti "belum dipilih" pakai value=""
         // (beda dari "-"), jadi cuma string kosong yang ditolak di sini.
+        // Pengecualian: CHEQUE/GIRO - pembayaran pakai cek/giro fisik yang
+        // diserahkan ke supplier (ditarik dari From Account milik sendiri),
+        // jadi rekening tujuan tidak diperlukan -> To Account TIDAK wajib.
         var isToccManual = $('#tocc_manual').is(':visible');
         var toccTrimmed = (tocc || '').trim();
         var toccInvalid = (toccTrimmed === '');
-        if (pay_mth != 'CASH' && toccInvalid) {
+        if (pay_mth != 'CASH' && pay_mth != 'CHEQUE/GIRO' && toccInvalid) {
             Swal.fire('Warning', 'Please select/isi To Account', 'warning');
             (isToccManual ? document.getElementById('tocc_manual') : document.getElementById('tocc')).focus();
             return;

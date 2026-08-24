@@ -219,7 +219,7 @@ try {
         $pv_coa_nama_esc = mysqli_real_escape_string($conn2, $pv_coa_nama);
         $type_pv_esc = mysqli_real_escape_string($conn2, $type_pv);
 
-        $bayar_pph = ($type_pv === 'Regular' || $type_pv === 'Installment')
+        $bayar_pph = ($type_pv === 'Regular' || $type_pv === 'Installment' || $type_pv === 'CBD')
             ? min($pv_pph, (float)$amount_pv) : 0;
         $total_dppnya = $amount_pv + $bayar_pph;
         $debit_idr = round($total_dppnya * $pv_rate, 4);
@@ -231,6 +231,8 @@ try {
         if ($bayar_pph > 0) {
             if ($type_pv === 'Regular') {
                 $sqlpph = dbExec($conn2, "SELECT no_coa, nama_coa FROM mtax WHERE idtax = (SELECT MAX(idtax) FROM kontrabon WHERE no_kbon = '$no_kbon_esc')");
+            } elseif ($type_pv === 'CBD') {
+                $sqlpph = dbExec($conn2, "SELECT no_coa, nama_coa FROM mtax WHERE idtax = (SELECT MAX(idtax) FROM kontrabon_cbd WHERE no_kbon = '$no_kbon_esc')");
             } else {
                 $sqlpph = dbExec($conn2, "SELECT no_coa, nama_coa FROM mtax WHERE idtax = (SELECT MAX(k.idtax) FROM kontrabon k INNER JOIN kontrabon_h_installment_detail d ON d.no_kbon = k.no_kbon WHERE d.no_kbon_det = '$no_kbon_esc')");
             }
