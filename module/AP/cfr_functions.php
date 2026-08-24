@@ -208,7 +208,7 @@ function cfrNamedCatValue($rows, $label, $realisasi, $account, $isCashIn) {
 // BUKAN lagi dari query dedicated (deteksi perubahan tanda saldo rekening), diganti rumus
 // manual sesuai permintaan user:
 //   Penerimaan Pinjaman Bank = -(TOTAL CASH DISBURSEMENT FROM OPERATING ACTIVITIES
-//     - TOTAL CASH DISBURSEMENT FROM INVESTING ACTIVITIES
+//     + TOTAL CASH DISBURSEMENT FROM INVESTING ACTIVITIES
 //     - (Pelunasan Pinjaman Non Bank + Pelunasan Pinjaman Group + Pelunasan Pinjaman Shareholder
 //        + Pembayaran Bunga Pinjaman Bank + Pembayaran Bunga Pinjaman Group
 //        + Pembayaran Bunga Pinjaman Shareholder + Pelunasan Pinjaman Antar Divisi))
@@ -231,7 +231,7 @@ function cfrCalcPenerimaanPinjamanBank($categories, $realisasi) {
             + cfrNamedCatValue($disbFinancing, 'Pembayaran Bunga Pinjaman Group', $realisasi, $account, false)
             + cfrNamedCatValue($disbFinancing, 'Pembayaran Bunga Pinjaman Shareholder', $realisasi, $account, false)
             + cfrNamedCatValue($disbFinancing, 'Pelunasan Pinjaman Antar Divisi', $realisasi, $account, false);
-        $value = -($disbOperating - $disbInvesting - $subItems);
+        $value = -($disbOperating + $disbInvesting - $subItems);
         $result[$key] = $value;
         $result['total'] += $value;
     }
@@ -292,29 +292,41 @@ function cfrFmtXls($num) {
 // per akun (008-997-1979 & 008-998-1982) supaya penjumlahan per-akun (subtotal & grand
 // total) tetap konsisten/nyambung dengan kolom Realisation.
 function cfrRowValue($realisasi, $catId, $account, $isCashIn) {
-    global $penerimaanPinjamanBank, $pembayaranPinjamanBank, $cfrSuppressFxAccounts;
+    global $penerimaanPinjamanBank, $pembayaranPinjamanBank, $cfrSuppressFxAccounts, $cfrFxGainCatId;
     if ($catId == 9) {
         return isset($penerimaanPinjamanBank[cfrAkunKey($account)]) ? $penerimaanPinjamanBank[cfrAkunKey($account)] : 0;
     }
     if ($catId == 47) {
         return isset($pembayaranPinjamanBank[cfrAkunKey($account)]) ? $pembayaranPinjamanBank[cfrAkunKey($account)] : 0;
     }
+    // "Pengakuan Keuntungan Selisih Kurs" (kategori BARU, id-nya dideteksi by nama
+    // di cfrComputeReportData -> $cfrFxGainCatId). SEMUA baris selisih kurs (untung
+    // maupun rugi) tetap ditag id_cash_flow 55 oleh auto-jurnal (lihat
+    // fxsk_functions.php: FXSK_ID_CASH_FLOW=55, untung->DEBIT, rugi->CREDIT), jadi
+    // baris "Keuntungan" ini AMBIL KHUSUS sisi DEBIT dari realisasi id 55 - BUKAN
+    // dari id kategori-nya sendiri (yang tidak pernah ada transaksinya). Cek ini
+    // HARUS di atas early-return "!isset($realisasi[$catId])" di bawah, karena
+    // $realisasi[$cfrFxGainCatId] itu memang selalu kosong. Suppress akun 1982
+    // (saldo native <= 0) tetap berlaku sama seperti baris Kerugian.
+    if ($cfrFxGainCatId && $catId == $cfrFxGainCatId) {
+        if (!empty($cfrSuppressFxAccounts[$account])) {
+            return 0;
+        }
+        return isset($realisasi[55][$account]) ? $realisasi[55][$account]['debit'] : 0;
+    }
     if (!isset($realisasi[$catId][$account])) {
         return 0;
     }
     $v = $realisasi[$catId][$account];
-    // id_cash_flow 55 = "Pengakuan Kerugian Selisih Kurs" (dari auto-jurnal-selisih-
-    // kurs) - kategori ini cuma ADA di section Cash Out, tapi baris jurnalnya sendiri
-    // bisa DEBIT (untung) atau CREDIT (rugi) tergantung tanda selisih hari itu - harus
-    // di-net (debit - credit), bukan cuma -credit spt kategori Cash Out biasa (yang
-    // baris sumbernya memang cuma pernah berisi credit). Khusus akun yang masuk
-    // $cfrSuppressFxAccounts (saldo akhir native-nya <= 0, lihat cfrComputeReportData),
-    // nilainya dianggap 0 - tidak bermakna secara ekonomi selama akun itu masih minus.
+    // id_cash_flow 55 = "Pengakuan Kerugian Selisih Kurs". Dulu di-net (debit - credit)
+    // jadi 1 baris untung/rugi gabungan; sekarang DIPECAH 2 baris - sisi DEBIT (untung)
+    // pindah ke baris "Keuntungan" di atas, jadi baris Kerugian ini HANYA ambil sisi
+    // CREDIT (rugi). Khusus akun $cfrSuppressFxAccounts (saldo native <= 0), dianggap 0.
     if ($catId == 55) {
         if (!empty($cfrSuppressFxAccounts[$account])) {
             return 0;
         }
-        return $v['debit'] - $v['credit'];
+        return -$v['credit'];
     }
     return $isCashIn ? $v['debit'] : -$v['credit'];
 }
@@ -324,12 +336,23 @@ function cfrAkunKey($account) {
     return null;
 }
 function cfrRowTotal($realisasi, $catId, $isCashIn) {
-    global $penerimaanPinjamanBank, $pembayaranPinjamanBank, $cfrSuppressFxAccounts;
+    global $penerimaanPinjamanBank, $pembayaranPinjamanBank, $cfrSuppressFxAccounts, $cfrFxGainCatId;
     if ($catId == 9) {
         return $penerimaanPinjamanBank['total'];
     }
     if ($catId == 47) {
         return $pembayaranPinjamanBank['total'];
+    }
+    // Keuntungan Selisih Kurs (kategori baru) - jumlahkan sisi DEBIT realisasi
+    // id 55 (semua selisih kurs ditag 55, untung=debit), hormati suppress akun 1982.
+    if ($cfrFxGainCatId && $catId == $cfrFxGainCatId) {
+        $total = 0;
+        if (isset($realisasi[55])) {
+            foreach ($realisasi[55] as $account => $v) {
+                $total += empty($cfrSuppressFxAccounts[$account]) ? $v['debit'] : 0;
+            }
+        }
+        return $total;
     }
     if (!isset($realisasi[$catId])) {
         return 0;
@@ -337,7 +360,8 @@ function cfrRowTotal($realisasi, $catId, $isCashIn) {
     $total = 0;
     foreach ($realisasi[$catId] as $account => $v) {
         if ($catId == 55) {
-            $total += empty($cfrSuppressFxAccounts[$account]) ? ($v['debit'] - $v['credit']) : 0;
+            // Kerugian: HANYA sisi CREDIT (sisi debit/untung pindah ke baris Keuntungan).
+            $total += empty($cfrSuppressFxAccounts[$account]) ? (-$v['credit']) : 0;
         } else {
             $total += $isCashIn ? $v['debit'] : -$v['credit'];
         }
@@ -375,7 +399,7 @@ function cfrGetAllAccounts($conn) {
 // semua akun kalau hasil filternya kosong (mis. kode akun yang dikirim sudah tidak ada
 // lagi di master) - baris "REALISATION BY BANK" tidak boleh sampai kosong sama sekali.
 function cfrComputeReportData($conn, $start_date, $end_date, $selectedAccounts = null) {
-    global $penerimaanPinjamanBank, $pembayaranPinjamanBank, $cfrSuppressFxAccounts;
+    global $penerimaanPinjamanBank, $pembayaranPinjamanBank, $cfrSuppressFxAccounts, $cfrFxGainCatId;
 
     $allAccounts = cfrGetAllAccounts($conn);
     $accounts = $allAccounts;
@@ -444,8 +468,19 @@ function cfrComputeReportData($conn, $start_date, $end_date, $selectedAccounts =
         display_seq asc");
     $categories = ['Cash In' => ['OPERATING ACTIVITIES' => [], 'INVESTING ACTIVITIES' => [], 'FINANCING ACTIVITIES' => []],
                    'Cash Out' => ['OPERATING ACTIVITIES' => [], 'INVESTING ACTIVITIES' => [], 'FINANCING ACTIVITIES' => []]];
+    // Deteksi id kategori "Pengakuan Keuntungan Selisih Kurs" (baru) by nama -
+    // supaya cfrRowValue/cfrRowTotal tidak perlu hardcode id-nya. Baris ini
+    // mengambil sisi DEBIT dari realisasi id 55 (semua selisih kurs ditag 55).
+    // Pakai match "Keuntungan" + "Selisih Kurs" - beda dari baris Kerugian
+    // (id 55) yang namanya mengandung "Kerugian", jadi tidak akan salah tangkap.
+    $cfrFxGainCatId = null;
     while ($r = mysqli_fetch_assoc($sqlCat)) {
         $categories[$r['type_cashflow']][$r['nama_category']][] = $r;
+        if ($cfrFxGainCatId === null
+            && stripos($r['nama_subcategory'], 'Keuntungan') !== false
+            && stripos($r['nama_subcategory'], 'Selisih Kurs') !== false) {
+            $cfrFxGainCatId = $r['id'];
+        }
     }
 
     // Realisasi per kategori x akun - tiap TRANSAKSI dikonversi ke IDR pakai kurs
