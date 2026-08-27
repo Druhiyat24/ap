@@ -77,7 +77,7 @@ $end_date = date("d F Y",strtotime($_GET['end_date'])); ?>
         $start_date = date("Y-m-d",strtotime($_GET['start_date']));
         $end_date = date("Y-m-d",strtotime($_GET['end_date']));
 
-        $sql = mysqli_query($conn2,"select a.no_pv, pv_date, nama_supp, for_pay, supp_doc, ctb, pay_date, pay_meth, curr, frm_akun, to_akun, IFNULL(no_cek,'-') no_cek, IF(no_cek = '' ,'-',cek_date) cek_date, reff_doc, reff_date, (subtotal + adjust) subtotal, pph, ppn, total, outstanding, deskripsi, status, create_by, create_date, approve_by, approve_date from tbl_pv_h a LEFT JOIN (SELECT no_pv, GROUP_CONCAT(DISTINCT reff_doc ORDER BY id ASC SEPARATOR ', ') AS reff_doc, GROUP_CONCAT(DISTINCT CASE WHEN reff_date = '1970-01-01' THEN '-' ELSE reff_date END ORDER BY id ASC SEPARATOR ', ') AS reff_date FROM ( SELECT no_pv, IF(reff_doc = '' OR reff_doc = '-', '-', reff_doc) AS reff_doc, IF(reff_date = '1970-01-01', '-', reff_date) AS reff_date, id FROM tbl_pv WHERE reff_doc != '-' and reff_doc != '' GROUP BY no_pv, reff_doc, reff_date, id ) a GROUP BY no_pv) b on b.no_pv = a.no_pv $where");
+        $sql = mysqli_query($conn2,"select a.no_pv, pv_date, nama_supp, for_pay, a.id_cash_flow, supp_doc, ctb, pay_date, pay_meth, curr, frm_akun, to_akun, IFNULL(no_cek,'-') no_cek, IF(no_cek = '' ,'-',cek_date) cek_date, reff_doc, reff_date, (subtotal + adjust) subtotal, pph, ppn, total, outstanding, deskripsi, status, create_by, create_date, approve_by, approve_date from tbl_pv_h a LEFT JOIN (SELECT no_pv, GROUP_CONCAT(DISTINCT reff_doc ORDER BY id ASC SEPARATOR ', ') AS reff_doc, GROUP_CONCAT(DISTINCT CASE WHEN reff_date = '1970-01-01' THEN '-' ELSE reff_date END ORDER BY id ASC SEPARATOR ', ') AS reff_date FROM ( SELECT no_pv, IF(reff_doc = '' OR reff_doc = '-', '-', reff_doc) AS reff_doc, IF(reff_date = '1970-01-01', '-', reff_date) AS reff_date, id FROM tbl_pv WHERE reff_doc != '-' and reff_doc != '' GROUP BY no_pv, reff_doc, reff_date, id ) a GROUP BY no_pv) b on b.no_pv = a.no_pv $where");
 
         $no = 1;
 
@@ -98,15 +98,22 @@ $end_date = date("d F Y",strtotime($_GET['end_date'])); ?>
                 $no_cek = '-'; 
             }else{
                 $cek_date = date("d-M-Y",strtotime($cekdate));
-                $no_cek = $row['no_cek']; 
+                $no_cek = $row['no_cek'];
             }
+
+            // For Payment: kalau kategori Lain-lain (id_cash_flow = 39), for_pay
+            // menyimpan teks manual -> tampilkan "LAIN-LAIN(<teks>)". Selain itu
+            // (kategori standar / record lama tanpa penanda) tampilkan apa adanya.
+            $forPayDisplay = ((string)($row['id_cash_flow'] ?? '') === '39')
+                ? 'LAIN-LAIN(' . $row['for_pay'] . ')'
+                : $row['for_pay'];
 
             echo '<tr style="font-size:12px;text-align:center;">
             <td >'.$no++.'</td>
             <td style=" text-align : left" value="'.$row['no_pv'].'">'.$row['no_pv'].'</td>
             <td style=" text-align : left" value="'.$row['pv_date'].'">'.date("d-M-Y",strtotime($row['pv_date'])).'</td>
             <td style=" text-align : left" value="'.$row['nama_supp'].'">'.$row['nama_supp'].'</td>
-            <td style=" text-align : left" value="'.$row['for_pay'].'">'.$row['for_pay'].'</td>
+            <td style=" text-align : left" value="'.$forPayDisplay.'">'.$forPayDisplay.'</td>
             <td style=" text-align : left" value="'.$row['supp_doc'].'">'.$row['supp_doc'].'</td>
             <td style=" text-align : left" value="'.$row['ctb'].'">'.$row['ctb'].'</td>
             <td style=" text-align : left" value="'.$row['pay_date'].'">'.date("d-M-Y",strtotime($row['pay_date'])).'</td>

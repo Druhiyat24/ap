@@ -215,8 +215,14 @@ foreach ($groups as $g) {
 }
 
 $grandTotal = 0;
+$grandTotalsByCurr = []; // total dipisah per mata uang (USD, IDR, dst) - hindari campur
 foreach ($rows as $r) {
     $grandTotal += $r['total'];
+    $c = !empty($r['curr']) ? $r['curr'] : 'IDR';
+    if (!isset($grandTotalsByCurr[$c])) {
+        $grandTotalsByCurr[$c] = 0;
+    }
+    $grandTotalsByCurr[$c] += $r['total'];
 }
 $grandTotalCurr = !empty($rows) ? $rows[0]['curr'] : 'IDR';
 
@@ -419,11 +425,21 @@ ob_start();
                     <?php } ?>
                 </tr>
             <?php } ?>
+            <?php
+            $gtCount = count($grandTotalsByCurr);
+            $gtIdx = 0;
+            foreach ($grandTotalsByCurr as $gtCurr => $gtTotal) {
+                $gtIdx++;
+            ?>
             <tr>
-                <td colspan="4" style="text-align:center;height: 25px;"><b>Grand Total</b></td>
-                <td style="text-align:right;"><b><?php echo number_format($grandTotal, 2); ?></b></td>
+                <?php if ($gtIdx === 1) { ?>
+                <td colspan="3" rowspan="<?php echo $gtCount; ?>" style="text-align:center;vertical-align:middle;height: 25px;"><b>Grand Total</b></td>
+                <?php } ?>
+                <td style="text-align:center;"><b><?php echo htmlspecialchars($gtCurr); ?></b></td>
+                <td style="text-align:right;"><b><?php echo number_format($gtTotal, 2); ?></b></td>
                 <td colspan="9"></td>
             </tr>
+            <?php } ?>
         </tbody>
     </table>
 
@@ -507,9 +523,11 @@ ob_start();
                 <td>Total <?php echo htmlspecialchars($pc['label']) . ' : ' . htmlspecialchars($pc['curr']) . ' ' . number_format($pc['total'], 2); ?></td>
             </tr>
             <?php } ?>
+            <?php foreach ($grandTotalsByCurr as $gtCurr => $gtTotal) { ?>
             <tr>
-                <td style="font-weight: bold">Total Payment List : <?php echo $grandTotalCurr . ' ' . number_format($grandTotal, 2); ?></td>
+                <td style="font-weight: bold">Total Payment List : <?php echo htmlspecialchars($gtCurr) . ' ' . number_format($gtTotal, 2); ?></td>
             </tr>
+            <?php } ?>
         </table>
     </div>
 
