@@ -1,0 +1,109 @@
+<?php
+include '../../conn/conn.php';
+header('Content-Type: application/json');
+
+$nama_supp = isset($_POST['nama_supp']) && trim($_POST['nama_supp']) !== '' ? trim($_POST['nama_supp']) : 'ALL';
+$start_date_raw = !empty($_POST['start_date']) ? $_POST['start_date'] : date('d-m-Y');
+$end_date_raw = !empty($_POST['end_date']) ? $_POST['end_date'] : date('d-m-Y');
+$start_date = date('Y-m-d', strtotime($start_date_raw));
+$end_date = date('Y-m-d', strtotime($end_date_raw));
+
+$nama_supp_esc = mysqli_real_escape_string($conn2, $nama_supp);
+$start_date_esc = mysqli_real_escape_string($conn2, $start_date);
+$end_date_esc = mysqli_real_escape_string($conn2, $end_date);
+
+$no = 1;
+
+// Kontrabon (KB) -> Payment Voucher List (PVL, optional/informational) and Payment List (PL, gates payment) subquery.
+// Combines legacy list_payment-based documents with the new pv_payment_list_h/pv_payment_voucher_list_h flow.
+$kb_pl_subquery = "select supplier supp,upt_no_inv,MAX(tgl_kbon) tgl_kbon,MAX(pvl_date) pvl_date,MAX(pvl_approve_date) pvl_approve_date,MAX(tgl_payment) tgl_payment,MAX(tgl_approve_lp) tgl_approve_lp,MAX(bankout_date) bankout_date from (select a.*,b.no_kbon,b.tgl_kbon,b.create_date created_kbon,c.no_payment,COALESCE(h.pl_date, c.tgl_payment) tgl_payment,c.create_date created_lp,DATE_FORMAT(COALESCE(h.second_approve_date, c.confirm_date), '%Y-%m-%d') tgl_approve_lp, COALESCE(d2.bankout_date, d.bankout_date) bankout_date, f.pl_date pvl_date, DATE_FORMAT(f.approve_date, '%Y-%m-%d') pvl_approve_date from (select no_bpb,supplier,upt_no_inv from bpb_new where upt_no_inv is not null and upt_no_inv != '-' GROUP BY no_bpb) a left join
+(select * from kontrabon where status != 'Cancel') b on b.no_bpb = a.no_bpb left join
+(select * from list_payment where status != 'Cancel') c on c.no_kbon = b.no_kbon left join
+(select * from pv_payment_voucher_list_det where type_pv = 'Regular' and status != 'Cancel') e on e.no_kbon = b.no_kbon left join
+(select * from pv_payment_voucher_list_h where status != 'Cancel') f on f.pl_number = e.pl_number left join
+(select * from pv_payment_list_det where type_pv = 'Regular' and status != 'Cancel') g on g.no_kbon = b.no_kbon left join
+(select * from pv_payment_list_h where status != 'Cancel') h on h.pl_number = g.pl_number left join
+(select * from (select a.no_bankout,bankout_date,no_reff from b_bankout_det a inner join b_bankout_h b on b.no_bankout = a.no_bankout where no_reff like '%LP/NAG%' and b.status != 'Cancel'
+UNION
+select a.no_pco,b.tgl_pco,no_reff from c_petty_cashout_det a inner join c_petty_cashout_h b on a.no_pco = b.no_pco where no_reff like '%LP/NAG%' and b.status != 'Cancel'
+UNION
+select payment_ftr_id,tgl_pelunasan,list_payment_id from payment_ftr where list_payment_id like '%LP/NAG%' and status != 'Cancel') a GROUP BY no_reff order by bankout_date desc) d on d.no_reff = c.no_payment left join
+(select * from (select a.no_bankout,bankout_date,no_reff from b_bankout_det a inner join b_bankout_h b on b.no_bankout = a.no_bankout where a.type_pv = 'Regular' and b.status != 'Cancel'
+UNION
+select a.no_pco,b.tgl_pco,no_reff from c_petty_cashout_det a inner join c_petty_cashout_h b on a.no_pco = b.no_pco where a.type_pv = 'Regular' and b.status != 'Cancel'
+UNION
+select payment_ftr_id,tgl_pelunasan,no_kbon from payment_ftr where type_pv = 'Regular' and status != 'Cancel') a GROUP BY no_reff order by bankout_date desc) d2 on d2.no_reff = b.no_kbon GROUP BY no_bpb) a GROUP BY supplier,upt_no_inv";
+
+if ($nama_supp === 'ALL') {
+    $sql = mysqli_query($conn2, "select * from (select no_invoice,COALESCE(no_reff,'-') no_reff,a.doc_number,b.nama_supp,a.amount,b.status,tgl_invoice,tgl_penerimaan,tfta_date,receive_acc_date,tatp_date,receive_pch_date,tptf_date,receive_fin_date from ir_invoice_supp a inner join ir_invoice_supp_h b on b.doc_number = a.doc_number where tgl_invoice between '$start_date_esc' and '$end_date_esc' group by a.id) a left join (select max(bpbdate) bpbdate,max(dateinput) dateinput,max(confirm_date) confirm_date,upt_no_inv,max(trf_date) trf_date,b.supplier from bpb a inner join mastersupplier b on b.id_supplier  = a.id_supplier where upt_no_inv is not null and upt_no_inv != '-' GROUP BY upt_no_inv,supplier) b on b.upt_no_inv = a.no_invoice and b.supplier = a.nama_supp left join
+($kb_pl_subquery) c on c.upt_no_inv = a.no_invoice and c.supp = a.nama_supp");
+} else {
+    $sql = mysqli_query($conn2, "select * from ( select no_invoice,COALESCE(no_reff,'-') no_reff,a.doc_number,b.nama_supp,a.amount,b.status,tgl_invoice,tgl_penerimaan,tfta_date,receive_acc_date,tatp_date,receive_pch_date,tptf_date,receive_fin_date from ir_invoice_supp a inner join ir_invoice_supp_h b on b.doc_number = a.doc_number where b.nama_supp = '$nama_supp_esc' and tgl_invoice between '$start_date_esc' and '$end_date_esc' group by a.id) a left join (select max(bpbdate) bpbdate,max(confirm_date) confirm_date,upt_no_inv,max(trf_date) trf_date,max(dateinput) dateinput,b.supplier from bpb a inner join mastersupplier b on b.id_supplier  = a.id_supplier where upt_no_inv is not null and upt_no_inv != '-' GROUP BY upt_no_inv,supplier) b on b.upt_no_inv = a.no_invoice and b.supplier = a.nama_supp left join
+($kb_pl_subquery) c on c.upt_no_inv = a.no_invoice and c.supp = a.nama_supp");
+}
+
+$data = [];
+
+while ($row = mysqli_fetch_array($sql)) {
+    if ($row['tfta_date'] == null || $row['tfta_date'] == '') { $tfta_date = '-'; } else { $tfta_date = date("d-M-Y", strtotime($row['tfta_date'])); }
+
+    if ($row['receive_acc_date'] == null || $row['receive_acc_date'] == '') { $receive_acc_date = '-'; } else { $receive_acc_date = date("d-M-Y", strtotime($row['receive_acc_date'])); }
+
+    if ($row['tatp_date'] == null || $row['tatp_date'] == '') { $tatp_date = '-'; } else { $tatp_date = date("d-M-Y", strtotime($row['tatp_date'])); }
+
+    if ($row['receive_pch_date'] == null || $row['receive_pch_date'] == '') { $receive_pch_date = '-'; } else { $receive_pch_date = date("d-M-Y", strtotime($row['receive_pch_date'])); }
+
+    if ($row['tptf_date'] == null || $row['tptf_date'] == '') { $tptf_date = '-'; } else { $tptf_date = date("d-M-Y", strtotime($row['tptf_date'])); }
+
+    if ($row['receive_fin_date'] == null || $row['receive_fin_date'] == '') { $receive_fin_date = '-'; } else { $receive_fin_date = date("d-M-Y", strtotime($row['receive_fin_date'])); }
+
+    if ($row['bpbdate'] == null || $row['bpbdate'] == '') { $bpbdate = '-'; } else { $bpbdate = date("d-M-Y", strtotime($row['bpbdate'])); }
+
+    if ($row['confirm_date'] == null || $row['confirm_date'] == '') { $confirm_date = '-'; } else { $confirm_date = date("d-M-Y", strtotime($row['confirm_date'])); }
+
+    if ($row['trf_date'] == null || $row['trf_date'] == '') { $trf_date = '-'; } else { $trf_date = date("d-M-Y", strtotime($row['trf_date'])); }
+
+    if ($row['tgl_kbon'] == null || $row['tgl_kbon'] == '') { $tgl_kbon = '-'; } else { $tgl_kbon = date("d-M-Y", strtotime($row['tgl_kbon'])); }
+
+    if ($row['tgl_payment'] == null || $row['tgl_payment'] == '') { $tgl_payment = '-'; } else { $tgl_payment = date("d-M-Y", strtotime($row['tgl_payment'])); }
+
+    if ($row['bankout_date'] == null || $row['bankout_date'] == '') { $bankout_date = '-'; } else { $bankout_date = date("d-M-Y", strtotime($row['bankout_date'])); }
+
+    if ($row['dateinput'] == null || $row['dateinput'] == '') { $dateinput = '-'; } else { $dateinput = date("d-M-Y", strtotime($row['dateinput'])); }
+
+    if ($row['tgl_approve_lp'] == null || $row['tgl_approve_lp'] == '') { $tgl_approve_lp = '-'; } else { $tgl_approve_lp = date("d-M-Y", strtotime($row['tgl_approve_lp'])); }
+
+    if ($row['pvl_date'] == null || $row['pvl_date'] == '') { $pvl_date = '-'; } else { $pvl_date = date("d-M-Y", strtotime($row['pvl_date'])); }
+
+    if ($row['pvl_approve_date'] == null || $row['pvl_approve_date'] == '') { $pvl_approve_date = '-'; } else { $pvl_approve_date = date("d-M-Y", strtotime($row['pvl_approve_date'])); }
+
+    $data[] = [
+        'no' => $no++,
+        'no_invoice' => $row['no_invoice'],
+        'doc_number' => $row['doc_number'],
+        'no_reff' => $row['no_reff'],
+        'nama_supp' => $row['nama_supp'],
+        'amount' => number_format($row['amount'], 2),
+        'status' => $row['status'],
+        'tgl_invoice' => date("d-M-Y", strtotime($row['tgl_invoice'])),
+        'tgl_penerimaan' => date("d-M-Y", strtotime($row['tgl_penerimaan'])),
+        'bpbdate' => $bpbdate,
+        'dateinput' => $dateinput,
+        'confirm_date' => $confirm_date,
+        'trf_date' => $trf_date,
+        'tfta_date' => $tfta_date,
+        'receive_acc_date' => $receive_acc_date,
+        'tatp_date' => $tatp_date,
+        'receive_pch_date' => $receive_pch_date,
+        'tptf_date' => $tptf_date,
+        'receive_fin_date' => $receive_fin_date,
+        'tgl_kbon' => $tgl_kbon,
+        'pvl_date' => $pvl_date,
+        'pvl_approve_date' => $pvl_approve_date,
+        'tgl_payment' => $tgl_payment,
+        'tgl_approve_lp' => $tgl_approve_lp,
+        'bankout_date' => $bankout_date,
+    ];
+}
+
+echo json_encode(['data' => $data]);
