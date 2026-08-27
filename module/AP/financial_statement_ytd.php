@@ -159,21 +159,21 @@
 
 <div id="trial-balance" class="tabcontent">
   <!-- <h2>Trial Balance</h2> -->
-  <?php include 'fs_ytd/trial_balance_ytd.php'; ?>
+  <?php include 'fs_ytd_server/trial_balance_ytd.php'; ?>
 </div>
 <div id="sfp" class="tabcontent">
-  <?php include 'fs_ytd/statement_financial_position.php'; ?>
+  <?php include 'fs_ytd_server/statement_financial_position.php'; ?>
 </div>
 <div id="spl" class="tabcontent">
-  <?php include 'fs_ytd/statement_profit_loss.php'; ?>
+  <?php include 'fs_ytd_server/statement_profit_loss.php'; ?>
 </div>
 <div id="cf-direct" class="tabcontent">
   <!-- <h6>Isi tab CF Direct</h6> -->
-  <?php include 'fs_ytd/cashflow_direct.php'; ?>
+  <?php include 'fs_ytd_server/cashflow_direct.php'; ?>
 </div>
 <div id="cf-indirect" class="tabcontent">
   <!-- <h6>Isi tab CF Indirect</h6> -->
-  <?php include 'fs_ytd/cashflow_indirect.php'; ?>
+  <?php include 'fs_ytd_server/cashflow_indirect.php'; ?>
 </div>
 
   </div>

@@ -1,53 +1,53 @@
 <style>
-  /* Reskin CSS-only - struktur HTML/PHP tabel TIDAK disentuh (lihat catatan
-     lengkap di fs_ytd/statement_financial_position.php) - cuma warna/spacing
-     diselaraskan ke bahasa visual biru-emas tab lain. Juga memperbaiki typo
-     lama "dicfdirectay: flex" (harusnya "display: flex" - hasil find-replace
-     serampangan waktu file ini di-clone) yang bikin tombol Export/Print
-     dulu tidak sejajar horizontal. */
-  #cf-direct .card-body {
+  #sfp .card-body {
     background: #f9fafb;
   }
-  #cf-direct table {
-    color: #2c3e50;
+  #sfp table {
+    color: #333;
   }
-  #cf-direct th, #cf-direct td {
+  #sfp th, #sfp td {
     padding: 8px 10px;
   }
-  #cf-direct .table-primary {
+  #sfp .table-primary {
     background-color: #e9f3ff !important;
+  }
+  #sfp .btn-success {
+    background: linear-gradient(90deg, #28a745, #218838);
+    border: none;
+    transition: 0.3s;
+  }
+  #sfp .btn-success:hover {
+    opacity: 0.9;
   }
 
   table th, table td {
     padding: 0 !important;
   }
 
+
   .laporan-container-cfdirect {
-    border: 1px solid #dbe3f0;
-    border-radius: 14px;
-    padding: 22px 28px 20px;
+    border: 2px solid #2c3e50;
+    border-radius: 10px;
+    padding: 15px 25px;
     background: #fafafa;
-    box-shadow: 0 4px 18px rgba(30, 58, 138, 0.08);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
   }
 
   .laporan-table-cfdirect {
-    font-size: 13.5px;
+    font-size: 14px;
     margin: auto;
     width: 100%;
     border-collapse: collapse;
-    color: #2c3e50;
+    color: #2c3e50; 
   }
 
   /* ===== Header Styles ===== */
   .judul-left,
   .judul-right {
-    font-weight: 700;
-    font-size: 16.5px;
-    color: #1e3a8a;
-    letter-spacing: .2px;
-    line-height: 1.3 !important;
-    padding-bottom: 2px !important;
-    padding-top: 6px !important;
+    font-weight: bold;
+    line-height: 1.2 !important; 
+    padding-bottom: 0;
+    padding-top: 0;
   }
 
   .judul-left {
@@ -57,19 +57,15 @@
   .judul-right {
     text-align: right;
     font-style: italic;
-    font-size: 15px;
-    color: #6b7280;
-    font-weight: 600;
   }
 
   .subjudul-left,
   .subjudul-right {
-    line-height: 1.3 !important;
+    line-height: 0.7 !important; 
     padding-top: 0;
-    font-weight: 700;
-    font-size: 14.5px;
-    color: #2c3e50;
-    padding-bottom: 2px !important;
+    font-weight: bold;
+    padding-bottom: 0;
+    padding-top: 0;
   }
 
   .subjudul-left {
@@ -79,26 +75,22 @@
   .subjudul-right {
     text-align: right;
     font-style: italic;
-    color: #6b7280;
-    font-weight: 500;
   }
 
   .tanggal-left {
     text-align: left;
-    font-weight: 600;
-    color: #2c3e50;
+    font-weight: 500;
   }
 
   .tanggal-right {
     text-align: right;
     font-style: italic;
-    color: #6b7280;
   }
 
   .desc-left,
   .desc-right {
-    color: #777;
-    font-size: 12.5px;
+    color: #555;
+    font-size: 12px;
   }
 
   .desc-left {
@@ -108,46 +100,50 @@
   .desc-right {
     text-align: right;
     font-style: italic;
-    color: #999;
-  }
-
-  .periode,
-  .persentage,
-  .isi-periode,
-  .isi-persentage {
-    text-align: center;
-    border-bottom: 2px solid #1e3a8a;
-    color: #1e3a8a;
-    font-weight: 600;
-    padding-bottom: 6px !important;
   }
 
   .periode {
+    text-align: center;
+    border-bottom: 3px solid #000;
+    font-weight: bold;
+    padding-bottom: 5px;
     width: 220px !important;
   }
 
+  .persentage {
+    text-align: center;
+    border-bottom: 3px solid #000;
+    font-weight: bold;
+    padding-bottom: 5px;
+  }
+
   .isi-periode {
+    text-align: center;
+    border-bottom: 3px solid #000;
+    font-weight: bold;
+    padding-bottom: 5px;
     width: 180px !important;
   }
 
   .isi-persentage {
+    text-align: center;
+    border-bottom: 3px solid #000;
+    font-weight: bold;
+    padding-bottom: 5px;
     width: 50px !important;
   }
 
   .judul-periode {
     text-align: center;
-    font-weight: 600;
-    color: #2c3e50;
-    padding-bottom: 6px !important;
+    font-weight: bold;
+    padding-bottom: 5px;
   }
 
   /* ===== Sections ===== */
   .section-left,
   .section-right {
     font-weight: bold;
-    color: #1e3a8a;
-    font-size: 13.5px;
-    letter-spacing: .2px;
+    color: #2c3e50;
   }
 
   .section-left {
@@ -157,14 +153,11 @@
   .section-right {
     text-align: right;
     font-style: italic;
-    color: #6b7280;
-    font-weight: 600;
   }
 
   .subsection-left,
   .subsection-right {
     font-weight: bold;
-    color: #2c3e50;
   }
 
   .subsection-left {
@@ -174,34 +167,26 @@
   .subsection-right {
     text-align: right;
     font-style: italic;
-    color: #6b7280;
   }
 
   /* ===== Data Rows ===== */
   .item-left {
     text-align: left;
-    padding: 4px 0 !important;
+    padding: 3px 0;
   }
 
   .item-right {
     text-align: right;
-    font-variant-numeric: tabular-nums;
   }
 
   .item-italic {
     text-align: right;
     font-style: italic;
-    color: #6b7280;
-  }
-
-  #cf-direct .laporan-table-cfdirect tr:hover .item-left,
-  #cf-direct .laporan-table-cfdirect tr:hover .item-right {
-    background-color: rgba(37, 99, 235, 0.06);
   }
 
   /* ===== Totals ===== */
   .total-line {
-    border-top: 1px solid #94a3c4;
+    border-top: 2px solid #000;
     line-height: 28px;
     font-weight: bold;
   }
@@ -212,38 +197,32 @@
 
   .total-right {
     text-align: right;
-    font-variant-numeric: tabular-nums;
   }
 
   .total-italic {
     text-align: right;
     font-style: italic;
-    color: #6b7280;
   }
 
   /* ===== Grand Total ===== */
   .grand-total {
-    border-top: 2px solid #1e3a8a;
-    background: #e8edfa;
+    border-top: 3px double #000;
+    background: #f5f5f5;
     font-weight: bold;
     line-height: 30px;
   }
 
   .grand-left {
     text-align: left;
-    color: #1e3a8a;
   }
 
   .grand-right {
     text-align: right;
-    color: #1e3a8a;
-    font-variant-numeric: tabular-nums;
   }
 
   .grand-italic {
     text-align: right;
     font-style: italic;
-    color: #5b6a94;
   }
 
   /* ===== Spacers ===== */
@@ -259,101 +238,45 @@
     height: 5px;
   }
 
-  /* ===== Tombol Export/Print - pill gradien + ikon SVG, konsisten dgn
-     tombol Export Excel di tab lain. Dulu tombol kotak flat & emoji. */
   .export-buttons {
-    display: flex;
-    justify-content: flex-end;
+    dicfdirectay: flex;
+    justify-content: flex-start; /* tombol di kiri */
     align-items: center;
-    gap: 10px;
-    margin: 4px 4px 14px;
+    gap: 10px; /* jarak antar tombol */
+    margin-left: 15px; /* sedikit geser dari kiri */
   }
 
   .btn-export {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 12.5px;
-    font-weight: 600;
-    letter-spacing: .2px;
-    padding: 8px 18px 8px 14px;
-    border-radius: 999px;
+    background: #2c3e50;
+    color: white;
     border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 14px;
     cursor: pointer;
-    transition: box-shadow 0.15s ease, transform 0.15s ease, background 0.15s ease;
-    color: #fff;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: 0.2s ease;
+  }
+
+  .btn-export:hover {
+    background: #34495e;
   }
 
   .btn-export.excel {
-    background: linear-gradient(135deg, #1f7a4d, #14532d);
-    box-shadow: 0 2px 6px rgba(20, 83, 45, 0.28);
-  }
-
-  .btn-export.excel:hover {
-    background: linear-gradient(135deg, #23935d, #185c36);
-    box-shadow: 0 4px 10px rgba(20, 83, 45, 0.35);
-    transform: translateY(-1px);
+    background: #27ae60;
   }
 
   .btn-export.pdf {
-    background: linear-gradient(135deg, #d64545, #a52a2a);
-    box-shadow: 0 2px 6px rgba(165, 42, 42, 0.28);
+    background: #e74c3c;
   }
-
-  .btn-export.pdf:hover {
-    background: linear-gradient(135deg, #e05a5a, #b93333);
-    box-shadow: 0 4px 10px rgba(165, 42, 42, 0.35);
-    transform: translateY(-1px);
-  }
-
-  .btn-export:active {
-    transform: translateY(0);
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
-  }
-
-/* ===== Freeze judul (header) CF Direct YTD - pola sama persis dgn tab SFP.
-   Scoped #cf-direct, class-based (Excel/PDF tidak berubah). */
-#cf-direct .laporan-container-cfdirect {
-  max-height: 70vh;
-  overflow: auto;
-  padding-top: 0;
-  scrollbar-width: thin;
-  scrollbar-color: #b7c3e0 #f1f4fa;
-}
-#cf-direct .laporan-container-cfdirect::-webkit-scrollbar { height: 10px; width: 10px; }
-#cf-direct .laporan-container-cfdirect::-webkit-scrollbar-track { background: #f1f4fa; }
-#cf-direct .laporan-container-cfdirect::-webkit-scrollbar-thumb {
-  background-color: #b7c3e0; border-radius: 8px; border: 2px solid #f1f4fa;
-}
-#cf-direct .laporan-table-cfdirect { border-collapse: separate; border-spacing: 0; }
-#cf-direct .laporan-table-cfdirect thead { position: sticky; top: 0; z-index: 5; }
-#cf-direct .laporan-table-cfdirect thead th { background: #fafafa; }
-#cf-direct .laporan-table-cfdirect thead tr:last-child th { box-shadow: inset 0 -1px 0 #ccd6ee; }
-/* Baris TOTAL (mis. "Arus kas ... aktivitas operasi") diberi latar biru muda
-   #e8edfa - sama seperti baris grand total di SFP/SPL - supaya menonjol.
-   Scoped #cf-direct saja. */
-#cf-direct .laporan-table-cfdirect .total-line { background: #e8edfa; }
 </style>
 
 
-<div class="export-buttons mt-2">
+<div class="export-buttons mt-2 text-left ml-4">
   <button id="btnExcel-cfdirect" class="btn-export excel">
-    <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="2" y="2.5" width="16" height="15" rx="2" fill="#ffffff" fill-opacity=".15"/>
-      <rect x="2" y="2.5" width="16" height="15" rx="2" stroke="#ffffff" stroke-width="1.1"/>
-      <path d="M2 7.3h16M7.2 2.5v15" stroke="#ffffff" stroke-width="1.1"/>
-      <path d="M4.3 10.1l2.1 3.2M6.4 10.1l-2.1 3.2" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round"/>
-    </svg>
-    Export Excel
+    📊 Export Excel
   </button>
   <button id="btnPDF-cfdirect" class="btn-export pdf">
-    <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="2" y="2.5" width="16" height="15" rx="2" fill="#ffffff" fill-opacity=".15"/>
-      <rect x="2" y="2.5" width="16" height="15" rx="2" stroke="#ffffff" stroke-width="1.1"/>
-      <path d="M6 6.5h8M6 10h8M6 13.5h5" stroke="#ffffff" stroke-width="1.1" stroke-linecap="round"/>
-    </svg>
-    Print PDF
+    🖨️ Print PDF
   </button>
 </div>
 
@@ -362,7 +285,6 @@
     <div class="card-body p-4" mt-0>
       <div class="laporan-container-cfdirect" id="laporan-cfdirect-ytd">
         <table class="laporan-table-cfdirect" border="0" role="grid" cellspacing="0">
-          <thead>
 
           <!-- Header Judul -->
           <tr>
@@ -389,7 +311,6 @@
             ?>
           </tr>
 
-          <tr>
           <th class="judul-left">LAPORAN ARUS KAS - METODE LANGSUNG</th>
           <?php
           if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -498,8 +419,6 @@
           ?>
           <th></th>
         </tr>
-        </thead>
-        <tbody>
 
         <!-- Section PENJUALAN KOTOR -->
         <tr>
@@ -1570,7 +1489,6 @@ select sub_kategori, sub_kategori_eng, sum(total_nag) total_nag, sum(total_nak) 
           <th class="subsection-right"><?= strtoupper('Cash and cash equivalent at the end of period'); ?></th>
 
         </tr>
-        </tbody>
 
       </table>
     </div>

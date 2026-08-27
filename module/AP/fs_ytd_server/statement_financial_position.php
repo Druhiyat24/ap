@@ -1,15 +1,9 @@
 <style>
-/* Reskin CSS-only - struktur HTML/PHP tabel (judul & data dalam 1 <table>
-   yg sama, kolom dinamis ikut profit_center ALL/NAG/NAK) TIDAK disentuh
-   sama sekali (risiko tinggi kalau direstruktur, banyak logic colspan
-   tersebar) - cuma warna/spacing diselaraskan ke bahasa visual biru-emas
-   yang sudah dipakai di semua tab lain (SPL/CF Direct/CF Indirect/Trial
-   Balance/tab-tab FS1) - dulu semua hitam-putih monokrom gaya cetak lama. */
 #sfp .card-body {
   background: #f9fafb;
 }
 #sfp table {
-  color: #2c3e50;
+  color: #333;
 }
 #sfp th, #sfp td {
   padding: 8px 10px;
@@ -17,37 +11,43 @@
 #sfp .table-primary {
   background-color: #e9f3ff !important;
 }
+#sfp .btn-success {
+  background: linear-gradient(90deg, #28a745, #218838);
+  border: none;
+  transition: 0.3s;
+}
+#sfp .btn-success:hover {
+  opacity: 0.9;
+}
 
 table th, table td {
   padding: 0 !important;
 }
 
+
 .laporan-container {
-  border: 1px solid #dbe3f0;
-  border-radius: 14px;
-  padding: 22px 28px 20px;
+  border: 2px solid #2c3e50;
+  border-radius: 10px;
+  padding: 15px 25px;
   background: #fafafa;
-  box-shadow: 0 4px 18px rgba(30, 58, 138, 0.08);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
 }
 
 .laporan-table {
-  font-size: 13.5px;
+  font-size: 14px;
   margin: auto;
   width: 95%;
   border-collapse: collapse;
-  color: #2c3e50;
+  color: #2c3e50; 
 }
 
 /* ===== Header Styles ===== */
 .judul-left,
 .judul-right {
-  font-weight: 700;
-  font-size: 16.5px;
-  color: #1e3a8a;
-  letter-spacing: .2px;
-  line-height: 1.3 !important;
-  padding-bottom: 2px !important;
-  padding-top: 6px !important;
+  font-weight: bold;
+  line-height: 1.2 !important; 
+  padding-bottom: 0;
+  padding-top: 0;
 }
 
 .judul-left {
@@ -57,19 +57,15 @@ table th, table td {
 .judul-right {
   text-align: right;
   font-style: italic;
-  font-size: 15px;
-  color: #6b7280;
-  font-weight: 600;
 }
 
 .subjudul-left,
 .subjudul-right {
-  line-height: 1.3 !important;
+  line-height: 0.7 !important; 
   padding-top: 0;
-  font-weight: 700;
-  font-size: 14.5px;
-  color: #2c3e50;
-  padding-bottom: 2px !important;
+  font-weight: bold;
+  padding-bottom: 0;
+  padding-top: 0;
 }
 
 .subjudul-left {
@@ -79,26 +75,22 @@ table th, table td {
 .subjudul-right {
   text-align: right;
   font-style: italic;
-  color: #6b7280;
-  font-weight: 500;
 }
 
 .tanggal-left {
   text-align: left;
-  font-weight: 600;
-  color: #2c3e50;
+  font-weight: 500;
 }
 
 .tanggal-right {
   text-align: right;
   font-style: italic;
-  color: #6b7280;
 }
 
 .desc-left,
 .desc-right {
-  color: #777;
-  font-size: 12.5px;
+  color: #555;
+  font-size: 12px;
 }
 
 .desc-left {
@@ -108,32 +100,27 @@ table th, table td {
 .desc-right {
   text-align: right;
   font-style: italic;
-  color: #999;
 }
 
 .periode {
   text-align: center;
-  border-bottom: 2px solid #1e3a8a;
-  color: #1e3a8a;
-  font-weight: 600;
-  padding-bottom: 6px !important;
+  border-bottom: 3px solid #000;
+  font-weight: bold;
+  padding-bottom: 5px;
   width: 190px !important;
 }
 
 .judul-periode {
   text-align: center;
-  font-weight: 600;
-  color: #2c3e50;
-  padding-bottom: 6px !important;
+  font-weight: bold;
+  padding-bottom: 5px;
 }
 
 /* ===== Sections ===== */
 .section-left,
 .section-right {
   font-weight: bold;
-  color: #1e3a8a;
-  font-size: 13.5px;
-  letter-spacing: .2px;
+  color: #2c3e50;
 }
 
 .section-left {
@@ -143,15 +130,12 @@ table th, table td {
 .section-right {
   text-align: right;
   font-style: italic;
-  color: #6b7280;
-  font-weight: 600;
 }
 
 .subsection-left,
 .subsection-right {
   font-weight: bold;
   text-transform: lowercase;
-  color: #2c3e50;
 }
 
 .subsection-left::first-letter,
@@ -166,34 +150,26 @@ table th, table td {
 .subsection-right {
   text-align: right;
   font-style: italic;
-  color: #6b7280;
 }
 
 /* ===== Data Rows ===== */
 .item-left {
   text-align: left;
-  padding: 4px 0 !important;
+  padding: 3px 0;
 }
 
 .item-right {
   text-align: right;
-  font-variant-numeric: tabular-nums;
 }
 
 .item-italic {
   text-align: right;
   font-style: italic;
-  color: #6b7280;
-}
-
-#sfp .laporan-table tr:hover .item-left,
-#sfp .laporan-table tr:hover .item-right {
-  background-color: rgba(37, 99, 235, 0.06);
 }
 
 /* ===== Totals ===== */
 .total-line {
-  border-top: 1px solid #94a3c4;
+  border-top: 2px solid #000;
   line-height: 28px;
   font-weight: bold;
 }
@@ -204,38 +180,32 @@ table th, table td {
 
 .total-right {
   text-align: right;
-  font-variant-numeric: tabular-nums;
 }
 
 .total-italic {
   text-align: right;
   font-style: italic;
-  color: #6b7280;
 }
 
 /* ===== Grand Total ===== */
 .grand-total {
-  border-top: 2px solid #1e3a8a;
-  background: #e8edfa;
+  border-top: 3px double #000;
+  background: #f5f5f5;
   font-weight: bold;
   line-height: 30px;
 }
 
 .grand-left {
   text-align: left;
-  color: #1e3a8a;
 }
 
 .grand-right {
   text-align: right;
-  color: #1e3a8a;
-  font-variant-numeric: tabular-nums;
 }
 
 .grand-italic {
   text-align: right;
   font-style: italic;
-  color: #5b6a94;
 }
 
 /* ===== Spacers ===== */
@@ -251,52 +221,41 @@ table th, table td {
   height: 5px;
 }
 
-/* ===== Tombol Export/Print - pill gradien + ikon SVG, konsisten dgn
-   tombol Export Excel di tab SFP/SPL/CF Direct/CF Indirect FS1 (bedanya
-   di sini ada 2 tombol: Excel hijau, PDF merah/oranye, biar tetap gampang
-   dibedakan sekilas). Dulu tombol emoji polos (📊/🖨️), bentuk kotak. */
 .export-buttons {
   display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin: 4px 4px 14px;
+  justify-content: left;
+  gap: 12px;
+  margin-top: 10px;
 }
 
 .btn-export {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 12.5px;
+  font-family: Calibri, Arial, sans-serif;
+  font-size: 12px;              /* 🔹 lebih kecil */
   font-weight: 600;
-  letter-spacing: .2px;
-  padding: 8px 18px 8px 14px;
-  border-radius: 999px;
+  padding: 6px 14px;            /* 🔹 lebih ramping */
+  border-radius: 6px;
   border: none;
   cursor: pointer;
-  transition: box-shadow 0.15s ease, transform 0.15s ease, background 0.15s ease;
+  transition: all 0.2s ease;
   color: #fff;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .btn-export.excel {
-  background: linear-gradient(135deg, #1f7a4d, #14532d);
-  box-shadow: 0 2px 6px rgba(20, 83, 45, 0.28);
+  background: #1d6f42; /* hijau Excel */
 }
 
 .btn-export.excel:hover {
-  background: linear-gradient(135deg, #23935d, #185c36);
-  box-shadow: 0 4px 10px rgba(20, 83, 45, 0.35);
+  background: #218c53;
   transform: translateY(-1px);
 }
 
 .btn-export.pdf {
-  background: linear-gradient(135deg, #d64545, #a52a2a);
-  box-shadow: 0 2px 6px rgba(165, 42, 42, 0.28);
+  background: #b22222; /* merah PDF */
 }
 
 .btn-export.pdf:hover {
-  background: linear-gradient(135deg, #e05a5a, #b93333);
-  box-shadow: 0 4px 10px rgba(165, 42, 42, 0.35);
+  background: #d12b2b;
   transform: translateY(-1px);
 }
 
@@ -305,53 +264,7 @@ table th, table td {
   box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
 }
 
-/* ===== Freeze judul (header) SFP YTD =====
-   Judul laporan + baris kolom (Nirwana Alabare Garment/Knitting/Total) tetap
-   terlihat saat body digulir ke bawah. Caranya: baris judul dibungkus <thead>
-   (baris data ke <tbody>), lalu <thead> dibuat sticky. SEMUA lewat CSS class
-   (bukan inline style) & di-scope ke #sfp saja, supaya:
-   - Export Excel (baca .laporan-container.outerHTML) TIDAK berubah - class
-     max-height/overflow/sticky tidak ikut ter-serialize ke outerHTML.
-   - Print PDF (render .laporan-table langsung) TIDAK terpotong container.
-   - Tab/report lain (SPL, CF, versi Monthly) tidak ikut terpengaruh. */
-#sfp .laporan-container {
-  max-height: 70vh;
-  overflow: auto;
-  /* padding-top DIHILANGKAN (jadi 0) supaya header sticky menempel pas di tepi
-     atas kontainer. Kalau masih ada padding-top, baris data yang ter-scroll
-     nongol di celah 22px itu -> ini penyebab "bolong" di atas header. Padding
-     samping/bawah tetap dari rule .laporan-container umum. */
-  padding-top: 0;
-  scrollbar-width: thin;
-  scrollbar-color: #b7c3e0 #f1f4fa;
-}
-#sfp .laporan-container::-webkit-scrollbar { height: 10px; width: 10px; }
-#sfp .laporan-container::-webkit-scrollbar-track { background: #f1f4fa; }
-#sfp .laporan-container::-webkit-scrollbar-thumb {
-  background-color: #b7c3e0; border-radius: 8px; border: 2px solid #f1f4fa;
-}
-/* border-collapse: collapse + sticky thead = bug repaint di Chromium (header
-   "bolong"/tembus pas discroll cepat). Diganti ke separate + spacing 0 (persis
-   yang dipakai versi Monthly). Border tabel ini semuanya satu-sisi (border-top/
-   border-bottom di baris total & underline kolom), jadi separate TIDAK
-   menggandakan garis - tampilan sama. */
-#sfp .laporan-table {
-  border-collapse: separate;
-  border-spacing: 0;
-}
-#sfp .laporan-table thead {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-}
-/* Latar opaque penuh supaya baris data tidak menembus di belakang header saat
-   digulir; garis bawah tipis sebagai pembatas header vs body. */
-#sfp .laporan-table thead th {
-  background: #fafafa;
-}
-#sfp .laporan-table thead tr:last-child th {
-  box-shadow: inset 0 -1px 0 #ccd6ee;
-}
+
 
 </style>
 
@@ -381,23 +294,12 @@ table th, table td {
 
 
     <!-- HEADER -->
-<div class="export-buttons mt-2">
-  <button id="btnExcel" class="btn-export excel">
-    <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="2" y="2.5" width="16" height="15" rx="2" fill="#ffffff" fill-opacity=".15"/>
-      <rect x="2" y="2.5" width="16" height="15" rx="2" stroke="#ffffff" stroke-width="1.1"/>
-      <path d="M2 7.3h16M7.2 2.5v15" stroke="#ffffff" stroke-width="1.1"/>
-      <path d="M4.3 10.1l2.1 3.2M6.4 10.1l-2.1 3.2" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round"/>
-    </svg>
-    Export Excel
+<div class="export-buttons mt-2 ml-4">
+  <button id="btnExcel" class=" btn-export excel">
+    📊 Export Excel
   </button>
-  <button id="btnPDF" class="btn-export pdf">
-    <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="2" y="2.5" width="16" height="15" rx="2" fill="#ffffff" fill-opacity=".15"/>
-      <rect x="2" y="2.5" width="16" height="15" rx="2" stroke="#ffffff" stroke-width="1.1"/>
-      <path d="M6 6.5h8M6 10h8M6 13.5h5" stroke="#ffffff" stroke-width="1.1" stroke-linecap="round"/>
-    </svg>
-    Print PDF
+  <button id="btnPDF" class=" btn-export pdf">
+    🖨️ Print PDF
   </button>
 </div>
 
@@ -407,7 +309,6 @@ table th, table td {
     <div class="card-body p-4">
       <div class="laporan-container">
         <table class="laporan-table" border="0" role="grid" cellspacing="0">
-          <thead>
           <!-- Header Judul -->
           <tr>
             <th class="judul-left">PT NIRWANA ALABARE GARMENT</th>
@@ -429,7 +330,6 @@ table th, table td {
             <th class="judul-right">PT NIRWANA ALABARE GARMENT</th>
           </tr>
 
-          <tr>
           <th class="judul-left">LAPORAN POSISI KEUANGAN</th>
             <?php
               if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -535,8 +435,6 @@ table th, table td {
             ?>
             <th></th>
           </tr>
-          </thead>
-          <tbody>
 
           <!-- Section ASET -->
           <tr class="spacer">
@@ -1236,7 +1134,6 @@ table th, table td {
              ?>
             <th class="grand-italic">TOTAL LIABILITIES AND EQUITY</th>
           </tr>
-        </tbody>
 
         </table>
       </div>

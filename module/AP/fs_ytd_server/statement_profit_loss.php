@@ -1,54 +1,53 @@
 <style>
-  /* Reskin CSS-only - struktur HTML/PHP tabel (judul & data dalam 1
-     <table> yg sama, kolom dinamis ikut profit_center ALL/NAG/NAK) TIDAK
-     disentuh sama sekali (risiko tinggi kalau direstruktur, banyak logic
-     colspan tersebar) - cuma warna/spacing diselaraskan ke bahasa visual
-     biru-emas yang sudah dipakai di semua tab lain (SFP/CF Direct/CF
-     Indirect/Trial Balance/tab-tab FS1) - dulu semua hitam-putih monokrom
-     gaya cetak lama. */
-  #spl .card-body {
+  #sfp .card-body {
     background: #f9fafb;
   }
-  #spl table {
-    color: #2c3e50;
+  #sfp table {
+    color: #333;
   }
-  #spl th, #spl td {
+  #sfp th, #sfp td {
     padding: 8px 10px;
   }
-  #spl .table-primary {
+  #sfp .table-primary {
     background-color: #e9f3ff !important;
+  }
+  #sfp .btn-success {
+    background: linear-gradient(90deg, #28a745, #218838);
+    border: none;
+    transition: 0.3s;
+  }
+  #sfp .btn-success:hover {
+    opacity: 0.9;
   }
 
   table th, table td {
     padding: 0 !important;
   }
 
+
   .laporan-container-spl {
-    border: 1px solid #dbe3f0;
-    border-radius: 14px;
-    padding: 22px 28px 20px;
+    border: 2px solid #2c3e50;
+    border-radius: 10px;
+    padding: 15px 25px;
     background: #fafafa;
-    box-shadow: 0 4px 18px rgba(30, 58, 138, 0.08);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
   }
 
   .laporan-table-spl {
-    font-size: 13.5px;
+    font-size: 14px;
     margin: auto;
     width: 100%;
     border-collapse: collapse;
-    color: #2c3e50;
+    color: #2c3e50; 
   }
 
   /* ===== Header Styles ===== */
   .judul-left,
   .judul-right {
-    font-weight: 700;
-    font-size: 16.5px;
-    color: #1e3a8a;
-    letter-spacing: .2px;
-    line-height: 1.3 !important;
-    padding-bottom: 2px !important;
-    padding-top: 6px !important;
+    font-weight: bold;
+    line-height: 1.2 !important; 
+    padding-bottom: 0;
+    padding-top: 0;
   }
 
   .judul-left {
@@ -58,19 +57,15 @@
   .judul-right {
     text-align: right;
     font-style: italic;
-    font-size: 15px;
-    color: #6b7280;
-    font-weight: 600;
   }
 
   .subjudul-left,
   .subjudul-right {
-    line-height: 1.3 !important;
+    line-height: 0.7 !important; 
     padding-top: 0;
-    font-weight: 700;
-    font-size: 14.5px;
-    color: #2c3e50;
-    padding-bottom: 2px !important;
+    font-weight: bold;
+    padding-bottom: 0;
+    padding-top: 0;
   }
 
   .subjudul-left {
@@ -80,26 +75,22 @@
   .subjudul-right {
     text-align: right;
     font-style: italic;
-    color: #6b7280;
-    font-weight: 500;
   }
 
   .tanggal-left {
     text-align: left;
-    font-weight: 600;
-    color: #2c3e50;
+    font-weight: 500;
   }
 
   .tanggal-right {
     text-align: right;
     font-style: italic;
-    color: #6b7280;
   }
 
   .desc-left,
   .desc-right {
-    color: #777;
-    font-size: 12.5px;
+    color: #555;
+    font-size: 12px;
   }
 
   .desc-left {
@@ -109,46 +100,50 @@
   .desc-right {
     text-align: right;
     font-style: italic;
-    color: #999;
-  }
-
-  .periode,
-  .persentage,
-  .isi-periode,
-  .isi-persentage {
-    text-align: center;
-    border-bottom: 2px solid #1e3a8a;
-    color: #1e3a8a;
-    font-weight: 600;
-    padding-bottom: 6px !important;
   }
 
   .periode {
+    text-align: center;
+    border-bottom: 3px solid #000;
+    font-weight: bold;
+    padding-bottom: 5px;
     width: 220px !important;
   }
 
+  .persentage {
+    text-align: center;
+    border-bottom: 3px solid #000;
+    font-weight: bold;
+    padding-bottom: 5px;
+  }
+
   .isi-periode {
+    text-align: center;
+    border-bottom: 3px solid #000;
+    font-weight: bold;
+    padding-bottom: 5px;
     width: 180px !important;
   }
 
   .isi-persentage {
+    text-align: center;
+    border-bottom: 3px solid #000;
+    font-weight: bold;
+    padding-bottom: 5px;
     width: 50px !important;
   }
 
   .judul-periode {
     text-align: center;
-    font-weight: 600;
-    color: #2c3e50;
-    padding-bottom: 6px !important;
+    font-weight: bold;
+    padding-bottom: 5px;
   }
 
   /* ===== Sections ===== */
   .section-left,
   .section-right {
     font-weight: bold;
-    color: #1e3a8a;
-    font-size: 13.5px;
-    letter-spacing: .2px;
+    color: #2c3e50;
   }
 
   .section-left {
@@ -158,14 +153,11 @@
   .section-right {
     text-align: right;
     font-style: italic;
-    color: #6b7280;
-    font-weight: 600;
   }
 
   .subsection-left,
   .subsection-right {
     font-weight: bold;
-    color: #2c3e50;
   }
 
   .subsection-left {
@@ -175,34 +167,26 @@
   .subsection-right {
     text-align: right;
     font-style: italic;
-    color: #6b7280;
   }
 
   /* ===== Data Rows ===== */
   .item-left {
     text-align: left;
-    padding: 4px 0 !important;
+    padding: 3px 0;
   }
 
   .item-right {
     text-align: right;
-    font-variant-numeric: tabular-nums;
   }
 
   .item-italic {
     text-align: right;
     font-style: italic;
-    color: #6b7280;
-  }
-
-  #spl .laporan-table-spl tr:hover .item-left,
-  #spl .laporan-table-spl tr:hover .item-right {
-    background-color: rgba(37, 99, 235, 0.06);
   }
 
   /* ===== Totals ===== */
   .total-line {
-    border-top: 1px solid #94a3c4;
+    border-top: 2px solid #000;
     line-height: 28px;
     font-weight: bold;
   }
@@ -213,38 +197,32 @@
 
   .total-right {
     text-align: right;
-    font-variant-numeric: tabular-nums;
   }
 
   .total-italic {
     text-align: right;
     font-style: italic;
-    color: #6b7280;
   }
 
   /* ===== Grand Total ===== */
   .grand-total {
-    border-top: 2px solid #1e3a8a;
-    background: #e8edfa;
+    border-top: 3px double #000;
+    background: #f5f5f5;
     font-weight: bold;
     line-height: 30px;
   }
 
   .grand-left {
     text-align: left;
-    color: #1e3a8a;
   }
 
   .grand-right {
     text-align: right;
-    color: #1e3a8a;
-    font-variant-numeric: tabular-nums;
   }
 
   .grand-italic {
     text-align: right;
     font-style: italic;
-    color: #5b6a94;
   }
 
   /* ===== Spacers ===== */
@@ -260,98 +238,38 @@
     height: 5px;
   }
 
-
-  /* ===== Tombol Export/Print - pill gradien + ikon SVG, konsisten dgn
-     tombol Export Excel di tab lain. Dulu tombol kotak flat & emoji
-     (📊/🖨️). */
-  .export-buttons {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 10px;
-    margin: 4px 4px 14px;
-  }
-
-  .btn-export {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 12.5px;
-    font-weight: 600;
-    letter-spacing: .2px;
-    padding: 8px 18px 8px 14px;
-    border-radius: 999px;
-    border: none;
-    cursor: pointer;
-    transition: box-shadow 0.15s ease, transform 0.15s ease, background 0.15s ease;
-    color: #fff;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  }
-
-  .btn-export.excel {
-    background: linear-gradient(135deg, #1f7a4d, #14532d);
-    box-shadow: 0 2px 6px rgba(20, 83, 45, 0.28);
-  }
-
-  .btn-export.excel:hover {
-    background: linear-gradient(135deg, #23935d, #185c36);
-    box-shadow: 0 4px 10px rgba(20, 83, 45, 0.35);
-    transform: translateY(-1px);
-  }
-
-  .btn-export.pdf {
-    background: linear-gradient(135deg, #d64545, #a52a2a);
-    box-shadow: 0 2px 6px rgba(165, 42, 42, 0.28);
-  }
-
-  .btn-export.pdf:hover {
-    background: linear-gradient(135deg, #e05a5a, #b93333);
-    box-shadow: 0 4px 10px rgba(165, 42, 42, 0.35);
-    transform: translateY(-1px);
-  }
-
-  .btn-export:active {
-    transform: translateY(0);
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
-  }
-
-/* ===== Freeze judul (header) SPL YTD - pola sama persis dgn tab SFP:
-   baris judul dibungkus <thead> lalu di-sticky; container di-scroll; tabel
-   pakai border-collapse: separate supaya sticky tidak "bolong" di Chromium;
-   padding-top container 0 supaya tak ada celah di atas header. Scoped #spl,
-   class-based (Excel/PDF tidak berubah). */
-#spl .laporan-container-spl {
-  max-height: 70vh;
-  overflow: auto;
-  padding-top: 0;
-  scrollbar-width: thin;
-  scrollbar-color: #b7c3e0 #f1f4fa;
+ .export-buttons {
+  display: flex;
+  justify-content: flex-start; /* tombol di kiri */
+  align-items: center;
+  gap: 10px; /* jarak antar tombol */
+  margin-left: 15px; /* sedikit geser dari kiri */
 }
-#spl .laporan-container-spl::-webkit-scrollbar { height: 10px; width: 10px; }
-#spl .laporan-container-spl::-webkit-scrollbar-track { background: #f1f4fa; }
-#spl .laporan-container-spl::-webkit-scrollbar-thumb {
-  background-color: #b7c3e0; border-radius: 8px; border: 2px solid #f1f4fa;
+
+.btn-export {
+  background: #2c3e50;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s ease;
 }
-#spl .laporan-table-spl { border-collapse: separate; border-spacing: 0; }
-#spl .laporan-table-spl thead { position: sticky; top: 0; z-index: 5; }
-#spl .laporan-table-spl thead th { background: #fafafa; }
-#spl .laporan-table-spl thead tr:last-child th { box-shadow: inset 0 -1px 0 #ccd6ee; }
+
+.btn-export:hover {
+  background: #34495e;
+}
+
+.btn-export.excel {
+  background: #27ae60;
+}
+
+.btn-export.pdf {
+  background: #e74c3c;
+}
 </style>
 
-<?php
-// Guard pembagian nol - kalau basis (Penjualan Bersih NAG/NAK/ALL) = 0
-// (mis. periode belum ada transaksi sama sekali), PHP menghasilkan NAN
-// (0/0) atau INF (x/0) yang lolos ke number_format() jadi teks "nan%"/
-// "inf%" di tampilan. Semua ~54 baris "fsYtdSplPercent($x, $y)"
-// di file ini dibungkus lewat helper ini supaya tampil "0.00%" saja kalau
-// basisnya kosong, bukan "nan%".
-function fsYtdSplPercent($nilai, $basis) {
-    if (empty($basis)) {
-        return number_format(0, 2);
-    }
-    return number_format(($nilai / $basis * 100), 2);
-}
-?>
 
 <!-- HEADER -->
 <!-- <div class=" mt-2">
@@ -380,23 +298,12 @@ function fsYtdSplPercent($nilai, $basis) {
   </div>
 </div> -->
 
-<div class="export-buttons mt-2">
+<div class="export-buttons mt-2 text-left ml-4">
   <button id="btnExcel-spl" class="btn-export excel">
-    <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="2" y="2.5" width="16" height="15" rx="2" fill="#ffffff" fill-opacity=".15"/>
-      <rect x="2" y="2.5" width="16" height="15" rx="2" stroke="#ffffff" stroke-width="1.1"/>
-      <path d="M2 7.3h16M7.2 2.5v15" stroke="#ffffff" stroke-width="1.1"/>
-      <path d="M4.3 10.1l2.1 3.2M6.4 10.1l-2.1 3.2" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round"/>
-    </svg>
-    Export Excel
+    📊 Export Excel
   </button>
   <button id="btnPDF-spl" class="btn-export pdf">
-    <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="2" y="2.5" width="16" height="15" rx="2" fill="#ffffff" fill-opacity=".15"/>
-      <rect x="2" y="2.5" width="16" height="15" rx="2" stroke="#ffffff" stroke-width="1.1"/>
-      <path d="M6 6.5h8M6 10h8M6 13.5h5" stroke="#ffffff" stroke-width="1.1" stroke-linecap="round"/>
-    </svg>
-    Print PDF
+    🖨️ Print PDF
   </button>
 </div>
 
@@ -405,7 +312,6 @@ function fsYtdSplPercent($nilai, $basis) {
     <div class="card-body p-4" mt-0>
       <div class="laporan-container-spl" id="laporan-spl-ytd">
         <table class="laporan-table-spl" border="0" role="grid" cellspacing="0">
-          <thead>
 
           <!-- Header Judul -->
           <tr>
@@ -437,7 +343,6 @@ function fsYtdSplPercent($nilai, $basis) {
             ?>
           </tr>
 
-          <tr>
           <th class="judul-left">LAPORAN LABA ATAU RUGI DAN PENGHASILAN KOMPREHENSIF LAINNYA</th>
           <?php
           if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -464,7 +369,7 @@ function fsYtdSplPercent($nilai, $basis) {
 
         <tr>
           <th class="judul-left">
-            UNTUK TAHUN YANG BERAKHIR PADA TANGGAL
+            UNTUK TAHUN YANG BERAKHIR PADA TANGGAL 
             <?php
             $sqlakhir = mysqli_query($conn2,"SELECT tgl_akhir FROM tbl_tgl_tb WHERE bulan = '$bulan_akhir' AND tahun = '$tahun_akhir'");
             $rowakhir = mysqli_fetch_array($sqlakhir);
@@ -494,7 +399,7 @@ function fsYtdSplPercent($nilai, $basis) {
           }
           ?>
           <th class="judul-right">
-            FOR THE YEARS ENDED
+            FOR THE YEARS ENDED 
             <?php echo strtoupper(date("d F Y", strtotime($tgl_akhir))); ?>
           </th>
         </tr>
@@ -561,8 +466,6 @@ function fsYtdSplPercent($nilai, $basis) {
           ?>
           <th></th>
         </tr>
-        </thead>
-        <tbody>
 
         <!-- Section PENJUALAN KOTOR -->
         <tr class="spacer"></tr>
@@ -620,18 +523,18 @@ function fsYtdSplPercent($nilai, $basis) {
           $penjualan_kotor_nag = $row['total_nag'] ?? 0;
           $penjualan_kotor_nak = $row['total_nak'] ?? 0;
           $penjualan_kotor_all = $row['total_all'] ?? 0;
-          $per_penjualan_kotor_nag = fsYtdSplPercent($penjualan_kotor_nag, $penjualan_bersih_nag);
-          $per_penjualan_kotor_nak = fsYtdSplPercent($penjualan_kotor_nak, $penjualan_bersih_nak);
-          $per_penjualan_kotor_all = fsYtdSplPercent($penjualan_kotor_all, $penjualan_bersih_all);
+          $per_penjualan_kotor_nag = number_format(($penjualan_kotor_nag / $penjualan_bersih_nag * 100),2);
+          $per_penjualan_kotor_nak = number_format(($penjualan_kotor_nak / $penjualan_bersih_nak * 100),2);
+          $per_penjualan_kotor_all = number_format(($penjualan_kotor_all / $penjualan_bersih_all * 100),2);
           $pktr_nag = $penjualan_kotor_nag > 0 ? number_format($penjualan_kotor_nag,2) : '(' . number_format(abs($penjualan_kotor_nag),2) . ')';
           $pktr_nak = $penjualan_kotor_nak > 0 ? number_format($penjualan_kotor_nak,2) : '(' . number_format(abs($penjualan_kotor_nak),2) . ')';
           $pktr_all = $penjualan_kotor_all > 0 ? number_format($penjualan_kotor_all,2) : '(' . number_format(abs($penjualan_kotor_all),2) . ')';
           $total_penjualan_kotor_nag += $penjualan_kotor_nag;
           $total_penjualan_kotor_nak += $penjualan_kotor_nak;
           $total_penjualan_kotor_all += $penjualan_kotor_all;
-          $per_total_penjualan_kotor_nag = fsYtdSplPercent($total_penjualan_kotor_nag, $penjualan_bersih_nag);
-          $per_total_penjualan_kotor_nak = fsYtdSplPercent($total_penjualan_kotor_nak, $penjualan_bersih_nak);
-          $per_total_penjualan_kotor_all = fsYtdSplPercent($total_penjualan_kotor_all, $penjualan_bersih_all);
+          $per_total_penjualan_kotor_nag = number_format(($total_penjualan_kotor_nag / $penjualan_bersih_nag * 100),2);
+          $per_total_penjualan_kotor_nak = number_format(($total_penjualan_kotor_nak / $penjualan_bersih_nak * 100),2);
+          $per_total_penjualan_kotor_all = number_format(($total_penjualan_kotor_all / $penjualan_bersih_all * 100),2);
           $total_pktr_nag = $total_penjualan_kotor_nag > 0 ? number_format($total_penjualan_kotor_nag,2) : '(' . number_format(abs($total_penjualan_kotor_nag),2) . ')';
           $total_pktr_nak = $total_penjualan_kotor_nak > 0 ? number_format($total_penjualan_kotor_nak,2) : '(' . number_format(abs($total_penjualan_kotor_nak),2) . ')';
           $total_pktr_all = $total_penjualan_kotor_all > 0 ? number_format($total_penjualan_kotor_all,2) : '(' . number_format(abs($total_penjualan_kotor_all),2) . ')';
@@ -722,18 +625,18 @@ function fsYtdSplPercent($nilai, $basis) {
           $retur_penjualan_nag = $row2['total_nag'] ?? 0;
           $retur_penjualan_nak = $row2['total_nak'] ?? 0;
           $retur_penjualan_all = $row2['total_all'] ?? 0;
-          $per_retur_penjualan_nag = fsYtdSplPercent($retur_penjualan_nag, $penjualan_bersih_nag);
-          $per_retur_penjualan_nak = fsYtdSplPercent($retur_penjualan_nak, $penjualan_bersih_nak);
-          $per_retur_penjualan_all = fsYtdSplPercent($retur_penjualan_all, $penjualan_bersih_all);
+          $per_retur_penjualan_nag = number_format(($retur_penjualan_nag / $penjualan_bersih_nag * 100),2);
+          $per_retur_penjualan_nak = number_format(($retur_penjualan_nak / $penjualan_bersih_nak * 100),2);
+          $per_retur_penjualan_all = number_format(($retur_penjualan_all / $penjualan_bersih_all * 100),2);
           $rpj_nag = $retur_penjualan_nag > 0 ? number_format($retur_penjualan_nag,2) : '(' . number_format(abs($retur_penjualan_nag),2) . ')';
           $rpj_nak = $retur_penjualan_nak > 0 ? number_format($retur_penjualan_nak,2) : '(' . number_format(abs($retur_penjualan_nak),2) . ')';
           $rpj_all = $retur_penjualan_all > 0 ? number_format($retur_penjualan_all,2) : '(' . number_format(abs($retur_penjualan_all),2) . ')';
           $total_retur_penjualan_nag += $retur_penjualan_nag;
           $total_retur_penjualan_nak += $retur_penjualan_nak;
           $total_retur_penjualan_all += $retur_penjualan_all;
-          $per_total_retur_penjualan_nag = fsYtdSplPercent($total_retur_penjualan_nag, $penjualan_bersih_nag);
-          $per_total_retur_penjualan_nak = fsYtdSplPercent($total_retur_penjualan_nak, $penjualan_bersih_nak);
-          $per_total_retur_penjualan_all = fsYtdSplPercent($total_retur_penjualan_all, $penjualan_bersih_all);
+          $per_total_retur_penjualan_nag = number_format(($total_retur_penjualan_nag / $penjualan_bersih_nag * 100),2);
+          $per_total_retur_penjualan_nak = number_format(($total_retur_penjualan_nak / $penjualan_bersih_nak * 100),2);
+          $per_total_retur_penjualan_all = number_format(($total_retur_penjualan_all / $penjualan_bersih_all * 100),2);
           $total_rpj_nag = $total_retur_penjualan_nag > 0 ? number_format($total_retur_penjualan_nag,2) : '(' . number_format(abs($total_retur_penjualan_nag),2) . ')';
           $total_rpj_nak = $total_retur_penjualan_nak > 0 ? number_format($total_retur_penjualan_nak,2) : '(' . number_format(abs($total_retur_penjualan_nak),2) . ')';
           $total_rpj_all = $total_retur_penjualan_all > 0 ? number_format($total_retur_penjualan_all,2) : '(' . number_format(abs($total_retur_penjualan_all),2) . ')';
@@ -824,18 +727,18 @@ function fsYtdSplPercent($nilai, $basis) {
           $potongan_penjualan_nag = $row3['total_nag'] ?? 0;
           $potongan_penjualan_nak = $row3['total_nak'] ?? 0;
           $potongan_penjualan_all = $row3['total_all'] ?? 0;
-          $per_potongan_penjualan_nag = fsYtdSplPercent($potongan_penjualan_nag, $penjualan_bersih_nag);
-          $per_potongan_penjualan_nak = fsYtdSplPercent($potongan_penjualan_nak, $penjualan_bersih_nak);
-          $per_potongan_penjualan_all = fsYtdSplPercent($potongan_penjualan_all, $penjualan_bersih_all);
+          $per_potongan_penjualan_nag = number_format(($potongan_penjualan_nag / $penjualan_bersih_nag * 100),2);
+          $per_potongan_penjualan_nak = number_format(($potongan_penjualan_nak / $penjualan_bersih_nak * 100),2);
+          $per_potongan_penjualan_all = number_format(($potongan_penjualan_all / $penjualan_bersih_all * 100),2);
           $ppj_nag = $potongan_penjualan_nag > 0 ? number_format($potongan_penjualan_nag,2) : '(' . number_format(abs($potongan_penjualan_nag),2) . ')';
           $ppj_nak = $potongan_penjualan_nak > 0 ? number_format($potongan_penjualan_nak,2) : '(' . number_format(abs($potongan_penjualan_nak),2) . ')';
           $ppj_all = $potongan_penjualan_all > 0 ? number_format($potongan_penjualan_all,2) : '(' . number_format(abs($potongan_penjualan_all),2) . ')';
           $total_potongan_penjualan_nag += $potongan_penjualan_nag;
           $total_potongan_penjualan_nak += $potongan_penjualan_nak;
           $total_potongan_penjualan_all += $potongan_penjualan_all;
-          $per_total_potongan_penjualan_nag = fsYtdSplPercent($total_potongan_penjualan_nag, $penjualan_bersih_nag);
-          $per_total_potongan_penjualan_nak = fsYtdSplPercent($total_potongan_penjualan_nak, $penjualan_bersih_nak);
-          $per_total_potongan_penjualan_all = fsYtdSplPercent($total_potongan_penjualan_all, $penjualan_bersih_all);
+          $per_total_potongan_penjualan_nag = number_format(($total_potongan_penjualan_nag / $penjualan_bersih_nag * 100),2);
+          $per_total_potongan_penjualan_nak = number_format(($total_potongan_penjualan_nak / $penjualan_bersih_nak * 100),2);
+          $per_total_potongan_penjualan_all = number_format(($total_potongan_penjualan_all / $penjualan_bersih_all * 100),2);
           $total_ppj_nag = $total_potongan_penjualan_nag > 0 ? number_format($total_potongan_penjualan_nag,2) : '(' . number_format(abs($total_potongan_penjualan_nag),2) . ')';
           $total_ppj_nak = $total_potongan_penjualan_nak > 0 ? number_format($total_potongan_penjualan_nak,2) : '(' . number_format(abs($total_potongan_penjualan_nak),2) . ')';
           $total_ppj_all = $total_potongan_penjualan_all > 0 ? number_format($total_potongan_penjualan_all,2) : '(' . number_format(abs($total_potongan_penjualan_all),2) . ')';
@@ -955,18 +858,18 @@ function fsYtdSplPercent($nilai, $basis) {
           $beban_pokok_nag = $row4['total_nag'] ?? 0;
           $beban_pokok_nak = $row4['total_nak'] ?? 0;
           $beban_pokok_all = $row4['total_all'] ?? 0;
-          $per_beban_pokok_nag = fsYtdSplPercent($beban_pokok_nag, $penjualan_bersih_nag);
-          $per_beban_pokok_nak = fsYtdSplPercent($beban_pokok_nak, $penjualan_bersih_nak);
-          $per_beban_pokok_all = fsYtdSplPercent($beban_pokok_all, $penjualan_bersih_all);
+          $per_beban_pokok_nag = number_format(($beban_pokok_nag / $penjualan_bersih_nag * 100),2);
+          $per_beban_pokok_nak = number_format(($beban_pokok_nak / $penjualan_bersih_nak * 100),2);
+          $per_beban_pokok_all = number_format(($beban_pokok_all / $penjualan_bersih_all * 100),2);
           $bpp_nag = $beban_pokok_nag > 0 ? number_format($beban_pokok_nag,2) : '(' . number_format(abs($beban_pokok_nag),2) . ')';
           $bpp_nak = $beban_pokok_nak > 0 ? number_format($beban_pokok_nak,2) : '(' . number_format(abs($beban_pokok_nak),2) . ')';
           $bpp_all = $beban_pokok_all > 0 ? number_format($beban_pokok_all,2) : '(' . number_format(abs($beban_pokok_all),2) . ')';
           $total_beban_pokok_nag += $beban_pokok_nag;
           $total_beban_pokok_nak += $beban_pokok_nak;
           $total_beban_pokok_all += $beban_pokok_all;
-          $per_total_beban_pokok_nag = fsYtdSplPercent($total_beban_pokok_nag, $penjualan_bersih_nag);
-          $per_total_beban_pokok_nak = fsYtdSplPercent($total_beban_pokok_nak, $penjualan_bersih_nak);
-          $per_total_beban_pokok_all = fsYtdSplPercent($total_beban_pokok_all, $penjualan_bersih_all);
+          $per_total_beban_pokok_nag = number_format(($total_beban_pokok_nag / $penjualan_bersih_nag * 100),2);
+          $per_total_beban_pokok_nak = number_format(($total_beban_pokok_nak / $penjualan_bersih_nak * 100),2);
+          $per_total_beban_pokok_all = number_format(($total_beban_pokok_all / $penjualan_bersih_all * 100),2);
           $total_bpp_nag = $total_beban_pokok_nag > 0 ? number_format($total_beban_pokok_nag,2) : '(' . number_format(abs($total_beban_pokok_nag),2) . ')';
           $total_bpp_nak = $total_beban_pokok_nak > 0 ? number_format($total_beban_pokok_nak,2) : '(' . number_format(abs($total_beban_pokok_nak),2) . ')';
           $total_bpp_all = $total_beban_pokok_all > 0 ? number_format($total_beban_pokok_all,2) : '(' . number_format(abs($total_beban_pokok_all),2) . ')';
@@ -1026,9 +929,9 @@ function fsYtdSplPercent($nilai, $basis) {
           $total_lrk_nak = $total_laba_rugi_kotor_nak > 0 ? number_format($total_laba_rugi_kotor_nak,2) : '(' . number_format(abs($total_laba_rugi_kotor_nak),2) . ')';
           $total_lrk_all = $total_laba_rugi_kotor_all > 0 ? number_format($total_laba_rugi_kotor_all,2) : '(' . number_format(abs($total_laba_rugi_kotor_all),2) . ')';
 
-          $per_total_laba_rugi_kotor_nag = fsYtdSplPercent($total_laba_rugi_kotor_nag, $penjualan_bersih_nag);
-          $per_total_laba_rugi_kotor_nak = fsYtdSplPercent($total_laba_rugi_kotor_nak, $penjualan_bersih_nak);
-          $per_total_laba_rugi_kotor_all = fsYtdSplPercent($total_laba_rugi_kotor_all, $penjualan_bersih_all);
+          $per_total_laba_rugi_kotor_nag = number_format(($total_laba_rugi_kotor_nag / $penjualan_bersih_nag * 100),2);
+          $per_total_laba_rugi_kotor_nak = number_format(($total_laba_rugi_kotor_nak / $penjualan_bersih_nak * 100),2);
+          $per_total_laba_rugi_kotor_all = number_format(($total_laba_rugi_kotor_all / $penjualan_bersih_all * 100),2);
 
           if ($profit_center == 'ALL') {
             echo "<th class='grand-right'>{$total_lrk_nag}</th>";
@@ -1065,18 +968,18 @@ function fsYtdSplPercent($nilai, $basis) {
           $beban_lainnya_nag = $row5['total_nag'] ?? 0;
           $beban_lainnya_nak = $row5['total_nak'] ?? 0;
           $beban_lainnya_all = $row5['total_all'] ?? 0;
-          $per_beban_lainnya_nag = fsYtdSplPercent($beban_lainnya_nag, $penjualan_bersih_nag);
-          $per_beban_lainnya_nak = fsYtdSplPercent($beban_lainnya_nak, $penjualan_bersih_nak);
-          $per_beban_lainnya_all = fsYtdSplPercent($beban_lainnya_all, $penjualan_bersih_all);
+          $per_beban_lainnya_nag = number_format(($beban_lainnya_nag / $penjualan_bersih_nag * 100),2);
+          $per_beban_lainnya_nak = number_format(($beban_lainnya_nak / $penjualan_bersih_nak * 100),2);
+          $per_beban_lainnya_all = number_format(($beban_lainnya_all / $penjualan_bersih_all * 100),2);
           $bln_nag = $beban_lainnya_nag > 0 ? number_format($beban_lainnya_nag,2) : '(' . number_format(abs($beban_lainnya_nag),2) . ')';
           $bln_nak = $beban_lainnya_nak > 0 ? number_format($beban_lainnya_nak,2) : '(' . number_format(abs($beban_lainnya_nak),2) . ')';
           $bln_all = $beban_lainnya_all > 0 ? number_format($beban_lainnya_all,2) : '(' . number_format(abs($beban_lainnya_all),2) . ')';
           $total_beban_lainnya_nag += $beban_lainnya_nag;
           $total_beban_lainnya_nak += $beban_lainnya_nak;
           $total_beban_lainnya_all += $beban_lainnya_all;
-          $per_total_beban_lainnya_nag = fsYtdSplPercent($total_beban_lainnya_nag, $penjualan_bersih_nag);
-          $per_total_beban_lainnya_nak = fsYtdSplPercent($total_beban_lainnya_nak, $penjualan_bersih_nak);
-          $per_total_beban_lainnya_all = fsYtdSplPercent($total_beban_lainnya_all, $penjualan_bersih_all);
+          $per_total_beban_lainnya_nag = number_format(($total_beban_lainnya_nag / $penjualan_bersih_nag * 100),2);
+          $per_total_beban_lainnya_nak = number_format(($total_beban_lainnya_nak / $penjualan_bersih_nak * 100),2);
+          $per_total_beban_lainnya_all = number_format(($total_beban_lainnya_all / $penjualan_bersih_all * 100),2);
           $total_bln_nag = $total_beban_lainnya_nag > 0 ? number_format($total_beban_lainnya_nag,2) : '(' . number_format(abs($total_beban_lainnya_nag),2) . ')';
           $total_bln_nak = $total_beban_lainnya_nak > 0 ? number_format($total_beban_lainnya_nak,2) : '(' . number_format(abs($total_beban_lainnya_nak),2) . ')';
           $total_bln_all = $total_beban_lainnya_all > 0 ? number_format($total_beban_lainnya_all,2) : '(' . number_format(abs($total_beban_lainnya_all),2) . ')';
@@ -1116,9 +1019,9 @@ function fsYtdSplPercent($nilai, $basis) {
           $total_lrsb_nak = $total_laba_rugi_sebelum_bunga_nak > 0 ? number_format($total_laba_rugi_sebelum_bunga_nak,2) : '(' . number_format(abs($total_laba_rugi_sebelum_bunga_nak),2) . ')';
           $total_lrsb_all = $total_laba_rugi_sebelum_bunga_all > 0 ? number_format($total_laba_rugi_sebelum_bunga_all,2) : '(' . number_format(abs($total_laba_rugi_sebelum_bunga_all),2) . ')';
 
-          $per_total_laba_rugi_sebelum_bunga_nag = fsYtdSplPercent($total_laba_rugi_sebelum_bunga_nag, $penjualan_bersih_nag);
-          $per_total_laba_rugi_sebelum_bunga_nak = fsYtdSplPercent($total_laba_rugi_sebelum_bunga_nak, $penjualan_bersih_nak);
-          $per_total_laba_rugi_sebelum_bunga_all = fsYtdSplPercent($total_laba_rugi_sebelum_bunga_all, $penjualan_bersih_all);
+          $per_total_laba_rugi_sebelum_bunga_nag = number_format(($total_laba_rugi_sebelum_bunga_nag / $penjualan_bersih_nag * 100),2);
+          $per_total_laba_rugi_sebelum_bunga_nak = number_format(($total_laba_rugi_sebelum_bunga_nak / $penjualan_bersih_nak * 100),2);
+          $per_total_laba_rugi_sebelum_bunga_all = number_format(($total_laba_rugi_sebelum_bunga_all / $penjualan_bersih_all * 100),2);
 
           if ($profit_center == 'ALL') {
             echo "<th class='grand-right'>{$total_lrsb_nag}</th>";
@@ -1155,18 +1058,18 @@ function fsYtdSplPercent($nilai, $basis) {
           $beban_bunga_nag = $row6['total_nag'] ?? 0;
           $beban_bunga_nak = $row6['total_nak'] ?? 0;
           $beban_bunga_all = $row6['total_all'] ?? 0;
-          $per_beban_bunga_nag = fsYtdSplPercent($beban_bunga_nag, $penjualan_bersih_nag);
-          $per_beban_bunga_nak = fsYtdSplPercent($beban_bunga_nak, $penjualan_bersih_nak);
-          $per_beban_bunga_all = fsYtdSplPercent($beban_bunga_all, $penjualan_bersih_all);
+          $per_beban_bunga_nag = number_format(($beban_bunga_nag / $penjualan_bersih_nag * 100),2);
+          $per_beban_bunga_nak = number_format(($beban_bunga_nak / $penjualan_bersih_nak * 100),2);
+          $per_beban_bunga_all = number_format(($beban_bunga_all / $penjualan_bersih_all * 100),2);
           $bbng_nag = $beban_bunga_nag > 0 ? number_format($beban_bunga_nag,2) : '(' . number_format(abs($beban_bunga_nag),2) . ')';
           $bbng_nak = $beban_bunga_nak > 0 ? number_format($beban_bunga_nak,2) : '(' . number_format(abs($beban_bunga_nak),2) . ')';
           $bbng_all = $beban_bunga_all > 0 ? number_format($beban_bunga_all,2) : '(' . number_format(abs($beban_bunga_all),2) . ')';
           $total_beban_bunga_nag += $beban_bunga_nag;
           $total_beban_bunga_nak += $beban_bunga_nak;
           $total_beban_bunga_all += $beban_bunga_all;
-          $per_total_beban_bunga_nag = fsYtdSplPercent($total_beban_bunga_nag, $penjualan_bersih_nag);
-          $per_total_beban_bunga_nak = fsYtdSplPercent($total_beban_bunga_nak, $penjualan_bersih_nak);
-          $per_total_beban_bunga_all = fsYtdSplPercent($total_beban_bunga_all, $penjualan_bersih_all);
+          $per_total_beban_bunga_nag = number_format(($total_beban_bunga_nag / $penjualan_bersih_nag * 100),2);
+          $per_total_beban_bunga_nak = number_format(($total_beban_bunga_nak / $penjualan_bersih_nak * 100),2);
+          $per_total_beban_bunga_all = number_format(($total_beban_bunga_all / $penjualan_bersih_all * 100),2);
           $total_bbng_nag = $total_beban_bunga_nag > 0 ? number_format($total_beban_bunga_nag,2) : '(' . number_format(abs($total_beban_bunga_nag),2) . ')';
           $total_bbng_nak = $total_beban_bunga_nak > 0 ? number_format($total_beban_bunga_nak,2) : '(' . number_format(abs($total_beban_bunga_nak),2) . ')';
           $total_bbng_all = $total_beban_bunga_all > 0 ? number_format($total_beban_bunga_all,2) : '(' . number_format(abs($total_beban_bunga_all),2) . ')';
@@ -1206,9 +1109,9 @@ function fsYtdSplPercent($nilai, $basis) {
           $total_lrsp_nak = $total_laba_rugi_sebelum_pajak_nak > 0 ? number_format($total_laba_rugi_sebelum_pajak_nak,2) : '(' . number_format(abs($total_laba_rugi_sebelum_pajak_nak),2) . ')';
           $total_lrsp_all = $total_laba_rugi_sebelum_pajak_all > 0 ? number_format($total_laba_rugi_sebelum_pajak_all,2) : '(' . number_format(abs($total_laba_rugi_sebelum_pajak_all),2) . ')';
 
-          $per_total_laba_rugi_sebelum_pajak_nag = fsYtdSplPercent($total_laba_rugi_sebelum_pajak_nag, $penjualan_bersih_nag);
-          $per_total_laba_rugi_sebelum_pajak_nak = fsYtdSplPercent($total_laba_rugi_sebelum_pajak_nak, $penjualan_bersih_nak);
-          $per_total_laba_rugi_sebelum_pajak_all = fsYtdSplPercent($total_laba_rugi_sebelum_pajak_all, $penjualan_bersih_all);
+          $per_total_laba_rugi_sebelum_pajak_nag = number_format(($total_laba_rugi_sebelum_pajak_nag / $penjualan_bersih_nag * 100),2);
+          $per_total_laba_rugi_sebelum_pajak_nak = number_format(($total_laba_rugi_sebelum_pajak_nak / $penjualan_bersih_nak * 100),2);
+          $per_total_laba_rugi_sebelum_pajak_all = number_format(($total_laba_rugi_sebelum_pajak_all / $penjualan_bersih_all * 100),2);
 
           if ($profit_center == 'ALL') {
             echo "<th class='grand-right'>{$total_lrsp_nag}</th>";
@@ -1245,18 +1148,18 @@ function fsYtdSplPercent($nilai, $basis) {
           $beban_pajak_nag = $row7['total_nag'] ?? 0;
           $beban_pajak_nak = $row7['total_nak'] ?? 0;
           $beban_pajak_all = $row7['total_all'] ?? 0;
-          $per_beban_pajak_nag = fsYtdSplPercent($beban_pajak_nag, $penjualan_bersih_nag);
-          $per_beban_pajak_nak = fsYtdSplPercent($beban_pajak_nak, $penjualan_bersih_nak);
-          $per_beban_pajak_all = fsYtdSplPercent($beban_pajak_all, $penjualan_bersih_all);
+          $per_beban_pajak_nag = number_format(($beban_pajak_nag / $penjualan_bersih_nag * 100),2);
+          $per_beban_pajak_nak = number_format(($beban_pajak_nak / $penjualan_bersih_nak * 100),2);
+          $per_beban_pajak_all = number_format(($beban_pajak_all / $penjualan_bersih_all * 100),2);
           $bpjk_nag = $beban_pajak_nag > 0 ? number_format($beban_pajak_nag,2) : '(' . number_format(abs($beban_pajak_nag),2) . ')';
           $bpjk_nak = $beban_pajak_nak > 0 ? number_format($beban_pajak_nak,2) : '(' . number_format(abs($beban_pajak_nak),2) . ')';
           $bpjk_all = $beban_pajak_all > 0 ? number_format($beban_pajak_all,2) : '(' . number_format(abs($beban_pajak_all),2) . ')';
           $total_beban_pajak_nag += $beban_pajak_nag;
           $total_beban_pajak_nak += $beban_pajak_nak;
           $total_beban_pajak_all += $beban_pajak_all;
-          $per_total_beban_pajak_nag = fsYtdSplPercent($total_beban_pajak_nag, $penjualan_bersih_nag);
-          $per_total_beban_pajak_nak = fsYtdSplPercent($total_beban_pajak_nak, $penjualan_bersih_nak);
-          $per_total_beban_pajak_all = fsYtdSplPercent($total_beban_pajak_all, $penjualan_bersih_all);
+          $per_total_beban_pajak_nag = number_format(($total_beban_pajak_nag / $penjualan_bersih_nag * 100),2);
+          $per_total_beban_pajak_nak = number_format(($total_beban_pajak_nak / $penjualan_bersih_nak * 100),2);
+          $per_total_beban_pajak_all = number_format(($total_beban_pajak_all / $penjualan_bersih_all * 100),2);
           $total_bpjk_nag = $total_beban_pajak_nag > 0 ? number_format($total_beban_pajak_nag,2) : '(' . number_format(abs($total_beban_pajak_nag),2) . ')';
           $total_bpjk_nak = $total_beban_pajak_nak > 0 ? number_format($total_beban_pajak_nak,2) : '(' . number_format(abs($total_beban_pajak_nak),2) . ')';
           $total_bpjk_all = $total_beban_pajak_all > 0 ? number_format($total_beban_pajak_all,2) : '(' . number_format(abs($total_beban_pajak_all),2) . ')';
@@ -1296,9 +1199,9 @@ function fsYtdSplPercent($nilai, $basis) {
           $total_lrsp_nak = $total_laba_rugi_bersih_nak > 0 ? number_format($total_laba_rugi_bersih_nak,2) : '(' . number_format(abs($total_laba_rugi_bersih_nak),2) . ')';
           $total_lrsp_all = $total_laba_rugi_bersih_all > 0 ? number_format($total_laba_rugi_bersih_all,2) : '(' . number_format(abs($total_laba_rugi_bersih_all),2) . ')';
 
-          $per_total_laba_rugi_bersih_nag = fsYtdSplPercent($total_laba_rugi_bersih_nag, $penjualan_bersih_nag);
-          $per_total_laba_rugi_bersih_nak = fsYtdSplPercent($total_laba_rugi_bersih_nak, $penjualan_bersih_nak);
-          $per_total_laba_rugi_bersih_all = fsYtdSplPercent($total_laba_rugi_bersih_all, $penjualan_bersih_all);
+          $per_total_laba_rugi_bersih_nag = number_format(($total_laba_rugi_bersih_nag / $penjualan_bersih_nag * 100),2);
+          $per_total_laba_rugi_bersih_nak = number_format(($total_laba_rugi_bersih_nak / $penjualan_bersih_nak * 100),2);
+          $per_total_laba_rugi_bersih_all = number_format(($total_laba_rugi_bersih_all / $penjualan_bersih_all * 100),2);
 
           if ($profit_center == 'ALL') {
             echo "<th class='grand-right'>{$total_lrsp_nag}</th>";
@@ -1317,7 +1220,6 @@ function fsYtdSplPercent($nilai, $basis) {
           ?>
           <th class="grand-italic">NET INCOME / (LOSS)</th>
         </tr>
-        </tbody>
 
 
       </table>

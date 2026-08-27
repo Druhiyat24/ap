@@ -1899,7 +1899,7 @@ if($id == '78'){
          <span class="menu-collapsed">General Ledger New</span>
          </a>';
           }
-     }if(strpos($id, '104') !== false){ 
+     }if(strpos($id, '104') !== false){ // SEMENTARA tampil lagi utk pembanding (tampilan lama)
          echo'<a href="AP/trial_balance.php" class="dropdown-item bg-dark text-white">
          <span class="fas fa-chart-line"></span>
          <span class="menu-collapsed">Trial Balance</span>
@@ -1938,7 +1938,7 @@ if($id == '78'){
   }
     echo'</ul>
     </li>';
-    if(strpos($id, '53') !== false){ 
+    if(strpos($id, '53') !== false){ // SEMENTARA tampil lagi utk pembanding (tampilan lama)
      echo'<li class="dropdown-submenu ">
      <a class="dropdown-item bg-dark text-white" href="#">
      <span class="fa fa-balance-scale fa-fw"></span>
@@ -1957,7 +1957,7 @@ if($id == '78'){
      </li>';
  }
 
- if($user == 'indro' || $user == 'willy' || $user == 'steven'){ 
+ if($user == 'indro' || $user == 'willy' || $user == 'steven'){ // SEMENTARA tampil lagi utk pembanding (versi server: YTD saja)
    echo'<li class="dropdown-submenu ">
    <a class="dropdown-item bg-dark text-white" href="#">
    <span class="fa fa-balance-scale fa-fw"></span>
@@ -1974,7 +1974,20 @@ if($id == '78'){
 
 }
 
-if(strpos($id2, '88') !== false){ 
+// Menu Financial Statement terpadu (menggantikan Trial Balance / FS1 / FS2 lama).
+// Digate lewat nama userrole baru: 'FS - ALL' atau 'FS - Trial Balance Only'.
+// Cek by-name (bukan strpos id) supaya id 132/133/134 tidak salah-cocok substring.
+$user_esc_fs = mysqli_real_escape_string($conn2, $user);
+$q_fsmenu = mysqli_query($conn2, "select count(*) as c from useraccess where username = '$user_esc_fs' and menu in ('FS - ALL','FS - Trial Balance Only')");
+$has_fs_menu = ($q_fsmenu && ($rw_fs = mysqli_fetch_assoc($q_fsmenu)) && (int)$rw_fs['c'] > 0);
+if($has_fs_menu){
+ echo'<a href="AP/financial_statement.php" class="dropdown-item bg-dark text-white">
+ <span class="fa fa-balance-scale fa-fw"></span>
+ <span class="menu-collapsed">Financial Statement (New)</span>
+ </a>';
+}
+
+if(strpos($id2, '88') !== false){
         // code...
  echo'<a href="AP/closing-periode.php" class="dropdown-item bg-dark text-white">
  <span class="fas fa-lock fa-fw"></span>
@@ -2580,6 +2593,18 @@ echo '</ul>
     <span class="fa fa-rocket mr-1"></span> Project
   </a>
 </li>
+<?php /* Disembunyikan sementara - halaman tetap bisa diakses via link langsung
+<li class="nav-item active">
+  <a href="AP/menu-docs.php" class="nav-link">
+    <span class="fa fa-book mr-1"></span> Menu Docs
+  </a>
+</li>
+<li class="nav-item active">
+  <a href="AP/journal-balance-tracker.php" class="nav-link">
+    <span class="fa fa-balance-scale mr-1"></span> Journal Tracker
+  </a>
+</li>
+*/ ?>
 <?php endif; ?>
 <!-- END Menu Project -->
 

@@ -64,14 +64,28 @@
  
     <table style="width:100%;font-size:10px;" border="1" >
         <tr>
-            <th rowspan="2" style="text-align: center;vertical-align: middle;">No</th>
-            <th rowspan="2" style="text-align: center;vertical-align: middle;">No coa</th>
-            <th rowspan="2" style="text-align: center;vertical-align: middle;">COA Name</th>
-            <th rowspan="2" style="text-align: center;vertical-align: middle;">Category 1</th>
-            <th rowspan="2" style="text-align: center;vertical-align: middle;">Category 2</th>
-            <th rowspan="2" style="text-align: center;vertical-align: middle;">Category 3</th>
-            <th rowspan="2" style="text-align: center;vertical-align: middle;">Category 4</th>
+            <th style="text-align: center;vertical-align: middle;border-bottom:none;">No</th>
+            <th style="text-align: center;vertical-align: middle;border-bottom:none;">No coa</th>
+            <th style="text-align: center;vertical-align: middle;border-bottom:none;">COA Name</th>
+            <th style="text-align: center;vertical-align: middle;border-bottom:none;">Category 1</th>
+            <th style="text-align: center;vertical-align: middle;border-bottom:none;">Category 2</th>
+            <th style="text-align: center;vertical-align: middle;border-bottom:none;">Category 3</th>
+            <th style="text-align: center;vertical-align: middle;border-bottom:none;">Category 4</th>
             <?php
+            // rowspan="2" (baris No/No coa/COA Name/Category 1-4 di atas) &
+            // colspan pada nama PC DULU bikin Excel benar2 nge-merge sel
+            // (rowspan/colspan HTML diterjemahkan Excel jadi merged cell
+            // sungguhan, ganggu sort/filter/formula user) - sekarang
+            // No/No coa/COA Name/Category 1-4 dipecah jadi 2 <th> terpisah
+            // per kolom (baris ke-2 di bawah isinya blank, border atas-
+            // bawah "disambung" pakai border-bottom:none/border-top:none
+            // biar VISUAL tetap kelihatan seperti 1 sel gabungan 2 baris,
+            // padahal teknis 2 sel independen) - pola disalin persis dari
+            // ekspor_tb_monthly_fs2.php (FS2 Monthly) yg sudah begini dari
+            // awal. Header nama PC (Nirwana Alabare Garment dst.) TETAP
+            // pakai colspan="4" - itu genuinely 1 grup 4 kolom (Beginning
+            // Balance/Debit/Credit/Ending Balance), sama seperti header
+            // periode di FS2 Monthly yg juga pakai colspan.
             if ($profit_center == 'ALL') {
                 echo '<th colspan="4">Nirwana Alabare Garment</th>';
                 echo '<th colspan="4">Nirwana Alabare Knitting</th>';
@@ -84,6 +98,13 @@
             ?>
         </tr>
         <tr>
+            <th style="border-top:none;"></th>
+            <th style="border-top:none;"></th>
+            <th style="border-top:none;"></th>
+            <th style="border-top:none;"></th>
+            <th style="border-top:none;"></th>
+            <th style="border-top:none;"></th>
+            <th style="border-top:none;"></th>
             <?php
             if ($profit_center == 'ALL') {
                 echo '<th>Beginning Balance</th>';

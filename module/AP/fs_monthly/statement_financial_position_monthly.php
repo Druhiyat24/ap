@@ -9,28 +9,36 @@
   padding: 6px 10px;
 }
 
-.sfpm-export-buttons {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 10px;
-}
 .sfpm-btn-export-excel {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
   font-size: 12.5px;
   font-weight: 600;
+  letter-spacing: .2px;
   color: #fff;
-  background: #1d6f42;
+  background: linear-gradient(135deg, #1f7a4d, #14532d);
   border: none;
-  border-radius: 6px;
-  padding: 7px 16px;
+  border-radius: 999px;
+  padding: 8px 18px 8px 14px;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-  transition: background 0.15s ease, transform 0.1s ease;
+  box-shadow: 0 2px 6px rgba(20, 83, 45, 0.28);
+  transition: box-shadow 0.15s ease, transform 0.15s ease, background 0.15s ease;
+}
+.sfpm-btn-export-excel .sfpm-btn-icon {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
 }
 .sfpm-btn-export-excel:hover {
-  background: #218c53;
+  background: linear-gradient(135deg, #23935d, #185c36);
+  box-shadow: 0 4px 10px rgba(20, 83, 45, 0.35);
+  transform: translateY(-1px);
 }
 .sfpm-btn-export-excel:active {
-  transform: translateY(1px);
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(20, 83, 45, 0.3);
 }
 
 /* Bungkus luar (border/radius/shadow) - overflow:hidden di sini yang
@@ -126,6 +134,10 @@
    & disclaimer mata uang), gaya italic. Kolom deskripsi EN yang dulu ada di
    paling kanan tabel sudah dihapus sepenuhnya (lihat .periode-desc). */
 .sfp-title-block {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
   text-align: left;
   padding: 18px 25px 14px;
   background: #fafafa;
@@ -404,92 +416,6 @@ $lastPeriod = end($periods);
 $pcCols = ($profit_center === 'ALL') ? ['NAG', 'NAK', 'ALL'] : [$profit_center];
 $pcColLabels = ['ALL' => 'Total'];
 
-// Semua kolom (NAG, NAK, Total) dalam 1 bulan yang sama dikasih class ganjil
-// atau genap yang sama - dipakai buat tint warna latar selang-seling per
-// bulan (lihat CSS .sfpm-month-a/.sfpm-month-b). $idx = urutan kolom nilai ke
-// berapa (0-based, dihitung dari kiri lintas semua bulan). Kolom pertama tiap
-// bulan (idx % groupSize === 0) juga dikasih garis vertikal tipis
-// (.sfpm-month-start) - tint warna doang ternyata kurang kelihatan buat
-// nandain batas antar bulan waktu kolomnya banyak (>15 kolom angka),
-// garisnya bikin mata lebih gampang "mengunci" ke grup bulan yang sama pas
-// baca ke bawah.
-// Pakai $GLOBALS['sfpmYtdStartIdx'] (bukan parameter tambahan) supaya semua
-// call site yang sudah ada (sfpmRenderRowValues, sfpmBlankCells, loop
-// header) tidak perlu diubah - begitu $idx masuk rentang grup YTD di ujung
-// kanan (lihat perhitungan $valueColCount di bawah), class .sfpm-ytd
-// ditambahkan buat kasih highlight warna beda dari tint bulan biasa.
-function sfpmColClass($idx, $groupSize) {
-    $monthIdx = intdiv($idx, $groupSize);
-    $cls = $monthIdx % 2 === 0 ? ' sfpm-month-a' : ' sfpm-month-b';
-    if ($idx % $groupSize === 0) {
-        $cls .= ' sfpm-month-start';
-    }
-    if (isset($GLOBALS['sfpmYtdStartIdx']) && $idx >= $GLOBALS['sfpmYtdStartIdx']) {
-        $cls .= ' sfpm-ytd';
-    }
-    return $cls;
-}
-
-// Lebar kolom DIKUNCI lewat <colgroup> yang sama persis di tabel header
-// maupun body (lihat catatan table-layout:fixed di CSS) - dipanggil 2x
-// dengan parameter identik, bukan cuma sekali/di-share, karena masing-masing
-// <table> butuh <colgroup>-nya sendiri (tidak bisa dipakai bareng lintas
-// elemen table berbeda).
-function sfpmColgroup($valueColCount, $descW = 260, $valW = 155) {
-    $html = '<colgroup><col style="width:' . $descW . 'px">';
-    for ($i = 0; $i < $valueColCount; $i++) {
-        $html .= '<col style="width:' . $valW . 'px">';
-    }
-    $html .= '</colgroup>';
-    return $html;
-}
-
-// Lebar total tabel (dipakai sebagai style="width:...px" eksplisit di TAG
-// <table> header maupun body, bukan cuma dibiarkan "auto"). Terbukti lewat
-// pengujian nyata (headless browser): dengan width:auto, table-layout:fixed
-// TIDAK menjamin dua elemen <table> terpisah dengan <colgroup> identik
-// akan dirender dengan lebar akhir yang sama persis - lebar minimum
-// konten sel (angka panjang tidak boleh wrap di tabel body, teks pendek di
-// tabel header) ikut memengaruhi kalkulasi auto-width, dan hasilnya bisa
-// menyimpang jauh dari sekadar jumlah <colgroup> (pernah terukur: tabel
-// header 1711px, tabel body 3595px, padahal <colgroup>-nya identik). Kalau
-// tabel header jadi TIDAK actually overflow (lebih sempit dari
-// wrapper-nya), scrollLeft yang di-set lewat JS jadi no-op (browser
-// otomatis clamp balik ke 0 karena tidak ada yang bisa discroll) - itu
-// akar masalah header yang "ketinggalan" pas tabel body discroll. width
-// eksplisit di sini menghapus ambiguitas itu - lebar akhir MURNI dari
-// angka PHP ini, tidak diserahkan ke algoritma auto-width browser sama
-// sekali.
-function sfpmTableWidth($valueColCount, $descW = 260, $valW = 155) {
-    return $descW + $valueColCount * $valW;
-}
-
-// Render 1 baris nilai, urutan periode lalu pcCol di dalamnya (NAG, NAK,
-// Total per bulan) dari lookup [period_label][pcCol] => float.
-function sfpmRenderRowValues($valuesByPeriod, $periods, $pcCols, $tag, $cellClass) {
-    $html = '';
-    $idx = 0;
-    foreach ($periods as $p) {
-        foreach ($pcCols as $pcCol) {
-            $v = $valuesByPeriod[$p['label']][$pcCol] ?? 0;
-            $html .= '<' . $tag . ' class="' . $cellClass . sfpmColClass($idx, count($pcCols)) . '">' . fsMonthlyFormatNumber($v) . '</' . $tag . '>';
-            $idx++;
-        }
-    }
-    // Grup kolom YTD di ujung kanan - bukan periode baru, cuma nilai bulan
-    // TERAKHIR dari filter yang diulang lagi (lihat catatan $valueColCount
-    // di bawah, kenapa nilainya memang identik dengan YTD).
-    $lastPeriod = end($periods);
-    if ($lastPeriod) {
-        foreach ($pcCols as $pcCol) {
-            $v = $valuesByPeriod[$lastPeriod['label']][$pcCol] ?? 0;
-            $html .= '<' . $tag . ' class="' . $cellClass . sfpmColClass($idx, count($pcCols)) . '">' . fsMonthlyFormatNumber($v) . '</' . $tag . '>';
-            $idx++;
-        }
-    }
-    return $html;
-}
-
 // Section > sub_kategori (kategori fs_kategori_laporan) - persis daftar +
 // label EN yang dipakai fs_ytd/statement_financial_position.php. Semua
 // kategori SFP pakai formula debit-normal (saldo + debit - credit), termasuk
@@ -543,39 +469,28 @@ $pcColCount = count($pcCols);
 // yang masuk grup YTD ini.
 $valueColCount = count($periods) * $pcColCount + $pcColCount;
 $GLOBALS['sfpmYtdStartIdx'] = count($periods) * $pcColCount;
-
-// Baris kosong (blank filler) sejumlah $valueColCount - tetap dikasih class
-// sfpm-month-a/b (lihat sfpmColClass()) biar tint per bulan tetap nyambung
-// waktu lewatin baris spacer/section yang kosong.
-function sfpmBlankCells($valueColCount, $pcColCount, $tag = 'th') {
-    $html = '';
-    for ($idx = 0; $idx < $valueColCount; $idx++) {
-        $html .= '<' . $tag . ' class="' . trim(sfpmColClass($idx, $pcColCount)) . '"></' . $tag . '>';
-    }
-    return $html;
-}
-
-// Baris spacer/kosong di antara section - jumlah <th> kosongnya ikut jumlah
-// kolom nilai (dulu di YTD cuma 1/3 sesuai profit_center, sekarang sejumlah
-// periode x pcCols).
-function sfpmSpacerRow($valueColCount, $pcColCount, $rowClass = 'spacer') {
-    echo '<tr class="' . $rowClass . '"><th class="sfpm-freeze-left"></th>' . sfpmBlankCells($valueColCount, $pcColCount) . '</tr>';
-}
 ?>
-
-<div class="sfpm-export-buttons">
-  <button type="button" id="btnExcel" class="sfpm-btn-export-excel">📊 Export Excel</button>
-</div>
 
 <div class="table-responsive mt-1">
   <div class="laporan-outer">
     <div class="sfp-title-block">
-      <div class="sfp-title-company">PT NIRWANA ALABARE GARMENT</div>
-      <div class="sfp-title-report">LAPORAN POSISI KEUANGAN</div>
-      <div class="sfp-title-report-en">Statements of Financial Position</div>
-      <div class="sfp-title-period"><?= htmlspecialchars($periods[0]['label']); ?> - <?= htmlspecialchars($lastPeriod['label']); ?></div>
-      <div class="sfp-title-desc">(Dinyatakan dalam Rupiah, kecuali dinyatakan lain)</div>
-      <div class="sfp-title-desc-en">Expressed in Rupiah, unless otherwise stated</div>
+      <div class="sfp-title-text">
+        <div class="sfp-title-company">PT NIRWANA ALABARE GARMENT</div>
+        <div class="sfp-title-report">LAPORAN POSISI KEUANGAN</div>
+        <div class="sfp-title-report-en">Statements of Financial Position</div>
+        <div class="sfp-title-period"><?= htmlspecialchars($periods[0]['label']); ?> - <?= htmlspecialchars($lastPeriod['label']); ?></div>
+        <div class="sfp-title-desc">(Dinyatakan dalam Rupiah, kecuali dinyatakan lain)</div>
+        <div class="sfp-title-desc-en">Expressed in Rupiah, unless otherwise stated</div>
+      </div>
+      <button type="button" id="btnExcel" class="sfpm-btn-export-excel">
+        <svg class="sfpm-btn-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2.5" width="16" height="15" rx="2" fill="#ffffff" fill-opacity=".15"/>
+          <rect x="2" y="2.5" width="16" height="15" rx="2" stroke="#ffffff" stroke-width="1.1"/>
+          <path d="M2 7.3h16M7.2 2.5v15" stroke="#ffffff" stroke-width="1.1"/>
+          <path d="M4.3 10.1l2.1 3.2M6.4 10.1l-2.1 3.2" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        Export Excel
+      </button>
     </div>
     <div class="sfp-header-clip">
       <table id="sfp-header-table" class="laporan-table sfpm-tbl" border="0" cellspacing="0" style="width:<?= sfpmTableWidth($valueColCount); ?>px">
@@ -707,7 +622,7 @@ function sfpmSpacerRow($valueColCount, $pcColCount, $rowClass = 'spacer') {
 
     window.addEventListener('resize', syncHeaderGutter);
     // Tab SFP defaultnya display:none saat halaman pertama dimuat (lihat
-    // openTab() di financial_statement_monthly.php) - elemen yang
+    // openTab() di financial_statement.php) - elemen yang
     // display:none lebar-nya selalu 0, jadi pengukuran di atas baru akurat
     // setelah tab-nya benar-benar ditampilkan. openTab() akan memanggil
     // fungsi ini lagi lewat window.updateSfpHeaderOffset begitu tab SFP

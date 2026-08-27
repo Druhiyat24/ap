@@ -26,10 +26,15 @@ while ($row = mysqli_fetch_assoc($sqlAssigned)) {
 }
 
 $menus = [];
-$sqlAll = mysqli_query($conn2, "select menu from menurole where id != '35' order by id asc");
+// display_name (nama formal) & menu_group (grup utk warna/legend di modal) -
+// kolom ADITIF, boleh NULL; front-end fallback ke `menu` / deteksi awalan-nama
+// lama kalau kosong. Key `menu` tetap dipakai apa adanya utk simpan useraccess.
+$sqlAll = mysqli_query($conn2, "select menu, display_name, menu_group from menurole where id != '35' order by id asc");
 while ($row = mysqli_fetch_assoc($sqlAll)) {
     $menus[] = [
         'menu' => $row['menu'],
+        'display_name' => $row['display_name'] ?? null,
+        'menu_group' => $row['menu_group'] ?? null,
         'assigned' => isset($assignedSet[$row['menu']]),
     ];
 }

@@ -1,4 +1,56 @@
 <style>
+  /*.tabcontent {
+    padding: 15px;
+    background: #fff;
+    border-radius: 8px;
+  }
+
+  .tb-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+  }
+
+  .tb-header h4 {
+    font-weight: 600;
+    color: #0d6efd;
+    margin-bottom: 0;
+  }
+
+  .tb-header .btn {
+    margin-right: 8px;
+    font-size: 13px;
+    border-radius: 6px;
+  }
+
+  .tb-header .btn i {
+    font-size: 14px;
+  }
+
+  .tableFix {
+    overflow-y: auto;
+    max-height: 450px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+  }
+
+  table th {
+    position: sticky;
+    top: 0;
+    background: #0d6efd;
+    color: #fff;
+    text-align: center;
+    font-size: 12px;
+    vertical-align: middle;
+  }
+
+  table td {
+    font-size: 12px;
+    vertical-align: middle;
+  }*/
+
   #myInput {
     border-radius: 6px;
     font-size: 13px;
@@ -20,212 +72,16 @@ table.dataTable {
   min-width: max-content; /* biar kolom tidak ketarik jadi sempit */
 }
 
-/* Bungkus tabel dalam kartu bulat/shadow - konsisten dengan tampilan
-   tab SFP/SPL/CF Direct/CF Indirect (.laporan-outer di situ). */
-.tb-outer {
-  border: 1px solid #dbe3f0;
-  border-radius: 14px;
-  background: #fafafa;
-  box-shadow: 0 4px 18px rgba(30, 58, 138, 0.08);
-  overflow: hidden;
-}
 
-.tb-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 16px 20px;
-  background: #fafafa;
-  border-bottom: 1px solid #e5e9f2;
-}
-
-.tb-toolbar .btn {
-  border-radius: 999px;
-  font-size: 12.5px;
-  font-weight: 600;
-  padding: 8px 18px;
-  border: none;
-}
-
-.tb-toolbar .btn-success {
-  background: linear-gradient(135deg, #1f7a4d, #14532d);
-  box-shadow: 0 2px 6px rgba(20, 83, 45, 0.28);
-}
-
-.tb-toolbar .btn-info {
-  background: linear-gradient(135deg, #2563eb, #1e3a8a);
-  box-shadow: 0 2px 6px rgba(30, 58, 138, 0.28);
-}
-
-/* Title block - pola sama persis dgn tab SFP/SPL/CF Direct/CF Indirect
-   (lihat catatan lengkap di fs1_monthly/trial_balance.php) - dulu toolbar
-   di sini cuma berisi tombol Export polos, tanpa judul laporan/periode. */
-.sfp-title-block {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  text-align: left;
-  padding: 18px 25px 14px;
-  background: #fafafa;
-  border-bottom: 1px solid #e5e9f2;
-}
-.sfp-title-company {
-  font-weight: 700;
-  font-size: 18px;
-  color: #1e3a8a;
-  letter-spacing: .3px;
-}
-.sfp-title-report {
-  font-weight: 700;
-  font-size: 16px;
-  color: #2c3e50;
-  margin-top: 4px;
-}
-.sfp-title-report-en {
-  font-style: italic;
-  font-size: 14.5px;
-  color: #6b7280;
-}
-.sfp-title-period {
-  font-weight: 600;
-  font-size: 14.5px;
-  color: #2c3e50;
-  margin-top: 6px;
-}
-.sfp-title-desc {
-  font-size: 13px;
-  color: #777;
-  margin-top: 3px;
-}
-.sfp-title-desc-en {
-  font-style: italic;
-  font-size: 12.5px;
-  color: #999;
-}
-.sfpm-btn-export-excel {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  flex-shrink: 0;
-  font-size: 12.5px;
-  font-weight: 600;
-  letter-spacing: .2px;
-  color: #fff;
-  background: linear-gradient(135deg, #1f7a4d, #14532d);
-  border: none;
-  border-radius: 999px;
-  padding: 8px 18px 8px 14px;
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(20, 83, 45, 0.28);
-  transition: box-shadow 0.15s ease, transform 0.15s ease, background 0.15s ease;
-  text-decoration: none;
-}
-.sfpm-btn-export-excel .sfpm-btn-icon {
-  display: inline-flex;
-  width: 16px;
-  height: 16px;
-}
-.sfpm-btn-export-excel:hover {
-  background: linear-gradient(135deg, #23935d, #185c36);
-  box-shadow: 0 4px 10px rgba(20, 83, 45, 0.35);
-  transform: translateY(-1px);
-  color: #fff;
-}
-
-.tb-table-wrap {
-  padding: 0 20px 20px;
-}
-
-/* Sebelumnya CSS sticky-column di sini SELURUHNYA dikomentari (mati) -
-   akibatnya kolom Category 1-4 (lebar auto, teks panjang mis. "LAPORAN
-   POSISI KEUANGAN") tidak pernah dibekukan/diberi jarak yang benar dan
-   tumpang tindih kelihatan menyatu dengan kolom sebelahnya waktu discroll.
-   Pola di bawah ini disalin dari trial_balance_monthly.php (FS2 Monthly)
-   yang sudah terbukti benar: freeze 6 kolom pertama (No COA s.d. Category
-   4) via position:sticky, lebar kolom DIBIARKAN NATURAL (bukan dipaksa
-   px, supaya teks panjang tidak kepotong), offset "left" tiap kolom
-   dihitung lewat JS dari lebar asli hasil render browser (lihat script di
-   financial_statement.php - updateFrozenOffsetsYtd()). */
-#table_tbytd td, #table_tbytd th {
-  padding: 8px 14px !important;
-}
-#table_tbytd tbody td:nth-child(-n+6),
-#table_tbytd thead tr:first-child th:nth-child(-n+6) {
-  position: sticky;
-  z-index: 2;
-  background-color: #fff;
-}
-#table_tbytd thead tr:first-child th:nth-child(-n+6) {
-  background: linear-gradient(180deg, #2f6fea, #2354c9);
-  z-index: 3;
-}
-#table_tbytd tbody td:nth-child(6),
-#table_tbytd thead tr:first-child th:nth-child(6) {
-  box-shadow: 2px 0 3px -1px rgba(0,0,0,0.25);
-}
-#table_tbytd tbody tr:hover td:nth-child(-n+6) {
-  background-color: #eaf2ff;
-}
-#table_tbytd tbody tr:hover td {
-  background-color: rgba(37, 99, 235, 0.07);
-}
-
-#table_tbytd thead th {
-  background: linear-gradient(180deg, #2f6fea, #2354c9);
-  font-weight: 600;
-  letter-spacing: .2px;
-}
-
-/* CATATAN: sempat dicoba kasih aksen keemasan di kolom paling kanan
-   (:last-child, matching pola "Total"/"YTD" di tab SFP/SPL/CF Direct/CF
-   Indirect) tapi DIBATALKAN - beda dari tab lain, "kolom terakhir" di tabel
-   ini bukan kolom ringkasan waktu, tapi grup profit center TERAKHIR yg
-   ditampilkan (NAG/NAK/ALL - urutannya bisa berubah tergantung filter),
-   jadi :last-child malah ikut mengecat header grup "Summary ALL" jadi emas
-   padahal grup NAG/NAK di sebelahnya tetap biru - kelihatan tidak
-   konsisten/aneh. Semua header & kolom TETAP biru merata, sesuai
-   permintaan user.
-   Zebra baris tetap biru-abu lembut, bukan abu-abu default Bootstrap. */
-#table_tbytd.table-striped tbody tr:nth-of-type(odd) td:nth-child(n+7) {
-  background-color: #f8fafd;
-}
-
-.tb-table-wrap {
-  scrollbar-width: thin;
-  scrollbar-color: #b7c3e0 #f1f4fa;
-}
-.tb-table-wrap::-webkit-scrollbar {
-  height: 10px;
-}
-.tb-table-wrap::-webkit-scrollbar-track {
-  background: #f1f4fa;
-}
-.tb-table-wrap::-webkit-scrollbar-thumb {
-  background-color: #b7c3e0;
-  border-radius: 8px;
-  border: 2px solid #f1f4fa;
-}
 </style>
 
 <!-- ====== TAB CONTENT: TRIAL BALANCE ====== -->
   <form id="form-data" method="post">
-
-  <div class="tb-outer mt-2">
+    
     <!-- HEADER -->
-    <div class="sfp-title-block">
-      <div class="sfp-title-text">
+    <div class="tb-header mt-2">
+      <div>
         <?php
-// Format angka - selaras dgn tab SFP/SPL/CF Direct/CF Indirect/TB
-// Monthly (FS2): negatif ditulis dlm kurung, bukan minus di depan.
-function fsMonthlyFormatNumber($val) {
-    $val = (float) $val;
-    if ($val < 0) {
-        return '(' . number_format(abs($val), 2) . ')';
-    }
-    return number_format($val, 2);
-}
-
         $nama_type ='';
         $Status = '';
         $start_date ='';
@@ -279,45 +135,41 @@ echo '<input type="hidden" style="font-size: 12px;" class="form-control" id="to_
           $kata_awal = date("M", strtotime($start_date));
           $kata_akhir = date("Y", strtotime($start_date));
           $kata_filter = $kata_awal . '_' . $kata_akhir;
-          $tbStartLabel = $start_date ? date('M Y', strtotime($start_date)) : date('M Y');
-          $tbEndLabel = $end_date ? date('M Y', strtotime($end_date)) : date('M Y');
-        ?>
-        <div class="sfp-title-company">PT NIRWANA ALABARE GARMENT</div>
-        <div class="sfp-title-report">NERACA SALDO</div>
-        <div class="sfp-title-report-en">Trial Balance</div>
-        <div class="sfp-title-period"><?= htmlspecialchars($tbStartLabel); ?> - <?= htmlspecialchars($tbEndLabel); ?></div>
-        <div class="sfp-title-desc">(Dinyatakan dalam Rupiah, kecuali dinyatakan lain)</div>
-        <div class="sfp-title-desc-en">Expressed in Rupiah, unless otherwise stated</div>
-      </div>
 
-      <?php
-        // Tombol "Copy Saldo" per-tab yang dulu ada di sini SUDAH DIPINDAH
-        // jadi 1 tombol gabungan di toolbar atas financial_statement.php
-        // (klik sekali menjalankan proses copy utk FS1 & FS2 sekaligus) -
-        // lihat catatan lengkap di sana. Logic populate fs_saldo_tb_temp
-        // di bawah TETAP dipertahankan apa adanya karena tombol gabungan
-        // itu bergantung pada efek samping render halaman ini (nge-refresh
-        // staging table) saat background-fetch dilakukan sebelum proses
-        // copy jalan.
-        if ($tanggal_akhir >= $tanggal_awal) {
-          echo '
-            <a class="sfpm-btn-export-excel" target="_blank" href="ekspor_tb_ytd_new.php?start_date='.$start_date.'&end_date='.$end_date.'&kata_filter='.$kata_filter.'&profit_center='.$profit_center.'">
-              <svg class="sfpm-btn-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="2" y="2.5" width="16" height="15" rx="2" fill="#ffffff" fill-opacity=".15"/>
-                <rect x="2" y="2.5" width="16" height="15" rx="2" stroke="#ffffff" stroke-width="1.1"/>
-                <path d="M2 7.3h16M7.2 2.5v15" stroke="#ffffff" stroke-width="1.1"/>
-                <path d="M4.3 10.1l2.1 3.2M6.4 10.1l-2.1 3.2" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round"/>
-              </svg>
-              Export Excel
-            </a>';
-        }
-      ?>
+          if ($tanggal_akhir >= $tanggal_awal) {
+            echo '
+              <a target="_blank" href="ekspor_tb_ytd_new.php?start_date='.$start_date.'&end_date='.$end_date.'&kata_filter='.$kata_filter.'&profit_center='.$profit_center.'">
+                <button type="button" class="btn btn-success">
+                  <i class="fa fa-file-excel-o me-2"></i> Export Excel
+                </button>
+              </a>';
+          }
+        ?>
+
+        <?php
+          $querys = mysqli_query($conn2, "
+            SELECT useraccess.menu, useraccess.username, menurole.id
+            FROM useraccess 
+            INNER JOIN menurole ON menurole.menu = useraccess.menu 
+            WHERE username = '$user' AND useraccess.menu = 'Acct - Copy saldo TB'
+          ");
+          $rs = mysqli_fetch_array($querys);
+          $id = isset($rs['id']) ? $rs['id'] : 0;
+
+          if ($id == '56') {
+            echo '
+              <button type="button" class="btn btn-info" name="co_sal" id="co_sal">
+                <i class="fa fa-clipboard me-2"></i> Copy Saldo
+              </button>';
+          }
+        ?>
+      </div>
     </div>
 
     <!-- ====== TABEL ====== -->
-    <div class="tb-table-wrap">
-          <table id="table_tbytd"
-          class="table table-striped table-bordered table-hover table-sm nowrap"
+    <div class="table-responsive mt-2">
+          <table id="table_tbytd" 
+          class="table table-striped table-bordered table-hover table-sm nowrap" 
           >
         <thead class="text-white" style="background-color: #2563EB;">
           <tr>
@@ -489,38 +341,37 @@ left join
        <td style="text-align : left;" value = "'.$row['indname3'].'">'.$row['indname3'].'</td>
        <td style="text-align : left;" value = "'.$row['indname4'].'">'.$row['indname4'].'</td>';
         if ($profit_center == 'ALL') {
-          echo '<td style=" text-align : right;" value="'.$row['saldo_awal_nag'].'">'.fsMonthlyFormatNumber($row['saldo_awal_nag']).'</td>
-                <td style=" text-align : right;" value="'.$row['debit_idr_nag'].'">'.fsMonthlyFormatNumber($row['debit_idr_nag']).'</td>
-                <td style=" text-align : right;" value="'.$row['credit_idr_nag'].'">'.fsMonthlyFormatNumber($row['credit_idr_nag']).'</td>
-                <td style=" text-align : right;" value="'.$row['saldo_akhir_nag'].'">'.fsMonthlyFormatNumber($row['saldo_akhir_nag']).'</td>
+          echo '<td style=" text-align : right;" value="'.$row['saldo_awal_nag'].'">'.number_format($row['saldo_awal_nag'],2).'</td>
+                <td style=" text-align : right;" value="'.$row['debit_idr_nag'].'">'.number_format($row['debit_idr_nag'],2).'</td>
+                <td style=" text-align : right;" value="'.$row['credit_idr_nag'].'">'.number_format($row['credit_idr_nag'],2).'</td>
+                <td style=" text-align : right;" value="'.$row['saldo_akhir_nag'].'">'.number_format($row['saldo_akhir_nag'],2).'</td>
 
-                <td style=" text-align : right;" value="'.$row['saldo_awal_nak'].'">'.fsMonthlyFormatNumber($row['saldo_awal_nak']).'</td>
-                <td style=" text-align : right;" value="'.$row['debit_idr_nak'].'">'.fsMonthlyFormatNumber($row['debit_idr_nak']).'</td>
-                <td style=" text-align : right;" value="'.$row['credit_idr_nak'].'">'.fsMonthlyFormatNumber($row['credit_idr_nak']).'</td>
-                <td style=" text-align : right;" value="'.$row['saldo_akhir_nak'].'">'.fsMonthlyFormatNumber($row['saldo_akhir_nak']).'</td>
+                <td style=" text-align : right;" value="'.$row['saldo_awal_nak'].'">'.number_format($row['saldo_awal_nak'],2).'</td>
+                <td style=" text-align : right;" value="'.$row['debit_idr_nak'].'">'.number_format($row['debit_idr_nak'],2).'</td>
+                <td style=" text-align : right;" value="'.$row['credit_idr_nak'].'">'.number_format($row['credit_idr_nak'],2).'</td>
+                <td style=" text-align : right;" value="'.$row['saldo_akhir_nak'].'">'.number_format($row['saldo_akhir_nak'],2).'</td>
 
-                <td style=" text-align : right;" value="'.$row['saldo_awal_all'].'">'.fsMonthlyFormatNumber($row['saldo_awal_all']).'</td>
-                <td style=" text-align : right;" value="'.$row['debit_idr_all'].'">'.fsMonthlyFormatNumber($row['debit_idr_all']).'</td>
-                <td style=" text-align : right;" value="'.$row['credit_idr_all'].'">'.fsMonthlyFormatNumber($row['credit_idr_all']).'</td>
-                <td style=" text-align : right;" value="'.$row['saldo_akhir_all'].'">'.fsMonthlyFormatNumber($row['saldo_akhir_all']).'</td>';
+                <td style=" text-align : right;" value="'.$row['saldo_awal_all'].'">'.number_format($row['saldo_awal_all'],2).'</td>
+                <td style=" text-align : right;" value="'.$row['debit_idr_all'].'">'.number_format($row['debit_idr_all'],2).'</td>
+                <td style=" text-align : right;" value="'.$row['credit_idr_all'].'">'.number_format($row['credit_idr_all'],2).'</td>
+                <td style=" text-align : right;" value="'.$row['saldo_akhir_all'].'">'.number_format($row['saldo_akhir_all'],2).'</td>';
         }elseif ($profit_center == 'NAG') {
-          echo '<td style=" text-align : right;" value="'.$row['saldo_awal_nag'].'">'.fsMonthlyFormatNumber($row['saldo_awal_nag']).'</td>
-                <td style=" text-align : right;" value="'.$row['debit_idr_nag'].'">'.fsMonthlyFormatNumber($row['debit_idr_nag']).'</td>
-                <td style=" text-align : right;" value="'.$row['credit_idr_nag'].'">'.fsMonthlyFormatNumber($row['credit_idr_nag']).'</td>
-                <td style=" text-align : right;" value="'.$row['saldo_akhir_nag'].'">'.fsMonthlyFormatNumber($row['saldo_akhir_nag']).'</td>';
+          echo '<td style=" text-align : right;" value="'.$row['saldo_awal_nag'].'">'.number_format($row['saldo_awal_nag'],2).'</td>
+                <td style=" text-align : right;" value="'.$row['debit_idr_nag'].'">'.number_format($row['debit_idr_nag'],2).'</td>
+                <td style=" text-align : right;" value="'.$row['credit_idr_nag'].'">'.number_format($row['credit_idr_nag'],2).'</td>
+                <td style=" text-align : right;" value="'.$row['saldo_akhir_nag'].'">'.number_format($row['saldo_akhir_nag'],2).'</td>';
         }else{
-          echo '<td style=" text-align : right;" value="'.$row['saldo_awal_nak'].'">'.fsMonthlyFormatNumber($row['saldo_awal_nak']).'</td>
-                <td style=" text-align : right;" value="'.$row['debit_idr_nak'].'">'.fsMonthlyFormatNumber($row['debit_idr_nak']).'</td>
-                <td style=" text-align : right;" value="'.$row['credit_idr_nak'].'">'.fsMonthlyFormatNumber($row['credit_idr_nak']).'</td>
-                <td style=" text-align : right;" value="'.$row['saldo_akhir_nak'].'">'.fsMonthlyFormatNumber($row['saldo_akhir_nak']).'</td>';
+          echo '<td style=" text-align : right;" value="'.$row['saldo_awal_nak'].'">'.number_format($row['saldo_awal_nak'],2).'</td>
+                <td style=" text-align : right;" value="'.$row['debit_idr_nak'].'">'.number_format($row['debit_idr_nak'],2).'</td>
+                <td style=" text-align : right;" value="'.$row['credit_idr_nak'].'">'.number_format($row['credit_idr_nak'],2).'</td>
+                <td style=" text-align : right;" value="'.$row['saldo_akhir_nak'].'">'.number_format($row['saldo_akhir_nak'],2).'</td>';
         }
        echo '</tr>';
    }
 }
 ?>
-        </tbody>
+        </tbody>                    
       </table>
     </div>
-  </div>
   </form>
 

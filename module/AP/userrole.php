@@ -132,6 +132,40 @@
     .menu-toggle-row:hover { border-color: #93c5fd; box-shadow: 0 2px 6px rgba(37,99,235,.18); transform: translateY(-1px); }
     .menu-toggle-row.is-on { background: #f8faff; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
 
+    /* Pemisah per bagian (grup navbar) - full-width di dalam grid 2 kolom. */
+    .menu-section-header {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin: 11px 0 1px;
+        padding: 0 2px;
+        background: none;
+        border: none;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+    }
+    .menu-section-header:first-child { margin-top: 2px; }
+    .menu-section-header i { font-size: 12px; flex-shrink: 0; }
+    /* garis tipis memanjang setelah label */
+    .menu-section-header::after {
+        content: "";
+        order: 1;
+        flex: 1;
+        height: 1px;
+        background: currentColor;
+        opacity: .22;
+    }
+    .menu-section-header .menu-section-count {
+        order: 2;
+        margin-left: 6px;
+        color: #94a3b8;
+        font-size: 10px;
+        font-weight: 600;
+    }
+
     .menu-category-legend {
         display: flex;
         flex-wrap: wrap;
@@ -486,15 +520,20 @@
         });
     }
 
+    // Grup mengikuti menu navbar atas. Urutan = urutan tampil di legend.
+    // Warna/ikon disamakan dgn navbar. `test` (deteksi awalan-nama) hanya
+    // fallback kalau menurole.menu_group kosong; utama pakai kolom menu_group.
     var MENU_CATEGORIES = [
-        { key: 'Approval', test: /^(approve|approval)/i, color: '#16a34a', icon: 'fa-check-circle' },
-        { key: 'Verification', test: /^verifikasi/i, color: '#7c3aed', icon: 'fa-shield' },
-        { key: 'Create', test: /^create/i, color: '#2563eb', icon: 'fa-plus-circle' },
-        { key: 'Maintain', test: /^maintain/i, color: '#d97706', icon: 'fa-wrench' },
-        { key: 'Cancel / Reverse', test: /^(cancel|reverse)/i, color: '#dc2626', icon: 'fa-undo' },
-        { key: 'Report / List', test: /^(report|list)/i, color: '#0891b2', icon: 'fa-list-alt' },
-        { key: 'Accounting', test: /^acct\s*-/i, color: '#4f46e5', icon: 'fa-calculator' },
-        { key: 'Other', test: /.*/, color: '#64748b', icon: 'fa-circle-o' }
+        { key: 'Master',          test: /^master/i,           color: '#0ea5e9', icon: 'fa-book' },
+        { key: 'AP',              test: /^ap\b/i,             color: '#2563eb', icon: 'fa-paypal' },
+        { key: 'Bank',            test: /^bank/i,             color: '#0891b2', icon: 'fa-university' },
+        { key: 'Cash',            test: /^cash/i,             color: '#16a34a', icon: 'fa-money' },
+        { key: 'Accounting',      test: /^(acct\s*-|fs\s*-)/i, color: '#7c3aed', icon: 'fa-bar-chart' },
+        { key: 'Cost Accounting', test: /^cost accounting/i,  color: '#d97706', icon: 'fa-industry' },
+        { key: 'Exim',            test: /^exim/i,             color: '#db2777', icon: 'fa-cubes' },
+        { key: 'Reverse',         test: /^(reverse|cancel)/i, color: '#dc2626', icon: 'fa-retweet' },
+        { key: 'Setting',         test: /^setting/i,          color: '#475569', icon: 'fa-cogs' },
+        { key: 'Other',           test: /.*/,                 color: '#94a3b8', icon: 'fa-circle-o' }
     ];
 
     function categoryOf(menu) {
@@ -506,9 +545,31 @@
         return MENU_CATEGORIES[MENU_CATEGORIES.length - 1];
     }
 
+    function categoryByKey(key) {
+        for (var i = 0; i < MENU_CATEGORIES.length; i++) {
+            if (MENU_CATEGORIES[i].key === key) { return MENU_CATEGORIES[i]; }
+        }
+        return null;
+    }
+
+    // Grup eksplisit dari DB (menurole.menu_group) menang; kalau kosong,
+    // fallback ke deteksi awalan-nama lama berdasarkan key `menu`.
+    function effectiveCategory(item) {
+        if (item && item.menu_group) {
+            var byKey = categoryByKey(item.menu_group);
+            if (byKey) { return byKey; }
+        }
+        return categoryOf(item.menu);
+    }
+
+    // Label formal dari DB (menurole.display_name); fallback ke key `menu`.
+    function labelOf(item) {
+        return (item && item.display_name) ? item.display_name : item.menu;
+    }
+
     function renderCategoryLegend(menus) {
         var usedKeys = {};
-        menus.forEach(function(item) { usedKeys[categoryOf(item.menu).key] = true; });
+        menus.forEach(function(item) { usedKeys[effectiveCategory(item).key] = true; });
 
         var $legend = $('#menuCategoryLegend').empty();
         MENU_CATEGORIES.forEach(function(cat) {
@@ -536,22 +597,46 @@
 
         renderCategoryLegend(menus);
 
+        // Kelompokkan per grup navbar, pertahankan urutan item asli (id).
+        var grouped = {};
         menus.forEach(function(item) {
-            var cat = categoryOf(item.menu);
-            var $row = $('<div class="menu-toggle-row"></div>')
-                .attr('title', item.menu)
-                .css('border-left-color', cat.color)
-                .toggleClass('is-on', item.assigned);
-            var $label = $('<div class="menu-label"></div>');
-            var $icon = $('<i class="fa"></i>').addClass(cat.icon).css('color', cat.color);
-            var $text = $('<span></span>').text(item.menu);
-            $label.append($icon).append($text);
-            var $switchLabel = $('<label class="toggle-switch"></label>');
-            var $input = $('<input type="checkbox" class="chk-menu-toggle">').val(item.menu).prop('checked', item.assigned);
-            var $slider = $('<span class="toggle-slider"></span>');
-            $switchLabel.append($input).append($slider);
-            $row.append($label).append($switchLabel);
-            $panel.append($row);
+            var key = effectiveCategory(item).key;
+            (grouped[key] = grouped[key] || []).push(item);
+        });
+
+        // Render per grup mengikuti urutan MENU_CATEGORIES (= urutan navbar),
+        // tiap grup diawali header pemisah full-width.
+        MENU_CATEGORIES.forEach(function(cat) {
+            var items = grouped[cat.key];
+            if (!items || !items.length) { return; }
+
+            var $header = $('<div class="menu-section-header"></div>')
+                .attr('data-group', cat.key)
+                .css({ 'border-left-color': cat.color, 'color': cat.color });
+            $header.append($('<i class="fa"></i>').addClass(cat.icon));
+            $header.append($('<span></span>').text(cat.key));
+            $header.append($('<span class="menu-section-count"></span>').text(items.length));
+            $panel.append($header);
+
+            items.forEach(function(item) {
+                var c = effectiveCategory(item);
+                var $row = $('<div class="menu-toggle-row"></div>')
+                    .attr('title', item.menu) // tooltip tetap key internal, bantu admin
+                    .attr('data-group', cat.key)
+                    .css('border-left-color', c.color)
+                    .toggleClass('is-on', item.assigned);
+                var $label = $('<div class="menu-label"></div>');
+                var $icon = $('<i class="fa"></i>').addClass(c.icon).css('color', c.color);
+                var $text = $('<span></span>').text(labelOf(item)); // nama formal (fallback ke key)
+                $label.append($icon).append($text);
+                var $switchLabel = $('<label class="toggle-switch"></label>');
+                // value TETAP key internal `menu` - inilah yg disimpan ke useraccess.
+                var $input = $('<input type="checkbox" class="chk-menu-toggle">').val(item.menu).prop('checked', item.assigned);
+                var $slider = $('<span class="toggle-slider"></span>');
+                $switchLabel.append($input).append($slider);
+                $row.append($label).append($switchLabel);
+                $panel.append($row);
+            });
         });
     }
 
@@ -562,8 +647,16 @@
     $('#modal_menu_search').on('keyup', function() {
         var filter = $(this).val().toUpperCase();
         $('#menuTogglePanel .menu-toggle-row').each(function() {
-            var text = $(this).text().toUpperCase();
+            // cocokkan nama formal (teks) DAN key internal (title) - admin bisa
+            // cari pakai "FS" walau labelnya sudah "Financial Statement ...".
+            var text = ($(this).text() + ' ' + ($(this).attr('title') || '')).toUpperCase();
             $(this).toggle(text.indexOf(filter) > -1);
+        });
+        // Sembunyikan header pemisah kalau semua baris di grupnya ter-filter.
+        $('#menuTogglePanel .menu-section-header').each(function() {
+            var grp = $(this).attr('data-group');
+            var anyVisible = $('#menuTogglePanel .menu-toggle-row[data-group="' + grp + '"]:visible').length > 0;
+            $(this).toggle(anyVisible);
         });
     });
 
