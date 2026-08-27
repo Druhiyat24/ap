@@ -1529,7 +1529,7 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
 <script type="text/javascript">
     // Supplier ini tidak punya rekening tetap di master_supplier_bank (kantor
     // pajak/bea cukai) - To Account diganti isian bebas, bukan dropdown.
-    var TOCC_MANUAL_SUPPLIERS = ['KANTOR PAJAK', 'KPPBC TMP A BANDUNG'];
+    var TOCC_MANUAL_SUPPLIERS = ['KANTOR PAJAK', 'KPPBC TMP A BANDUNG', 'KANTOR PELAYANAN UTAMA BEA DAN CUKAI TIPE A'];
 
     function toggleToccInputMode() {
         var nama_supp = ($('#nama_supp').val() || '').toUpperCase();

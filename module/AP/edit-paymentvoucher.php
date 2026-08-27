@@ -1147,7 +1147,7 @@ $(function() {
 <script type="text/javascript">
     // Supplier ini tidak punya rekening tetap di master_supplier_bank (kantor
     // pajak/bea cukai) - To Account diganti isian bebas, bukan dropdown.
-    var TOCC_MANUAL_SUPPLIERS = ['KANTOR PAJAK', 'KPPBC TMP A BANDUNG'];
+    var TOCC_MANUAL_SUPPLIERS = ['KANTOR PAJAK', 'KPPBC TMP A BANDUNG', 'KANTOR PELAYANAN UTAMA BEA DAN CUKAI TIPE A'];
 
     // To Account yang TERSIMPAN untuk PV ini (dari tbl_pv_h, lihat $toccVal di
     // atas) - dipakai sekali di awal supaya refreshToAccount() bisa
