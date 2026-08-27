@@ -33,8 +33,12 @@ try {
         $where .= " AND category = '$fm'";
     }
     if ($filter_month !== '') {
+        // A project occupies every month between start_date and target_date (inclusive),
+        // so the selected month must fall within that span — not only match target_date.
+        // Mirrors projectSpansMonth() on the page so the export matches the on-screen view.
         $fmo = mysqli_real_escape_string($conn2, $filter_month);
-        $where .= " AND target_date LIKE '$fmo%'";
+        $where .= " AND '$fmo' BETWEEN DATE_FORMAT(COALESCE(start_date, target_date), '%Y-%m')
+                                   AND DATE_FORMAT(target_date, '%Y-%m')";
     }
     if ($filter_search !== '') {
         $fse = mysqli_real_escape_string($conn2, $filter_search);
@@ -87,7 +91,7 @@ try {
     $sheet->setTitle('Progress Project IT');
 
     // ===== Column widths (A..P = 16 columns) =====
-    $widths = ['A'=>5,'B'=>13,'C'=>20,'D'=>38,'E'=>11,'F'=>11,'G'=>11,'H'=>11,'I'=>8,'J'=>11,'K'=>11,'L'=>8,'M'=>16,'N'=>13,'O'=>9,'P'=>9];
+    $widths = ['A'=>5,'B'=>13,'C'=>20,'D'=>48,'E'=>11,'F'=>11,'G'=>11,'H'=>11,'I'=>8,'J'=>11,'K'=>11,'L'=>8,'M'=>16,'N'=>13,'O'=>9,'P'=>9];
     foreach ($widths as $col => $w) { $sheet->getColumnDimension($col)->setWidth($w); }
 
     // Applies every requested property to a range in ONE pass via applyFromArray()
@@ -118,9 +122,9 @@ try {
     };
 
     // ================= HEADER BLOCK (rows 1-8) =================
-    $sheet->mergeCells('A1:L1');
+    $sheet->mergeCells('A1:P1');
     $sheet->setCellValue('A1', 'PROGRESS PROJECT IT');
-    $style('A1:L1', ['bold' => true, 'size' => 16, 'hcenter' => true, 'vcenter' => true, 'border' => true]);
+    $style('A1:P1', ['bold' => true, 'size' => 16, 'hcenter' => true, 'vcenter' => true, 'border' => true]);
     $sheet->getRowDimension(1)->setRowHeight(24);
 
     $labels = [
@@ -168,9 +172,11 @@ try {
             $style("M{$rn}:P{$rn}", ['fill' => $BLUE, 'bold' => true, 'hcenter' => true, 'vcenter' => true, 'border' => true]);
         } else {
             $style("M{$rn}", ['fill' => $BLUE, 'bold' => true, 'hcenter' => true, 'vcenter' => true, 'border' => true]);
-            $style("N{$rn}", ['hcenter' => true, 'border' => true]);
-            $style("O{$rn}", ['hcenter' => true, 'border' => true]);
-            $style("P{$rn}", ['hcenter' => true, 'border' => true]);
+            // fill diisi eksplisit putih (bukan dibiarkan kosong) - versi PhpSpreadsheet
+            // ini kadang mewarisi fill biru dari cell tetangga kalau key 'fill' tidak dikirim sama sekali.
+            $style("N{$rn}", ['fill' => 'FFFFFF', 'bold' => true, 'hcenter' => true, 'border' => true]);
+            $style("O{$rn}", ['fill' => 'FFFFFF', 'bold' => true, 'hcenter' => true, 'border' => true]);
+            $style("P{$rn}", ['fill' => 'FFFFFF', 'bold' => true, 'hcenter' => true, 'border' => true]);
         }
     }
 
@@ -192,23 +198,25 @@ try {
     $sheet->setCellValue("J{$h2}", 'TARGET'); $sheet->setCellValue("K{$h2}", 'ACTUAL'); $sheet->setCellValue("L{$h2}", 'PARAF');
     $sheet->setCellValue("O{$h2}", 'BOBOT'); $sheet->setCellValue("P{$h2}", 'NILAI');
 
-    $baseHeaderOpts = ['bold' => true, 'hcenter' => true, 'vcenter' => true, 'border' => true];
+    // Thead seragam hijau semua (NO..NILAI KPI) sesuai permintaan user -
+    // sebelumnya IT/SISTEM/USER biru dan NILAI KPI orange, sekarang disamakan.
+    $baseHeaderOpts = ['bold' => true, 'hcenter' => true, 'vcenter' => true, 'border' => true, 'fill' => $GREEN];
     // One call per atomic merge/cell — see the $style() comment above for why.
-    $style("A{$h1}:A{$h2}", $baseHeaderOpts + ['fill' => $GREEN]);
-    $style("B{$h1}:B{$h2}", $baseHeaderOpts + ['fill' => $GREEN]);
-    $style("C{$h1}:C{$h2}", $baseHeaderOpts + ['fill' => $GREEN]);
-    $style("D{$h1}:D{$h2}", $baseHeaderOpts + ['fill' => $GREEN]);
-    $style("E{$h1}:F{$h1}", $baseHeaderOpts + ['fill' => $BLUE]);
-    $style("G{$h1}:I{$h1}", $baseHeaderOpts + ['fill' => $BLUE]);
-    $style("J{$h1}:L{$h1}", $baseHeaderOpts + ['fill' => $BLUE]);
-    $style("M{$h1}:M{$h2}", $baseHeaderOpts + ['fill' => $GREEN]);
-    $style("N{$h1}:N{$h2}", $baseHeaderOpts + ['fill' => $BLUE, 'wrap' => true]);
-    $style("O{$h1}:P{$h1}", $baseHeaderOpts + ['fill' => $ORANGE]);
+    $style("A{$h1}:A{$h2}", $baseHeaderOpts);
+    $style("B{$h1}:B{$h2}", $baseHeaderOpts);
+    $style("C{$h1}:C{$h2}", $baseHeaderOpts);
+    $style("D{$h1}:D{$h2}", $baseHeaderOpts);
+    $style("E{$h1}:F{$h1}", $baseHeaderOpts);
+    $style("G{$h1}:I{$h1}", $baseHeaderOpts);
+    $style("J{$h1}:L{$h1}", $baseHeaderOpts);
+    $style("M{$h1}:M{$h2}", $baseHeaderOpts);
+    $style("N{$h1}:N{$h2}", $baseHeaderOpts + ['wrap' => true]);
+    $style("O{$h1}:P{$h1}", $baseHeaderOpts);
     foreach (['E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'] as $col) {
-        $style("{$col}{$h2}", $baseHeaderOpts + ['fill' => $BLUE]);
+        $style("{$col}{$h2}", $baseHeaderOpts);
     }
-    $style("O{$h2}", $baseHeaderOpts + ['fill' => $ORANGE]);
-    $style("P{$h2}", $baseHeaderOpts + ['fill' => $ORANGE]);
+    $style("O{$h2}", $baseHeaderOpts);
+    $style("P{$h2}", $baseHeaderOpts);
     $sheet->getRowDimension($h1)->setRowHeight(18);
     $sheet->getRowDimension($h2)->setRowHeight(28);
 

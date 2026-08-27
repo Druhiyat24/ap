@@ -23,6 +23,10 @@ $affected = mysqli_stmt_affected_rows($stmt);
 mysqli_stmt_close($stmt);
 
 if ($ok && $affected > 0) {
+    // Cascade - task list items and the activity log are meaningless once
+    // their parent project is gone.
+    mysqli_query($conn2, "DELETE FROM project_milestones WHERE project_id = " . intval($id));
+    mysqli_query($conn2, "DELETE FROM project_activity_log WHERE project_id = " . intval($id));
     echo json_encode(['status' => 'success']);
 } else {
     echo json_encode(['status' => 'error', 'message' => 'Data not found or already deleted.']);
