@@ -49,25 +49,32 @@
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
     }
 
-    .modal {
-        text-align: center;
-        padding: 0 !important;
-    }
-
-    .modal:before {
-        content: '';
-        display: inline-block;
-        height: 100%;
-        vertical-align: middle;
-        margin-right: -4px;
-    }
-
-    .modal-dialog {
-        display: inline-table;
-        width: 700px;
-        text-align: left;
-        vertical-align: middle;
-    }
+    /* ===== Modal View (modern, diperbesar) ===== */
+    #mymodal .modal-dialog { max-width: 1360px; width: 96vw; }
+    #mymodal .modal-content { border: 0; border-radius: 16px; overflow: hidden; box-shadow: 0 24px 70px rgba(15, 23, 42, .3); }
+    #mymodal .modal-header { background: linear-gradient(90deg, #191970, #1e90ff); color: #fff; border: 0; padding: 16px 24px; align-items: center; }
+    #mymodal .modal-title { font-weight: 700; font-size: 20px; letter-spacing: .02em; margin: 0; }
+    #mymodal .modal-header .close { color: #fff; opacity: .9; text-shadow: none; font-size: 22px; }
+    #mymodal .modal-body { padding: 20px 24px 24px; max-height: 76vh; overflow-y: auto; background: #fff; }
+    .mj-info { display: flex; flex-wrap: wrap; gap: 10px 32px; background: #f8fafc; border: 1px solid #e8edf5; border-radius: 12px; padding: 14px 20px; margin-bottom: 18px; }
+    .mj-info-item { display: flex; flex-direction: column; min-width: 150px; }
+    .mj-info-item .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: #94a3b8; margin-bottom: 2px; }
+    .mj-info-item .val { font-size: 14px; font-weight: 600; color: #0f172a; }
+    .mj-badge { display: inline-block; padding: 2px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+    .mj-badge.post { background: #e6f7ec; color: #1f9d57; }
+    .mj-badge.draft { background: #eef2ff; color: #3730a3; }
+    .mj-badge.cancel { background: #fdecec; color: #dc2626; }
+    #details .mj-detail-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 16px; }
+    #details .mj-detail-table thead th { background: #1E3A8A; color: #fff; font-weight: 600; padding: 9px 10px; text-align: left; white-space: nowrap; border: 0; }
+    #details .mj-detail-table thead th:first-child { border-top-left-radius: 10px; }
+    #details .mj-detail-table thead th:last-child { border-top-right-radius: 10px; }
+    #details .mj-detail-table tbody td { padding: 8px 10px; border: 0; border-bottom: 1px solid #eef2f7; vertical-align: middle; text-align: left; }
+    #details .mj-detail-table th:nth-child(8), #details .mj-detail-table th:nth-child(9),
+    #details .mj-detail-table td:nth-child(8), #details .mj-detail-table td:nth-child(9) { text-align: right; }
+    #details .mj-detail-table tbody tr:hover td { background: #f5f8ff; }
+    #details .mj-detail-table tbody tr:last-child td { border-bottom: 0; }
+    #details .mj-total-table { width: 100%; font-size: 13px; margin-top: 6px; }
+    #details .mj-total-table td { padding: 5px 8px; }
 </style>
 
 <!-- MAIN -->
@@ -165,19 +172,19 @@
 
 <!-- Modal Detail -->
 <div class="modal fade" id="mymodal" data-target="#mymodal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
-            <div class="modal-header text-white" style="background-color: #2563EB;">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
+            <div class="modal-header">
                 <h4 class="modal-title" id="txt_bpb"></h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
             </div>
-            <div class="container">
-                <div class="row">
-                    <div id="txt_tglbpb" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                    <div id="txt_no_po" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                    <div id="txt_supp" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                    <div id="details" class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;"></div>
+            <div class="modal-body">
+                <div class="mj-info">
+                    <div class="mj-info-item"><span class="lbl">Date</span><span class="val" id="txt_tglbpb"></span></div>
+                    <div class="mj-info-item"><span class="lbl">Type</span><span class="val" id="txt_no_po"></span></div>
+                    <div class="mj-info-item"><span class="lbl">Status</span><span class="val" id="txt_supp"></span></div>
                 </div>
+                <div id="details"></div>
             </div>
         </div>
     </div>
@@ -425,9 +432,11 @@
         });
 
         $('#txt_bpb').html(data.no_mj);
-        $('#txt_tglbpb').html('Date : ' + data.mj_date);
-        $('#txt_no_po').html('Type : ' + data.nama_cmj);
-        $('#txt_supp').html('Status : ' + data.status);
+        $('#txt_tglbpb').text(data.mj_date);
+        $('#txt_no_po').text(data.nama_cmj);
+        var st = (data.status || '').toLowerCase();
+        var stCls = st === 'post' ? 'post' : (st === 'cancel' ? 'cancel' : 'draft');
+        $('#txt_supp').html('<span class="mj-badge ' + stCls + '">' + data.status + '</span>');
     });
 </script>
 
