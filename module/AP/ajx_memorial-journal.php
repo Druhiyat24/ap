@@ -25,8 +25,11 @@ if ($start_date !== '' && $end_date !== '') {
 
 $where = empty($conditions) ? '' : ('WHERE ' . implode(' AND ', $conditions));
 
-$sql = mysqli_query($conn2, "select a.no_mj, a.mj_date, a.id_cmj, b.nama_cmj, a.curr, sum(a.debit) debit, sum(a.credit) credit, a.keterangan, a.status
-    from tbl_memorial_journal a left join master_category_mj b on b.id_cmj = a.id_cmj
+$sql = mysqli_query($conn2, "select a.no_mj, a.mj_date, a.id_cmj, b.nama_cmj, a.curr, sum(a.debit) debit, sum(a.credit) credit, a.keterangan, a.status,
+        MIN(c.status_closing) status_closing
+    from tbl_memorial_journal a
+    left join master_category_mj b on b.id_cmj = a.id_cmj
+    left join tbl_closing_periode c on a.mj_date BETWEEN c.tgl_awal AND c.tgl_akhir
     $where
     group by a.no_mj
     order by a.mj_date desc, a.no_mj desc");
@@ -44,21 +47,35 @@ while ($row = mysqli_fetch_assoc($sql)) {
     $noMj = $row['no_mj'];
     $rowStatus = $row['status'];
 
-    $action = '<div class="kbon-action-buttons">';
-    if ($rowStatus == 'Draft' && $fin == '1') {
-        $action .= '<button type="button" class="btn btn-sm btn-outline-info btn-approve-mj" data-no="' . htmlspecialchars($noMj) . '" title="Post"><i class="fa fa-paper-plane"></i> Post</button>';
-        $action .= '<a href="edit-memorial-journal.php?no_mj=' . base64_encode($noMj) . '" class="btn btn-sm btn-outline-warning" title="Edit"><i class="fa fa-edit"></i> Edit</a>';
-        $action .= '<button type="button" class="btn btn-sm btn-outline-danger btn-cancel-mj" data-no="' . htmlspecialchars($noMj) . '" title="Cancel"><i class="fa fa-ban"></i> Cancel</button>';
-    } elseif ($rowStatus == 'Post' && $fin == '1' && $app != '1') {
-        $action .= '<span class="badge text-bg-success">Post</span>';
-        $action .= '<a href="edit-memorial-journal.php?no_mj=' . base64_encode($noMj) . '" class="btn btn-sm btn-outline-warning" title="Edit"><i class="fa fa-edit"></i> Edit</a>';
-    } elseif ($rowStatus == 'Post' && $fin == '1' && $app == '1') {
-        $action .= '<button type="button" class="btn btn-sm btn-outline-danger btn-cancel-mj" data-no="' . htmlspecialchars($noMj) . '" title="Cancel"><i class="fa fa-ban"></i> Cancel</button>';
-        $action .= '<a href="edit-memorial-journal.php?no_mj=' . base64_encode($noMj) . '" class="btn btn-sm btn-outline-warning" title="Edit"><i class="fa fa-edit"></i> Edit</a>';
-    } elseif ($rowStatus == 'Cancel' && $fin == '1') {
-        $action .= '<span class="badge text-bg-danger">Canceled</span>';
+    // Journal di periode yang sudah CLOSING -> tampilkan badge "PERIOD LOCKED"
+    // (tombol Post/Edit/Cancel disembunyikan), konsisten dengan halaman Edit Journal.
+    $isClosed = ($row['status_closing'] === 'Closed');
+
+    if ($isClosed) {
+        $action = '<div style="display:flex; flex-direction:column; align-items:center; gap:2px;">'
+            . '<span class="badge badge-danger" style="font-size:11px; padding:5px 8px;"><i class="fa fa-lock"></i> PERIOD LOCKED</span>'
+            . '<small style="color:#888;">Open period to edit</small>'
+            . '</div>';
+    } else {
+        $editBtn   = '<a href="edit-memorial-journal.php?no_mj=' . base64_encode($noMj) . '" class="btn btn-sm btn-outline-warning" title="Edit"><i class="fa fa-edit"></i> Edit</a>';
+        $cancelBtn = '<button type="button" class="btn btn-sm btn-outline-danger btn-cancel-mj" data-no="' . htmlspecialchars($noMj) . '" title="Cancel"><i class="fa fa-ban"></i> Cancel</button>';
+
+        $action = '<div class="kbon-action-buttons">';
+        if ($rowStatus == 'Draft' && $fin == '1') {
+            $action .= '<button type="button" class="btn btn-sm btn-outline-info btn-approve-mj" data-no="' . htmlspecialchars($noMj) . '" title="Post"><i class="fa fa-paper-plane"></i> Post</button>';
+            $action .= $editBtn;
+            $action .= $cancelBtn;
+        } elseif ($rowStatus == 'Post' && $fin == '1' && $app != '1') {
+            $action .= '<span class="badge text-bg-success">Post</span>';
+            $action .= $editBtn;
+        } elseif ($rowStatus == 'Post' && $fin == '1' && $app == '1') {
+            $action .= $cancelBtn;
+            $action .= $editBtn;
+        } elseif ($rowStatus == 'Cancel' && $fin == '1') {
+            $action .= '<span class="badge text-bg-danger">Canceled</span>';
+        }
+        $action .= '</div>';
     }
-    $action .= '</div>';
 
     $data[] = [
         'no_mj'      => $noMj,
