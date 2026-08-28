@@ -18,7 +18,7 @@ $no_mj = isset($_POST['no_mj']) ? $_POST['no_mj']: null;
     $credit_idr = $row3['credit_idr'];
 
 
-    $table = '<table id="mytdmodal" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
+    $table = '<table id="mytdmodal" class="mj-detail-table" cellspacing="0" width="100%" style="font-size:12px;">
                     <thead>
                         <tr>                       
                             <th style="width:14%;">Coa</th>
@@ -35,11 +35,15 @@ $no_mj = isset($_POST['no_mj']) ? $_POST['no_mj']: null;
 
             $table .= '<tbody>';
             while ($row = mysqli_fetch_assoc($sql)) {
-            $table .= '<tr>                       
+            // reff_date kosong / '0000-00-00' -> strtotime menghasilkan 1970 / -0001. Tampilkan '-'.
+            $rts = !empty($row['reff_date']) ? strtotime($row['reff_date']) : false;
+            $reffDate = ($rts && date('Y', $rts) > 2000) ? date('d-M-Y', $rts) : '-';
+            $cc = trim($row['no_costcenter'] . ' ' . $row['cc_name']); // tampilkan nomor CC + nama
+            $table .= '<tr>
                             <td style="" value="'.$row['coa'].'">'.$row['coa'].'</td>
-                            <td style="" value="'.$row['cc_name'].'">'.$row['cc_name'].'</td>
+                            <td style="" value="'.$cc.'">'.$cc.'</td>
                             <td style="" value="'.$row['no_reff'].'">'.$row['no_reff'].'</td>
-                            <td value="'.$row['reff_date'].'">'.date("d-M-Y",strtotime($row['reff_date'])).'</td>
+                            <td value="'.($reffDate === '-' ? '' : $row['reff_date']).'">'.$reffDate.'</td>
                             <td style="" value="'.$row['buyer'].'">'.$row['buyer'].'</td>
                             <td style="" value="'.$row['no_ws'].'">'.$row['no_ws'].'</td>
                             <td style="" value="'.$row['curr'].'">'.$row['curr'].'</td>                                                                       
@@ -54,7 +58,7 @@ echo $table;
 
 
 
-echo '<table width="100%" border="0" style="font-size:12px">
+echo '<table width="100%" border="0" class="mj-total-table" style="font-size:12px">
 
     <tr>
         <td width="70%">
