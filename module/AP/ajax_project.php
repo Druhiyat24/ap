@@ -27,7 +27,7 @@ if ($action === 'get_one') {
 $q = mysqli_query($conn2,
     "SELECT *,
         CASE
-            WHEN status != 'Done' AND target_date IS NOT NULL AND target_date < CURDATE() THEN 1
+            WHEN status IN ('On Progress', 'Planned') AND target_date IS NOT NULL AND target_date < CURDATE() THEN 1
             ELSE 0
         END AS is_overdue,
         CASE status

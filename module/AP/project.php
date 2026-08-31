@@ -1071,7 +1071,9 @@ if ($fn_row = mysqli_fetch_assoc($fn_res)) {
       if (c[p.status] !== undefined) c[p.status]++;
       if (parseInt(p.is_overdue) === 1) overdue++;
     });
-    var rate = total > 0 ? Math.round((c['Done'] / total) * 100) : 0;
+    // Completion tidak menghitung item overdue (dikeluarkan dari basis).
+    var base = total - overdue;
+    var rate = base > 0 ? Math.round((c['Done'] / base) * 100) : 0;
 
     animateNumber('st-total', total);
     animateNumber('st-progress', c['On Progress'], function (v) {
@@ -1743,7 +1745,9 @@ if ($fn_row = mysqli_fetch_assoc($fn_res)) {
         var mc = moduleColor(p.category);
         var t = dOnly(p.target_date);
         var diff = Math.round((t - todayD) / 86400000);
-        var when = diff < 0 ? '<span class="overdue-flag">' + Math.abs(diff) + 'd overdue</span>'
+        var isOd = parseInt(p.is_overdue) === 1;   // On Hold tidak dihitung overdue
+        var when = isOd ? '<span class="overdue-flag"><i class="fa fa-exclamation-triangle"></i> ' + Math.abs(diff) + 'd overdue</span>'
+          : diff < 0 ? '<span class="text-muted">' + Math.abs(diff) + 'd past</span>'
           : diff === 0 ? '<span class="overdue-flag">Due today</span>'
           : diff + 'd left';
         html += '<div class="activity-item" onclick="openEdit(' + p.id + ')">' +
