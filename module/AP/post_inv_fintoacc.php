@@ -251,16 +251,32 @@
             }
 
 
-            while($row = mysqli_fetch_array($sql)){                    
-                    echo '<tr>
-                            <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" <?php if(in_array("1",$_POST[select])) echo "checked=checked";?></td>                        
-                            <td style="width:50px;" value="'.$row['doc_number'].'">'.$row['doc_number'].'</td>
+            while($row = mysqli_fetch_array($sql)){
+                    // Kelengkapan: HANYA berlaku utk IR alur baru (punya ir_kontrabon_h).
+                    // IR wajib ada faktur DAN BPB baru boleh ditransfer. IR lama (tanpa
+                    // ir_kontrabon_h) tidak digating supaya alur lama tidak terganggu.
+                    $docE = mysqli_real_escape_string($conn2, $row['doc_number']);
+                    $chk = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT
+                        (SELECT COUNT(*) FROM ir_kontrabon_h kh WHERE kh.doc_number='$docE') has_kh,
+                        (SELECT COUNT(*) FROM ir_kontrabon_bpb b JOIN ir_kontrabon_h kh ON kh.unik_code=b.unik_code WHERE kh.doc_number='$docE') bpb,
+                        (SELECT COUNT(*) FROM ir_kontrabon_faktur f JOIN ir_kontrabon_h kh ON kh.unik_code=f.unik_code WHERE kh.doc_number='$docE') fk"));
+                    $miss = [];
+                    if ((int)($chk['has_kh'] ?? 0) > 0) {
+                        if ((int)($chk['fk'] ?? 0) === 0)  $miss[] = 'faktur';
+                        if ((int)($chk['bpb'] ?? 0) === 0) $miss[] = 'BPB';
+                    }
+                    $isIncomplete = !empty($miss);
+                    $cbDisabled = $isIncomplete ? ' disabled title="IR belum lengkap - tidak bisa ditransfer"' : '';
+                    $note = $isIncomplete ? '<br><small style="color:#dc2626;font-weight:600;font-size:10px;"><i class="fa fa-exclamation-triangle"></i> belum lengkap: belum ada '.implode(' & ', $miss).' &mdash; tidak bisa ditransfer</small>' : '';
+                    echo '<tr'.($isIncomplete ? ' style="background:#fef2f2;"' : '').'>
+                            <td style="width:10px;"><input type="checkbox" class="cbrow" name="select[]" value=""'.$cbDisabled.'></td>
+                            <td style="width:50px;" value="'.$row['doc_number'].'">'.$row['doc_number'].$note.'</td>
                             <td style="width:100px;" value="'.$row['tgl_penerimaan'].'">'.date("d-M-Y",strtotime($row['tgl_penerimaan'])).'</td>
                             <td style="" value="'.$row['nama_supp'].'">'.$row['nama_supp'].'</td>
                             <td style ="text-align: right;" class="dt_total" style="width:100px;" value="'.$row['total_amount'].'">'.number_format($row['total_amount'],2).'</td>
-                 
+
                         </tr>';
-                      }                  
+                      }
                     ?>
             </tbody>                    
             </table>                    
@@ -561,8 +577,11 @@ function addListener(elm,index){
 <script type="text/javascript">
 $("#select_all").click(function() {
   var c = this.checked;
-  $(':checkbox').prop('checked', c);
-});  
+  // Hanya ceklis baris IR yang lengkap (checkbox tidak disabled) supaya IR belum
+  // lengkap tidak ikut ter-transfer lewat "select all".
+  $('.cbrow:not(:disabled)').prop('checked', c);
+  $('.cbrow').first().trigger('change'); // hitung ulang total
+});
 </script>
 
 <script type="text/javascript">     

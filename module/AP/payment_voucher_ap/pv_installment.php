@@ -300,7 +300,12 @@
                             <?php
                             $ir_number = isset($_POST['ir_number']) ? $_POST['ir_number']: null; 
                             $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;              
-                            $sql = mysqli_query($conn1,"select doc_number, nama_supp, total_amount from ir_invoice_supp_h where status != 'Cancel' and nama_supp = '$nama_supp'");
+                            // Sembunyikan IR yang sudah dipakai PV aktif (kontrabon_h non-Cancel);
+                            // muncul lagi kalau PV-nya di-cancel.
+                            $sql = mysqli_query($conn1,"select doc_number, nama_supp, total_amount from ir_invoice_supp_h
+                                where status != 'Cancel' and nama_supp = '$nama_supp'
+                                and doc_number NOT IN (select ir_number from kontrabon_h
+                                    where status <> 'Cancel' and ir_number is not null and ir_number <> '' and ir_number <> '-')");
                             while ($row = mysqli_fetch_array($sql)) {
                                 $data = $row['doc_number'];
                                 if($row['doc_number'] == $ir_number ){
@@ -2129,6 +2134,13 @@ $("#inst_jml_cicilan").on('keyup change', function () {
                     e.preventDefault();
                 },
                 success: function(response){
+                    // Guard server: IR sudah dipakai PV lain (non-cancel) -> batalkan save.
+                    if (typeof response === 'string' && response.indexOf('IR_ALREADY_USED') === 0) {
+                        var usedBy = response.split(':')[1] || '';
+                        Swal.fire({ icon: 'error', title: 'Invoice Received already used',
+                            html: 'This IR has already been used in another Payment Voucher' + (usedBy ? ' (<b>' + usedBy + '</b>)' : '') + '.<br>Cancel that PV first, or choose another IR.' });
+                        return;
+                    }
                     localStorage.removeItem("profit_center_inst");
 
                     var no_kbon_induk = response.split(':').pop().trim();

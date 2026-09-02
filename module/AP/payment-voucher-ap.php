@@ -231,11 +231,11 @@ div.dataTables_wrapper .dataTables_info {
         <i class="fa fa-search"></i> Search
       </button>
     <?php
-    $querys = mysqli_query($conn2, "select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create Kontrabon'");
+    $querys = mysqli_query($conn2, "select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create Payment Voucher AP'");
     $rs = mysqli_fetch_array($querys);
     $id = isset($rs['id']) ? $rs['id'] : 0;
 
-    if ($id == '7') {
+    if ($id == '136') {
         echo '<button type="button" id="btnCreateNew" class="btn btn-primary btn-sm ml-2" onclick="location.href=\'create-payment-voucher-ap.php\'">
         <i class="fa fa-plus-circle" aria-hidden="true"></i> Create New
         </button>';

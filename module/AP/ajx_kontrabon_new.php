@@ -31,7 +31,9 @@ $transExpr = ($tt && mysqli_num_rows($tt) > 0)
 
 $res = mysqli_query($conn2, "SELECT kh.doc_number, kh.kontrabon_date, kh.document_date, kh.no_reff, kh.nama_supp, kh.total_amount, kh.amount_add_pv,
         kh.status AS kb_status, kh.create_user, kh.create_date, ih.status AS ir_status,
-        $transExpr AS trans_cnt
+        $transExpr AS trans_cnt,
+        (SELECT COUNT(*) FROM ir_kontrabon_bpb b WHERE b.unik_code = kh.unik_code) AS bpb_cnt,
+        (SELECT COUNT(*) FROM ir_kontrabon_faktur f WHERE f.unik_code = kh.unik_code) AS fk_cnt
     FROM ir_kontrabon_h kh
     LEFT JOIN ir_invoice_supp_h ih ON ih.doc_number = kh.doc_number
     $where ORDER BY kh.id DESC");
@@ -45,6 +47,21 @@ while ($res && ($r = mysqli_fetch_assoc($res))) {
     $lc  = strtolower($eStat);
     $bcls = ($lc === 'cancel') ? 'cancel' : (($lc === 'draft') ? 'draft' : (($lc === 'received') ? 'received' : 'process'));
     $canModify = ($eStat === 'Draft' || $eStat === 'Received') && (int) ($r['trans_cnt'] ?? 0) === 0;
+
+    // Kelengkapan IR: harus ada faktur DAN BPB. Kalau belum, tampilkan notif kecil di
+    // bawah nomor. (IR Cancel tidak diberi notif.)
+    $bpbCnt = (int) ($r['bpb_cnt'] ?? 0);
+    $fkCnt  = (int) ($r['fk_cnt'] ?? 0);
+    $incompleteNote = '';
+    if ($eStat !== 'Cancel') {
+        $miss = [];
+        if ($fkCnt === 0)  $miss[] = 'faktur';
+        if ($bpbCnt === 0) $miss[] = 'BPB';
+        if ($miss) {
+            $incompleteNote = '<small class="kb-incomplete" style="display:block;color:#dc2626;font-weight:600;font-size:10px;margin-top:3px;">'
+                . '<i class="fa fa-exclamation-triangle"></i> IR belum lengkap: belum ada ' . implode(' & ', $miss) . '</small>';
+        }
+    }
 
     // Status badge
     $statusHtml = '<span class="kb-badge ' . $bcls . '">' . $esc($eStat) . '</span>';
@@ -65,7 +82,7 @@ while ($res && ($r = mysqli_fetch_assoc($res))) {
     $addpv  = (float) ($r['amount_add_pv'] ?? 0);
     $grand  = (float) $r['total_amount'] + $addpv;
     $data[] = [
-        'doc_number'     => '<span class="kb-doc"><i class="fa fa-file-text-o"></i>' . $esc($doc) . '</span>',
+        'doc_number'     => '<span class="kb-doc"><i class="fa fa-file-text-o"></i>' . $esc($doc) . '</span>' . $incompleteNote,
         'document_date'  => !empty($r['document_date']) ? date('d-M-Y', strtotime($r['document_date'])) : '-',
         'kontrabon_date' => !empty($r['kontrabon_date']) ? date('d-M-Y', strtotime($r['kontrabon_date'])) : '-',
         'no_reff'        => $esc($r['no_reff'] ?? ''),
