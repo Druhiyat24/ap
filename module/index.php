@@ -582,7 +582,7 @@ if ($user == '') {
       $pur = $rs['purchasing'];
       $app_po = $rs['approve_po'];
 
-      $queryss = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%BPB%' and useraccess.menu != 'Transfer BPB' and useraccess.menu != 'Accept BPB Whs-Acc' and useraccess.menu != 'Maintain BPB' and useraccess.menu != 'Acct - Rekonsiliasi Jurnal-BPB' and useraccess.menu != 'Acct - Repost Jurnal BPB' and useraccess.menu not like '%create%' and profit_center != 'NAK' and  useraccess.menu != 'Update BPB Fabric' group by username");
+      $queryss = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%BPB%' and useraccess.menu != 'Document Handover - BPB & SJ' and useraccess.menu != 'Document Handover - Accept BPB Warehouse To Accounting' and useraccess.menu != 'Maintain BPB' and useraccess.menu != 'Acct - Rekonsiliasi Jurnal-BPB' and useraccess.menu != 'Acct - Repost Jurnal BPB' and useraccess.menu not like '%create%' and profit_center != 'NAK' and  useraccess.menu != 'Update BPB Fabric' group by username");
       while($rss = mysqli_fetch_array($queryss)){
         $menu = isset($rss['ket']) ? $rss['ket'] :0;
         $id = isset($rss['id']) ? $rss['id'] :0;
@@ -798,7 +798,7 @@ $group = $rs['Groupp'];
 $pur = $rs['purchasing'];
 $app_po = $rs['approve_po'];
 $menu_nak = '';
-$queryss_nak = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%BPB%' and useraccess.menu != 'Transfer BPB' and useraccess.menu != 'Accept BPB Whs-Acc' and useraccess.menu != 'Maintain BPB' and useraccess.menu not like '%create%' and profit_center = 'NAK' group by username");
+$queryss_nak = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu like '%BPB%' and useraccess.menu != 'Document Handover - BPB & SJ' and useraccess.menu != 'Document Handover - Accept BPB Warehouse To Accounting' and useraccess.menu != 'Maintain BPB' and useraccess.menu not like '%create%' and profit_center = 'NAK' group by username");
 while($rss_nak = mysqli_fetch_array($queryss_nak)){
     $menu_nak = isset($rss_nak['ket']) ? $rss_nak['ket'] :0;
     $id_nak = isset($rss_nak['id']) ? $rss_nak['id'] :0;
@@ -884,12 +884,12 @@ if($id == '4'){
 
 
 <?php
-$querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Invoice Received'");
+$querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Document Handover - Invoice'");
 $rs = mysqli_fetch_array($querys);
 $menu = isset($rs['menu']) ? $rs['menu'] :0;
 $id = isset($rs['id']) ? $rs['id'] :0;
 
-$querys2 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, GROUP_CONCAT(menurole.id) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu IN ('Transfer BPB') GROUP BY username");
+$querys2 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, GROUP_CONCAT(menurole.id) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu IN ('Document Handover - BPB & SJ') GROUP BY username");
 $rs2 = mysqli_fetch_array($querys2);
 $menu2 = isset($rs2['menu']) ? $rs2['menu'] :0;
 $id2 = isset($rs2['id']) ? $rs2['id'] :0;
@@ -970,9 +970,44 @@ if($id == '6'){
     </a>
     </ul>
     </li>';
+}else{
+    echo '';
+}
 
-    //NEW PAYMENT VOUCHER
+// Invoice Received - menu sendiri (menggantikan submenu lama "Kontrabon New" yang
+// dulu hanya utk dev/tester lewat hardcode username). Sekarang digating menurole
+// 'Invoice Received' -> bisa diatur lewat Manage User Role (userrole.php).
+// Anak menu tetap: Kontrabon (kontrabon_new.php) & Reference Number (kontrabon_new_ref.php).
+$querysIR = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Invoice Received'");
+$rsIR = mysqli_fetch_array($querysIR);
+$idIR = isset($rsIR['id']) ? $rsIR['id'] :0;
 
+if($idIR != 0){
+    echo '
+    <li class="dropdown-submenu ">
+    <a class="dropdown-item bg-dark text-white" href="#">
+    <span class="fa fa-inbox fa-fw "></span>
+    <span class="menu-collapsed">Invoice Received</span>
+    </a>
+    <ul class="dropdown-menu bg-dark text-white" role="menu">
+    <a href="AP/kontrabon_new.php" class="dropdown-item bg-dark text-white">
+    <span class="fa fa-list-alt fa-fw "></span>
+    <span class="menu-collapsed">Invoice Received</span>
+    </a>
+    <a href="AP/kontrabon_new_ref.php" class="dropdown-item bg-dark text-white">
+    <span class="fa fa-hashtag fa-fw "></span>
+    <span class="menu-collapsed">Reference Number</span>
+    </a>
+    </ul>
+    </li>';
+}
+
+// Payment Voucher AP - userrole sendiri, terpisah dari Kontrabon.
+$querysPvAp = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Payment Voucher AP'");
+$rsPvAp = mysqli_fetch_array($querysPvAp);
+$idPvAp = isset($rsPvAp['id']) ? $rsPvAp['id'] :0;
+
+if($idPvAp == '135'){
     echo '
     <li class="dropdown-submenu ">
     <a class="dropdown-item bg-dark text-white" href="#">
@@ -987,14 +1022,12 @@ if($id == '6'){
     </a>
 
     <a href="AP/payment-voucher-list.php" class="dropdown-item bg-dark text-white">
-                    <span class="fa fa-list-alt fa-fw "></span>
-                    <span class="menu-collapsed">Payment Voucher list</span>
-                    </a>
+    <span class="fa fa-list-alt fa-fw "></span>
+    <span class="menu-collapsed">Payment Voucher list</span>
+    </a>
 
     </ul>
     </li>';
-}else{
-    echo '';
 }
 ?>
 

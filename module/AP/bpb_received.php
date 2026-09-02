@@ -147,7 +147,7 @@
 <?php
 
 
-        $querys7 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Accept BPB Whs-Acc'");
+        $querys7 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Document Handover - Accept BPB Warehouse To Accounting'");
         $rs7 = mysqli_fetch_array($querys7);
         $id7 = isset($rs7['id']) ? $rs7['id'] : 0;
 

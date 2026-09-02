@@ -1,4 +1,77 @@
 <?php include '../header.php' ?>
+<!-- DH-SKIN-START -->
+<style>
+  /* ===== Skin "Document Handover" (inline) — meniru document_handover.php ===== */
+  .col.p-4{ background:transparent !important; box-shadow:none !important; }
+  /* Netralkan wrapper .box supaya header NEMPEL ke form jadi 1 card */
+  .col.p-4 > .box,
+  .col.p-4 .box.header,
+  .col.p-4 .card-body.table-responsive{
+    background:transparent !important; border:0 !important; box-shadow:none !important;
+    padding:0 !important; margin:0 !important;
+  }
+
+  /* ===== CARD 1 = header judul (atap) + form (body) ===== */
+  .col.p-4 > h3.text-center{
+    background:linear-gradient(90deg,#191970,#1e90ff); color:#fff;
+    text-align:left !important; font-size:18px; font-weight:700; letter-spacing:.02em;
+    margin:0 !important; padding:14px 22px; border-radius:14px 14px 0 0;
+    display:flex; align-items:center; gap:10px;
+  }
+  .col.p-4 > h3.text-center .fa{ font-size:16px; opacity:.95; }
+  #form-data{
+    background:#fff; border:1px solid #e8edf5; border-top:0;
+    border-radius:0 0 14px 14px; padding:18px 20px 8px;
+    box-shadow:0 8px 30px rgba(15,23,42,.06); margin:0 0 22px !important;
+  }
+
+  /* ===== CARD 2 = tabel + footer (Total Amount + Post/Back) jadi SATU card ===== */
+  .col.p-4 .box.body{
+    background:#fff !important; border:1px solid #e8edf5 !important; border-radius:14px !important;
+    padding:18px 20px !important; box-shadow:0 8px 30px rgba(15,23,42,.06) !important; margin:0 !important;
+  }
+  .col.p-4 .box.body > .row{ margin:0 !important; }
+  .col.p-4 .box.body .col-md-12{ padding:0 !important; }
+  #mytable_wrapper{ background:transparent; border:0; box-shadow:none; padding:0; }
+  /* Footer (total + tombol) nyatu di dalam card, dipisah garis halus di atasnya */
+  .col.p-4 .box.footer{
+    background:transparent !important; border:0 !important; box-shadow:none !important;
+    padding:14px 2px 2px !important; margin-top:12px !important; border-top:1px solid #eef2f7 !important;
+  }
+
+  /* Tabel utama -> header biru + hover (seperti Document Handover) */
+  #mytable{ border-collapse:separate !important; border-spacing:0; }
+  #mytable thead tr.bg-dark, #mytable thead tr.thead-dark{ background:transparent !important; }
+  #mytable thead th{ background:#1E3A8A !important; color:#fff !important; font-weight:600; letter-spacing:.02em; border:0 !important; vertical-align:middle; padding:10px 12px; }
+  #mytable tbody td{ border-color:#eef2f7 !important; vertical-align:middle; }
+  #mytable tbody tr:hover{ background:#f5f8ff; }
+
+  /* Modal -> header gradient + rounded (seperti modal Document Handover) */
+  .modal-header.bg-dark{ background:linear-gradient(135deg,#172554,#2563eb) !important; border:0; }
+  .modal-content{ border:0; border-radius:14px; overflow:hidden; box-shadow:0 18px 55px rgba(15,23,42,.25); }
+  /* Tabel DI DALAM modal (mis. modal Accept #mytable2) -> header biru juga */
+  .modal thead tr.bg-dark, .modal thead tr.thead-dark{ background:transparent !important; }
+  .modal thead th{ background:#1E3A8A !important; color:#fff !important; font-weight:600 !important; letter-spacing:.02em; border:0 !important; vertical-align:middle; padding:9px 11px; }
+  .modal tbody td{ border-color:#eef2f7 !important; }
+  .modal tbody tr:hover{ background:#f5f8ff; }
+  /* Perbesar modal (mis. Accept = modal-lg) sedikit */
+  .modal-lg{ max-width:920px !important; }
+
+  /* Tombol Post / Back / Accept lebih modern */
+  #simpan,#batal,#approve,#reject,#post,#accept{ border-radius:8px !important; font-weight:600; padding:6px 16px; transition:transform .12s ease, box-shadow .15s ease; }
+  #simpan:hover,#batal:hover,#approve:hover,#reject:hover,#post:hover,#accept:hover{ transform:translateY(-1px); box-shadow:0 5px 13px rgba(30,58,138,.2); }
+</style>
+<script>
+  // Ikon judul: sisipkan <i class="fa fa-exchange"> asli (FA5 + v4-shims yg dimuat app).
+  document.addEventListener('DOMContentLoaded', function () {
+    var h = document.querySelector('.col.p-4 > h3.text-center');
+    if (h && !h.querySelector('.fa')) {
+      var i = document.createElement('i'); i.className = 'fa fa-exchange';
+      h.insertBefore(i, h.firstChild);
+    }
+  });
+</script>
+<!-- DH-SKIN-END -->
 
     <!-- MAIN -->
     <div class="col p-4">
@@ -245,7 +318,7 @@ echo $rate;
            <div class="form-row col">
             <div class="col-md-3 mb-3">                              
             <button type="button" style="border-radius: 6px" class="btn-outline-primary btn-sm" name="simpan" id="simpan"><span class="fa fa-floppy-o"></span> Save</button>                
-            <button type="button" style="border-radius: 6px" class="btn-outline-danger btn-sm" name="batal" id="batal" onclick="location.href='invoice_received.php'"><span class="fa fa-angle-double-left"></span> Back</button>           
+            <button type="button" style="border-radius: 6px" class="btn-outline-danger btn-sm" name="batal" id="batal" onclick="location.href='document_handover.php?type=invoice'"><span class="fa fa-angle-double-left"></span> Back</button>           
             </div>
             </div>                                    
         </form>
@@ -860,7 +933,7 @@ function simpanData(){
             });
 
             alert("Berhasil disimpan");
-            window.location = 'invoice_received.php';
+            window.location = 'document_handover.php?type=invoice';
         }
     });
 }
@@ -910,7 +983,7 @@ function simpanData(){
     //                     console.log(response);
     //                     // alert(response);
                 
-    //                     window.location = 'invoice_received.php';
+    //                     window.location = 'document_handover.php?type=invoice';
     //                 },
     //                 error: function (xhr, ajaxOptions, thrownError) {
     //                     console.log(xhr);

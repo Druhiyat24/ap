@@ -43,6 +43,7 @@
             <th style="text-align: center;vertical-align: middle;">No Reff</th>
             <th style="text-align: center;vertical-align: middle;">Supplier Name</th>
             <th style="text-align: center;vertical-align: middle;">Amount</th>
+            <th style="text-align: center;vertical-align: middle;">Amount Add in PV</th>
             <th style="text-align: center;vertical-align: middle;">Status</th>
             <th style="text-align: center;vertical-align: middle;">SI Date</th>
             <th style="text-align: center;vertical-align: middle;">IR Date</th>
@@ -97,10 +98,12 @@ select payment_ftr_id,tgl_pelunasan,no_kbon from payment_ftr where type_pv = 'Re
 
         if ($nama_supp === 'ALL') {
             $sql = mysqli_query($conn2,"select * from (select no_invoice,COALESCE(no_reff,'-') no_reff,a.doc_number,b.nama_supp,a.amount,b.status,tgl_invoice,tgl_penerimaan,tfta_date,receive_acc_date,tatp_date,receive_pch_date,tptf_date,receive_fin_date from ir_invoice_supp a inner join ir_invoice_supp_h b on b.doc_number = a.doc_number where tgl_invoice between '$start_date_esc' and '$end_date_esc' group by a.id) a left join (select max(bpbdate) bpbdate,max(dateinput) dateinput,max(confirm_date) confirm_date,upt_no_inv,max(trf_date) trf_date,b.supplier from bpb a inner join mastersupplier b on b.id_supplier  = a.id_supplier where upt_no_inv is not null and upt_no_inv != '-' GROUP BY upt_no_inv,supplier) b on b.upt_no_inv = a.no_invoice and b.supplier = a.nama_supp left join
-($kb_pl_subquery) c on c.upt_no_inv = a.no_invoice and c.supp = a.nama_supp");
+($kb_pl_subquery) c on c.upt_no_inv = a.no_invoice and c.supp = a.nama_supp left join
+(select doc_number dn, COALESCE(SUM(amount_add_pv),0) amount_add_pv from ir_kontrabon_h group by doc_number) kh on kh.dn = a.doc_number");
         } else {
             $sql = mysqli_query($conn2,"select * from (select no_invoice,COALESCE(no_reff,'-') no_reff,a.doc_number,b.nama_supp,a.amount,b.status,tgl_invoice,tgl_penerimaan,tfta_date,receive_acc_date,tatp_date,receive_pch_date,tptf_date,receive_fin_date from ir_invoice_supp a inner join ir_invoice_supp_h b on b.doc_number = a.doc_number where b.nama_supp = '$nama_supp_esc' and tgl_invoice between '$start_date_esc' and '$end_date_esc' group by a.id) a left join (select max(bpbdate) bpbdate,max(dateinput) dateinput,max(confirm_date) confirm_date,upt_no_inv,max(trf_date) trf_date,b.supplier from bpb a inner join mastersupplier b on b.id_supplier  = a.id_supplier where upt_no_inv is not null and upt_no_inv != '-' GROUP BY upt_no_inv,supplier) b on b.upt_no_inv = a.no_invoice and b.supplier = a.nama_supp left join
-($kb_pl_subquery) c on c.upt_no_inv = a.no_invoice and c.supp = a.nama_supp");
+($kb_pl_subquery) c on c.upt_no_inv = a.no_invoice and c.supp = a.nama_supp left join
+(select doc_number dn, COALESCE(SUM(amount_add_pv),0) amount_add_pv from ir_kontrabon_h group by doc_number) kh on kh.dn = a.doc_number");
         }
 
         $no = 1;
@@ -146,6 +149,7 @@ select payment_ftr_id,tgl_pelunasan,no_kbon from payment_ftr where type_pv = 'Re
             <td value = "'.$row['no_reff'].'">'.$row['no_reff'].'</td>
             <td style="text-align: left;" value = "'.$row['nama_supp'].'">'.$row['nama_supp'].'</td>
             <td style="text-align: right;" value = "'.$row['amount'].'">'.number_format($row['amount'],2).'</td>
+            <td style="text-align: right;">'.((((float)($row['amount_add_pv'] ?? 0))>0?'+':'').number_format((float)($row['amount_add_pv'] ?? 0),2)).'</td>
             <td style="text-align: left;" value = "'.$row['status'].'">'.$row['status'].'</td>
             <td value = "'.$row['tgl_invoice'].'">'.date("d-M-Y",strtotime($row['tgl_invoice'])).'</td>
             <td value = "'.$row['tgl_penerimaan'].'">'.date("d-M-Y",strtotime($row['tgl_penerimaan'])).'</td>

@@ -1,6 +1,11 @@
 <?php
 include '../../conn/conn.php';
+require_once __DIR__ . '/bpb_docinfo_guard.php';
 ini_set('date.timezone', 'Asia/Jakarta');
+
+// Semua nilai uang dari form bisa kosong ("") / berkoma -> bikin float dulu supaya
+// tidak ada "A non-numeric value encountered" saat dijumlahkan (PHP 8).
+$numf = function ($v) { return (float) str_replace(',', '', (string) ($v ?? 0)); };
 
 $no_kbon_h = $_POST['no_kbon_h'];
 $unik_code = $_POST['unik_code'];
@@ -12,33 +17,45 @@ $no_faktur_h = $_POST['no_faktur_h'];
 $supp_inv_h = $_POST['supp_inv_h'];
 $tgl_inv_h = date("Y-m-d",strtotime($_POST['tgl_inv_h']));
 $tgl_tempo_h = date("Y-m-d",strtotime($_POST['tgl_tempo_h']));
-$pph_h = $_POST['pph_h'];
+$pph_h = $numf($_POST['pph_h'] ?? 0);
 $curr_h = $_POST['curr_h'];
 $create_date = date("Y-m-d H:i:s");
 $post_date = date("Y-m-d H:i:s");
 $update_date = date("Y-m-d H:i:s");
 $status = 'draft';
 $create_user_h = $_POST['create_user_h'];
-$sub_h      = $_POST['sub_h']      ?? 0;
-$tax_h      = $_POST['tax_h']      ?? 0;
-$dp_h       = $_POST['dp_h']       ?? 0;
-$total_h    = $_POST['total_h']    ?? 0;
+$sub_h      = $numf($_POST['sub_h']      ?? 0);
+$tax_h      = $numf($_POST['tax_h']      ?? 0);
+$dp_h       = $numf($_POST['dp_h']       ?? 0);
+$total_h    = $numf($_POST['total_h']    ?? 0);
 $balance    = $total_h;
-$jml_return = $_POST['jml_return'] ?? 0;
-$lr_kurs    = $_POST['lr_kurs']    ?? 0;
-$s_qty      = $_POST['s_qty']      ?? 0;
-$s_harga    = $_POST['s_harga']    ?? 0;
-$materai    = $_POST['materai']    ?? 0;
-$pot_beli   = $_POST['pot_beli']   ?? 0;
-$ekspedisi  = $_POST['ekspedisi']  ?? 0;
-$moq        = $_POST['moq']        ?? 0;
-$jml_potong = $_POST['jml_potong'] ?? 0;
+$jml_return = $numf($_POST['jml_return'] ?? 0);
+$lr_kurs    = $numf($_POST['lr_kurs']    ?? 0);
+$s_qty      = $numf($_POST['s_qty']      ?? 0);
+$s_harga    = $numf($_POST['s_harga']    ?? 0);
+$materai    = $numf($_POST['materai']    ?? 0);
+$pot_beli   = $numf($_POST['pot_beli']   ?? 0);
+$ekspedisi  = $numf($_POST['ekspedisi']  ?? 0);
+$moq        = $numf($_POST['moq']        ?? 0);
+$jml_potong = $numf($_POST['jml_potong'] ?? 0);
 $status_invoice = 'Invoiced';
 $mattype = $_POST['mattype'];
 $matclass = $_POST['matclass'];
 $n_code_category = $_POST['n_code_category'];
 $cus_ctg = $_POST['cus_ctg'];
 $profit_center = $_POST['profit_center'];
+
+// Field baru (disamakan dengan create): Koreksi PPN/PPh, IR Number, Supplier Bank
+// Account, From Account. Ditulis ke revisi baru (kontrabon_h / potongan) supaya
+// hasil edit tidak kehilangan data bank/IR yang dipakai proses approval & payment.
+$potongan_ppn = $numf($_POST['potongan_ppn'] ?? 0);
+$potongan_pph = $numf($_POST['potongan_pph'] ?? 0);
+$ir_number      = isset($_POST['ir_number']) ? mysqli_real_escape_string($conn2, $_POST['ir_number']) : '';
+$bank_account_raw = isset($_POST['bank_account']) ? $_POST['bank_account'] : '';
+$id_bank_account  = ($bank_account_raw !== '' && $bank_account_raw !== '-') ? (int) $bank_account_raw : 'NULL';
+$from_account   = mysqli_real_escape_string($conn2, isset($_POST['from_account']) ? $_POST['from_account'] : '');
+$from_bank      = mysqli_real_escape_string($conn2, isset($_POST['from_bank']) ? $_POST['from_bank'] : '');
+$from_bank_curr = mysqli_real_escape_string($conn2, isset($_POST['from_bank_curr']) ? $_POST['from_bank_curr'] : '');
 
 
 
@@ -117,9 +134,9 @@ $sqlno = mysqli_query($conn1,"select CONCAT(
 $rowno = mysqli_fetch_array($sqlno);
 $kode = isset($rowno['new_nomor']) ? $rowno['new_nomor'] : 0;
 
-$queryss = "INSERT INTO potongan (no_kbon, tgl_kbon, nama_supp, jml_return, lr_kurs, s_qty, s_harga, materai, pot_beli, ekspedisi, moq, jml_potong, status)
-VALUES 
-('$kode','$tgl_kbon_h', '$nama_supp_h', '$jml_return', '$lr_kurs1', '$s_qty1', '$s_harga1', '$materai1', '$pot_beli1', '$ekspedisi1', '$moq1', '$jml_potong1', '$status')";
+$queryss = "INSERT INTO potongan (no_kbon, tgl_kbon, nama_supp, jml_return, lr_kurs, s_qty, s_harga, materai, pot_beli, ekspedisi, moq, jml_potong, potongan_ppn, potongan_pph, status)
+VALUES
+('$kode','$tgl_kbon_h', '$nama_supp_h', '$jml_return', '$lr_kurs1', '$s_qty1', '$s_harga1', '$materai1', '$pot_beli1', '$ekspedisi1', '$moq1', '$jml_potong1', '$potongan_ppn', '$potongan_pph', '$status')";
 $executess = mysqli_query($conn2,$queryss);
 
 if ($curr_h != 'IDR') {
@@ -356,16 +373,16 @@ $pph_h1 = $pph_h * $rate;
 
 if($curr_h == 'IDR'){
 
-	$query = "INSERT INTO kontrabon_h ( no_kbon, tgl_kbon, no_po, nama_supp, no_faktur, supp_inv, tgl_inv, tgl_tempo, subtotal, tax, pph_idr, rate, total, dp_value, balance, curr, post_date, update_date, status, create_user, create_date, tgl_kbon2, unik_code,no_coa,nama_coa, profit_center)
-	VALUES 
-	('$kode', '$tgl_kbon_h', '$no_po_h', '$nama_supp_h', '$no_faktur_h', '$supp_inv_h', '$tgl_inv_h', '$tgl_tempo_h', '$sub_h', '$tax_h', '$pph_h', '1', '$total_h', '$dp_h', '$balance', '$curr_h', '$post_date', '$update_date', '$status', '$create_user_h', '$create_date', '$tgl_kbon_s', '$unik_code', '$no_coa_cre', '$nama_coa_cre', '$profit_center')";
+	$query = "INSERT INTO kontrabon_h ( no_kbon, tgl_kbon, no_po, nama_supp, no_faktur, supp_inv, tgl_inv, tgl_tempo, subtotal, tax, pph_idr, rate, total, dp_value, balance, curr, post_date, update_date, status, create_user, create_date, tgl_kbon2, unik_code,no_coa,nama_coa, profit_center, ir_number, id_bank_account, from_account, from_bank, from_bank_curr)
+	VALUES
+	('$kode', '$tgl_kbon_h', '$no_po_h', '$nama_supp_h', '$no_faktur_h', '$supp_inv_h', '$tgl_inv_h', '$tgl_tempo_h', '$sub_h', '$tax_h', '$pph_h', '1', '$total_h', '$dp_h', '$balance', '$curr_h', '$post_date', '$update_date', '$status', '$create_user_h', '$create_date', '$tgl_kbon_s', '$unik_code', '$no_coa_cre', '$nama_coa_cre', '$profit_center', '$ir_number', $id_bank_account, '$from_account', '$from_bank', '$from_bank_curr')";
 	$execute = mysqli_query($conn2,$query);
 
 } else{
 
-	$query = "INSERT INTO kontrabon_h ( no_kbon, tgl_kbon, no_po, nama_supp, no_faktur, supp_inv, tgl_inv, tgl_tempo, subtotal, tax, pph_idr, rate, pph_fgn, total, dp_value, balance, curr, post_date, update_date, status, create_user, create_date, tgl_kbon2, unik_code,no_coa,nama_coa, profit_center)
-	VALUES 
-	('$kode', '$tgl_kbon_h', '$no_po_h', '$nama_supp_h', '$no_faktur_h', '$supp_inv_h', '$tgl_inv_h', '$tgl_tempo_h', '$sub_h', '$tax_h', '$pph_h1',  '$rate', '$pph_h', '$total_h', '$dp_h', '$balance', '$curr_h', '$post_date', '$update_date', '$status', '$create_user_h', '$create_date', '$tgl_kbon_s', '$unik_code', '$no_coa_cre', '$nama_coa_cre', '$profit_center')";
+	$query = "INSERT INTO kontrabon_h ( no_kbon, tgl_kbon, no_po, nama_supp, no_faktur, supp_inv, tgl_inv, tgl_tempo, subtotal, tax, pph_idr, rate, pph_fgn, total, dp_value, balance, curr, post_date, update_date, status, create_user, create_date, tgl_kbon2, unik_code,no_coa,nama_coa, profit_center, ir_number, id_bank_account, from_account, from_bank, from_bank_curr)
+	VALUES
+	('$kode', '$tgl_kbon_h', '$no_po_h', '$nama_supp_h', '$no_faktur_h', '$supp_inv_h', '$tgl_inv_h', '$tgl_tempo_h', '$sub_h', '$tax_h', '$pph_h1',  '$rate', '$pph_h', '$total_h', '$dp_h', '$balance', '$curr_h', '$post_date', '$update_date', '$status', '$create_user_h', '$create_date', '$tgl_kbon_s', '$unik_code', '$no_coa_cre', '$nama_coa_cre', '$profit_center', '$ir_number', $id_bank_account, '$from_account', '$from_bank', '$from_bank_curr')";
 	$execute = mysqli_query($conn2,$query);
 
 }
@@ -384,6 +401,10 @@ $sqlcopy2 = mysqli_query($conn2,"insert into kontrabon_ftr select '', '$kode' no
 
 $sqlcopy3 = mysqli_query($conn2,"insert into return_kb select '', '$kode' no_kbon, no_ro, no_bpbrtn, total_ro, 'draft' status from ap_edit_return_kb where no_kbon = '$no_kbon_h'");
 
+// Salin jurnal BPB (GR/IR + PPN) dari ap_journal_temp ke jurnal revisi. CATATAN:
+// ap_journal_temp TIDAK punya kolom faktur_pajak/tgl_faktur_pajak, jadi jangan
+// menyertakannya di sini (kalau disertakan, INSERT...SELECT gagal -> debit BPB tidak
+// tersalin -> jurnal revisi tidak balance).
 $sqlcopy4 = mysqli_query($conn2,"insert into tbl_list_journal (id, no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center) select '', '$kode' no_journal, '$create_date' tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, 'draft' status, keterangan, create_by, '$create_date' create_date, approve_by, approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center from ap_journal_temp where no_journal = '$no_kbon_h'");
 
 
@@ -403,6 +424,47 @@ $delquery6 = mysqli_query($conn2,"delete from ap_journal_temp where no_journal= 
 $uptquery6 = mysqli_query($conn2,"update bpb_new a INNER JOIN kontrabon b ON b.no_bpb = a.no_bpb SET a.is_invoiced = 'Waiting' where b.no_kbon = '$no_kbon_h'");
 
 $uptquery6 = mysqli_query($conn2,"update bpb_new a INNER JOIN kontrabon b ON b.no_bpb = a.no_bpb SET a.is_invoiced = 'Invoiced' where b.no_kbon = '$kode'");
+
+// ============================================================================
+// Samakan dgn create: isi No/Tgl Faktur + No/Tgl Invoice per BPB & RETUR ke
+// bpb_new / bppb_new (upt_*) DENGAN strip-guard, plus isi faktur_pajak jurnal
+// revisi (disalin dari ap_journal_temp yg tak punya kolom itu). Sumber faktur =
+// peta dari form (bpb_faktur_map / ret_faktur_map); invoice = header supp_inv/tgl_inv
+// PV ini; dok = IR number (kalau ada) / no kontrabon revisi.
+// ============================================================================
+$dok_edit     = ($ir_number !== '' && $ir_number !== '-') ? $ir_number : $kode;
+$inv_tgl_edit = (!empty($_POST['tgl_inv_h']) && $supp_inv_h !== '' && $supp_inv_h !== '-')
+    ? "'" . mysqli_real_escape_string($conn2, $tgl_inv_h) . "'" : 'NULL';
+$fdate = function ($v) {
+    $v = trim((string) $v);
+    if ($v === '' || $v === '-') return 'NULL';
+    $ts = strtotime($v);
+    return $ts ? "'" . date('Y-m-d', $ts) . "'" : 'NULL';
+};
+// BPB -> bpb_new + faktur_pajak jurnal revisi.
+$bpbMap = json_decode($_POST['bpb_faktur_map'] ?? '{}', true) ?: [];
+foreach ($bpbMap as $noBpb => $fk) {
+    $noBpb = trim((string) $noBpb); if ($noBpb === '') continue;
+    $nf = trim((string) ($fk['no_faktur'] ?? ''));
+    $ftSql = $fdate($fk['tgl_faktur'] ?? '');
+    bpbnew_apply_docinfo($conn2, $noBpb, $dok_edit, $supp_inv_h, $inv_tgl_edit, $nf, $ftSql);
+    @mysqli_query($conn2, "UPDATE tbl_list_journal SET faktur_pajak = '" . mysqli_real_escape_string($conn2, $nf) . "', tgl_faktur_pajak = $ftSql
+        WHERE no_journal = '" . mysqli_real_escape_string($conn2, $kode) . "'
+          AND reff_doc = '" . mysqli_real_escape_string($conn2, $noBpb) . "' AND type_journal = 'AP - Kontrabon'");
+}
+// RETUR -> bppb_new.
+$retMap = json_decode($_POST['ret_faktur_map'] ?? '{}', true) ?: [];
+foreach ($retMap as $noBppb => $fk) {
+    $noBppb = trim((string) $noBppb); if ($noBppb === '') continue;
+    $nf = trim((string) ($fk['no_faktur'] ?? ''));
+    $ftSql = $fdate($fk['tgl_faktur'] ?? '');
+    bppbnew_apply_docinfo($conn2, $noBppb, $dok_edit, $supp_inv_h, $inv_tgl_edit, $nf, $ftSql);
+    // Baris jurnal RETUR pakai reff_doc = no_bppb -> isi faktur_pajak juga (sama
+    // seperti loop BPB di atas), supaya No Faktur retur muncul di jurnal.
+    @mysqli_query($conn2, "UPDATE tbl_list_journal SET faktur_pajak = '" . mysqli_real_escape_string($conn2, $nf) . "', tgl_faktur_pajak = $ftSql
+        WHERE no_journal = '" . mysqli_real_escape_string($conn2, $kode) . "'
+          AND reff_doc = '" . mysqli_real_escape_string($conn2, $noBppb) . "' AND type_journal = 'AP - Kontrabon'");
+}
 
 
 if($execute){

@@ -9,17 +9,81 @@
         font-size: 14px;
     }
 
-    .table-gradient th {
-        background: #1E3A8A;
+    #datatable.ir-modern thead.table-gradient th {
+        background: linear-gradient(180deg, #2f6fea, #1E3A8A);
         color: #fff;
         text-align: center;
         vertical-align: middle;
         white-space: nowrap;
+        border-color: #1c3577;
+        font-size: 12px;
+        letter-spacing: .2px;
+        padding: 10px 10px;
     }
+
+    #datatable.ir-modern tbody td {
+        font-size: 12.5px;
+        vertical-align: middle;
+        padding: 7px 10px;
+        transition: background-color .12s ease;
+    }
+
+    #datatable.ir-modern tbody tr:hover td {
+        background-color: #eef4ff;
+    }
+
+    #datatable.ir-modern td.ir-clickable {
+        cursor: pointer;
+        color: #1E3A8A;
+        font-weight: 600;
+        position: relative;
+    }
+
+    #datatable.ir-modern td.ir-clickable:hover {
+        background-color: #dbe7ff !important;
+        text-decoration: underline;
+    }
+
+    #datatable.ir-modern td.ir-clickable.ir-empty {
+        color: #adb5bd;
+        font-weight: 400;
+        cursor: default;
+        text-decoration: none;
+    }
+
+    #datatable.ir-modern td.ir-clickable.ir-empty:hover {
+        background-color: transparent !important;
+    }
+
+    .ir-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .2px;
+        white-space: nowrap;
+    }
+
+    .ir-badge-green { background: #dcfce7; color: #15803d; }
+    .ir-badge-blue { background: #dbeafe; color: #1d4ed8; }
+    .ir-badge-amber { background: #fef3c7; color: #b45309; }
+    .ir-badge-gray { background: #e5e7eb; color: #4b5563; }
 
     div.dataTables_wrapper .dataTables_paginate {
         float: right;
         margin-top: 10px;
+    }
+
+    div.dataTables_wrapper .dataTables_paginate .paginate_button {
+        border-radius: 6px !important;
+        margin-left: 3px;
+    }
+
+    div.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: #1E3A8A !important;
+        border-color: #1E3A8A !important;
+        color: #fff !important;
     }
 
     div.dataTables_wrapper .dataTables_info {
@@ -27,13 +91,77 @@
         margin-top: 10px;
     }
 
+    div.dataTables_wrapper .dataTables_filter input {
+        border-radius: 6px;
+    }
+
+    div.dataTables_wrapper .dataTables_length select {
+        border-radius: 6px;
+    }
+
     .ir-legend {
         font-size: 12.5px;
+    }
+
+    .ir-legend .card {
+        border: 0;
+        border-radius: 10px;
+        background: #f8fafc;
+        box-shadow: 0 1px 4px rgba(15, 23, 42, .06);
     }
 
     .ir-legend ul {
         padding-left: 18px;
         margin-bottom: 0;
+    }
+
+    #mymodalCellDetail .modal-content {
+        border: 0;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 16px 42px rgba(15, 23, 42, .24);
+    }
+
+    #mymodalCellDetail .modal-header {
+        background: linear-gradient(90deg, #191970, #1e90ff);
+        border: 0;
+        padding: 16px 20px;
+    }
+
+    #mymodalCellDetail .modal-title {
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    #mymodalCellDetail .modal-body {
+        padding: 22px;
+        background: #f8fafc;
+    }
+
+    .ir-detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #fff;
+        border: 1px solid #e5e9f2;
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 10px;
+    }
+
+    .ir-detail-row .label {
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+    }
+
+    .ir-detail-row .value {
+        color: #0f172a;
+        font-size: 14px;
+        font-weight: 700;
+        text-align: right;
     }
 </style>
 
@@ -88,7 +216,7 @@
     <div class="card shadow border-0 mt-4">
         <div class="card-body p-4">
             <div class="table-responsive">
-                <table id="datatable" class="table table-striped table-bordered table-hover table-sm text-nowrap" style="width:100%">
+                <table id="datatable" class="ir-modern table table-striped table-bordered table-hover table-sm text-nowrap" style="width:100%">
                     <thead class="table-gradient">
                         <tr>
                             <th>No</th>
@@ -97,6 +225,7 @@
                             <th>No Reff</th>
                             <th>Supplier Name</th>
                             <th>Amount</th>
+                            <th>Amount Add in PV</th>
                             <th>Status</th>
                             <th>SI Date</th>
                             <th>IR Date</th>
@@ -159,17 +288,33 @@
     </div>
 </div>
 
-<div class="modal fade" id="mymodalkbon" data-target="#mymodalkbon" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
+<div class="modal fade" id="mymodalCellDetail" tabindex="-1" role="dialog" aria-labelledby="irCellDetailTitle" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header text-white" style="background-color: #2563EB;">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                <h4 class="modal-title" id="txt_kbon"></h4>
+            <div class="modal-header text-white">
+                <button type="button" class="close text-white" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
+                <h4 class="modal-title" id="irCellDetailTitle"><i class="fa fa-info-circle" aria-hidden="true"></i> <span id="irCellDetailStage"></span></h4>
             </div>
-            <div class="container">
-                <div class="row">
-                    <div id="txt_nama_supp" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                    <div id="details" class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;"></div>
+            <div class="modal-body">
+                <div id="irCellDetailLoading" class="text-center text-muted py-3">
+                    <i class="fa fa-spinner fa-spin"></i> Memuat data...
+                </div>
+                <div id="irCellDetailContent" style="display:none;">
+                    <div class="ir-detail-row">
+                        <span class="label">No Dokumen</span>
+                        <span class="value" id="irCellDetailDoc">-</span>
+                    </div>
+                    <div class="ir-detail-row">
+                        <span class="label">Tanggal</span>
+                        <span class="value" id="irCellDetailTanggal">-</span>
+                    </div>
+                    <div class="ir-detail-row" id="irCellDetailOlehRow">
+                        <span class="label" id="irCellDetailOlehLabel">Oleh</span>
+                        <span class="value" id="irCellDetailOleh">-</span>
+                    </div>
+                </div>
+                <div id="irCellDetailEmpty" class="text-center text-muted py-3" style="display:none;">
+                    <i class="fa fa-exclamation-circle"></i> <span id="irCellDetailEmptyMsg">Data tidak ditemukan.</span>
                 </div>
             </div>
         </div>
@@ -231,6 +376,46 @@
 </script>
 
 <script>
+    var IR_STAGE_LABELS = {
+        no_invoice: 'Supplier Invoice (SI)',
+        doc_number: 'Invoice Received (IR)',
+        bpbdate: 'Barang Diterima (BPB Date)',
+        dateinput: 'BPB Dibuat (BPB Create)',
+        confirm_date: 'BPB Disetujui (BPB-A)',
+        trf_date: 'BPB Transfer ke Accounting (BPB-R)',
+        tfta_date: 'Finance to Accounting (FTA)',
+        receive_acc_date: 'Accounting Receive from Finance (ARF)',
+        tatp_date: 'Accounting to Purchasing (ATP)',
+        receive_pch_date: 'Purchasing Receive from Accounting (PRA)',
+        tptf_date: 'Purchasing to Finance (PTF)',
+        receive_fin_date: 'Finance Receive from Purchasing (FRP)',
+        tgl_kbon: 'Kontrabon (KB)',
+        pvl_date: 'Payment Voucher List (PVL)',
+        pvl_approve_date: 'PVL Approve',
+        tgl_payment: 'Payment List (PL)',
+        tgl_approve_lp: 'PL Approve (Second Approve)',
+        bankout_date: 'Pembayaran (Bank Out / PCO / FTR)'
+    };
+
+    function irMakeClickableCell(stage) {
+        return function (td, cellData) {
+            $(td).addClass('ir-clickable').attr('data-stage', stage);
+            if (!cellData || cellData === '-') {
+                $(td).addClass('ir-empty');
+            }
+        };
+    }
+
+    function irStatusBadge(data) {
+        if (!data) return '-';
+        var cls = 'ir-badge-gray';
+        var d = String(data).toLowerCase();
+        if (d.indexOf('accepted') !== -1) cls = 'ir-badge-green';
+        else if (d.indexOf('received') !== -1) cls = 'ir-badge-blue';
+        else if (d.indexOf('reject') !== -1 || d.indexOf('cancel') !== -1) cls = 'ir-badge-amber';
+        return '<span class="ir-badge ' + cls + '">' + data + '</span>';
+    }
+
     $(document).ready(function () {
         window.irTable = $('#datatable').DataTable({
             ordering: false,
@@ -250,30 +435,31 @@
             },
             columns: [
                 { data: 'no' },
-                { data: 'no_invoice' },
-                { data: 'doc_number' },
+                { data: 'no_invoice', createdCell: irMakeClickableCell('no_invoice') },
+                { data: 'doc_number', createdCell: irMakeClickableCell('doc_number') },
                 { data: 'no_reff' },
                 { data: 'nama_supp' },
                 { data: 'amount' },
-                { data: 'status' },
-                { data: 'tgl_invoice' },
-                { data: 'tgl_penerimaan' },
-                { data: 'bpbdate' },
-                { data: 'dateinput' },
-                { data: 'confirm_date' },
-                { data: 'trf_date' },
-                { data: 'tfta_date' },
-                { data: 'receive_acc_date' },
-                { data: 'tatp_date' },
-                { data: 'receive_pch_date' },
-                { data: 'tptf_date' },
-                { data: 'receive_fin_date' },
-                { data: 'tgl_kbon' },
-                { data: 'pvl_date' },
-                { data: 'pvl_approve_date' },
-                { data: 'tgl_payment' },
-                { data: 'tgl_approve_lp' },
-                { data: 'bankout_date' }
+                { data: 'amount_add_pv' },
+                { data: 'status', render: function (data) { return irStatusBadge(data); } },
+                { data: 'tgl_invoice', createdCell: irMakeClickableCell('no_invoice') },
+                { data: 'tgl_penerimaan', createdCell: irMakeClickableCell('doc_number') },
+                { data: 'bpbdate', createdCell: irMakeClickableCell('bpbdate') },
+                { data: 'dateinput', createdCell: irMakeClickableCell('dateinput') },
+                { data: 'confirm_date', createdCell: irMakeClickableCell('confirm_date') },
+                { data: 'trf_date', createdCell: irMakeClickableCell('trf_date') },
+                { data: 'tfta_date', createdCell: irMakeClickableCell('tfta_date') },
+                { data: 'receive_acc_date', createdCell: irMakeClickableCell('receive_acc_date') },
+                { data: 'tatp_date', createdCell: irMakeClickableCell('tatp_date') },
+                { data: 'receive_pch_date', createdCell: irMakeClickableCell('receive_pch_date') },
+                { data: 'tptf_date', createdCell: irMakeClickableCell('tptf_date') },
+                { data: 'receive_fin_date', createdCell: irMakeClickableCell('receive_fin_date') },
+                { data: 'tgl_kbon', createdCell: irMakeClickableCell('tgl_kbon') },
+                { data: 'pvl_date', createdCell: irMakeClickableCell('pvl_date') },
+                { data: 'pvl_approve_date', createdCell: irMakeClickableCell('pvl_approve_date') },
+                { data: 'tgl_payment', createdCell: irMakeClickableCell('tgl_payment') },
+                { data: 'tgl_approve_lp', createdCell: irMakeClickableCell('tgl_approve_lp') },
+                { data: 'bankout_date', createdCell: irMakeClickableCell('bankout_date') }
             ]
         });
 
@@ -288,23 +474,53 @@
                 + '&end_date=' + encodeURIComponent($('#end_date').val());
         });
 
-        $('#datatable tbody').on('click', 'tr', function () {
-            var no_inv = $(this).find('td:eq(1)').text();
-            var supp = $(this).find('td:eq(3)').text();
+        $('#datatable tbody').on('click', 'td.ir-clickable', function () {
+            if ($(this).hasClass('ir-empty')) return;
 
-            $('#mymodalkbon').modal('show');
+            var stage = $(this).data('stage');
+            var rowData = window.irTable.row($(this).closest('tr')).data();
+            if (!stage || !rowData) return;
+
+            $('#irCellDetailStage').text(IR_STAGE_LABELS[stage] || stage);
+            $('#irCellDetailContent').hide();
+            $('#irCellDetailEmpty').hide();
+            $('#irCellDetailLoading').show();
+            $('#mymodalCellDetail').modal('show');
 
             $.ajax({
-                type: 'post',
-                url: 'ajax_reportinv.php',
-                data: { 'no_inv': no_inv, 'supp': supp },
-                success: function (data) {
-                    $('#details').html(data);
+                type: 'POST',
+                url: 'ajax_ir_cell_detail.php',
+                dataType: 'json',
+                data: {
+                    stage: stage,
+                    no_invoice: rowData.no_invoice,
+                    doc_number: rowData.doc_number,
+                    nama_supp: rowData.nama_supp
+                },
+                success: function (resp) {
+                    $('#irCellDetailLoading').hide();
+                    if (resp && resp.ok) {
+                        $('#irCellDetailDoc').text(resp.no_dokumen || '-');
+                        $('#irCellDetailTanggal').text(resp.tanggal || '-');
+                        if (resp.label) {
+                            $('#irCellDetailOlehLabel').text(resp.label);
+                            $('#irCellDetailOleh').text(resp.oleh || '-');
+                            $('#irCellDetailOlehRow').show();
+                        } else {
+                            $('#irCellDetailOlehRow').hide();
+                        }
+                        $('#irCellDetailContent').show();
+                    } else {
+                        $('#irCellDetailEmptyMsg').text((resp && resp.message) || 'Data tidak ditemukan.');
+                        $('#irCellDetailEmpty').show();
+                    }
+                },
+                error: function () {
+                    $('#irCellDetailLoading').hide();
+                    $('#irCellDetailEmptyMsg').text('Gagal memuat data.');
+                    $('#irCellDetailEmpty').show();
                 }
             });
-
-            $('#txt_kbon').html(no_inv);
-            $('#txt_nama_supp').html('Supplier : ' + supp + '');
         });
     });
 </script>

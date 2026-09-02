@@ -98,7 +98,7 @@ while($row = mysqli_fetch_array($sql)){
         <td class="dt_price" style="width:100px;text-align:right;" data-link="1" data-subtotal="'.$sub.'">'.number_format($sub,2).'</td>
         <td class="dt_tax" style="width:100px;text-align:right;" data-tax="'.$tax.'">'.number_format($tax,2).'</td>
         <td style="width:100px;">                            
-        <select name="combo_pph_edit" class="combo_pph_edit" disabled>
+        <select name="combo_pph_edit" class="combo_pph_edit form-control form-control-sm" style="width:150px;">
         <option data-idtax="0" value="0" selected="selected">Non PPH</option>
         '.$persen.'                                                                                     
         </select>                                                        
@@ -125,7 +125,7 @@ while($row = mysqli_fetch_array($sql)){
         <td class="dt_price" style="width:100px;text-align:right;" data-link="1" data-subtotal="'.$sub.'">'.number_format($sub,2).'</td>
         <td class="dt_tax" style="width:100px;text-align:right;" data-tax="'.$tax.'">'.number_format($tax,2).'</td>
         <td style="width:100px;">                            
-        <select name="combo_pph_edit" class="combo_pph_edit" disabled>
+        <select name="combo_pph_edit" class="combo_pph_edit form-control form-control-sm" style="width:150px;">
         <option data-idtax="0" value="0" selected="selected">Non PPH</option>
         '.$persen.'                                                                                     
         </select>                                                        
@@ -152,7 +152,7 @@ while($row = mysqli_fetch_array($sql)){
         <td class="dt_price" style="width:100px;text-align:right;" data-link="1" data-subtotal="'.$sub.'">'.number_format($sub,2).'</td>
         <td class="dt_tax" style="width:100px;text-align:right;" data-tax="'.$tax.'">'.number_format($tax,2).'</td>
         <td style="width:100px;">                            
-        <select name="combo_pph_edit" class="combo_pph_edit" disabled>
+        <select name="combo_pph_edit" class="combo_pph_edit form-control form-control-sm" style="width:150px;">
         <option data-idtax="0" value="0" selected="selected">Non PPH</option>
         '.$persen.'                                                                                     
         </select>                                                        

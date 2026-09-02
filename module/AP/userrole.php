@@ -94,6 +94,7 @@
         font-size: 12px;
     }
 
+    #modalManageRole .modal-dialog { max-width: 1180px; }
     #modalManageRole .modal-content { border-radius: 14px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,.25); border: none; }
     #modalManageRole .modal-header { background: linear-gradient(135deg, #172554, #2563eb); color: #fff; border: none; }
     #modalManageRole .modal-header .close { color: #fff; opacity: .85; text-shadow: none; }
@@ -106,7 +107,7 @@
         overflow-y: auto;
         padding: 12px;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
         gap: 8px;
         align-content: start;
         background: #f8fafc;
@@ -126,9 +127,10 @@
         transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
     }
 
-    .menu-toggle-row .menu-label { display: flex; align-items: center; gap: 8px; overflow: hidden; }
-    .menu-toggle-row .menu-label i { flex-shrink: 0; font-size: 12px; opacity: .85; }
-    .menu-toggle-row .menu-label span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .menu-toggle-row .menu-label { display: flex; align-items: flex-start; gap: 8px; min-width: 0; flex: 1; }
+    .menu-toggle-row .menu-label i { flex-shrink: 0; font-size: 12px; opacity: .85; margin-top: 2px; }
+    /* Jangan truncate: nama penuh, wrap ke baris ke-2 kalau kepanjangan. */
+    .menu-toggle-row .menu-label span { white-space: normal; overflow-wrap: anywhere; line-height: 1.3; }
     .menu-toggle-row:hover { border-color: #93c5fd; box-shadow: 0 2px 6px rgba(37,99,235,.18); transform: translateY(-1px); }
     .menu-toggle-row.is-on { background: #f8faff; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
 

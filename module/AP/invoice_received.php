@@ -145,35 +145,35 @@
 </form> 
 
 <?php
-$querys1 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create Invoice Received'");
+$querys1 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Document Handover - Create Invoice'");
 $rs1 = mysqli_fetch_array($querys1);
 $id1 = isset($rs1['id']) ? $rs1['id'] : 0;
 
-$querys2 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Transfer Invoice Fin-Acc'");
+$querys2 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Document Handover - Transfer Invoice Finance To Accounting'");
 $rs2 = mysqli_fetch_array($querys2);
 $id2 = isset($rs2['id']) ? $rs2['id'] : 0;
 
-$querys3 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Accept Invoice Acc'");
+$querys3 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Document Handover - Accept Invoice Accounting'");
 $rs3 = mysqli_fetch_array($querys3);
 $id3 = isset($rs3['id']) ? $rs3['id'] : 0;
 
-$querys4 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Transfer Invoice Acc-Pch'");
+$querys4 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Document Handover - Transfer Invoice Accounting To Purchasing'");
 $rs4 = mysqli_fetch_array($querys4);
 $id4 = isset($rs4['id']) ? $rs4['id'] : 0;
 
-$querys5 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Accept Invoice Pch'");
+$querys5 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Document Handover - Accept Invoice Purchasing'");
 $rs5 = mysqli_fetch_array($querys5);
 $id5 = isset($rs5['id']) ? $rs5['id'] : 0;
 
-$querys6 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Transfer Invoice Pch-Fin'");
+$querys6 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Document Handover - Transfer Invoice Purchasing To Finance'");
 $rs6 = mysqli_fetch_array($querys6);
 $id6 = isset($rs6['id']) ? $rs6['id'] : 0;
 
-$querys7 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Accept Invoice Fin'");
+$querys7 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Document Handover - Accept Invoice Finance'");
 $rs7 = mysqli_fetch_array($querys7);
 $id7 = isset($rs7['id']) ? $rs7['id'] : 0;
 
-$querys8 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Reverse Invoice'");
+$querys8 = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Document Handover - Reverse Invoice'");
 $rs8 = mysqli_fetch_array($querys8);
 $id8 = isset($rs8['id']) ? $rs8['id'] : 0;
 

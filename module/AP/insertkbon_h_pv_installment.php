@@ -42,6 +42,19 @@ $n_code_category = $_POST['n_code_category'];
 $cus_ctg = $_POST['cus_ctg'];
 $profit_center = $_POST['profit_center'];
 $ir_number = $_POST['ir_number'];
+
+// GUARD: 1 IR hanya boleh dipakai 1 PV aktif. Kalau IR ini sudah dipakai PV lain
+// (kontrabon_h) non-Cancel -> tolak (belum ada yang di-insert). Available lagi
+// setelah PV pemakainya di-cancel.
+if ($ir_number !== null && $ir_number !== '' && $ir_number !== '-') {
+	$ire = mysqli_real_escape_string($conn2, $ir_number);
+	$chkIr = mysqli_query($conn2, "SELECT no_kbon FROM kontrabon_h WHERE ir_number = '$ire' AND status <> 'Cancel' LIMIT 1");
+	if ($chkIr && mysqli_num_rows($chkIr) > 0) {
+		$uKb = mysqli_fetch_assoc($chkIr);
+		echo 'IR_ALREADY_USED:' . ($uKb['no_kbon'] ?? '');
+		exit;
+	}
+}
 $bank_account_raw = isset($_POST['bank_account']) ? $_POST['bank_account'] : '';
 $id_bank_account = ($bank_account_raw !== '' && $bank_account_raw !== '-') ? (int) $bank_account_raw : 'NULL';
 $from_account = mysqli_real_escape_string($conn2, isset($_POST['from_account']) ? $_POST['from_account'] : '');

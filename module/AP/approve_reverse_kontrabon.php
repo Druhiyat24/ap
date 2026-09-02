@@ -52,14 +52,8 @@ if (!empty($rvs_number)) {
     WHERE no_kbon = '$doc_number'";
     $execute4 = mysqli_query($conn2, $sql7);
 
-    $sql_rv8 = mysqli_query($conn1,"select confirm_date from kontrabon_h where no_kbon = '$doc_number'"); 
-    $row8 = mysqli_fetch_array($sql_rv8);
-    $date_reverse = $row8['confirm_date'];
-
-    $queryss = "INSERT into tbl_list_journal (id, no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center) select '', no_journal, '$date_reverse' tgl_journal, CONCAT('Reverse ',type_journal) type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, credit, debit, credit_idr, debit_idr, status, keterangan, create_by, create_date, '$approve_user' approve_by, CURRENT_TIMESTAMP() approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center from tbl_list_journal where no_journal = '$doc_number'";
-
-    $executess = mysqli_query($conn2,$queryss);
-
+    // CATATAN: dokumen kontrabon dikembalikan ke 'draft' (BUKAN Cancel), jadi jurnalnya
+    // TIDAK dibalik di sini. Jurnal terbentuk lagi saat kontrabon di-approve ulang.
   }
 
   if ($execute) {
