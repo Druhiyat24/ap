@@ -1,6 +1,5 @@
 <?php
 include '../../conn/conn.php';
-require_once __DIR__ . '/bpb_docinfo_guard.php';
 ini_set('date.timezone', 'Asia/Jakarta');
 ini_set('max_execution_time', 0);
 ini_set('memory_limit', '4096M');
@@ -63,48 +62,6 @@ $bankoutdate_ftr = date("Y-m-d",strtotime($_POST['bankoutdate_ftr']));
 $coa_ftr = $_POST['coa_ftr'];
 
 $profit_center = $_POST['profit_center'];
-
-// ============================================================================
-// No Faktur & Tgl Faktur PER-BPB dari kontrabon baru (ir_kontrabon_faktur).
-// Lama: no_faktur diambil dari field header (alur BPB baru selalu kosong) &
-// tgl_faktur tidak ada sama sekali. Sekarang: ambil faktur milik BPB ini pada
-// IR terpilih. Kalau ketemu -> pakai untuk kolom no_faktur (override header)
-// dan tgl_faktur. Kalau tidak (mis. IR lama non-kontrabon) -> perilaku lama.
-$ir_number  = isset($_POST['ir_number']) ? trim($_POST['ir_number']) : '';
-$tgl_faktur = '';
-$faktur_found = false;
-$in_ir = false; // apakah no_bpb ini sudah termasuk set asli IR (ir_kontrabon_bpb)?
-if ($ir_number !== '' && $ir_number !== '-' && $no_bpb !== '') {
-	$ire = mysqli_real_escape_string($conn2, $ir_number);
-	$nbe = mysqli_real_escape_string($conn2, $no_bpb);
-	$chkIr = mysqli_query($conn2, "SELECT b.id FROM ir_kontrabon_bpb b
-		JOIN ir_kontrabon_h h ON h.unik_code = b.unik_code
-		WHERE h.doc_number = '$ire' AND b.no_bpb = '$nbe' AND h.status <> 'Cancel' LIMIT 1");
-	$in_ir = ($chkIr && mysqli_num_rows($chkIr) > 0);
-	$rf = mysqli_query($conn2, "SELECT f.no_faktur, f.tgl_faktur
-		FROM ir_kontrabon_bpb b
-		JOIN ir_kontrabon_h h ON h.unik_code = b.unik_code
-		JOIN ir_kontrabon_faktur f ON f.id = b.faktur_id
-		WHERE h.doc_number = '$ire' AND b.no_bpb = '$nbe' AND h.status <> 'Cancel' LIMIT 1");
-	if ($rf && ($fr = mysqli_fetch_assoc($rf))) {
-		if (!empty($fr['no_faktur']))  { $no_faktur  = $fr['no_faktur']; $faktur_found = true; }
-		if (!empty($fr['tgl_faktur']) && $fr['tgl_faktur'] !== '0000-00-00') { $tgl_faktur = $fr['tgl_faktur']; $faktur_found = true; }
-	}
-}
-// UI form PV mengirim No Faktur & Tgl Faktur per-BPB (auto-fill dari IR atau diisi
-// manual, minimal '-'). Kalau ada -> prioritaskan di atas hasil lookup.
-$no_faktur_in  = isset($_POST['no_faktur_in'])  ? trim($_POST['no_faktur_in'])  : '';
-$tgl_faktur_in = isset($_POST['tgl_faktur_in']) ? trim($_POST['tgl_faktur_in']) : '';
-if ($no_faktur_in !== '') { $no_faktur = $no_faktur_in; $faktur_found = true; }
-if ($tgl_faktur_in !== '' && $tgl_faktur_in !== '-') {
-	$ts = strtotime($tgl_faktur_in);
-	if ($ts) { $tgl_faktur = date('Y-m-d', $ts); $faktur_found = true; }
-} elseif ($tgl_faktur_in === '-') {
-	$tgl_faktur = ''; // '-' bukan tanggal valid -> NULL di kolom DATE
-}
-// Fragmen untuk jurnal: faktur_pajak (varchar) & tgl_faktur_pajak (DATE; NULL bila kosong).
-$fp_esc  = mysqli_real_escape_string($conn2, $no_faktur);
-$tfp_sql = ($tgl_faktur !== '') ? "'" . mysqli_real_escape_string($conn2, $tgl_faktur) . "'" : "NULL";
 
 // echo $no_ro;
 
@@ -186,13 +143,6 @@ if ($dup_kbon != null && $dup_bpb == $no_bpb) {
 		VALUES 
 		('$kode', '$tgl_kbon', '$jurnal', '$nama_supp', '$no_faktur', '$no_bpb', '$no_po', '$tgl_bpb', '$tgl_po', '$supp_inv', '$tgl_inv', '$tgl_tempo', '$sum_sub', '$sum_tax', '$idtax', '$pph', '$sum_pph', '$sum_total', '$sum_dp', '$curr', '$ceklist', '$post_date', '$update_date', '$status', '$status_int', '$create_user', '$create_date', '$start_date', '$end_date')";
 		$execute = mysqli_query($conn2,$query);
-		// Simpan Tgl Faktur per-BPB (kolom baru `tgl_faktur`). Aman: kalau kolom
-		// belum ada, query gagal diam-diam tanpa menghentikan proses (no_faktur
-		// tetap tersimpan lewat INSERT di atas).
-		if ($tgl_faktur !== '') {
-			@mysqli_query($conn2, "UPDATE kontrabon SET tgl_faktur = '" . mysqli_real_escape_string($conn2, $tgl_faktur) . "'
-				WHERE no_kbon = '" . mysqli_real_escape_string($conn2, $kode) . "' AND no_bpb = '" . mysqli_real_escape_string($conn2, $no_bpb) . "'");
-		}
 		$squerys = mysqli_query($conn2,"update bppb_new set is_invoiced = '$status_invoice', no_kbon = '$no_kbon' where no_ro= '$no_ro'");
 
 		if ($curr != 'IDR') {
@@ -244,73 +194,7 @@ if ($dup_kbon != null && $dup_bpb == $no_bpb) {
 
 		}
 
-		// Isi No Faktur Pajak & Tgl Faktur Pajak pada baris jurnal BPB ini
-		// (GR/IR + PPN Masukan; keduanya reff_doc = no_bpb). Dulu NULL karena
-		// jurnal AP - Kontrabon tak pernah mengisi kolom faktur_pajak/tgl_faktur_pajak.
-		if ($faktur_found) {
-			@mysqli_query($conn2, "UPDATE tbl_list_journal
-				SET faktur_pajak = '$fp_esc', tgl_faktur_pajak = $tfp_sql
-				WHERE no_journal = '" . mysqli_real_escape_string($conn2, $kode) . "'
-				  AND reff_doc = '" . mysqli_real_escape_string($conn2, $no_bpb) . "'
-				  AND type_journal = 'AP - Kontrabon'");
-		}
 
-		// SYNC BPB TAMBAHAN ke IR: kalau BPB ini diceklis manual (bukan bagian set asli
-		// IR) tapi PV memilih IR tsb, tambahkan ke ir_kontrabon_faktur + ir_kontrabon_bpb
-		// dengan keterangan "Added in Payment Voucher <no_pv>" supaya kelihatan saat di-
-		// view di menu Kontrabon. NILAI INVOICE IR TIDAK DIUBAH (ir_kontrabon_h.total_amount
-		// & mirror ir_invoice_supp_h dibiarkan).
-		if ($execute && $ir_number !== '' && $ir_number !== '-' && !$in_ir && $no_bpb !== '') {
-			$ket_esc = mysqli_real_escape_string($conn2, 'Added in Payment Voucher ' . $kode);
-			$ire2 = mysqli_real_escape_string($conn2, $ir_number);
-			$hrow = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT h.unik_code,
-				(SELECT MIN(id) FROM ir_kontrabon_inv i WHERE i.unik_code = h.unik_code) inv_id
-				FROM ir_kontrabon_h h WHERE h.doc_number = '$ire2' AND h.status <> 'Cancel' LIMIT 1"));
-			if ($hrow && !empty($hrow['unik_code'])) {
-				$ir_unik = mysqli_real_escape_string($conn2, $hrow['unik_code']);
-				$ir_inv  = (int) ($hrow['inv_id'] ?? 0);
-				$nf_esc  = mysqli_real_escape_string($conn2, $no_faktur);
-				$tf_sql  = ($tgl_faktur !== '') ? "'" . mysqli_real_escape_string($conn2, $tgl_faktur) . "'" : "NULL";
-				// Faktur: pakai yang sudah ada di IR ini (no_faktur sama) atau buat baru.
-				$fid = 0;
-				$frow = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT id FROM ir_kontrabon_faktur WHERE unik_code = '$ir_unik' AND no_faktur = '$nf_esc' LIMIT 1"));
-				if ($frow) {
-					$fid = (int) $frow['id'];
-				} elseif (mysqli_query($conn2, "INSERT INTO ir_kontrabon_faktur
-					(inv_id, unik_code, no_faktur, tgl_faktur, nama_supplier, dpp, ppn, ppnbm, status_faktur, create_user, create_date)
-					VALUES ($ir_inv, '$ir_unik', '$nf_esc', $tf_sql, '" . mysqli_real_escape_string($conn2, $nama_supp) . "', '$sum_sub', '$sum_tax', 0, '', '$create_user', '$create_date')")) {
-					$fid = (int) mysqli_insert_id($conn2);
-					@mysqli_query($conn2, "UPDATE ir_kontrabon_faktur SET keterangan = '$ket_esc' WHERE id = $fid");
-				}
-				// BPB: tambahkan ke IR (nilai per-BPB saja; nilai invoice IR tidak berubah).
-				if ($fid > 0) {
-					$bpb_total = (float) $sum_sub + (float) $sum_tax;
-					if (mysqli_query($conn2, "INSERT INTO ir_kontrabon_bpb
-						(faktur_id, inv_id, unik_code, no_bpb, no_po, supplier, tgl_bpb, total, dpp, ppn, curr, create_user, create_date)
-						VALUES ($fid, $ir_inv, '$ir_unik', '" . mysqli_real_escape_string($conn2, $no_bpb) . "', '" . mysqli_real_escape_string($conn2, $no_po) . "', '" . mysqli_real_escape_string($conn2, $nama_supp) . "', '$tgl_bpb', '$bpb_total', '$sum_sub', '$sum_tax', '$curr', '$create_user', '$create_date')")) {
-						@mysqli_query($conn2, "UPDATE ir_kontrabon_bpb SET keterangan = '$ket_esc' WHERE id = " . (int) mysqli_insert_id($conn2));
-					}
-					// bpb_new juga (dipakai laporan_pembelian): No/Tgl Invoice dari invoice IR
-					// (inv_id) + No/Tgl Faktur dari input PV, untuk BPB tambahan ini.
-					$inv_no = ''; $inv_tgl_sql = 'NULL';
-					if ($ir_inv > 0) {
-						$irow = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT no_inv, tgl_inv FROM ir_kontrabon_inv WHERE id = $ir_inv LIMIT 1"));
-						if ($irow) {
-							$inv_no = $irow['no_inv'] ?? '';
-							$inv_tgl_sql = (!empty($irow['tgl_inv']) && $irow['tgl_inv'] !== '0000-00-00') ? "'" . mysqli_real_escape_string($conn2, $irow['tgl_inv']) . "'" : 'NULL';
-						}
-					}
-					$fak_tgl_sql = ($tgl_faktur !== '') ? "'" . mysqli_real_escape_string($conn2, $tgl_faktur) . "'" : 'NULL';
-					// GUARD: jangan timpa No/Tgl Invoice/Faktur real yg sudah ada dgn strip "-".
-					// Strip hanya mengisi kalau nilai lama masih kosong (lihat bpb_docinfo_guard.php).
-					bpbnew_apply_docinfo($conn2, $no_bpb, $ir_number, $inv_no, $inv_tgl_sql, $no_faktur, $fak_tgl_sql);
-					// Akumulasi nilai BPB tambahan (dpp+ppn) ke KOLOM TERPISAH di IR:
-					// amount_add_pv (PLUS). total_amount (invoice asli) TIDAK diubah.
-					// Grand total IR = total_amount + amount_add_pv.
-					@mysqli_query($conn2, "UPDATE ir_kontrabon_h SET amount_add_pv = COALESCE(amount_add_pv,0) + " . (float) $bpb_total . " WHERE unik_code = '$ir_unik'");
-				}
-			}
-		}
 
 	}
 
@@ -321,19 +205,6 @@ if ($dup_kbon != null && $dup_bpb == $no_bpb) {
 		$executeess = mysqli_query($conn2,$queryess);
 
 		$squery_bppb = mysqli_query($conn2,"update bppb_new set no_kbon = '$kode' where no_bppb = '$no_bppb';");
-
-		// RETUR: tulis No/Tgl Faktur (dari input retur) + No/Tgl Invoice (supp_inv PV)
-		// ke bppb_new dgn strip-guard (jangan timpa nilai real dgn strip). Dibaca laporan.
-		$ret_dok     = ($ir_number !== '' && $ir_number !== '-') ? $ir_number : $kode;
-		$ret_inv_tgl = (!empty($_POST['tgl_inv']) && $supp_inv !== '' && $supp_inv !== '-')
-			? "'" . mysqli_real_escape_string($conn2, $tgl_inv) . "'" : 'NULL';
-		bppbnew_apply_docinfo($conn2, $no_bppb, $ret_dok, $supp_inv, $ret_inv_tgl, $no_faktur, $tfp_sql);
-
-		// RO/retur MENGURANGI kolom terpisah amount_add_pv di IR (MINUS). ttl_ro positif
-		// (magnitude) -> dikurangkan. Hanya kalau PV ini memang terkait sebuah IR.
-		if ($ir_number !== '' && $ir_number !== '-') {
-			@mysqli_query($conn2, "UPDATE ir_kontrabon_h SET amount_add_pv = COALESCE(amount_add_pv,0) - " . (float) $ttl_ro . " WHERE doc_number = '" . mysqli_real_escape_string($conn2, $ir_number) . "' AND status <> 'Cancel'");
-		}
 
 		if ($curr != 'IDR') {
 			$sqlx = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where tanggal = '$tgl_bpb' and v_codecurr = 'PAJAK'");
@@ -398,17 +269,6 @@ if ($dup_kbon != null && $dup_bpb == $no_bpb) {
 
 		}
 
-		// No Faktur Pajak & Tgl Faktur Pajak utk baris jurnal RETUR (reff_doc = no_bppb).
-		// Blok BPB (di atas) mengisi kolom faktur_pajak untuk reff_doc = no_bpb; baris
-		// RETUR (queryss5/6/7) memakai reff_doc = no_bppb sehingga sebelumnya
-		// faktur_pajak-nya tak pernah terisi -> No Faktur retur hilang di jurnal.
-		if ($faktur_found) {
-			@mysqli_query($conn2, "UPDATE tbl_list_journal
-				SET faktur_pajak = '$fp_esc', tgl_faktur_pajak = $tfp_sql
-				WHERE no_journal = '" . mysqli_real_escape_string($conn2, $kode) . "'
-				  AND reff_doc = '" . mysqli_real_escape_string($conn2, $no_bppb) . "'
-				  AND type_journal = 'AP - Kontrabon'");
-		}
 
 	}else{
 		echo '';

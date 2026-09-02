@@ -11,232 +11,255 @@
 
 </style>
 
-<?php
-$no_kbon = base64_decode($_GET['no_kbon']);
+<?php 
+$no_kbon = base64_decode($_GET['no_kbon']); 
 
 $sql = mysqli_query($conn2,"select no_kbon from ap_edit_kontrabon_h where no_kbon = '$no_kbon'");
-$row = mysqli_fetch_array($sql);
+$row = mysqli_fetch_array($sql);                         
 echo $nokbon['no_kbon'];
-
-// Prefill untuk field baru (IR Number, Supplier Bank Account, From Account, Koreksi
-// PPN/PPh) — dibaca dari baris LIVE yang masih ada (copy_data_kontrabon.php hanya
-// mengubah status jadi 'Updating', tidak menghapus), jadi tetap terbaca meskipun
-// snapshot ap_edit_* dibuat sebelum kolom-kolom ini ada di skema.
-$esc_kbon = mysqli_real_escape_string($conn2, $no_kbon);
-$hdr_live = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT ir_number, id_bank_account, from_account, from_bank, from_bank_curr, nama_supp FROM kontrabon_h WHERE no_kbon = '$esc_kbon' ORDER BY id DESC LIMIT 1")) ?: [];
-$pot_live = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT potongan_ppn, potongan_pph FROM potongan WHERE no_kbon = '$esc_kbon' ORDER BY id DESC LIMIT 1")) ?: [];
-$pf_ir_number = $hdr_live['ir_number']      ?? '';
-$pf_id_bank   = $hdr_live['id_bank_account'] ?? '';
-$pf_from_acc  = $hdr_live['from_account']   ?? '';
-$pf_from_bank = $hdr_live['from_bank']      ?? '';
-$pf_from_curr = $hdr_live['from_bank_curr'] ?? '';
-$pf_supp      = $hdr_live['nama_supp']      ?? '';
-$pf_pot_ppn   = $pot_live['potongan_ppn']   ?? 0;
-$pf_pot_pph   = $pot_live['potongan_pph']   ?? 0;
-
-// Rekening bank milik supplier (dropdown Supplier Bank Account) + nilai display terpilih.
-$__banks = [];
-if ($pf_supp !== '') {
-    $qb = mysqli_query($conn2,
-        "SELECT msb.id, msb.bank_account, msb.bank_currency, msb.bank_name, msb.beneficiary_name
-         FROM master_supplier_bank msb
-         INNER JOIN mastersupplier ms ON ms.id_supplier = msb.id_supplier
-         WHERE ms.Supplier = '" . mysqli_real_escape_string($conn2, $pf_supp) . "' AND msb.status = 'Active'
-         ORDER BY msb.bank_name ASC");
-    while ($rb = mysqli_fetch_assoc($qb)) $__banks[] = $rb;
-}
-$__sel_bankname = ''; $__sel_benef = ''; $__sel_bankcurr = '';
-foreach ($__banks as $b) {
-    if ((string)$b['id'] === (string)$pf_id_bank) {
-        $__sel_bankname = $b['bank_name']; $__sel_benef = $b['beneficiary_name']; $__sel_bankcurr = $b['bank_currency'];
-    }
-}
-
-// Prefill field header (layout disamakan dengan create pv_regular.php).
-$eh = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT tgl_kbon, curr, supp_inv, no_faktur, profit_center, tgl_kbon2 FROM ap_edit_kontrabon_h WHERE no_kbon = '$esc_kbon' LIMIT 1")) ?: [];
-$ed = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT tgl_inv, tgl_tempo FROM ap_edit_kontrabon WHERE no_kbon = '$esc_kbon' LIMIT 1")) ?: [];
-$pf_tgl_kbon  = !empty($eh['tgl_kbon'])  ? date('Y-m-d', strtotime($eh['tgl_kbon']))  : date('Y-m-d');
-$pf_curr      = $eh['curr'] ?? '';
-$pf_supp_inv  = $eh['supp_inv'] ?? '';
-$pf_no_faktur = $eh['no_faktur'] ?? '';
-$pf_pc        = $eh['profit_center'] ?? '';
-$pf_tgl_kbon2 = !empty($eh['tgl_kbon2']) ? date('Y-m-d', strtotime($eh['tgl_kbon2'])) : $pf_tgl_kbon;
-$pf_tgl_inv   = !empty($ed['tgl_inv'])   ? date('Y-m-d', strtotime($ed['tgl_inv']))   : date('Y-m-d');
-$pf_tgl_tempo = !empty($ed['tgl_tempo']) ? date('Y-m-d', strtotime($ed['tgl_tempo'])) : date('Y-m-d');
-$pf_pc_nama = '';
-if ($pf_pc !== '') {
-    $rp = mysqli_fetch_assoc(mysqli_query($conn1, "SELECT nama_pc FROM master_pc WHERE kode_pc = '" . mysqli_real_escape_string($conn1, $pf_pc) . "' LIMIT 1"));
-    $pf_pc_nama = $rp['nama_pc'] ?? $pf_pc;
-}
 ?>
 
 <!-- MAIN -->
-<div class="container-fluid mt-2 p-3" style="padding-left: 2rem; padding-right: 2rem;">
-  <div class="card mb-3" style="border: none; background: transparent;">
+<div class="container-fluid mt-4 p-4">
+  <div class="card border-secondary mb-3">
+    <div class="card-header text-left" style="background: linear-gradient(90deg, #191970, #1e90ff);">
+      <h5 class="mb-0 text-white" >FORM PAYMENT VOUCHER - REGULAR</h5>
+  </div>
   <form id="form-data" method="post">
-    <div class="card shadow mb-5" style="border: 1px solid #e2e8f0; border-radius: 10px;">
-                <div class="card-header d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #191970, #1e90ff); border: none; font-weight: 700; letter-spacing: 0.4px; color: #fff; cursor: pointer;" data-toggle="collapse" data-target="#header_card_body" aria-expanded="true" aria-controls="header_card_body">
-                    <span><i class="fa fa-file-text-o mr-2"></i> FORM PAYMENT VOUCHER</span>
-                    <i class="fa fa-chevron-up"></i>
-                </div>
-                <div class="collapse show" id="header_card_body">
+    <div class="card shadow-sm mb-4">
+                <!-- <div class="card-header" style="background-color: #60A5FA; color: white; font-weight: bold;">
+                    Data FTR
+                </div> -->
                 <div class="card-body p-2">
                     <div class="form-row">
+                        <div class="col-md-3 mb-3">            
+                            <label for="nokontrabon"><b>No Kontra Bon</b></label>
+                            <?php
+                            echo'<input type="text" readonly style="font-size: 13px;;" class="form-control form-control-sm" id="nokontrabon" name="nokontrabon" value="'.$no_kbon.'">'
+                            ?>
 
-                        <div class="col-md-3 mb-3">
-                            <label for="nokontrabon"><b>No Payment Voucher</b></label>
-                            <input type="text" readonly style="font-size: 13px;" class="form-control form-control-sm" id="nokontrabon" name="nokontrabon" value="<?= htmlspecialchars($no_kbon) ?>">
-                            <input type="hidden" name="unik_code" id="unik_code" value="<?php $karakter='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789'; echo substr(str_shuffle($karakter),0,16); ?>" autocomplete="off" readonly>
-                        </div>
-
-                        <div class="col-md-2 mb-3">
-                            <label for="tanggal"><b>Payment Voucher Date <i style="color: red;">*</i></b></label>
-                            <input type="text" style="font-size: 13px;" name="tanggal" id="tanggal" class="form-control form-control-sm tanggal" value="<?= htmlspecialchars($pf_tgl_kbon) ?>">
-                            <input type="hidden" name="tgl_perhitungan" id="tgl_perhitungan" value="">
-                            <input type="hidden" name="txt_top" id="txt_top" value="0">
-                            <input type="hidden" name="tanggal3" id="tanggal3" value="<?= htmlspecialchars($pf_tgl_kbon) ?>">
-                            <input type="hidden" name="tanggal4" id="tanggal4" value="<?= htmlspecialchars($pf_tgl_kbon2) ?>">
+                            <input type="hidden" style="font-size: 13px;;" name="unik_code" id="unik_code" class="form-control form-control-sm" 
+                            value="<?php 
+                            $karakter = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789';
+                            $shuffle  = substr(str_shuffle($karakter), 0, 16);
+                            echo $shuffle; ?>" autocomplete='off' readonly>
                         </div>
 
-                        <div class="col-md-3 mb-3">
-                            <label for="profit_center"><b>Profit Center <i style="color: red;">*</i></b></label>
-                            <select class="form-control selectpicker" name="profit_center" id="profit_center" data-dropup-auto="false" data-live-search="true">
-                                <?php
-                                if ($pf_pc !== '') { echo '<option value="'.htmlspecialchars($pf_pc).'" selected="selected">'.htmlspecialchars($pf_pc_nama).'</option>'; }
-                                else { echo '<option value="" disabled selected="true">Select Profit Center</option>'; }
-                                $qpc = mysqli_query($conn1, "select kode_pc, nama_pc from master_pc where status='Active' and kode_pc != '".mysqli_real_escape_string($conn1,$pf_pc)."'");
-                                if ($qpc) while ($rpc = mysqli_fetch_assoc($qpc)) { echo '<option value="'.htmlspecialchars($rpc['kode_pc']).'">'.htmlspecialchars($rpc['nama_pc']).'</option>'; }
-                                ?>
-                            </select>
-                            <input type="hidden" id="jurnal" name="jurnal" value="0">
-                        </div>
+                        <div class="col-md-2 mb-3">            
+                            <label for="tanggal"><b>Kontra Bon Date <i style="color: red;">*</i></b></label>          
+                            <input type="text" style="font-size: 13px;;" name="tanggal" id="tanggal" class="form-control form-control-sm tanggal"
+                            value="<?php 
+                            $sql = mysqli_query($conn2,"select tgl_kbon from ap_edit_kontrabon_h where no_kbon = '$no_kbon'");
+                            $row = mysqli_fetch_array($sql); 
 
-                        <!-- Hidden mengikuti create: Currency, No Supplier Invoice, Supplier Invoice Date, No Tax Invoice -->
-                        <input type="hidden" id="matauang" name="matauang" value="<?= htmlspecialchars($pf_curr) ?>">
-                        <input type="hidden" id="txt_inv" name="txt_inv" value="<?= htmlspecialchars($pf_supp_inv) ?>">
-                        <input type="hidden" id="txt_tglsi" name="txt_tglsi" value="<?= htmlspecialchars($pf_tgl_inv) ?>">
-                        <input type="hidden" id="no_faktur" name="no_faktur" value="<?= htmlspecialchars($pf_no_faktur) ?>">
+                            if(!empty($no_kbon)) {
+                                echo date("Y-m-d",strtotime($row['tgl_kbon']));
+                            }
+                            else{
+                                echo date("Y-m-d");
+                            }  ?>">
+                            <input type="hidden" style="font-size: 13px;;" name="tgl_perhitungan" id="tgl_perhitungan" class="form-control form-control-sm">
+                            <input type="hidden" style="font-size: 13px;;" class="form-control form-control-sm" name="txt_top" id="txt_top" 
+                            value="<?php
+                            $start_date ='';
+                            $end_date ='';
+                            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                                $startdate = date("Y-m-d",strtotime($_POST['tanggal_kbn']));
+                                $start_date = date("Y-m-d",strtotime($_POST['start_date']));
+                                $end_date = date("Y-m-d",strtotime($_POST['end_date']));
+                            }
 
-                        <div class="col-md-2 mb-3">
-                            <label for="txt_tgltempo"><b>Due Date <i style="color: red;">*</i></b></label>
-                            <input type="text" style="font-size: 13px;" class="form-control form-control-sm tanggal1" name="txt_tgltempo" id="txt_tgltempo" value="<?= htmlspecialchars($pf_tgl_tempo) ?>">
-                        </div>
+                            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
+                            $sql = mysqli_query($conn2,"select distinct max(tgl_bpb), top from bpb_new where supplier = '$nama_supp' and is_invoiced != 'Invoiced' and confirm2 != '' and tgl_bpb between '$start_date' and '$end_date' ");
+                            $row = mysqli_fetch_array($sql);
+                            $tgl = $row['max(tgl_bpb)'];
+                            $top = isset($row['top']) ? $row['top'] : 0;            
 
-                        <div class="col-md-3 mb-3">
-                            <label for="sel_bank_account"><b>Supplier Bank Account <i style="color: red;">*</i></b></label>
-                            <select class="form-control form-control-sm selectpicker" id="sel_bank_account" name="sel_bank_account" data-live-search="true" data-dropup-auto="false" data-size="8">
-                                <option value="">-- Select Bank Account --</option>
-                                <option value="-" <?= ($pf_id_bank === '-' ? 'selected="selected"' : '') ?>>- (Tidak ada rekening)</option>
-                                <?php foreach ($__banks as $b): ?>
-                                <option value="<?= htmlspecialchars($b['id']) ?>"
-                                        data-account="<?= htmlspecialchars($b['bank_account']) ?>"
-                                        data-currency="<?= htmlspecialchars($b['bank_currency']) ?>"
-                                        data-bankname="<?= htmlspecialchars($b['bank_name']) ?>"
-                                        data-beneficiary="<?= htmlspecialchars($b['beneficiary_name']) ?>"
-                                        <?= ((string)$b['id'] === (string)$pf_id_bank ? 'selected="selected"' : '') ?>>
-                                    <?= htmlspecialchars($b['bank_account']) ?>
-                                </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
 
-                        <div class="col-md-2 mb-3">
-                            <label for="disp_bankname"><b>Supplier Bank Name</b></label>
-                            <input type="text" readonly class="form-control form-control-sm bg-light" id="disp_bankname" name="disp_bankname" value="<?= htmlspecialchars($__sel_bankname) ?>" placeholder="-">
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label for="disp_beneficiary"><b>Beneficiary Name</b></label>
-                            <input type="text" readonly class="form-control form-control-sm bg-light" id="disp_beneficiary" name="disp_beneficiary" value="<?= htmlspecialchars($__sel_benef) ?>" placeholder="-">
-                        </div>
-                        <div class="col-md-2 mb-3">
-                            <label for="disp_currency"><b>Supplier Bank Currency</b></label>
-                            <input type="text" readonly class="form-control form-control-sm bg-light" id="disp_currency" name="disp_currency" value="<?= htmlspecialchars($__sel_bankcurr) ?>" placeholder="-">
-                        </div>
+                            if(!empty($nama_supp)) {
+                                echo $top;
+                            }
+                            else{
+                                echo $top;
+                            } 
 
-                        <input type="hidden" id="txt_bank_supp" name="txt_bank_supp">
-                        <input type="hidden" id="txt_akun_supp" name="txt_akun_supp">
+                        ?>">
+                        <input type="hidden" style="font-size: 13px;;" name="tanggal3" id="tanggal3" class="form-control form-control-sm"
+                        value="<?php             
+                        $start_date ='';
+                        $end_date ='';
+                        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                            $start_date = date("Y-m-d",strtotime($_POST['start_date']));
+                            $end_date = date("Y-m-d",strtotime($_POST['end_date']));
+                        }
 
-                        <div class="col-md-3 mb-3">
-                            <label for="ir_number"><b>Invoice Received Number <i style="color: red;">*</i></b></label>
-                            <select class="form-control selectpicker" name="ir_number" id="ir_number" data-dropup-auto="false" data-size="5" data-live-search="true">
-                                <option value="-">-</option>
-                                <?php
-                                if ($pf_ir_number !== '' && $pf_ir_number !== '-') {
-                                    echo '<option value="' . htmlspecialchars($pf_ir_number) . '" selected="selected">' . htmlspecialchars($pf_ir_number) . ' (current)</option>';
-                                }
-                                $qir = mysqli_query($conn1, "select doc_number from ir_invoice_supp_h
-                                    where status != 'Cancel' and nama_supp = '" . mysqli_real_escape_string($conn1, $pf_supp) . "'
-                                    and doc_number NOT IN (select ir_number from kontrabon_h
-                                        where status <> 'Cancel' and ir_number is not null and ir_number <> '' and ir_number <> '-')");
-                                if ($qir) while ($rir = mysqli_fetch_assoc($qir)) {
-                                    if ($rir['doc_number'] == $pf_ir_number) continue;
-                                    echo '<option value="' . htmlspecialchars($rir['doc_number']) . '">' . htmlspecialchars($rir['doc_number']) . '</option>';
-                                }
-                                ?>
-                            </select>
-                        </div>
+                        $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
+                        $sql = mysqli_query($conn2,"select distinct max(tgl_bpb) from bpb_new where supplier = '$nama_supp' and is_invoiced != 'Invoiced' and confirm2 != '' and status != 'Cancel' and tgl_bpb between '$start_date' and '$end_date' ");
+                        $row = mysqli_fetch_array($sql);
+                        $tgl = $row['max(tgl_bpb)'];         
 
-                        <div class="col-md-2 mb-3">
-                            <label for="from_account"><b>From Account <i style="color: red;">*</i></b></label>
-                            <select class="form-control form-control-sm selectpicker" id="from_account" name="from_account" data-live-search="true">
-                                <option value="">Select Account</option>
-                                <?php
-                                $where_akun = '';
-                                if (strcasecmp($user, 'dessy') === 0) { $where_akun = "WHERE tipe_akun = 'BANK'"; }
-                                elseif (strcasecmp($user, 'Yeni_acc') === 0) { $where_akun = "WHERE tipe_akun = 'CASH'"; }
-                                $qacc = mysqli_query($conn1, "
-                                    select * from (
-                                        (select bank_account as account, bank_name as bank, curr, RIGHT(bank_account,4) as kode, nama_pc, kode_pc, b_code, 'BANK' as tipe_akun
-                                         from b_masterbank a INNER JOIN master_pc b on b.kode_pc = a.profit_center_bank where a.status = 'Active')
-                                        UNION
-                                        (select no_coa as account, concat(no_coa,' ', nama_coa) as bank, 'IDR' as curr, kode_cash as kode,
-                                         IF(no_coa = '1.01.11','PCP002 - NIRWANA ALABARE KNITTING','PCP001 - NIRWANA ALABARE GARMENT') as nama_pc,
-                                         IF(no_coa = '1.01.11','NAK','NAG') as kode_pc, kode_cash as b_code, 'CASH' as tipe_akun
-                                         from mastercoa_v2 where no_coa like '%1.01%' and nama_coa like '%kas kecil%')
-                                    ) akun_gabungan
-                                    $where_akun
-                                    ORDER BY tipe_akun ASC, account ASC
-                                ");
-                                if ($qacc) while ($ra = mysqli_fetch_assoc($qacc)) {
-                                    $label = ($ra['tipe_akun'] === 'CASH') ? $ra['bank'] : $ra['account'];
-                                    $selA = ((string)$ra['account'] === (string)$pf_from_acc) ? 'selected="selected"' : '';
-                                    echo "<option value='" . htmlspecialchars($ra['account']) . "' data-bank='" . htmlspecialchars($ra['bank']) . "' data-currency='" . htmlspecialchars($ra['curr']) . "' data-namapc='" . htmlspecialchars($ra['nama_pc']) . "' data-kodepc='" . htmlspecialchars($ra['kode_pc']) . "' data-kodebank='" . htmlspecialchars($ra['b_code']) . "' $selA>" . htmlspecialchars($label) . " </option>";
-                                }
-                                ?>
-                            </select>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <label for="from_bank"><b>From Bank Name <i style="color: red;">*</i></b></label>
-                            <input type="text" class="form-control form-control-sm bg-light" id="from_bank" name="from_bank" value="<?= htmlspecialchars($pf_from_bank) ?>" readonly>
-                        </div>
-                        <div class="col-md-2 mb-3">
-                            <label for="from_bank_curr"><b>From Bank Currency <i style="color: red;">*</i></b></label>
-                            <input type="text" class="form-control form-control-sm bg-light" id="from_bank_curr" name="from_bank_curr" value="<?= htmlspecialchars($pf_from_curr) ?>" readonly>
-                        </div>
 
-                        <div class="col-md-3 mb-3">
-                            <label for="nama_supp"><b>Supplier</b></label>
-                            <input type="text" readonly style="font-size: 13px;" class="form-control form-control-sm" name="txt_supp" id="txt_supp" value="<?= htmlspecialchars($pf_supp) ?>">
-                            <input type="hidden" name="bpbvalue" id="bpbvalue" value="">
-                        </div>
+                        if(!empty($nama_supp)) {
 
-                        <!-- Filter BPB Date untuk menambah BPB (mirror create): cari BPB
-                             tersedia utk supplier ini pada rentang tanggal, lalu ceklis. -->
-                        <div class="col-md-3 mb-3">
-                            <label><b>BPB Date</b> <small class="text-muted">(tambah BPB)</small></label>
-                            <div class="d-flex align-items-center">
-                                <input type="text" class="form-control form-control-sm tanggal_fil" id="bpb_start" name="bpb_start" value="<?= date('d-m-Y', strtotime($pf_tgl_kbon)) ?>" placeholder="Awal" autocomplete="off">
-                                <span class="mx-1">-</span>
-                                <input type="text" class="form-control form-control-sm tanggal_fil" id="bpb_end" name="bpb_end" value="<?= date('d-m-Y') ?>" placeholder="Akhir" autocomplete="off">
-                                <button type="button" class="btn btn-primary btn-sm ml-2" id="btnCariBpb" style="white-space:nowrap;"><i class="fas fa-search"></i> Cari BPB</button>
-                            </div>
-                        </div>
+                            echo date("Y-m-d",strtotime($tgl));
+                        }
+                        else{
+                            echo date("Y-m-d");
+                        }  ?>">
 
+                        <input type="hidden" style="font-size: 13px;;" name="tanggal4" id="tanggal4" class="form-control form-control-sm"
+                        value="<?php             
+                        $start_date ='';
+                        $end_date ='';
+                        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                            $tkbon = date("Y-m-d",strtotime($_POST['tanggal_kbn']));
+                        }     
+
+                        if(!empty($tkbon)) {
+
+                            echo date("Y-m-d",strtotime($tkbon));
+                        }
+                        else{
+                            echo date("Y-m-d");
+                        }  ?>">
                     </div>
-                </div>
-                </div>
+                    <!-- onchange="updateNoKontraBon()" -->
+                    <div class="col-md-3 mb-3">            
+                        <label for="profit_center"><b>Profit Center <i style="color: red;">*</i></b></label>            
+                        <select class="form-control selectpicker" name="profit_center" id="profit_center" data-dropup-auto="false" data-live-search="true">
+                            <option value="" disabled selected="true">Select Profit Center</option>                                                 
+                            <?php
+                            $sql = mysqli_query($conn2,"select profit_center, nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from ap_edit_kontrabon_h a left join master_pc b on b.kode_pc = a.profit_center where no_kbon = '$no_kbon'");
+                            $row = mysqli_fetch_array($sql);  
+                            $kode_pc = $row['profit_center']; 
+                            $nama_pc = $row['nama_pc'];  
+                            $isSelected = ' selected="selected"';                      
+                            if(!empty($no_kbon)) {
+                                echo '<option value="'.$kode_pc.'"'.$isSelected.'">'. $nama_pc .'</option>'; 
+                            }
+                            else{
+                                echo '<option value="-">Select Supplier</option>'; 
+                            }
+
+                            $profit_center = isset($_POST['profit_center']) ? $_POST['profit_center']: null;               
+                            $sql = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active' and kode_pc != '$kode_pc'");
+                            while ($row = mysqli_fetch_array($sql)) {
+                                $data = $row['kode_pc'];
+                                $data2 = $row['nama_pc'];
+                                if($row['kode_pc'] == $profit_center ){
+                                    $isSelected = ' selected="selected"';
+                                }else{
+                                    $isSelected = '';
+
+                                }
+                                echo '<option value="'.$data.'"'.$isSelected.'">'. $data2 .'</option>';    
+                            }?>
+                        </select>  
+
+                        <input type="hidden" readonly style="font-size: 13px;;" class="form-control form-control-sm" id="jurnal" name="jurnal" 
+                        value="0" placeholder="<?php echo "KONTRA BON" ?>">
+                    </div>
+
+                    <div class="col-md-2 mb-3">            
+                        <label for="matauang"><b>Currency</b></label>
+                        <input type="text" readonly class="form-control form-control-sm" id="matauang" name="matauang" value="<?php 
+                        $sql = mysqli_query($conn2,"select curr from ap_edit_kontrabon_h where no_kbon = '$no_kbon'");
+                        $row = mysqli_fetch_array($sql);                         
+                        echo $row['curr'];
+                    ?>">                      
+                </div>                                         
+
+                <div class="col-md-3 mb-3">            
+                    <label for="txt_inv"><b>No Supplier Invoice <i style="color: red;">*</i></b></label>          
+                    <input type="text" style="font-size: 13px;;" class="form-control form-control-sm" id="txt_inv" name="txt_inv" 
+                    value="<?php
+                    $sql = mysqli_query($conn2,"select supp_inv from ap_edit_kontrabon_h where no_kbon = '$no_kbon'");
+                    $row = mysqli_fetch_array($sql);                         
+                    $supp_inv = $row['supp_inv'];
+
+                    $txt_inv = isset($_POST['txt_inv']) ? $_POST['txt_inv']: $supp_inv;
+                    echo $txt_inv; 
+                ?>" required>
             </div>
-    </form>
+
+            <div class="col-md-2 mb-3">            
+                <label for="txt_tglsi"><b>Supplier Invoice Date <i style="color: red;">*</i></b></label>   
+                <input type="text" style="font-size: 13px;;" class="form-control form-control-sm tanggal" name="txt_tglsi" id="txt_tglsi" 
+                value="<?php 
+                $sql = mysqli_query($conn2,"select tgl_inv from ap_edit_kontrabon where no_kbon = '$no_kbon'");
+                $row = mysqli_fetch_array($sql);                         
+                if(!empty($no_kbon)) {
+                    echo date("Y-m-d",strtotime($row['tgl_inv']));
+                }
+                else{
+                    echo date("Y-m-d");
+                }  ?>">
+            </div>
+
+            <div class="col-md-3 mb-3">            
+                <label for="no_faktur"><b>No Tax Invoice <i style="color: red;">*</i></b></label>            
+                <input type="text" style="font-size: 13px;;" class="form-control form-control-sm" id="no_faktur" name="no_faktur" 
+                value="<?php 
+                $sql = mysqli_query($conn2,"select no_faktur from ap_edit_kontrabon_h where no_kbon = '$no_kbon'");
+                $row = mysqli_fetch_array($sql);                         
+                $faktur_h = $row['no_faktur'];
+
+                $no_faktur = isset($_POST['no_faktur']) ? $_POST['no_faktur']: $faktur_h;
+                echo $no_faktur; 
+            ?>" required>
+        </div>
+
+        <div class="col-md-2 mb-3">            
+            <label for="txt_tgltempo"><b>Due Date <i style="color: red;">*</i></b></label>   
+            <input type="text" style="font-size: 13px;;" class="form-control form-control-sm tanggal1" name="txt_tgltempo" id="txt_tgltempo" 
+            value="<?php 
+            $sql = mysqli_query($conn2,"select tgl_tempo from ap_edit_kontrabon where no_kbon = '$no_kbon'");
+            $row = mysqli_fetch_array($sql);                         
+            if(!empty($no_kbon)) {
+                echo date("Y-m-d",strtotime($row['tgl_tempo']));
+            }
+            else{
+                echo date("Y-m-d");
+            }  ?>">
+        </div>
+
+
+        <div class="col-md-6 mb-3">
+            <label for="nama_supp"><b>Supplier</b></label>            
+            <div class="input-group">
+                <input type="text" readonly style="font-size: 13px;" class="form-control" name="txt_supp" id="txt_supp" 
+                value="<?php 
+                $sql = mysqli_query($conn2,"select nama_supp from ap_edit_kontrabon_h where no_kbon = '$no_kbon'");
+                $row = mysqli_fetch_array($sql);                         
+                $nama_supp_h = $row['nama_supp'];
+                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: $nama_supp_h;
+                echo $nama_supp; 
+            ?>">
+
+
+            <div class="input-group-append col">
+                <button 
+                type="button"
+                name="edit_header"
+                id="edit_header"
+                class="btn btn-warning"
+                style="
+                line-height: 1;
+                padding: 4px 12px;
+                font-size: 0.875rem;
+                border-radius: 6px;">
+                <i class="fas fa-save"></i> Edit Header
+            </button>
+
+            <input type="hidden" name="bpbvalue" id="bpbvalue" value="">      
+        </div>
+
+    </div>
+</div>                   
+</div>
+</div>
+</div>
+</form>
 
 <form id="form-simpan">
     <div class="card shadow-sm mb-4">
@@ -248,7 +271,7 @@ if ($pf_pc !== '') {
                         <table id="mytable" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 13px;;text-align:center;">
                             <thead>
                                 <tr class="text-white" style="background-color: #1E3A8A;">
-                                    <th style="width:6%;">Cek</th>
+                                    <th style="display: none;">Cek</th>
                                     <th style="width:18%;">NO BPB</th>
                                     <th style="width:15%;">NO PO</th>                            
                                     <th style="width:13%;">BPB Date</th>                            
@@ -280,7 +303,7 @@ if ($pf_pc !== '') {
                                 $total = '';
                                 $persen = '';  
 
-                                $sql = mysqli_query($conn2,"select a.no_bpb, no_po, tgl_bpb, subtotal, a.idtax, IFNULL(percentage,0) percentage, IFNULL(kriteria,'Non PPH') kriteria, tax, pph_code, pph_value, total, dp_value, confirm1, confirm2, nama_supp, tgl_po, tgl_tempo, curr, mattype, matclass, n_code_category, cus_ctg, a.no_faktur no_faktur_bpb, b.upt_tgl_faktur tgl_faktur_bpb from ap_edit_kontrabon a INNER JOIN (select no_bpb, confirm1, confirm2, MAX(upt_tgl_faktur) upt_tgl_faktur from bpb_new where status != 'Cancel' GROUP BY no_bpb) b on b.no_bpb = a.no_bpb INNER JOIN (select * from (select reff_doc, a.no_coa, mattype, matclass, n_code_category, cus_ctg from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa where no_journal = '$no_kbon' and a.nama_coa like '%GR/IR%' and type_journal = 'AP - Kontrabon' GROUP BY reff_doc
+                                $sql = mysqli_query($conn2,"select a.no_bpb, no_po, tgl_bpb, subtotal, a.idtax, IFNULL(percentage,0) percentage, IFNULL(kriteria,'Non PPH') kriteria, tax, pph_code, pph_value, total, dp_value, confirm1, confirm2, nama_supp, tgl_po, tgl_tempo, curr, mattype, matclass, n_code_category, cus_ctg from ap_edit_kontrabon a INNER JOIN (select no_bpb, confirm1, confirm2 from bpb_new where status != 'Cancel' GROUP BY no_bpb) b on b.no_bpb = a.no_bpb INNER JOIN (select * from (select reff_doc, a.no_coa, mattype, matclass, n_code_category, cus_ctg from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa where no_journal = '$no_kbon' and a.nama_coa like '%GR/IR%' and type_journal = 'AP - Kontrabon' GROUP BY reff_doc
                                     UNION
                                     select reff_doc, a.no_coa, mattype, matclass, n_code_category, cus_ctg from ap_journal_temp a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa where no_journal = '$no_kbon' and a.nama_coa like '%GR/IR%' and type_journal = 'AP - Kontrabon' GROUP BY reff_doc) a GROUP BY reff_doc) c on c.reff_doc = a.no_bpb left join mtax d on d.idtax = a.idtax where a.no_kbon = '$no_kbon' and a.status != 'Cancel'");
 
@@ -290,16 +313,15 @@ if ($pf_pc !== '') {
                                     // $id_supplier = $row['id_supplier'];
                                     // $pono = isset($row['pono']) ? $row['pono'] : null;
 
-                                   $tgl_fk_bpb = (!empty($row['tgl_faktur_bpb']) && $row['tgl_faktur_bpb'] != '0000-00-00') ? date('Y-m-d', strtotime($row['tgl_faktur_bpb'])) : '';
-                                   echo '<tr data-nofaktur="'.htmlspecialchars($row['no_faktur_bpb'], ENT_QUOTES).'" data-tglfaktur="'.htmlspecialchars($tgl_fk_bpb, ENT_QUOTES).'">
-                                   <td style="width:10px;"><input type="checkbox" class="select_edit" name="select_edit[]" value="" checked></td>
+                                   echo '<tr>
+                                   <td style="display: none;"><input type="checkbox" class="chkA"  id="select" name="select[]" value="" <?php if(in_array("1",$_POST[select])) echo "checked=checked";? disabled></td>                        
                                    <td value="'.$row['no_bpb'].'">'.$row['no_bpb'].'</td>
                                    <td value="'.$row['no_po'].'">'.$row['no_po'].'</td>                            
                                    <td dates="'.date("Y-m-d",strtotime($row['tgl_bpb'])).'" value="'.$row['tgl_bpb'].'">'.date("d-M-Y",strtotime($row['tgl_bpb'])).'</td>                            
                                    <td class="dt_price" style="width:100px;text-align:right;" data-link="1" data-subtotal="'.$row['subtotal'].'">'.number_format($row['subtotal'],2).'</td>
                                    <td class="dt_tax" style="width:100px;text-align:right;" data-tax="'.$row['tax'].'">'.number_format($row['tax'],2).'</td>
-                                   <td style="width:200px;">
-                                   <select name="combo_pph_edit" class="combo_pph_edit form-control form-control-sm" style="width:150px;">
+                                   <td style="width:200px;">                            
+                                   <select class="form-control selectpicker" style="width:150px;" name="combo_pph" id="combo_pph" disabled>
                                    <option data-idtax="'.$row['pph_code'].'" value="'.$row['percentage'].'">'.$row['kriteria'].'</option>';
                                    if ($row['pph_code'] != 0) {
                                        echo '<option data-idtax="0" value="0">Non PPH</option>';
@@ -352,6 +374,14 @@ if ($pf_pc !== '') {
                         <input type="hidden" name="subtotal_h" id="subtotal_h" value="<?= $subtotal; ?>">
                         <input type="hidden" name="subtotal_h1" id="subtotal_h1" value="<?= $subtotal; ?>">
                     </div>
+                    <div class="col-md-2 mb-3">
+                        <button 
+                        type="button" 
+                        id="edit_bpb" 
+                        class="btn btn-warning btn-xs" 
+                        style="border-radius: 6px;">
+                        <i class="fas fa-edit"></i> Edit Detail BPB
+                    </button>
                 </div>
             </div>
         </div>
@@ -424,12 +454,20 @@ if ($pf_pc !== '') {
                          <input type="hidden" name="h_code_ctg" id="h_code_ctg" value="">
                          <input type="hidden" name="h_cus_ctg" id="h_cus_ctg" value="">
                      </div>
+                     <div class="col-md-2 mb-3">
+                        <button 
+                        type="button" 
+                        id="edit_bppb" 
+                        class="btn btn-warning btn-xs" 
+                        style="border-radius: 6px;">
+                        <i class="fas fa-edit"></i> Edit Detail BPPB
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="card shadow-sm mb-4" style="margin-left:2rem;margin-right:2rem;">
+    <div class="card shadow-sm mb-4">
                 <!-- <div class="card-header" style="background-color: #60A5FA; color: white; font-weight: bold;">
                     Data FTR
                 </div> -->
@@ -501,21 +539,27 @@ if ($pf_pc !== '') {
                             <input type="hidden" name="ttl_dp_h" id="ttl_dp_h" value="<?= $total_ftr; ?>">
 
                         </div>
+                        <div class="col-md-2 mb-3">
+                            <button 
+                            type="button" 
+                            id="edit_ftr" 
+                            class="btn btn-warning btn-xs" 
+                            style="border-radius: 6px;">
+                            <i class="fas fa-edit"></i> Edit Detail CBD
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="card shadow-sm mb-4" style="margin-left:2rem;margin-right:2rem;">
+        <div class="card shadow-sm mb-4">
           <div class="card-body p-2">
             <div class="row">
               <div class="col-md-7 border-end pe-4">
 
                 <?php
-                // FIX: query lama menulis "select select ..." (typo) -> syntax error,
-                // sehingga breakdown potongan selalu ter-load 0 saat edit. Sekaligus
-                // tambah potongan_ppn/potongan_pph (Koreksi PPN/PPh) agar sejajar create.
-                $sql = mysqli_query($conn2,"select jml_return, lr_kurs, s_qty, s_harga, materai, pot_beli, ekspedisi, moq, jml_potong, potongan_ppn, potongan_pph from ap_edit_potongan where no_kbon = '$no_kbon'");
-                $row = mysqli_fetch_array($sql);
+                $sql = mysqli_query($conn2,"select select jml_return, lr_kurs, s_qty, s_harga, materai, pot_beli, ekspedisi, moq, jml_potong from ap_edit_potongan where no_kbon = '$no_kbon'");
+                $row = mysqli_fetch_array($sql);                         
                 $jml_return = $row['jml_return'];
                 $lr_kurs = $row['lr_kurs'];
                 $s_qty = $row['s_qty'];
@@ -525,9 +569,6 @@ if ($pf_pc !== '') {
                 $ekspedisi = $row['ekspedisi'];
                 $moq = $row['moq'];
                 $jml_potong = $row['jml_potong'];
-                // Fallback ke nilai LIVE bila snapshot lama belum punya kolom ini.
-                $potongan_ppn = isset($row['potongan_ppn']) && $row['potongan_ppn'] !== null ? $row['potongan_ppn'] : $pf_pot_ppn;
-                $potongan_pph = isset($row['potongan_pph']) && $row['potongan_pph'] !== null ? $row['potongan_pph'] : $pf_pot_pph;
                 ?>
 
                 <div class="row mb-2 align-items-center">
@@ -603,28 +644,6 @@ if ($pf_pc !== '') {
 </div>
 <div class="col-4">
     <input type="text" class="form-control form-control-sm text-right" name="moq_h" id="moq_h" value="<?= number_format($moq,2); ?>" placeholder="0.00" readonly>
-</div>
-<div class="col-2"></div>
-</div>
-
-<div class="row mb-2 align-items-center">
-  <label class="col-3 col-form-label" style="font-size: 13px;;"><b><u>Koreksi PPN</u></b></label>
-  <div class="col-3">
-    <input type="number" class="form-control form-control-sm text-right" name="potongan_ppn" id="potongan_ppn" value="<?= $potongan_ppn; ?>" placeholder="0.00">
-</div>
-<div class="col-4">
-    <input type="text" class="form-control form-control-sm text-right" name="potongan_ppn_h" id="potongan_ppn_h" value="<?= number_format($potongan_ppn,2); ?>" placeholder="0.00" readonly>
-</div>
-<div class="col-2"></div>
-</div>
-
-<div class="row mb-2 align-items-center">
-  <label class="col-3 col-form-label" style="font-size: 13px;;"><b><u>Koreksi PPh</u></b></label>
-  <div class="col-3">
-    <input type="number" class="form-control form-control-sm text-right" name="potongan_pph" id="potongan_pph" value="<?= $potongan_pph; ?>" placeholder="0.00">
-</div>
-<div class="col-4">
-    <input type="text" class="form-control form-control-sm text-right" name="potongan_pph_h" id="potongan_pph_h" value="<?= number_format($potongan_pph,2); ?>" placeholder="0.00" readonly>
 </div>
 <div class="col-2"></div>
 </div>
@@ -1207,25 +1226,6 @@ if ($pf_pc !== '') {
 <script language="JavaScript" src="../css/4.1.1/select2.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
 
-<script>
-// Auto-fill display fields (Bank Name/Beneficiary/Currency & From Bank) saat pilihan
-// diubah — mirror create pv_regular.php. Ditaruh SETELAH jQuery dimuat (bukan di tengah
-// body) supaya tidak "$ is not defined".
-$(function () {
-    $('#sel_bank_account').on('change', function () {
-        var o = $(this).find('option:selected');
-        $('#disp_bankname').val(o.data('bankname') || '');
-        $('#disp_beneficiary').val(o.data('beneficiary') || '');
-        $('#disp_currency').val(o.data('currency') || '');
-    });
-    $('#from_account').on('change', function () {
-        var o = $(this).find('option:selected');
-        $('#from_bank').val(o.data('bank') || '');
-        $('#from_bank_curr').val(o.data('currency') || '');
-    });
-});
-</script>
-
 
 
 <script>
@@ -1393,8 +1393,15 @@ function SidebarCollapse () {
     } );
 
     $(document).ready(function () {
-        // #mytable dibiarkan tabel biasa (bukan DataTable) supaya alur ceklis/append/
-        // serialize BPB sama seperti create (create pun #mytable-nya plain).
+        $('#mytable').DataTable({
+            paging: false,
+            searching: true,
+            info: false,
+            scrollY: "300px",
+            scrollCollapse: true,
+            scrollX: true
+        });
+
         $('#mytable1').DataTable({
             paging: false,
             searching: true,
@@ -1411,73 +1418,6 @@ function SidebarCollapse () {
             scrollY: "300px",
             scrollCollapse: true,
             scrollX: true
-        });
-
-        // ===== Kolom No Faktur / Tgl Faktur per BPB (mirror create). Ditambah di UJUNG
-        // baris supaya index td:eq(...) yang dipakai serialize tidak bergeser. =====
-        function pvAppendFakturHead() {
-            var $head = $('#mytable thead tr');
-            if ($head.find('th.fk-head').length === 0) {
-                $head.append('<th class="fk-head" style="min-width:150px;">No Faktur</th><th class="fk-head" style="min-width:120px;">Tgl Faktur</th>');
-            }
-        }
-        window.pvAppendFakturCells = function($rows, defFaktur) {
-            $rows.each(function(){
-                var $r = $(this);
-                if ($r.find('td.fk-cell').length > 0) return;   // sudah ada
-                if ($r.find('td').length < 2) return;           // lewati baris "No data"
-                // Prefill No Faktur per-BPB dari data-nofaktur baris (kalau ada), baru
-                // fallback ke default (header). Baris baru dari Cari BPB: kosong.
-                var nf = ($r.attr('data-nofaktur') || defFaktur || '').replace(/"/g, '&quot;');
-                var tf = ($r.attr('data-tglfaktur') || '').replace(/"/g, '&quot;');  // dari bpb_new.upt_tgl_faktur
-                $r.append(
-                    '<td class="fk-cell"><input type="text" class="fk-no form-control form-control-sm" list="fkOptions" value="' + nf + '" placeholder="No Faktur" style="min-width:150px;font-size:12px;"></td>' +
-                    '<td class="fk-cell"><input type="date" class="fk-tgl form-control form-control-sm" value="' + tf + '" style="min-width:150px;font-size:12px;"></td>'
-                );
-            });
-        };
-        pvAppendFakturHead();
-        // Baris existing (BPB dokumen): prefill No Faktur dari no_faktur per-BPB (data-nofaktur),
-        // fallback ke No Tax Invoice header.
-        pvAppendFakturCells($('#mytable tbody tr'), $('#no_faktur').val() || '');
-
-        // Kolom No Faktur/Tgl Faktur juga di tabel RETUR (#mytable1) -> disimpan ke bppb_new.
-        (function () {
-            var $h1 = $('#mytable1 thead tr');
-            if ($h1.find('th.fk-head').length === 0) {
-                $h1.append('<th class="fk-head" style="min-width:150px;">No Faktur</th><th class="fk-head" style="min-width:120px;">Tgl Faktur</th>');
-            }
-        })();
-        pvAppendFakturCells($('#mytable1 tbody tr'), '');
-
-        // ===== Suggest & auto-adjust No Faktur (mirror create) =====
-        // Datalist saran No Faktur diisi dari faktur milik IR terpilih (ajx_pv_ir_bpb.php).
-        if (!document.getElementById('fkOptions')) { $('body').append('<datalist id="fkOptions"></datalist>'); }
-        window.irFakturMap = window.irFakturMap || {};
-        function pvLoadIrFaktur(ir) {
-            ir = $.trim(ir || '');
-            $('#fkOptions').empty(); window.irFakturMap = {};
-            if (ir === '' || ir === '-') return;
-            $.post('ajx_pv_ir_bpb.php', { ir_number: ir }, function (res) {
-                if (!res || !res.ok) return;
-                var _opts = '';
-                (res.faktur_list || []).forEach(function (f) {
-                    var n = String(f.no_faktur || '').trim();
-                    if (n) { _opts += '<option value="' + n.replace(/"/g, '&quot;') + '"></option>'; window.irFakturMap[n] = f.tgl_faktur || ''; }
-                });
-                $('#fkOptions').html(_opts);
-            }, 'json');
-        }
-        // Muat saran utk IR yang sedang terpilih + refresh saat IR diganti.
-        pvLoadIrFaktur($('#ir_number').val());
-        $('#ir_number').on('change', function () { pvLoadIrFaktur($(this).val()); });
-        // Auto-isi Tgl Faktur saat No Faktur cocok salah satu faktur IR (tetap boleh diketik lain).
-        $(document).on('input change', '#mytable input.fk-no, #mytable1 input.fk-no', function () {
-            var v = $.trim($(this).val());
-            if (window.irFakturMap && Object.prototype.hasOwnProperty.call(window.irFakturMap, v) && window.irFakturMap[v]) {
-                var $tgl = $(this).closest('tr').find('.fk-tgl');
-                if (!$tgl.prop('disabled')) { $tgl.val(window.irFakturMap[v]); }
-            }
         });
 
         var tableBPB = $('#mytable_edit').DataTable({
@@ -1523,33 +1463,20 @@ function SidebarCollapse () {
 
 
         $(document).on('change', '.select_edit', function () {
+            console.log('Checkbox berubah:', $(this).is(':checked'));
             var sum_sub = 0;
-            // Combo PPh dibiarkan selalu enabled supaya tampilan seragam (tidak greyed
-            // saat un-check) — mengikuti tampilan create.
-            $("input.select_edit[type=checkbox]:checked").each(function () {
+
+            $(this).closest('tr').find('td:eq(6)').find('select[name=combo_pph_edit]').prop('disabled', true);         
+            $("input[type=checkbox]:checked").each(function () {
+                var select_pph = $(this).closest('tr').find('td:eq(6)').find('select[name=combo_pph_edit]');
+                select_pph.prop('disabled', false);
                 var price = parseFloat($(this).closest('tr').find('td:eq(4)').attr('data-subtotal'),10) || 0;
                 sum_sub += price;
             });
 
             $("#subtotal_edit").val(formatMoney(sum_sub));
-            $("#subtotal_h_edit").val(sum_sub.toFixed(2));
-            // $("#subtotal_h1_edit").val(data1.toFixed(2));
-        });
-
-        // Ceklis BPB di TABEL UTAMA (#mytable) -> langsung update Total BPB (#subtotal)
-        // + Tax PPn (#pajak) dari baris yang terceklis (mirror create). Grand Total tetap
-        // via tombol Calculate.
-        $(document).on('change', '#mytable .select_edit', function () {
-            var sub = 0, tax = 0;
-            $('#mytable input.select_edit[type=checkbox]:checked').each(function () {
-                var $tr = $(this).closest('tr');
-                sub += parseFloat($tr.find('td:eq(4)').attr('data-subtotal'), 10) || 0;
-                tax += parseFloat($tr.find('td:eq(5)').attr('data-tax'), 10) || 0;
-            });
-            $('#subtotal').val(formatMoney(sub));
-            $('#subtotal_h').val(sub.toFixed(2));
-            if ($('#pajak').length)   { $('#pajak').val(formatMoney(tax)); }
-            if ($('#pajak_h').length) { $('#pajak_h').val(tax.toFixed(2)); }
+            $("#subtotal_h_edit").val(sum_sub.toFixed(2)); 
+            // $("#subtotal_h1_edit").val(data1.toFixed(2)); 
         });
 
 
@@ -1645,7 +1572,7 @@ function SidebarCollapse () {
             $("#pph_h_edit").val(sum_pph.toFixed(2));
         });
 
-        $(document).on('click', '#edit_bpb', function() {
+        document.getElementById('edit_bpb').addEventListener('click', function() {
             Swal.fire({
                 title: 'Are you sure?',
                 text: "Are you sure you want to edit this data? Current data will be deleted.",
@@ -1676,7 +1603,7 @@ function SidebarCollapse () {
         });
 
 
-        $(document).on('click', '#edit_bppb', function() {
+        document.getElementById('edit_bppb').addEventListener('click', function() {
             Swal.fire({
                 title: 'Are you sure?',
                 text: "Are you sure you want to edit this data? Current data will be deleted.",
@@ -1707,7 +1634,7 @@ function SidebarCollapse () {
         });
 
 
-        $(document).on('click', '#edit_ftr', function() {
+        document.getElementById('edit_ftr').addEventListener('click', function() {
             Swal.fire({
                 title: 'Are you sure?',
                 text: "Are you sure you want to edit this data? Current data will be deleted.",
@@ -1754,47 +1681,6 @@ function SidebarCollapse () {
                     tableBPB.clear().rows.add($(res)).draw();
                 }
 
-            });
-        });
-
-        // ===== Cari BPB inline (mirror create): tambah BPB tersedia utk supplier ini pada
-        // rentang tanggal ke tabel utama #mytable (un-checked). Dedup by no_bpb. =====
-        $(document).on('click', '#btnCariBpb', function() {
-            var nama_supp = $('#txt_supp').val();
-            var start_date = $('#bpb_start').val();
-            var end_date = $('#bpb_end').val();
-            var no_kbon = $('#nokontrabon').val();
-            var profit_center = $('#profit_center').val();
-            if (!start_date || !end_date) { Swal.fire({icon:'warning', title:'Rentang tanggal BPB kosong'}); return; }
-
-            var $btn = $(this);
-            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Mencari...');
-            $.post('get_bpb_kontrabon.php', {nama_supp: nama_supp, start_date: start_date, end_date: end_date, no_kbon: no_kbon, profit_center: profit_center}, function(res) {
-                var existing = {};
-                $('#mytable tbody tr').each(function(){ var nb = $(this).find('td:eq(1)').attr('value'); if (nb) existing[nb] = true; });
-                var $rows = $('<table><tbody>' + res + '</tbody></table>').find('tbody > tr');
-                var added = 0;
-                $rows.each(function(){
-                    var $r = $(this);
-                    var nb = $r.find('td:eq(1)').attr('value');
-                    if (!nb || existing[nb]) return;
-                    $r.find('.select_edit').prop('checked', false);       // baris baru default belum diceklis
-                    $r.find('td:eq(0)').css('display', '');                // pastikan kolom cek terlihat
-                    $('#mytable tbody').append($r);
-                    if (window.pvAppendFakturCells) window.pvAppendFakturCells($r, ''); // kolom faktur (kosong)
-                    existing[nb] = true;
-                    added++;
-                });
-                $btn.prop('disabled', false).html('<i class="fas fa-search"></i> Cari BPB');
-                // Tidak ada notif sukses di sini — baris muncul di tabel, tapi belum
-                // tersimpan sampai user ceklis + Calculate + Save. Hanya beri info kalau
-                // hasil pencarian memang kosong.
-                if (added === 0) {
-                    Swal.fire({icon:'info', title:'Tidak ada BPB baru', text:'Tidak ada BPB tersedia (di luar yang sudah ada) untuk rentang ini.'});
-                }
-            }).fail(function(xhr){
-                $btn.prop('disabled', false).html('<i class="fas fa-search"></i> Cari BPB');
-                Swal.fire('Error', xhr.responseText || 'Gagal mencari BPB', 'error');
             });
         });
 
@@ -2851,35 +2737,25 @@ if (!processedPO.includes(po)) {
 </script>
 
 <script type="text/javascript">
-    // Delegasi dari document: form-simpan bisa ter-auto-close browser krn nesting
-    // div bawaan form (net div -5). Pakai document agar klik #calculate tetap kena.
-    $(document).on("click", "#calculate", function(){
-        // Jumlahkan HANYA baris BPB yang ter-ceklis (mirror create). Subtotal/PPn/PPh
-        // dihitung ulang dari tabel, bukan dari nilai prefilled — supaya uncheck/tambah
-        // BPB langsung berpengaruh ke total.
-        var sum_sub = 0, sum_tax = 0, sum_pph = 0;
-        $('#mytable tbody tr').each(function(){
-            if (!$(this).find('.select_edit').is(':checked')) return;
-            var price = parseFloat($(this).find('td:eq(4)').attr('data-subtotal'),10) || 0;
-            var tax   = parseFloat($(this).find('td:eq(5)').attr('data-tax'),10) || 0;
-            var pphp  = parseFloat($(this).find('td:eq(6) select.combo_pph_edit option:selected').val(),10) || 0;
-            sum_sub += price;
-            sum_tax += tax;
-            sum_pph += price * (pphp / 100);
-        });
+    $("#form-simpan").on("click", "#calculate", function(){
+        var jumlah = 0; 
+        var total = 0;
+        var ttl_dp = 0;
+        var pajak = 0;
+        var pph = 0;
 
-        $('#subtotal').val(formatMoney(sum_sub));
-        $('#subtotal_h').val(sum_sub.toFixed(2));
-        $('#pajak').val(formatMoney(sum_tax));
-        $('#pajak_h').val(sum_tax.toFixed(2));
-        $('#pph').val(formatMoney(sum_pph));
-        $('#pph_h').val(sum_pph.toFixed(2));
+        var subtotal_h = parseFloat(document.getElementById('subtotal_h').value,10) || 0;
+        var potongan_h = parseFloat(document.getElementById('potongan_h').value,10) || 0;
+        var ttl_dp_h = parseFloat(document.getElementById('ttl_dp_h').value,10) || 0;
+        var jml_potong = parseFloat(document.getElementById('jml_potong').value,10) || 0;
+        var pajak_h = parseFloat(document.getElementById('pajak_h').value,10) || 0;
+        var pph_h = parseFloat(document.getElementById('pph_h').value,10) || 0;
 
-        var potongan_h = parseFloat(document.getElementById('potongan_h').value,10) || 0; // Total Return
-        var ttl_dp_h   = parseFloat(document.getElementById('ttl_dp_h').value,10) || 0;    // Total DP/CBD
-        var jml_potong = parseFloat(document.getElementById('jml_potong').value,10) || 0;  // Potongan lain-lain
+        pajak = pajak_h;
+        pph = pph_h;          
+        jumlah = (subtotal_h - (potongan_h + ttl_dp_h) + jml_potong) + pajak - pph; 
 
-        var jumlah = (sum_sub - (potongan_h + ttl_dp_h) + jml_potong) + sum_tax - sum_pph;
+
         $("#total").val(formatMoney(jumlah));
         $("#total_h").val(jumlah.toFixed(4));
     });
@@ -2887,136 +2763,95 @@ if (!processedPO.includes(po)) {
 
 
 <script type="text/javascript">
-    $(document).on("click", "#simpan", function(){
-        // WAJIB Calculate dulu (total kosong sampai Calculate dijalankan).
+    $("#form-simpan").on("click", "#simpan", function(){
+        var no_kbon_h = document.getElementById('nokontrabon').value;
+        var unik_code = document.getElementById('unik_code').value;
+        var tgl_kbon_h = document.getElementById('tanggal').value;
+        var tgl_kbon_p = document.getElementById('tgl_perhitungan').value;
+        var tgl_kbon_s = document.getElementById('tanggal4').value; 
+        var nama_supp_h = document.getElementById('txt_supp').value;
+        var no_faktur_h = document.getElementById('no_faktur').value;
+        var no_po_h = document.getElementById('po').value;
+        var supp_inv_h = document.getElementById('txt_inv').value;
+        var tgl_inv_h = document.getElementById('txt_tglsi').value;
+        var tgl_tempo_h = document.getElementById('txt_tgltempo').value;        
+        var curr_h = document.getElementById('matauang').value;
+        var sub_h = document.getElementById('subtotal_h').value;
+        var tax_h = document.getElementById('pajak_h').value;
+        var dp_h = document.getElementById('ttl_dp_h').value;
+        var pph_h = document.getElementById('pph_h').value;
         var total_h = document.getElementById('total_h').value;
-        if (total_h === '') { document.getElementById('calculate').focus(); alert("Please do the calculation "); return; }
-        if (parseFloat(total_h) < 0) { alert("Contrabon can't be minus "); return; }
-
         var create_user_h = '<?php echo $user; ?>';
+        var jml_return = document.getElementById('potongan_h').value;
+        var lr_kurs = document.getElementById('labarugi').value;
+        var s_qty = document.getElementById('selisihqty').value;
+        var s_harga = document.getElementById('selisihharga').value;        
+        var materai = document.getElementById('materai').value;                               
+        var pot_beli = document.getElementById('potongbeli').value;
+        var ekspedisi = document.getElementById('ekspedisi').value;          
+        var moq = document.getElementById('moq').value;
+        var jml_potong = document.getElementById('jml_potong').value;
+        var mattype = document.getElementById('h_mattype').value;
+        var matclass = document.getElementById('h_matclass').value;
+        var n_code_category = document.getElementById('h_code_ctg').value;
+        var cus_ctg = document.getElementById('h_cus_ctg').value;
+        var profit_center = $('select[name=profit_center] option').filter(':selected').val();
+        //&& tgl_kbon_h >= tgl_kbon_p 
+        if(total_h != '' && total_h >= 0 ){        
+            $.ajax({
+                type:'POST',
+                url:'insert_kontrabon_edit_all.php',
+                data: {'no_kbon_h':no_kbon_h, 'tgl_kbon_h':tgl_kbon_h,'nama_supp_h':nama_supp_h, 'no_faktur_h':no_faktur_h, 'supp_inv_h':supp_inv_h, 'tgl_inv_h':tgl_inv_h, 'tgl_tempo_h':tgl_tempo_h, 'curr_h':curr_h, 'create_user_h':create_user_h, 'sub_h':sub_h, 'tax_h':tax_h, 'dp_h':dp_h, 'pph_h':pph_h, 'total_h':total_h, 'jml_return':jml_return, 'lr_kurs':lr_kurs, 's_qty':s_qty, 's_harga':s_harga, 'materai':materai, 'pot_beli':pot_beli, 'ekspedisi':ekspedisi, 'moq':moq, 'jml_potong':jml_potong, 'no_po_h':no_po_h, 'tgl_kbon_s':tgl_kbon_s, 'unik_code':unik_code, 'mattype':mattype, 'matclass':matclass, 'n_code_category':n_code_category, 'cus_ctg':cus_ctg, 'profit_center':profit_center},
+                cache: 'false',
+                close: function(e){
+                    e.preventDefault();
+                },
+                success: function(response){
+                    localStorage.removeItem("profit_center");
+                    console.log(response);
+                    alert('Data Saved Successfully');
+                    window.location = 'payment-voucher-ap.php';
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(xhr);
+                    alert(xhr);
+                }
+            }); 
+        }  
+              
 
-        // ---- Set BPB final = baris yang TER-CEKLIS (uncheck = dibuang, ceklis baru = ditambah) ----
-        var dataArr = [];
-        $('#mytable tbody tr').each(function(){
-            var $tr = $(this);
-            if (!$tr.find('.select_edit').is(':checked')) return;
-            var no_bpb = $tr.find('td:eq(1)').attr('value');
-            if (!no_bpb) return;
-            var price = parseFloat($tr.find('td:eq(4)').attr('data-subtotal'),10) || 0;
-            var tax   = parseFloat($tr.find('td:eq(5)').attr('data-tax'),10) || 0;
-            var cash  = parseFloat($tr.find('td:eq(8)').attr('data'),10) || 0;
-            var pph   = parseFloat($tr.find('td:eq(6) select.combo_pph_edit option:selected').val(),10) || 0;
-            var idtax = $tr.find('td:eq(6) select.combo_pph_edit option:selected').attr('data-idtax');
-            var sum_sub = price, sum_tax = tax, sum_pph = price * (pph/100);
-            var sum_total = (sum_sub + sum_tax) - sum_pph;
-            dataArr.push({
-                no_kbon: $('#nokontrabon').val(), tgl_kbon: $('#tanggal').val(), pc_kbon: $('#profit_center').val(),
-                nama_supp: $('#txt_supp').val(), invoice: $('#txt_inv').val(),
-                faktur: ($.trim($tr.find('.fk-no').val() || '') || $('#no_faktur').val()),  // No Faktur per-BPB
-                create_user: create_user_h,
-                no_bpb: no_bpb, no_po: $tr.find('td:eq(2)').attr('value'), tgl_bpb: $tr.find('td:eq(3)').attr('value'),
-                price: price, tax: tax, cash: cash, tgl_po: $tr.find('td:eq(12)').attr('value'),
-                pph: pph, idtax: idtax,
-                mattype: $tr.find('td:eq(15)').attr('value') || '', matclass: $tr.find('td:eq(16)').attr('value') || '',
-                n_code_category: $tr.find('td:eq(17)').attr('value') || '', cus_ctg: $tr.find('td:eq(18)').attr('value') || '',
-                sum_sub: sum_sub, sum_tax: sum_tax, sum_pph: sum_pph, sum_total: sum_total,
-                tglsi: $('#txt_tglsi').val(), tgltempo: $('#txt_tgltempo').val(),
-                curr_bpb: $tr.find('td:eq(14)').attr('value') || '',
-                start_date: $('#bpb_start').val(), end_date: $('#bpb_end').val()
-            });
-        });
-        if (dataArr.length === 0) { Swal.fire({icon:'warning', title:'Tidak ada BPB', text:'Ceklis minimal satu BPB.'}); return; }
+       if (document.getElementById('total_h').value == ''){
+            document.getElementById('calculate').focus();
+            alert("Please do the calculation ");
+        }else if (document.getElementById('total_h').value < 0){
+            alert("Contrabon can't be minus ");
+        }else{
 
-        // Map faktur per-BPB (#mytable) & per-RETUR (#mytable1) -> dipakai server untuk
-        // update bpb_new / bppb_new (upt_*) + faktur_pajak jurnal, dgn strip-guard.
-        var bpbFakturMap = {};
-        $('#mytable tbody tr').each(function () {
-            var $tr = $(this);
-            if (!$tr.find('.select_edit').is(':checked')) return;
-            var noBpb = ($tr.find('td:eq(1)').attr('value') || '').trim();
-            if (!noBpb) return;
-            bpbFakturMap[noBpb] = { no_faktur: $.trim($tr.find('.fk-no').val() || ''), tgl_faktur: $.trim($tr.find('.fk-tgl').val() || '') };
-        });
-        var retFakturMap = {};
-        $('#mytable1 tbody tr').each(function () {
-            var $tr = $(this);
-            var noBppb = ($tr.find('td:eq(2)').attr('valuess') || '').trim();
-            if (!noBppb) return;
-            retFakturMap[noBppb] = { no_faktur: $.trim($tr.find('.fk-no').val() || ''), tgl_faktur: $.trim($tr.find('.fk-tgl').val() || '') };
-        });
-
-        var payload = {
-            no_kbon_h: document.getElementById('nokontrabon').value,
-            unik_code: document.getElementById('unik_code').value,
-            tgl_kbon_h: document.getElementById('tanggal').value,
-            tgl_kbon_s: document.getElementById('tanggal4').value,
-            nama_supp_h: document.getElementById('txt_supp').value,
-            no_faktur_h: document.getElementById('no_faktur').value,
-            no_po_h: document.getElementById('po').value,
-            supp_inv_h: document.getElementById('txt_inv').value,
-            tgl_inv_h: document.getElementById('txt_tglsi').value,
-            tgl_tempo_h: document.getElementById('txt_tgltempo').value,
-            curr_h: document.getElementById('matauang').value,
-            sub_h: document.getElementById('subtotal_h').value,
-            tax_h: document.getElementById('pajak_h').value,
-            dp_h: document.getElementById('ttl_dp_h').value,
-            pph_h: document.getElementById('pph_h').value,
-            total_h: document.getElementById('total_h').value,
-            create_user_h: create_user_h,
-            jml_return: document.getElementById('potongan_h').value,
-            lr_kurs: document.getElementById('labarugi').value,
-            s_qty: document.getElementById('selisihqty').value,
-            s_harga: document.getElementById('selisihharga').value,
-            materai: document.getElementById('materai').value,
-            pot_beli: document.getElementById('potongbeli').value,
-            ekspedisi: document.getElementById('ekspedisi').value,
-            moq: document.getElementById('moq').value,
-            jml_potong: document.getElementById('jml_potong').value,
-            potongan_ppn: document.getElementById('potongan_ppn') ? document.getElementById('potongan_ppn').value : 0,
-            potongan_pph: document.getElementById('potongan_pph') ? document.getElementById('potongan_pph').value : 0,
-            mattype: document.getElementById('h_mattype').value,
-            matclass: document.getElementById('h_matclass').value,
-            n_code_category: document.getElementById('h_code_ctg').value,
-            cus_ctg: document.getElementById('h_cus_ctg').value,
-            profit_center: $('select[name=profit_center] option').filter(':selected').val(),
-            ir_number: $('select[name=ir_number] option').filter(':selected').val(),
-            bank_account: $('select[name=sel_bank_account] option').filter(':selected').val(),
-            from_account: $('select[name=from_account] option').filter(':selected').val(),
-            from_bank: document.getElementById('from_bank') ? document.getElementById('from_bank').value : '',
-            from_bank_curr: document.getElementById('from_bank_curr') ? document.getElementById('from_bank_curr').value : '',
-            bpb_faktur_map: JSON.stringify(bpbFakturMap),
-            ret_faktur_map: JSON.stringify(retFakturMap)
-        };
-
-        // (1) bangun ulang set BPB temp dari yang ter-ceklis, lalu (2) simpan revisi + jurnal balik.
-        Swal.fire({ title:'Menyimpan...', allowOutsideClick:false, didOpen: function(){ Swal.showLoading(); } });
-        $.ajax({
-            type:'POST', url:'insert_bpb_kontrabon_edit.php', data:{ data: JSON.stringify(dataArr) },
-            success: function(){
-                $.ajax({
-                    type:'POST', url:'insert_kontrabon_edit_all.php', data: payload,
-                    success: function(response){
-                        localStorage.removeItem("profit_center");
-                        Swal.fire({ icon:'success', title:'Tersimpan', text: ('' + response).slice(0, 200) }).then(function(){
-                            window.location = 'payment-voucher-ap.php';
-                        });
-                    },
-                    error: function(xhr){ Swal.fire('Error', 'Gagal revisi: ' + (xhr.responseText || ''), 'error'); }
-                });
-            },
-            error: function(xhr){ Swal.fire('Error', 'Gagal simpan BPB: ' + (xhr.responseText || ''), 'error'); }
-        });
+        } 
     });
 
 
-    // Delegasi di document (paling robust) + redirect apapun hasilnya (.always), supaya
-    // tombol Back selalu membawa user kembali ke daftar PV walau revert temp gagal.
-    $(document).on("click", "#batal", function(){
+    $("#form-simpan").on("click", "#batal", function(){
         var no_kbon_h = document.getElementById('nokontrabon').value;
-        $.post('batal_edit_kontrabon.php', { no_kbon_h: no_kbon_h }).always(function(){
-            localStorage.removeItem("profit_center");
-            window.location = 'payment-voucher-ap.php';
-        });
+      
+            $.ajax({
+                type:'POST',
+                url:'batal_edit_kontrabon.php',
+                data: {'no_kbon_h':no_kbon_h},
+                cache: 'false',
+                close: function(e){
+                    e.preventDefault();
+                },
+                success: function(response){
+                    localStorage.removeItem("profit_center");
+                    window.location = 'payment-voucher-ap.php';
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(xhr);
+                    alert(xhr);
+                }
+            });  
+              
     });
 </script>
 

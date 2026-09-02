@@ -48,19 +48,6 @@ $from_account = mysqli_real_escape_string($conn2, isset($_POST['from_account']) 
 $from_bank = mysqli_real_escape_string($conn2, isset($_POST['from_bank']) ? $_POST['from_bank'] : '');
 $from_bank_curr = mysqli_real_escape_string($conn2, isset($_POST['from_bank_curr']) ? $_POST['from_bank_curr'] : '');
 
-// GUARD: 1 IR hanya boleh dipakai 1 PV aktif. Kalau IR ini sudah dipakai PV lain
-// (kontrabon_h) yang belum Cancel -> tolak total (belum ada yang di-insert).
-// IR baru bisa dipakai lagi setelah PV yang memakainya di-cancel.
-if ($ir_number !== null && $ir_number !== '' && $ir_number !== '-') {
-	$ire = mysqli_real_escape_string($conn2, $ir_number);
-	$chkIr = mysqli_query($conn2, "SELECT no_kbon FROM kontrabon_h WHERE ir_number = '$ire' AND status <> 'Cancel' LIMIT 1");
-	if ($chkIr && mysqli_num_rows($chkIr) > 0) {
-		$uKb = mysqli_fetch_assoc($chkIr);
-		echo 'IR_ALREADY_USED:' . ($uKb['no_kbon'] ?? '');
-		exit;
-	}
-}
-
 
 
 

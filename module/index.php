@@ -906,22 +906,21 @@ echo '
 <span class="menu-collapsed">Document Tracking</span>
 </a>
 <ul class="dropdown-menu bg-dark text-white" role="menu">';
-if(strpos($id2, '77') !== false){    
-    echo '<a href="AP/bpb_received.php" class="dropdown-item bg-dark text-white">
-    <span class="fa fa-share fa-fw "></span>
-    <span class="menu-collapsed">BPB Transferred</span>
-    </a>';
+// Document Handover = gabungan (tab) BPB Transferred + Invoice Received. Tampil
+// bila user punya akses salah satunya. Menu lama BPB Transferred & Invoice Received
+// DISEMBUNYIKAN dari sidebar (halaman aslinya tetap bisa diakses via link langsung).
+if(strpos($id2, '77') !== false || strpos($id, '66') !== false){
+  echo '<a href="AP/document_handover.php" class="dropdown-item text-white" style="background:#1e90ff;font-weight:600;">
+  <span class="fa fa-exchange fa-fw "></span>
+  <span class="menu-collapsed">Document Handover</span>
+  </a>';
 }
 
-if(strpos($id, '66') !== false){    
-    echo '<a href="AP/invoice_received.php" class="dropdown-item bg-dark text-white">
-    <span class="fa fa-share fa-fw "></span>
-    <span class="menu-collapsed">Invoice Received</span>
-    </a>
-    <a href="AP/report_invoice_received.php" class="dropdown-item bg-dark text-white">
-    <span class="fa fa-tags fa-fw "></span>
-    <span class="menu-collapsed">IR Report</span>
-    </a>';
+if(strpos($id, '66') !== false){
+  echo '<a href="AP/report_invoice_received.php" class="dropdown-item bg-dark text-white">
+  <span class="fa fa-tags fa-fw "></span>
+  <span class="menu-collapsed">IR Report</span>
+  </a>';
 }
 
 if(strpos($id3, '109') !== false){    
