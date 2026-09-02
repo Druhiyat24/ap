@@ -166,12 +166,25 @@ function fxSkCalcRevaluation($conn, $account, $startDate, $endDate) {
     // supaya tool ini tidak "memakan" hasil jurnalnya sendiri kalau
     // dijalankan ulang utk tanggal yang sama/berikutnya (insert-or-update
     // harus tetap idempotent).
-    $sqlTx = mysqli_query($conn, "select transaksi_date, debit, credit from b_reportbank
+    $sqlTx = mysqli_query($conn, "select transaksi_date, no_doc, debit, credit from b_reportbank
         where akun = '$accEsc' and status != 'Cancel' and no_doc not like 'FX/%' and transaksi_date <= '$edEsc'
         order by transaksi_date asc, id asc");
     $txByDate = [];
     while ($r = mysqli_fetch_assoc($sqlTx)) {
         $txByDate[$r['transaksi_date']][] = $r;
+    }
+
+    // Rate/nilai IDR per transaksi IKUT JURNAL (user bisa input rate MANUAL saat
+    // posting bank-out, beda dari masterrate PAJAK). Ambil debit_idr/credit_idr baris
+    // bank di tbl_list_journal (no_coa = COA bank akun ini) -> map per no_doc. Dipakai
+    // untuk nilai buku transaksi baru; fallback ke net*PAJAK bila jurnalnya belum ada.
+    $rowCoa = mysqli_fetch_assoc(mysqli_query($conn, "select id_coa from b_masterbank where bank_account = '$accEsc' limit 1"));
+    $bankCoa = $rowCoa ? $rowCoa['id_coa'] : '';
+    $jrnIdr = [];
+    if ($bankCoa !== '') {
+        $bcE = mysqli_real_escape_string($conn, $bankCoa);
+        $rj = mysqli_query($conn, "select no_journal, debit_idr, credit_idr from tbl_list_journal where no_coa = '$bcE' and status != 'Cancel'");
+        while ($x = mysqli_fetch_assoc($rj)) { $jrnIdr[$x['no_journal']] = (float) $x['debit_idr'] - (float) $x['credit_idr']; }
     }
 
     // Native SEBELUM start_date numpuk dulu (titik awal saldo buku cuma 1x
@@ -201,7 +214,12 @@ function fxSkCalcRevaluation($conn, $account, $startDate, $endDate) {
             foreach ($txByDate[$d] as $tx) {
                 $net = (float) $tx['debit'] - (float) $tx['credit'];
                 $runningNative += $net;
-                $bookIdr += $net * $pajakRate;
+                // Nilai buku transaksi = IDR jurnal (rate manual/asli); fallback net*PAJAK.
+                if (isset($jrnIdr[$tx['no_doc']])) {
+                    $bookIdr += $jrnIdr[$tx['no_doc']];
+                } else {
+                    $bookIdr += $net * $pajakRate;
+                }
             }
         }
 

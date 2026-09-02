@@ -168,9 +168,10 @@ $rowsaldo = mysqli_fetch_array($sqlsaldo);
 $salawal = isset($rowsaldo['amount']) ? $rowsaldo['amount'] : 0;
 $saldo_awal = isset($rowsaldo['amount']) ? $rowsaldo['amount'] : 0;
 
-$sqlxss2 = mysqli_query($conn1,"select curr  from b_masterbank where bank_account = '$accountid'");
+$sqlxss2 = mysqli_query($conn1,"select curr, id_coa  from b_masterbank where bank_account = '$accountid'");
 $rowxss2 = mysqli_fetch_array($sqlxss2);
 $curren1 = isset($rowxss2['curr']) ? $rowxss2['curr'] : null;
+$bank_coa = isset($rowxss2['id_coa']) ? $rowxss2['id_coa'] : '';  // COA bank utk ambil rate jurnal per transaksi
 
 
 // Baris penyesuaian selisih kurs (curr = IDR, dari auto jurnal selisih kurs)
@@ -339,9 +340,22 @@ FROM
         $debitIdr = (float) $row['orig_debit'];
         $creditIdr = (float) $row['orig_credit'];
     } else {
-        $sqlratespjk = mysqli_query($conn1,"select rate FROM masterrate where v_codecurr = 'PAJAK' and curr = '$curren1' and tanggal <= '".$row['date']."' order by tanggal desc limit 1");
-        $rowratespjk = mysqli_fetch_array($sqlratespjk);
-        $ratepjk = isset($rowratespjk['rate']) ? $rowratespjk['rate'] : 1;
+        // Rate IKUT JURNAL: ambil rate baris bank di tbl_list_journal (no_journal =
+        // no_doc, no_coa = COA bank). Ini yang benar karena user bisa input rate
+        // MANUAL saat posting (beda dari masterrate PAJAK). Fallback ke masterrate
+        // PAJAK hanya bila baris jurnalnya belum ada.
+        $ratepjk = null;
+        if ($bank_coa !== '') {
+            $docE = mysqli_real_escape_string($conn1, $row['doc_num']);
+            $bcE  = mysqli_real_escape_string($conn1, $bank_coa);
+            $rowrj = mysqli_fetch_array(mysqli_query($conn1, "select rate FROM tbl_list_journal where no_journal = '$docE' and no_coa = '$bcE' and status != 'Cancel' limit 1"));
+            if (isset($rowrj['rate']) && (float) $rowrj['rate'] > 0) $ratepjk = (float) $rowrj['rate'];
+        }
+        if ($ratepjk === null) {
+            $sqlratespjk = mysqli_query($conn1,"select rate FROM masterrate where v_codecurr = 'PAJAK' and curr = '$curren1' and tanggal <= '".$row['date']."' order by tanggal desc limit 1");
+            $rowratespjk = mysqli_fetch_array($sqlratespjk);
+            $ratepjk = isset($rowratespjk['rate']) ? $rowratespjk['rate'] : 1;
+        }
         $debitIdr = (float) $debit * $ratepjk;
         $creditIdr = (float) $credit * $ratepjk;
     }

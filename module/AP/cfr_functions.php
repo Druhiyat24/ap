@@ -494,20 +494,55 @@ function cfrComputeReportData($conn, $start_date, $end_date, $selectedAccounts =
     $akunList = implode(',', array_map(function ($acc) use ($conn) {
         return "'" . mysqli_real_escape_string($conn, $acc['account']) . "'";
     }, $accounts));
+
+    // Peta akun bank -> COA-nya (b_masterbank.id_coa) + rate JURNAL per dokumen.
+    // Untuk transaksi bank valas, IDR-nya HARUS ikut rate yang benar-benar dipakai
+    // saat posting ke GL (bisa rate MANUAL yang diinput user di bank-out), bukan
+    // di-derive ulang dari masterrate PAJAK - persis fix di bankreport.php. Rate
+    // diambil dari baris bank di tbl_list_journal (no_journal = no_doc transaksi,
+    // no_coa = COA bank). Kalau dokumen tak punya baris jurnal (mis. data legacy),
+    // fallback ke masterrate PAJAK di tanggal transaksi (perilaku lama).
+    $bankCoaMap = [];
+    $qCoa = mysqli_query($conn, "select bank_account, id_coa from b_masterbank where bank_account in ($akunList)");
+    while ($rc = mysqli_fetch_assoc($qCoa)) {
+        if ($rc['id_coa'] !== null && $rc['id_coa'] !== '') $bankCoaMap[$rc['bank_account']] = $rc['id_coa'];
+    }
+    $jrnRate = []; // [no_coa][no_journal] => rate
+    if (!empty($bankCoaMap)) {
+        $coaList = implode(',', array_map(function ($c) use ($conn) {
+            return "'" . mysqli_real_escape_string($conn, $c) . "'";
+        }, array_unique(array_values($bankCoaMap))));
+        $qj = mysqli_query($conn, "select no_journal, no_coa, rate from tbl_list_journal where no_coa in ($coaList) and status != 'Cancel'");
+        while ($rj = mysqli_fetch_assoc($qj)) {
+            $jrnRate[$rj['no_coa']][$rj['no_journal']] = (float) $rj['rate'];
+        }
+    }
+
     // curr diambil per BARIS (bukan curr akun) - baris penyesuaian selisih kurs
     // (dari auto-jurnal-selisih-kurs) punya curr='IDR' walau akunnya sendiri USD,
     // nilainya SUDAH dalam IDR jadi rate=1 (jangan dikonversi PAJAK lagi, dobel
-    // konversi -> nilainya bisa meledak jadi ratusan miliar salah).
-    $sqlReal = mysqli_query($conn, "select id_cash_flow, akun, curr, transaksi_date, debit, credit from (
-        select id_cash_flow, akun, curr, transaksi_date, debit, credit from b_reportbank where status != 'Cancel' and transaksi_date between '$start_date' and '$end_date' and id_cash_flow is not null and akun in ($akunList)
+    // konversi -> nilainya bisa meledak jadi ratusan miliar salah). no_doc dipakai
+    // buat nyari rate jurnal per dokumen (lihat $jrnRate di atas).
+    $sqlReal = mysqli_query($conn, "select id_cash_flow, akun, curr, transaksi_date, no_doc, debit, credit from (
+        select id_cash_flow, akun, curr, transaksi_date, no_doc, debit, credit from b_reportbank where status != 'Cancel' and transaksi_date between '$start_date' and '$end_date' and id_cash_flow is not null and akun in ($akunList)
         union all
-        select id_cash_flow, akun, curr, transaksi_date, debit, credit from c_report_pettycash where status != 'Cancel' and transaksi_date between '$start_date' and '$end_date' and id_cash_flow is not null and akun in ($akunList)
+        select id_cash_flow, akun, curr, transaksi_date, no_doc, debit, credit from c_report_pettycash where status != 'Cancel' and transaksi_date between '$start_date' and '$end_date' and id_cash_flow is not null and akun in ($akunList)
     ) x");
     $realisasi = [];
     while ($r = mysqli_fetch_assoc($sqlReal)) {
         $akun = $r['akun'];
         $idCf = $r['id_cash_flow'];
-        $rate = ($r['curr'] === 'IDR') ? 1 : cfrGetRate($conn, $r['transaksi_date'], 'PAJAK');
+        if ($r['curr'] === 'IDR') {
+            $rate = 1;
+        } else {
+            // Rate jurnal (bisa manual) diprioritaskan; fallback masterrate PAJAK.
+            $coa = isset($bankCoaMap[$akun]) ? $bankCoaMap[$akun] : '';
+            if ($coa !== '' && isset($jrnRate[$coa][$r['no_doc']]) && $jrnRate[$coa][$r['no_doc']] > 0) {
+                $rate = $jrnRate[$coa][$r['no_doc']];
+            } else {
+                $rate = cfrGetRate($conn, $r['transaksi_date'], 'PAJAK');
+            }
+        }
         if (!isset($realisasi[$idCf][$akun])) {
             $realisasi[$idCf][$akun] = ['debit' => 0.0, 'credit' => 0.0];
         }
