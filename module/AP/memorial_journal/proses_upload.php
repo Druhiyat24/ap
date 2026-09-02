@@ -58,9 +58,15 @@ try {
         $row_pc = mysqli_fetch_array($sql_pc);
         $kode_pc = $row_pc['kode_pc'];
 
-        $sql_rate = mysqli_query($conn2,"select TRIM(TRAILING '.' FROM TRIM(TRAILING '0' FROM rate)) rate from ap_masterrate where tanggal = '$tgl_journal' and v_codecurr = 'PAJAK' and curr = '$curr'");
-        $row_rate = mysqli_fetch_array($sql_rate);
-        $rate = $row_rate['rate'] ?? '1';
+        // Baris IDR: rate SELALU 1, jangan cari ke masterrate (nilai sudah IDR).
+        // Kalau tidak dikunci, baris IDR ikut dikali kurs -> nilai IDR meledak.
+        if (strtoupper(trim($curr)) === 'IDR') {
+            $rate = 1;
+        } else {
+            $sql_rate = mysqli_query($conn2,"select TRIM(TRAILING '.' FROM TRIM(TRAILING '0' FROM rate)) rate from ap_masterrate where tanggal = '$tgl_journal' and v_codecurr = 'PAJAK' and curr = '$curr'");
+            $row_rate = mysqli_fetch_array($sql_rate);
+            $rate = $row_rate['rate'] ?? '1';
+        }
 
         $debit_idr = $debit * $rate;
         $credit_idr = $credit * $rate;

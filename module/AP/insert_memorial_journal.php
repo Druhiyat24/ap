@@ -21,6 +21,11 @@ $curr = $_POST['curr'];
 $rate = $_POST['rate'];
 $debit = $_POST['debit'];
 $credit =$_POST['credit'];
+// Baris IDR tidak boleh dikali kurs - form mengirim 1 rate global (#rate_mj) untuk
+// SEMUA baris, jadi baris IDR ikut terkirim rate USD. Paksa rate=1 di sini supaya
+// debit_idr/credit_idr baris IDR = nominal asli (kalau tidak, nilai IDR meledak
+// ratusan miliar - lihat total di ajax_mj.php yang cuma menjumlah kolom ini).
+if (strtoupper(trim($curr)) === 'IDR') { $rate = 1; }
 $debit_idr = $debit * $rate;
 $credit_idr = $credit * $rate;
 $keterangan = $_POST['keterangan'];

@@ -145,6 +145,12 @@ try {
             $credit_idr = $r['credit_idr'];
             $debit_i = $r['debit'];
             $debit_idr = $r['debit_idr'];
+            // Guard: baris IDR wajib rate=1 & IDR = nominal asli (jangan kena kurs).
+            if (strtoupper(trim($curr_i)) === 'IDR') {
+                $rate_det = 1;
+                $debit_idr = $debit_i;
+                $credit_idr = $credit_i;
+            }
             $ket_i = $r['keterangan'];
             $pc_i = $r['kode_pc'];
             $mj_type = $r['id_cmj'];

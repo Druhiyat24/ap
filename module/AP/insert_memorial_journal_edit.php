@@ -17,6 +17,8 @@ $curr = $_POST['curr'];
 $rate = $_POST['rate'];
 $debit = $_POST['debit'];
 $credit =$_POST['credit'];
+// Baris IDR tidak boleh dikali kurs (form kirim 1 rate global utk semua baris).
+if (strtoupper(trim($curr)) === 'IDR') { $rate = 1; }
 $debit_idr = $debit * $rate;
 $credit_idr = $credit * $rate;
 $keterangan = $_POST['keterangan'];
