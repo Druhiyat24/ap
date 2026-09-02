@@ -171,7 +171,9 @@ $decFlag  = ($type === 'bpb') ? 'dec_bpb' : 'dec';
             $c_apch = $cnt("select COUNT(doc_number) from ir_invoice_supp_h where status = 'Accepted Pch'");
             $c_fin  = $cnt("select COUNT(doc_number) from ir_invoice_supp_h where status = 'Post Pch To Fin'");
             $bdg = function ($n) { return ' <span class="badge bg-danger text-white" style="font-size:10px">' . $n . '</span>'; };
-            if ($ids[1] == '67') echo '<button id="btncreate" type="button" class="btn-primary btn-xs" data-href="create_invoice_received.php"><span class="fa fa-pencil-square-o"></span> Invoice received</button> ';
+            // Tombol "Invoice received" di-hide karena sudah ada menu Invoice Received
+            // baru (kontrabon_new.php). Pembuatan IR dilakukan dari menu itu.
+            // if ($ids[1] == '67') echo '<button id="btncreate" type="button" class="btn-primary btn-xs" data-href="create_invoice_received.php"><span class="fa fa-pencil-square-o"></span> Invoice received</button> ';
             if ($ids[2] == '68') echo '<button type="button" class="btn-info btn-xs" data-href="post_inv_fintoacc.php"><span class="fa fa-paper-plane"></span> Post Fin-Acc' . $bdg($c_recv) . '</button> ';
             if ($ids[3] == '69') echo '<button type="button" class="btn-success btn-xs" data-href="form_approve_acc.php"><span class="fa fa-thumbs-up"></span> Accept Acc' . $bdg($c_acc) . '</button> ';
             if ($ids[4] == '70') echo '<button type="button" class="btn-info btn-xs" data-href="post_inv_acctopch.php"><span class="fa fa-paper-plane"></span> Post Acc-Pch' . $bdg($c_rec2) . '</button> ';

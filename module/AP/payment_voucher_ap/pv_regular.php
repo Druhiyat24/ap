@@ -293,7 +293,13 @@
                             <?php
                             $ir_number = isset($_POST['ir_number']) ? $_POST['ir_number']: null; 
                             $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;              
-                            $sql = mysqli_query($conn1,"select doc_number, nama_supp, total_amount from ir_invoice_supp_h where status != 'Cancel' and nama_supp = '$nama_supp'");
+                            // Hanya IR yang BELUM dipakai PV aktif. IR yang sudah di-save ke
+                            // Payment Voucher (kontrabon_h non-Cancel) disembunyikan; muncul lagi
+                            // kalau PV-nya di-cancel.
+                            $sql = mysqli_query($conn1,"select doc_number, nama_supp, total_amount from ir_invoice_supp_h
+                                where status != 'Cancel' and nama_supp = '$nama_supp'
+                                and doc_number NOT IN (select ir_number from kontrabon_h
+                                    where status <> 'Cancel' and ir_number is not null and ir_number <> '' and ir_number <> '-')");
                             while ($row = mysqli_fetch_array($sql)) {
                                 $data = $row['doc_number'];
                                 if($row['doc_number'] == $ir_number ){
@@ -1246,6 +1252,39 @@ $(document).on('change', '#from_account', function () {
     } );
 
     $(document).ready(function () {
+        // Tambah kolom input No Faktur & Tgl Faktur di UJUNG tabel BPB (index baru,
+        // tidak menggeser td:eq(...) yang sudah dipakai kode lain). Inject SEBELUM
+        // DataTable init supaya jumlah kolom thead & tbody konsisten.
+        (function () {
+            // datalist bersama utk saran No Faktur (diisi dari faktur milik IR terpilih).
+            if (!document.getElementById('fkOptions')) { $('body').append('<datalist id="fkOptions"></datalist>'); }
+            var $head = $('#mytable thead tr');
+            if ($head.find('th.fk-head').length === 0) {
+                $head.append('<th class="fk-head" style="min-width:150px;">No Faktur</th><th class="fk-head" style="min-width:120px;">Tgl Faktur</th>');
+            }
+            $('#mytable tbody tr').each(function () {
+                if ($(this).find('td.fk-cell').length > 0) return;
+                if ($(this).find('td').length < 2) return; // lewati baris "No data"
+                $(this).append(
+                    '<td class="fk-cell"><input type="text" class="fk-no form-control form-control-sm" list="fkOptions" placeholder="required" style="min-width:150px;font-size:12px;"></td>' +
+                    '<td class="fk-cell"><input type="date" class="fk-tgl form-control form-control-sm" style="min-width:150px;font-size:12px;"></td>'
+                );
+            });
+            // Kolom No Faktur/Tgl Faktur juga di tabel RETUR (#mytable1) -> disimpan ke bppb_new.
+            var $head1 = $('#mytable1 thead tr');
+            if ($head1.find('th.fk-head').length === 0) {
+                $head1.append('<th class="fk-head" style="min-width:150px;">No Faktur</th><th class="fk-head" style="min-width:120px;">Tgl Faktur</th>');
+            }
+            $('#mytable1 tbody tr').each(function () {
+                if ($(this).find('td.fk-cell').length > 0) return;
+                if ($(this).find('td').length < 2) return; // lewati baris "No data"
+                $(this).append(
+                    '<td class="fk-cell"><input type="text" class="fk-no form-control form-control-sm" list="fkOptions" placeholder="required" style="min-width:150px;font-size:12px;"></td>' +
+                    '<td class="fk-cell"><input type="date" class="fk-tgl form-control form-control-sm" style="min-width:150px;font-size:12px;"></td>'
+                );
+            });
+        })();
+
         $('#mytable').DataTable({
             paging: false,
             searching: true,
@@ -1933,7 +1972,73 @@ if (!processedPO.includes(po)) {
 </script>
 
 <script type="text/javascript">
+    // Kirim PV secara bulk (1 request, 1 transaksi di server). Dipisah jadi fungsi
+    // supaya tombol "Try Again" di dialog gagal bisa memanggil ulang TANPA user harus
+    // ceklis BPB lagi — kalau gagal, server rollback total & form tidak berubah.
+    // #simpan dikunci selama request (cegah dobel-klik / dobel-PV).
+    function submitBulkPV(headerData, items){
+        $('#simpan').prop('disabled', true);
+        $.ajax({
+            type:'POST',
+            url:'insertkbon_bulk.php',
+            dataType:'json',
+            data: { header: JSON.stringify(headerData), items: JSON.stringify(items) },
+            cache: false,
+            success: function(res){
+                if (res && res.code === 'IR_ALREADY_USED') {
+                    $('#simpan').prop('disabled', false);
+                    Swal.fire({ icon: 'error', title: 'Invoice Received already used',
+                        html: 'This IR has already been used in another Payment Voucher' + (res.no_kbon ? ' (<b>' + res.no_kbon + '</b>)' : '') + '.<br>Cancel that PV first, or choose another IR.' });
+                    return;
+                }
+                if (!res || !res.ok) {
+                    $('#simpan').prop('disabled', false);
+                    Swal.fire({ icon: 'error', title: 'Save failed — nothing was saved',
+                        html: (res && res.msg ? res.msg : 'Save failed.') + (res && res.failed && res.failed.length ? '<br><small>Rows: ' + res.failed.join(', ') + '</small>' : '') + '<br><small>Your checked BPB are still here — click <b>Try Again</b> to resubmit (no need to re-check).</small>',
+                        showCancelButton: true, confirmButtonText: 'Try Again', cancelButtonText: 'Close', confirmButtonColor: '#1E3A8A' })
+                        .then(function(r){ if (r.isConfirmed) submitBulkPV(headerData, items); });
+                    return;
+                }
+                localStorage.removeItem("profit_center");
+                Swal.fire({icon:'success', title:'Data Saved Successfully', html: (res.no_kbon ? ('Payment Voucher: <b>' + res.no_kbon + '</b>') : ''), timer:5000, showConfirmButton:true, confirmButtonText:'OK'})
+                    .then(function(){ window.location = 'payment-voucher-ap.php'; });
+            },
+            error: function (xhr) {
+                $('#simpan').prop('disabled', false);
+                console.log(xhr);
+                Swal.fire({ icon: 'error', title: 'Server error — nothing was saved',
+                    html: 'Nothing was saved (rolled back). Your checked BPB are still here — click <b>Try Again</b> to resubmit (no need to re-check).',
+                    showCancelButton: true, confirmButtonText: 'Try Again', cancelButtonText: 'Close', confirmButtonColor: '#1E3A8A' })
+                    .then(function(r){ if (r.isConfirmed) submitBulkPV(headerData, items); });
+            }
+        });
+    }
+
     $("#form-simpan").on("click", "#simpan", function(){
+        // WAJIB: tiap BPB yang diceklis harus punya No Faktur & Tgl Faktur (boleh "-").
+        var fkMissing = [];
+        $('#mytable tbody tr').each(function () {
+            var $tr = $(this);
+            if (!$tr.find('input.chkA[type=checkbox]').prop('checked')) return;
+            var nob = ($tr.find('td:eq(1)').attr('value') || '').trim();
+            var fn = $.trim($tr.find('.fk-no').val() || '');
+            var ft = $.trim($tr.find('.fk-tgl').val() || '');
+            var fnBad = (fn === '');
+            var ftBad = (fn !== '' && fn !== '-' && ft === ''); // Tgl wajib hanya bila No Faktur berisi nomor nyata
+            $tr.find('.fk-no').css('border-color', fnBad ? '#dc2626' : '');
+            $tr.find('.fk-tgl').css('border-color', ftBad ? '#dc2626' : '');
+            if (fnBad || ftBad) fkMissing.push(nob || '(BPB)');
+        });
+        if (fkMissing.length > 0) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'warning', title: 'No Faktur / Tgl Faktur is required',
+                    html: 'Please provide the <b>No Faktur</b> and <b>Tgl Faktur</b> for the following BPB (a dash "-" is allowed):<br><br>' + fkMissing.join('<br>') });
+            } else {
+                alert('No Faktur / Tgl Faktur is required for the following BPB: ' + fkMissing.join(', '));
+            }
+            return;
+        }
+
         var no_kbon_h = document.getElementById('nokontrabon').value;
         var unik_code = document.getElementById('unik_code').value;
         var tgl_kbon_h = document.getElementById('tanggal').value;
@@ -1975,17 +2080,10 @@ if (!processedPO.includes(po)) {
         var from_bank_curr = document.getElementById('from_bank_curr').value;
         //&& tgl_kbon_h >= tgl_kbon_p
         if(total_h != '' && total_h >= 0 && ir_number != '' && bank_account != '' && profit_center != '' && from_account != ''){
-            $.ajax({
-                type:'POST',
-                url:'insertkbon_h_pv_regular.php',
-                data: {'no_kbon_h':no_kbon_h, 'tgl_kbon_h':tgl_kbon_h,'nama_supp_h':nama_supp_h, 'no_faktur_h':no_faktur_h, 'supp_inv_h':supp_inv_h, 'tgl_inv_h':tgl_inv_h, 'tgl_tempo_h':tgl_tempo_h, 'curr_h':curr_h, 'create_user_h':create_user_h, 'sub_h':sub_h, 'tax_h':tax_h, 'dp_h':dp_h, 'pph_h':pph_h, 'total_h':total_h, 'jml_return':jml_return, 'lr_kurs':lr_kurs, 's_qty':s_qty, 's_harga':s_harga, 'materai':materai, 'pot_beli':pot_beli, 'ekspedisi':ekspedisi, 'moq':moq, 'jml_potong':jml_potong, 'potongan_ppn':potongan_ppn, 'potongan_pph':potongan_pph, 'no_po_h':no_po_h, 'tgl_kbon_s':tgl_kbon_s, 'unik_code':unik_code, 'mattype':mattype, 'matclass':matclass, 'n_code_category':n_code_category, 'cus_ctg':cus_ctg, 'profit_center':profit_center, 'ir_number':ir_number, 'bank_account':bank_account, 'from_account':from_account, 'from_bank':from_bank, 'from_bank_curr':from_bank_curr},
-                cache: 'false',
-                close: function(e){
-                    e.preventDefault();
-                },
-                success: function(response){
-                    localStorage.removeItem("profit_center");
-                    $("#form-simpan input[type=checkbox]:checked").each(function () {
+            var headerData = {'no_kbon_h':no_kbon_h, 'tgl_kbon_h':tgl_kbon_h,'nama_supp_h':nama_supp_h, 'no_faktur_h':no_faktur_h, 'supp_inv_h':supp_inv_h, 'tgl_inv_h':tgl_inv_h, 'tgl_tempo_h':tgl_tempo_h, 'curr_h':curr_h, 'create_user_h':create_user_h, 'sub_h':sub_h, 'tax_h':tax_h, 'dp_h':dp_h, 'pph_h':pph_h, 'total_h':total_h, 'jml_return':jml_return, 'lr_kurs':lr_kurs, 's_qty':s_qty, 's_harga':s_harga, 'materai':materai, 'pot_beli':pot_beli, 'ekspedisi':ekspedisi, 'moq':moq, 'jml_potong':jml_potong, 'potongan_ppn':potongan_ppn, 'potongan_pph':potongan_pph, 'no_po_h':no_po_h, 'tgl_kbon_s':tgl_kbon_s, 'unik_code':unik_code, 'mattype':mattype, 'matclass':matclass, 'n_code_category':n_code_category, 'cus_ctg':cus_ctg, 'profit_center':profit_center, 'ir_number':ir_number, 'bank_account':bank_account, 'from_account':from_account, 'from_bank':from_bank, 'from_bank_curr':from_bank_curr};
+
+            var items = [];
+            $("#form-simpan input[type=checkbox]:checked").each(function () {
                         //header
                         var no_kbon = document.getElementById('nokontrabon').value; 
                         var unik_code = document.getElementById('unik_code').value;       
@@ -2007,6 +2105,16 @@ if (!processedPO.includes(po)) {
                         var create_user = '<?php echo $user; ?>';
                         //table bpb                               
                         var no_bpb = $(this).closest('#mytable tr').find('td:eq(1)').attr('value');
+                        // No Faktur & Tgl Faktur dari input (auto-fill IR / manual). Baris BPB
+                        // yang diceklis wajib minimal "-".
+                        var no_faktur_in = '', tgl_faktur_in = '';
+                        // Baris BPB (#mytable) atau baris RETUR (#mytable1) — ambil fk dari mana pun row-nya.
+                        var $fkRow = $(this).closest('#mytable tr');
+                        if ($fkRow.length === 0) $fkRow = $(this).closest('#mytable1 tr');
+                        if ($fkRow.length) {
+                            no_faktur_in = $.trim($fkRow.find('.fk-no').val() || '');
+                            tgl_faktur_in = $.trim($fkRow.find('.fk-tgl').val() || '');
+                        }
                         var no_po = $(this).closest('#mytable tr').find('td:eq(2)').attr('value');
                         var tgl_bpb = $(this).closest('#mytable tr').find('td:eq(3)').attr('value');
                         var price = parseFloat($(this).closest('#mytable tr').find('td:eq(4)').attr('data-subtotal'),10) ||0;
@@ -2051,39 +2159,19 @@ if (!processedPO.includes(po)) {
                         sum_pph += sum_sub * (pph / 100);   
                         sum_total += total - sum_pph - sum_dp;
         // && tgl_kbon >= tgl_kbon_p
-        if(total != '' && total >= 0){     
-            $.ajax({
-                type:'POST',
-                url:'insertkbon.php',
-                data: {'no_kbon':no_kbon, 'tgl_kbon':tgl_kbon, 'jurnal':jurnal, 'no_bpb':no_bpb, 'no_po':no_po,  'no_ro':no_ro,
+        if(total != '' && total >= 0){
+            items.push({'no_kbon':no_kbon, 'tgl_kbon':tgl_kbon, 'jurnal':jurnal, 'no_bpb':no_bpb, 'no_po':no_po,  'no_ro':no_ro,
                 'nama_supp':nama_supp, 'tgl_bpb':tgl_bpb, 'no_faktur':no_faktur, 'supp_inv':supp_inv, 'tgl_inv':tgl_inv, 'tgl_tempo':tgl_tempo,
-                'curr':curr, 'ceklist':ceklist, 'cash':cash, 'create_user':create_user, 'sum_sub':sum_sub, 'sum_tax':sum_tax, 'sum_dp':sum_dp, 'sum_pph':sum_pph, 'sum_total':sum_total, 'start_date':start_date, 'end_date':end_date, 'pph':pph, 'idtax':idtax, 'tgl_po':tgl_po, 'ttl_ro':ttl_ro, 'no_bppb':no_bppb, 'unik_code':unik_code, 'mattype':mattype, 'matclass':matclass, 'n_code_category':n_code_category, 'cus_ctg':cus_ctg, 'no_ftr':no_ftr, 'no_po_ftr':no_po_ftr, 'tgl_po_ftr':tgl_po_ftr, 'no_pi_ftr':no_pi_ftr, 'ttl_ftr':ttl_ftr, 'curr_ftr':curr_ftr, 'kbon_ftr':kbon_ftr, 'tglkbon_ftr':tglkbon_ftr, 'lp_ftr':lp_ftr, 'tgllp_ftr':tgllp_ftr, 'pv_ftr':pv_ftr, 'bankout_ftr':bankout_ftr, 'bankoutdate_ftr':bankoutdate_ftr, 'coa_ftr':coa_ftr, 'profit_center':profit_center},
-                cache: 'false',
-                close: function(e){
-                    e.preventDefault();
-                },
-                success: function(response){
-                    console.log(response);
-                  // alert(response);
-              },
-              error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                Swal.fire('Error', xhr.responseText, 'error');
-            }
-        });
+                'curr':curr, 'ceklist':ceklist, 'cash':cash, 'create_user':create_user, 'sum_sub':sum_sub, 'sum_tax':sum_tax, 'sum_dp':sum_dp, 'sum_pph':sum_pph, 'sum_total':sum_total, 'start_date':start_date, 'end_date':end_date, 'pph':pph, 'idtax':idtax, 'tgl_po':tgl_po, 'ttl_ro':ttl_ro, 'no_bppb':no_bppb, 'unik_code':unik_code, 'mattype':mattype, 'matclass':matclass, 'n_code_category':n_code_category, 'cus_ctg':cus_ctg, 'no_ftr':no_ftr, 'no_po_ftr':no_po_ftr, 'tgl_po_ftr':tgl_po_ftr, 'no_pi_ftr':no_pi_ftr, 'ttl_ftr':ttl_ftr, 'curr_ftr':curr_ftr, 'kbon_ftr':kbon_ftr, 'tglkbon_ftr':tglkbon_ftr, 'lp_ftr':lp_ftr, 'tgllp_ftr':tgllp_ftr, 'pv_ftr':pv_ftr, 'bankout_ftr':bankout_ftr, 'bankoutdate_ftr':bankoutdate_ftr, 'coa_ftr':coa_ftr, 'profit_center':profit_center, 'ir_number':ir_number, 'no_faktur_in':no_faktur_in, 'tgl_faktur_in':tgl_faktur_in});
             // console.log(data);
         }
     });
-console.log(response);
-Swal.fire({icon: 'success', title: 'Data Saved Successfully', text: response, timer: 5000, showConfirmButton: true, confirmButtonText: 'OK'}).then(function(){
-window.location = 'payment-voucher-ap.php';
-});
-},
-error: function (xhr, ajaxOptions, thrownError) {
-    console.log(xhr);
-    Swal.fire('Error', xhr.responseText, 'error');
-}
-});
+
+    // ===== KIRIM SEKALI: bulk 1-transaksi (all-or-nothing) =====
+    // Header + SEMUA BPB/RO masuk 1 request. Server commit hanya kalau semua sukses;
+    // kalau ada yang gagal / proses mati -> rollback total (tidak ada PV setengah jadi).
+    // Kalau gagal, dialog menyediakan "Try Again" -> submit ulang tanpa ceklis lagi.
+    submitBulkPV(headerData, items);
 }
 
         // else if (document.getElementById('tanggal').value < document.getElementById('tgl_perhitungan').value){
@@ -2145,7 +2233,126 @@ error: function (xhr, ajaxOptions, thrownError) {
         $('#txt_curr').html('Currency : ' + curr + '');        
         $('#txt_confirm').html('Confirm By (GMF) : ' + confirm + '');
         $('#txt_confirm2').html('Confirm By (PCH) : ' + confirm2 + '');
-        $('#txt_tgl_po').html('Tgl PO : ' + tgl_po + '');                         
+        $('#txt_tgl_po').html('Tgl PO : ' + tgl_po + '');
     });
 
+</script>
+
+<script type="text/javascript">
+// ============================================================================
+// AUTO-CEKLIS BPB (+ RO/retur) saat Invoice Received Number dipilih.
+// Daftar BPB milik IR diambil dari ir_kontrabon_bpb (via ir_kontrabon_h.doc_number).
+//   #mytable  = tabel BPB   -> NO BPB di td:eq(1) attr "value",  checkbox .chkA
+//   #mytable1 = tabel RO    -> NO BPB di td:eq(4) attr "valuess", checkbox .chkB
+// Ceklis di-reset dulu supaya set-nya persis sesuai IR yang dipilih, lalu
+// trigger 'change' (sama seperti klik manual) agar Total BPB terhitung ulang.
+// ============================================================================
+$(document).on('change', '#ir_number', function () {
+    var ir = $(this).val();
+
+    // Selalu re-enable + reset dulu (supaya ganti/clear IR bersih).
+    $('#mytable  input.chkA[type=checkbox]').prop('disabled', false).prop('checked', false).removeAttr('title');
+    $('#mytable1 input.chkB[type=checkbox]').prop('disabled', false).prop('checked', false).removeAttr('title');
+    $('#mytable .fk-no, #mytable .fk-tgl, #mytable1 .fk-no, #mytable1 .fk-tgl').prop('disabled', false).val('').css('border-color', ''); // buka kunci + kosongkan (BPB + RO)
+    $('#fkOptions').empty(); window.irFakturMap = {}; // reset saran No Faktur
+
+    if (!ir || ir === '-' || ir === '') {
+        $('#form-simpan input[id=select]').first().trigger('change'); // recalc -> 0, kembali bisa manual
+        return;
+    }
+
+    $.post('ajx_pv_ir_bpb.php', { ir_number: ir }, function (res) {
+        if (!res || !res.ok) { return; }
+        var set = {};
+        (res.bpb || []).forEach(function (b) { set[String(b).trim()] = true; });
+        var totalIr = Object.keys(set).length;
+        var found = 0;
+
+        // Saran No Faktur (datalist) dari SEMUA faktur milik IR + map utk auto-isi Tgl
+        // saat user memilih salah satu faktur di BPB tambahan (tetap boleh ketik lain).
+        window.irFakturMap = {};
+        var _opts = '';
+        (res.faktur_list || []).forEach(function (f) {
+            var n = String(f.no_faktur || '').trim();
+            if (n) { _opts += '<option value="' + n.replace(/"/g, '&quot;') + '"></option>'; window.irFakturMap[n] = f.tgl_faktur || ''; }
+        });
+        $('#fkOptions').html(_opts);
+
+        var fakMap = res.faktur || {};
+        // Ceklis BPB milik IR ini + isi No Faktur / Tgl Faktur (tetap boleh diedit manual).
+        $('#mytable tbody tr').each(function () {
+            var $tr = $(this);
+            var nob = ($tr.find('td:eq(1)').attr('value') || '').trim();
+            if (set[nob]) {
+                var fk = fakMap[nob] || {};
+                // Nilai yang datang dari IR -> diisi & DIKUNCI (disabled, tak bisa diubah).
+                // Kalau IR tak menyediakan -> biarkan kosong & tetap bisa diisi manual.
+                if (fk.no_faktur) { $tr.find('.fk-no').val(fk.no_faktur).prop('disabled', true); }
+                else { $tr.find('.fk-no').val('').prop('disabled', false); }
+                if (fk.tgl_faktur) { $tr.find('.fk-tgl').val(fk.tgl_faktur).prop('disabled', true); }
+                else { $tr.find('.fk-tgl').val('').prop('disabled', false); }
+                var cb = $tr.find('input.chkA[type=checkbox]');
+                if (cb.length && !cb.prop('checked')) { cb.prop('checked', true).trigger('change'); }
+                found++;
+            }
+        });
+
+        // Ceklis RO/retur + isi No/Tgl Faktur. RO SUDAH tersimpan di IR dengan NOMOR
+        // RO-nya sendiri (No BPPB, td:eq(2)) — jadi map langsung by nomor RO itu.
+        $('#mytable1 tbody tr').each(function () {
+            var $tr = $(this);
+            var nob = ($tr.find('td:eq(2)').attr('valuess') || '').trim();
+            if (set[nob]) {
+                var fk = fakMap[nob] || {};
+                if (fk.no_faktur) { $tr.find('.fk-no').val(fk.no_faktur).prop('disabled', true); }
+                else { $tr.find('.fk-no').val('').prop('disabled', false); }
+                if (fk.tgl_faktur) { $tr.find('.fk-tgl').val(fk.tgl_faktur).prop('disabled', true); }
+                else { $tr.find('.fk-tgl').val('').prop('disabled', false); }
+                var cb = $tr.find('input.chkB[type=checkbox]');
+                if (cb.length && !cb.prop('checked')) { cb.prop('checked', true).trigger('change'); }
+            }
+        });
+
+        // Recalc final.
+        $('#form-simpan input[id=select]').first().trigger('change');
+
+        // KUNCI: selama IR terpilih, semua checkbox BPB & RO tidak bisa diubah
+        // (tidak bisa di-uncheck, juga tidak bisa nambah baris lain). Set-nya
+        // sepenuhnya ditentukan oleh IR. Clear IR (pilih '-') utk buka kunci.
+        // Kunci HANYA baris yang ter-ceklis dari IR; yang tidak terceklis biar aktif
+        // supaya user bisa menambah BPB lain manual.
+        $('#mytable  input.chkA[type=checkbox]:checked').prop('disabled', true).attr('title', 'From selected IR — locked. Clear the IR to edit.');
+        $('#mytable1 input.chkB[type=checkbox]:checked').prop('disabled', true).attr('title', 'From selected IR — locked. Clear the IR to edit.');
+
+        // Info kalau ada BPB IR yang tidak tampil (mis. di luar filter tanggal/PC).
+        if (totalIr > 0 && found < totalIr && typeof Swal !== 'undefined') {
+            Swal.fire({
+                toast: true, position: 'top-end', icon: 'info',
+                title: found + ' of ' + totalIr + ' BPB checked',
+                text: 'Some BPB in this IR are not shown — check the Supplier / date filter.',
+                showConfirmButton: false, timer: 4500, timerProgressBar: true
+            });
+        } else if (totalIr === 0 && typeof Swal !== 'undefined') {
+            Swal.fire({
+                toast: true, position: 'top-end', icon: 'warning',
+                title: 'No BPB linked to this IR',
+                text: 'This IR has no BPB from the kontrabon flow.',
+                showConfirmButton: false, timer: 4000, timerProgressBar: true
+            });
+        }
+    }, 'json');
+});
+
+// Saat user memilih / mengetik No Faktur pada BPB tambahan dan nilainya COCOK dengan
+// salah satu faktur milik IR -> auto-isi Tgl Faktur baris itu (hanya kalau editable).
+$(document).on('input change', '#mytable input.fk-no', function () {
+    var v = $.trim($(this).val() || '');
+    if (window.irFakturMap && Object.prototype.hasOwnProperty.call(window.irFakturMap, v) && window.irFakturMap[v]) {
+        var $tgl = $(this).closest('tr').find('.fk-tgl');
+        if (!$tgl.prop('disabled')) { $tgl.val(window.irFakturMap[v]).css('border-color', ''); }
+    }
+});
+
+// Catatan: BPB yang ditambah manual dibiarkan No Faktur/Tgl Faktur KOSONG dulu,
+// tapi WAJIB diisi sebelum save (boleh "-"). Validasinya ada di handler #simpan.
 </script>

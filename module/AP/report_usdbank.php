@@ -60,7 +60,7 @@
     // Kurs Saldo Awal (Beginning Balance) = HARIAN, di tanggal SEBELUM
     // start_date (rate HARIAN terdekat yang tersedia sebelum start_date) -
     // persis bankreport.php, bukan PAJAK exact-match seperti sebelumnya.
-    $sqlrates = mysqli_query($conn1,"select rate FROM masterrate where v_codecurr = 'HARIAN' and tanggal < '$start_date2' order by tanggal desc limit 1");
+    $sqlrates = mysqli_query($conn1,"select rate FROM masterrate where v_codecurr = 'HARIAN' and curr = '$curren1' and tanggal < '$start_date2' order by tanggal desc limit 1");
     $rowrates = mysqli_fetch_array($sqlrates);
     $rates = isset($rowrates['rate']) ? $rowrates['rate'] : 1;
 
@@ -141,7 +141,7 @@
 
      // Kurs Saldo Akhir (Ending Balance) = HARIAN, di tanggal AKHIR FILTER
      // ($end_date) - persis bankreport.php.
-     $sqlrates3 = mysqli_query($conn1,"select rate FROM masterrate where v_codecurr = 'HARIAN' and tanggal <= '$end_date' order by tanggal desc limit 1");
+     $sqlrates3 = mysqli_query($conn1,"select rate FROM masterrate where v_codecurr = 'HARIAN' and curr = '$curren1' and tanggal <= '$end_date' order by tanggal desc limit 1");
      $rowrates3 = mysqli_fetch_array($sqlrates3);
      $rates3 = isset($rowrates3['rate']) ? $rowrates3['rate'] : 1;
      $sal_akhir = $saldoakhir * $rates3;
@@ -179,7 +179,7 @@ FROM
         $debitIdr = (float) $row['orig_debit'];
         $creditIdr = (float) $row['orig_credit'];
     } else {
-        $sqlratespjk = mysqli_query($conn1,"select rate FROM masterrate where v_codecurr = 'PAJAK' and tanggal <= '".$row['date']."' order by tanggal desc limit 1");
+        $sqlratespjk = mysqli_query($conn1,"select rate FROM masterrate where v_codecurr = 'PAJAK' and curr = '$curren1' and tanggal <= '".$row['date']."' order by tanggal desc limit 1");
         $rowratespjk = mysqli_fetch_array($sqlratespjk);
         $ratepjk = isset($rowratespjk['rate']) ? $rowratespjk['rate'] : 1;
         $debitIdr = (float) $debit * $ratepjk;
