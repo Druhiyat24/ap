@@ -405,7 +405,10 @@ $(function () {
     else f = { no_faktur: raw.trim(), tgl_faktur:'', dpp:0, ppn:0, ppnbm:0 };
     if (!f.no_faktur) { Swal.fire({icon:'error', title:'Invalid faktur', text:'Could not read the faktur number.'}); $(this).val(''); return; }
     var $detail = $(this).closest('.inv-detail');
-    var dup = false; $('#invBody .fak-no').each(function(){ if (($(this).val()||'') === f.no_faktur) dup = true; });
+    // Faktur strip ("-") = penanda "tanpa faktur", boleh dipakai berkali-kali.
+    var isStrip = /^[-\s]*$/.test(f.no_faktur);
+    var dup = false;
+    if (!isStrip) { $('#invBody .fak-no').each(function(){ if (($(this).val()||'') === f.no_faktur) dup = true; }); }
     if (dup) { Swal.fire({icon:'info', title:'Already added', text:'Faktur ' + f.no_faktur + ' is already used in this invoice received (cannot be scanned twice, even in another invoice).'}); $(this).val(''); return; }
     var $f = $(fakturHtml(f));
     $detail.find('.faktur-list').append($f);
@@ -418,9 +421,11 @@ $(function () {
     var f = parseFakturScan($(this).val());
     if (!f) { Swal.fire({icon:'error', title:'Invalid faktur', text:'Could not read the faktur number.'}); $(this).val(''); return; }
     var $item = $(this).closest('.faktur-item');
-    // No Faktur baru tidak boleh bentrok dgn faktur LAIN di invoice yang sama.
+    // No Faktur baru tidak boleh bentrok dgn faktur LAIN di invoice yang sama -
+    // kecuali strip ("-") yang memang penanda "tanpa faktur", boleh dobel.
+    var isStrip = /^[-\s]*$/.test(f.no_faktur);
     var dup = false;
-    $('#invBody .faktur-item').not($item).find('.fak-no').each(function(){ if (($(this).val()||'') === f.no_faktur) dup = true; });
+    if (!isStrip) { $('#invBody .faktur-item').not($item).find('.fak-no').each(function(){ if (($(this).val()||'') === f.no_faktur) dup = true; }); }
     if (dup) { Swal.fire({icon:'info', title:'Duplicate', text:'Faktur ' + f.no_faktur + ' is already used in this invoice received (cannot be scanned twice, even in another invoice).'}); $(this).val(''); return; }
     applyFakturToBlock($item, f);
     $(this).val('');

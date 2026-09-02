@@ -454,7 +454,11 @@ $(function () {
     var f = parseFaktur(raw);
     if (!f.no_faktur) { Swal.fire({icon:'error', title:'Invalid faktur', text:'Could not read the faktur number from the scan.'}); $(this).val(''); return; }
     var $detail = $(this).closest('.inv-detail');
-    var dup = false; $('#invBody .fak-no').each(function(){ if (($(this).val()||'') === f.no_faktur) dup = true; });
+    // Faktur strip ("-" / hanya tanda hubung) = penanda "tanpa faktur", boleh dipakai
+    // berkali-kali. Aturan "tidak boleh dobel" hanya berlaku untuk nomor faktur asli.
+    var isStrip = /^[-\s]*$/.test(f.no_faktur);
+    var dup = false;
+    if (!isStrip) { $('#invBody .fak-no').each(function(){ if (($(this).val()||'') === f.no_faktur) dup = true; }); }
     if (dup) { Swal.fire({icon:'info', title:'Already added', text:'Faktur ' + f.no_faktur + ' is already used in this invoice received (cannot be scanned twice, even in another invoice).'}); $(this).val(''); return; }
     var $f = $(fakturHtml(f));
     $detail.find('.faktur-list').append($f);
