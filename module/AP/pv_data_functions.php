@@ -129,6 +129,10 @@ function buildActionRegular($kbonno, $rowStatus, $total, $row, $status_closing, 
     $btnEdit = '<button type="button" class="btn btn-sm btn-outline-warning btn-edit-kbon" data-no_kbon="' . htmlspecialchars($kbonno) . '" data-closing="' . htmlspecialchars($status_closing) . '" title="Edit">'
         . '<i class="fa fa-pencil"></i> Edit</button>';
 
+    // Edit (New): form create-style baru -> simpan sbg revisi (-REV_NN) via insertkbon_bulk_edit.php.
+    $btnEditNew = '<a href="edit_pv_regular_new.php?no_kbon=' . urlencode($kbonno) . '" class="btn btn-sm btn-outline-primary" title="Edit (New)">'
+        . '<i class="fa fa-pencil-square-o"></i> Edit (New)</a>';
+
     $btnContinueEdit = '<a href="form_edit_kontrabon.php?no_kbon=' . base64_encode($kbonno) . '" class="btn btn-sm btn-outline-warning" title="Continue Editing">'
         . '<i class="fa fa-pencil"></i> Continue Editing</a>';
 
@@ -137,9 +141,9 @@ function buildActionRegular($kbonno, $rowStatus, $total, $row, $status_closing, 
     } elseif ($rowStatus == 'FIRST APPROVED') {
         return '<div class="kbon-action-buttons">' . $btnPdf . '<span class="kbon-status-label" style="background:#eef2f9;color:#1e3a8a;"><i class="fa fa-clock-o"></i> Waiting 2nd Approval</span></div>';
     } elseif ($rowStatus == 'draft' && $fin == '1' && $app == '1') {
-        return '<div class="kbon-action-buttons">' . $btnCancel . $btnPdf . $btnEdit . '</div>';
+        return '<div class="kbon-action-buttons">' . $btnCancel . $btnPdf . $btnEdit . $btnEditNew . '</div>';
     } elseif ($rowStatus == 'draft' && $fin == '1' && $app != '1') {
-        return '<div class="kbon-action-buttons">' . $btnPdf . $btnEdit . '</div>';
+        return '<div class="kbon-action-buttons">' . $btnPdf . $btnEdit . $btnEditNew . '</div>';
     } elseif ($rowStatus == 'Cancel') {
         return '<span class="kbon-status-label kbon-status-canceled"><i class="fa fa-ban"></i> Canceled</span>';
     } elseif ($rowStatus == 'Updated') {

@@ -298,8 +298,8 @@ if ($pf_pc !== '') {
                                    <td dates="'.date("Y-m-d",strtotime($row['tgl_bpb'])).'" value="'.$row['tgl_bpb'].'">'.date("d-M-Y",strtotime($row['tgl_bpb'])).'</td>                            
                                    <td class="dt_price" style="width:100px;text-align:right;" data-link="1" data-subtotal="'.$row['subtotal'].'">'.number_format($row['subtotal'],2).'</td>
                                    <td class="dt_tax" style="width:100px;text-align:right;" data-tax="'.$row['tax'].'">'.number_format($row['tax'],2).'</td>
-                                   <td style="width:200px;">
-                                   <select name="combo_pph_edit" class="combo_pph_edit form-control form-control-sm" style="width:150px;">
+                                   <td style="width:120px;">
+                                   <select name="combo_pph_edit" class="combo_pph_edit form-control form-control-sm" style="width:100%;min-width:110px;">
                                    <option data-idtax="'.$row['pph_code'].'" value="'.$row['percentage'].'">'.$row['kriteria'].'</option>';
                                    if ($row['pph_code'] != 0) {
                                        echo '<option data-idtax="0" value="0">Non PPH</option>';
@@ -383,12 +383,14 @@ if ($pf_pc !== '') {
                             <tbody>
                                 <?php
 
-                                $querys = mysqli_query($conn2,"select a.no_ro, no_bppb, tgl_bppb, no_bpb, total_ro, curr, mattype, matclass, n_code_category, cus_ctg from ap_edit_return_kb a INNER JOIN (select no_bppb, no_ro, tgl_bppb, no_bpb, curr from bppb_new GROUP BY no_bppb) b on b.no_bppb = a.no_bpbrtn LEFT JOIN (select reff_doc, a.no_coa, mattype, matclass, n_code_category, cus_ctg from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa where no_journal = '$no_kbon' and a.nama_coa like '%GR/IR%' and type_journal = 'AP - Kontrabon' GROUP BY reff_doc
+                                $querys = mysqli_query($conn2,"select a.no_ro, no_bppb, tgl_bppb, no_bpb, total_ro, curr, mattype, matclass, n_code_category, cus_ctg, b.upt_no_faktur, b.upt_tgl_faktur from ap_edit_return_kb a INNER JOIN (select no_bppb, no_ro, tgl_bppb, no_bpb, curr, MAX(upt_no_faktur) upt_no_faktur, MAX(upt_tgl_faktur) upt_tgl_faktur from bppb_new GROUP BY no_bppb) b on b.no_bppb = a.no_bpbrtn LEFT JOIN (select reff_doc, a.no_coa, mattype, matclass, n_code_category, cus_ctg from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa where no_journal = '$no_kbon' and a.nama_coa like '%GR/IR%' and type_journal = 'AP - Kontrabon' GROUP BY reff_doc
                                  UNION
                                  select reff_doc, a.no_coa, mattype, matclass, n_code_category, cus_ctg from ap_journal_temp a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa where no_journal = '$no_kbon' and a.nama_coa like '%GR/IR%' and type_journal = 'AP - Kontrabon' GROUP BY reff_doc) c on c.reff_doc = b.no_bppb where no_kbon = '$no_kbon'");
 
                                 while($row1 = mysqli_fetch_array($querys)){
-                                    echo '<tr>
+                                    // Prefill No/Tgl Faktur RO dari bppb_new.upt_* (strip-guard) saat edit.
+                                    $tgl_fk_ro = (!empty($row1['upt_tgl_faktur']) && $row1['upt_tgl_faktur'] != '0000-00-00') ? date('Y-m-d', strtotime($row1['upt_tgl_faktur'])) : '';
+                                    echo '<tr data-nofaktur="'.htmlspecialchars($row1['upt_no_faktur'] ?? '', ENT_QUOTES).'" data-tglfaktur="'.htmlspecialchars($tgl_fk_ro, ENT_QUOTES).'">
                                     <td style="width:10px;" hidden><input type="checkbox" class="chkB" id="select" name="select[]" value="" <?php if(in_array("1",$_POST[select])) echo "checked=checked";? checked></td>                        
                                     <td style="width:50px;" data-ro="'.$row1['no_ro'].'">'.$row1['no_ro'].'</td>
                                     <td style="width:50px;" valuess="'.$row1['no_bppb'].'">'.$row1['no_bppb'].'</td>
@@ -427,9 +429,9 @@ if ($pf_pc !== '') {
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="card shadow-sm mb-4" style="margin-left:2rem;margin-right:2rem;">
+
+    <div class="card shadow-sm mb-4" >
                 <!-- <div class="card-header" style="background-color: #60A5FA; color: white; font-weight: bold;">
                     Data FTR
                 </div> -->
@@ -503,7 +505,6 @@ if ($pf_pc !== '') {
                         </div>
                 </div>
             </div>
-        </div>
 
         <div class="card shadow-sm mb-4" style="margin-left:2rem;margin-right:2rem;">
           <div class="card-body p-2">
@@ -1395,26 +1396,10 @@ function SidebarCollapse () {
     $(document).ready(function () {
         // #mytable dibiarkan tabel biasa (bukan DataTable) supaya alur ceklis/append/
         // serialize BPB sama seperti create (create pun #mytable-nya plain).
-        $('#mytable1').DataTable({
-            paging: false,
-            searching: true,
-            info: false,
-            scrollY: "300px",
-            scrollCollapse: true,
-            scrollX: true
-        });
-
-        $('#mytable2').DataTable({
-            paging: false,
-            searching: true,
-            info: false,
-            scrollY: "300px",
-            scrollCollapse: true,
-            scrollX: true
-        });
-
         // ===== Kolom No Faktur / Tgl Faktur per BPB (mirror create). Ditambah di UJUNG
-        // baris supaya index td:eq(...) yang dipakai serialize tidak bergeser. =====
+        // baris supaya index td:eq(...) yang dipakai serialize tidak bergeser.
+        // PENTING: kolom faktur pada #mytable1 HARUS di-append SEBELUM DataTable init-nya,
+        // kalau tidak DataTables tak mengenali 2 kolom tambahan -> header jadi ngaco. =====
         function pvAppendFakturHead() {
             var $head = $('#mytable thead tr');
             if ($head.find('th.fk-head').length === 0) {
@@ -1449,6 +1434,25 @@ function SidebarCollapse () {
             }
         })();
         pvAppendFakturCells($('#mytable1 tbody tr'), '');
+
+        // DataTable init SETELAH kolom faktur ditambah (biar header tidak ngaco).
+        $('#mytable1').DataTable({
+            paging: false,
+            searching: true,
+            info: false,
+            scrollY: "300px",
+            scrollCollapse: true,
+            scrollX: true
+        });
+
+        $('#mytable2').DataTable({
+            paging: false,
+            searching: true,
+            info: false,
+            scrollY: "300px",
+            scrollCollapse: true,
+            scrollX: true
+        });
 
         // ===== Suggest & auto-adjust No Faktur (mirror create) =====
         // Datalist saran No Faktur diisi dari faktur milik IR terpilih (ajx_pv_ir_bpb.php).
@@ -1785,13 +1789,38 @@ function SidebarCollapse () {
                     existing[nb] = true;
                     added++;
                 });
-                $btn.prop('disabled', false).html('<i class="fas fa-search"></i> Cari BPB');
-                // Tidak ada notif sukses di sini — baris muncul di tabel, tapi belum
-                // tersimpan sampai user ceklis + Calculate + Save. Hanya beri info kalau
-                // hasil pencarian memang kosong.
-                if (added === 0) {
-                    Swal.fire({icon:'info', title:'Tidak ada BPB baru', text:'Tidak ada BPB tersedia (di luar yang sudah ada) untuk rentang ini.'});
-                }
+                // ===== Muat RO/retur juga (agar "Cari BPB" memunculkan BPB DAN RO, seperti
+                // create). RO ditambah ke #mytable1 (DataTable); disimpan saat Save utama
+                // via insert_bppb_kontrabon_edit.php (full-replace ap_edit_return_kb +
+                // jurnal RO ke ap_journal_temp). Baris RO baru default TER-CEKLIS. =====
+                $.post('get_bppb_kontrabon.php', {nama_supp: nama_supp, start_date: start_date, end_date: end_date, no_kbon: no_kbon, profit_center: profit_center}, function(resRo){
+                    var dt1 = $('#mytable1').DataTable();
+                    var exRo = {};
+                    dt1.rows().every(function(){ var nb = $(this.node()).find('td:eq(2)').attr('valuess'); if (nb) exRo[nb] = true; });
+                    var $roRows = $('<table><tbody>' + resRo + '</tbody></table>').find('tbody > tr');
+                    var addedRo = 0;
+                    $roRows.each(function(){
+                        var $r = $(this);
+                        var nb = $r.find('td:eq(2)').attr('valuess');
+                        if (!nb || exRo[nb]) return;
+                        // Samakan ke struktur #mytable1 (main): checkbox .chkB terlihat + checked,
+                        // atribut data-total-ro, lalu tambah 2 kolom faktur (kosong).
+                        $r.find('td:eq(0)').removeAttr('hidden').css('display', '').html('<input type="checkbox" class="chkB" name="select[]" checked>');
+                        var $t5 = $r.find('td:eq(5)'); if (!$t5.attr('data-total-ro')) { $t5.attr('data-total-ro', $t5.attr('data-total-ro-edit') || ''); }
+                        $r.append('<td class="fk-cell"><input type="text" class="fk-no form-control form-control-sm" list="fkOptions" placeholder="No Faktur" style="min-width:150px;font-size:12px;"></td>' +
+                                  '<td class="fk-cell"><input type="date" class="fk-tgl form-control form-control-sm" style="min-width:120px;font-size:12px;"></td>');
+                        dt1.row.add($r);
+                        exRo[nb] = true; addedRo++;
+                    });
+                    if (addedRo) { dt1.draw(false); }
+                    $btn.prop('disabled', false).html('<i class="fas fa-search"></i> Cari BPB');
+                    if (added === 0 && addedRo === 0) {
+                        Swal.fire({icon:'info', title:'Tidak ada data baru', text:'Tidak ada BPB / RO baru (di luar yang sudah ada) untuk rentang ini.'});
+                    }
+                }).fail(function(){
+                    $btn.prop('disabled', false).html('<i class="fas fa-search"></i> Cari BPB');
+                    if (added === 0) { Swal.fire({icon:'info', title:'Tidak ada BPB baru', text:'Tidak ada BPB baru untuk rentang ini.'}); }
+                });
             }).fail(function(xhr){
                 $btn.prop('disabled', false).html('<i class="fas fa-search"></i> Cari BPB');
                 Swal.fire('Error', xhr.responseText || 'Gagal mencari BPB', 'error');
@@ -2988,24 +3017,59 @@ if (!processedPO.includes(po)) {
             ret_faktur_map: JSON.stringify(retFakturMap)
         };
 
-        // (1) bangun ulang set BPB temp dari yang ter-ceklis, lalu (2) simpan revisi + jurnal balik.
-        Swal.fire({ title:'Menyimpan...', allowOutsideClick:false, didOpen: function(){ Swal.showLoading(); } });
-        $.ajax({
-            type:'POST', url:'insert_bpb_kontrabon_edit.php', data:{ data: JSON.stringify(dataArr) },
-            success: function(){
-                $.ajax({
-                    type:'POST', url:'insert_kontrabon_edit_all.php', data: payload,
-                    success: function(response){
-                        localStorage.removeItem("profit_center");
-                        Swal.fire({ icon:'success', title:'Tersimpan', text: ('' + response).slice(0, 200) }).then(function(){
-                            window.location = 'payment-voucher-ap.php';
-                        });
-                    },
-                    error: function(xhr){ Swal.fire('Error', 'Gagal revisi: ' + (xhr.responseText || ''), 'error'); }
-                });
-            },
-            error: function(xhr){ Swal.fire('Error', 'Gagal simpan BPB: ' + (xhr.responseText || ''), 'error'); }
+        // RO/retur dari #mytable1 (ter-ceklis) -> full-replace ap_edit_return_kb + jurnal RO
+        // ke ap_journal_temp (sama alur modal "Cari Return"), supaya RO yang ditambah lewat
+        // "Cari BPB" ikut tersimpan & terjurnal saat rebuild.
+        var roArr = [];
+        $('#mytable1 tbody tr').each(function(){
+            var $tr = $(this);
+            var chk = $tr.find('.chkB');
+            if (chk.length && !chk.is(':checked')) return;   // uncheck = dibuang
+            var no_bppb = ($tr.find('td:eq(2)').attr('valuess') || '').trim();
+            if (!no_bppb) return;
+            roArr.push({
+                no_kbon: $('#nokontrabon').val(), tgl_kbon: $('#tanggal').val(), pc_kbon: $('#profit_center').val(),
+                nama_supp: $('#txt_supp').val(), invoice: $('#txt_inv').val(), faktur: $('#no_faktur').val(),
+                tglsi: $('#txt_tglsi').val(), tgltempo: $('#txt_tgltempo').val(), create_user: create_user_h,
+                no_ro: $tr.find('td:eq(1)').attr('data-ro'), no_bppb: no_bppb,
+                tgl_bppb: $tr.find('td:eq(3)').attr('valuess'),
+                ttl_ro: parseFloat($tr.find('td:eq(6) input').val(),10) || 0,
+                curr: $tr.find('td:eq(7)').attr('valuess'), mattype: $tr.find('td:eq(8)').attr('valuess'),
+                matclass: $tr.find('td:eq(9)').attr('valuess'), n_code_category: $tr.find('td:eq(10)').attr('valuess'),
+                cus_ctg: $tr.find('td:eq(11)').attr('valuess'),
+                start_date: $('#bpb_start').val(), end_date: $('#bpb_end').val()
+            });
         });
+
+        // (0) simpan RO (kalau ada) -> (1) rebuild set BPB temp -> (2) simpan revisi + jurnal balik.
+        Swal.fire({ title:'Menyimpan...', allowOutsideClick:false, didOpen: function(){ Swal.showLoading(); } });
+        function pvEditSaveBpbThenAll(){
+            $.ajax({
+                type:'POST', url:'insert_bpb_kontrabon_edit.php', data:{ data: JSON.stringify(dataArr) },
+                success: function(){
+                    $.ajax({
+                        type:'POST', url:'insert_kontrabon_edit_all.php', data: payload,
+                        success: function(response){
+                            localStorage.removeItem("profit_center");
+                            Swal.fire({ icon:'success', title:'Tersimpan', text: ('' + response).slice(0, 200) }).then(function(){
+                                window.location = 'payment-voucher-ap.php';
+                            });
+                        },
+                        error: function(xhr){ Swal.fire('Error', 'Gagal revisi: ' + (xhr.responseText || ''), 'error'); }
+                    });
+                },
+                error: function(xhr){ Swal.fire('Error', 'Gagal simpan BPB: ' + (xhr.responseText || ''), 'error'); }
+            });
+        }
+        if (roArr.length) {
+            $.ajax({
+                type:'POST', url:'insert_bppb_kontrabon_edit.php', data:{ data: JSON.stringify(roArr) },
+                success: pvEditSaveBpbThenAll,
+                error: function(xhr){ Swal.fire('Error', 'Gagal simpan RO: ' + (xhr.responseText || ''), 'error'); }
+            });
+        } else {
+            pvEditSaveBpbThenAll();
+        }
     });
 
 

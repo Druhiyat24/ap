@@ -93,13 +93,13 @@ if (!empty($dataArr)) {
         // insert jurnal PPN jika ada
        if ($val_tax_ro > 0) {
 
-            $queryss6 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+            $queryss6 = "INSERT INTO ap_journal_temp (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
             VALUES 
             ('$no_kbon', '$create_date', 'AP - Kontrabon', '1.52.07', 'PAJAK DIBAYAR DIMUKA PPN MASUKAN (UNBILLED)', '-', '-', '$no_bppb', '$tgl_bppb', '-', '-', '$curr', '$rate', '$tax_ro', '0', '$idr_tax_ro', '0', 'Draft', '$keter','$create_user', '$create_date', '', '', '', '', '$profit_center')";
 
             $executess6 = mysqli_query($conn2,$queryss6);
 
-            $queryss7 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+            $queryss7 = "INSERT INTO ap_journal_temp (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
             VALUES 
             ('$no_kbon', '$create_date', 'AP - Kontrabon', '1.52.04', 'PAJAK DIBAYAR DIMUKA PPN MASUKAN', '-', '-', '$no_bppb', '$tgl_bppb', '-', '-', '$curr', '$rate', '0', '$tax_ro', '0', '$idr_tax_ro', 'Draft', '$keter','$create_user', '$create_date', '', '', '', '', '$profit_center')";
 
