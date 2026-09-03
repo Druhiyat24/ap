@@ -26,35 +26,10 @@ $sq = mysqli_query($conn2, "SELECT DISTINCT $eff st FROM ir_kontrabon_h kh
 while ($sq && ($sx = mysqli_fetch_assoc($sq))) { if (!empty($sx['st'])) $stOpts[] = $sx['st']; }
 ?>
 
+<!-- Skin UI bersama (kartu, tabel, badge, tombol, chrome DataTables) -->
+<link rel="stylesheet" href="../css/app-skin.css">
 <style>
-.container-fluid > .card{ border-radius:0 0 14px 14px; }
-.container-fluid > .card > .card-header{ border-top-left-radius:0; border-top-right-radius:0; }
-.table-gradient th{ background:#1E3A8A; color:#fff; vertical-align:middle; white-space:nowrap; }
-#tblKb{ border-collapse:separate !important; border-spacing:0; }
-#tblKb thead th{ background:#1E3A8A; color:#fff; font-weight:600; font-size:12px; letter-spacing:.02em; padding:12px 14px; border:0 !important; white-space:nowrap; vertical-align:middle; }
-#tblKb tbody td{ padding:13px 14px; border:0 !important; border-bottom:1px solid #eef2f7 !important; vertical-align:middle; font-size:13px; color:#334155; }
-#tblKb tbody tr{ transition:background .12s; }
-#tblKb tbody tr:hover{ background:#f5f8ff; }
-#tblKb tbody tr:last-child td{ border-bottom:0 !important; }
-.kb-doc{ font-weight:700; color:#1e3a8a; letter-spacing:.02em; white-space:nowrap; }
-.kb-doc i{ color:#3b82f6; margin-right:7px; }
-.kb-amt{ font-weight:700; color:#0f172a; }
-.kb-user{ color:#334155; font-weight:500; }
-.kb-badge{ display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:20px; font-size:11.5px; font-weight:700; }
-.kb-badge::before{ content:''; width:7px; height:7px; border-radius:50%; display:inline-block; }
-.kb-badge.draft{ background:#eef2ff; color:#3730a3; } .kb-badge.draft::before{ background:#6366f1; }
-.kb-badge.received{ background:#e0f2fe; color:#075985; } .kb-badge.received::before{ background:#0284c7; }
-.kb-badge.process{ background:#fef3c7; color:#92400e; } .kb-badge.process::before{ background:#f59e0b; }
-.kb-badge.cancel{ background:#fdecec; color:#dc2626; } .kb-badge.cancel::before{ background:#dc2626; }
-.kb-locked{ display:inline-flex; flex-direction:column; align-items:center; gap:0; line-height:1.25; }
-.kb-locked .lk{ display:inline-flex; align-items:center; gap:6px; padding:5px 13px; border-radius:20px; font-size:12px; font-weight:700; background:#f1f5f9; color:#64748b; }
-.kb-locked .lk i{ color:#94a3b8; }
-.kb-locked small{ font-size:9.5px; color:#94a3b8; margin-top:3px; letter-spacing:.02em; }
-.btn-act{ padding:6px 15px; font-size:12px; font-weight:600; border-radius:20px; box-shadow:0 2px 5px rgba(30,58,138,.14); transition:transform .12s ease, box-shadow .15s ease, filter .15s ease; }
-.btn-act:hover{ transform:translateY(-1px); box-shadow:0 6px 15px rgba(30,58,138,.24); filter:brightness(1.05); }
-.btn-act i{ margin-right:5px; }
-.btn-round{ border-radius:10px !important; font-weight:600; box-shadow:0 2px 5px rgba(30,58,138,.14); transition:transform .12s ease, box-shadow .15s ease; }
-.btn-round:hover{ transform:translateY(-1px); box-shadow:0 6px 15px rgba(30,58,138,.22); }
+/* Halaman-spesifik: hanya gaya modal detail. Sisanya di app-skin.css. */
 /* ---- KB detail modal ---- */
 #kbDetailModal .modal-dialog{ max-width:1500px; width:94vw; }
 #kbDetailModal .modal-content{ border:0; border-radius:16px; overflow:hidden; box-shadow:0 24px 70px rgba(15,23,42,.28); }
@@ -90,15 +65,15 @@ while ($sq && ($sx = mysqli_fetch_assoc($sq))) { if (!empty($sx['st'])) $stOpts[
 <div class="container-fluid mt-4 p-4">
 
   <!-- ===== Filter card ===== -->
-  <div class="card shadow border-0">
-    <div class="card-header text-white py-2 px-3" style="background: linear-gradient(90deg, #191970, #1e90ff);">
-      <h5 class="mb-0"><i class="fa fa-list-alt" aria-hidden="true"></i> LIST INVOICE RECEIVED</h5>
+  <div class="card app-card border-0">
+    <div class="card-header app-card-header">
+      <h5><i class="fa fa-list-alt" aria-hidden="true"></i> LIST INVOICE RECEIVED</h5>
     </div>
     <div class="card-body p-3">
       <form id="form-filter" method="post" action="kontrabon_new.php">
         <div class="row g-3">
           <div class="col-md-3">
-            <label class="form-label"><b>Supplier</b></label>
+            <label class="app-flabel">Supplier</label>
             <select class="form-control selectpicker" name="nama_supp" data-live-search="true" data-size="5">
               <option value="ALL"<?= $fSupp === 'ALL' ? ' selected' : '' ?>>ALL</option>
               <?php
@@ -111,7 +86,7 @@ while ($sq && ($sx = mysqli_fetch_assoc($sq))) { if (!empty($sx['st'])) $stOpts[
             </select>
           </div>
           <div class="col-md-2">
-            <label class="form-label"><b>Status</b></label>
+            <label class="app-flabel">Status</label>
             <select class="form-control selectpicker" name="status" data-size="8" data-live-search="true">
               <?php foreach ($stOpts as $st) {
                   $sel = ($st === $fStatus) ? ' selected' : '';
@@ -120,12 +95,12 @@ while ($sq && ($sx = mysqli_fetch_assoc($sq))) { if (!empty($sx['st'])) $stOpts[
             </select>
           </div>
           <div class="col-md-2">
-            <label class="form-label"><b>From</b></label>
-            <input type="text" class="form-control form-control-sm tanggal" name="start_date" value="<?= date('d-m-Y', strtotime($fStart)) ?>" autocomplete="off">
+            <label class="app-flabel">From</label>
+            <input type="text" class="form-control form-control-sm tanggal" name="start_date" value="<?= date('d M Y', strtotime($fStart)) ?>" autocomplete="off">
           </div>
           <div class="col-md-2">
-            <label class="form-label"><b>To</b></label>
-            <input type="text" class="form-control form-control-sm tanggal" name="end_date" value="<?= date('d-m-Y', strtotime($fEnd)) ?>" autocomplete="off">
+            <label class="app-flabel">To</label>
+            <input type="text" class="form-control form-control-sm tanggal" name="end_date" value="<?= date('d M Y', strtotime($fEnd)) ?>" autocomplete="off">
           </div>
           <div class="col-md-3 d-flex align-items-end mt-2">
             <button type="submit" class="btn btn-info btn-sm btn-round"><i class="fa fa-search"></i> Search</button>
@@ -138,10 +113,26 @@ while ($sq && ($sx = mysqli_fetch_assoc($sq))) { if (!empty($sx['st'])) $stOpts[
   </div>
 
   <!-- ===== Table card ===== -->
-  <div class="card shadow border-0 mt-4">
+  <div class="card app-card border-0 mt-4">
     <div class="card-body p-4">
-      <div class="table-responsive">
-        <table id="tblKb" class="table table-hover" style="width:100%">
+      <div class="app-dt-wrap">
+        <!-- Skeleton loading (shimmer) — ditutup saat draw pertama -->
+        <div id="kbSkeleton" class="app-skeleton">
+          <div class="sk-head"></div>
+          <?php for ($i = 0; $i < 8; $i++): ?>
+          <div class="sk-row">
+            <span class="sk-bar" style="width:22px"></span>
+            <span class="sk-bar" style="flex:0 0 15%"></span>
+            <span class="sk-bar" style="flex:0 0 9%"></span>
+            <span class="sk-bar" style="flex:0 0 9%"></span>
+            <span class="sk-bar" style="flex:0 0 13%"></span>
+            <span class="sk-bar" style="flex:0 0 10%"></span>
+            <span class="sk-bar" style="flex:0 0 8%"></span>
+            <span class="sk-bar" style="flex:1"></span>
+          </div>
+          <?php endfor; ?>
+        </div>
+        <table id="tblKb" class="table table-hover app-dt" style="width:100%">
           <thead class="table-gradient">
             <tr>
               <th style="width:50px; text-align:center;">No</th>
@@ -149,7 +140,7 @@ while ($sq && ($sx = mysqli_fetch_assoc($sq))) { if (!empty($sx['st'])) $stOpts[
               <th style="width:175px; text-align:center;">Actual Document Receiving Date</th>
               <th style="width:130px; text-align:center;">Invoice Received Date</th>
               <th style="width:110px; text-align:center;">No Reff</th>
-              <th style="text-align:left;">Supplier</th>
+              <th style="text-align:left; min-width:230px;">Supplier</th>
               <th style="width:150px; text-align:right;">Total Amount</th>
               <th style="width:120px; text-align:right;">Add in PV</th>
               <th style="width:150px; text-align:right;">Grand Total</th>
@@ -191,15 +182,35 @@ while ($sq && ($sx = mysqli_fetch_assoc($sq))) { if (!empty($sx['st'])) $stOpts[
 var kbTable;
 $(function () {
   $('.selectpicker').selectpicker();
-  $('.tanggal').datepicker({ format:'dd-mm-yyyy', autoclose:true });
+  $('.tanggal').datepicker({ format:'dd M yyyy', autoclose:true, language:'en' })
+    // Samakan lebar kalender popup dengan lebar input pemicunya.
+    .on('show', function () {
+      var w = $(this).outerWidth();
+      setTimeout(function () { $('.datepicker-dropdown:visible').outerWidth(w); }, 0);
+    });
 
   // ===== DataTables AJAX (pola app: endpoint balikin {data, footer}) =====
   kbTable = $('#tblKb').DataTable({
     ordering: false,
-    processing: true,
+    processing: false,
     autoWidth: false,
+    // Responsive: di layar kecil/Android kolom yg tak muat kolaps ke baris "+"
+    // (detail), sementara No Document / Status / Action tetap tampil (priority 1-2).
+    responsive: true,
     pageLength: 10,
     lengthMenu: [10, 25, 50, 100],
+    // Teks chrome + empty/loading state (styling-nya di app-skin.css)
+    language: {
+      processing:  '<i class="fa fa-spinner fa-spin"></i> Loading...',
+      emptyTable:  '<div class="app-empty"><i class="fa fa-inbox"></i>No data found</div>',
+      zeroRecords: '<div class="app-empty"><i class="fa fa-search"></i>No matching records</div>',
+      lengthMenu:  'Show _MENU_ entries',
+      info:        'Showing _START_&ndash;_END_ of _TOTAL_ entries',
+      infoEmpty:   'Showing 0 entries',
+      infoFiltered:'(filtered from _MAX_)',
+      search:      'Search:',
+      paginate:    { previous: '&lsaquo; Prev', next: 'Next &rsaquo;' }
+    },
     ajax: {
       url: 'ajx_kontrabon_new.php',
       type: 'POST',
@@ -211,10 +222,12 @@ $(function () {
       },
       dataSrc: 'data'
     },
+    // responsivePriority kecil = makin dipertahankan saat layar menyempit.
+    // No Document (1), Action (1), Status (2) tetap tampil; sisanya kolaps duluan.
     columns: [
-      { data: null, orderable: false, className: 'text-center',
+      { data: null, orderable: false, className: 'text-center', responsivePriority: 1,
         render: function (d, t, r, meta) { return meta.row + meta.settings._iDisplayStart + 1; } },
-      { data: 'doc_number' },
+      { data: 'doc_number', responsivePriority: 1 },
       { data: 'document_date', className: 'text-center' },
       { data: 'kontrabon_date', className: 'text-center' },
       { data: 'no_reff', className: 'text-center' },
@@ -222,12 +235,16 @@ $(function () {
       { data: 'total_amount', className: 'text-right' },
       { data: 'amount_add_pv', className: 'text-right' },
       { data: 'grand_total', className: 'text-right' },
-      { data: 'status', className: 'text-center' },
+      { data: 'status', className: 'text-center', responsivePriority: 2 },
       { data: 'create_user' },
       { data: 'create_date', className: 'text-center' },
-      { data: 'action', className: 'text-center', orderable: false }
+      { data: 'action', className: 'text-center', orderable: false, responsivePriority: 2 }
     ]
   });
+
+  // Skeleton loading: tampil saat request, sembunyi saat data selesai digambar.
+  kbTable.on('preXhr.dt', function () { $('#kbSkeleton').show(); });
+  kbTable.on('draw.dt',   function () { $('#kbSkeleton').hide(); });
 
   // Search -> reload tabel (bukan reload halaman)
   $('#form-filter').on('submit', function (e) { e.preventDefault(); kbTable.ajax.reload(); });

@@ -70,10 +70,10 @@ while ($res && ($r = mysqli_fetch_assoc($res))) {
     $act = '<button type="button" class="btn btn-info btn-act show-kb" data-doc="' . $esc($doc) . '"><i class="fa fa-eye"></i> Show</button>';
     if ($eStat !== 'Cancel') {
         if ($canModify) {
-            $act .= '<a href="edit_kontrabon_new.php?doc=' . rawurlencode($doc) . '" class="btn btn-warning btn-act ml-1"><i class="fa fa-pencil"></i> Edit</a>';
-            $act .= '<button type="button" class="btn btn-danger btn-act cancel-kb ml-1" data-doc="' . $esc($doc) . '"><i class="fa fa-ban"></i> Cancel</button>';
+            $act .= '<a href="edit_kontrabon_new.php?doc=' . rawurlencode($doc) . '" class="btn btn-warning btn-act"><i class="fa fa-pencil"></i> Edit</a>';
+            $act .= '<button type="button" class="btn btn-danger btn-act cancel-kb" data-doc="' . $esc($doc) . '"><i class="fa fa-ban"></i> Cancel</button>';
         } else {
-            $act .= '<span class="kb-locked ml-1" title="Already used in the Invoice Received flow (' . $esc($eStat) . ') — can no longer be edited or cancelled.">'
+            $act .= '<span class="kb-locked" title="Already used in the Invoice Received flow (' . $esc($eStat) . ') — can no longer be edited or cancelled.">'
                  . '<span class="lk"><i class="fa fa-lock"></i> Locked</span><small>in IR process</small></span>';
         }
     }
@@ -93,7 +93,7 @@ while ($res && ($r = mysqli_fetch_assoc($res))) {
         'status'         => $statusHtml,
         'create_user'    => '<span class="kb-user">' . $esc($r['create_user'] ?? '') . '</span>',
         'create_date'    => !empty($r['create_date']) ? date('d-M-Y H:i', strtotime($r['create_date'])) : '-',
-        'action'         => $act,
+        'action'         => '<div class="act-wrap">' . $act . '</div>',
     ];
 }
 

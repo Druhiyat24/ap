@@ -1,0 +1,231 @@
+/* ============================================================================
+   app-skin.css — Skin UI bersama untuk menu-menu list AP (template).
+   Dipakai dengan: <link rel="stylesheet" href="../css/app-skin.css">
+   Tujuan: satu sumber gaya (kartu, header gradient, tabel, badge status,
+   tombol, dan "chrome" DataTables: length/search/info/pagination/empty/loading)
+   supaya semua menu tampil konsisten hanya dengan meng-include file ini +
+   memakai class di bawah. Pilot: kontrabon_new.php.
+   ============================================================================ */
+
+/* ===== Kartu + header gradient ===== */
+.app-card{ border:0 !important; border-radius:14px !important; box-shadow:0 8px 30px rgba(15,23,42,.06) !important; }
+.app-card-header{
+  background:linear-gradient(90deg,#191970,#1e90ff); color:#fff; border:0 !important;
+  border-radius:14px 14px 0 0 !important; padding:12px 18px;
+}
+.app-card-header h5{ margin:0; font-weight:700; font-size:16px; letter-spacing:.02em; display:flex; align-items:center; gap:9px; }
+
+/* ===== Label filter (kecil-uppercase, konsisten dgn modal) ===== */
+.app-flabel{ display:block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#64748b; margin-bottom:5px; }
+
+/* ===== Tabel (tambahkan class .app-dt pada <table>) ===== */
+table.app-dt{ border-collapse:separate !important; border-spacing:0; width:100%; }
+table.app-dt thead th{ background:#1E3A8A; color:#fff; font-weight:600; font-size:12px; letter-spacing:.02em; padding:12px 14px; border:0 !important; white-space:nowrap; vertical-align:middle; }
+table.app-dt tbody td{ padding:13px 14px; border:0 !important; border-bottom:1px solid #eef2f7 !important; vertical-align:middle; font-size:13px; color:#334155; }
+table.app-dt tbody tr{ transition:background .12s; }
+table.app-dt tbody tr:hover{ background:#f5f8ff; }
+table.app-dt tbody tr:last-child td{ border-bottom:0 !important; }
+/* thead lama yg pakai .table-gradient tetap didukung */
+.table-gradient th{ background:#1E3A8A; color:#fff; vertical-align:middle; white-space:nowrap; }
+
+/* ===== Isi sel standar ===== */
+.kb-doc{ font-weight:700; color:#1e3a8a; letter-spacing:.02em; white-space:nowrap; }
+.kb-doc i{ color:#3b82f6; margin-right:7px; }
+.kb-amt{ font-weight:700; color:#0f172a; }
+.kb-user{ color:#334155; font-weight:500; }
+
+/* ===== Badge status (pill) ===== */
+.kb-badge{ display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:20px; font-size:11.5px; font-weight:700; }
+.kb-badge::before{ content:''; width:7px; height:7px; border-radius:50%; display:inline-block; }
+.kb-badge.draft{ background:#eef2ff; color:#3730a3; } .kb-badge.draft::before{ background:#6366f1; }
+.kb-badge.received{ background:#e0f2fe; color:#075985; } .kb-badge.received::before{ background:#0284c7; }
+.kb-badge.process{ background:#fef3c7; color:#92400e; } .kb-badge.process::before{ background:#f59e0b; }
+.kb-badge.cancel{ background:#fdecec; color:#dc2626; } .kb-badge.cancel::before{ background:#dc2626; }
+
+/* Badge "Locked" (aksi terkunci) */
+.kb-locked{ display:inline-flex; flex-direction:column; align-items:center; gap:0; line-height:1.25; }
+.kb-locked .lk{ display:inline-flex; align-items:center; gap:6px; padding:5px 13px; border-radius:20px; font-size:12px; font-weight:700; background:#f1f5f9; color:#64748b; }
+.kb-locked .lk i{ color:#94a3b8; }
+.kb-locked small{ font-size:9.5px; color:#94a3b8; margin-top:3px; letter-spacing:.02em; }
+
+/* ===== Tombol ===== */
+.btn-act{ padding:4px 11px; font-size:11px; font-weight:600; border-radius:18px; box-shadow:0 2px 5px rgba(30,58,138,.14); transition:transform .12s ease, box-shadow .15s ease, filter .15s ease; }
+.btn-act:hover{ transform:translateY(-1px); box-shadow:0 6px 15px rgba(30,58,138,.24); filter:brightness(1.05); }
+.btn-act i{ margin-right:4px; }
+/* font-size !important + line-height: seragamkan tombol <a> (Create) dgn <button>
+   (Search/Export) yg defaultnya beda ukuran. */
+.btn-round{ border-radius:9px !important; font-weight:600 !important; padding:5px 12px; font-size:12px !important; line-height:1.5 !important; box-shadow:0 2px 5px rgba(30,58,138,.14); transition:transform .12s ease, box-shadow .15s ease; }
+.btn-round:hover{ transform:translateY(-1px); box-shadow:0 6px 15px rgba(30,58,138,.22); }
+.btn-round i{ font-size:12px !important; }
+
+/* Grup tombol aksi di kolom Action — rapi: stack vertikal, lebar seragam, jarak rata */
+.act-wrap{ display:inline-flex; flex-direction:column; gap:6px; align-items:stretch; min-width:104px; }
+/* Seragamkan ukuran font/tinggi semua tombol (Edit tag <a>, Show/Cancel <button>
+   defaultnya beda ukuran) supaya teksnya tidak ada yg kecil sendiri. */
+.act-wrap > .btn{
+  margin:0 !important; width:100%; display:inline-flex; align-items:center; justify-content:center; gap:5px;
+  font-size:11px !important; line-height:1.5 !important; font-weight:600 !important; letter-spacing:0;
+}
+.act-wrap > .btn i{ font-size:11px !important; }
+.act-wrap .kb-locked{ align-self:center; }
+
+/* ============================================================================
+   "CHROME" DataTables — length / search / info / pagination / loading / empty.
+   Inilah bagian yg selama ini masih default; ini otomatis berlaku untuk SEMUA
+   DataTables di halaman yg meng-include skin ini (tak perlu ubah markup).
+   ============================================================================ */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter{ margin-bottom:14px; font-size:13px; color:#475569; }
+.dataTables_wrapper .dataTables_length label,
+.dataTables_wrapper .dataTables_filter label{ font-weight:500; color:#64748b; }
+.dataTables_wrapper .dataTables_length select{
+  border:1px solid #dbe4f3; border-radius:8px; padding:5px 26px 5px 10px; height:auto;
+  color:#334155; background-color:#fff; margin:0 6px; cursor:pointer;
+}
+.dataTables_wrapper .dataTables_length select:focus{ border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.15); outline:none; }
+.dataTables_wrapper .dataTables_filter input{
+  border:1px solid #dbe4f3; border-radius:20px; padding:6px 15px; margin-left:8px; min-width:230px;
+  transition:border-color .15s, box-shadow .15s;
+}
+.dataTables_wrapper .dataTables_filter input:focus{ border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.15); outline:none; }
+.dataTables_wrapper .dataTables_info{ color:#94a3b8; font-size:12.5px; padding-top:16px !important; }
+
+/* Pagination (DataTables Bootstrap4 -> .pagination .page-link) */
+.dataTables_wrapper .dataTables_paginate{ padding-top:12px; }
+.dataTables_wrapper .pagination{ margin:0; }
+.dataTables_wrapper .pagination .page-link{
+  border:1px solid #e2e8f0; color:#475569; border-radius:8px !important; margin:0 3px; padding:6px 13px;
+  font-size:13px; font-weight:600; transition:all .12s ease;
+}
+.dataTables_wrapper .pagination .page-link:hover{ background:#eef4ff; color:#1e3a8a; border-color:#c7d7f5; }
+.dataTables_wrapper .pagination .page-item.active .page-link{ background:#1E3A8A; border-color:#1E3A8A; color:#fff; box-shadow:0 3px 8px rgba(30,58,138,.25); }
+.dataTables_wrapper .pagination .page-item.disabled .page-link{ color:#cbd5e1; background:#fff; border-color:#eef2f7; }
+
+/* Loading overlay */
+.dataTables_wrapper .dataTables_processing{
+  border:0 !important; background:#fff !important; box-shadow:0 10px 34px rgba(15,23,42,.14) !important;
+  border-radius:12px; color:#1e3a8a; font-weight:600; padding:16px 24px !important; top:40% !important;
+}
+.dataTables_wrapper .dataTables_processing i{ color:#3b82f6; margin-right:8px; }
+
+/* Empty state */
+table.app-dt td.dataTables_empty{ padding:44px 12px !important; text-align:center; color:#94a3b8; font-size:14px; }
+.app-empty i{ display:block; font-size:34px; color:#cbd5e1; margin-bottom:10px; }
+
+/* ============================================================================
+   DataTables Responsive — kontrol "+/−" & baris detail (kolom yg dikolaps di
+   layar kecil/Android). No Document / Status / Action tetap tampil; sisanya
+   masuk ke sini saat di-expand.
+   ============================================================================ */
+table.app-dt td.dtr-control{ cursor:pointer; }
+table.app-dt td.dtr-control:before{
+  background-color:#1E3A8A !important; border:0 !important; color:#fff !important;
+  box-shadow:0 2px 5px rgba(30,58,138,.3) !important; font-weight:700;
+}
+table.app-dt tr.dtr-expanded td.dtr-control:before{ background-color:#dc2626 !important; }
+/* Baris detail */
+table.app-dt tr.child td{ background:#f8fafc !important; }
+table.app-dt ul.dtr-details{ display:block; width:100%; padding:4px 0; margin:0; }
+table.app-dt ul.dtr-details > li{
+  display:flex; gap:12px; padding:8px 4px; border-bottom:1px solid #e8edf5; align-items:baseline;
+}
+table.app-dt ul.dtr-details > li:last-child{ border-bottom:0; }
+table.app-dt ul.dtr-details .dtr-title{
+  min-width:170px; font-weight:700; color:#64748b; font-size:10.5px; text-transform:uppercase; letter-spacing:.04em;
+}
+table.app-dt ul.dtr-details .dtr-data{ color:#0f172a; font-size:13px; }
+
+/* ============================================================================
+   bootstrap-select (.selectpicker) — tombol & dropdown filter.
+   Diperbaiki: lebar dropdown DIKUNCI = lebar tombol (tidak melebihi kolom),
+   item panjang membungkus (wrap), + tampilan lebih modern.
+   ============================================================================ */
+.bootstrap-select > .dropdown-toggle{
+  border:1px solid #dbe4f3 !important; border-radius:8px !important; background:#fff !important;
+  color:#334155 !important; padding:8px 12px; font-size:13px; box-shadow:none !important; outline:none;
+}
+.bootstrap-select > .dropdown-toggle:focus,
+.bootstrap-select > .dropdown-toggle:active,
+.bootstrap-select.show > .dropdown-toggle{
+  border-color:#3b82f6 !important; box-shadow:0 0 0 3px rgba(59,130,246,.15) !important;
+}
+.bootstrap-select > .dropdown-toggle .filter-option-inner-inner{ color:#334155; }
+.bootstrap-select > .dropdown-toggle::after{ color:#94a3b8; }
+
+/* Popup menu: kunci lebar ke lebar tombol supaya tidak overflow ke kolom lain */
+.bootstrap-select > .dropdown-menu{
+  border:1px solid #e6ebf3; border-radius:10px; box-shadow:0 14px 36px rgba(15,23,42,.15);
+  padding:6px; margin-top:5px;
+  width:100% !important; min-width:100% !important; max-width:100% !important;
+}
+.bootstrap-select .dropdown-menu.inner{ width:100%; }
+
+/* Kotak search di dalam dropdown */
+.bootstrap-select .bs-searchbox{ padding:2px 4px 8px; }
+.bootstrap-select .bs-searchbox input{
+  border:1px solid #dbe4f3; border-radius:8px; padding:7px 12px; font-size:13px; box-shadow:none;
+}
+.bootstrap-select .bs-searchbox input:focus{ border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.15); outline:none; }
+
+/* Item: rapi, wrap kalau panjang, hover biru muda, terpilih biru tua */
+.bootstrap-select .dropdown-item{
+  border-radius:7px; padding:8px 12px; font-size:13px; color:#334155;
+  white-space:normal; word-break:break-word;
+}
+.bootstrap-select .dropdown-item:hover,
+.bootstrap-select .dropdown-item:focus{ background:#eef4ff; color:#1e3a8a; }
+.bootstrap-select .dropdown-item.active,
+.bootstrap-select .dropdown-item.selected,
+.bootstrap-select li.selected .dropdown-item{ background:#1E3A8A !important; color:#fff !important; }
+.bootstrap-select .dropdown-item.active .check-mark,
+.bootstrap-select .dropdown-item.selected .check-mark{ color:#fff; }
+/* Scrollbar tipis di list */
+.bootstrap-select .dropdown-menu .inner::-webkit-scrollbar{ width:8px; }
+.bootstrap-select .dropdown-menu .inner::-webkit-scrollbar-thumb{ background:#cbd5e1; border-radius:8px; }
+
+/* ============================================================================
+   bootstrap-datepicker (.tanggal) — kalender popup dipercantik senada tema.
+   ============================================================================ */
+.datepicker.datepicker-dropdown{
+  border:1px solid #e6ebf3; border-radius:12px; box-shadow:0 14px 38px rgba(15,23,42,.16);
+  padding:12px; font-size:13px;
+}
+.datepicker.datepicker-dropdown:before,
+.datepicker.datepicker-dropdown:after{ display:none !important; } /* buang panah default */
+.datepicker table{ width:100%; }
+.datepicker table tr th{ font-weight:700; color:#334155; }
+.datepicker .datepicker-switch{ font-weight:700; color:#1e3a8a; border-radius:8px; }
+.datepicker .prev, .datepicker .next{ color:#64748b; border-radius:8px; font-size:15px; }
+.datepicker .datepicker-switch:hover,
+.datepicker .prev:hover, .datepicker .next:hover,
+.datepicker tfoot tr th:hover{ background:#eef4ff !important; color:#1e3a8a; }
+.datepicker table tr th.dow{ color:#94a3b8; font-size:10.5px; text-transform:uppercase; font-weight:700; padding:6px 0; }
+.datepicker table tr td{ padding:1px; }
+.datepicker table tr td.day{ border-radius:8px; color:#334155; padding:6px 8px; transition:background .1s; }
+.datepicker table tr td.day:hover,
+.datepicker table tr td.focused{ background:#eef4ff !important; color:#1e3a8a; }
+.datepicker table tr td.old, .datepicker table tr td.new{ color:#cbd5e1; }
+.datepicker table tr td.today{ background:#fef3c7 !important; color:#92400e !important; }
+.datepicker table tr td.active,
+.datepicker table tr td.active:hover,
+.datepicker table tr td.active.active{
+  background:#1E3A8A !important; background-image:none !important; color:#fff !important;
+  box-shadow:0 3px 8px rgba(30,58,138,.3); text-shadow:none;
+}
+.datepicker table tr td span.month, .datepicker table tr td span.year{ border-radius:8px; }
+.datepicker table tr td span.month:hover, .datepicker table tr td span.year:hover{ background:#eef4ff; color:#1e3a8a; }
+.datepicker table tr td span.active,
+.datepicker table tr td span.active:hover{ background:#1E3A8A !important; background-image:none !important; color:#fff; text-shadow:none; }
+
+/* ============================================================================
+   Skeleton loading (shimmer) — dipakai lewat #<id>Skeleton di dalam .app-dt-wrap
+   ============================================================================ */
+.app-dt-wrap{ position:relative; }
+.app-skeleton{ position:absolute; top:0; left:0; right:0; z-index:6; background:#fff; }
+.app-skeleton .sk-head{ height:44px; background:#1E3A8A; border-radius:8px 8px 0 0; margin-bottom:2px; opacity:.92; }
+.app-skeleton .sk-row{ display:flex; gap:16px; align-items:center; padding:14px; border-bottom:1px solid #f1f5f9; }
+.app-skeleton .sk-bar{ height:12px; border-radius:6px; background:linear-gradient(90deg,#eef2f7 25%,#e2e8f0 37%,#eef2f7 63%); background-size:400% 100%; animation:sk-shimmer 1.3s ease infinite; }
+@keyframes sk-shimmer{ 0%{ background-position:100% 0; } 100%{ background-position:0 0; } }
+
+/* Angka nominal rata sempurna antar baris */
+.kb-amt{ font-variant-numeric:tabular-nums; }
