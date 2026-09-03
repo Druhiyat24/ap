@@ -437,8 +437,21 @@ while($row = mysql_fetch_array($sqlpv)){
     if ($reff_date == '' || $reff_date == '1970-01-01') { 
         $reffdate = '';
     }else{
-        $reffdate = date("d-m-Y",strtotime($row['reff_date'])); 
-    } 
+        $reffdate = date("d-m-Y",strtotime($row['reff_date']));
+    }
+
+    // Filter grup Cost Center sesuai COA (samakan dgn getCostCenter.php & upload):
+    // hanya CC yg group2-nya termasuk grup COA (+ id_pc = profit center) yg boleh muncul.
+    // COA tanpa grup (neraca) -> tidak ada CC valid (CC memang harus kosong).
+    $coaEsc = mysqli_real_escape_string($conn1, $coa);
+    $rowGrp = mysqli_fetch_assoc(mysqli_query($conn1, "SELECT TRIM(BOTH ',' FROM CONCAT(
+        IF(support_gen_adm='Y','''SUPPORTING GENERAL & ADMINISTRATION'',',''),
+        IF(support_prod='Y','''SUPPORTING PRODUCTION'',',''),
+        IF(prod='Y','''PRODUCTION'',',''),
+        IF(support_sell='Y','''SUPPORTING SELLING'',','')
+    )) AS groups FROM mastercoa_v2 WHERE no_coa = '$coaEsc'"));
+    $groupFilter = ($rowGrp && isset($rowGrp['groups']) && $rowGrp['groups'] !== '') ? $rowGrp['groups'] : '';
+    $ccGroupCond = ($groupFilter !== '') ? " and group2 IN ($groupFilter)" : " and 1=0";
 
     echo'<tr>
     <td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>
@@ -454,7 +467,7 @@ while($row = mysql_fetch_array($sqlpv)){
     echo '</select>
     </td>
     <td >
-    <select class="form-control selectpicker nomor_cc" name="nomor_cc[]" id="nomor_cc" data-width="200px" data-live-search="true"><option value="'.$row['no_costcenter'].'" >'.$row['no_costcenter'].' - '.$row['cc_name'].'</option><option value="-" > - </option>'; $sql2 = mysqli_query($conn1,"select no_cc as code_combine,CONCAT(no_cc,' - ',cc_name) as cost_name from b_master_cc where no_cc != '$no_cc' and id_pc = '$profit_center' AND status = 'Active'"); foreach ($sql2 as $cc) : echo'<option value="'. $cc["code_combine"].'">'.$cc["cost_name"].'</option>'; endforeach; ?>
+    <select class="form-control selectpicker nomor_cc" name="nomor_cc[]" id="nomor_cc" data-width="200px" data-live-search="true"><option value="'.$row['no_costcenter'].'" >'.$row['no_costcenter'].' - '.$row['cc_name'].'</option><option value="-" > - </option>'; $sql2 = mysqli_query($conn1,"select no_cc as code_combine,CONCAT(no_cc,' - ',cc_name) as cost_name from b_master_cc where no_cc != '$no_cc' and id_pc = '$profit_center' AND status = 'Active' $ccGroupCond"); foreach ($sql2 as $cc) : echo'<option value="'. $cc["code_combine"].'">'.$cc["cost_name"].'</option>'; endforeach; ?>
     <?php
     echo '</select>
     </td>

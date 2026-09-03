@@ -41,9 +41,12 @@ if ($search != '') {
                                 select a.no_coa, b.no_cc, b.id_pc from (select no_coa, support_gen_adm, support_prod, prod, support_sell from mastercoa_v2 where support_gen_adm != 'N' OR support_prod != 'N' OR prod != 'N' OR support_sell != 'N') a inner join
                                 (select no_cc, cc_name, id_pc, 'Y' support_sell from b_master_cc where group2 = 'SUPPORTING SELLING' and status = 'Active') b on b.support_sell = a.support_sell)a GROUP BY no_coa, no_cc, id_pc
                                 UNION
-                                select no_coa, '' no_cc, 'NAK' id_pc from mastercoa_v2
+                                -- CC kosong hanya VALID untuk COA yang TIDAK punya grup (all flag 'N' = COA neraca).
+                                -- COA yg punya grup (support_gen_adm/support_prod/prod/support_sell = 'Y') WAJIB CC,
+                                -- jadi CC kosong tidak di-whitelist -> baris jadi merah -> save diblok.
+                                select no_coa, '' no_cc, 'NAK' id_pc from mastercoa_v2 where support_gen_adm='N' and support_prod='N' and prod='N' and support_sell='N'
                                 UNION
-                                select no_coa, '' no_cc, 'NAG' id_pc from mastercoa_v2
+                                select no_coa, '' no_cc, 'NAG' id_pc from mastercoa_v2 where support_gen_adm='N' and support_prod='N' and prod='N' and support_sell='N'
                                 ORDER BY no_coa asc) b on b.no_coa = a.no_coa and b.no_cc = a.no_costcenter and b.id_pc = a.kode_pc) b on b.filter = a.id) a $where ";
 
 
