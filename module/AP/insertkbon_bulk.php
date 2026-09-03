@@ -29,6 +29,7 @@ ob_start(); // safety net: buang output tak terduga sebelum echo JSON
 
 include '../../conn/conn.php';
 require_once __DIR__ . '/insertkbon_core.php';
+require_once __DIR__ . '/pv_ppn_group_faktur.php';
 date_default_timezone_set('Asia/Jakarta');
 ini_set('date.timezone', 'Asia/Jakarta');
 ini_set('max_execution_time', 0);
@@ -87,6 +88,13 @@ if (!empty($failed)) {
     mysqli_rollback($conn2);
     pv_bulk_out(['ok' => false, 'failed' => $failed,
         'msg' => count($failed) . ' baris gagal disimpan. SEMUA dibatalkan (rollback) — tidak ada yang tersimpan.']);
+    exit;
+}
+
+// ---- 2b) PPN Masukan billed HEADER: pecah per NOMOR FAKTUR (jaga total=balance) --
+if (!pv_group_ppn_billed_by_faktur($conn2, $kode)) {
+    mysqli_rollback($conn2);
+    pv_bulk_out(['ok' => false, 'msg' => 'Gagal mengelompokkan PPN Masukan per faktur. Tidak ada yang tersimpan.']);
     exit;
 }
 
