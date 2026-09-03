@@ -182,13 +182,31 @@ $decFlag  = ($type === 'bpb') ? 'dec_bpb' : 'dec';
             if ($ids[7] == '73') echo '<button type="button" class="btn-success btn-xs" data-href="form_approve_fin.php"><span class="fa fa-thumbs-up"></span> Accept Fin' . $bdg($c_fin) . '</button> ';
             if ($ids[8] == '74') echo '<button type="button" class="btn-warning btn-xs" data-href="reverse_transfer_inv.php"><span class="fa fa-undo"></span> Reverse</button> ';
         } else {
-            // BPB: 1 tombol Accept BPB (id7 == 76) (identik bpb_received.php)
-            $q = mysqli_query($conn2, "select menurole.id id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Document Handover - Accept BPB Warehouse To Accounting'");
-            $r = mysqli_fetch_array($q);
-            $id7 = isset($r['id']) ? $r['id'] : 0;
-            $rf = mysqli_fetch_array(mysqli_query($conn2, "select count(no_transfer) c from (select no_transfer, CASE WHEN s_post > 0 THEN 'Transfer' WHEN s_cancel > 0 and s_approved = 0 THEN 'Cancel' WHEN s_cancel = 0 and s_approved > 0 THEN 'Approved' WHEN s_cancel > 0 and s_approved > 0 THEN 'Approved Partial' END as status from (select a.no_transfer,COALESCE(s_post,0) s_post,COALESCE(s_cancel,0) s_cancel, COALESCE(s_approved,0) s_approved from (select no_transfer from ir_trans_bpb GROUP BY no_transfer) a left join (select no_transfer,COUNT(status) s_post from ir_trans_bpb where status = 'Transfer' GROUP BY no_transfer) b on b.no_transfer = a.no_transfer LEFT JOIN (select no_transfer,COUNT(status) s_cancel from ir_trans_bpb where status = 'Cancel' GROUP BY no_transfer) c on c.no_transfer = a.no_transfer LEFT JOIN (select no_transfer,COUNT(status) s_approved from ir_trans_bpb where status = 'Approved' GROUP BY no_transfer) d on d.no_transfer = a.no_transfer) a) a where status = 'Transfer'"));
-            $c_bpb = $rf ? $rf['c'] : 0;
-            if ($id7 == '76') echo '<button type="button" class="btn-success btn-xs" data-href="form_approve_bpb.php"><span class="fa fa-thumbs-up"></span> Accept BPB <span class="badge bg-danger text-white" style="font-size:10px">' . $c_bpb . '</span></button>';
+            // BPB & SJ: 2 tombol TERPISAH —
+            //   Accept BPB (menurole id 76): semua transfer NON FG/OUT
+            //   Accept SJ  (menurole id 137): khusus transfer FG/OUT (Surat Jalan)
+            // FG/OUT = Surat Jalan; tidak ada transfer yg mencampur FG/OUT dgn dokumen
+            // lain, jadi pemisahan aman di level no_transfer.
+            $roleId = function ($menu) use ($conn2, $user) {
+                $r = mysqli_fetch_array(mysqli_query($conn2, "select menurole.id id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = '" . mysqli_real_escape_string($conn2, $menu) . "'"));
+                return isset($r['id']) ? $r['id'] : 0;
+            };
+            $id7   = $roleId('Document Handover - Accept BPB Warehouse To Accounting');
+            $id_sj = $roleId('Document Handover - Accept SJ Warehouse To Accounting');
+
+            // Status-per-transfer (sama spt sebelumnya), lalu hitung yg berstatus
+            // 'Transfer' dipecah BPB vs SJ berdasar ada/tidaknya baris FG/OUT.
+            $trfStat = "select no_transfer, CASE WHEN s_post > 0 THEN 'Transfer' WHEN s_cancel > 0 and s_approved = 0 THEN 'Cancel' WHEN s_cancel = 0 and s_approved > 0 THEN 'Approved' WHEN s_cancel > 0 and s_approved > 0 THEN 'Approved Partial' END as status from (select a.no_transfer,COALESCE(s_post,0) s_post,COALESCE(s_cancel,0) s_cancel, COALESCE(s_approved,0) s_approved from (select no_transfer from ir_trans_bpb GROUP BY no_transfer) a left join (select no_transfer,COUNT(status) s_post from ir_trans_bpb where status = 'Transfer' GROUP BY no_transfer) b on b.no_transfer = a.no_transfer LEFT JOIN (select no_transfer,COUNT(status) s_cancel from ir_trans_bpb where status = 'Cancel' GROUP BY no_transfer) c on c.no_transfer = a.no_transfer LEFT JOIN (select no_transfer,COUNT(status) s_approved from ir_trans_bpb where status = 'Approved' GROUP BY no_transfer) d on d.no_transfer = a.no_transfer) a";
+            $fgSet = "select no_transfer from ir_trans_bpb where no_bpb like 'FG/OUT/%'";
+            $cntTrf = function ($cond) use ($conn2, $trfStat) {
+                $r = mysqli_fetch_array(mysqli_query($conn2, "select count(no_transfer) c from ($trfStat) a where status = 'Transfer' $cond"));
+                return $r ? $r['c'] : 0;
+            };
+            $c_bpb = $cntTrf("and no_transfer not in ($fgSet)");
+            $c_sj  = $cntTrf("and no_transfer in ($fgSet)");
+
+            if ($id7 == '76')    echo '<button type="button" class="btn-success btn-xs" data-href="form_approve_bpb.php"><span class="fa fa-thumbs-up"></span> Accept BPB <span class="badge bg-danger text-white" style="font-size:10px">' . $c_bpb . '</span></button> ';
+            if ($id_sj == '137') echo '<button type="button" class="btn-success btn-xs" data-href="form_approve_sj.php"><span class="fa fa-truck"></span> Accept SJ <span class="badge bg-danger text-white" style="font-size:10px">' . $c_sj . '</span></button>';
         }
         ?>
       </div>

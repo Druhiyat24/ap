@@ -1,4 +1,24 @@
 <?php include '../header.php' ?>
+<?php
+// ============================================================================
+// Mode halaman:
+//   'bpb' (default)         -> Accept Transfer BPB (semua dokumen NON FG/OUT)
+//   'sj'  (Surat Jalan)     -> Accept Transfer Surat Jalan (khusus FG/OUT)
+// form_approve_sj.php meng-include file ini dengan $APPROVE_MODE='sj' supaya
+// logikanya identik — yang beda hanya filter jenis dokumen, judul, & redirect.
+// FG/OUT = Surat Jalan (BPB keluar); tidak pernah ada transfer yang mencampur
+// FG/OUT dengan dokumen lain, jadi aman difilter di level no_transfer.
+// ============================================================================
+$APPROVE_MODE = (isset($APPROVE_MODE) && $APPROVE_MODE === 'sj') ? 'sj' : 'bpb';
+$IS_SJ  = ($APPROVE_MODE === 'sj');
+$SELF   = $IS_SJ ? 'form_approve_sj.php' : 'form_approve_bpb.php';
+$TITLE_PAGE  = $IS_SJ ? 'ACCEPT TRANSFER SURAT JALAN (FG/OUT) FROM WAREHOUSE TO ACCOUNTING' : 'ACCEPT TRANSFER BPB FROM WAREHOUSE TO ACCOUNTING';
+$TITLE_MODAL = $IS_SJ ? 'ACCEPT TRANSFER SURAT JALAN' : 'ACCEPT TRANSFER BPB';
+// Filter jenis dokumen di ir_trans_bpb — SJ hanya FG/OUT, BPB semua selain FG/OUT.
+$DOC_FILTER = $IS_SJ
+    ? "and no_transfer in (select no_transfer from ir_trans_bpb where no_bpb like 'FG/OUT/%')"
+    : "and no_transfer not in (select no_transfer from ir_trans_bpb where no_bpb like 'FG/OUT/%')";
+?>
 <!-- DH-SKIN-START -->
 <style>
   /* ===== Skin "Document Handover" (inline) — meniru document_handover.php ===== */
@@ -19,25 +39,23 @@
     display:flex; align-items:center; gap:10px;
   }
   .col.p-4 > h3.text-center .fa{ font-size:16px; opacity:.95; }
-  #form-data{
-    background:#fff; border:1px solid #e8edf5; border-top:0;
-    border-radius:0 0 14px 14px; padding:18px 20px 8px;
-    box-shadow:0 8px 30px rgba(15,23,42,.06); margin:0 0 22px !important;
-  }
-
-  /* ===== CARD 2 = tabel + footer (Total Amount + Post/Back) jadi SATU card ===== */
+  /* ===== Header + tabel + Back = SATU kartu utuh =====
+     Sudut atas membulat dari header (h3), sudut bawah dari sini. */
   .col.p-4 .box.body{
-    background:#fff !important; border:1px solid #e8edf5 !important; border-radius:14px !important;
-    padding:18px 20px !important; box-shadow:0 8px 30px rgba(15,23,42,.06) !important; margin:0 !important;
+    background:#fff !important; border:1px solid #e8edf5 !important; border-top:0 !important;
+    border-radius:0 0 14px 14px !important;
+    padding:18px 20px !important; box-shadow:0 12px 30px rgba(15,23,42,.07) !important; margin:0 !important;
   }
   .col.p-4 .box.body > .row{ margin:0 !important; }
   .col.p-4 .box.body .col-md-12{ padding:0 !important; }
   #mytable_wrapper{ background:transparent; border:0; box-shadow:none; padding:0; }
-  /* Footer (total + tombol) nyatu di dalam card, dipisah garis halus di atasnya */
+  /* Footer (tombol Back) nyatu DI DALAM card tabel, dipisah garis halus di atasnya */
   .col.p-4 .box.footer{
     background:transparent !important; border:0 !important; box-shadow:none !important;
-    padding:14px 2px 2px !important; margin-top:12px !important; border-top:1px solid #eef2f7 !important;
+    padding:14px 0 0 !important; margin-top:14px !important; border-top:1px solid #eef2f7 !important;
   }
+  .col.p-4 .box.footer .form-row.col{ margin:0 !important; padding:0 !important; }
+  .col.p-4 .box.footer .col-md-3{ padding:0 !important; }
 
   /* Tabel utama -> header biru + hover (seperti Document Handover) */
   #mytable{ border-collapse:separate !important; border-spacing:0; }
@@ -57,6 +75,40 @@
   /* Perbesar modal (mis. Accept = modal-lg) sedikit */
   .modal-lg{ max-width:920px !important; }
 
+  /* ===== Modal Accept (#modal-approve): diperlebar, tinggi DIBATASI dengan
+     scroll internal pada tabel (header tabel tetap menempel), tampilan lebih rapi.
+     Catatan: tabel di modal ini BUKAN DataTable (tanpa paging) & tombol Accept
+     mengiterasi SEMUA baris di DOM — jadi scroll tidak mengurangi yang di-approve. */
+  #modal-approve .modal-dialog{ max-width:1080px !important; margin:1.6rem auto; }
+  #modal-approve .modal-content{ max-height:92vh; }
+  /* .container bawaan Bootstrap membatasi lebar — paksa penuh mengikuti dialog */
+  #modal-approve .container{ max-width:100% !important; width:100% !important; padding:0 16px 14px; }
+  /* Info No Document & Document Date = satu KOTAK dgn label kecil (uppercase)
+     di atas dan nilainya di bawah, dibagi kiri-kanan. */
+  #modal-approve .container > .row{ margin:0; display:flex; flex-wrap:wrap; align-items:stretch; }
+  #modal-approve .trf-meta{
+    flex:0 0 100%; width:100%;
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:6px 32px;
+    margin:14px 0 2px; padding:12px 16px;
+    background:#f8fafc; border:1px solid #e6ebf3; border-radius:10px;
+  }
+  #modal-approve .trf-meta > div{ display:flex; flex-direction:column; min-width:0; }
+  #modal-approve .tm-lbl{ font-size:10.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:#94a3b8; margin-bottom:3px; }
+  #modal-approve .tm-val{ font-size:14px; font-weight:600; color:#1e293b; }
+  /* Area tabel: penuh 1 baris, batasi tinggi + scroll vertikal, header sticky */
+  #modal-approve .card-body.table-responsive{
+    flex:0 0 100%; width:100%;
+    max-height:56vh; overflow:auto !important; margin:10px 0 0; padding:0 !important;
+    border:1px solid #e8edf5 !important; border-radius:12px;
+  }
+  #mytable2{ margin:0 !important; }
+  #mytable2 thead th{ position:sticky; top:0; z-index:3; }
+  #mytable2 tbody tr:hover{ background:#eef4ff; }
+  /* Teks sel tabel rata kiri (kolom checkbox tetap di tengah) */
+  #mytable2 th, #mytable2 td{ text-align:left !important; }
+  #mytable2 th:first-child, #mytable2 td:first-child{ text-align:center !important; }
+  #modal-approve .modal-footer{ border-top:1px solid #eef2f7; padding:12px 20px; }
+
   /* Tombol Post / Back / Accept lebih modern */
   #simpan,#batal,#approve,#reject,#post,#accept{ border-radius:8px !important; font-weight:600; padding:6px 16px; transition:transform .12s ease, box-shadow .15s ease; }
   #simpan:hover,#batal:hover,#approve:hover,#reject:hover,#post:hover,#accept:hover{ transform:translateY(-1px); box-shadow:0 5px 13px rgba(30,58,138,.2); }
@@ -75,50 +127,9 @@
 
     <!-- MAIN -->    
     <div class="col p-4">
-        <h3 class="text-center">ACCEPT TRANSFER BPB FROM WAREHOUSE TO ACCOUNTING</h3>
+        <h3 class="text-center"><?= $TITLE_PAGE ?></h3>
 <div class="box">
-    <div class="box header">
-<form id="form-data" action="form_approve_bpb.php" method="post">
-        <div class="form-row">
-            <div class="col-md-6">
-            <label for="nama_supp"><b>Supplier</b></label>            
-              <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true" onchange="this.form.submit()">
-                <option value="ALL" <?php
-                $nama_supp = '';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $status = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
-                }                 
-                    if($nama_supp == 'ALL'){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
-                    }
-                    echo $isSelected;
-                ?>                
-                >ALL</option>                                 
-                <?php
-                $nama_supp ='';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
-                }                 
-                $sql = mysqli_query($conn1,"select distinct(Supplier) from mastersupplier where tipe_sup = 'S' order by Supplier ASC");
-                while ($row = mysqli_fetch_array($sql)) {
-                    $data = $row['Supplier'];
-                    if($row['Supplier'] == $_POST['nama_supp']){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
-                    }
-                    echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
-                }?>
-                </select>
-                </div>  
-
-           
-</div>                   
-    </br>
-    </div>
-</form>
+    <!-- Filter Supplier dihapus (tidak terpakai) — tabel selalu tampil semua transfer. -->
     <div class="box body">
         <div class="row">
         
@@ -162,11 +173,8 @@
             // $sql = mysqli_query($conn2,"select doc_number,tgl_penerimaan,nama_supp,total_amount, status, CONCAT(created_by,' (',created_date,')') create_user,updated_at from ir_invoice_supp_h where status = 'Post Pch To Fin' and nama_supp = '$nama_supp'");
             // }
 
-            if(empty($nama_supp) or $nama_supp == 'ALL'){
-            $sql = mysqli_query($conn2,"select no_transfer,tgl_transfer,nama_supp,SUM(total) total,created_at,created_by from ir_trans_bpb where status = 'Transfer' GROUP BY no_transfer");                
-            }else {
-            $sql = mysqli_query($conn2,"select no_transfer,tgl_transfer,nama_supp,SUM(total) total,created_at,created_by from ir_trans_bpb where status = 'Transfer' and nama_supp = '$nama_supp' GROUP BY no_transfer");
-            }
+            // $DOC_FILTER memisahkan BPB vs Surat Jalan (FG/OUT) sesuai mode halaman.
+            $sql = mysqli_query($conn2,"select no_transfer,tgl_transfer,nama_supp,SUM(total) total,created_at,created_by from ir_trans_bpb where status = 'Transfer' $DOC_FILTER GROUP BY no_transfer");
                                                                          
             while($row = mysqli_fetch_array($sql)){                               
                     echo'<tr>                       
@@ -182,9 +190,14 @@
                    
                     } ?>
                     </tbody>
-                    </table> 
-                    </div> 
-                    </div>                   
+                    </table>
+                    </div>
+                    </div>
+
+        <!-- Footer (Back) — nyatu di dalam card tabel -->
+        <div class="box footer">
+            <button type="button" style="border-radius: 6px" class="btn-outline-danger" name="batal" id="batal" onclick="location.href='document_handover.php?type=bpb'"><span class="fa fa-angle-double-left"></span> Back</button>
+        </div>
 
 <div class="modal fade" id="mymodalkbon" data-target="#mymodalkbon" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
         <div class="modal-dialog">
@@ -211,12 +224,14 @@
         <div class="modal-content">
         <div class="modal-header bg-dark text-white">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-        <h5 class="modal-title" id="txt_dp">ACCEPT TRANSFER BPB</h5>
+        <h5 class="modal-title" id="txt_dp"><?= $TITLE_MODAL ?></h5>
         </div>
         <div class="container">
         <div class="row">
-            <div id="txt_notrf" class="modal-body col-6" style="font-size: 14px;"></div>
-          <div id="txt_tgl_trf" class="modal-body col-6" style="font-size: 14px;"></div>
+          <div class="trf-meta">
+            <div><span class="tm-lbl">No Document</span><span class="tm-val" id="txt_notrf">-</span></div>
+            <div><span class="tm-lbl">Document Date</span><span class="tm-val" id="txt_tgl_trf">-</span></div>
+          </div>
           <div class="card-body table-responsive">
                 <!-- <div class="d-flex justify-content-between mr-2 mb-1">
                     <div class="ml-auto">
@@ -258,17 +273,6 @@
 </div>
                      
                     
-<div class="box footer">   
-        <form id="form-simpan">
-           <div class="form-row col">
-            <div class="col-md-3 mb-3">  
-            </br>                            
-            <button type="button" style="border-radius: 6px" class="btn-outline-warning" name="batal" id="batal" onclick="location.href='document_handover.php?type=bpb'"><span class="fa fa-angle-double-left"></span> Back</button>         
-            </div>
-            </div>                                   
-        </form>
-        </div>        
-                                
 </div><!-- body-row END -->
 </div>
 
@@ -345,8 +349,8 @@ function SidebarCollapse () {
             }
         }); 
 
-        $('#txt_notrf').html('<b>No Document : </b>' + notrf + '');
-        $('#txt_tgl_trf').html('<b>Document Date : </b>' + tgl_trf + ''); 
+        $('#txt_notrf').text(notrf);
+        $('#txt_tgl_trf').text(tgl_trf);
         $('#modal-approve').modal('show');
     });
 </script>   
@@ -510,7 +514,7 @@ $(document).ready(function(){
             },
             success: function(response){                
                 console.log(response);
-                window.location = 'form_approve_bpb.php';
+                window.location = '<?= $SELF ?>';
                                                
             },
             error:  function (xhr, ajaxOptions, thrownError) {
@@ -540,7 +544,7 @@ $(document).ready(function(){
             },
             success: function(response){                
                 console.log(response);
-                window.location = 'form_approve_bpb.php';                                               
+                window.location = '<?= $SELF ?>';                                               
             },
             error:  function (xhr, ajaxOptions, thrownError) {
                alert(xhr);
