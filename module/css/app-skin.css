@@ -218,14 +218,25 @@ table.app-dt ul.dtr-details .dtr-data{ color:#0f172a; font-size:13px; }
 .datepicker table tr td span.active:hover{ background:#1E3A8A !important; background-image:none !important; color:#fff; text-shadow:none; }
 
 /* ============================================================================
-   Skeleton loading (shimmer) — dipakai lewat #<id>Skeleton di dalam .app-dt-wrap
+   Loading overlay + spinner — menutup HANYA area tabel (posisi/ukuran di-set JS)
    ============================================================================ */
 .app-dt-wrap{ position:relative; }
-.app-skeleton{ position:absolute; top:0; left:0; right:0; z-index:6; background:#fff; }
-.app-skeleton .sk-head{ height:44px; background:#1E3A8A; border-radius:8px 8px 0 0; margin-bottom:2px; opacity:.92; }
-.app-skeleton .sk-row{ display:flex; gap:16px; align-items:center; padding:14px; border-bottom:1px solid #f1f5f9; }
-.app-skeleton .sk-bar{ height:12px; border-radius:6px; background:linear-gradient(90deg,#eef2f7 25%,#e2e8f0 37%,#eef2f7 63%); background-size:400% 100%; animation:sk-shimmer 1.3s ease infinite; }
-@keyframes sk-shimmer{ 0%{ background-position:100% 0; } 100%{ background-position:0 0; } }
+.app-dt-overlay{
+  position:absolute; z-index:6; display:flex; align-items:center; justify-content:center;
+  background:rgba(248,250,252,.55); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px);
+  border-radius:10px;
+}
+.app-spin-box{
+  display:flex; flex-direction:column; align-items:center; gap:12px; padding:20px 28px;
+  background:#fff; border-radius:14px; box-shadow:0 14px 38px rgba(15,23,42,.18);
+}
+.app-spinner{
+  width:44px; height:44px; border-radius:50%; box-sizing:border-box;
+  border:4px solid #e8edf5; border-top-color:#1E3A8A; border-right-color:#3b82f6;
+  animation:app-spin .7s linear infinite;
+}
+.app-spin-txt{ font-size:12.5px; font-weight:600; color:#64748b; letter-spacing:.03em; }
+@keyframes app-spin{ to{ transform:rotate(360deg); } }
 
 /* Angka nominal rata sempurna antar baris */
 .kb-amt{ font-variant-numeric:tabular-nums; }

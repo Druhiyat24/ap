@@ -116,21 +116,12 @@ while ($sq && ($sx = mysqli_fetch_assoc($sq))) { if (!empty($sx['st'])) $stOpts[
   <div class="card app-card border-0 mt-4">
     <div class="card-body p-4">
       <div class="app-dt-wrap">
-        <!-- Skeleton loading (shimmer) — ditutup saat draw pertama -->
-        <div id="kbSkeleton" class="app-skeleton">
-          <div class="sk-head"></div>
-          <?php for ($i = 0; $i < 8; $i++): ?>
-          <div class="sk-row">
-            <span class="sk-bar" style="width:22px"></span>
-            <span class="sk-bar" style="flex:0 0 15%"></span>
-            <span class="sk-bar" style="flex:0 0 9%"></span>
-            <span class="sk-bar" style="flex:0 0 9%"></span>
-            <span class="sk-bar" style="flex:0 0 13%"></span>
-            <span class="sk-bar" style="flex:0 0 10%"></span>
-            <span class="sk-bar" style="flex:0 0 8%"></span>
-            <span class="sk-bar" style="flex:1"></span>
+        <!-- Loading overlay: spinner dalam kartu, menutup HANYA area tabel (ukuran di-set via JS) -->
+        <div id="kbSpin" class="app-dt-overlay" style="display:none">
+          <div class="app-spin-box" role="status" aria-label="Loading">
+            <span class="app-spinner"></span>
+            <span class="app-spin-txt">Loading&hellip;</span>
           </div>
-          <?php endfor; ?>
         </div>
         <table id="tblKb" class="table table-hover app-dt" style="width:100%">
           <thead class="table-gradient">
@@ -242,9 +233,22 @@ $(function () {
     ]
   });
 
-  // Skeleton loading: tampil saat request, sembunyi saat data selesai digambar.
-  kbTable.on('preXhr.dt', function () { $('#kbSkeleton').show(); });
-  kbTable.on('draw.dt',   function () { $('#kbSkeleton').hide(); });
+  // Loading overlay (spinner) — ukur ke posisi & ukuran tabel supaya HANYA area
+  // tabel yang tertutup (bukan filter/pagination), tampil saat request, sembunyi
+  // saat data selesai digambar.
+  function kbShowSpin() {
+    var $t = $('#tblKb'); if (!$t.length) return;
+    var pos = $t.position() || { top: 0, left: 0 };
+    $('#kbSpin').css({
+      top:    pos.top,
+      left:   pos.left,
+      width:  $t.outerWidth() || '100%',
+      height: Math.max($t.outerHeight() || 0, 180)
+    }).css('display', 'flex');
+  }
+  kbTable.on('preXhr.dt', function () { kbShowSpin(); });
+  kbTable.on('draw.dt',   function () { $('#kbSpin').hide(); });
+  kbShowSpin(); // tampilkan saat load pertama (draw pertama akan menyembunyikan)
 
   // Search -> reload tabel (bukan reload halaman)
   $('#form-filter').on('submit', function (e) { e.preventDefault(); kbTable.ajax.reload(); });
