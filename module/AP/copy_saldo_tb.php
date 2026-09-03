@@ -36,17 +36,30 @@ if(!$execute4){
 	$sld_akhir = isset($rowy['sld_akhir']) ? $rowy['sld_akhir'] : 0;
 
 
-	$sqlupdate2 = "UPDATE saldo_awal_tb
-				SET saldo_awal_tb.$saldo_to = $sld_akhir
-				where saldo_awal_tb.no_coa = '3.40.01'";
-				
-	$execute2 = mysqli_query($conn2, $sqlupdate2);
+	// TUTUP BUKU AKHIR TAHUN: kalau periode tujuan = Januari (awal tahun baru), Laba
+	// Tahun Berjalan (3.40.01) di-NOL-kan dan akumulasinya (laba tahun berjalan =
+	// $sld_akhir) DIPINDAH ke Laba Ditahan (3.30.01). Selain Januari: perilaku lama
+	// (3.40.01 = akumulasi laba tahun berjalan berjalan; 3.30.01 tetap carry).
+	$isYearStart = (strncasecmp($saldo_to, 'Jan_', 4) === 0);
+	if ($isYearStart) {
+		// 3.30.01 = saldo akhir laba ditahan (dari temp) + laba tahun berjalan yg ditutup.
+		$sqlupdate2 = "UPDATE saldo_awal_tb sa
+					INNER JOIN tbl_saldo_tb_temp t ON t.no_coa = sa.no_coa
+					SET sa.$saldo_to = t.end_balance + ($sld_akhir)
+					where sa.no_coa = '3.30.01'";
+		$execute2 = mysqli_query($conn2, $sqlupdate2);
 
-	$sqlupdate3 = "UPDATE saldo_awal_tb
-				SET saldo_awal_tb.$saldo_to = $sld_akhir
-				where saldo_awal_tb.no_coa = '3.40.01'";
-				
-	$execute3 = mysqli_query($conn2, $sqlupdate3);
+		// 3.40.01 mulai lagi dari 0 di tahun baru.
+		$sqlupdate3 = "UPDATE saldo_awal_tb
+					SET saldo_awal_tb.$saldo_to = 0
+					where saldo_awal_tb.no_coa = '3.40.01'";
+		$execute3 = mysqli_query($conn2, $sqlupdate3);
+	} else {
+		$sqlupdate2 = "UPDATE saldo_awal_tb
+					SET saldo_awal_tb.$saldo_to = $sld_akhir
+					where saldo_awal_tb.no_coa = '3.40.01'";
+		$execute2 = mysqli_query($conn2, $sqlupdate2);
+	}
 
 
 	$queryss3 = "INSERT INTO tbl_log_copsal_tb (copy_user,copy_date,to_saldo)
