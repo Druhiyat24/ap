@@ -11,6 +11,10 @@ $excludeDoc = trim($_POST['exclude_doc'] ?? '');   // mode edit: abaikan invoice
 if ($no_inv === '')   { echo json_encode(['ok' => false, 'msg' => 'Invoice number is empty.']); exit; }
 if ($supplier === '') { echo json_encode(['ok' => false, 'msg' => 'Please select the Supplier first.']); exit; }
 
+// No Invoice strip ("-") = penanda "tanpa nomor invoice". Boleh dipakai berkali-kali,
+// termasuk oleh supplier yang sama -> lewati cek "sudah dipakai" (sama spt faktur).
+if (preg_match('/^-+$/', $no_inv)) { echo json_encode(['ok' => true]); exit; }
+
 $ni = mysqli_real_escape_string($conn2, $no_inv);
 $sp = mysqli_real_escape_string($conn2, $supplier);
 $excCond = ($excludeDoc !== '') ? " AND h.doc_number <> '" . mysqli_real_escape_string($conn2, $excludeDoc) . "'" : '';

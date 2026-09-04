@@ -457,7 +457,11 @@ $(function () {
     var amt = parseFloat(($('#new_inv_amt').val() || '').replace(/,/g,'')) || 0;
     if (no === '') { Swal.fire({icon:'warning', title:'No Invoice required', text:'Enter the invoice number first.'}); $('#new_inv_no').focus(); return; }
     if (amt <= 0) { Swal.fire({icon:'warning', title:'Amount required', text:'Amount must be greater than 0.'}); $('#new_inv_amt').focus(); return; }
-    var dup = false; $('#invBody .inv-no').each(function(){ if (($(this).val()||'') === no) dup = true; });
+    // No Invoice strip ("-") = penanda "tanpa nomor invoice", boleh dipakai
+    // berkali-kali -> aturan "tidak boleh dobel" dilewati (sama spt faktur).
+    var isStripInv = /^-+$/.test(no);
+    var dup = false;
+    if (!isStripInv) { $('#invBody .inv-no').each(function(){ if (($(this).val()||'') === no) dup = true; }); }
     if (dup) { Swal.fire({icon:'info', title:'Already added', text:'Invoice ' + no + ' is already in the list.'}); return; }
     var $btn = $(this).prop('disabled', true);
     $.post('kontrabon_new_check_inv.php', { no_inv: no, supplier: $('#nama_supp').val(), exclude_doc: DOC }, function (res) {
