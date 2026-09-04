@@ -426,39 +426,62 @@ $(document).ready(function(){
 </script>-->
 
 <script type="text/javascript">
-    $("#form-simpan").on("click", "#simpan", function(){
-        $("input[type=checkbox]:checked").each(function () {        
-        var ceklist = document.getElementById('select').value;         
-        var no_bpb = $(this).closest('tr').find('td:eq(1)').attr('value');
-        var no_bpb_asal = $(this).closest('tr').find('td:eq(4)').attr('value');
-        var create_user = '<?php echo $user ?>';
-        var start_date = document.getElementById('start_date').value;
-        var end_date = document.getElementById('end_date').value;
-        var tgl_po = $(this).closest('tr').find('td:eq(9)').attr('value');
-        var pterms = $(this).closest('tr').find('td:eq(10)').attr('value');        
+    // Guard anti DOUBLE-SUBMIT: selama proses simpan berjalan, klik berikutnya
+    // (atau klik ganda) diabaikan. Dulu tiap klik mengirim ulang SEMUA baris
+    // tercentang -> data tersimpan dobel.
+    var fmvSaving = false;
 
-        $.ajax({
-            type:'POST',
-            url:'insertfmvbpb.php',
-            data: {'no_bpb':no_bpb, 'no_bpb_asal':no_bpb_asal, 'ceklist':ceklist, 'create_user':create_user, 'start_date':start_date, 'end_date':end_date, 'tgl_po':tgl_po, 'pterms':pterms},
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){                
-                console.log(response);
+    $("#form-simpan").on("click", "#simpan", function(){
+
+        if (fmvSaving) return;
+
+        // Hanya checkbox BARIS (name="select[]"). Dulu memakai
+        // input[type=checkbox]:checked sehingga #select_all ikut terkirim
+        // sebagai 1 request bogus (no_bpb undefined).
+        var $rows = $("input[name='select[]']:checked");
+        if ($rows.length === 0) { alert("Please check the BPB number"); return; }
+
+        fmvSaving = true;
+        var $btn = $(this).prop('disabled', true);
+
+        var ceklist     = document.getElementById('select').value;
+        var create_user = '<?php echo $user ?>';
+        var start_date  = document.getElementById('start_date').value;
+        var end_date    = document.getElementById('end_date').value;
+
+        var reqs = [];
+
+        $rows.each(function () {
+            var tr = $(this).closest('tr');
+            reqs.push($.ajax({
+                type:'POST',
+                url:'insertfmvbpb.php',
+                data:{
+                    'no_bpb'      : tr.find('td:eq(1)').attr('value'),
+                    'no_bpb_asal' : tr.find('td:eq(4)').attr('value'),
+                    'ceklist'     : ceklist,
+                    'create_user' : create_user,
+                    'start_date'  : start_date,
+                    'end_date'    : end_date,
+                    'tgl_po'      : tr.find('td:eq(9)').attr('value'),
+                    'pterms'      : tr.find('td:eq(10)').attr('value')
+                }
+            }));
+        });
+
+        // Tunggu SEMUA request selesai baru pindah halaman. Dulu redirect
+        // dijalankan di success baris PERTAMA, sehingga request baris lain
+        // bisa terputus (tersimpan sebagian).
+        $.when.apply($, reqs)
+            .done(function(){
+                alert("Data saved successfully");
                 window.location = 'verifikasibpb.php';
-                                               
-            },
-            error:  function (xhr, ajaxOptions, thrownError) {
-               alert(xhr);
-            }
-        });
-        });
-        if(document.querySelectorAll("input[name='select[]']:checked").length >= 1){
-            alert("Data saved successfully");
-        }else{
-            alert("Please check the BPB number");
-        }        
+            })
+            .fail(function(){
+                fmvSaving = false;
+                $btn.prop('disabled', false);
+                alert("Gagal menyimpan sebagian data. Silakan cek lalu ulangi.");
+            });
     });
 </script>
 

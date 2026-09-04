@@ -16,6 +16,18 @@ $confirm_date = '0000-00-00 00:00:00';
 $tgl_po = $_POST['tgl_po'];
 $pterms = $_POST['pterms'];
 
+// ==========================================================================
+// GUARD ANTI DOUBLE-SAVE. Satu BPB hanya boleh diverifikasi SEKALI. Karena 1
+// BPB menghasilkan BANYAK baris bpb_new (satu per item), keberadaan baris apa
+// pun untuk no_bpb ini berarti sudah pernah tersimpan -> jangan insert lagi.
+// (Kasus nyata: klik Save 2x -> tiap item dobel di bpb_new & bpb_ri.)
+// ==========================================================================
+$cekDup = mysqli_query($conn2, "SELECT 1 FROM bpb_new WHERE no_bpb = '" . mysqli_real_escape_string($conn2, $no_bpb) . "' LIMIT 1");
+if ($cekDup && mysqli_num_rows($cekDup) > 0) {
+    echo "SKIP: BPB " . $no_bpb . " sudah pernah diverifikasi, tidak disimpan ulang.";
+    exit;
+}
+
 if(strpos($no_bpb, '/IN/') !== false) {
 if(strpos($no_bpb, 'GEN/') !== false) {
 $sql = mysqli_query($conn1,"select bpb.id ,bpb.bpbno_int, bpb.pono, bpb.id_item, masteritem.itemdesc, masteritem.color, masteritem.size, IF(bpb.qty_reject IS NULL,(bpb.qty), (bpb.qty - bpb.qty_reject)) as qty, bpb.unit, bpb.price ,po_header.tax, bpb.bpbdate, mastersupplier.Supplier, po_header.jml_pterms, bpb.kpno, bpb.curr, bpb.confirm_by, bpb.id_supplier, ifnull(bpb.profit_center,'NAG') profit_center from bpb INNER JOIN po_header on po_header.pono = bpb.pono INNER JOIN mastersupplier on mastersupplier.Id_Supplier = bpb.id_supplier INNER JOIN masteritem on masteritem.id_item = bpb.id_item where bpb.confirm='Y' and status_retur = 'N' and po_header.app = 'A' and cancel = 'N' and bpb.bpbno_int = '$no_bpb'");	
