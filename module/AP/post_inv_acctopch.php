@@ -255,10 +255,22 @@
             
             while($row = mysqli_fetch_array($sql)){
             if ($row['no_trans'] == null || $row['no_trans'] == '') { $no_trans = '-'; }else{ $no_trans = $row['no_trans'];}                    
-                    echo '<tr>
-                            <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" <?php if(in_array("1",$_POST[select])) echo "checked=checked";?></td>                        
+                    // Kelengkapan: HANYA berlaku utk IR alur baru (punya ir_kontrabon_h).
+                    // IR wajib sudah ada BPB baru boleh ditransfer. Menu ini juga menampilkan
+                    // IR berstatus 'Received' (belum lewat Fin->Acc), jadi gate-nya harus ada
+                    // di sini juga - kalau tidak, IR tanpa BPB bisa lolos lewat jalur ini.
+                    // FAKTUR tidak digating: nomor faktur sah boleh berupa strip "-".
+                    $docE = mysqli_real_escape_string($conn2, $row['doc_number']);
+                    $chk = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT
+                        (SELECT COUNT(*) FROM ir_kontrabon_h kh WHERE kh.doc_number='$docE') has_kh,
+                        (SELECT COUNT(*) FROM ir_kontrabon_bpb b JOIN ir_kontrabon_h kh ON kh.unik_code=b.unik_code WHERE kh.doc_number='$docE') bpb"));
+                    $isIncomplete = ((int)($chk['has_kh'] ?? 0) > 0 && (int)($chk['bpb'] ?? 0) === 0);
+                    $cbDisabled = $isIncomplete ? ' disabled title="IR belum ada BPB - tidak bisa ditransfer"' : '';
+                    $note = $isIncomplete ? '<br><small style="color:#dc2626;font-weight:600;font-size:10px;"><i class="fa fa-exclamation-triangle"></i> belum ada BPB &mdash; tidak bisa ditransfer</small>' : '';
+                    echo '<tr'.($isIncomplete ? ' style="background:#fef2f2;"' : '').'>
+                            <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value=""'.$cbDisabled.'  <?php if(in_array("1",$_POST[select])) echo "checked=checked";?></td>                        
                             <td style="width:50px;" value="'.$no_trans.'">'.$no_trans.'</td>
-                            <td style="width:50px;" value="'.$row['doc_number'].'">'.$row['doc_number'].'</td>
+                            <td style="width:50px;" value="'.$row['doc_number'].'">'.$row['doc_number'].$note.'</td>
                             <td style="width:100px;" value="'.$row['tgl_penerimaan'].'">'.date("d-M-Y",strtotime($row['tgl_penerimaan'])).'</td>
                             <td style="" value="'.$row['nama_supp'].'">'.$row['nama_supp'].'</td>
                             <td style ="text-align: right;" class="dt_total" style="width:100px;" value="'.$row['total_amount'].'">'.number_format($row['total_amount'],2).'</td>

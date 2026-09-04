@@ -16,12 +16,15 @@ $kode_trans = $_POST['kode_trans'];
 $unik_code = $_POST['unik_code'];
 
 // GUARD kelengkapan: IR alur baru (punya ir_kontrabon_h) WAJIB sudah ada BPB
-// sebelum transfer pertama (Fin->Acc / TFTA).
+// sebelum ditransfer. Berlaku utk TFTA (Fin->Acc) DAN TATP (Acc->Pch),
+// karena menu Acc->Pch juga menampilkan IR berstatus 'Received' sehingga bisa
+// dipakai melompati tahap Fin->Acc. TPTF tidak perlu: menunya hanya menerima
+// dokumen berstatus 'Accepted Pch' yang pasti sudah lewat gate di atas.
 // FAKTUR TIDAK ikut digating: nomor faktur yang sah boleh berupa strip "-"
 // (artinya memang tanpa nomor faktur), jadi keberadaan faktur tidak bisa
 // dipakai sebagai syarat transfer.
 // IR lama tanpa ir_kontrabon_h juga tidak digating supaya alur lama tidak terganggu.
-if ($kode_trans == 'TFTA') {
+if ($kode_trans === 'TFTA' || $kode_trans === 'TATP') {
     $de = mysqli_real_escape_string($conn2, $no_kbon);
     $g = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT
         (SELECT COUNT(*) FROM ir_kontrabon_h kh WHERE kh.doc_number='$de') has_kh,
@@ -46,7 +49,7 @@ $execute = mysqli_query($conn2,$query);
 if(!$execute){	
    die('Error: ' . mysqli_error());	
 }else{
-	if ($kode_trans == 'TFTA') {
+	if ($kode_trans === 'TFTA' || $kode_trans === 'TATP') {
 		$sql_upt = "update ir_invoice_supp_h set status = 'Post Fin To Acc', updated_at = '$create_date',tfta_by = '$create_user', tfta_date = '$tgl_doc', cancel_acc_by = null, cancel_acc_date = null where doc_number = '$no_kbon'";
 	}elseif($kode_trans == 'TATP'){
 		$sql_upt = "update ir_invoice_supp_h set status = 'Post Acc To Pch', updated_at = '$create_date',tatp_by = '$create_user', tatp_date = '$tgl_doc', cancel_pch_by = null, cancel_pch_date = null where doc_number = '$no_kbon'";
