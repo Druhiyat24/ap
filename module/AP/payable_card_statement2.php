@@ -316,14 +316,14 @@
         <div class="col-md-2">
           <label for="start_date" class="form-label"><i class="far fa-calendar-alt me-1"></i> From</label>
           <input type="text" class="form-control form-control-sm tanggal" id="start_date" name="start_date"
-          value="<?php echo !empty($_POST['start_date']) ? $_POST['start_date'] : '2026-07-01'; ?>" placeholder="Start Date" autocomplete="off">
+          value="<?php echo !empty($_POST['start_date']) ? $_POST['start_date'] : date('Y-m-d'); ?>" placeholder="Start Date" autocomplete="off">
         </div>
 
         <!-- End Date -->
         <div class="col-md-2">
           <label for="end_date" class="form-label"><i class="far fa-calendar-alt me-1"></i> To</label>
           <input type="text" class="form-control form-control-sm tanggal" id="end_date" name="end_date"
-          value="<?php echo !empty($_POST['end_date']) ? $_POST['end_date'] : '2026-07-01'; ?>" placeholder="End Date" autocomplete="off">
+          value="<?php echo !empty($_POST['end_date']) ? $_POST['end_date'] : date('Y-m-d'); ?>" placeholder="End Date" autocomplete="off">
         </div>
 
         <!-- Tombol -->
