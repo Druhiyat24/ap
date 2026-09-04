@@ -44,7 +44,11 @@ try {
     }
 
 
-    $sql_insert = "insert INTO tbl_list_journal
+    // Daftar kolom DITULIS EKSPLISIT: tbl_list_journal punya kolom faktur_pajak &
+    // tgl_faktur_pajak yang tidak dihasilkan query ini (repost BPB = tahap PPN
+    // UNBILLED, belum ada faktur pajak), jadi "INSERT ... SELECT" tanpa daftar
+    // kolom bikin "Column count doesn't match value count".
+    $sql_insert = "insert INTO tbl_list_journal (id, no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center)
 WITH
 rate as (select curr, tanggal, rate from ap_masterrate where v_codecurr = 'PAJAK' GROUP BY curr, tanggal),
 
@@ -117,7 +121,10 @@ WHERE EXISTS (
     }
 
 
-    $sql_ro_insert = "insert into tbl_list_journal
+    // Daftar kolom DITULIS EKSPLISIT: tbl_list_journal punya kolom faktur_pajak &
+    // tgl_faktur_pajak yang tidak dihasilkan query ini, jadi "INSERT ... SELECT" tanpa
+    // daftar kolom bikin "Column count doesn't match value count".
+    $sql_ro_insert = "insert into tbl_list_journal (id, no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center)
 WITH
 rate as (select curr, tanggal, rate from ap_masterrate where v_codecurr = 'PAJAK' GROUP BY curr, tanggal),
 
