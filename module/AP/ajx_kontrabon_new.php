@@ -32,8 +32,7 @@ $transExpr = ($tt && mysqli_num_rows($tt) > 0)
 $res = mysqli_query($conn2, "SELECT kh.doc_number, kh.kontrabon_date, kh.document_date, kh.no_reff, kh.nama_supp, kh.total_amount, kh.amount_add_pv,
         kh.status AS kb_status, kh.create_user, kh.create_date, ih.status AS ir_status,
         $transExpr AS trans_cnt,
-        (SELECT COUNT(*) FROM ir_kontrabon_bpb b WHERE b.unik_code = kh.unik_code) AS bpb_cnt,
-        (SELECT COUNT(*) FROM ir_kontrabon_faktur f WHERE f.unik_code = kh.unik_code) AS fk_cnt
+        (SELECT COUNT(*) FROM ir_kontrabon_bpb b WHERE b.unik_code = kh.unik_code) AS bpb_cnt
     FROM ir_kontrabon_h kh
     LEFT JOIN ir_invoice_supp_h ih ON ih.doc_number = kh.doc_number
     $where ORDER BY kh.id DESC");
@@ -48,19 +47,14 @@ while ($res && ($r = mysqli_fetch_assoc($res))) {
     $bcls = ($lc === 'cancel') ? 'cancel' : (($lc === 'draft') ? 'draft' : (($lc === 'received') ? 'received' : 'process'));
     $canModify = ($eStat === 'Draft' || $eStat === 'Received') && (int) ($r['trans_cnt'] ?? 0) === 0;
 
-    // Kelengkapan IR: harus ada faktur DAN BPB. Kalau belum, tampilkan notif kecil di
-    // bawah nomor. (IR Cancel tidak diberi notif.)
+    // Kelengkapan IR: yang menghalangi transfer HANYA BPB. Nomor faktur boleh berupa
+    // strip "-" (artinya tanpa nomor faktur), jadi faktur tidak dijadikan syarat.
+    // (IR Cancel tidak diberi notif.)
     $bpbCnt = (int) ($r['bpb_cnt'] ?? 0);
-    $fkCnt  = (int) ($r['fk_cnt'] ?? 0);
     $incompleteNote = '';
-    if ($eStat !== 'Cancel') {
-        $miss = [];
-        if ($fkCnt === 0)  $miss[] = 'faktur';
-        if ($bpbCnt === 0) $miss[] = 'BPB';
-        if ($miss) {
-            $incompleteNote = '<small class="kb-incomplete" style="display:block;color:#dc2626;font-weight:600;font-size:10px;margin-top:3px;">'
-                . '<i class="fa fa-exclamation-triangle"></i> IR belum lengkap: belum ada ' . implode(' & ', $miss) . '</small>';
-        }
+    if ($eStat !== 'Cancel' && $bpbCnt === 0) {
+        $incompleteNote = '<small class="kb-incomplete" style="display:block;color:#dc2626;font-weight:600;font-size:10px;margin-top:3px;">'
+            . '<i class="fa fa-exclamation-triangle"></i> IR belum ada BPB</small>';
     }
 
     // Status badge

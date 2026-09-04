@@ -15,21 +15,20 @@ $status = "Post";
 $kode_trans = $_POST['kode_trans'];
 $unik_code = $_POST['unik_code'];
 
-// GUARD kelengkapan: IR alur baru (punya ir_kontrabon_h) WAJIB sudah ada faktur DAN
-// BPB sebelum transfer pertama (Fin->Acc / TFTA). IR lama tanpa ir_kontrabon_h tidak
-// digating supaya alur lama tidak terganggu.
+// GUARD kelengkapan: IR alur baru (punya ir_kontrabon_h) WAJIB sudah ada BPB
+// sebelum transfer pertama (Fin->Acc / TFTA).
+// FAKTUR TIDAK ikut digating: nomor faktur yang sah boleh berupa strip "-"
+// (artinya memang tanpa nomor faktur), jadi keberadaan faktur tidak bisa
+// dipakai sebagai syarat transfer.
+// IR lama tanpa ir_kontrabon_h juga tidak digating supaya alur lama tidak terganggu.
 if ($kode_trans == 'TFTA') {
     $de = mysqli_real_escape_string($conn2, $no_kbon);
     $g = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT
         (SELECT COUNT(*) FROM ir_kontrabon_h kh WHERE kh.doc_number='$de') has_kh,
-        (SELECT COUNT(*) FROM ir_kontrabon_bpb b JOIN ir_kontrabon_h kh ON kh.unik_code=b.unik_code WHERE kh.doc_number='$de') bpb,
-        (SELECT COUNT(*) FROM ir_kontrabon_faktur f JOIN ir_kontrabon_h kh ON kh.unik_code=f.unik_code WHERE kh.doc_number='$de') fk"));
-    if ((int) ($g['has_kh'] ?? 0) > 0 && ((int) ($g['bpb'] ?? 0) === 0 || (int) ($g['fk'] ?? 0) === 0)) {
-        $miss = [];
-        if ((int) ($g['fk'] ?? 0) === 0)  $miss[] = 'faktur';
-        if ((int) ($g['bpb'] ?? 0) === 0) $miss[] = 'BPB';
+        (SELECT COUNT(*) FROM ir_kontrabon_bpb b JOIN ir_kontrabon_h kh ON kh.unik_code=b.unik_code WHERE kh.doc_number='$de') bpb"));
+    if ((int) ($g['has_kh'] ?? 0) > 0 && (int) ($g['bpb'] ?? 0) === 0) {
         http_response_code(422);
-        echo "IR $no_kbon belum lengkap (belum ada " . implode(' & ', $miss) . ") - tidak bisa ditransfer.";
+        echo "IR $no_kbon belum ada BPB - tidak bisa ditransfer.";
         exit;
     }
 }

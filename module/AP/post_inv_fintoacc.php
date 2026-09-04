@@ -253,21 +253,16 @@
 
             while($row = mysqli_fetch_array($sql)){
                     // Kelengkapan: HANYA berlaku utk IR alur baru (punya ir_kontrabon_h).
-                    // IR wajib ada faktur DAN BPB baru boleh ditransfer. IR lama (tanpa
-                    // ir_kontrabon_h) tidak digating supaya alur lama tidak terganggu.
+                    // IR wajib sudah ada BPB baru boleh ditransfer. FAKTUR TIDAK digating
+                    // karena nomor faktur sah boleh berupa strip "-" (tanpa nomor faktur).
+                    // IR lama (tanpa ir_kontrabon_h) tidak digating supaya alur lama aman.
                     $docE = mysqli_real_escape_string($conn2, $row['doc_number']);
                     $chk = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT
                         (SELECT COUNT(*) FROM ir_kontrabon_h kh WHERE kh.doc_number='$docE') has_kh,
-                        (SELECT COUNT(*) FROM ir_kontrabon_bpb b JOIN ir_kontrabon_h kh ON kh.unik_code=b.unik_code WHERE kh.doc_number='$docE') bpb,
-                        (SELECT COUNT(*) FROM ir_kontrabon_faktur f JOIN ir_kontrabon_h kh ON kh.unik_code=f.unik_code WHERE kh.doc_number='$docE') fk"));
-                    $miss = [];
-                    if ((int)($chk['has_kh'] ?? 0) > 0) {
-                        if ((int)($chk['fk'] ?? 0) === 0)  $miss[] = 'faktur';
-                        if ((int)($chk['bpb'] ?? 0) === 0) $miss[] = 'BPB';
-                    }
-                    $isIncomplete = !empty($miss);
-                    $cbDisabled = $isIncomplete ? ' disabled title="IR belum lengkap - tidak bisa ditransfer"' : '';
-                    $note = $isIncomplete ? '<br><small style="color:#dc2626;font-weight:600;font-size:10px;"><i class="fa fa-exclamation-triangle"></i> belum lengkap: belum ada '.implode(' & ', $miss).' &mdash; tidak bisa ditransfer</small>' : '';
+                        (SELECT COUNT(*) FROM ir_kontrabon_bpb b JOIN ir_kontrabon_h kh ON kh.unik_code=b.unik_code WHERE kh.doc_number='$docE') bpb"));
+                    $isIncomplete = ((int)($chk['has_kh'] ?? 0) > 0 && (int)($chk['bpb'] ?? 0) === 0);
+                    $cbDisabled = $isIncomplete ? ' disabled title="IR belum ada BPB - tidak bisa ditransfer"' : '';
+                    $note = $isIncomplete ? '<br><small style="color:#dc2626;font-weight:600;font-size:10px;"><i class="fa fa-exclamation-triangle"></i> belum ada BPB &mdash; tidak bisa ditransfer</small>' : '';
                     echo '<tr'.($isIncomplete ? ' style="background:#fef2f2;"' : '').'>
                             <td style="width:10px;"><input type="checkbox" class="cbrow" name="select[]" value=""'.$cbDisabled.'></td>
                             <td style="width:50px;" value="'.$row['doc_number'].'">'.$row['doc_number'].$note.'</td>
