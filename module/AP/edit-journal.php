@@ -791,8 +791,8 @@ function SidebarCollapse () {
                 if (isNaN(val)) return data;
 
                 return val.toLocaleString('en-US', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2
+                  minimumFractionDigits: 4,
+                  maximumFractionDigits: 4
                 });
               }
             },
@@ -887,7 +887,7 @@ function initSelect2Element(el){
         width:'100%',
         dropdownParent: $('#modalEdit'),
         dropdownAutoWidth:true,
-        placeholder: cssClass === 'sel-cc' ? 'Select Profit Center first' : 'Nothing Selected',
+        placeholder: cssClass === 'sel-cc' ? 'Select COA & Profit Center first' : 'Nothing Selected',
         allowClear:true,
         minimumInputLength:cfg.minInput,
         ajax:{
@@ -899,10 +899,11 @@ function initSelect2Element(el){
 
                 let data = { q: params.term };
 
-                // Cost Center dibatasi sesuai Profit Center baris ini
-                // (cc.php akan kosong kalau pc belum dipilih)
+                // Cost Center dibatasi 2 lapis: Profit Center DAN grup COA baris ini
+                // (cc.php mengembalikan kosong kalau pc / coa belum dipilih)
                 if(cssClass === 'sel-cc'){
-                    data.pc = el.closest('tr').find('.sel-pc').val() || '';
+                    data.pc  = el.closest('tr').find('.sel-pc').val()  || '';
+                    data.coa = el.closest('tr').find('.sel-coa').val() || '';
                 }
 
                 return data;
@@ -934,13 +935,13 @@ $(document).ready(function(){
 
 
 /* ===============================
-   RESET COST CENTER SAAT PROFIT CENTER GANTI
+   RESET COST CENTER SAAT PROFIT CENTER / COA GANTI
    (Cost Center dibatasi per Profit Center - kalau PC-nya diganti,
    Cost Center yang sudah dipilih sebelumnya bisa jadi sudah tidak
    valid buat PC yang baru, jadi dikosongkan lagi)
 ================================ */
 
-$(document).on('change','.sel-pc',function(){
+$(document).on('change','.sel-pc,.sel-coa',function(){
 
     let tr = $(this).closest('tr');
     let ccEl = tr.find('.sel-cc');
@@ -1200,8 +1201,8 @@ function setVal(id,val){
 
 function formatNumber(num){
     return new Intl.NumberFormat("en-US",{
-        minimumFractionDigits:2,
-        maximumFractionDigits:2
+        minimumFractionDigits:4,
+        maximumFractionDigits:4
     }).format(num);
 }
 
@@ -1514,10 +1515,14 @@ function SaveEdit(){
       let costcenter = tr.find("select[name='nomor_cc[]']").val();
 
       let curr = tr.find("select[name='currenc[]']").val();
-      let rate = round2(toNumber(tr.find("input[name='rate[]']").val()));
+      // JANGAN dibulatkan di sini: debit/credit/rate bisa punya 4 desimal
+      // (mis. 207.3852). Membulatkan sebelum dikali rate bikin IDR meleset
+      // -> jurnal yang sebenarnya balance jadi dianggap "Not Balanced",
+      // dan nilai bulat itu ikut TERSIMPAN (merusak angka asli).
+      let rate = toNumber(tr.find("input[name='rate[]']").val());
 
-      let debit  = round2(toNumber(tr.find("input[name='debit[]']").val()));
-      let credit = round2(toNumber(tr.find("input[name='credit[]']").val()));
+      let debit  = toNumber(tr.find("input[name='debit[]']").val());
+      let credit = toNumber(tr.find("input[name='credit[]']").val());
 
       // Balance dicek pakai debit_idr/credit_idr (kolom yang memang ada di tbl_list_journal),
       // bukan debit/credit mentah - karena rate bisa beda-beda per baris kalau currency-nya
