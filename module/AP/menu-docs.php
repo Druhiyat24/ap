@@ -408,12 +408,14 @@ $menuGroups = [
                     ],
                     'tables_write' => [],
                     'tables_read' => [
+                        ['name' => 'tbl_list_journal', 'desc' => 'Dibaca untuk mengambil rate yang BENAR-BENAR dipakai saat posting - baris bank dicocokkan lewat no_journal = no_doc dan no_coa = b_masterbank.id_coa, termasuk rate MANUAL yang diinput user saat bank-out.'],
                         ['name' => 'b_reportbank', 'desc' => 'Sumber utama baris mutasi bank — tabel ledger untuk seluruh transaksi bank (Bank In, Bank Out, Payment Voucher, dan baris penyesuaian selisih kurs otomatis).'],
                         ['name' => 'b_masterbank', 'desc' => 'Master rekening bank (nama bank, nomor rekening, mata uang, kode_cash, limit fasilitas pinjaman).'],
                         ['name' => 'b_saldoawal_bank', 'desc' => 'Saldo awal per rekening bank, sebagai titik nol sebelum ada transaksi tercatat.'],
                         ['name' => 'masterrate', 'desc' => 'Kurs harian (HARIAN, untuk saldo awal) dan kurs pajak (PAJAK, untuk konversi tiap baris transaksi ke IDR).'],
                     ],
                     'notes' => [
+                        'Perbaikan (commit 6553ae7, Sep 2026): konversi IDR transaksi bank valas kini memakai rate dari baris bank di tbl_list_journal (bisa rate MANUAL yang diinput saat bank-out), bukan diturunkan ulang dari masterrate PAJAK - dulu nilai laporan bisa berbeda dari GL. Fallback ke masterrate PAJAK hanya bila dokumen tidak punya baris jurnal. Pencarian masterrate juga kini difilter per curr, karena satu tanggal bisa memuat lebih dari satu baris kurs mata uang berbeda.',
                         'Pengecualian baris FX/ (selisih kurs) dari akumulasi saldo native merupakan perbaikan penting yang pernah dilakukan pada sesi ini — sebelumnya baris penyesuaian ini turut dianggap sebagai mutasi asli, sehingga menyebabkan saldo membengkak secara signifikan dan tidak akurat.',
                         'Excel export (report_usdbank.php) harus selalu disinkronkan logikanya dengan halaman ini — apabila salah satu diubah, yang lainnya juga perlu diperiksa agar angkanya tetap sama persis.',
                     ],
@@ -439,6 +441,7 @@ $menuGroups = [
                     'status_flow' => [],
                     'tables_write' => [],
                     'tables_read' => [
+                        ['name' => 'tbl_list_journal', 'desc' => 'Dibaca lewat cfr_functions.php untuk mengambil rate asli baris bank (termasuk rate manual), menggantikan penurunan ulang dari masterrate PAJAK.'],
                         ['name' => 'b_reportbank', 'desc' => 'Sumber mutasi rekening BANK yang bertag id_cash_flow.'],
                         ['name' => 'c_report_pettycash', 'desc' => 'Sumber mutasi rekening KAS/Petty Cash yang bertag id_cash_flow.'],
                         ['name' => 'b_saldoawal_bank', 'desc' => 'Saldo awal per rekening bank, titik nol perhitungan saldo berjalan.'],
@@ -448,6 +451,7 @@ $menuGroups = [
                         ['name' => 'b_masterbank', 'desc' => 'Sumber Limit fasilitas pinjaman (fac_limit) untuk section Pinjaman Bank.'],
                     ],
                     'notes' => [
+                        'Perbaikan (commit 6553ae7, Sep 2026): transaksi bank valas dikonversi memakai rate dari baris bank di tbl_list_journal, bukan masterrate PAJAK. Perbaikan ada di cfr_functions.php yang dipakai BERSAMA oleh halaman laporan dan export Excel, sehingga keduanya otomatis konsisten.',
                         'Kolom Projection dan Variance terdapat pada layout laporan, namun saat ini nilainya di-set 0 untuk seluruh baris — belum ada sumber data proyeksi yang terhubung (rencananya melalui menu terpisah "Upload Projection Cash Flow").',
                         'Section Pinjaman Bank sengaja dibatasi hanya untuk 2 akun (1979 & 1982) dan formulanya berbeda dari section kategori biasa — tanda Penambahan/Pelunasan dibalik, dan kondisi tampil/sembunyi berbeda bergantung pada tanda saldo (khusus akun 1982).',
                         'Memiliki kembaran Excel export (ekspor_cashflow_realisation.php) yang sudah diverifikasi menghasilkan angka persis sama dengan tampilan layar.',
@@ -604,6 +608,9 @@ $menuGroups = [
                         ['name' => 'masterpterms', 'desc' => 'Master termin pembayaran.'],
                     ],
                     'notes' => [
+                        'Perbaikan (commit 9462ad4, Sep 2026) - cegah SIMPAN DOBEL: dulu tombol Save bisa ditekan berulang sehingga SEMUA baris tercentang terkirim ulang dan tersimpan dua kali di <code>bpb_new</code> serta <code>bpb_ri</code>. Sekarang: tombol dikunci selama proses berjalan, hanya checkbox baris yang dikirim (dulu checkbox "select all" di header ikut terkirim sebagai request kosong ber-no_bpb undefined), dan perpindahan halaman baru dilakukan setelah SELURUH request selesai (dulu redirect terjadi pada respons baris pertama sehingga sisanya bisa terputus / tersimpan sebagian).',
+                        'Pengaman kedua di sisi server: <code>insertfmvbpb.php</code> kini menolak menyimpan ulang bila <code>no_bpb</code> tersebut sudah punya baris di <code>bpb_new</code> (satu BPB hanya boleh diverifikasi sekali; satu BPB memang menghasilkan BANYAK baris, satu per item, jadi keberadaan baris apa pun berarti sudah pernah tersimpan). Ini menutup semua jalur, termasuk refresh atau POST langsung.',
+                        'Data lama (audit Sep 2026, patokan tabel <code>bpb</code>): 2.887 BPB punya baris berlebih di <code>bpb_new</code> (9.855 baris). Terbagi 3 - 500 BPB benar-benar simpan dobel (lebih dari satu create_date), 61 BPB tidak punya pasangan di <code>bpb</code>, dan 2.326 BPB batch simpannya tunggal tetapi barisnya berlipat tidak bulat (indikasi fan-out JOIN jo/jo_det/so/act_costing pada query penarikan, bukan klik ganda). Data lama ini BELUM dibersihkan.',
                         'PENTING: BPB (tabel master "bpb") sama sekali TIDAK dibuat di modul AP ini — sudah dicari ke seluruh module/ dan tidak ditemukan satu pun perintah INSERT ke tabel bpb. BPB dibuat oleh sistem Warehouse/Gudang yang terpisah; modul AP hanya membaca BPB yang sudah dikonfirmasi lalu menariknya.',
                         'Tombol "Create" di halaman ini butuh hak akses menu terpisah bernama "Create BPB" yang sengaja tidak muncul di sidebar sebagai menu sendiri — jadi walau tidak ada menu "Create BPB" yang terlihat, fungsinya tetap ada, tersemat sebagai tombol di halaman Verifikasi ini.',
                         'Ada beberapa berkas mati/duplikat terkait BPB (verifikasibpbedit.php yang sudah yatim, beberapa salinan "Copy" dan folder cadangan BAK/Old) yang tidak lagi dipakai.',
@@ -867,7 +874,7 @@ $menuGroups = [
             ],
             '_s4' => ['section' => 'Document Tracking'],
             'bpb-transferred' => [
-                'title' => 'BPB Transferred', 'icon' => 'fa-share', 'path' => 'module/AP/bpb_received.php',
+                'title' => 'Document Handover', 'icon' => 'fa-exchange', 'path' => 'module/AP/document_handover.php',
                 'doc' => [
                     'summary' => 'Daftar batch serah-terima dokumen fisik BPB dari Warehouse ke Accounting — murni pelacakan hand-off antar departemen, bukan input data transaksi.',
                     'purpose' => 'Dipakai Accounting untuk menerima (accept) batch BPB yang sudah dikirim/dibundel oleh Warehouse, sebagai syarat sebelum BPB tersebut bisa diproses lebih lanjut menjadi Kontrabon.',
@@ -890,12 +897,55 @@ $menuGroups = [
                         ['name' => 'ir_status', 'desc' => 'Master label status untuk BPB.'],
                     ],
                     'notes' => [
+'Menu ini MENGGANTIKAN dua menu lama yang kini sudah tidak ada di sidebar: BPB Transferred (bpb_received.php) dan Invoice Received lama (invoice_received.php). Keduanya digabung menjadi satu halaman dengan pilihan Type Document - Invoice atau BPB & SJ - dan tombol aksinya (Post/Accept per tahap, Accept BPB, Accept SJ, Reverse) muncul sesuai type dan hak akses menurole pengguna.',
+                        'Perbaikan (commit 548b66d, Sep 2026): Accept dipisah menjadi dua menu - Accept BPB untuk dokumen selain FG/OUT, dan Accept SJ khusus Surat Jalan (no_bpb berawalan FG/OUT) dengan menurole terpisah id 137 (Document Handover - Accept SJ Warehouse To Accounting). Halaman SJ memakai logika yang sama lewat parameter mode sehingga tidak ada duplikasi kode. Pemisahan aman karena tidak ada satu pun no_transfer yang mencampur FG/OUT dengan dokumen lain.',
                         'Pembuatan baris ir_trans_bpb (batch transfer itu sendiri) TIDAK ditemukan sama sekali di dalam module/AP/ — dibuat dari modul Warehouse/Gudang yang terpisah. Menu ini murni sisi penerimaan (Accounting).',
                     ],
                 ],
             ],
+            'invoice-received-new' => [
+                'title' => 'Invoice Received', 'icon' => 'fa-file-text-o', 'path' => 'module/AP/kontrabon_new.php',
+                'doc' => [
+                    'summary' => 'Pencatatan penerimaan invoice supplier versi baru (dulu bernama "Kontrabon New"). Satu dokumen IR memuat beberapa Invoice, tiap invoice punya Faktur Pajak, dan tiap faktur punya daftar BPB/RO. Jadi sumber nilai untuk PV (Payment Voucher).',
+                    'purpose' => 'Menggantikan input Kontrabon lama. Nomor invoice, faktur pajak, dan BPB divalidasi saat di-scan supaya tidak dobel dan tidak tertukar antar supplier. BPB yang sedang dipakai draft user lain dikunci lewat tabel reservasi agar tidak diambil dua orang.',
+                    'variants' => [],
+                    'flow' => [
+                        ['title' => 'Create', 'desc' => 'create_kontrabon_new.php — pilih Supplier, scan No Invoice, scan Faktur Pajak, lalu scan BPB/RO per faktur. Draft tersimpan per user sehingga bisa dilanjutkan dari komputer lain. Simpan lewat kontrabon_new_save.php.'],
+                        ['title' => 'Validasi saat scan', 'desc' => 'kontrabon_new_check_inv.php (No Invoice belum dipakai supplier yang sama) dan kontrabon_new_check_bpb.php (BPB milik supplier terpilih, belum dipakai IR lain, lalu di-RESERVE). Nomor berupa strip "-" boleh dipakai berulang karena artinya "tanpa nomor".'],
+                        ['title' => 'Edit', 'desc' => 'edit_kontrabon_new.php — prefill dari DB, tanpa draft/reservasi. Seluruh detail ditulis ulang dalam satu transaksi oleh kontrabon_new_update.php (all-or-nothing).'],
+                        ['title' => 'Terpakai di PV', 'desc' => 'Dokumen IR menjadi dasar pembuatan Payment Voucher; sesudah IR dipakai transaksi lain (status bergerak dari Received atau ada transfer aktif), IR TIDAK bisa diedit lagi.'],
+                    ],
+                    'status_flow' => [
+                        ['label' => 'Received', 'cls' => 'planned'],
+                        ['label' => 'Dipakai PV / transfer', 'cls' => 'progress'],
+                        ['label' => 'Cancel', 'cls' => 'done'],
+                    ],
+                    'tables_write' => [
+                        ['name' => 'ir_kontrabon_h', 'actions' => ['insert','update'], 'desc' => 'Header IR: doc_number, no_reff, nama_supp, tanggal, total_amount, amount_add_pv.'],
+                        ['name' => 'ir_kontrabon_inv', 'actions' => ['insert','delete'], 'desc' => 'Daftar invoice per IR. Saat edit dihapus lalu ditulis ulang.'],
+                        ['name' => 'ir_kontrabon_faktur', 'actions' => ['insert','delete'], 'desc' => 'Faktur pajak per invoice (nama/NPWP supplier, DPP, PPN, PPnBM).'],
+                        ['name' => 'ir_kontrabon_bpb', 'actions' => ['insert','delete'], 'desc' => 'BPB/RO per faktur beserta nilainya. RO/retur bernilai NEGATIF.'],
+                        ['name' => 'ir_kontrabon_bpb_reserve', 'actions' => ['insert','delete'], 'desc' => 'Kunci BPB per draft (no_bpb UNIQUE) supaya dua user tidak memakai BPB yang sama. Reservasi lebih dari 24 jam dilepas otomatis.'],
+                        ['name' => 'ir_invoice_supp_h', 'actions' => ['insert','update'], 'desc' => 'Mirror header untuk alur Document Handover.'],
+                        ['name' => 'ir_invoice_supp', 'actions' => ['insert','delete'], 'desc' => 'Mirror detail invoice.'],
+                        ['name' => 'bpb_new', 'actions' => ['update'], 'desc' => 'Kolom upt_* (No/Tgl Invoice & Faktur) diisi per BPB lewat bpbnew_apply_docinfo() — dipakai laporan pembelian.'],
+                    ],
+                    'tables_read' => [
+                        ['name' => 'mastersupplier', 'desc' => 'Master Supplier untuk dropdown header.'],
+                        ['name' => 'bpb_new', 'desc' => 'Sumber BPB masuk: pemilik supplier, tanggal, qty/price/tax untuk DPP, PPN, dan Total.'],
+                        ['name' => 'bppb_new', 'desc' => 'Sumber RO/retur (no_ro / no_bppb) — nilainya dibalik jadi negatif.'],
+                    ],
+                    'notes' => [
+                        'Perbaikan (commit c034a17 dan 4423b91, Sep 2026): No Faktur dan No Invoice berupa STRIP "-" tidak lagi dianggap duplikat, karena strip artinya "tanpa nomor" dan wajar dipakai berulang.',
+                        'Perbaikan (commit 45ef4f7, Sep 2026) - SUPPLIER DI FORM EDIT KINI BISA DIGANTI: satu perusahaan kadang punya DUA record di mastersupplier dengan susunan nama berbeda (contoh "CV. MITRA EKA PERKASA" dan "MITRA EKA PERKASA, CV"), sedangkan BPB-nya hanya terdaftar di salah satunya - akibatnya BPB yang sah ikut tertolak. Field Supplier diubah dari readonly menjadi dropdown pencarian.',
+                        'Pengaman perubahan supplier: kalau BPB sudah terisi lalu supplier diganti ke nama yang BEDA, penggantian DITOLAK dan pilihan dikembalikan, disertai daftar BPB beserta pemilik aslinya. Di sisi server (kontrabon_new_update.php) dicek ulang 3 lapis - supplier harus ada di mastersupplier, harus cocok dengan supplier tiap BPB pada payload, dan diverifikasi langsung ke bpb_new/bppb_new supaya tidak bisa ditembus dari browser. Gagal salah satu = seluruh transaksi rollback.',
+                        'Supplier baru disimpan ke ir_kontrabon_h DAN ir_invoice_supp_h sekaligus agar header dan mirror-nya tidak desync.',
+                        'IR yang sudah dipakai transaksi lain tidak bisa diedit - harus di-reverse dulu dari menu terkait.',
+                    ],
+                ],
+            ],
             'invoice-received' => [
-                'title' => 'Invoice Received', 'icon' => 'fa-share', 'path' => 'module/AP/invoice_received.php',
+                'title' => 'Invoice Received (lama - digabung ke Document Handover)', 'icon' => 'fa-share', 'path' => 'module/AP/invoice_received.php',
                 'doc' => [
                     'summary' => 'Mencatat kedatangan faktur/invoice fisik dari supplier, lalu melacak serah-terimanya lintas 3 departemen (Finance → Accounting → Purchasing → Finance) sebelum bisa dicocokkan ke Kontrabon.',
                     'purpose' => 'Dipakai untuk mencatat penerimaan faktur pajak/invoice supplier secara fisik, kemudian mendokumentasikan alur serah-terimanya antar departemen sampai kembali ke Finance untuk pengarsipan/verifikasi.',
@@ -913,6 +963,10 @@ $menuGroups = [
                         ['label' => 'Accepted Fin (selesai)', 'cls' => 'progress'],
                     ],
                     'tables_write' => [
+                        ['name' => 'ir_kontrabon_h', 'desc' => 'Header Invoice Received versi baru (menu Invoice Received / kontrabon_new).'],
+                        ['name' => 'ir_kontrabon_inv', 'desc' => 'Daftar invoice per Invoice Received.'],
+                        ['name' => 'ir_kontrabon_faktur', 'desc' => 'Faktur pajak per invoice.'],
+                        ['name' => 'ir_kontrabon_bpb', 'desc' => 'BPB per faktur.'],
                         ['name' => 'ir_invoice_supp_h', 'actions' => ['insert','update'], 'desc' => 'Header per batch penerimaan. Insert saat Invoice Received; Update status & tanggal setiap tahap Post/Accept berjalan.'],
                         ['name' => 'ir_invoice_supp', 'actions' => ['insert'], 'desc' => 'Detail — satu baris per nomor invoice fisik dalam batch.'],
                         ['name' => 'ir_trans_invoice_supp', 'actions' => ['insert','update'], 'desc' => 'Catatan tiap event transfer (Fin→Acc/Acc→Pch/Pch→Fin), termasuk update status saat di-approve.'],
@@ -922,6 +976,9 @@ $menuGroups = [
                         ['name' => 'ir_status', 'desc' => 'Master label status.'],
                     ],
                     'notes' => [
+'MENU LAMA - sudah TIDAK ada di sidebar. Fungsinya digabung ke menu Document Handover (satu halaman dengan pilihan Type Document: Invoice atau BPB & SJ). Entri ini dipertahankan sebagai rujukan alur lama; halaman invoice_received.php sendiri masih ada di server tetapi tidak lagi ditautkan dari menu.',
+                        'Perbaikan (commit c034a17 dan 4423b91, Sep 2026): nomor Faktur dan No Invoice yang berupa STRIP (hanya tanda hubung) adalah penanda tanpa nomor sehingga boleh dipakai berkali-kali. Aturan tidak boleh dobel kini dilewati untuk strip - baik pada pengecekan daftar di layar maupun pada pengecekan server yang menolak invoice yang sudah dipakai supplier yang sama. Nomor asli tetap dijaga.',
+                        'Perbaikan tampilan (commit 48b1b26, Sep 2026): halaman daftar memakai skin bersama module/css/app-skin.css - kartu, header tabel, badge status, tombol, kontrol DataTables (Show entries, Search, info, pagination), dropdown dan datepicker. Ditambah overlay spinner saat memuat dan mode responsif yang melipat kolom ke baris detail di layar kecil.',
                         'Status berjalan panjang dan bolak-balik antar 3 departemen: Received → Post Fin To Acc → Accepted Acc → Post Acc To Pch → Accepted Pch → Post Pch To Fin → Accepted Fin.',
                     ],
                 ],
@@ -1576,6 +1633,7 @@ $menuGroups = [
                         ['name' => 'mastersupplier', 'desc' => 'Master Supplier.'],
                     ],
                     'notes' => [
+                        'Perbaikan (commit 0defbd8, Sep 2026): filter From dan To kini otomatis berisi tanggal hari ini saat halaman dibuka - sebelumnya nilainya dipaku ke 2026-07-01.',
                         'Perubahan sumber data dari list_payment ke tbl_list_journal ini menandakan proses bisnis pelunasan supplier benar-benar berubah mulai Juli 2026 (bukan sekadar penulisan ulang kode) — perlu diperhatikan kalau membandingkan angka lintas periode/versi laporan.',
                         'Lihat juga catatan pada "AP Report (Apr 2022 - Dec 2025)" untuk konteks 3 versi laporan ini.',
                     ],
@@ -1917,9 +1975,14 @@ $menuGroups = [
                         ['name' => 'tbl_memorial_journal_temp', 'actions' => ['delete'], 'desc' => 'Tabel staging khusus jalur Upload — baris dihapus setelah berhasil dipindahkan menjadi jurnal permanen.'],
                     ],
                     'tables_read' => [
+                        ['name' => 'mastercoa_v2', 'desc' => 'Master COA - flag grup (support_gen_adm, support_prod, prod, support_sell) menentukan Cost Center mana yang sah untuk COA tersebut, sekaligus menentukan COA wajib Cost Center atau tidak.'],
+                        ['name' => 'b_master_cc', 'desc' => 'Master Cost Center - disaring lewat id_pc (Profit Center baris) DAN group2 (harus termasuk grup COA baris).'],
                         ['name' => 'master_category_mj', 'desc' => 'Kategori Memorial Journal, menentukan nama type_journal.'],
                     ],
                     'notes' => [
+                        'Perbaikan (commit c7bdebc, Sep 2026): pembatasan Cost Center per COA diperketat. Di form EDIT, dropdown Cost Center dulu memuat SEMUA cost center milik Profit Center itu tanpa menyaring grup COA - sekarang ikut disaring group2 sesuai grup COA. Di jalur UPLOAD, Cost Center KOSONG dulu selalu dianggap sah untuk semua COA - sekarang hanya sah untuk COA tanpa grup (COA neraca), sehingga COA yang wajib Cost Center akan ditandai merah dan tidak bisa disimpan.',
+                        'Perbaikan (commit e3423eb, Sep 2026): baris ber-mata-uang IDR tidak lagi dikali kurs. Form mengirim satu rate global untuk SEMUA baris sehingga baris IDR ikut dikali kurs USD dan total IDR membengkak sampai ratusan miliar. Sekarang seluruh jalur simpan memaksa rate=1 untuk baris IDR. CATATAN: baris lama yang terlanjur salah BELUM diperbaiki.',
+                        'Riwayat edit tersimpan di tbl_list_journal_cancel - versi SEBELUM diedit dipindahkan ke sana, sehingga berguna untuk menelusuri kondisi awal sebuah jurnal (mis. Cost Center yang berubah saat edit).',
                         'Nomor: GM/NAG/MMYY/00001 — PENTING: prefiks "NAG" ini tetap sama meski barisnya sebenarnya milik Profit Center NAK, sehingga satu seri nomor dipakai bersama lintas Profit Center (berbeda dari kebiasaan aplikasi ini yang biasanya memisahkan NAG/NAK).',
                         'BUG/kode mati: seluruh jalur pembuatan jurnal (Manual/HRIS/Upload) menetapkan status "Post" secara langsung — tidak ada jalur aktif manapun di UI saat ini yang menghasilkan status "Draft". Akibatnya tombol/menu "Post" terpisah (formverifikasimj.php/approvemj.php/post_memorialjournal.php) menjadi kode yang praktis tidak pernah terpakai, kecuali ada baris Draft yang diubah manual langsung di database.',
                         'tbl_list_journal adalah TABEL JURNAL UMUM TUNGGAL yang dipakai bersama oleh SEMUA jenis dokumen di seluruh aplikasi ini — BPB, Bank Out, Kontrabon, Payment Voucher, dan Memorial Journal semuanya menulis ke tabel yang sama ini. Kolom status-nya TIDAK konsisten sebagai satu enum: Memorial Journal memakai "Post"/"Draft"/"Cancel", sedangkan baris asal BPB memakai "APPROVED"/"DRAFT" — kode yang menyaring status="Draft" secara spesifik tidak akan pernah cocok dengan baris asal BPB.',
@@ -2308,6 +2371,8 @@ $menuGroups = [
                         ['name' => 'tbl_list_journal', 'actions' => ['delete', 'insert'], 'desc' => 'Jurnal lama dihapus, dibentuk ulang berstatus "APPROVED" dari data BPB/BPPB sumber — kosakata status ini berbeda dari Memorial Journal (Post/Draft/Cancel), menegaskan tbl_list_journal.status bukan satu enum yang konsisten lintas jenis dokumen.'],
                     ],
                     'tables_read' => [
+                        ['name' => 'ap_masterrate', 'desc' => 'Kurs PAJAK per tanggal dan mata uang, dipakai mengonversi nilai BPB ke IDR saat jurnal dibentuk ulang.'],
+                        ['name' => 'act_costing', 'desc' => 'Ikut di-JOIN (lewat jo, jo_det, so) untuk BPB non-GEN guna mengambil nomor WS - rantai JOIN ini dapat MENGGANDAKAN baris hasil (fan-out) bila satu BPB terkait banyak SO.'],
                         ['name' => 'bpb', 'desc' => 'Sumber data BPB Garment untuk pembentukan ulang jurnal pembelian normal.'],
                         ['name' => 'bpb_knitting', 'desc' => 'Sumber data BPB Knitting.'],
                         ['name' => 'bppb', 'desc' => 'Sumber data retur BPPB, untuk pembentukan ulang jurnal retur.'],
@@ -2318,6 +2383,8 @@ $menuGroups = [
                         ['name' => 'ap_mapping_coa_jurnal', 'desc' => 'Tabel pemetaan akun COA jurnal berdasarkan tipe barang/kategori supplier/kelas barang — menentukan akun mana yang dipakai saat jurnal dibentuk ulang.'],
                     ],
                     'notes' => [
+                        'Perbaikan (commit f78dd52, Sep 2026): repost sempat gagal total dengan galat Column count does not match value count, karena kedua perintah INSERT INTO tbl_list_journal tidak menyebutkan daftar kolom sementara tabelnya bertambah dua kolom (faktur_pajak dan tgl_faktur_pajak) dari pekerjaan PV. Sekarang daftar kolom ditulis EKSPLISIT (29 kolom) sehingga aman terhadap penambahan kolom berikutnya; kedua kolom faktur pajak sengaja dibiarkan NULL karena repost BPB adalah tahap PPN UNBILLED (COA 1.52.07).',
+                        'Perbaikan tampilan: dulu hasil GAGAL tetap muncul sebagai kotak hijau bertulis Berhasil karena pesan sukses ditampilkan tanpa membaca isi respons. Sekarang status dibaca dari isi respons sehingga kegagalan tampil sebagai galat, dan tabel hanya dimuat ulang bila benar-benar sukses.',
                         'Nomor jurnal hasil repost memakai ulang nomor BPB itu sendiri (bpbno_int) sebagai no_journal, sama seperti pola Repost Bank Out.',
                         'Berbeda dari Repost Bank Out, tidak ada rentang tahun yang di-hardcode di sini — filter tanggal dikendalikan pengguna lewat input di halaman.',
                         'Menu ini adalah versi "actionable" (bisa memperbaiki) dari menu Rekonsiliasi Jurnal-BPB, yang berbagi logika perbandingan serupa namun murni baca.',
@@ -2368,11 +2435,16 @@ $menuGroups = [
                         ['name' => 'tbl_memorial_journal', 'actions' => ['delete', 'insert'], 'desc' => 'Dihapus lalu ditulis ulang — HANYA berlaku untuk jurnal yang teridentifikasi berasal dari Memorial Journal; jurnal asal BPB/Bank Out/dst. tidak menyentuh tabel ini sama sekali.'],
                     ],
                     'tables_read' => [
+                        ['name' => 'b_master_cc', 'desc' => 'Master Cost Center untuk dropdown per baris (endpoint cc.php) - disaring id_pc sesuai Profit Center baris DAN group2 sesuai grup COA baris.'],
+                        ['name' => 'master_pc', 'desc' => 'Master Profit Center untuk dropdown per baris.'],
                         ['name' => 'tbl_closing_periode', 'desc' => 'Menentukan apakah tanggal jurnal berada dalam periode yang sudah ditutup — satu-satunya sumber penjagaan edit di halaman ini.'],
                         ['name' => 'mastercoa_v2', 'desc' => 'Master Chart of Account, untuk pemilihan akun pada form edit.'],
                         ['name' => 'master_category_mj', 'desc' => 'Dipakai untuk mencocokkan type_journal ke kategori Memorial Journal — menentukan apakah tbl_memorial_journal ikut diproses.'],
                     ],
                     'notes' => [
+                        'Perbaikan (commit d3cecbf, Sep 2026): dropdown Cost Center kini dibatasi DUA lapis - Profit Center DAN grup COA baris tersebut (endpoint cc.php). Sebelumnya hanya disaring Profit Center sehingga cost center yang grupnya tidak cocok tetap dapat dipilih. Cost Center juga ikut dikosongkan saat COA diganti, bukan hanya saat Profit Center diganti.',
+                        'Perbaikan (commit d3cecbf): validasi balance dulu membulatkan debit, credit dan rate ke 2 desimal SEBELUM dikali rate. Karena nilai jurnal bisa 4 desimal, jurnal yang sebenarnya balance dilaporkan Not Balanced (contoh selisih 151,18) dan nilai bulat itu ikut TERSIMPAN sehingga merusak angka asli. Sekarang pembulatan hanya dikenakan pada hasil debit_idr dan credit_idr.',
+                        'Tampilan debit, credit, debit IDR dan credit IDR kini memakai 4 angka di belakang koma - baik di tabel daftar maupun di modal edit dan kartu total - supaya digit di belakang tidak tersamarkan.',
                         'PENTING — RISIKO DESAIN: halaman ini bisa mengedit atau membatalkan jurnal APA PUN, dari dokumen sumber APA PUN, sepanjang tanggalnya belum berada di periode tertutup — tidak peduli status dokumen sumbernya (Draft/Approved/dsb.). Mengedit/membatalkan jurnal asal BPB/Bank Out/Kontrabon di sini TIDAK mengubah status dokumen sumber tersebut, sehingga berpotensi menciptakan ketidaksinkronan yang baru terdeteksi lewat menu Rekonsiliasi Jurnal-BPB atau Repost Journal.',
                         'Menyimpan hasil edit SELALU menetapkan status jurnal menjadi "Post" — jurnal yang asalnya berstatus "APPROVED" (dari BPB) akan berubah kosakata statusnya menjadi "Post" setelah diedit di sini.',
                         'Nama kolom tbl_log_edit_mj.no_mj tetap dipakai untuk mencatat NOMOR JURNAL APA PUN yang diedit (bukan cuma Memorial Journal) — sisa penamaan dari saat fitur ini awalnya khusus Memorial Journal.',
@@ -3674,12 +3746,17 @@ function pdTableNames($raw) {
     return array_values(array_unique($out));
 }
 
-$tableIndex = []; // table name => [ ['menu' => 'Group › Item', 'actions' => ['insert', ...]], ... ]
+$tableIndex = []; // table name => [ ['menu' => 'Group › Section › Item', 'actions' => ['insert', ...]], ... ]
 $tableDb = []; // table name => db source label (only set when it's not the default main DB)
 foreach ($menuGroups as $group) {
+    // Sub-judul di dalam grup (mis. "BPB Garment") ikut dibawa supaya label menu
+    // lengkap sampai level terdalam - "AP › BPB Garment › Verifikasi BPB", bukan
+    // hanya "AP › Verifikasi BPB".
+    $curSection = null;
     foreach ($group['items'] as $item) {
-        if (isset($item['section']) || $item['doc'] === null) continue;
-        $menuLabel = $group['title'] . ' › ' . $item['title'];
+        if (isset($item['section'])) { $curSection = $item['section']; continue; }
+        if ($item['doc'] === null) continue;
+        $menuLabel = $group['title'] . ' › ' . ($curSection !== null ? $curSection . ' › ' : '') . $item['title'];
         foreach (($item['doc']['tables_write'] ?? []) as $t) {
             foreach (pdTableNames($t['name']) as $tn) {
                 $tableIndex[$tn][] = ['menu' => $menuLabel, 'actions' => $t['actions'] ?? ['update']];
@@ -3735,7 +3812,7 @@ ksort($tableIndex, SORT_FLAG_CASE | SORT_STRING);
   }
   .docs-nav-group-title .grp-chevron { font-size: 10px; color: var(--ink-soft); transition: transform .2s ease; flex-shrink: 0; }
   .docs-nav-group.collapsed .grp-chevron { transform: rotate(-90deg); }
-  .docs-nav-group-body { overflow: hidden; max-height: 600px; transition: max-height .25s ease; padding-bottom: 4px; }
+  .docs-nav-group-body { overflow: hidden; max-height: 3000px; transition: max-height .25s ease; padding-bottom: 4px; }
   .docs-nav-group.collapsed .docs-nav-group-body { max-height: 0; padding-bottom: 0; }
   .docs-nav-item {
     display: flex; align-items: center; gap: 10px; padding: 9px 12px 9px 22px; border-radius: 10px; cursor: pointer;
