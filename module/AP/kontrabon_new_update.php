@@ -2,8 +2,9 @@
 // UPDATE (edit) Kontrabon: ganti seluruh detail (invoice/faktur/BPB) kontrabon
 // yang sudah ada. Dalam 1 TRANSAKSI: hapus detail lama -> guard keunikan (BPB &
 // invoice, mengecualikan kontrabon ini sendiri karena sudah dihapus) -> insert
-// ulang -> update header. All-or-nothing. Header (doc_number, no_reff, supplier,
-// unik_code) TIDAK berubah; reff tetap Used.
+// ulang -> update header. All-or-nothing. Header (doc_number, no_reff,
+// unik_code) TIDAK berubah; reff tetap Used. SUPPLIER BOLEH berubah, tapi
+// wajib ada di master DAN cocok dgn semua BPB pada payload (guard 1b & 1c).
 session_start();
 include '../../conn/conn.php';
 require_once __DIR__ . '/bpb_docinfo_guard.php';
@@ -48,6 +49,20 @@ if ($tcq && ($tcr = mysqli_fetch_assoc($tcq)) && (int) $tcr['c'] > 0) {
 $unik = $h['unik_code'];
 $supp = $h['nama_supp'];
 
+// Supplier BOLEH diganti lewat form edit. Alasannya: satu perusahaan kadang
+// punya 2 record di mastersupplier dgn susunan nama berbeda (mis.
+// "CV. MITRA EKA PERKASA" vs "MITRA EKA PERKASA, CV") dan BPB-nya cuma
+// terdaftar di salah satunya. Divalidasi 2 lapis: (a) harus ada di master,
+// (b) harus cocok dgn semua BPB pada payload (lihat guard 1b/1c di bawah).
+$suppNew = trim($_POST['nama_supp'] ?? '');
+if ($suppNew !== '' && $suppNew !== $supp) {
+    $ms = mysqli_query($conn2, "SELECT 1 FROM mastersupplier WHERE Supplier = '" . $e($suppNew) . "' LIMIT 1");
+    if (!$ms || mysqli_num_rows($ms) === 0) {
+        echo json_encode(['ok' => false, 'msg' => "Supplier '$suppNew' is not registered in the supplier master."]); exit;
+    }
+    $supp = $suppNew;
+}
+
 $nInv = 0; $nFak = 0; $nBpb = 0; $fail = null;
 $bnUpd = []; // (no_bpb, no_inv, tgl_inv, no_faktur, tgl_faktur) -> update bpb_new setelah commit
 mysqli_begin_transaction($conn2);
@@ -74,6 +89,41 @@ if (!$fail && $allBpb) {
         LEFT JOIN ir_kontrabon_h h ON h.unik_code = b.unik_code
         WHERE b.no_bpb IN ($inList) AND (h.status IS NULL OR h.status <> 'Cancel') LIMIT 1");
     if ($rc && mysqli_num_rows($rc) > 0) { $dup = mysqli_fetch_assoc($rc); $fail = "BPB '" . $dup['no_bpb'] . "' is already used in saved invoice received " . ($dup['doc_number'] ?? '') . "."; }
+}
+
+// 1b) Guard supplier vs BPB (payload): nama supplier di header WAJIB sama dgn
+//     supplier tiap BPB. Inilah yang MENOLAK kalau supplier diganti sesudah
+//     BPB terisi. Pengaman yang sama ada di form; ini lapis server-nya.
+if (!$fail) {
+    foreach ($invoices as $iv) foreach (($iv['fakturs'] ?? []) as $fk) foreach (($fk['bpbs'] ?? []) as $bp) {
+        $nb = trim($bp['no_bpb'] ?? ''); if ($nb === '') continue;
+        $bs = trim($bp['supplier'] ?? '');
+        if ($bs !== '' && $bs !== $supp) {
+            $fail = "Supplier does not match: BPB '$nb' belongs to '$bs', not '$supp'. Remove that BPB first, or set the supplier back.";
+            break 3;
+        }
+    }
+}
+
+// 1c) Cek ulang langsung ke sumbernya (bpb_new / bppb_new) supaya guard di atas
+//     tidak bisa ditembus dari sisi klien. Hanya menolak bila nomornya KETEMU
+//     tapi terdaftar atas supplier lain (BPB retur/RO ada di bppb_new).
+if (!$fail && $allBpb) {
+    $inList = implode(',', array_map(function ($x) use ($e) { return "'" . $e($x) . "'"; }, array_keys($allBpb)));
+    $rs = mysqli_query($conn2, "SELECT no_bpb, supplier FROM bpb_new WHERE no_bpb IN ($inList)
+        UNION SELECT no_ro   no_bpb, supplier FROM bppb_new WHERE no_ro   IN ($inList)
+        UNION SELECT no_bppb no_bpb, supplier FROM bppb_new WHERE no_bppb IN ($inList)");
+    $own = [];
+    while ($rs && $x = mysqli_fetch_assoc($rs)) {
+        $sv = trim((string) $x['supplier']);
+        if ($sv !== '') $own[$x['no_bpb']][$sv] = true;
+    }
+    foreach ($own as $nb => $sups) {
+        if (!isset($sups[$supp])) {
+            $fail = "Supplier does not match: BPB '$nb' is registered for " . implode(' / ', array_keys($sups)) . ", not '$supp'.";
+            break;
+        }
+    }
 }
 
 // 2) Guard invoice: tidak dobel dalam payload + tidak dipakai supplier sama di kontrabon lain
@@ -137,13 +187,13 @@ if (!$fail) {
 
 // 4) Update header
 if (!$fail) {
-    if (!mysqli_query($conn2, "UPDATE ir_kontrabon_h SET kontrabon_date = '$tgl', document_date = '$docDate', deskripsi = '" . $e($desc) . "', total_amount = $total WHERE doc_number = '" . $e($doc) . "'"))
+    if (!mysqli_query($conn2, "UPDATE ir_kontrabon_h SET kontrabon_date = '$tgl', document_date = '$docDate', nama_supp = '" . $e($supp) . "', deskripsi = '" . $e($desc) . "', total_amount = $total WHERE doc_number = '" . $e($doc) . "'"))
         $fail = 'header: ' . mysqli_error($conn2);
 }
 
 // 5) MIRROR ke IR: update header + re-insert invoice (rebuild penuh)
 if (!$fail) {
-    if (!mysqli_query($conn2, "UPDATE ir_invoice_supp_h SET tgl_penerimaan = '$tgl', deskripsi = '" . $e($desc) . "', total_amount = $total, updated_at = '$now' WHERE doc_number = '" . $e($doc) . "'"))
+    if (!mysqli_query($conn2, "UPDATE ir_invoice_supp_h SET tgl_penerimaan = '$tgl', nama_supp = '" . $e($supp) . "', deskripsi = '" . $e($desc) . "', total_amount = $total, updated_at = '$now' WHERE doc_number = '" . $e($doc) . "'"))
         $fail = 'IR header: ' . mysqli_error($conn2);
 }
 if (!$fail) {

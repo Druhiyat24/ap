@@ -2,7 +2,9 @@
 <?php
 // ============================================================================
 // EDIT KONTRABON (Kontrabon New). Sama seperti Create tapi: data di-prefill dari
-// DB, Supplier & No Reff TERKUNCI (readonly), tanpa draft/staging/reservasi.
+// DB & No Reff TERKUNCI (readonly), tanpa draft/staging/reservasi.
+// Supplier BOLEH diganti (nama PT/CV kadang terbalik antar master & BPB), tapi
+// ditolak kalau BPB yang sudah masuk milik supplier lain.
 // Bisa tambah/edit/hapus invoice-faktur-BPB. Simpan -> kontrabon_new_update.php
 // (transaksi: hapus detail lama -> insert baru). Keunikan BPB & invoice
 // mengecualikan kontrabon ini sendiri (exclude_doc). Bootstrap 4.5 -> ml-/mr-.
@@ -127,8 +129,29 @@ while ($iv = mysqli_fetch_assoc($invs)) {
         <div class="col-md-3 mb-2">
         </div>
         <div class="col-md-3 mb-2">
-          <label class="form-label"><b>Supplier</b> <span class="text-muted" style="font-size:11px;">(locked)</span></label>
-          <input type="text" readonly class="form-control" id="nama_supp" value="<?= htmlspecialchars($h['nama_supp'] ?? '') ?>" style="background:#eef2f7;">
+          <label class="form-label"><b>Supplier</b> <span class="text-muted" style="font-size:11px;">(editable)</span></label>
+          <select class="form-control selectpicker" id="nama_supp" data-live-search="true" title="Select Supplier">
+            <?php
+            // Supplier BOLEH diganti: satu perusahaan kadang punya 2 record master
+            // dgn susunan nama berbeda (mis. "CV. MITRA EKA PERKASA" vs
+            // "MITRA EKA PERKASA, CV") dan BPB-nya terdaftar di salah satunya.
+            // Pengaman "tidak boleh beda dgn BPB yg sudah masuk" ada di JS di
+            // bawah + dicek ulang server-side di kontrabon_new_update.php.
+            $curSupp = $h['nama_supp'] ?? '';
+            $foundSupp = false;
+            $sp = mysqli_query($conn1, "SELECT DISTINCT Supplier sup FROM mastersupplier WHERE tipe_sup = 'S' ORDER BY Supplier ASC");
+            while ($sp && $x = mysqli_fetch_assoc($sp)) {
+                $sel = ($x['sup'] === $curSupp) ? ' selected' : '';
+                if ($sel !== '') $foundSupp = true;
+                echo '<option value="' . htmlspecialchars($x['sup']) . '"' . $sel . '>' . htmlspecialchars($x['sup']) . '</option>';
+            }
+            // Supplier lama bisa saja sudah non-aktif / bukan tipe 'S' -> tetap
+            // ditampilkan supaya nilai dokumen lama tidak hilang saat dibuka.
+            if (!$foundSupp && $curSupp !== '') {
+                echo '<option value="' . htmlspecialchars($curSupp) . '" selected>' . htmlspecialchars($curSupp) . '</option>';
+            }
+            ?>
+          </select>
         </div>
         <div class="col-md-6 mb-2">
           <label class="form-label"><b>Descriptions</b></label>
@@ -199,11 +222,61 @@ while ($iv = mysqli_fetch_assoc($invs)) {
 <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
+<script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
 <script>
 var DOC = <?= json_encode($h['doc_number']) ?>;
 var PAYLOAD = <?= json_encode($payload) ?>;
 $(function () {
+  // ===== Supplier: boleh diganti, TAPI wajib cocok dgn BPB yang sudah masuk =====
+  // Satu perusahaan kadang punya 2 record master dgn susunan nama berbeda
+  // (mis. "CV. MITRA EKA PERKASA" vs "MITRA EKA PERKASA, CV") dan BPB-nya
+  // terdaftar di salah satunya saja -- makanya header perlu bisa diganti.
+  // Kalau BPB sudah terisi lalu supplier diganti ke nama yang BEDA, tolak &
+  // kembalikan ke pilihan sebelumnya. Server mengecek ulang saat Update.
+  $('#nama_supp').selectpicker();
+  var suppPrev = $('#nama_supp').val() || '';
+  var suppReverting = false;
+
+  function bpbSupplierConflicts(newSupp){
+    var bad = [];
+    $('.bpb-row').each(function () {
+      var s = String($(this).attr('data-supp') || '').trim();
+      if (s !== '' && s !== newSupp) bad.push({ bpb: String($(this).attr('data-no') || ''), supp: s });
+    });
+    return bad;
+  }
+
+  $('#nama_supp').on('change', function () {
+    if (suppReverting) return;                 // abaikan 'change' dari revert kita sendiri
+    var neu = $(this).val() || '';
+    if (neu === suppPrev) return;
+
+    var bad = bpbSupplierConflicts(neu);
+    if (bad.length) {
+      var rows = bad.slice(0, 6).map(function (b) {
+        return '<tr><td style="text-align:left;padding:2px 8px;">' + esc(b.bpb) + '</td>' +
+               '<td style="text-align:left;padding:2px 8px;"><b>' + esc(b.supp) + '</b></td></tr>';
+      }).join('');
+      var more = bad.length > 6 ? '<div class="text-muted" style="font-size:12px;margin-top:4px;">+' + (bad.length - 6) + ' BPB lain</div>' : '';
+      suppReverting = true;
+      $('#nama_supp').selectpicker('val', suppPrev);
+      suppReverting = false;
+      Swal.fire({
+        icon: 'error',
+        title: 'Supplier does not match the BPB',
+        html: '<div style="text-align:left;font-size:13px;">There ' + (bad.length === 1 ? 'is 1 BPB' : 'are ' + bad.length + ' BPBs') +
+              ' already added that belong to another supplier:</div>' +
+              '<table style="margin:8px auto;font-size:12px;border-collapse:collapse;"><thead><tr>' +
+              '<th style="text-align:left;padding:2px 8px;">BPB</th><th style="text-align:left;padding:2px 8px;">Supplier</th>' +
+              '</tr></thead><tbody>' + rows + '</tbody></table>' + more +
+              '<div class="text-muted" style="font-size:12px;margin-top:8px;">Remove those BPBs first, then change the supplier.</div>'
+      });
+      return;
+    }
+    suppPrev = neu;
+  });
+
   function bindDate($s){ ($s || $(document)).find('.tanggal').datepicker({ format:'dd-mm-yyyy', autoclose:true }); }
   bindDate();
 
@@ -546,6 +619,7 @@ $(function () {
     Swal.fire({ title:'Updating...', allowOutsideClick:false, didOpen:function(){ Swal.showLoading(); } });
     $.post('kontrabon_new_update.php', {
       doc_number: DOC, document_date: $('#tgl_doc').val(), kontrabon_date: $('#tgl_received').val(), pesan: $('#pesan').val(),
+      nama_supp: $('#nama_supp').val(),   // supplier boleh berubah; server memvalidasi ulang vs BPB
       total_amount: $('#total_value_h').val(), invoices: JSON.stringify(invoices)
     }, function (res) {
       if (res.ok) { Swal.fire({icon:'success', title:'Updated', text: res.msg}).then(function(){ window.location = 'kontrabon_new.php'; }); }
