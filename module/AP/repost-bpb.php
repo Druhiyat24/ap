@@ -377,13 +377,19 @@ function RepostJurnal() {
                 data: { bpb_list: selected },
                 success: function (res) {
 
+                    // Endpoint membalas TEKS BIASA: sukses -> "Repost jurnal berhasil ...",
+                    // gagal -> "Gagal repost: ...". Dulu selalu ditampilkan "Berhasil!"
+                    // walaupun isinya pesan error, jadi kegagalan tidak kelihatan.
+                    var txt = (res || '').toString().trim();
+                    var ok  = /berhasil/i.test(txt) && !/^gagal/i.test(txt);
+
                     Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: res
+                        icon:  ok ? 'success' : 'error',
+                        title: ok ? 'Berhasil!' : 'Gagal!',
+                        text:  txt
                     });
 
-                    datatable.ajax.reload();
+                    if (ok) datatable.ajax.reload();
                 },
                 error: function () {
                     Swal.fire({
