@@ -29,7 +29,7 @@ $sql = mysqli_query($conn2, "SELECT * FROM (
   select a.* from (SELECT a.id, a.no_faktur, a.tgl_faktur, a.no_bpb, a.tgl_bpb, '-' no_referensi, b.itemdesc, price, sum(qty) qty, 0 diskon, sum(qty * price) dpp, sum((qty * price) * tax/100) ppn, sum((qty * price) + ((qty * price) * tax/100)) total,'-' sup_doc from bpb_faktur_inv a INNER JOIN bpb_new b on b.no_bpb = a.no_bpb where tgl_faktur BETWEEN '$start_date' and '$end_date' GROUP BY a.no_faktur, b.no_bpb, b.itemdesc, b.price order by no_faktur,a.no_bpb,a.id asc) a LEFT JOIN bpb_scan_faktur b on b.kd_no_faktur = a.no_faktur where b.id is null and a.no_faktur != ''
   UNION ALL
   SELECT MIN(b.id) id, b.upt_no_faktur no_faktur, b.upt_tgl_faktur tgl_faktur, b.no_bpb, b.tgl_bpb, '-' no_referensi, b.itemdesc nama_item, b.price, SUM(b.qty) qty, 0 diskon, SUM(b.qty * b.price) dpp, SUM((b.qty * b.price) * b.tax/100) ppn, SUM((b.qty * b.price) + ((b.qty * b.price) * b.tax/100)) total, '-' sup_doc
-  FROM bpb_new b LEFT JOIN bpb_faktur_inv f ON f.no_bpb = b.no_bpb
+  FROM bpb_new b LEFT JOIN bpb_faktur_inv f ON f.no_dok = b.upt_dok_faktur
   WHERE b.upt_no_faktur IS NOT NULL AND b.upt_no_faktur <> '' AND b.upt_no_faktur <> '-' AND f.no_bpb IS NULL AND b.upt_tgl_faktur BETWEEN '$start_date' and '$end_date'
   GROUP BY b.upt_no_faktur, b.no_bpb, b.itemdesc, b.price
  ) z
