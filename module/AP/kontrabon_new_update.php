@@ -125,12 +125,13 @@ if (!$fail && $allBpb) {
         }
     }
 }
-
 // 2) Guard invoice: tidak dobel dalam payload + tidak dipakai supplier sama di kontrabon lain
+// No Invoice strip ("-") = penanda "tanpa nomor invoice", boleh dipakai berkali-kali
+// (baik dalam 1 dokumen maupun lintas dokumen) - tidak pernah dianggap dobel.
 $allInv = [];
 if (!$fail) {
     foreach ($invoices as $iv) {
-        $n = trim($iv['no_inv'] ?? ''); if ($n === '') continue;
+        $n = trim($iv['no_inv'] ?? ''); if ($n === '' || preg_match('/^-+$/', $n)) continue;
         if (isset($allInv[$n])) { $fail = "Invoice '$n' appears more than once."; break; }
         $allInv[$n] = true;
     }

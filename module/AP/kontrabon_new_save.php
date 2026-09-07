@@ -71,11 +71,15 @@ if (!$fail) {
         }
     }
 }
-
 // 1d) Guard: No Invoice belum dipakai untuk SUPPLIER yang sama (kecuali Cancel).
+// No Invoice strip ("-") = penanda "tanpa nomor invoice", boleh dipakai berkali-kali
+// (baik dalam 1 dokumen maupun lintas dokumen) - tidak pernah dianggap dobel.
 if (!$fail) {
     $allInv = [];
-    foreach ($invoices as $iv) { $n = trim($iv['no_inv'] ?? ''); if ($n !== '') $allInv[$n] = true; }
+    foreach ($invoices as $iv) {
+        $n = trim($iv['no_inv'] ?? '');
+        if ($n !== '' && !preg_match('/^-+$/', $n)) $allInv[$n] = true;
+    }
     if ($allInv) {
         $inList = implode(',', array_map(function ($x) use ($e) { return "'" . $e($x) . "'"; }, array_keys($allInv)));
         $rc = mysqli_query($conn2, "SELECT i.no_inv, h.doc_number FROM ir_kontrabon_inv i
