@@ -244,12 +244,23 @@
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $start_date = date("Y-m-d",strtotime($_POST['start_date']));
             $end_date = date("Y-m-d",strtotime($_POST['end_date']));
+
+            // Filter & batas minimum Transfer Date memakai TANGGAL IR AKTUAL
+            // (DATE(created_date)), BUKAN tgl_penerimaan.
+            // Alasan: tgl_penerimaan sering digeser maju ke hari Rabu (tanggal kontrabon),
+            // jadi bisa lebih besar dari hari transfer sebenarnya - mis. IR dibuat 04-Sep
+            // tapi tgl_penerimaan 09-Sep, sehingga transfer tgl 07-Sep tertolak
+            // oleh validasi "tgl_doc >= tgl_fil_inv" padahal IR-nya sudah ada.
+            // Kolom "Kontrabon Date" yang TAMPIL tetap tgl_penerimaan (tanggal kontrabon resmi);
+            // yang dipindah ke ir_date hanya filter + fill_date (batas minimum transfer).
+            // approved_date (TFTA) tetap diprioritaskan bila ada: tidak boleh transfer ke
+            // Purchasing sebelum Accounting menyetujui.
             }
 
             if ($nama_supp == 'ALL') {
-                $sql = mysqli_query($conn2,"select *,IF(approved_date is null,tgl_penerimaan,approved_date) fill_date from (select doc_number,tgl_penerimaan,nama_supp,total_amount, status, CONCAT(created_by,' (',created_date,')') create_user from ir_invoice_supp_h where status IN ('Accepted Acc','Received') and tgl_penerimaan between '$start_date' and '$end_date') a LEFT JOIN (select nama_trans,no_trans,tgl_trans,DATE_FORMAT(approved_date,'%Y-%m-%d') approved_date,doc_number doc_num from ir_trans_invoice_supp where status = 'Approved' and nama_trans = 'TFTA' GROUP BY doc_number) b on b.doc_num = a.doc_number order by fill_date asc");
+                $sql = mysqli_query($conn2,"select *,IF(approved_date is null,ir_date,approved_date) fill_date from (select doc_number,tgl_penerimaan,DATE(created_date) ir_date,nama_supp,total_amount, status, CONCAT(created_by,' (',created_date,')') create_user from ir_invoice_supp_h where status IN ('Accepted Acc','Received') and DATE(created_date) between '$start_date' and '$end_date') a LEFT JOIN (select nama_trans,no_trans,tgl_trans,DATE_FORMAT(approved_date,'%Y-%m-%d') approved_date,doc_number doc_num from ir_trans_invoice_supp where status = 'Approved' and nama_trans = 'TFTA' GROUP BY doc_number) b on b.doc_num = a.doc_number order by fill_date asc");
             }else{
-                $sql = mysqli_query($conn2,"select *,IF(approved_date is null,tgl_penerimaan,approved_date) fill_date from (select doc_number,tgl_penerimaan,nama_supp,total_amount, status, CONCAT(created_by,' (',created_date,')') create_user from ir_invoice_supp_h where status IN ('Accepted Acc','Received') and nama_supp = '$nama_supp' and tgl_penerimaan between '$start_date' and '$end_date') a LEFT JOIN (select nama_trans,no_trans,tgl_trans,DATE_FORMAT(approved_date,'%Y-%m-%d') approved_date,doc_number doc_num from ir_trans_invoice_supp where status = 'Approved' and nama_trans = 'TFTA' and nama_supp = '$nama_supp' GROUP BY doc_number) b on b.doc_num = a.doc_number order by fill_date asc");
+                $sql = mysqli_query($conn2,"select *,IF(approved_date is null,ir_date,approved_date) fill_date from (select doc_number,tgl_penerimaan,DATE(created_date) ir_date,nama_supp,total_amount, status, CONCAT(created_by,' (',created_date,')') create_user from ir_invoice_supp_h where status IN ('Accepted Acc','Received') and nama_supp = '$nama_supp' and DATE(created_date) between '$start_date' and '$end_date') a LEFT JOIN (select nama_trans,no_trans,tgl_trans,DATE_FORMAT(approved_date,'%Y-%m-%d') approved_date,doc_number doc_num from ir_trans_invoice_supp where status = 'Approved' and nama_trans = 'TFTA' and nama_supp = '$nama_supp' GROUP BY doc_number) b on b.doc_num = a.doc_number order by fill_date asc");
             }
 
             
