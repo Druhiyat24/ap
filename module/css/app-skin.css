@@ -1,3 +1,4 @@
+@import url("app-skin-form.css");   /* skin kontrol form: select & tanggal */
 /* ============================================================================
    app-skin.css — Skin UI bersama untuk menu-menu list AP (template).
    Dipakai dengan: <link rel="stylesheet" href="../css/app-skin.css">
@@ -134,88 +135,6 @@ table.app-dt ul.dtr-details .dtr-title{
   min-width:170px; font-weight:700; color:#64748b; font-size:10.5px; text-transform:uppercase; letter-spacing:.04em;
 }
 table.app-dt ul.dtr-details .dtr-data{ color:#0f172a; font-size:13px; }
-
-/* ============================================================================
-   bootstrap-select (.selectpicker) — tombol & dropdown filter.
-   Diperbaiki: lebar dropdown DIKUNCI = lebar tombol (tidak melebihi kolom),
-   item panjang membungkus (wrap), + tampilan lebih modern.
-   ============================================================================ */
-.bootstrap-select > .dropdown-toggle{
-  border:1px solid #dbe4f3 !important; border-radius:8px !important; background:#fff !important;
-  color:#334155 !important; padding:8px 12px; font-size:13px; box-shadow:none !important; outline:none;
-}
-.bootstrap-select > .dropdown-toggle:focus,
-.bootstrap-select > .dropdown-toggle:active,
-.bootstrap-select.show > .dropdown-toggle{
-  border-color:#3b82f6 !important; box-shadow:0 0 0 3px rgba(59,130,246,.15) !important;
-}
-.bootstrap-select > .dropdown-toggle .filter-option-inner-inner{ color:#334155; }
-.bootstrap-select > .dropdown-toggle::after{ color:#94a3b8; }
-
-/* Popup menu: kunci lebar ke lebar tombol supaya tidak overflow ke kolom lain */
-.bootstrap-select > .dropdown-menu{
-  border:1px solid #e6ebf3; border-radius:10px; box-shadow:0 14px 36px rgba(15,23,42,.15);
-  padding:6px; margin-top:5px;
-  width:100% !important; min-width:100% !important; max-width:100% !important;
-}
-.bootstrap-select .dropdown-menu.inner{ width:100%; }
-
-/* Kotak search di dalam dropdown */
-.bootstrap-select .bs-searchbox{ padding:2px 4px 8px; }
-.bootstrap-select .bs-searchbox input{
-  border:1px solid #dbe4f3; border-radius:8px; padding:7px 12px; font-size:13px; box-shadow:none;
-}
-.bootstrap-select .bs-searchbox input:focus{ border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.15); outline:none; }
-
-/* Item: rapi, wrap kalau panjang, hover biru muda, terpilih biru tua */
-.bootstrap-select .dropdown-item{
-  border-radius:7px; padding:8px 12px; font-size:13px; color:#334155;
-  white-space:normal; word-break:break-word;
-}
-.bootstrap-select .dropdown-item:hover,
-.bootstrap-select .dropdown-item:focus{ background:#eef4ff; color:#1e3a8a; }
-.bootstrap-select .dropdown-item.active,
-.bootstrap-select .dropdown-item.selected,
-.bootstrap-select li.selected .dropdown-item{ background:#1E3A8A !important; color:#fff !important; }
-.bootstrap-select .dropdown-item.active .check-mark,
-.bootstrap-select .dropdown-item.selected .check-mark{ color:#fff; }
-/* Scrollbar tipis di list */
-.bootstrap-select .dropdown-menu .inner::-webkit-scrollbar{ width:8px; }
-.bootstrap-select .dropdown-menu .inner::-webkit-scrollbar-thumb{ background:#cbd5e1; border-radius:8px; }
-
-/* ============================================================================
-   bootstrap-datepicker (.tanggal) — kalender popup dipercantik senada tema.
-   ============================================================================ */
-.datepicker.datepicker-dropdown{
-  border:1px solid #e6ebf3; border-radius:12px; box-shadow:0 14px 38px rgba(15,23,42,.16);
-  padding:12px; font-size:13px;
-}
-.datepicker.datepicker-dropdown:before,
-.datepicker.datepicker-dropdown:after{ display:none !important; } /* buang panah default */
-.datepicker table{ width:100%; }
-.datepicker table tr th{ font-weight:700; color:#334155; }
-.datepicker .datepicker-switch{ font-weight:700; color:#1e3a8a; border-radius:8px; }
-.datepicker .prev, .datepicker .next{ color:#64748b; border-radius:8px; font-size:15px; }
-.datepicker .datepicker-switch:hover,
-.datepicker .prev:hover, .datepicker .next:hover,
-.datepicker tfoot tr th:hover{ background:#eef4ff !important; color:#1e3a8a; }
-.datepicker table tr th.dow{ color:#94a3b8; font-size:10.5px; text-transform:uppercase; font-weight:700; padding:6px 0; }
-.datepicker table tr td{ padding:1px; }
-.datepicker table tr td.day{ border-radius:8px; color:#334155; padding:6px 8px; transition:background .1s; }
-.datepicker table tr td.day:hover,
-.datepicker table tr td.focused{ background:#eef4ff !important; color:#1e3a8a; }
-.datepicker table tr td.old, .datepicker table tr td.new{ color:#cbd5e1; }
-.datepicker table tr td.today{ background:#fef3c7 !important; color:#92400e !important; }
-.datepicker table tr td.active,
-.datepicker table tr td.active:hover,
-.datepicker table tr td.active.active{
-  background:#1E3A8A !important; background-image:none !important; color:#fff !important;
-  box-shadow:0 3px 8px rgba(30,58,138,.3); text-shadow:none;
-}
-.datepicker table tr td span.month, .datepicker table tr td span.year{ border-radius:8px; }
-.datepicker table tr td span.month:hover, .datepicker table tr td span.year:hover{ background:#eef4ff; color:#1e3a8a; }
-.datepicker table tr td span.active,
-.datepicker table tr td span.active:hover{ background:#1E3A8A !important; background-image:none !important; color:#fff; text-shadow:none; }
 
 /* ============================================================================
    Loading overlay + spinner — menutup HANYA area tabel (posisi/ukuran di-set JS)

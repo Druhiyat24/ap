@@ -1,0 +1,422 @@
+/* ============================================================================
+   app-skin-form.css — SKIN KONTROL FORM (dropdown & tanggal).
+   Dipisah dari app-skin.css supaya halaman yang hanya ingin menyamakan gaya
+   INPUT-nya saja (mis. create_memorial_journal.php) bisa memuat berkas ini
+   tanpa ikut terkena skin kartu/tabel/tombol/DataTables.
+   app-skin.css sendiri meng-@import berkas ini, jadi halaman lama tidak berubah
+   dan aturannya tetap SATU sumber (tidak diduplikasi).
+
+   Isi:
+     1. bootstrap-select (.selectpicker)
+     2. select2          (.select2)          <- disamakan dgn bootstrap-select
+     3. input tanggal    (.tanggal)          <- disamakan dgn tombol dropdown
+     4. bootstrap-datepicker (kalender popup)
+     5. tombol aksi      (.app-btn)          <- opt-in, dipakai di form manapun
+     6. loading overlay  (.app-loading)      <- opt-in, spinner saat memuat data
+     7. modal            (.app-modal)        <- opt-in, modal Bootstrap 4 dipercantik
+   ============================================================================ */
+
+/* ============================================================================
+   5. Tombol aksi (.app-btn) — OPT-IN, tidak menimpa .btn bawaan Bootstrap.
+   Cara pakai:  <button class="app-btn app-btn-primary"><i class="fa fa-..."></i> Save</button>
+   Varian: -primary (biru) | -success (hijau) | -warning (kuning) |
+           -danger (merah) | -light (netral, garis tipis)
+   Ukuran : tambahkan .app-btn-sm untuk versi kecil.
+   Dipisah dari .btn-act/.btn-round yg sudah ada di app-skin.css (itu utk tombol
+   di dalam tabel/list), yang ini untuk tombol aksi form & toolbar.
+   ============================================================================ */
+.app-btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:6px;
+  border:1px solid transparent; border-radius:9px;
+  padding:7px 15px; font-size:12.5px; font-weight:600; line-height:1.45;
+  cursor:pointer; white-space:nowrap; text-decoration:none;
+  box-shadow:0 2px 5px rgba(15,23,42,.10);
+  transition:transform .12s ease, box-shadow .15s ease, filter .15s ease, background .15s ease;
+}
+.app-btn:hover{
+  transform:translateY(-1px); box-shadow:0 6px 15px rgba(15,23,42,.18);
+  filter:brightness(1.04); text-decoration:none;
+}
+.app-btn:active{ transform:translateY(0); box-shadow:0 2px 5px rgba(15,23,42,.12); }
+.app-btn:focus{ outline:none; box-shadow:0 0 0 3px rgba(59,130,246,.28); }
+.app-btn i{ font-size:12px; line-height:1; }
+.app-btn:disabled, .app-btn.disabled{
+  opacity:.55; cursor:not-allowed; transform:none; box-shadow:none; filter:none;
+}
+.app-btn-sm{ padding:5px 11px; font-size:11.5px; border-radius:8px; }
+
+.app-btn-primary{ background:linear-gradient(180deg,#2f6bdd,#1d4ed8); color:#fff; }
+.app-btn-primary:hover{ color:#fff; }
+.app-btn-success{ background:linear-gradient(180deg,#22c07f,#10b981); color:#fff; }
+.app-btn-success:hover{ color:#fff; }
+.app-btn-warning{ background:linear-gradient(180deg,#fbbf24,#f0a413); color:#4a3200; }
+.app-btn-warning:hover{ color:#4a3200; }
+.app-btn-danger{ background:linear-gradient(180deg,#f4635f,#e13c37); color:#fff; }
+.app-btn-danger:hover{ color:#fff; }
+.app-btn-dark{ background:linear-gradient(180deg,#3f4756,#232a36); color:#fff; }
+.app-btn-dark:hover{ color:#fff; }
+.app-btn-light{ background:#fff; color:#475569; border-color:#dbe4f3; box-shadow:0 1px 3px rgba(15,23,42,.07); }
+.app-btn-light:hover{ background:#f5f8ff; color:#1e3a8a; border-color:#bfd3f5; }
+
+/* Baris tombol aksi di bawah form */
+.app-actions{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+
+/* ============================================================================
+   1. bootstrap-select (.selectpicker) — tombol & dropdown filter.
+   Lebar dropdown DIKUNCI = lebar tombol (tidak melebihi kolom), item panjang
+   membungkus (wrap), tampilan lebih modern.
+   ============================================================================ */
+.bootstrap-select > .dropdown-toggle{
+  border:1px solid #dbe4f3 !important; border-radius:8px !important; background:#fff !important;
+  color:#334155 !important; padding:8px 12px; font-size:13px; box-shadow:none !important; outline:none;
+}
+.bootstrap-select > .dropdown-toggle:focus,
+.bootstrap-select > .dropdown-toggle:active,
+.bootstrap-select.show > .dropdown-toggle{
+  border-color:#3b82f6 !important; box-shadow:0 0 0 3px rgba(59,130,246,.15) !important;
+}
+.bootstrap-select > .dropdown-toggle .filter-option-inner-inner{ color:#334155; }
+.bootstrap-select > .dropdown-toggle::after{ color:#94a3b8; }
+
+/* Popup menu: kunci lebar ke lebar tombol supaya tidak overflow ke kolom lain */
+.bootstrap-select > .dropdown-menu{
+  border:1px solid #e6ebf3; border-radius:10px; box-shadow:0 14px 36px rgba(15,23,42,.15);
+  padding:6px; margin-top:5px;
+  width:100% !important; min-width:100% !important; max-width:100% !important;
+}
+.bootstrap-select .dropdown-menu.inner{ width:100%; }
+
+/* Kotak search di dalam dropdown */
+.bootstrap-select .bs-searchbox{ padding:2px 4px 8px; }
+.bootstrap-select .bs-searchbox input{
+  border:1px solid #dbe4f3; border-radius:8px; padding:7px 12px; font-size:13px; box-shadow:none;
+}
+.bootstrap-select .bs-searchbox input:focus{ border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.15); outline:none; }
+
+/* Item: rapi, wrap kalau panjang, hover biru muda, terpilih biru tua */
+.bootstrap-select .dropdown-item{
+  border-radius:7px; padding:8px 12px; font-size:13px; color:#334155;
+  white-space:normal; word-break:break-word;
+}
+.bootstrap-select .dropdown-item:hover,
+.bootstrap-select .dropdown-item:focus{ background:#eef4ff; color:#1e3a8a; }
+.bootstrap-select .dropdown-item.active,
+.bootstrap-select .dropdown-item.selected,
+.bootstrap-select li.selected .dropdown-item{ background:#1E3A8A !important; color:#fff !important; }
+.bootstrap-select .dropdown-item.active .check-mark,
+.bootstrap-select .dropdown-item.selected .check-mark{ color:#fff; }
+/* Scrollbar tipis di list */
+.bootstrap-select .dropdown-menu .inner::-webkit-scrollbar{ width:8px; }
+.bootstrap-select .dropdown-menu .inner::-webkit-scrollbar-thumb{ background:#cbd5e1; border-radius:8px; }
+
+/* ============================================================================
+   2. select2 (.select2) — DISAMAKAN dengan bootstrap-select di atas.
+   Beberapa halaman (mis. Memorial Journal) memakai select2, bukan selectpicker;
+   tanpa ini keduanya terlihat beda di halaman yang sama.
+   ============================================================================ */
+.select2-container--default .select2-selection--single{
+  border:1px solid #dbe4f3; border-radius:8px; background:#fff;
+  height:auto; padding:8px 12px; outline:none;
+}
+.select2-container--default.select2-container--focus .select2-selection--single,
+.select2-container--default.select2-container--open .select2-selection--single{
+  border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.15);
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered{
+  color:#334155; font-size:13px; line-height:1.35; padding:0 20px 0 0;
+}
+.select2-container--default .select2-selection--single .select2-selection__placeholder{ color:#94a3b8; }
+.select2-container--default .select2-selection--single .select2-selection__arrow{
+  height:100%; top:0; right:8px;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow b{ border-color:#94a3b8 transparent transparent transparent; }
+.select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b{ border-color:transparent transparent #94a3b8 transparent; }
+
+/* Popup */
+.select2-container--default .select2-dropdown{
+  border:1px solid #e6ebf3; border-radius:10px; box-shadow:0 14px 36px rgba(15,23,42,.15); padding:6px;
+}
+.select2-container--default .select2-search--dropdown .select2-search__field{
+  border:1px solid #dbe4f3; border-radius:8px; padding:7px 12px; font-size:13px; box-shadow:none;
+}
+.select2-container--default .select2-search--dropdown .select2-search__field:focus{
+  border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.15); outline:none;
+}
+.select2-container--default .select2-results__option{
+  border-radius:7px; padding:8px 12px; font-size:13px; color:#334155;
+  white-space:normal; word-break:break-word;
+}
+.select2-container--default .select2-results__option--highlighted[aria-selected]{ background:#eef4ff; color:#1e3a8a; }
+.select2-container--default .select2-results__option[aria-selected=true]{ background:#1E3A8A; color:#fff; }
+.select2-container--default .select2-results > .select2-results__options::-webkit-scrollbar{ width:8px; }
+.select2-container--default .select2-results > .select2-results__options::-webkit-scrollbar-thumb{ background:#cbd5e1; border-radius:8px; }
+
+/* ============================================================================
+   3. Input tanggal (.tanggal) — disamakan dgn tombol dropdown di atas supaya
+   sebaris terlihat seragam (border, radius, tinggi, cincin fokus).
+   ============================================================================ */
+input.tanggal.form-control,
+input.tanggal{
+  border:1px solid #dbe4f3; border-radius:8px; background:#fff;
+  color:#334155; font-size:13px; padding:8px 12px; height:auto; box-shadow:none;
+}
+input.tanggal.form-control:focus,
+input.tanggal:focus{
+  border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.15); outline:none;
+}
+
+/* ============================================================================
+   4. bootstrap-datepicker (.tanggal) — kalender popup dipercantik senada tema.
+   ============================================================================ */
+.datepicker.datepicker-dropdown{
+  border:1px solid #e6ebf3; border-radius:12px; box-shadow:0 14px 38px rgba(15,23,42,.16);
+  padding:12px; font-size:13px;
+}
+.datepicker.datepicker-dropdown:before,
+.datepicker.datepicker-dropdown:after{ display:none !important; } /* buang panah default */
+.datepicker table{ width:100%; }
+.datepicker table tr th{ font-weight:700; color:#334155; }
+.datepicker .datepicker-switch{ font-weight:700; color:#1e3a8a; border-radius:8px; }
+.datepicker .prev, .datepicker .next{ color:#64748b; border-radius:8px; font-size:15px; }
+.datepicker .datepicker-switch:hover,
+.datepicker .prev:hover, .datepicker .next:hover,
+.datepicker tfoot tr th:hover{ background:#eef4ff !important; color:#1e3a8a; }
+.datepicker table tr th.dow{ color:#94a3b8; font-size:10.5px; text-transform:uppercase; font-weight:700; padding:6px 0; }
+.datepicker table tr td{ padding:1px; }
+.datepicker table tr td.day{ border-radius:8px; color:#334155; padding:6px 8px; transition:background .1s; }
+.datepicker table tr td.day:hover,
+.datepicker table tr td.focused{ background:#eef4ff !important; color:#1e3a8a; }
+.datepicker table tr td.old, .datepicker table tr td.new{ color:#cbd5e1; }
+.datepicker table tr td.today{ background:#fef3c7 !important; color:#92400e !important; }
+.datepicker table tr td.active,
+.datepicker table tr td.active:hover,
+.datepicker table tr td.active.active{
+  background:#1E3A8A !important; background-image:none !important; color:#fff !important;
+  box-shadow:0 3px 8px rgba(30,58,138,.3); text-shadow:none;
+}
+.datepicker table tr td span.month, .datepicker table tr td span.year{ border-radius:8px; }
+.datepicker table tr td span.month:hover, .datepicker table tr td span.year:hover{ background:#eef4ff; color:#1e3a8a; }
+.datepicker table tr td span.active,
+.datepicker table tr td span.active:hover{ background:#1E3A8A !important; background-image:none !important; color:#fff; text-shadow:none; }
+
+/* ============================================================================
+   6. Loading overlay (.app-loading) — OPT-IN, bisa dipakai di halaman manapun
+   (tabel DataTables, kartu, form, area apa saja yang sedang memuat data).
+
+   Markup:
+     <div class="app-loading-wrap" id="xLoad">
+       <div class="app-loading">
+         <div class="app-loading-box">
+           <div class="app-spinner"></div>
+           <div class="app-loading-text">Loading data...</div>
+         </div>
+       </div>
+       ... isi area (tabel / form / dll) ...
+     </div>
+
+   Menyalakan / mematikan: tambah-hapus class .is-loading pada .app-loading-wrap
+     $('#xLoad').addClass('is-loading');      // mulai
+     $('#xLoad').removeClass('is-loading');   // selesai
+
+   Khusus DataTables cukup satu baris (kotak "Processing" bawaan auto disembunyikan):
+     tbl.on('processing.dt', function (e, s, p) { $('#xLoad').toggleClass('is-loading', p); });
+
+   Varian: .app-loading-sm (kotak & spinner lebih kecil, untuk area sempit).
+   ============================================================================ */
+.app-loading-wrap{ position:relative; }
+.app-loading-wrap.is-loading{ min-height:180px; }
+
+.app-loading{
+  position:absolute; inset:0; z-index:20; overflow:hidden;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(248,250,252,.72);
+  -webkit-backdrop-filter:blur(2.5px); backdrop-filter:blur(2.5px);
+  border-radius:12px;
+  opacity:0; visibility:hidden; transition:opacity .18s ease, visibility .18s ease;
+}
+.app-loading-wrap.is-loading > .app-loading{ opacity:1; visibility:visible; }
+/* Saat memuat, isi di belakang tidak bisa diklik (cegah dobel-request) */
+.app-loading-wrap.is-loading > :not(.app-loading){ pointer-events:none; }
+
+/* Garis progres indeterminate tipis di sisi atas area */
+.app-loading::before{
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg, rgba(59,130,246,0), #3b82f6, #1E3A8A, #3b82f6, rgba(59,130,246,0));
+  background-size:42% 100%; background-repeat:no-repeat;
+  animation:appLoadBar 1.15s ease-in-out infinite;
+}
+@keyframes appLoadBar{ 0%{ background-position:-45% 0; } 100%{ background-position:145% 0; } }
+
+/* Kotak putih di tengah */
+.app-loading-box{
+  display:flex; flex-direction:column; align-items:center; gap:11px;
+  padding:22px 30px; background:#fff; border:1px solid #e6ebf3; border-radius:14px;
+  box-shadow:0 18px 44px rgba(15,23,42,.16);
+  animation:appLoadPop .22s ease-out;
+}
+@keyframes appLoadPop{ from{ opacity:0; transform:translateY(6px) scale(.97); } to{ opacity:1; transform:none; } }
+
+/* Spinner cincin ganda (luar searah jarum jam, dalam berlawanan) */
+.app-spinner{ position:relative; width:44px; height:44px; }
+.app-spinner::before,
+.app-spinner::after{ content:''; position:absolute; border-radius:50%; border:3px solid transparent; }
+.app-spinner::before{
+  inset:0; border-top-color:#1E3A8A; border-right-color:#3b82f6;
+  animation:appSpin .8s linear infinite;
+}
+.app-spinner::after{
+  inset:7px; border-bottom-color:#93c5fd; border-left-color:#bfdbfe;
+  animation:appSpin 1.25s linear infinite reverse;
+}
+@keyframes appSpin{ to{ transform:rotate(360deg); } }
+
+.app-loading-text{
+  font-size:12.5px; font-weight:600; color:#1e3a8a; letter-spacing:.2px;
+  animation:appLoadFade 1.3s ease-in-out infinite;
+}
+@keyframes appLoadFade{ 0%,100%{ opacity:1; } 50%{ opacity:.45; } }
+
+/* Varian kecil */
+.app-loading-sm .app-loading-box{ padding:14px 18px; gap:8px; }
+.app-loading-sm .app-spinner{ width:30px; height:30px; }
+.app-loading-sm .app-spinner::after{ inset:5px; }
+.app-loading-sm .app-loading-text{ font-size:11.5px; }
+
+/* Kotak "Processing" bawaan DataTables tidak perlu lagi kalau overlay ini dipakai */
+.app-loading-wrap .dataTables_processing{ display:none !important; }
+
+/* Hormati preferensi "kurangi animasi" milik OS/browser */
+@media (prefers-reduced-motion: reduce){
+  .app-loading::before,
+  .app-spinner::before, .app-spinner::after,
+  .app-loading-text, .app-loading-box{ animation:none !important; }
+}
+
+/* ============================================================================
+   7. Modal (.app-modal) — OPT-IN, dipasang di elemen .modal-dialog milik
+   Bootstrap 4. Header gradient biru senada .app-card-header, sudut membulat,
+   body bisa discroll sendiri, tabel di dalamnya rapat & mudah dibaca.
+
+   Markup:
+     <div class="modal fade" id="xModal" tabindex="-1" role="dialog">
+       <div class="modal-dialog app-modal modal-dialog-centered" role="document">
+         <div class="modal-content">
+           <div class="modal-header">
+             <h5 class="modal-title"><i class="fa fa-file-text-o"></i> Judul</h5>
+             <button type="button" class="close" data-dismiss="modal"><span class="fa fa-times"></span></button>
+           </div>
+           <div class="modal-body"> ... </div>
+           <div class="modal-footer"> ... </div>
+         </div>
+       </div>
+     </div>
+   ============================================================================ */
+.app-modal .modal-content{
+  border:0; border-radius:14px; overflow:hidden;
+  box-shadow:0 26px 70px rgba(15,23,42,.30);
+}
+
+/* LEBAR: Bootstrap di app ini versi 4.1.1 -> class .modal-xl BELUM ADA, jadi lebar
+   diatur di sini. Dipasang di elemen .modal-dialog, mengalahkan .modal-lg. */
+.app-modal.modal-dialog{ max-width:1500px; width:calc(100% - 2.5rem); }
+/* Varian lebar persen: .app-modal-80 = 80% layar (untuk modal upload/kerja besar) */
+.app-modal.app-modal-80.modal-dialog{ max-width:none; width:80%; }
+@media (max-width:1100px){ .app-modal.app-modal-80.modal-dialog{ width:calc(100% - 2rem); } }
+@media (max-width:576px){ .app-modal.modal-dialog{ width:calc(100% - 1rem); margin:.5rem auto; } }
+.app-modal .modal-header{
+  background:linear-gradient(135deg,#1E3A8A 0%,#2f6bdd 100%);
+  border-bottom:0; padding:14px 20px; align-items:center;
+}
+.app-modal .modal-header .modal-title{
+  color:#fff; font-size:14.5px; font-weight:700; letter-spacing:.2px; margin:0;
+  display:flex; align-items:center; gap:9px;
+}
+.app-modal .modal-header .modal-title i{ opacity:.85; }
+.app-modal .modal-header .close{
+  color:#fff; opacity:.8; text-shadow:none; font-size:15px; padding:6px 10px; margin:0;
+  border-radius:8px; transition:background .15s, opacity .15s;
+}
+.app-modal .modal-header .close:hover{ opacity:1; background:rgba(255,255,255,.16); }
+
+.app-modal .modal-body{ padding:18px 20px; max-height:72vh; overflow:auto; background:#fff; }
+.app-modal .modal-footer{ border-top:1px solid #eef2f7; background:#f8fafc; padding:12px 20px; }
+
+/* Panel ringkas info dokumen di atas tabel */
+.app-modal .app-mod-info{
+  display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:12px 18px;
+  background:#f6f9ff; border:1px solid #e3ebf9; border-radius:11px; padding:13px 16px; margin-bottom:16px;
+}
+/* 5 kolom per baris (mis. 10 field = 5 atas + 5 bawah), menyusut di layar sempit */
+@media (max-width:1100px){ .app-modal .app-mod-info{ grid-template-columns:repeat(3, minmax(0, 1fr)); } }
+@media (max-width:700px){  .app-modal .app-mod-info{ grid-template-columns:repeat(2, minmax(0, 1fr)); } }
+.app-modal .app-mod-info div{ min-width:0; }
+.app-modal .app-mod-info b{
+  display:block; font-size:10px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.5px; color:#94a3b8; margin-bottom:3px;
+}
+.app-modal .app-mod-info span{
+  display:block; font-size:12.5px; color:#0f172a; font-weight:600;
+  word-break:break-word; line-height:1.35;
+}
+
+/* Kotak search kecil ber-ikon (header seksi modal / toolbar tabel) */
+.app-search{ position:relative; display:inline-block; }
+.app-search input{
+  border:1px solid #dbe4f3; border-radius:8px; background:#fff; color:#334155;
+  font-size:12px; padding:6px 10px 6px 30px; height:auto; box-shadow:none; min-width:250px;
+}
+.app-search input:focus{ border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.15); outline:none; }
+.app-search i{
+  position:absolute; left:10px; top:50%; transform:translateY(-50%);
+  color:#94a3b8; font-size:12px; pointer-events:none;
+}
+
+/* Judul kecil pemisah bagian di dalam modal */
+.app-modal .app-mod-sec{
+  font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.6px;
+  color:#1e3a8a; margin:0 0 8px; display:flex; align-items:center; gap:7px;
+}
+.app-modal .app-mod-sec:after{ content:''; flex:1; height:1px; background:#e6ebf3; }
+/* .no-line: garis otomatis dimatikan, dipakai kalau seksi ini diisi kontrol
+   sendiri (mis. kotak search di kanan) dgn spacer manual. */
+.app-modal .app-mod-sec.no-line:after{ display:none; }
+
+/* Tabel di dalam modal */
+.app-modal table.app-mod-tbl{ width:100%; font-size:12px; margin:0; border-collapse:separate; border-spacing:0; }
+.app-modal table.app-mod-tbl thead th{
+  background:#1E3A8A; color:#fff; font-weight:600; font-size:11px; text-transform:uppercase;
+  letter-spacing:.3px; padding:9px 10px; white-space:nowrap; border:0; position:sticky; top:0; z-index:1;
+}
+.app-modal table.app-mod-tbl thead th:first-child{ border-top-left-radius:9px; }
+.app-modal table.app-mod-tbl thead th:last-child{ border-top-right-radius:9px; }
+.app-modal table.app-mod-tbl tbody td{
+  padding:8px 10px; border-bottom:1px solid #eef2f7; color:#334155; vertical-align:top;
+}
+.app-modal table.app-mod-tbl tbody tr:hover td{ background:#f5f8ff; }
+.app-modal table.app-mod-tbl tfoot th{
+  background:#eef2f7; border-top:2px solid #1E3A8A; padding:9px 10px; font-size:12px; font-weight:700; color:#0f172a;
+}
+.app-modal table.app-mod-tbl .num{ text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.app-modal .app-mod-scroll{ overflow-x:auto; border-radius:9px; }
+/* .h10 = tinggi tabel DIKUNCI kira-kira 10 baris data; sisanya discroll DI DALAM
+   tabel, jadi modal (dan halaman di belakangnya) tidak ikut memanjang.
+   Header & baris TOTAL dibuat sticky supaya tetap kelihatan saat discroll. */
+.app-modal .app-mod-scroll.h10{ max-height:400px; overflow-y:auto; }
+.app-modal table.app-mod-tbl tfoot th{ position:sticky; bottom:0; z-index:1; }
+/* Tabel PAS lebar modal — TIDAK dipaksa min-width, jadi tidak muncul scroll
+   horizontal. Kolom COA diberi jatah lebar tetap supaya namanya tidak terjepit
+   jadi 1 kata per baris; kolom angka & kode tidak boleh patah. */
+.app-modal table.app-mod-tbl{ width:100%; }
+.app-modal table.app-mod-tbl td:first-child,
+.app-modal table.app-mod-tbl th:first-child{ width:22%; }
+.app-modal table.app-mod-tbl td:first-child b{ white-space:nowrap; }
+.app-modal table.app-mod-tbl td:first-child span{ font-size:11.5px; line-height:1.3; }
+.app-modal table.app-mod-tbl .nowrap{ white-space:nowrap; }
+
+/* Link dokumen yang bisa diklik di dalam tabel report */
+a.ppn-doc{
+  color:#1d4ed8; font-weight:600; text-decoration:none;
+  border-bottom:1px dashed rgba(29,78,216,.45); cursor:pointer;
+}
+a.ppn-doc:hover{ color:#0f2f9e; border-bottom-style:solid; text-decoration:none; }
+.ppn-doc-sep{ color:#94a3b8; }

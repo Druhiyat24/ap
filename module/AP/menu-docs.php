@@ -734,8 +734,8 @@ $menuGroups = [
             'report-fp' => [
                 'title' => 'Report FP', 'icon' => 'fa-files-o', 'path' => 'module/AP/report-faktur-pajak.php',
                 'doc' => [
-                    'summary' => 'Laporan Faktur Pajak (tax invoice) murni baca, menggabungkan Faktur yang sudah "di-scan" maupun yang belum, per rentang tanggal.',
-                    'purpose' => 'Menampilkan daftar Faktur Pajak beserta detail barang (harga, qty, DPP, diskon, PPN, total) untuk keperluan administrasi pajak — sumbernya digabung dari 2 jalur: Faktur yang sudah melalui proses "scan" dan yang belum.',
+                    'summary' => 'Laporan Faktur Pajak (tax invoice) murni baca, menggabungkan 3 sumber Faktur (sudah di-scan, lewat penaut Invoice, dan yang diisi langsung di BPB) per rentang tanggal. Tabelnya DataTables AJAX.',
+                    'purpose' => 'Menampilkan daftar Faktur Pajak beserta detail barang (harga, qty, DPP, diskon, PPN, total) untuk keperluan administrasi pajak — sumbernya digabung dari 3 jalur: Faktur yang sudah melalui proses "scan", Faktur lewat penaut <code>bpb_faktur_inv</code>, dan Faktur yang diinput langsung ke BPB (kolom <code>upt_no_faktur</code>) tanpa melalui kedua jalur tadi.',
                     'variants' => [],
                     'flow' => [],
                     'status_flow' => [],
@@ -744,10 +744,13 @@ $menuGroups = [
                         ['name' => 'bpb_scan_faktur', 'desc' => 'Detail Faktur Pajak yang sudah di-scan.'],
                         ['name' => 'bpb_scan_faktur_h', 'desc' => 'Header Faktur Pajak yang sudah di-scan.'],
                         ['name' => 'bpb_faktur_inv', 'desc' => 'Penaut BPB ke nomor Invoice/Faktur Pajak.'],
-                        ['name' => 'bpb_new', 'desc' => 'Data baris BPB, untuk Faktur yang belum melalui proses scan.'],
+                        ['name' => 'bpb_new', 'desc' => 'Data baris BPB — dipakai 2 kali: sebagai detail barang untuk Faktur lewat penaut, DAN sebagai sumber Faktur mandiri lewat kolom <code>upt_no_faktur</code>/<code>upt_tgl_faktur</code>/<code>upt_dok_inv</code> (BPB yang fakturnya diisi langsung, tidak punya baris di bpb_faktur_inv).'],
                     ],
                     'notes' => [
-                        'Punya kembaran ekspor Excel (ekspor-report-faktur-pajak.php).',
+                        'Punya kembaran ekspor Excel (ekspor-report-faktur-pajak.php) yang memakai UNION 3 cabang yang sama, plus kolom Supplier.',
+                        'Tabel ditarik lewat DataTables AJAX ke <code>ajx_report_faktur_pajak.php</code> (bukan lagi render server-side), lengkap dengan overlay loading dan baris GRAND TOTAL yang ikut menyesuaikan kotak search.',
+                        'Baris dengan Nomor Faktur kosong, "-", atau "0" DISARING di luar UNION — strip/kosong itu penanda "belum ada nomor faktur", bukan data faktur pajak.',
+                        'Cabang ke-3 (Faktur langsung di BPB) di-dedup dengan <code>LEFT JOIN bpb_faktur_inv ... WHERE f.no_bpb IS NULL</code> supaya BPB yang sudah punya penaut tidak terhitung dua kali.',
                     ],
                 ],
             ],

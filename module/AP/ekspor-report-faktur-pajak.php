@@ -60,9 +60,20 @@
         $end_date = date("Y-m-d",strtotime($_GET['end_date']));
 
   
-        $sql = mysqli_query($conn2,"(SELECT a.id,b.nama_supp, b.kd_no_faktur no_faktur, b.tgl_faktur,c.no_bpb,c.tgl_bpb,no_referensi,nama_item,price,qty,diskon,dpp,ppn,(dpp + ppn) total,'-' sup_doc FROM bpb_scan_faktur a inner join bpb_scan_faktur_h b on b.kd_no_faktur = a.kd_no_faktur inner join bpb_faktur_inv c on c.no_faktur = b.kd_no_faktur where b.tgl_faktur BETWEEN '$start_date' and '$end_date' order by no_faktur,no_bpb,id asc)
+        // Filter dipasang di LUAR union supaya berlaku seragam utk ketiga sumber:
+        //  - No Faktur strip "-" / kosong = penanda "tanpa nomor faktur", bukan data faktur pajak.
+        //  - Baris bernilai 0 (harga/qty item 0) tidak relevan utk laporan pajak.
+        $sql = mysqli_query($conn2,"SELECT * FROM (
+            (SELECT a.id,b.nama_supp, b.kd_no_faktur no_faktur, b.tgl_faktur,c.no_bpb,c.tgl_bpb,no_referensi,nama_item,price,qty,diskon,dpp,ppn,(dpp + ppn) total,'-' sup_doc FROM bpb_scan_faktur a inner join bpb_scan_faktur_h b on b.kd_no_faktur = a.kd_no_faktur inner join bpb_faktur_inv c on c.no_faktur = b.kd_no_faktur where b.tgl_faktur BETWEEN '$start_date' and '$end_date' order by no_faktur,no_bpb,id asc)
             UNION ALL
-            select a.* from (SELECT a.id, a.nama_supp, a.no_faktur, a.tgl_faktur, a.no_bpb, a.tgl_bpb, '-' no_referensi, b.itemdesc, price, sum(qty) qty, 0 diskon, sum(qty * price) dpp, sum((qty * price) * tax/100) ppn, sum((qty * price) + ((qty * price) * tax/100)) total,'-' sup_doc from bpb_faktur_inv a INNER JOIN bpb_new b on b.no_bpb = a.no_bpb where tgl_faktur BETWEEN '$start_date' and '$end_date' GROUP BY a.no_faktur, b.no_bpb, b.itemdesc, b.price order by no_faktur,a.no_bpb,a.id asc) a LEFT JOIN bpb_scan_faktur b on b.kd_no_faktur = a.no_faktur where b.id is null and a.no_faktur != ''");
+            select a.* from (SELECT a.id, a.nama_supp, a.no_faktur, a.tgl_faktur, a.no_bpb, a.tgl_bpb, '-' no_referensi, b.itemdesc, price, sum(qty) qty, 0 diskon, sum(qty * price) dpp, sum((qty * price) * tax/100) ppn, sum((qty * price) + ((qty * price) * tax/100)) total,'-' sup_doc from bpb_faktur_inv a INNER JOIN bpb_new b on b.no_bpb = a.no_bpb where tgl_faktur BETWEEN '$start_date' and '$end_date' GROUP BY a.no_faktur, b.no_bpb, b.itemdesc, b.price order by no_faktur,a.no_bpb,a.id asc) a LEFT JOIN bpb_scan_faktur b on b.kd_no_faktur = a.no_faktur where b.id is null and a.no_faktur != ''
+            UNION ALL
+            SELECT MIN(b.id) id, b.supplier nama_supp, b.upt_no_faktur no_faktur, b.upt_tgl_faktur tgl_faktur, b.no_bpb, b.tgl_bpb, '-' no_referensi, b.itemdesc nama_item, b.price, SUM(b.qty) qty, 0 diskon, SUM(b.qty * b.price) dpp, SUM((b.qty * b.price) * b.tax/100) ppn, SUM((b.qty * b.price) + ((b.qty * b.price) * b.tax/100)) total, COALESCE(NULLIF(b.upt_dok_inv,''),'-') sup_doc
+            FROM bpb_new b LEFT JOIN bpb_faktur_inv f ON f.no_bpb = b.no_bpb
+            WHERE b.upt_no_faktur IS NOT NULL AND b.upt_no_faktur <> '' AND b.upt_no_faktur <> '-' AND f.no_bpb IS NULL AND b.upt_tgl_faktur BETWEEN '$start_date' and '$end_date'
+            GROUP BY b.upt_no_faktur, b.no_bpb, b.itemdesc, b.price
+        ) z
+        WHERE TRIM(COALESCE(z.no_faktur,'')) NOT IN ('','-','0')");
 
         //SELECT a.id,b.no_faktur, b.tgl_faktur,c.no_bpb,c.tgl_bpb,no_referensi,nama_item,price,qty,diskon,dpp,ppn,(dpp + ppn) total,'-' sup_doc FROM bpb_scan_faktur a inner join bpb_scan_faktur_h b on b.kd_no_faktur = a.kd_no_faktur inner join (select no_faktur, GROUP_CONCAT(DISTINCT no_bpb) no_bpb, GROUP_CONCAT(DISTINCT tgl_bpb) tgl_bpb from bpb_faktur_inv GROUP BY no_faktur) c on c.no_faktur = b.kd_no_faktur where b.tgl_faktur BETWEEN '$start_date' and '$end_date' GROUP BY id order by id asc
         // SELECT a.id,b.kd_no_faktur no_faktur, b.tgl_faktur,c.no_bpb,c.tgl_bpb,no_referensi,nama_item,price,qty,diskon,dpp,ppn,(dpp + ppn) total,'-' sup_doc FROM bpb_scan_faktur a inner join bpb_scan_faktur_h b on b.kd_no_faktur = a.kd_no_faktur inner join bpb_faktur_inv c on c.no_faktur = b.kd_no_faktur where b.tgl_faktur BETWEEN '$start_date' and '$end_date' order by no_faktur,no_bpb,id asc
@@ -85,7 +96,7 @@ $no = 0;
     <td style="text-align:right;">'.number_format($row2['diskon'],2).'</td>
     <td style="text-align:right;">'.number_format($row2['ppn'],2).'</td>
     <td style="text-align:right;">'.number_format($row2['total'],2).'</td>
-    <td style="text-align:left;">'.$row2['sup_doc'].'</td>
+    <td style="text-align:left;">-</td>
 </tr>';
 
          

@@ -1,4 +1,14 @@
 <?php include '../header.php' ?>
+
+<!-- Skin kontrol form (dropdown & kalender tanggal) — potongan dari app-skin.css.
+     Sengaja HANYA berkas ini, bukan app-skin.css utuh: skin penuh juga mengubah
+     kartu/tabel/tombol/DataTables, sedangkan halaman ini sudah punya gaya
+     kartu & tombolnya sendiri (diselaraskan dgn financial_statement.php). -->
+<!-- ?v=filemtime: browser meng-cache CSS cukup agresif. Tanpa penanda versi,
+     perubahan skin tidak kelihatan sampai user hard-refresh (Ctrl+F5). -->
+<link rel="stylesheet" href="../css/app-skin.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-skin.css'); ?>">
+<link rel="stylesheet" href="../css/app-skin-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-skin-form.css'); ?>">
+
 <style >
     .modal {
   text-align: center;
@@ -19,15 +29,84 @@
   text-align: left;
   vertical-align: middle;
 }
+
+/* ===== Skin filter & tombol - diselaraskan dgn financial_statement.php =====
+   Tinggi input & tombol dikunci ke satu nilai (--fs-ctl-h) supaya SEJAJAR.
+   Perlu dikunci karena app-skin-form.css membuat input.tanggal lebih tinggi
+   (padding 8px 12px) dari tinggi bawaan tombol pill - kalau dibiarkan
+   menghitung sendiri dari font, keduanya jadi beda tinggi. */
+:root { --fs-ctl-h: 38px; }
+
+.fs-btn-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: var(--fs-ctl-h);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: .2px;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 0 20px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: box-shadow 0.15s ease, transform 0.15s ease, background 0.15s ease;
+}
+.fs-btn-teal { background: linear-gradient(135deg, #17a2b8, #0f7c8f); box-shadow: 0 2px 6px rgba(15,124,143,0.3); }
+.fs-btn-teal:hover {
+  background: linear-gradient(135deg, #1cb8d1, #128a9f);
+  box-shadow: 0 4px 10px rgba(15,124,143,0.38);
+  transform: translateY(-1px); color: #fff;
+}
+.fs-btn-green { background: linear-gradient(135deg, #28c76f, #1f9d57); box-shadow: 0 2px 6px rgba(31,157,87,0.3); }
+.fs-btn-green:hover {
+  background: linear-gradient(135deg, #34d97e, #24ab60);
+  box-shadow: 0 4px 10px rgba(31,157,87,0.38);
+  transform: translateY(-1px); color: #fff;
+}
+.fs-btn-pill:active { transform: translateY(0); box-shadow: inset 0 2px 4px rgba(0,0,0,0.15); }
+
+/* Field tanggal dgn ikon kalender di dalam kotak */
+.fs-month-field { position: relative; width: 240px; max-width: 100%; }
+.fs-month-field .fs-month-ico {
+  position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+  color: #17a2b8; font-size: 12.5px; pointer-events: none;
+}
+.fs-month-field .fs-month-input {
+  border: 1px solid #d7dce5 !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  height: var(--fs-ctl-h) !important;
+  padding: 0 12px 0 30px !important;   /* kiri lebih lebar utk ikon kalender */
+  font-weight: 600;
+  color: #2c3e50;
+  cursor: pointer;
+}
+.fs-month-field .fs-month-input:focus {
+  border-color: #17a2b8 !important;
+  box-shadow: 0 0 0 2px rgba(23,162,184,0.12) !important;
+  outline: none !important;
+}
+.fs-month-field .fs-month-input::placeholder { font-weight: 500; color: #9aa5b5; }
+
+/* Header tabel senada dgn financial_statement.php */
+.table-gradient th { background: #1E3A8A; color: #fff; text-align: center; vertical-align: middle; white-space: nowrap; }
+div.dataTables_wrapper .dataTables_paginate { float: right; margin-top: 10px; }
+div.dataTables_wrapper .dataTables_info { float: left; margin-top: 10px; }
 </style>
     <!-- MAIN -->
-    <div class="col p-4">
-        <h2 class="text-center">REPORT FAKTUR PAJAK</h2>
-<div class="box">
-    <div class="box header">
+    <div class="container-fluid mt-4 p-4">
+    <!-- Card Filter -->
+    <div class="card shadow border-0 filter-card">
+      <div class="card-header text-white py-2 px-3" style="background: linear-gradient(90deg, #191970, #1e90ff);">
+        <h5 class="mb-0"><i class="fa fa-file-text-o"></i> REPORT FAKTUR PAJAK</h5>
+      </div>
+    <div class="card-body p-3">
 
-        <form id="form-data" action="report-faktur-pajak.php" method="post">        
-        <div class="form-row">
+        <form id="form-data" action="report-faktur-pajak.php" method="post">
+        <div class="row g-3 align-items-end">
 
             <!-- <div class="col-md-4">
             <label for="nama_type"><b>No COA</b></label>            
@@ -52,49 +131,47 @@
                 </select>
                 </div>  -->
 
-            <div class="col-md-2 mb-3"> 
-            <label for="start_date"><b>From</b></label>          
-            <input type="text" style="font-size: 12px;" class="form-control tanggal" id="start_date" name="start_date" 
-            value="<?php
-            $start_date ='';
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-               $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-            }
-            if(!empty($_POST['start_date'])) {
-               echo $_POST['start_date'];
-            }
-            else{
-               echo date("d-m-Y");
-            } ?>" 
-            placeholder="Tanggal Awal">
+            <div class="col-auto mb-3">
+            <label for="start_date" class="form-label"><b>From</b></label>
+            <div class="fs-month-field">
+              <i class="fa fa-calendar fs-month-ico"></i>
+              <input type="text" class="form-control form-control-sm tanggal fs-month-input" id="start_date" name="start_date"
+              value="<?php
+              $start_date ='';
+              if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                 $start_date = date("Y-m-d",strtotime($_POST['start_date']));
+              }
+              if(!empty($_POST['start_date'])) {
+                 echo $_POST['start_date'];
+              }
+              else{
+                 echo date("d-m-Y");
+              } ?>"
+              placeholder="Tanggal Awal" autocomplete="off">
+            </div>
             </div>
 
-            <div class="col-md-2 mb-3"> 
-            <label for="end_date"><b>To</b></label>          
-            <input type="text" style="font-size: 12px;" class="form-control tanggal" id="end_date" name="end_date" 
-            value="<?php
-            $end_date ='';
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-               $end_date = date("Y-m-d",strtotime($_POST['end_date']));
-            }
-            if(!empty($_POST['end_date'])) {
-               echo $_POST['end_date'];
-            }
-            else{
-               echo date("d-m-Y");
-            } ?>" 
-            placeholder="Tanggal Awal">
+            <div class="col-auto mb-3">
+            <label for="end_date" class="form-label"><b>To</b></label>
+            <div class="fs-month-field">
+              <i class="fa fa-calendar fs-month-ico"></i>
+              <input type="text" class="form-control form-control-sm tanggal fs-month-input" id="end_date" name="end_date"
+              value="<?php
+              $end_date ='';
+              if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                 $end_date = date("Y-m-d",strtotime($_POST['end_date']));
+              }
+              if(!empty($_POST['end_date'])) {
+                 echo $_POST['end_date'];
+              }
+              else{
+                 echo date("d-m-Y");
+              } ?>"
+              placeholder="Tanggal Akhir" autocomplete="off">
             </div>
-            <div class="input-group-append col">                                   
-            <button  type="submit" id="submit" value=" Search " style="height: 35px; margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
-    line-height: 1;
-    padding: -2px 8px;
-    font-size: 1rem;
-    text-align: center;
-    color: #fff;
-    text-shadow: 1px 1px 1px #000;
-    border-radius: 6px;
-    background-color: rgb(46, 139, 87);"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
+            </div>
+            <div class="col-auto mb-3 d-flex align-items-end" style="gap:10px;">
+            <button type="submit" id="submit" class="btn fs-btn-pill fs-btn-teal"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
 <!--             <button type="button" id="reset" value=" Reset " style="height: 35px; margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
     line-height: 1;
     padding: -2px 8px;
@@ -119,9 +196,10 @@
         $kata_filter = $kata_awal . $tengah . $kata_akhir;
 
 
-        echo '<a style="padding-right: 10px;" target="_blank" href="ekspor-report-faktur-pajak.php?start_date='.$start_date.' && end_date='.$end_date.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>
-
-        ';
+        // Tanggal TIDAK lagi ditempel dari PHP: sejak tabel pakai DataTables AJAX,
+        // halaman tidak reload saat Search, jadi nilai PHP di sini bisa basi.
+        // Link-nya dirakit di JS dari isi input saat tombol diklik (lihat #btnExport).
+        echo '<button type="button" id="btnExport" class="btn fs-btn-pill fs-btn-green"><i class="fa fa-file-excel-o" aria-hidden="true"></i> Excel</button>';
         //<a style="padding-right: 5px;" target="_blank" href="ekspor_sfp_ytd.php?start_date='.$start_date.' && end_date='.$end_date.' && kata_filter='.$kata_filter.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel SFP</i></button></a>
 
         // <a style="padding-right: 5px;" target="_blank" href="ekspor_spl_ytd.php?start_date='.$start_date.' && end_date='.$end_date.' && kata_filter='.$kata_filter.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel SPL</i></button></a>
@@ -129,13 +207,14 @@
         //     <a style="padding-left: 10px";><button type="button" class="btn btn-info " name="co_sal" id="co_sal" style= "margin-top: 30px;"><i class="fa fa-clipboard" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Copy Saldo</i></button></a>
 
         
-        ?>  
+        ?>
 
-            </div>                                                            
-    </div>
-<br/>
-</div>
-</form> 
+            </div>
+        </div>
+        </form>
+    </div><!-- card-body -->
+    </div><!-- card filter -->
+    <br/>
 
 <!-- <?php
         $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create List payment'");
@@ -149,78 +228,57 @@
     echo '';
     }
 ?> -->
-    <div class="box body">
-        <div class="row">       
-            <div class="col-md-12">      
-   <table id="mytable" class="table table-striped table-bordered " role="grid" cellspacing="0" width="100%">
-        <thead>
-        <tr class="thead-dark text-nowrap">
-            <th style="text-align: center;vertical-align: middle;">Nomor FP</th>
-            <th style="text-align: center;vertical-align: middle;">Tanggal FP</th>
-            <th style="text-align: center;vertical-align: middle;">Nomor BPB</th>
-            <th style="text-align: center;vertical-align: middle;">Tanggal BPB</th>
-            <th style="text-align: center;vertical-align: middle;">Referensi</th>
-            <th style="text-align: center;vertical-align: middle;">Nama Barang</th>
-            <th style="text-align: center;vertical-align: middle;">Harga</th>
-            <th style="text-align: center;vertical-align: middle;">Qty</th>
-            <th style="text-align: center;vertical-align: middle;">DPP</th>
-            <th style="text-align: center;vertical-align: middle;">Diskon</th>
-            <th style="text-align: center;vertical-align: middle;">PPN</th>
-            <th style="text-align: center;vertical-align: middle;">Total</th>
-            <th style="text-align: center;vertical-align: middle;">Support Doc</th>
-        </tr>
-    </thead>
-        </tbody>
-
-    <?php
-    $coa_number ='';
-    $date_now = date("Y-m-d");  
-    $start_date = date("Y-m-d",strtotime($date_now));
-    $end_date = date("Y-m-d",strtotime($date_now));          
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-    $end_date = date("Y-m-d",strtotime($_POST['end_date']));        
-    }
-
-
-
- $sql = mysqli_query($conn2,"(SELECT a.id,b.kd_no_faktur no_faktur, b.tgl_faktur,c.no_bpb,c.tgl_bpb,no_referensi,nama_item,price,qty,diskon,dpp,ppn,(dpp + ppn) total,'-' sup_doc FROM bpb_scan_faktur a inner join bpb_scan_faktur_h b on b.kd_no_faktur = a.kd_no_faktur inner join bpb_faktur_inv c on c.no_faktur = b.kd_no_faktur where b.tgl_faktur BETWEEN '$start_date' and '$end_date' order by no_faktur,no_bpb,id asc)
-  UNION all
-  select a.* from (SELECT a.id, a.no_faktur, a.tgl_faktur, a.no_bpb, a.tgl_bpb, '-' no_referensi, b.itemdesc, price, sum(qty) qty, 0 diskon, sum(qty * price) dpp, sum((qty * price) * tax/100) ppn, sum((qty * price) + ((qty * price) * tax/100)) total,'-' sup_doc from bpb_faktur_inv a INNER JOIN bpb_new b on b.no_bpb = a.no_bpb where tgl_faktur BETWEEN '$start_date' and '$end_date' GROUP BY a.no_faktur, b.no_bpb, b.itemdesc, b.price order by no_faktur,a.no_bpb,a.id asc) a LEFT JOIN bpb_scan_faktur b on b.kd_no_faktur = a.no_faktur where b.id is null and a.no_faktur != ''");
-
-
-
-$limit = 0;
-    while($row2 = mysqli_fetch_array($sql)){
-        $limit++;
-
-        echo ' <tr style="font-size:12px;text-align:center;">
-            <td style="text-align : left;" value = "'.$row2['no_faktur'].'">'.$row2['no_faktur'].'</td>
-            <td style="text-align : left;" value = "'.$row2['tgl_faktur'].'">'.date("d-M-Y",strtotime($row2['tgl_faktur'])).'</td>
-            <td style="text-align : left;" value = "'.$row2['no_bpb'].'">'.$row2['no_bpb'].'</td>
-            <td style="text-align : left;" value = "'.$row2['tgl_bpb'].'">'.$row2['tgl_bpb'].'</td>
-            <td style="text-align : left;" value = "'.$row2['no_referensi'].'">'.$row2['no_referensi'].'</td>
-            <td style="text-align : left;" value = "'.$row2['nama_item'].'">'.$row2['nama_item'].'</td>
-            <td style="text-align : right;" value = "'.$row2['price'].'">'.number_format($row2['price'],2).'</td>
-            <td style="text-align : right;" value = "'.$row2['qty'].'">'.number_format($row2['qty'],2).'</td>
-            <td style="text-align : right;" value = "'.$row2['dpp'].'">'.number_format($row2['dpp'],2).'</td>
-            <td style="text-align : right;" value = "'.$row2['diskon'].'">'.number_format($row2['diskon'],2).'</td>
-            <td style="text-align : right;" value = "'.$row2['ppn'].'">'.number_format($row2['ppn'],2).'</td>
-            <td style="text-align : right;" value = "'.$row2['total'].'">'.number_format($row2['total'],2).'</td>
-            <td style="text-align : left;" value = "'.$row2['sup_doc'].'">'.$row2['sup_doc'].'</td>
-            </tr>
-            ';
-}
-?>  
-</tbody>
-</table>                  
-</div>
-   
-    </div>
-    </div>
-</div>
-</div><!-- body-row END -->
-</div>
+    <!-- ===== Table card ===== -->
+    <!-- Data TIDAK lagi dirender server-side; diisi lewat DataTables AJAX ke
+         ajx_report_faktur_pajak.php (pola sama dgn ppn_masukan_report.php),
+         supaya Search tidak me-reload halaman & ada overlay loading. -->
+    <div class="card app-card border-0">
+      <div class="card-body p-4">
+        <!-- .app-loading-wrap: area yg ditutup overlay loading saat Search (skin: app-skin-form.css) -->
+        <div class="app-loading-wrap" id="fpLoad">
+          <div class="app-loading">
+            <div class="app-loading-box">
+              <div class="app-spinner"></div>
+              <div class="app-loading-text">Loading data...</div>
+            </div>
+          </div>
+          <table id="mytable" class="table table-hover app-dt" style="width:100%">
+            <thead>
+              <tr>
+                <th>Nomor FP</th>
+                <th>Tanggal FP</th>
+                <th>Nomor BPB</th>
+                <th>Tanggal BPB</th>
+                <th>Referensi</th>
+                <th>Nama Barang</th>
+                <th>Harga</th>
+                <th>Qty</th>
+                <th>DPP</th>
+                <th>Diskon</th>
+                <th>PPN</th>
+                <th>Total</th>
+                <th>Support Doc</th>
+              </tr>
+            </thead>
+            <tbody><!-- diisi via DataTables AJAX (ajx_report_faktur_pajak.php) --></tbody>
+            <!-- GRAND TOTAL: dihitung dari SELURUH baris hasil filter (lintas
+                 halaman), lihat footerCallback. Urutan 13 sel = urutan kolom. -->
+            <tfoot>
+              <tr>
+                <th class="ftot-label">GRAND TOTAL</th>
+                <th class="ftot-sub" id="fpFootCount"></th>
+                <th></th><th></th><th></th><th></th>
+                <th class="num"></th><th class="num"></th><th class="num"></th>
+                <th class="num"></th><th class="num"></th><th class="num"></th>
+                <th></th>
+              </tr>
+            </tfoot>
+          </table>
+        </div><!-- app-loading-wrap -->
+      </div><!-- card-body -->
+    </div><!-- card tabel -->
+</div><!-- container-fluid END -->
+</div><!-- body-row END (wrapper dari header.php) -->
 </div>
 
 <div class="form-row">
@@ -322,17 +380,91 @@ function SidebarCollapse () {
 </script> -->
 
 <script>
-    $(document).ready(function() {
-    $('#mytable').dataTable({
-    'order': [1, 'asc'],
-    scrollX: true,
-    scrollY: true
-      });
-    
-     $("[data-toggle=tooltip]").tooltip();
-    
-} );
+var tFp;
+$(document).ready(function() {
 
+  // ===== DataTables AJAX =====
+  // Endpoint (ajx_report_faktur_pajak.php) balikan JSON: { "data": [ [ ...13 kolom... ], ... ] }
+  // (array per baris, urutan kolom sesuai header). Pola sama dgn ppn_masukan_report.php.
+  var numCols = [6, 7, 8, 9, 10, 11];   // Harga, Qty, DPP, Diskon, PPN, Total
+
+  tFp = $('#mytable').DataTable({
+    ordering: false,
+    processing: true,
+    autoWidth: false,
+    pageLength: 10,
+    lengthMenu: [10, 25, 50, 100, 200],
+    // Layout: length+search (atas) & info+pagination (bawah) DI LUAR area scroll;
+    // hanya tabel yg dibungkus .app-dt-scroll yang scroll horizontal.
+    dom: "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
+         "<'app-dt-scroll't>" +
+         "<'row mt-2'<'col-sm-5'i><'col-sm-7'p>>",
+    ajax: {
+      url: 'ajx_report_faktur_pajak.php',
+      type: 'POST',
+      data: function (d) {
+        d.start_date = $('#start_date').val() || '';
+        d.end_date   = $('#end_date').val() || '';
+      },
+      dataSrc: 'data'
+    },
+    columnDefs: [
+      { targets: numCols, className: 'num' },
+      { targets: [0, 2, 4, 5, 12], className: 'txtleft' }
+    ],
+    // GRAND TOTAL di <tfoot>: memakai rows({search:'applied'}) -> menjumlah SEMUA
+    // baris hasil filter, TIDAK terpatok halaman aktif.
+    footerCallback: function () {
+      var api  = this.api();
+      var rows = api.rows({ search: 'applied' }).data();
+      var num  = function (v) {
+        v = (v === null || v === undefined) ? '' : String(v).replace(/,/g, '').trim();
+        return v === '' ? 0 : (parseFloat(v) || 0);
+      };
+      var fmt  = function (v) { return v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+      var sumCols = [8, 10, 11];   // DPP, PPN, Total (Harga & Qty tidak dijumlah - tidak bermakna)
+      var tot = {}, i, c;
+      for (i = 0; i < sumCols.length; i++) { tot[sumCols[i]] = 0; }
+      for (i = 0; i < rows.length; i++) {
+        for (c = 0; c < sumCols.length; c++) { tot[sumCols[c]] += num(rows[i][sumCols[c]]); }
+      }
+      var $f = $('#mytable tfoot th');
+      $f.each(function (idx) {
+        if (sumCols.indexOf(idx) >= 0) { $(this).text(fmt(tot[idx])); }
+        else if (idx > 1 && idx < 12) { $(this).text(''); }
+      });
+      $('#fpFootCount').text(rows.length + ' baris');
+    },
+    language: {
+      processing:  '<i class="fa fa-spinner fa-spin"></i> Loading...',
+      emptyTable:  '<div class="app-empty"><i class="fa fa-inbox"></i>Data not found</div>',
+      zeroRecords: '<div class="app-empty"><i class="fa fa-search"></i>No matching records</div>',
+      lengthMenu:  'Show _MENU_ entries',
+      info:        'Showing _START_&ndash;_END_ of _TOTAL_ entries',
+      infoEmpty:   'Showing 0 entries',
+      paginate:    { previous: '&lsaquo; Prev', next: 'Next &rsaquo;' }
+    }
+  });
+
+  // Overlay loading (skin .app-loading) mengikuti status processing DataTables.
+  tFp.on('processing.dt', function (e, settings, processing) {
+    $('#fpLoad').toggleClass('is-loading', processing);
+  });
+
+  // Search -> reload tabel (bukan reload halaman)
+  $('#form-data').on('submit', function (e) { e.preventDefault(); tFp.ajax.reload(); });
+
+  // Export Excel: rakit URL dari isi input SAAT diklik (bukan dari PHP), supaya
+  // selalu ikut filter tanggal terakhir walau halaman tidak pernah reload.
+  $('#btnExport').on('click', function () {
+    var s = $('#start_date').val() || '';
+    var e = $('#end_date').val() || '';
+    window.open('ekspor-report-faktur-pajak.php?start_date=' + encodeURIComponent(s) +
+                '&end_date=' + encodeURIComponent(e), '_blank');
+  });
+
+  $("[data-toggle=tooltip]").tooltip();
+});
 </script>
 
 <script>
@@ -365,6 +497,11 @@ function myFunction() {
         format: "dd-mm-yyyy",
         startDate : "01-01-2023",
         autoclose:true
+    })
+    // Samakan lebar kalender popup dengan lebar input pemicunya.
+    .on('show', function () {
+      var w = $(this).outerWidth();
+      setTimeout(function () { $('.datepicker-dropdown:visible').outerWidth(w); }, 0);
     });
 });
 </script>
@@ -484,21 +621,18 @@ $(function() {
 </script> -->
 
 <script type="text/javascript">
-    document.getElementById('btncreate').onclick = function () {
-    location.href = "create-list-journal.php";
-};
-</script>
-
-<script type="text/javascript">
-    document.getElementById('btnupload').onclick = function () {
-    location.href = "upload-list-journal.php";
-};
-</script>
-
-<script type="text/javascript">
-    document.getElementById('reset').onclick = function () {
-    location.href = "list-journal.php";
-};
+// Tombol Create/Upload/Reset markup-nya sudah dikomentari di halaman ini, jadi
+// elemennya TIDAK ADA. Tanpa penjaga null, ketiga baris ini melempar
+// "Cannot set property 'onclick' of null" di setiap muat halaman.
+(function () {
+  var bind = function (id, url) {
+    var el = document.getElementById(id);
+    if (el) { el.onclick = function () { location.href = url; }; }
+  };
+  bind('btncreate', 'create-list-journal.php');
+  bind('btnupload', 'upload-list-journal.php');
+  bind('reset',     'list-journal.php');
+})();
 </script>
 
 <!-- <script type="text/javascript">     
