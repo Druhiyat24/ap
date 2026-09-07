@@ -6,6 +6,8 @@ $doc_num = $_POST['doc_num'] ?? '';
 $date = date("Y-m-d",strtotime($_POST['date'])) ?? '';
 $ref_data = $_POST['ref_data'] ?? '';
 $customer = $_POST['customer'] ?? '';
+// Nama lawan transaksi ikut disimpan ke jurnal (kolom supplier).
+$customer_esc = mysqli_real_escape_string($conn2, $customer);
 $profit_center = $_POST['profit_center'] ?? '';
 $akun = $_POST['akun'] ?? '';
 $curr = $_POST['curr'] ?? '';
@@ -38,9 +40,9 @@ if ($doc_num) {
 	$no_coa1 = $rowcoa1['no_coa'];
 	$nama_coa1 = $rowcoa1['nama_coa'];
 
-	$jurnal_balik = mysqli_query($conn2,"INSERT into tbl_list_journal (id, no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center) select '', no_journal, tgl_journal, CONCAT('Reverse ',type_journal) type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, credit, debit, credit_idr, debit_idr, 'Updated' status, keterangan, create_by, create_date, '$create_user' approve_by, CURRENT_TIMESTAMP() approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center from tbl_list_journal where no_journal = '$doc_num' and status != 'Updated'");
+	$jurnal_balik = mysqli_query($conn2,"INSERT into tbl_list_journal (id, no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center, supplier) select '', no_journal, tgl_journal, CONCAT('Reverse ',type_journal) type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, credit, debit, credit_idr, debit_idr, 'Updated' status, keterangan, create_by, create_date, '$create_user' approve_by, CURRENT_TIMESTAMP() approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center, supplier from tbl_list_journal where no_journal = '$doc_num' and status != 'Updated'");
 
-	$jurnal_tambahan = mysqli_query($conn2,"INSERT into tbl_list_journal (id, no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center) select '', no_journal, '$date' tgl_journal, '$type_journal' type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, 'Draft' status, '$deskripsi' keterangan, '$create_user' create_by, '$create_date' create_date, '' approve_by, CURRENT_TIMESTAMP() approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center from tbl_list_journal where no_journal = '$doc_num' and reff_doc like '%LP/%' and type_journal not like '%Reverse%' and status = 'Draft'");
+	$jurnal_tambahan = mysqli_query($conn2,"INSERT into tbl_list_journal (id, no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center, supplier) select '', no_journal, '$date' tgl_journal, '$type_journal' type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, 'Draft' status, '$deskripsi' keterangan, '$create_user' create_by, '$create_date' create_date, '' approve_by, CURRENT_TIMESTAMP() approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center, supplier from tbl_list_journal where no_journal = '$doc_num' and reff_doc like '%LP/%' and type_journal not like '%Reverse%' and status = 'Draft'");
 
 	$Update_journal = mysqli_query($conn2,"UPDATE tbl_list_journal set status = 'Updated' where no_journal = '$doc_num' and type_journal != '$type_journal' ");	
 
@@ -48,9 +50,9 @@ if ($doc_num) {
 
 	$Update_report = mysqli_query($conn2,"UPDATE b_reportbank set transaksi_date = '$date', credit = '$amount', deskripsi = '$deskripsi' where no_doc = '$doc_num'");
 
-		$query_nag = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+		$query_nag = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier) 
 		VALUES 
-		('$doc_num', '$date', '$type_journal', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '0', '$amount', '0', '$eqv_idr', 'Draft', '$deskripsi', '$create_user', '$create_date', '', '', '', '', 'NAG')";
+		('$doc_num', '$date', '$type_journal', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '0', '$amount', '0', '$eqv_idr', 'Draft', '$deskripsi', '$create_user', '$create_date', '', '', '', '', 'NAG', '$customer_esc')";
 
 		$execute_nag = mysqli_query($conn2,$query_nag);
 	
@@ -86,9 +88,9 @@ if ($doc_num) {
 
 		$execute_det = mysqli_query($conn2,$query_det);
 
-		$sql_det = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+		$sql_det = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier) 
 		VALUES 
-		('$doc_num', '$date', '$type_journal', '$coa', '$nama_coa', '$cost_ctr', '$nama_cc', '$refferensi', '$tgl_refferensi', '-', '-', 'IDR', '1', '$debit', '$credit', '$debit', '$credit', 'Draft', '$ket', '$create_user', '$create_date', '', '', '', '', '$prof_ctr')";
+		('$doc_num', '$date', '$type_journal', '$coa', '$nama_coa', '$cost_ctr', '$nama_cc', '$refferensi', '$tgl_refferensi', '-', '-', 'IDR', '1', '$debit', '$credit', '$debit', '$credit', 'Draft', '$ket', '$create_user', '$create_date', '', '', '', '', '$prof_ctr', '$customer_esc')";
 
 		$jurnal_det = mysqli_query($conn2,$sql_det);
 	}

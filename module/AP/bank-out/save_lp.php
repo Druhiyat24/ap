@@ -143,7 +143,7 @@ try {
   $bankoutDetValues = [];
   $adjDetValues = [];
 
-  $journalValues[] = "('$doc_num', '$doc_date', 'Payment', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '0', '$amount', '0', '$eqv', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc_bank')";
+  $journalValues[] = "('$doc_num', '$doc_date', 'Payment', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '0', '$amount', '0', '$eqv', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc_bank', '$supp')";
 
     // =========================
     // INSERT DETAIL PV
@@ -204,7 +204,7 @@ try {
 
     $bankoutDetValues[] = "('$doc_num', '$pv_number', '$pv_date', '$pv_duedate', '$pv_sub', '$pv_ppn', '$pv_pph', '$pv_total', '$pv_curr', '$amountLp', '1', '$amountLp', '$pv_pc')";
 
-    $journalValues[] = "('$doc_num', '$doc_date', 'Payment', '$pv_no_coa', '$pv_nama_coa', '-', '-', '$pv_number', '$pv_date', '-', '-', '$pv_curr', '$pv_rate', '$total_dppnya', '0', '$total_dppnya_idr', '0', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pv_pc')";
+    $journalValues[] = "('$doc_num', '$doc_date', 'Payment', '$pv_no_coa', '$pv_nama_coa', '-', '-', '$pv_number', '$pv_date', '-', '-', '$pv_curr', '$pv_rate', '$total_dppnya', '0', '$total_dppnya_idr', '0', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pv_pc', '$supp')";
 
     if ($pv_pph > 0) {
 
@@ -213,7 +213,7 @@ try {
       $no_coa_pph = mysqli_real_escape_string($conn2, $rowpph['no_coa'] ?? '');
       $nama_coa_pph = mysqli_real_escape_string($conn2, $rowpph['nama_coa'] ?? '');
 
-      $journalValues[] = "('$doc_num', '$doc_date', 'Payment', '$no_coa_pph', '$nama_coa_pph', '-', '-', '$pv_number', '$pv_date', '-', '-', '$pv_curr', '$pv_rate', '0', '$pv_pph', '0', '$pv_pph_idr', 'Draft', '$desc','$user', '$create_date', '', '', '', '', '$pv_pc')";
+      $journalValues[] = "('$doc_num', '$doc_date', 'Payment', '$no_coa_pph', '$nama_coa_pph', '-', '-', '$pv_number', '$pv_date', '-', '-', '$pv_curr', '$pv_rate', '0', '$pv_pph', '0', '$pv_pph_idr', 'Draft', '$desc','$user', '$create_date', '', '', '', '', '$pv_pc', '$supp')";
 
     }
   }
@@ -270,7 +270,7 @@ try {
 
     $adjDetValues[] = "('$doc_num', '$coaEsc', '$ccEsc', '$reff', '$reff_date', '$desc2', '$debit', '$credit', '$pcEsc')";
 
-    $journalValues[] = "('$doc_num', '$doc_date', 'Payment', '$coaEsc', '$nama_coa_adj', '$ccEsc', '$nama_cc', '$reff', '$reff_date', '-', '-', 'IDR', '1', '$debit', '$credit', '$debit', '$credit', 'Draft', '$desc2', '$user', '$create_date', '', '', '', '', '$pcEsc')";
+    $journalValues[] = "('$doc_num', '$doc_date', 'Payment', '$coaEsc', '$nama_coa_adj', '$ccEsc', '$nama_cc', '$reff', '$reff_date', '-', '-', 'IDR', '1', '$debit', '$credit', '$debit', '$credit', 'Draft', '$desc2', '$user', '$create_date', '', '', '', '', '$pcEsc', '$supp')";
   }
 
     // =========================
@@ -288,7 +288,7 @@ try {
   }
 
   q($conn2, "INSERT INTO tbl_list_journal
-    (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
+    (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
     VALUES " . implode(',', $journalValues));
 
     // =========================

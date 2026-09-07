@@ -153,10 +153,12 @@ while ($rowWajib = mysqli_fetch_assoc($sqlWajibCcAll)) {
     $coaWajibCC[] = $rowWajib['no_coa'];
 }
 
+// Nama supplier ikut disimpan ke jurnal (kolom supplier).
+$supp_esc = mysqli_real_escape_string($conn2, $supp);
 $journalValues = [];
 $bankoutNoneValues = [];
 
-$journalValues[] = "('$doc_num', '$doc_date', '$refNumEsc', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$currEsc', '$rate', '0', '$amount', '0', '$eqv', 'Draft', '$descEsc', '$userEsc', '$create_date', '', '', '', '', '$pcBankEsc')";
+$journalValues[] = "('$doc_num', '$doc_date', '$refNumEsc', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$currEsc', '$rate', '0', '$amount', '0', '$eqv', 'Draft', '$descEsc', '$userEsc', '$create_date', '', '', '', '', '$pcBankEsc', '$supp_esc')";
 
 /* =========================
 INSERT DETAIL TABLE (bulk)
@@ -247,7 +249,7 @@ for($i=0;$i<count($coa);$i++){
 
     $bankoutNoneValues[] = "('$doc_num', '$doc_date', '$refNumEsc', '$noCoaEsc', '$ccEsc', '$buyerEsc', '$wsEsc', '$currDetEsc', '$d_debit', '$d_credit', '$ketEsc', '$pcEsc')";
 
-    $journalValues[] = "('$doc_num', '$doc_date', '$refNumEsc', '$noCoaEsc', '$namaCoaEsc', '$ccEsc', '$nama_cc', '-', '', '$buyerEsc', '$wsEsc', '$currDetEsc', '$rate_det', '$d_debit', '$d_credit', '$d_debit_idr', '$d_credit_idr', 'Draft', '$ketEsc', '$userEsc', '$create_date', '', '', '', '', '$pcEsc')";
+    $journalValues[] = "('$doc_num', '$doc_date', '$refNumEsc', '$noCoaEsc', '$namaCoaEsc', '$ccEsc', '$nama_cc', '-', '', '$buyerEsc', '$wsEsc', '$currDetEsc', '$rate_det', '$d_debit', '$d_credit', '$d_debit_idr', '$d_credit_idr', 'Draft', '$ketEsc', '$userEsc', '$create_date', '', '', '', '', '$pcEsc', '$supp_esc')";
 
 }
 
@@ -260,7 +262,7 @@ q($conn2, "INSERT INTO b_bankout_none
 VALUES " . implode(',', $bankoutNoneValues));
 
 q($conn2, "INSERT INTO tbl_list_journal
-(no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
+(no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
 VALUES " . implode(',', $journalValues));
 
 mysqli_commit($conn2);

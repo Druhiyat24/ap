@@ -110,6 +110,8 @@ if (!$no_coa1) {
 INSERT HEADER
 ========================= */
 
+// Nama supplier/lawan transaksi ikut disimpan ke jurnal (kolom supplier).
+$supp_esc = mysqli_real_escape_string($conn2, $supp);
 q($conn2,"
 INSERT INTO tbl_bankin_arcollection
 (
@@ -130,9 +132,9 @@ VALUES
 
 q($conn2,"
 INSERT INTO tbl_list_journal
-(no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
+(no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
 VALUES
-('$doc_num', '$doc_date', '$ref_num', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '$amount', '0', '$eqv', '0', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc_bank')
+('$doc_num', '$doc_date', '$ref_num', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '$amount', '0', '$eqv', '0', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc_bank', '$supp_esc')
 ");
 
 
@@ -224,7 +226,7 @@ for ($i = 0; $i < count($coa); $i++) {
 
     $bankinValues[] = "('$doc_num', '$noCoaEsc', '$ccEsc', '$buyerEsc', '$wsEsc', '$currEsc', '$d_debit', '$d_credit', '$ketEsc', '$pcEsc')";
 
-    $journalValues[] = "('$doc_num', '$doc_date', '$ref_num', '$noCoaEsc', '$namaCoaEsc', '$ccEsc', '$namaCcEsc', '-', '', '$buyerEsc', '$wsEsc', '$currEsc', '$rate_det', '$d_debit', '$d_credit', '$d_debit_idr', '$d_credit_idr', 'Draft', '$ketEsc', '$user', '$create_date', '', '', '', '', '$pcEsc')";
+    $journalValues[] = "('$doc_num', '$doc_date', '$ref_num', '$noCoaEsc', '$namaCoaEsc', '$ccEsc', '$namaCcEsc', '-', '', '$buyerEsc', '$wsEsc', '$currEsc', '$rate_det', '$d_debit', '$d_credit', '$d_debit_idr', '$d_credit_idr', 'Draft', '$ketEsc', '$user', '$create_date', '', '', '', '', '$pcEsc', '$supp_esc')";
 }
 
 if (empty($bankinValues)) {
@@ -239,7 +241,7 @@ VALUES " . implode(',', $bankinValues)
 
 q($conn2, "
 INSERT INTO tbl_list_journal
-(no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
+(no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
 VALUES " . implode(',', $journalValues)
 );
 

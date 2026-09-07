@@ -132,13 +132,13 @@ try {
              no_costcenter, nama_costcenter, reff_doc, reff_date,
              buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr,
              status, keterangan, create_by, create_date,
-             approve_by, approve_date, cancel_by, cancel_date, profit_center)
+             approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
             VALUES
             ('$doc_num', '$tgl_pay', 'Payment Non Bank', '$pv_coa', '$pv_coa_nama',
              '-', '-', '$no_kbon_esc', $pv_date_sql,
              '-', '-', '$pv_curr', '$pv_rate', '$total_dppnya', '0', '$debit_idr', '0',
              'Draft', '$pesan', '$create_user', '$create_date',
-             '', '', '', '', '$pv_pc')");
+             '', '', '', '', '$pv_pc', '$nama_supp')");
 
         if ($bayar_pph > 0) {
             $pv_pc_esc_pph = mysqli_real_escape_string($conn2, $pv_pc);
@@ -159,13 +159,13 @@ try {
                      no_costcenter, nama_costcenter, reff_doc, reff_date,
                      buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr,
                      status, keterangan, create_by, create_date,
-                     approve_by, approve_date, cancel_by, cancel_date, profit_center)
+                     approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
                     VALUES
                     ('$doc_num', '$tgl_pay', 'Payment Non Bank', '$no_coa_pph', '$nama_coa_pph',
                      '-', '-', '$no_kbon_esc', $pv_date_sql,
                      '-', '-', '$pv_curr_esc_pph', '$pv_rate', '0', '$bayar_pph', '0', '$pph_idr',
                      'Draft', '$pesan', '$create_user', '$create_date',
-                     '', '', '', '', '$pv_pc_esc_pph')");
+                     '', '', '', '', '$pv_pc_esc_pph', '$nama_supp')");
             }
         }
     }
@@ -202,13 +202,13 @@ try {
              no_costcenter, nama_costcenter, reff_doc, reff_date,
              buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr,
              status, keterangan, create_by, create_date,
-             approve_by, approve_date, cancel_by, cancel_date, profit_center)
+             approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
             VALUES
             ('$doc_num', '$tgl_pay', 'Payment Non Bank', '$coa', '$nama_coa_adj',
              '$cc', '$nama_cc', '$reff_doc', $reff_date_sql,
              '-', '-', 'IDR', '1', '$debit_a', '$credit_a', '$debit_a', '$credit_a',
              'Draft', '$desk', '$create_user', '$create_date',
-             '', '', '', '', '$adj_pc')");
+             '', '', '', '', '$adj_pc', '$nama_supp')");
     }
 
     mysqli_commit($conn2);

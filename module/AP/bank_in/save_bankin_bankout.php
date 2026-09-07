@@ -187,17 +187,19 @@ VALUES
 ========================= */
 
 $journalValues = [];
+// Nama supplier/lawan transaksi ikut disimpan ke jurnal (kolom supplier).
+$supp_esc = mysqli_real_escape_string($conn2, $supp);
 
-$journalValues[] = "('$doc_num', '$doc_date', '$ref_num', '$no_coa1', '$nama_coa1', '-', '-', '$reff_doc', '$reff_date', '-', '-', '$curr', '$rate', '$amount', '0', '$eqv', '0', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc_bank')";
-$journalValues[] = "('$doc_num', '$doc_date', '$ref_num', '$coa', '$nama_coa', '-', '-', '$reff_doc', '$reff_date', '-', '-', '$curr_reff', '$rate_reff', '0', '$total_reff', '0', '$total_idr_reff', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc')";
+$journalValues[] = "('$doc_num', '$doc_date', '$ref_num', '$no_coa1', '$nama_coa1', '-', '-', '$reff_doc', '$reff_date', '-', '-', '$curr', '$rate', '$amount', '0', '$eqv', '0', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc_bank', '$supp_esc')";
+$journalValues[] = "('$doc_num', '$doc_date', '$ref_num', '$coa', '$nama_coa', '-', '-', '$reff_doc', '$reff_date', '-', '-', '$curr_reff', '$rate_reff', '0', '$total_reff', '0', '$total_idr_reff', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc', '$supp_esc')";
 
 if ($selisih != 0) {
-    $journalValues[] = "('$doc_num', '$doc_date', '$ref_num', '8.52.01', 'LABA / (RUGI) SELISIH KURS', '-', '-', '$reff_doc', '$reff_date', '-', '-', 'IDR', '1', '$debit_reff', '$credit_reff', '$debit_reff', '$credit_reff', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc')";
+    $journalValues[] = "('$doc_num', '$doc_date', '$ref_num', '8.52.01', 'LABA / (RUGI) SELISIH KURS', '-', '-', '$reff_doc', '$reff_date', '-', '-', 'IDR', '1', '$debit_reff', '$credit_reff', '$debit_reff', '$credit_reff', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc', '$supp_esc')";
 }
 
 q($conn2, "
 INSERT INTO tbl_list_journal
-(no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
+(no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
 VALUES " . implode(',', $journalValues)
 );
 

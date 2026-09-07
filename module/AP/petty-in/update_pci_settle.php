@@ -23,6 +23,10 @@ $pc_kas    = $_POST['profit_center_kas2'];
 $akun      = mysqli_real_escape_string($conn2, $_POST['account2']);
 $curr      = mysqli_real_escape_string($conn2, $_POST['currency2']);
 $reff_number = mysqli_real_escape_string($conn2, $_POST['reff_number']);
+// Nama supplier diambil dari PCO yang di-settle, ikut disimpan ke jurnal (kolom supplier).
+$nama_supp_esc = '';
+$rs_supp_ = mysqli_query($conn2, "SELECT nama_supp FROM c_petty_cashout_h WHERE no_pco = '$reff_number' LIMIT 1");
+if ($rs_supp_ && ($r_supp_ = mysqli_fetch_assoc($rs_supp_))) $nama_supp_esc = mysqli_real_escape_string($conn2, $r_supp_['nama_supp']);
 $desc      = mysqli_real_escape_string($conn2, $_POST['pesan2'] ?? '-');
 $cash_flow = $_POST['cash_flow2'] ?? '';
 
@@ -92,8 +96,8 @@ if ($willRenumber) {
 ========================= */
 
 dbExec($conn2,"
-INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
-SELECT no_journal, tgl_journal, CONCAT('Reverse ', type_journal), no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, credit, debit, credit_idr, debit_idr, 'Updated', keterangan, create_by, create_date, '$user', '$create_date', cancel_by, cancel_date, profit_center
+INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
+SELECT no_journal, tgl_journal, CONCAT('Reverse ', type_journal), no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, credit, debit, credit_idr, debit_idr, 'Updated', keterangan, create_by, create_date, '$user', '$create_date', cancel_by, cancel_date, profit_center, supplier
 FROM tbl_list_journal
 WHERE no_journal = '$doc_num' AND status != 'Updated'
 ");
@@ -138,7 +142,7 @@ $debit  = $_POST['txt_amount2'];
 $credit = $_POST['txt_credit2'];
 
 $detRows     = [];
-$journalRows = ["('$doc_num', '$doc_date', '$type_journal', '$akun', '$nama_coa', '-', '-', '$reff_number', '', '-', '-', 'IDR', '1', '$amount', '0', '$amount', '0', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc_kas')"];
+$journalRows = ["('$doc_num', '$doc_date', '$type_journal', '$akun', '$nama_coa', '-', '-', '$reff_number', '', '-', '-', 'IDR', '1', '$amount', '0', '$amount', '0', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc_kas', '$nama_supp_esc')"];
 
 for($i=0;$i<count($coa);$i++){
 
@@ -165,7 +169,7 @@ for($i=0;$i<count($coa);$i++){
 
     $detRows[] = "('$doc_num', '$doc_date', '$no_coa', '$pc_i', '$cc_i', '$buyer_i', '$ws_i', '$curr_i', '$d_debit', '$d_credit', '$ket_i')";
 
-    $journalRows[] = "('$doc_num', '$doc_date', '$type_journal', '$no_coa', '$nama_coa_d', '$cc_i', '$nama_cc', '$reff_number', '', '$buyer_i', '$ws_i', '$curr_i', '1', '$d_debit', '$d_credit', '$d_debit', '$d_credit', 'Draft', '$ket_i', '$user', '$create_date', '', '', '', '', '$pc_i')";
+    $journalRows[] = "('$doc_num', '$doc_date', '$type_journal', '$no_coa', '$nama_coa_d', '$cc_i', '$nama_cc', '$reff_number', '', '$buyer_i', '$ws_i', '$curr_i', '1', '$d_debit', '$d_credit', '$d_debit', '$d_credit', 'Draft', '$ket_i', '$user', '$create_date', '', '', '', '', '$pc_i', '$nama_supp_esc')";
 
 }
 
@@ -177,7 +181,7 @@ if (!empty($detRows)) {
 }
 
 dbExec($conn2, "
-    INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
+    INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
     VALUES " . implode(', ', $journalRows)
 );
 

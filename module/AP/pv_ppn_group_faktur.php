@@ -43,7 +43,7 @@ function pv_group_ppn_billed_by_faktur($conn2, $kode) {
     $tgt_deb_idr = (float) $T['sdeb_idr'];
 
     $tplq = mysqli_query($conn2, "SELECT no_coa, nama_coa, no_costcenter, nama_costcenter, curr, rate,
-        status, keterangan, create_by, create_date, profit_center FROM tbl_list_journal WHERE $whereHdr LIMIT 1");
+        status, keterangan, create_by, create_date, profit_center, supplier FROM tbl_list_journal WHERE $whereHdr LIMIT 1");
     if ($tplq === false) return false;
     $H = mysqli_fetch_assoc($tplq);
     if (!$H) return true;
@@ -82,12 +82,12 @@ function pv_group_ppn_billed_by_faktur($conn2, $kode) {
             (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter,
              reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate,
              debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date,
-             approve_by, approve_date, cancel_by, cancel_date, profit_center)
+             approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
             VALUES ('$ke', '" . $e($H['create_date']) . "', 'AP - Kontrabon', '" . $e($H['no_coa']) . "', '" . $e($H['nama_coa']) . "',
              '" . $e($H['no_costcenter']) . "', '" . $e($H['nama_costcenter']) . "',
              '-', '', '$fp', $tfp, '-', '-', '$curr', '$rate',
              '$deb', '0', '$deb_idr', '0', '" . $e($H['status']) . "', '" . $e($H['keterangan']) . "',
-             '" . $e($H['create_by']) . "', '" . $e($H['create_date']) . "', '', '', '', '', '" . $e($H['profit_center']) . "')";
+             '" . $e($H['create_by']) . "', '" . $e($H['create_date']) . "', '', '', '', '', '" . $e($H['profit_center']) . "', '" . $e($H['supplier'] ?? '') . "')";
         if (mysqli_query($conn2, $q) === false) return false;
     }
     return true;

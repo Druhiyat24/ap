@@ -8,6 +8,8 @@ $bulan =  date("m",strtotime($_POST['tgl_pco']));
 $tahun =  date("Y",strtotime($_POST['tgl_pco']));
 $reff = $_POST['reff'];
 $nama_supp = $_POST['nama_supp'];
+// Nama supplier ikut disimpan ke jurnal (kolom supplier).
+$nama_supp_esc = mysqli_real_escape_string($conn2, $nama_supp);
 $akun = $_POST['akun'];
 $curr = $_POST['curr'];
 $amount = $_POST['amount'];
@@ -60,26 +62,26 @@ $executes = mysqli_query($conn2,$queryss);
 if ($reff != 'List Payment') {
 
    if ($total_nag != 0) {
-      $queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+      $queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier) 
       VALUES 
-      ('$kode', '$tgl_pco', '$reff', '$akun', '$nama_coa', '-', '-', '-', '', '-', '-', 'IDR', '1', '0', '$total_nag', '0', '$total_nag', 'Draft', '$deskripsi', '$create_by', '$create_date', '', '', '', '', 'NAG')";
+      ('$kode', '$tgl_pco', '$reff', '$akun', '$nama_coa', '-', '-', '-', '', '-', '-', 'IDR', '1', '0', '$total_nag', '0', '$total_nag', 'Draft', '$deskripsi', '$create_by', '$create_date', '', '', '', '', 'NAG', '$nama_supp_esc')";
 
       $executess2 = mysqli_query($conn2,$queryss2);
    }
 
 
    if ($total_nak != 0) {
-      $queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+      $queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier) 
       VALUES 
-      ('$kode', '$tgl_pco', '$reff', '$akun', '$nama_coa', '-', '-', '-', '', '-', '-', 'IDR', '1', '0', '$total_nak', '0', '$total_nak', 'Draft', '$deskripsi', '$create_by', '$create_date', '', '', '', '', 'NAK')";
+      ('$kode', '$tgl_pco', '$reff', '$akun', '$nama_coa', '-', '-', '-', '', '-', '-', 'IDR', '1', '0', '$total_nak', '0', '$total_nak', 'Draft', '$deskripsi', '$create_by', '$create_date', '', '', '', '', 'NAK', '$nama_supp_esc')";
 
       $executess2 = mysqli_query($conn2,$queryss2);
    }
 }else{
 
-   $queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+   $queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier) 
       VALUES 
-      ('$kode', '$tgl_pco', '$reff', '$akun', '$nama_coa', '-', '-', '-', '', '-', '-', 'IDR', '1', '0', '$amount', '0', '$amount', 'Draft', '$deskripsi', '$create_by', '$create_date', '', '', '', '', '$h_profit_center')";
+      ('$kode', '$tgl_pco', '$reff', '$akun', '$nama_coa', '-', '-', '-', '', '-', '-', 'IDR', '1', '0', '$amount', '0', '$amount', 'Draft', '$deskripsi', '$create_by', '$create_date', '', '', '', '', '$h_profit_center', '$nama_supp_esc')";
 
       $executess2 = mysqli_query($conn2,$queryss2);
 }

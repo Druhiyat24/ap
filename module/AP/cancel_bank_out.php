@@ -36,6 +36,10 @@ $filter_jurnal = $rowx['no_journal'] ?? null;
 if ($filter_jurnal === null) {
     $jurnal_balik = mysqli_query($conn2, "
         INSERT INTO tbl_list_journal
+        (id, no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter,
+         reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr,
+         status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date,
+         created_at, updated_at, profit_center, supplier)
         SELECT 
             '', 
             no_journal, 
@@ -46,7 +50,7 @@ if ($filter_jurnal === null) {
             status, keterangan, create_by, create_date,
             '$cancel_user' AS approve_by,
             CURRENT_TIMESTAMP() AS approve_date,
-            cancel_by, cancel_date, created_at, updated_at, profit_center
+            cancel_by, cancel_date, created_at, updated_at, profit_center, supplier
         FROM tbl_list_journal
         WHERE no_journal='$no_bi' AND status = 'Draft'
     ");

@@ -8,6 +8,8 @@ $bulan =  date("m",strtotime($_POST['bankout_date']));
 $tahun =  date("y",strtotime($_POST['bankout_date']));
 $reff_doc = $_POST['reff_doc'];
 $nama_supp = $_POST['nama_supp'];
+// Nama supplier ikut disimpan ke jurnal (kolom supplier).
+$nama_supp_esc = mysqli_real_escape_string($conn2, $nama_supp);
 $akun = $_POST['akun'];
 $bank = $_POST['bank'];
 $curr = $_POST['curr'];
@@ -79,9 +81,9 @@ $execute = mysqli_query($conn2,$query);
 if ($reff_doc == 'None') {
     if ($total_nag != 0) {
       $total_nag_idr = $total_nag * $rate;
-      $query_nag = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+      $query_nag = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier) 
       VALUES 
-      ('$kode', '$bankout_date', '$reff_doc', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '0', '$total_nag', '0', '$total_nag_idr', 'Draft', '$deskripsi', '$create_user', '$create_date', '', '', '', '', 'NAG')";
+      ('$kode', '$bankout_date', '$reff_doc', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '0', '$total_nag', '0', '$total_nag_idr', 'Draft', '$deskripsi', '$create_user', '$create_date', '', '', '', '', 'NAG', '$nama_supp_esc')";
 
       $execute_nag = mysqli_query($conn2,$query_nag);
   }
@@ -89,17 +91,17 @@ if ($reff_doc == 'None') {
 
   if ($total_nak != 0) {
       $total_nak_idr = $total_nak * $rate;
-      $query_nak = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+      $query_nak = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier) 
       VALUES 
-      ('$kode', '$bankout_date', '$reff_doc', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '0', '$total_nak', '0', '$total_nak_idr', 'Draft', '$deskripsi', '$create_user', '$create_date', '', '', '', '', 'NAK')";
+      ('$kode', '$bankout_date', '$reff_doc', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '0', '$total_nak', '0', '$total_nak_idr', 'Draft', '$deskripsi', '$create_user', '$create_date', '', '', '', '', 'NAK', '$nama_supp_esc')";
 
       $execute_nak = mysqli_query($conn2,$query_nak);
   }
 }else{
 
-    $queryss3 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+    $queryss3 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier) 
     VALUES 
-    ('$kode', '$bankout_date', '$reff_doc', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '0', '$amount', '0', '$eqv_idr', 'Draft', '$deskripsi', '$create_user', '$create_date', '', '', '', '', '$h_profit_center')";
+    ('$kode', '$bankout_date', '$reff_doc', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '0', '$amount', '0', '$eqv_idr', 'Draft', '$deskripsi', '$create_user', '$create_date', '', '', '', '', '$h_profit_center', '$nama_supp_esc')";
 
     $executess3 = mysqli_query($conn2,$queryss3);
 }

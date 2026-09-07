@@ -40,7 +40,7 @@ try {
 
     $doc_num_esc = mysqli_real_escape_string($conn2, $doc_num);
 
-    $sqlChk = dbExec($conn2, "SELECT status, reff_doc, coa_akun FROM c_petty_cashout_h WHERE no_pco = '$doc_num_esc' AND reff = 'Settlement' LIMIT 1 FOR UPDATE");
+    $sqlChk = dbExec($conn2, "SELECT status, reff_doc, coa_akun, nama_supp FROM c_petty_cashout_h WHERE no_pco = '$doc_num_esc' AND reff = 'Settlement' LIMIT 1 FOR UPDATE");
     $rowChk = mysqli_fetch_assoc($sqlChk);
 
     if (!$rowChk) {
@@ -54,6 +54,8 @@ try {
     // reff_number (dokumen Advance yang di-settle) diambil dari data
     // tersimpan - tidak bisa diubah lewat form edit (readonly di form).
     $reff_number = $rowChk['reff_doc'];
+    // Nama supplier ikut disimpan ke jurnal (kolom supplier).
+    $nama_supp_esc = mysqli_real_escape_string($conn2, (string) ($rowChk['nama_supp'] ?? ''));
 
     // =========================
     // HEADER VALUE
@@ -111,8 +113,8 @@ try {
     // perlu disentuh)
     // =========================
     dbExec($conn2, "
-        INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
-        SELECT no_journal, tgl_journal, CONCAT('Reverse ', type_journal), no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, credit, debit, credit_idr, debit_idr, 'Updated', keterangan, create_by, create_date, '$user', '$edit_date', cancel_by, cancel_date, profit_center
+        INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
+        SELECT no_journal, tgl_journal, CONCAT('Reverse ', type_journal), no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, credit, debit, credit_idr, debit_idr, 'Updated', keterangan, create_by, create_date, '$user', '$edit_date', cancel_by, cancel_date, profit_center, supplier
         FROM tbl_list_journal
         WHERE no_journal = '$doc_num_esc' AND status != 'Updated'
         ");
@@ -146,7 +148,7 @@ try {
     $detRows     = [];
     $journalRows = [];
 
-    $journalRows[] = "('$doc_num_esc', '$doc_date', '$type_journal', '$akun', '$nama_coa', '-', '-', '$reff_number', '', '-', '-', 'IDR', '1', '0', '$amount', '0', '$amount', 'Draft', '$desc', '$user', '$edit_date', '', '', '', '', '$pc_kas')";
+    $journalRows[] = "('$doc_num_esc', '$doc_date', '$type_journal', '$akun', '$nama_coa', '-', '-', '$reff_number', '', '-', '-', 'IDR', '1', '0', '$amount', '0', '$amount', 'Draft', '$desc', '$user', '$edit_date', '', '', '', '', '$pc_kas', '$nama_supp_esc')";
 
     foreach ($detail as $row) {
 
@@ -170,7 +172,7 @@ try {
 
         $detRows[] = "('$doc_num_esc', '$doc_date', '$ref_num', '$coa', '$pc', '$cc', '$buyer', '$ws', '$curr_det', '$debit', '$credit', '$desc2')";
 
-        $journalRows[] = "('$doc_num_esc', '$doc_date', '$type_journal', '$coa', '$nama_coa_det', '$cc', '$nama_cc', '$reff_number', '', '$buyer', '$ws', '$curr_det', '1', '$debit', '$credit', '$debit', '$credit', 'Draft', '$desc2', '$user', '$edit_date', '', '', '', '', '$pc')";
+        $journalRows[] = "('$doc_num_esc', '$doc_date', '$type_journal', '$coa', '$nama_coa_det', '$cc', '$nama_cc', '$reff_number', '', '$buyer', '$ws', '$curr_det', '1', '$debit', '$credit', '$debit', '$credit', 'Draft', '$desc2', '$user', '$edit_date', '', '', '', '', '$pc', '$nama_supp_esc')";
     }
 
     if (!empty($detRows)) {
@@ -181,7 +183,7 @@ try {
     }
 
     dbExec($conn2, "
-        INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
+        INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
         VALUES " . implode(', ', $journalRows)
     );
 

@@ -24,6 +24,8 @@ try {
 	$date = date("Y-m-d", strtotime($_POST['date']));
 	$ref_data = $_POST['ref_data'] ?? '';
 	$customer = $_POST['customer'] ?? '';
+	// Nama lawan transaksi ikut disimpan ke jurnal (kolom supplier).
+	$customer_esc = mysqli_real_escape_string($conn2, $customer);
 	$profit_center = $_POST['profit_center'] ?? '';
 	$akun = $_POST['akun'] ?? '';
 	$curr = $_POST['curr'] ?? '';
@@ -137,7 +139,7 @@ try {
 		throw new Exception('COA Bank untuk akun "'.$akun.'" tidak ditemukan di mastercoa_v2.');
 	}
 
-	q($conn2, "INSERT into tbl_list_journal (id, no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center) select '', no_journal, tgl_journal, CONCAT('Reverse ',type_journal) type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, credit, debit, credit_idr, debit_idr, 'Updated' status, keterangan, create_by, create_date, '".mysqli_real_escape_string($conn2, $create_user)."' approve_by, CURRENT_TIMESTAMP() approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center from tbl_list_journal where no_journal = '".mysqli_real_escape_string($conn2, $old_doc_num)."' and status != 'Updated'");
+	q($conn2, "INSERT into tbl_list_journal (id, no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center, supplier) select '', no_journal, tgl_journal, CONCAT('Reverse ',type_journal) type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, credit, debit, credit_idr, debit_idr, 'Updated' status, keterangan, create_by, create_date, '".mysqli_real_escape_string($conn2, $create_user)."' approve_by, CURRENT_TIMESTAMP() approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center, supplier from tbl_list_journal where no_journal = '".mysqli_real_escape_string($conn2, $old_doc_num)."' and status != 'Updated'");
 
 	q($conn2, "UPDATE tbl_list_journal set status = 'Updated' where no_journal = '".mysqli_real_escape_string($conn2, $old_doc_num)."'");
 
@@ -147,16 +149,16 @@ try {
 
 	if ($total_nag != 0) {
 		$total_nag_idr = $total_nag * $rate;
-		q($conn2, "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
+		q($conn2, "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
 			VALUES
-			('$doc_num', '$date', '$type_journal', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '$total_nag', '0', '$total_nag_idr', '0', 'Draft', '".mysqli_real_escape_string($conn2, $deskripsi)."', '".mysqli_real_escape_string($conn2, $create_user)."', '$create_date', '', '', '', '', 'NAG')");
+			('$doc_num', '$date', '$type_journal', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '$total_nag', '0', '$total_nag_idr', '0', 'Draft', '".mysqli_real_escape_string($conn2, $deskripsi)."', '".mysqli_real_escape_string($conn2, $create_user)."', '$create_date', '', '', '', '', 'NAG', '$customer_esc')");
 	}
 
 	if ($total_nak != 0) {
 		$total_nak_idr = $total_nak * $rate;
-		q($conn2, "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
+		q($conn2, "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
 			VALUES
-			('$doc_num', '$date', '$type_journal', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '$total_nak', '0', '$total_nak_idr', '0', 'Draft', '".mysqli_real_escape_string($conn2, $deskripsi)."', '".mysqli_real_escape_string($conn2, $create_user)."', '$create_date', '', '', '', '', 'NAK')");
+			('$doc_num', '$date', '$type_journal', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '$total_nak', '0', '$total_nak_idr', '0', 'Draft', '".mysqli_real_escape_string($conn2, $deskripsi)."', '".mysqli_real_escape_string($conn2, $create_user)."', '$create_date', '', '', '', '', 'NAK', '$customer_esc')");
 	}
 
 	q($conn2, "insert into tbl_bankin_cancel (select * from tbl_bankin where no_doc='".mysqli_real_escape_string($conn2, $old_doc_num)."')");
@@ -230,7 +232,7 @@ try {
 
 		$bankinValues[] = "('$doc_num', '$coaEsc', '$ccEsc', '$buyerEsc', '$wsEsc', '$currencyEsc', '$debit', '$credit', '$ketEsc', '$profCtrEsc')";
 
-		$journalValues[] = "('$doc_num', '$date', '$type_journal', '$coaEsc', '$namaCoaEsc', '$ccEsc', '$namaCcEsc', '-', '', '$buyerEsc', '$wsEsc', '$currencyEsc', '$rate', '$debit', '$credit', '$t_debit', '$t_credit', 'Draft', '$ketEsc', '$createUserEsc', '$create_date', '', '', '', '', '$profCtrEsc')";
+		$journalValues[] = "('$doc_num', '$date', '$type_journal', '$coaEsc', '$namaCoaEsc', '$ccEsc', '$namaCcEsc', '-', '', '$buyerEsc', '$wsEsc', '$currencyEsc', '$rate', '$debit', '$credit', '$t_debit', '$t_credit', 'Draft', '$ketEsc', '$createUserEsc', '$create_date', '', '', '', '', '$profCtrEsc', '$customer_esc')";
 	}
 
 	if (empty($bankinValues)) {
@@ -240,7 +242,7 @@ try {
 	q($conn2, "INSERT INTO tbl_bankin (no_doc,id_coa,id_cost_center,buyer,no_ws,curr,t_debit,t_credit,keterangan, profit_center)
 		VALUES " . implode(',', $bankinValues));
 
-	q($conn2, "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
+	q($conn2, "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
 		VALUES " . implode(',', $journalValues));
 
 	mysqli_commit($conn2);

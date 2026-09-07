@@ -3,6 +3,10 @@ include '../../conn/conn.php';
 ini_set('date.timezone', 'Asia/Jakarta');
 
 $no_bankout = $_POST['no_bankout'];
+// Nama supplier diambil dari header Bank Out, ikut disimpan ke jurnal (kolom supplier).
+$nama_supp_esc = '';
+$rs_supp_ = mysqli_query($conn2, "SELECT nama_supp FROM b_bankout_h WHERE no_bankout = '" . mysqli_real_escape_string($conn2, $no_bankout) . "' LIMIT 1");
+if ($rs_supp_ && ($r_supp_ = mysqli_fetch_assoc($rs_supp_))) $nama_supp_esc = mysqli_real_escape_string($conn2, $r_supp_['nama_supp']);
 $bankout_date = date("Y-m-d",strtotime($_POST['bankout_date']));
 $no_coa = $_POST['no_coa'];
 $reff_doc = $_POST['reff_doc'];
@@ -113,9 +117,9 @@ VALUES
 
 $execute = mysqli_query($conn2,$query);
 
-$queryss = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
+$queryss = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, supplier) 
 VALUES 
-   ('$kode', '$bankout_date', '$type_ob', '$no_coa', '$nama_coa', '-', '-', '$reff_doc', '$reff_date', '-', '-', 'IDR', '1', '$debit', '$credit', '$t_debit', '$t_credit', 'Draft', '$deskripsi', '$create_by', '$create_date', '', '', '', '')";
+   ('$kode', '$bankout_date', '$type_ob', '$no_coa', '$nama_coa', '-', '-', '$reff_doc', '$reff_date', '-', '-', 'IDR', '1', '$debit', '$credit', '$t_debit', '$t_credit', 'Draft', '$deskripsi', '$create_by', '$create_date', '', '', '', '', '$nama_supp_esc')";
 
 $executess = mysqli_query($conn2,$queryss);
 }
@@ -154,9 +158,9 @@ $execute2 = mysqli_query($conn2,$query2);
 		$pv_pph_idr = $pv_total_pph * $rates;
 		
 
-		$queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date)
+		$queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, supplier)
 VALUES
-('$kode', '$bankout_date', '$type_ob', '$pv_coa', '$pv_nama_coa', '$pv_no_cc', '$pv_cc_name', '$pv_no_pv', '$pv_pv_date', '-', '-', '$pv_curr', '$rates','$pv_total', '0', '$pv_total_idr', '0', 'Draft', '$pv_deskripsi', '$create_by', '$create_date', '', '', '', '')";
+('$kode', '$bankout_date', '$type_ob', '$pv_coa', '$pv_nama_coa', '$pv_no_cc', '$pv_cc_name', '$pv_no_pv', '$pv_pv_date', '-', '-', '$pv_curr', '$rates','$pv_total', '0', '$pv_total_idr', '0', 'Draft', '$pv_deskripsi', '$create_by', '$create_date', '', '', '', '', '$nama_supp_esc')";
 
 		$executess2 = mysqli_query($conn2, $queryss2);
 
@@ -168,9 +172,9 @@ $no_coa_ppn = $rowcoa3['no_coa'];
 $nama_coa_ppn = $rowcoa3['nama_coa'];
 
 
-$querys_ppn = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
+$querys_ppn = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, supplier) 
 VALUES 
-   ('$kode', '$bankout_date', '$type_ob', '$no_coa_ppn', '$nama_coa_ppn', '$pv_no_cc', '$pv_cc_name', '$pv_no_pv', '$pv_pv_date', '-', '-', '$curr', '$rates', '$pv_total_ppn', '0', '$pv_ppn_idr', '0', 'Draft', '$pv_deskripsi','$create_by', '$create_date', '', '', '', '')";
+   ('$kode', '$bankout_date', '$type_ob', '$no_coa_ppn', '$nama_coa_ppn', '$pv_no_cc', '$pv_cc_name', '$pv_no_pv', '$pv_pv_date', '-', '-', '$curr', '$rates', '$pv_total_ppn', '0', '$pv_ppn_idr', '0', 'Draft', '$pv_deskripsi','$create_by', '$create_date', '', '', '', '', '$nama_supp_esc')";
 
  $executes_ppn = mysqli_query($conn2,$querys_ppn);
 }else{
@@ -180,9 +184,9 @@ VALUES
 if ($pv_pph > 0) {
 
 
-$querys_ppn = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
+$querys_ppn = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, supplier) 
 VALUES 
-    ('$kode', '$bankout_date', '$type_ob', '$pv_coa_ppn', '$pv_coa_name_ppn', '$pv_no_cc', '$pv_cc_name', '$pv_no_pv', '$pv_pv_date', '-', '-', '$curr', '$rates', '0', '$pv_total_pph', '0', '$pv_pph_idr', 'Draft', '$pv_deskripsi','$create_by', '$create_date', '', '', '', '')";
+    ('$kode', '$bankout_date', '$type_ob', '$pv_coa_ppn', '$pv_coa_name_ppn', '$pv_no_cc', '$pv_cc_name', '$pv_no_pv', '$pv_pv_date', '-', '-', '$curr', '$rates', '0', '$pv_total_pph', '0', '$pv_pph_idr', 'Draft', '$pv_deskripsi','$create_by', '$create_date', '', '', '', '', '$nama_supp_esc')";
 
  $executes_ppn = mysqli_query($conn2,$querys_ppn);
 }else{
@@ -210,9 +214,9 @@ $memolp = $rowlp['memo'];
 $lp_total_idr = $amountlp * $rates;
 
 
-$queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date) 
+$queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, supplier) 
 VALUES 
-   ('$kode', '$bankout_date', '$type_ob', '$no_coalp', '$nama_coalp', '-', '-', '$no_pay', '$pay_date', '-', '-', '$curr', '$rates', '$balance', '0', '$balanceidr', '0', 'Draft', '$pesan_ob', '$create_by', '$create_date', '', '', '', '')";
+   ('$kode', '$bankout_date', '$type_ob', '$no_coalp', '$nama_coalp', '-', '-', '$no_pay', '$pay_date', '-', '-', '$curr', '$rates', '$balance', '0', '$balanceidr', '0', 'Draft', '$pesan_ob', '$create_by', '$create_date', '', '', '', '', '$nama_supp_esc')";
 
 $executess2 = mysqli_query($conn2,$queryss2);
 }

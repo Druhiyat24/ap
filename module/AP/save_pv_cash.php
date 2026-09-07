@@ -116,7 +116,7 @@ try {
     $detRows     = [];
     $adjRows     = [];
 
-    $journalRows[] = "('$doc_num', '$doc_date', '$ref_num', '$akun', '$nama_coa', '-', '-', '', '', '-', '-', 'IDR', '1', '0', '$amount', '0', '$amount', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc_kas')";
+    $journalRows[] = "('$doc_num', '$doc_date', '$ref_num', '$akun', '$nama_coa', '-', '-', '', '', '-', '-', 'IDR', '1', '0', '$amount', '0', '$amount', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc_kas', '$nama_supp')";
 
     // =========================
     // DETAIL PV
@@ -212,7 +212,7 @@ try {
 
         $detRows[] = "('$doc_num', '$doc_date', '$no_kbon_esc', $pv_date_sql, $pv_duedate_sql, '$pv_sub', '$pv_ppn', '$pv_pph', '$pv_total', '$pv_curr_esc', '$amount_pv', '$amount_pv', '$type_pv_esc')";
 
-        $journalRows[] = "('$doc_num', '$doc_date', '$ref_num', '$pv_coa_esc', '$pv_coa_nama_esc', '-', '-', '$no_kbon_esc', $pv_date_sql, '-', '-', '$pv_curr_esc', '$pv_rate', '$total_dppnya', '0', '$debit_idr', '0', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pv_pc_esc')";
+        $journalRows[] = "('$doc_num', '$doc_date', '$ref_num', '$pv_coa_esc', '$pv_coa_nama_esc', '-', '-', '$no_kbon_esc', $pv_date_sql, '-', '-', '$pv_curr_esc', '$pv_rate', '$total_dppnya', '0', '$debit_idr', '0', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pv_pc_esc', '$nama_supp')";
 
         if ($bayar_pph > 0) {
             if ($type_pv === 'Regular') {
@@ -228,7 +228,7 @@ try {
             $pph_idr = round($bayar_pph * $pv_rate, 4);
 
             if (!empty($no_coa_pph)) {
-                $journalRows[] = "('$doc_num', '$doc_date', '$ref_num', '$no_coa_pph', '$nama_coa_pph', '-', '-', '$no_kbon_esc', $pv_date_sql, '-', '-', '$pv_curr_esc', '$pv_rate', '0', '$bayar_pph', '0', '$pph_idr', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pv_pc_esc')";
+                $journalRows[] = "('$doc_num', '$doc_date', '$ref_num', '$no_coa_pph', '$nama_coa_pph', '-', '-', '$no_kbon_esc', $pv_date_sql, '-', '-', '$pv_curr_esc', '$pv_rate', '0', '$bayar_pph', '0', '$pph_idr', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pv_pc_esc', '$nama_supp')";
             }
         }
     }
@@ -257,7 +257,7 @@ try {
 
         $adjRows[] = "('$doc_num', '$doc_date', '$coa', '$reff', '$reff_date', '$desc2', '$debit', '$credit', '$cc', '$pc')";
 
-        $journalRows[] = "('$doc_num', '$doc_date', '$ref_num', '$coa', '$nama_coa_adj', '$cc', '$nama_cc', '$reff', '$reff_date', '-', '-', 'IDR', '1', '$debit', '$credit', '$debit', '$credit', 'Draft', '$desc2', '$user', '$create_date', '', '', '', '', '$pc')";
+        $journalRows[] = "('$doc_num', '$doc_date', '$ref_num', '$coa', '$nama_coa_adj', '$cc', '$nama_cc', '$reff', '$reff_date', '-', '-', 'IDR', '1', '$debit', '$credit', '$debit', '$credit', 'Draft', '$desc2', '$user', '$create_date', '', '', '', '', '$pc', '$nama_supp')";
     }
 
     // =========================
@@ -278,7 +278,7 @@ try {
     }
 
     dbExec($conn2, "
-        INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
+        INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
         VALUES " . implode(', ', $journalRows)
     );
 

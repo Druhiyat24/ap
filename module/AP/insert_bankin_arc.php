@@ -8,6 +8,8 @@ $bulan =  date("m",strtotime($_POST['doc_date']));
 $tahun =  date("y",strtotime($_POST['doc_date']));
 $referen = $_POST['referen'];
 $nama_supp = $_POST['nama_supp'];
+// Nama supplier ikut disimpan ke jurnal (kolom supplier).
+$nama_supp_esc = mysqli_real_escape_string($conn2, $nama_supp);
 $akun = $_POST['akun'];
 $bank = $_POST['bank'];
 $curr = $_POST['curr'];
@@ -91,18 +93,18 @@ if ($referen == 'Bank Keluar') {
    $rowbk = mysqli_fetch_array($sqlbk);
    $bk_date = isset($rowbk['bankout_date']) ? $rowbk['bankout_date'] : null;
 
-   $queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+   $queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier) 
    VALUES 
-   ('$kode', '$doc_date', '$referen', '$no_coa1', '$nama_coa1', '-', '-', '$no_bk', '$bk_date', '-', '-', '$curr', '$rate', '$nominal', '0', '$eqv_idr', '0', 'Draft', '$pesan', '$create_user', '$create_date', '', '', '', '', '$prof_ctr')";
+   ('$kode', '$doc_date', '$referen', '$no_coa1', '$nama_coa1', '-', '-', '$no_bk', '$bk_date', '-', '-', '$curr', '$rate', '$nominal', '0', '$eqv_idr', '0', 'Draft', '$pesan', '$create_user', '$create_date', '', '', '', '', '$prof_ctr', '$nama_supp_esc')";
 
    $executess2 = mysqli_query($conn2,$queryss2);
 }elseif ($referen == 'None') {
 
    if ($total_nag != 0) {
       $total_nag_idr = $total_nag * $rate;
-      $query_nag = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+      $query_nag = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier) 
       VALUES 
-      ('$kode', '$doc_date', '$referen', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '$total_nag', '0', '$total_nag_idr', '0', 'Draft', '$pesan', '$create_user', '$create_date', '', '', '', '', 'NAG')";
+      ('$kode', '$doc_date', '$referen', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '$total_nag', '0', '$total_nag_idr', '0', 'Draft', '$pesan', '$create_user', '$create_date', '', '', '', '', 'NAG', '$nama_supp_esc')";
 
       $execute_nag = mysqli_query($conn2,$query_nag);
    }
@@ -110,25 +112,25 @@ if ($referen == 'Bank Keluar') {
 
    if ($total_nak != 0) {
       $total_nak_idr = $total_nak * $rate;
-      $query_nak = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+      $query_nak = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier) 
       VALUES 
-      ('$kode', '$doc_date', '$referen', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '$total_nak', '0', '$total_nak_idr', '0', 'Draft', '$pesan', '$create_user', '$create_date', '', '', '', '', 'NAK')";
+      ('$kode', '$doc_date', '$referen', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '$total_nak', '0', '$total_nak_idr', '0', 'Draft', '$pesan', '$create_user', '$create_date', '', '', '', '', 'NAK', '$nama_supp_esc')";
 
       $execute_nak = mysqli_query($conn2,$query_nak);
    }
 
 } else{
-   $queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+   $queryss2 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier) 
    VALUES 
-   ('$kode', '$doc_date', '$referen', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '$nominal', '0', '$eqv_idr', '0', 'Draft', '$pesan', '$create_user', '$create_date', '', '', '', '', '$prof_ctr')";
+   ('$kode', '$doc_date', '$referen', '$no_coa1', '$nama_coa1', '-', '-', '-', '', '-', '-', '$curr', '$rate', '$nominal', '0', '$eqv_idr', '0', 'Draft', '$pesan', '$create_user', '$create_date', '', '', '', '', '$prof_ctr', '$nama_supp_esc')";
 
    $executess2 = mysqli_query($conn2,$queryss2);
 }
 
 if ($referen == 'AR Collection') {
-   $queryss3 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center) 
+   $queryss3 = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier) 
    VALUES 
-   ('$kode', '$doc_date', '$referen', '$coa', '$nama_coa', '$cost', '$nama_cc', '-', '', '-', '-', '$curr', '$rate', '0', '$nominal', '0', '$eqv_idr', 'Draft', '$pesan', '$create_user', '$create_date', '', '', '', '', '$prof_ctr')";
+   ('$kode', '$doc_date', '$referen', '$coa', '$nama_coa', '$cost', '$nama_cc', '-', '', '-', '-', '$curr', '$rate', '0', '$nominal', '0', '$eqv_idr', 'Draft', '$pesan', '$create_user', '$create_date', '', '', '', '', '$prof_ctr', '$nama_supp_esc')";
 
    $executess3 = mysqli_query($conn2,$queryss3);
 }

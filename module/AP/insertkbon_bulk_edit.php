@@ -65,12 +65,16 @@ register_shutdown_function(function () use ($conn2) {
 function pvj($conn2, $kode, $create_date, $no_coa, $nama_coa, $no_cc, $nama_cc,
              $reff_doc, $reff_date, $curr, $rate, $debit, $credit, $debit_idr, $credit_idr,
              $keter, $create_user, $profit_center) {
+    // $nama_supp_h_esc ada di scope global (didefinisikan dekat $nama_supp_h).
+    // Fungsi PHP tidak mewarisi variabel luar, jadi WAJIB di-global-kan di sini -
+    // tanpa ini kolom supplier pada jurnal revisi akan kosong.
+    global $nama_supp_h_esc;
     $esc = function ($v) use ($conn2) { return mysqli_real_escape_string($conn2, (string) $v); };
     if ($no_cc === '' || $no_cc === null)     { $no_cc = '-'; }
     if ($nama_cc === '' || $nama_cc === null) { $nama_cc = '-'; }
-    $sql = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
+    $sql = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
         VALUES
-        ('" . $esc($kode) . "', '" . $esc($create_date) . "', 'AP - Kontrabon', '" . $esc($no_coa) . "', '" . $esc($nama_coa) . "', '" . $esc($no_cc) . "', '" . $esc($nama_cc) . "', '" . $esc($reff_doc) . "', '" . $esc($reff_date) . "', '-', '-', '" . $esc($curr) . "', '" . $esc($rate) . "', '" . $esc($debit) . "', '" . $esc($credit) . "', '" . $esc($debit_idr) . "', '" . $esc($credit_idr) . "', 'Draft', '" . $esc($keter) . "', '" . $esc($create_user) . "', '" . $esc($create_date) . "', '', '', '', '', '" . $esc($profit_center) . "')";
+        ('" . $esc($kode) . "', '" . $esc($create_date) . "', 'AP - Kontrabon', '" . $esc($no_coa) . "', '" . $esc($nama_coa) . "', '" . $esc($no_cc) . "', '" . $esc($nama_cc) . "', '" . $esc($reff_doc) . "', '" . $esc($reff_date) . "', '-', '-', '" . $esc($curr) . "', '" . $esc($rate) . "', '" . $esc($debit) . "', '" . $esc($credit) . "', '" . $esc($debit_idr) . "', '" . $esc($credit_idr) . "', 'Draft', '" . $esc($keter) . "', '" . $esc($create_user) . "', '" . $esc($create_date) . "', '', '', '', '', '" . $esc($profit_center) . "', '$nama_supp_h_esc')";
     return mysqli_query($conn2, $sql);
 }
 
@@ -82,6 +86,8 @@ $tgl_kbon_h   = date("Y-m-d", strtotime($headerData['tgl_kbon_h'] ?? 'now'));
 $tgl_kbon_s   = date("Y-m-d", strtotime($headerData['tgl_kbon_s'] ?? ($headerData['tgl_kbon_h'] ?? 'now')));
 $no_po_h      = $headerData['no_po_h'] ?? '';
 $nama_supp_h  = $headerData['nama_supp_h'] ?? '';
+// Nama supplier ikut disimpan ke jurnal (kolom supplier).
+$nama_supp_h_esc = mysqli_real_escape_string($conn2, $nama_supp_h);
 $no_faktur_h  = $headerData['no_faktur_h'] ?? '';
 $supp_inv_h   = $headerData['supp_inv_h'] ?? '';
 $tgl_inv_h    = date("Y-m-d", strtotime($headerData['tgl_inv_h'] ?? 'now'));
@@ -139,7 +145,7 @@ $ke = $e($kode);
 
 // ---- 2) JURNAL BALIK: reverse SEMUA jurnal PV lama (debit<->credit) ---------
 // (identik insert_kontrabon_edit_all.php; self-balancing, di bawah no_journal=<old>)
-$jurnal_balik = mysqli_query($conn2, "INSERT into tbl_list_journal (id, no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center) select '', no_journal, '" . $e($create_date) . "' tgl_journal, CONCAT('Reverse ',type_journal) type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, credit, debit, credit_idr, debit_idr, status, keterangan, create_by, create_date, '" . $e($create_user_h) . "' approve_by, CURRENT_TIMESTAMP() approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center from tbl_list_journal where no_journal = '" . $oe . "'");
+$jurnal_balik = mysqli_query($conn2, "INSERT into tbl_list_journal (id, no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center, supplier) select '', no_journal, '" . $e($create_date) . "' tgl_journal, CONCAT('Reverse ',type_journal) type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, credit, debit, credit_idr, debit_idr, status, keterangan, create_by, create_date, '" . $e($create_user_h) . "' approve_by, CURRENT_TIMESTAMP() approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center, supplier from tbl_list_journal where no_journal = '" . $oe . "'");
 if ($jurnal_balik === false) {
     mysqli_rollback($conn2);
     pv_edit_out(['ok' => false, 'msg' => 'Gagal membuat jurnal balik PV lama. Tidak ada yang tersimpan.']);

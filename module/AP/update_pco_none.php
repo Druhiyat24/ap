@@ -63,7 +63,7 @@ try {
     $rowcoa = mysqli_fetch_array($sqlcoa);
     $nama_coa = $rowcoa['nama_coa'];
 
-    dbExec($conn2, "INSERT into tbl_list_journal (id, no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center) select '', no_journal, tgl_journal, CONCAT('Reverse ',type_journal) type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, credit, debit, credit_idr, debit_idr, 'Updated' status, keterangan, create_by, create_date, '$create_user' approve_by, CURRENT_TIMESTAMP() approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center from tbl_list_journal where no_journal = '$doc_num' and status != 'Updated'");
+    dbExec($conn2, "INSERT into tbl_list_journal (id, no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center, supplier) select '', no_journal, tgl_journal, CONCAT('Reverse ',type_journal) type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, credit, debit, credit_idr, debit_idr, 'Updated' status, keterangan, create_by, create_date, '$create_user' approve_by, CURRENT_TIMESTAMP() approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center, supplier from tbl_list_journal where no_journal = '$doc_num' and status != 'Updated'");
 
     dbExec($conn2, "UPDATE tbl_list_journal set status = 'Updated' where no_journal = '$doc_num' and status = 'Draft'");
 
@@ -76,11 +76,11 @@ try {
     $journalRows = [];
 
     if ($total_nag != 0) {
-        $journalRows[] = "('$doc_num', '$date', '$type_journal', '$akun', '$nama_coa', '-', '-', '-', '', '-', '-', 'IDR', '1', '0', '$total_nag', '0', '$total_nag', 'Draft', '$deskripsi', '$create_user', '$create_date', '', '', '', '', 'NAG')";
+        $journalRows[] = "('$doc_num', '$date', '$type_journal', '$akun', '$nama_coa', '-', '-', '-', '', '-', '-', 'IDR', '1', '0', '$total_nag', '0', '$total_nag', 'Draft', '$deskripsi', '$create_user', '$create_date', '', '', '', '', 'NAG', '$customer')";
     }
 
     if ($total_nak != 0) {
-        $journalRows[] = "('$doc_num', '$date', '$type_journal', '$akun', '$nama_coa', '-', '-', '-', '', '-', '-', 'IDR', '1', '0', '$total_nak', '0', '$total_nak', 'Draft', '$deskripsi', '$create_user', '$create_date', '', '', '', '', 'NAK')";
+        $journalRows[] = "('$doc_num', '$date', '$type_journal', '$akun', '$nama_coa', '-', '-', '-', '', '-', '-', 'IDR', '1', '0', '$total_nak', '0', '$total_nak', 'Draft', '$deskripsi', '$create_user', '$create_date', '', '', '', '', 'NAK', '$customer')";
     }
 
     dbExec($conn2, "insert into c_petty_cashout_none_cancel (select * from c_petty_cashout_none where no_pco='$doc_num')");
@@ -112,7 +112,7 @@ try {
 
         $detRows[] = "('$doc_num', '$date', '$reff', '$coa', '$prof_ctr', '$cost_ctr', '$buyer', '$ws', '$currency', '$debit', '$credit', '$ket')";
 
-        $journalRows[] = "('$doc_num', '$date', '$type_journal', '$coa', '$nama_coa_det', '$cost_ctr', '$nama_cc', '', '', '$buyer', '$ws', '$currency', '1', '$debit', '$credit', '$t_debit', '$t_credit', 'Draft', '$ket', '$create_user', '$create_date', '', '', '', '', '$prof_ctr')";
+        $journalRows[] = "('$doc_num', '$date', '$type_journal', '$coa', '$nama_coa_det', '$cost_ctr', '$nama_cc', '', '', '$buyer', '$ws', '$currency', '1', '$debit', '$credit', '$t_debit', '$t_credit', 'Draft', '$ket', '$create_user', '$create_date', '', '', '', '', '$prof_ctr', '$customer')";
     }
 
     if (!empty($detRows)) {
@@ -124,7 +124,7 @@ try {
 
     if (!empty($journalRows)) {
         dbExec($conn2, "
-            INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
+            INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
             VALUES " . implode(', ', $journalRows)
         );
     }
