@@ -47,9 +47,13 @@ VALUES
 $execute = mysqli_query($conn2,$query);
 
 if(!$execute){	
-   die('Error: ' . mysqli_error());	
+   die('Error: ' . mysqli_error($conn2));
 }else{
-	if ($kode_trans === 'TFTA' || $kode_trans === 'TATP') {
+	// HANYA TFTA di sini. Guard di atas memang berlaku utk TFTA DAN TATP, tapi
+	// update status header TIDAK boleh disatukan: kalau TATP ikut masuk cabang ini,
+	// elseif TATP di bawah jadi tidak pernah tercapai sehingga header salah diisi
+	// 'Post Fin To Acc'/tfta_by dan dokumen tak pernah muncul di form_approve_pch.php.
+	if ($kode_trans === 'TFTA') {
 		$sql_upt = "update ir_invoice_supp_h set status = 'Post Fin To Acc', updated_at = '$create_date',tfta_by = '$create_user', tfta_date = '$tgl_doc', cancel_acc_by = null, cancel_acc_date = null where doc_number = '$no_kbon'";
 	}elseif($kode_trans == 'TATP'){
 		$sql_upt = "update ir_invoice_supp_h set status = 'Post Acc To Pch', updated_at = '$create_date',tatp_by = '$create_user', tatp_date = '$tgl_doc', cancel_pch_by = null, cancel_pch_date = null where doc_number = '$no_kbon'";
