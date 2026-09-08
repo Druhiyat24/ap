@@ -5,7 +5,7 @@ ini_set('date.timezone', 'Asia/Jakarta');
 $create_user = $_POST['create_user'];
 $total = 0;
 
- $sql = mysqli_query($conn1,"select id_bpb, no_po, no_bpb, tgl_bpb, id_jo, id_item, itemdesc,qty_tagih, price_tagih,unit  from req_dn_po_detail_temp where created_by = '$create_user'");
+ $sql = mysqli_query($conn1,"select id_bpb, no_po, no_bpb, tgl_bpb, a.id_jo, id_item, itemdesc,qty_tagih, price_tagih,unit, styleno from req_dn_po_detail_temp a LEFT JOIN (select id_jo,kpno,styleno from act_costing ac inner join so on ac.id=so.id_cost inner join jo_det jod on so.id=jod.id_so group by id_jo) b on b.id_jo=a.id_jo where created_by = '$create_user'");
 
 $table = '';
 
@@ -24,7 +24,7 @@ $table = '';
                         <td><input style="text-align: right;font-size: 12px;" type="text" class="form-control" id="tot_row" name="tot_row" value="'.$total.'" placeholder="" autocomplete="off"></td>
                         <td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off" value=""></td>
                         <td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off" value=""></td>
-                        <td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off" value=""></td>
+                        <td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off" value="'.$row['styleno'].'"></td>
                         <td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td>
                         <td hidden value="'.$row['id_bpb'].'"></td>
                         <td hidden value="'.$row['tgl_bpb'].'"></td>
