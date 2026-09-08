@@ -414,61 +414,105 @@ $(document).ready(function(){
 </script>
 
 <script type="text/javascript">
-    $("#form-simpan").on("click", "#simpan", async function(){
-        Swal.fire({
-          title: "Loading",
-          html: "Data sedang di copy.",
-          didOpen: () => {
-            Swal.showLoading();
-          },
+    // Approve BULK: dulu setiap dokumen dikirim satu-satu dan DITUNGGU (await di
+    // dalam for), sehingga biayanya ~345 ms/dokumen - centang 50 baris ~ 17 detik.
+    // Sekarang semua dikirim dalam SATU request ke approvemj_bulk.php dan
+    // diproses sebagai himpunan di sisi SQL.
+    $("#form-simpan").on("click", "#simpan", function(){
+
+        // Kumpulkan dokumen yang dicentang (buang duplikat nomor).
+        var seen = {};
+        var items = [];
+        document.querySelectorAll('input[type=checkbox]:checked').forEach(function (cb) {
+            var tr = cb.closest('tr');
+            if (!tr) { return; }                       // lewati checkbox "select all" di <thead>
+            var td = tr.querySelectorAll('td');
+            if (td.length < 3) { return; }
+            var no_mj  = td[1].getAttribute('value');
+            var tgl_mj = td[2].getAttribute('value');
+            if (!no_mj || seen[no_mj]) { return; }
+            seen[no_mj] = true;
+            items.push({ no_mj: no_mj, tgl_mj: tgl_mj });
         });
 
-        let checkedElement = document.querySelectorAll('input[type=checkbox]:checked');
-        console.log(checkedElement.length);
-        for (let i = 0; i < checkedElement.length; i++) {
-            console.log(checkedElement[i]);
-            var ceklist = document.getElementById('select').value;         
-            var no_mj = checkedElement[i].closest('tr').querySelectorAll('td')[1].getAttribute('value');
-            var tgl_mj = checkedElement[i].closest('tr').querySelectorAll('td')[2].getAttribute('value');
-            var create_user = '<?php echo $user ?>';
-            var start_date = document.getElementById('start_date').value;
-            var end_date = document.getElementById('end_date').value;    
-
-            await berhasil(no_mj,tgl_mj,create_user)
+        if (items.length === 0) {
+            Swal.fire({ title: 'Nothing Selected',
+                        text: 'Please select at least one journal number.', icon: 'warning' });
+            return;
         }
-        // alert("Data saved successfully");
-        // Swal.close();
+
+        // SEBELUM approve: tampilkan jumlahnya supaya ada pembanding dengan hasil.
         Swal.fire({
-            title: 'Data Berhasil Dicopy!',
-            icon: "success",
-            showConfirmButton: true,
+            title: 'Verify ' + items.length + ' Journal Number(s)?',
+            html: 'Selected: <b>' + items.length + '</b> journal number(s).<br>'
+                + 'A summary will be shown once the process is finished.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Verify',
+            cancelButtonText: 'Cancel',
             allowOutsideClick: false
-        }).then(() => {
-            window.location.reload();
+        }).then(function (konf) {
+            if (!konf.isConfirmed) { return; }
+
+            Swal.fire({
+                title: 'Processing ' + items.length + ' Journal Number(s)',
+                html: 'Please wait, data is being copied.',
+                allowOutsideClick: false,
+                didOpen: function () { Swal.showLoading(); }
+            });
+
+            $.ajax({
+                type: 'POST',
+                url: 'approvemj_bulk.php',
+                dataType: 'json',
+                data: {
+                    items: JSON.stringify(items),
+                    create_user: '<?php echo $user ?>'
+                }
+            }).done(function (res) {
+                if (!res) {
+                    Swal.fire({ title: 'Failed', text: 'Empty response from server.', icon: 'error' });
+                    return;
+                }
+
+                // Daftar nomor yang TIDAK berhasil - inilah yang dulu hilang diam-diam.
+                var masalah = (res.hasil || []).filter(function (h) { return h.status !== 'ok'; });
+                var rincian = '';
+                if (masalah.length) {
+                    rincian = '<div style="max-height:200px;overflow:auto;text-align:left;'
+                            + 'font-size:12px;margin-top:8px;border-top:1px solid #eee;padding-top:8px;">';
+                    masalah.forEach(function (h) {
+                        rincian += '<div><b>' + h.no_mj + '</b> — '
+                                +  (h.status === 'dilewati' ? 'SKIPPED' : 'FAILED') + ': '
+                                +  (h.pesan || '-') + '</div>';
+                    });
+                    rincian += '</div>';
+                }
+
+                Swal.fire({
+                    title: res.dibuat + ' of ' + items.length + ' Verified Successfully',
+                    html: 'Selected: <b>' + items.length + '</b><br>'
+                        + 'Verified: <b>' + res.dibuat + '</b><br>'
+                        + 'Skipped (already verified): <b>' + res.dilewati + '</b><br>'
+                        + 'Failed: <b>' + res.gagal + '</b>'
+                        + (res.pesan ? '<br><span style="color:#dc2626">' + res.pesan + '</span>' : '')
+                        + rincian,
+                    icon: (res.gagal > 0 ? 'warning' : 'success'),
+                    showConfirmButton: true,
+                    allowOutsideClick: false
+                }).then(function () { window.location.reload(); });
+
+            }).fail(function (xhr) {
+                Swal.fire({
+                    title: 'Failed',
+                    html: 'Server responded with status ' + xhr.status + '.<br>'
+                        + '<div style="max-height:160px;overflow:auto;text-align:left;font-size:11px">'
+                        + $('<div>').text(xhr.responseText || '').html() + '</div>',
+                    icon: 'error'
+                });
+            });
         });
     })
-
-
-    function berhasil(no_mj,tgl_mj,create_user){
-        return $.ajax({
-            type:'POST',
-            url:'approvemj.php',
-            data: {'no_mj':no_mj,'tgl_mj':tgl_mj,'create_user':create_user},
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){                
-                console.log(response);
-                // window.location.reload();
-                // alert(response);
-                                               
-            },
-            error:  function (xhr, ajaxOptions, thrownError) {
-               alert(xhr);
-            }
-        });
-        // alert("Data saved successfully");
-    }
 </script>
 
 <script type="text/javascript">
