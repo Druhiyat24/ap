@@ -582,6 +582,11 @@ if ($dup_kbon != null && $dup_bpb == $no_bpb) {
 	$sql1 = mysqli_query($conn2,"select no_kbon from kontrabon_dp where no_bpb = '$no_bpb'");
 	while($row = mysqli_fetch_array($sql1)){
 		$kbon = $row['no_kbon'];
+		// Penanda: apakah docinfo bpb_new sudah ditulis lewat cabang "BPB tambahan"
+		// ($fid > 0). Kalau sudah, blok BPB reguler di bawah TIDAK boleh menulis ulang -
+		// sumber No/Tgl Invoice-nya beda (cabang tambahan pakai invoice IR, blok reguler
+		// pakai header PV), jadi penulisan kedua akan menimpa data IR yang benar.
+		$docinfo_done = false;
 
 		if($sum_dp != '0'){
 			echo '';
@@ -755,6 +760,7 @@ if ($dup_kbon != null && $dup_bpb == $no_bpb) {
 					// GUARD: jangan timpa No/Tgl Invoice/Faktur real yg sudah ada dgn strip "-".
 					// Strip hanya mengisi kalau nilai lama masih kosong (lihat bpb_docinfo_guard.php).
 					bpbnew_apply_docinfo($conn2, $no_bpb, $ir_number, $inv_no, $inv_tgl_sql, $no_faktur, $fak_tgl_sql);
+					$docinfo_done = true;
 					// Akumulasi nilai BPB tambahan (dpp+ppn) ke KOLOM TERPISAH di IR:
 					// amount_add_pv (PLUS). total_amount (invoice asli) TIDAK diubah.
 					// Grand total IR = total_amount + amount_add_pv.
@@ -868,6 +874,34 @@ if ($dup_kbon != null && $dup_bpb == $no_bpb) {
 	if($execute){
 
 		$squery = mysqli_query($conn2,"update bpb_new set is_invoiced = '$status_invoice' where no_bpb= '$no_bpb'");
+
+		// bpb_new: No/Tgl Faktur (+ No/Tgl Invoice header) utk BPB REGULER.
+		// Sebelumnya bpbnew_apply_docinfo() HANYA dipanggil di cabang "BPB tambahan"
+		// ($fid > 0 di atas), sehingga No/Tgl Faktur yang diketik saat CREATE PV tidak
+		// pernah turun ke bpb_new kalau BPB-nya tidak lewat IR. Celah ini lama tak
+		// terlihat karena umumnya faktur sudah lebih dulu diisi di tahap IR.
+		// Jalur EDIT (insertkbon_bulk_edit.php) sudah memanggilnya utk SETIAP BPB;
+		// blok ini menyamakan CREATE dengan EDIT.
+		//
+		// SCOPE: $supp_inv_h/$tgl_inv_h di-set di LUAR fungsi pv_reg_save_bpb(), jadi
+		// TIDAK terlihat dari dalam sini. Harus dibaca ulang dari $_POST - jangan
+		// mengandalkan variabel luar (pernah jadi sumber bug "supplier tidak tersimpan").
+		//
+		// Penimpaan tetap lewat guard: nilai ASLI menimpa, tapi strip "-"/kosong tidak
+		// boleh menghapus No/Tgl Invoice/Faktur real yang sudah ada (bpb_docinfo_guard.php).
+		if (!$docinfo_done) {
+		$supp_inv_pv = trim((string) ($_POST['supp_inv_h'] ?? ''));
+		$tgl_inv_pv  = trim((string) ($_POST['tgl_inv_h'] ?? ''));
+		$inv_tgl_pv_sql = 'NULL';
+		if ($supp_inv_pv !== '' && $supp_inv_pv !== '-' && $tgl_inv_pv !== '') {
+			$ts_inv_pv = strtotime($tgl_inv_pv);
+			if ($ts_inv_pv) {
+				$inv_tgl_pv_sql = "'" . mysqli_real_escape_string($conn2, date('Y-m-d', $ts_inv_pv)) . "'";
+			}
+		}
+		$dok_bpb_pv = ($ir_number !== '' && $ir_number !== '-') ? $ir_number : $kode;
+		bpbnew_apply_docinfo($conn2, $no_bpb, $dok_bpb_pv, $supp_inv_pv, $inv_tgl_pv_sql, $no_faktur, $tfp_sql);
+		}
 		$squerysss = mysqli_query($conn2,"delete from kontrabon where no_bpb = '' and no_po = '' ");
 		$sql2 = mysqli_query($conn2,"select no_po from list_payment_cbd where no_po = '$no_po'");
 		$row = mysqli_fetch_array($sql2);
