@@ -1,0 +1,17 @@
+03:37:22  MULAI backfill supplier
+03:37:22  [1] Bangun tabel pemetaan
+03:37:23    kontrabon_h (PV)                               11609 baris (0.3s)
+03:37:23    b_bankout_h (Bank Out / PV / Payment)          19517 baris (0s)
+03:37:23    memo_h (MEMO-EXIM)                             5824 baris (0s)
+03:37:27    bpb.bpbno_int (AP - BPB)                       179970 baris (4.1s)
+03:37:27    tbl_bankin_arcollection (Bank In)              2959 baris (0s)
+03:37:27    c_petty_cashout_h (Petty Cash Out)             14564 baris (0s)
+03:37:30    bppb.bppbno_int (AP - BPB RETURN)              162458 baris (3.4s)
+03:37:30    bpb_new (sisa BPB)                             17 baris (0.2s)
+03:37:30    -> pemetaan siap: 396,918 nomor dokumen
+03:37:30  [2] Terapkan ke tabel jurnal
+03:37:39    tbl_list_journal                               400200 baris (8.4s)
+03:37:39    -> tbl_list_journal: terisi 400,225 dari 631,877 baris (63.3%)
+03:40:22    tbl_list_journal_cancel                        GAGAL: MySQL server has gone away
+03:40:22    -> tbl_list_journal_cancel: terisi 0 dari 0 baris (0.0%)
+03:40:22  SELESAI
