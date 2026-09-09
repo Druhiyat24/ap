@@ -1968,6 +1968,11 @@ if($id == '78'){
       <span class="menu-collapsed">Prepaid Tax</span>
       </a>';
   }
+    // PPN Masukan (report baru). TODO(role): tambahkan gating menurole sebelum produksi.
+    // echo'<a href="AP/ppn_masukan_report.php" class="dropdown-item bg-dark text-white">
+    // <span class="fa fa-fax fa-fw"></span>
+    // <span class="menu-collapsed">PPN Masukan</span>
+    // </a>';
     echo'</ul>
     </li>';
     if(strpos($id, '53') !== false){ // SEMENTARA tampil lagi utk pembanding (tampilan lama)
@@ -1989,20 +1994,20 @@ if($id == '78'){
      </li>';
  }
 
- if($user == 'indro' || $user == 'willy' || $user == 'steven'){ // SEMENTARA tampil lagi utk pembanding (versi server: YTD saja)
-   echo'<li class="dropdown-submenu ">
-   <a class="dropdown-item bg-dark text-white" href="#">
-   <span class="fa fa-balance-scale fa-fw"></span>
-   <span class="menu-collapsed">Financial Statement 2</span>
-   </a>
-   <ul class="dropdown-menu bg-dark text-white" role="menu">
-   <a href="AP/financial_statement_ytd.php" class="dropdown-item bg-dark text-white">
-   <span class="fa fa-calendar fa-fw mr-3"></span>
-   <span class="menu-collapsed">Year To Date</span>
-   </a>
-   </ul>
-   </li>';
-}
+//  if($user == 'indro' || $user == 'willy' || $user == 'steven'){ // SEMENTARA tampil lagi utk pembanding (versi server: YTD saja)
+//    echo'<li class="dropdown-submenu ">
+//    <a class="dropdown-item bg-dark text-white" href="#">
+//    <span class="fa fa-balance-scale fa-fw"></span>
+//    <span class="menu-collapsed">Financial Statement 2</span>
+//    </a>
+//    <ul class="dropdown-menu bg-dark text-white" role="menu">
+//    <a href="AP/financial_statement_ytd.php" class="dropdown-item bg-dark text-white">
+//    <span class="fa fa-calendar fa-fw mr-3"></span>
+//    <span class="menu-collapsed">Year To Date</span>
+//    </a>
+//    </ul>
+//    </li>';
+// }
 
 }
 
