@@ -415,9 +415,9 @@ ob_start();
                             . 'Name Of The Bank : ' . htmlspecialchars($bank['bank_name'] ?? '') . '<br>'
                             . 'Bank Account Currency : ' . htmlspecialchars($bank['bank_currency'] ?? '');
                         ?>
-                        <td style="text-align:left;vertical-align:top;" rowspan="<?php echo $g['rowspan']; ?>"><?php echo strtoupper(htmlspecialchars($g['nama_supp'])); ?></td>
+                        <td style="text-align:left;vertical-align:top;" rowspan="<?php echo $g['rowspan']; ?>"><?php echo htmlspecialchars(strtoupper($g['nama_supp'])); ?></td>
                         <td style="text-align:right;vertical-align:top;" rowspan="<?php echo $g['rowspan']; ?>"><?php echo number_format($g['total'], 2); ?></td>
-                        <td style="text-align:left;vertical-align:top;" rowspan="<?php echo $g['rowspan']; ?>"><?php echo strtoupper(htmlspecialchars($bank['beneficiary_name'])); ?></td>
+                        <td style="text-align:left;vertical-align:top;" rowspan="<?php echo $g['rowspan']; ?>"><?php echo htmlspecialchars(strtoupper($bank['beneficiary_name'])); ?></td>
                         <td style="text-align:left;vertical-align:top;" rowspan="<?php echo $g['rowspan']; ?>"><?php echo htmlspecialchars($bank['bank_currency']); ?></td>
                         <td style="text-align:left;vertical-align:top;" rowspan="<?php echo $g['rowspan']; ?>"><?php echo htmlspecialchars($bank['bank_name']); ?></td>
                         <td style="text-align:left;vertical-align:top;" rowspan="<?php echo $g['rowspan']; ?>"><?php echo htmlspecialchars($bank['bank_account']); ?></td>
