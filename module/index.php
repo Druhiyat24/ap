@@ -1989,20 +1989,20 @@ if($id == '78'){
      </li>';
  }
 
- if($user == 'indro' || $user == 'willy' || $user == 'steven'){ // SEMENTARA tampil lagi utk pembanding (versi server: YTD saja)
-   echo'<li class="dropdown-submenu ">
-   <a class="dropdown-item bg-dark text-white" href="#">
-   <span class="fa fa-balance-scale fa-fw"></span>
-   <span class="menu-collapsed">Financial Statement 2</span>
-   </a>
-   <ul class="dropdown-menu bg-dark text-white" role="menu">
-   <a href="AP/financial_statement_ytd.php" class="dropdown-item bg-dark text-white">
-   <span class="fa fa-calendar fa-fw mr-3"></span>
-   <span class="menu-collapsed">Year To Date</span>
-   </a>
-   </ul>
-   </li>';
-}
+//  if($user == 'indro' || $user == 'willy' || $user == 'steven'){ // SEMENTARA tampil lagi utk pembanding (versi server: YTD saja)
+//    echo'<li class="dropdown-submenu ">
+//    <a class="dropdown-item bg-dark text-white" href="#">
+//    <span class="fa fa-balance-scale fa-fw"></span>
+//    <span class="menu-collapsed">Financial Statement 2</span>
+//    </a>
+//    <ul class="dropdown-menu bg-dark text-white" role="menu">
+//    <a href="AP/financial_statement_ytd.php" class="dropdown-item bg-dark text-white">
+//    <span class="fa fa-calendar fa-fw mr-3"></span>
+//    <span class="menu-collapsed">Year To Date</span>
+//    </a>
+//    </ul>
+//    </li>';
+// }
 
 }
 
@@ -2015,7 +2015,7 @@ $has_fs_menu = ($q_fsmenu && ($rw_fs = mysqli_fetch_assoc($q_fsmenu)) && (int)$r
 if($has_fs_menu){
  echo'<a href="AP/financial_statement.php" class="dropdown-item bg-dark text-white">
  <span class="fa fa-balance-scale fa-fw"></span>
- <span class="menu-collapsed">Financial Statement (New)</span>
+ <span class="menu-collapsed">Financial Statement</span>
  </a>';
 }
 
