@@ -1969,10 +1969,10 @@ if($id == '78'){
       </a>';
   }
     // PPN Masukan (report baru). TODO(role): tambahkan gating menurole sebelum produksi.
-    // echo'<a href="AP/ppn_masukan_report.php" class="dropdown-item bg-dark text-white">
-    // <span class="fa fa-fax fa-fw"></span>
-    // <span class="menu-collapsed">PPN Masukan</span>
-    // </a>';
+    echo'<a href="AP/ppn_masukan_report.php" class="dropdown-item bg-dark text-white">
+    <span class="fa fa-fax fa-fw"></span>
+    <span class="menu-collapsed">PPN Masukan</span>
+    </a>';
     echo'</ul>
     </li>';
     if(strpos($id, '53') !== false){ // SEMENTARA tampil lagi utk pembanding (tampilan lama)

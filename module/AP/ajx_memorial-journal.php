@@ -25,11 +25,15 @@ if ($start_date !== '' && $end_date !== '') {
 
 $where = empty($conditions) ? '' : ('WHERE ' . implode(' AND ', $conditions));
 
+// LEFT JOIN ke tbl_ppn_masukan_upload (subquery DISTINCT no_mj) -> MAX(p.no_mj)
+// dipakai sbg penanda "jurnal ini asalnya dari tab PPN Masukan". Dipakai di
+// bawah utk memunculkan tombol Export (data mentah/uploadan) di kolom Action.
 $sql = mysqli_query($conn2, "select a.no_mj, a.mj_date, a.id_cmj, b.nama_cmj, a.curr, sum(a.debit) debit, sum(a.credit) credit, a.keterangan, a.status,
-        MIN(c.status_closing) status_closing
+        MIN(c.status_closing) status_closing, MAX(p.no_mj) ppn_flag
     from tbl_memorial_journal a
     left join master_category_mj b on b.id_cmj = a.id_cmj
     left join tbl_closing_periode c on a.mj_date BETWEEN c.tgl_awal AND c.tgl_akhir
+    left join (select distinct no_mj from tbl_ppn_masukan_upload where no_mj is not null and no_mj <> '') p on p.no_mj = a.no_mj
     $where
     group by a.no_mj
     order by a.mj_date desc, a.no_mj desc");
@@ -47,6 +51,16 @@ while ($row = mysqli_fetch_assoc($sql)) {
     $noMj = $row['no_mj'];
     $rowStatus = $row['status'];
 
+    // Khusus jurnal yang asalnya dari tab PPN Masukan (ada baris di
+    // tbl_ppn_masukan_upload dgn no_mj ini) -> tombol Export data mentah/uploadan.
+    // Sengaja SELALU ditampilkan (termasuk saat period locked / sudah Cancel) -
+    // ini cuma menampilkan ulang file yang dulu diupload, read-only, tidak
+    // mengubah status jurnal apa pun.
+    $exportBtn = '';
+    if (!empty($row['ppn_flag'])) {
+        $exportBtn = '<a href="memorial_journal/ekspor_ppn_masukan_by_gm.php?no_mj=' . base64_encode($noMj) . '" target="_blank" class="btn btn-sm btn-outline-success" title="Export raw uploaded invoice data (Excel)"><i class="fa fa-file-excel-o"></i> Export</a>';
+    }
+
     // Journal di periode yang sudah CLOSING -> tampilkan badge "PERIOD LOCKED"
     // (tombol Post/Edit/Cancel disembunyikan), konsisten dengan halaman Edit Journal.
     $isClosed = ($row['status_closing'] === 'Closed');
@@ -55,6 +69,7 @@ while ($row = mysqli_fetch_assoc($sql)) {
         $action = '<div style="display:flex; flex-direction:column; align-items:center; gap:2px;">'
             . '<span class="badge badge-danger" style="font-size:11px; padding:5px 8px;"><i class="fa fa-lock"></i> PERIOD LOCKED</span>'
             . '<small style="color:#888;">Open period to edit</small>'
+            . $exportBtn
             . '</div>';
     } else {
         $editBtn   = '<a href="edit-memorial-journal.php?no_mj=' . base64_encode($noMj) . '" class="btn btn-sm btn-outline-warning" title="Edit"><i class="fa fa-edit"></i> Edit</a>';
@@ -74,6 +89,7 @@ while ($row = mysqli_fetch_assoc($sql)) {
         } elseif ($rowStatus == 'Cancel' && $fin == '1') {
             $action .= '<span class="badge text-bg-danger">Canceled</span>';
         }
+        $action .= $exportBtn;
         $action .= '</div>';
     }
 

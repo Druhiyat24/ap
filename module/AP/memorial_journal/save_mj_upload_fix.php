@@ -64,6 +64,12 @@ try {
         /* ================= AMBIL HEADER ================= */
 
         $mj_date = date('Y-m-d', strtotime($header['mj_date'] ?? $rows[0]['mj_date']));
+
+        // CLOSING PERIODE — dicek DI SERVER, bukan cuma di datepicker. Jurnal tidak
+        // boleh masuk ke periode yang bukunya sudah ditutup.
+        require_once __DIR__ . '/../closing_periode_guard.php';
+        $errClose = closing_error($conn2, $mj_date);
+        if ($errClose !== '') { throw new Exception($errClose); }
         $description = $header['keterangan'] ?? $rows[0]['keterangan'];
         $fil_sb1 = $header['status'] ?? ($rows[0]['status'] ?? 'N');
 
@@ -137,6 +143,11 @@ try {
             $cc_i = $r['no_costcenter'];
             $reff_i = $r['no_reff'];
             $reffdate_i = $r['reff_date'];
+            // Tanggal Reference boleh kosong. Kalau ditempel sebagai '' MySQL
+            // menyimpannya 0000-00-00; yang benar NULL (kolomnya nullable).
+            $reffdate_sql = (!empty($reffdate_i) && $reffdate_i !== '0000-00-00')
+                ? "'" . mysqli_real_escape_string($conn2, $reffdate_i) . "'"
+                : 'NULL';
             $buyer_i = $r['buyer'];
             $ws_i = $r['no_ws'];
             $curr_i = $r['curr'];
@@ -153,6 +164,17 @@ try {
             }
             $ket_i = $r['keterangan'];
             $pc_i = $r['kode_pc'];
+
+            // Kolom baru dari template upload. Nilai sudah lolos escape saat masuk
+            // staging (proses_upload.php), tapi di-escape lagi di sini karena baris
+            // ini bisa juga berasal dari sumber lain.
+            $faktur_i   = mysqli_real_escape_string($conn2, (string) ($r['faktur_pajak'] ?? ''));
+            $supplier_i = mysqli_real_escape_string($conn2, (string) ($r['supplier'] ?? ''));
+            // Tanggal faktur kosong harus jadi NULL, bukan '0000-00-00'/'1970-01-01'.
+            $tglfak_raw = $r['tgl_faktur_pajak'] ?? null;
+            $tglfak_sql = (!empty($tglfak_raw) && $tglfak_raw !== '0000-00-00')
+                ? "'" . mysqli_real_escape_string($conn2, $tglfak_raw) . "'"
+                : 'NULL';
             $mj_type = $r['id_cmj'];
             $nama_cmj = $r['nama_cmj'];
             $nama_cc = $r['cc_name'];
@@ -167,16 +189,22 @@ try {
             no_mj, mj_date, id_cmj, no_coa, no_costcenter, no_reff, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, keterangan, status, create_by, create_date, profit_center
             )
             VALUES
-            ('$no_mj', '$mj_date', '$mj_type', '$coa_i', '$cc_i', '$reff_i', '$reffdate_i', '$buyer_i', '$ws_i', '$curr_i', '$rate_det', '$debit_i', '$credit_i', '$debit_idr', '$credit_idr', '$ket_i', '$status', '$user', '$create_date', '$pc_i')
+            ('$no_mj', '$mj_date', '$mj_type', '$coa_i', '$cc_i', '$reff_i', $reffdate_sql, '$buyer_i', '$ws_i', '$curr_i', '$rate_det', '$debit_i', '$credit_i', '$debit_idr', '$credit_idr', '$ket_i', '$status', '$user', '$create_date', '$pc_i')
             ");
+            // CATATAN: No Faktur / Tgl Faktur / Supplier SENGAJA TIDAK disimpan di
+            // tbl_memorial_journal - hanya di tbl_list_journal (keputusan user).
+            // Konsekuensinya: form edit MJ membaca detail dari tbl_memorial_journal,
+            // lalu menulis ulang tbl_list_journal dari isi form itu; sehingga MJ yang
+            // PERNAH DIEDIT akan kehilangan ketiga nilai ini di tbl_list_journal.
+            // Data dari upload yang tidak pernah diedit tetap utuh.
 
             mysqli_query($conn2, "
             INSERT INTO tbl_list_journal
             (
-            no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center
+            no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, supplier, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center
             )
             VALUES
-            ('$no_mj', '$mj_date', '$nama_cmj', '$coa_i', '$nama_coa', '$cc_i', '$nama_cc', '$reff_i', '$reffdate_i', '$buyer_i', '$ws_i', '$curr_i', '$rate_det', '$debit_i', '$credit_i', '$debit_idr', '$credit_idr', '$status', '$ket_i', '$user', '$create_date', '', '', '', '', '$pc_i')
+            ('$no_mj', '$mj_date', '$nama_cmj', '$coa_i', '$nama_coa', '$cc_i', '$nama_cc', '$reff_i', $reffdate_sql, '$faktur_i', $tglfak_sql, '$supplier_i', '$buyer_i', '$ws_i', '$curr_i', '$rate_det', '$debit_i', '$credit_i', '$debit_idr', '$credit_idr', '$status', '$ket_i', '$user', '$create_date', '', '', '', '', '$pc_i')
             ");
 
             if ($fil_sb1 == 'YES') {
@@ -187,7 +215,7 @@ try {
                 no_mj, mj_date, id_cmj, no_coa, no_costcenter, no_reff, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, keterangan, status, create_by, create_date, asal_data, profit_center
                 )
                 VALUES
-                ('$no_mj_sb', '$mj_date', '$mj_type', '$coa_i', '$cc_i', '$reff_i', '$reffdate_i', '$buyer_i', '$ws_i', '$curr_i', '$rate_det', '$debit_i', '$credit_i', '$debit_idr', '$credit_idr', '$ket_i', '$status', '$user', '$create_date', 'Upload SB2', '$pc_i')
+                ('$no_mj_sb', '$mj_date', '$mj_type', '$coa_i', '$cc_i', '$reff_i', $reffdate_sql, '$buyer_i', '$ws_i', '$curr_i', '$rate_det', '$debit_i', '$credit_i', '$debit_idr', '$credit_idr', '$ket_i', '$status', '$user', '$create_date', 'Upload SB2', '$pc_i')
                 ");
 
                 mysqli_query($conn2, "
@@ -196,7 +224,7 @@ try {
                 no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center
                 )
                 VALUES
-                ('$no_mj_sb', '$mj_date', '$nama_cmj', '$coa_i', '$nama_coa', '$cc_i', '$nama_cc', '$reff_i', '$reffdate_i', '$buyer_i', '$ws_i', '$curr_i', '$rate_det', '$debit_i', '$credit_i', '$debit_idr', '$credit_idr', '$status', '$ket_i', '$user', '$create_date', '', '', '', '', '$pc_i')
+                ('$no_mj_sb', '$mj_date', '$nama_cmj', '$coa_i', '$nama_coa', '$cc_i', '$nama_cc', '$reff_i', $reffdate_sql, '$buyer_i', '$ws_i', '$curr_i', '$rate_det', '$debit_i', '$credit_i', '$debit_idr', '$credit_idr', '$status', '$ket_i', '$user', '$create_date', '', '', '', '', '$pc_i')
                 ");
             }
         }

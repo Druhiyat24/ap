@@ -1,5 +1,13 @@
 <?php include '../header.php' ?>
 
+<!-- Skin kontrol form (dropdown & tanggal) — potongan dari app-skin.css.
+     Sengaja HANYA berkas ini, bukan app-skin.css utuh: skin penuh juga
+     mengubah kartu/tabel/tombol/DataTables yang dipakai tab-tab di halaman ini. -->
+<!-- ?v=filemtime: browser meng-cache CSS cukup agresif. Tanpa penanda versi,
+     perubahan skin tidak kelihatan sampai user hard-refresh (Ctrl+F5). Angka ini
+     berubah sendiri hanya ketika berkasnya benar-benar diubah. -->
+<link rel="stylesheet" href="../css/app-skin-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-skin-form.css'); ?>">
+
 <style type="text/css">
   label {
     font-size: 14px;
@@ -69,17 +77,9 @@
   }
 
 
-  .select2-container .select2-selection--single {
-    height: calc(2.25rem + 2px);
-  }
-
-  .select2-container--default .select2-selection--single .select2-selection__rendered {
-    line-height: 2.25rem;
-  }
-
-  .select2-container--default .select2-selection--single .select2-selection__arrow {
-    height: calc(2.25rem + 2px);
-  }
+  /* Tinggi/line-height select2 dulu diatur di sini. Sekarang seluruh tampilan
+     select2 & selectpicker & input tanggal diambil dari app-skin-form.css
+     (di-link di atas) supaya seragam dengan skin. Jangan ditimpa di sini. */
 
   .table-gradient th {
     background: #1E3A8A;
@@ -171,6 +171,7 @@
           <button class="tablinks active" onclick="openTab(event, 'mj_input')">Manual Journal Entry</button>
           <button class="tablinks" onclick="openTab(event, 'mj_hris')">Journal From HRIS</button>
           <button class="tablinks" onclick="openTab(event, 'mj_upload')">Upload Journal</button>
+          <button class="tablinks" onclick="openTab(event, 'mj_ppn')">PPN Masukan</button>
         </div>
 
 
@@ -184,6 +185,10 @@
 
         <div id="mj_upload" class="tabcontent">
           <?php include 'memorial_journal/mj_upload.php'; ?>
+        </div>
+
+        <div id="mj_ppn" class="tabcontent">
+          <?php include 'memorial_journal/mj_ppn_masukan.php'; ?>
         </div>
 
       </div>
@@ -251,12 +256,26 @@
       $('#collapse-icon').toggleClass('fa-angle-double-left fa-angle-double-right');
     }
   </script>
+  <?php
+  // Batas tanggal GM dari CLOSING PERIODE (dipakai semua tab di halaman ini).
+  // Hanya untuk tanggal GM/jurnal; Reff Date sengaja TIDAK dibatasi karena itu
+  // tanggal dokumen sumber yang memang boleh lebih tua.
+  require_once __DIR__ . '/closing_periode_guard.php';
+  $cmjMinDate = closing_min_date($conn2);
+  $cmjMinDp   = $cmjMinDate ? date('d-m-Y', strtotime($cmjMinDate)) : '';
+  ?>
   <script>
     $(document).ready(function() {
       $('.tanggal').datepicker({
           format: "dd-mm-yyyy",
           autoclose: true
         });
+      <?php if ($cmjMinDp) { ?>
+      // Tanggal GM tidak boleh mundur ke periode yang bukunya sudah ditutup.
+      // Ditempel setelah init umum, dan HANYA ke field tanggal GM.
+      $('#mj_date, #mj_date2').datepicker('setStartDate', '<?php echo $cmjMinDp; ?>')
+        .attr('title', 'Closed period: the earliest date allowed is <?php echo date('d M Y', strtotime($cmjMinDate)); ?>');
+      <?php } ?>
       $('#table_tbytd').DataTable({
         scrollX: true,
         scrollCollapse: true,
@@ -286,6 +305,31 @@
       });
 
       $('.selectpicker').selectpicker();
+
+      // FIX: dropdown selectpicker terpotong oleh overflow milik pembungkus
+      // scroll (.table-responsive di tab Manual & HRIS). Bootstrap 4
+      // .table-responsive hanya men-set overflow-x:auto, tapi menurut spesifikasi
+      // CSS, kalau salah satu sumbu bukan 'visible' maka sumbu yang lain
+      // (overflow-y) ikut diperlakukan sebagai 'auto' juga - itulah yang
+      // memotong menu dropdown secara vertikal.
+      //
+      // SENGAJA TIDAK memakai opsi container:'body' milik bootstrap-select -
+      // opsi itu memicu error internal plugin "Cannot read properties of
+      // undefined (reading 'length')" di dalam setPositionData/liHeight/setSize
+      // saat menu dibuka (teruji reproduksi bahkan pada <select> paling polos,
+      // tanpa live-search sekalipun), jadi tidak aman dipasang.
+      //
+      // Sebagai gantinya: lepas overflow pembungkus HANYA SELAGI dropdown
+      // terbuka, lewat event bawaan Bootstrap show.bs.dropdown/hide.bs.dropdown
+      // (bootstrap-select memakai mesin dropdown Bootstrap asli, jadi event ini
+      // ikut terpicu). Didelegasikan ke document supaya berlaku juga untuk
+      // baris baru dari addRow()/InsertRow() tanpa perlu mengikat ulang.
+      $(document).on('show.bs.dropdown', '.table-responsive', function () {
+          $(this).css('overflow', 'visible');
+      });
+      $(document).on('hide.bs.dropdown', '.table-responsive', function () {
+          $(this).css({ 'overflow-x': 'auto', 'overflow-y': '' });
+      });
     });
   </script>
 
@@ -338,7 +382,7 @@
     <input type="checkbox" id="select" name="select[]" value="" checked disabled>
     </td>
     <td>
-    <select class="form-control selectpicker no_coa" name="nomor_coa[]" id="nomor_coa" data-live-search="true" data-width="200px">
+    <select class="form-control selectpicker no_coa" name="nomor_coa[]" id="nomor_coa" data-live-search="true" data-width="200px" data-size="5">
     <option value="-">-</option>
     <?php 
     $sql = mysqli_query($conn1, "SELECT no_coa AS id_coa, CONCAT(no_coa, ' ', nama_coa) AS coa FROM mastercoa_v2"); 
@@ -370,7 +414,13 @@ foreach ($sql3 as $fc) : ?>
 <input type="text" class="form-control tanggal" style="font-size: 12px;width: 150px;" name="reffdate[]" placeholder="" autocomplete="off">
 </td>
 <td>
-<select class="form-control selectpicker" name="buyer[]" id="buyer" data-live-search="true" data-width="200px">
+<input type="text" class="form-control" style="font-size: 12px;width: 150px;" name="faktur[]" placeholder="No Faktur" autocomplete="off">
+</td>
+<td>
+<input type="text" class="form-control tanggal" style="font-size: 12px;width: 150px;" name="fakturdate[]" placeholder="" autocomplete="off">
+</td>
+<td>
+<select class="form-control selectpicker" name="buyer[]" id="buyer" data-live-search="true" data-width="200px" data-size="5">
 <option value="-">-</option>
 <?php 
 $sql4 = mysqli_query($conn1, "SELECT DISTINCT(Supplier) AS buyer FROM mastersupplier WHERE tipe_sup = 'C' ORDER BY Supplier ASC"); 
@@ -381,7 +431,7 @@ foreach ($sql4 as $ms) :
 </select>
 </td>
 <td>
-<select class="form-control selectpicker" name="no_ws[]" id="no_ws" data-live-search="true" data-width="200px">
+<select class="form-control selectpicker" name="no_ws[]" id="no_ws" data-live-search="true" data-width="200px" data-size="5">
 <option value="-">-</option>
 <?php 
 $sql3 = mysqli_query($conn1, "SELECT a.kpno AS no_ws, b.Supplier FROM act_costing a 
@@ -394,7 +444,7 @@ foreach ($sql3 as $ws) :
 </select>
 </td>
 <td>
-<select class="form-control selectpicker" name="currenc[]" id="currenc" data-live-search="true">
+<select class="form-control selectpicker" name="currenc[]" id="currenc" data-live-search="true" data-size="5">
 <option value="IDR">IDR</option>
 <option value="USD">USD</option>
 </select>
@@ -528,7 +578,7 @@ foreach ($sql3 as $ws) :
     <input type="checkbox" id="select" name="select[]" value="" checked disabled>
     </td>
     <td>
-    <select class="form-control selectpicker no_coa" name="nomor_coa[]" id="nomor_coa" data-live-search="true" data-width="200px">
+    <select class="form-control selectpicker no_coa" name="nomor_coa[]" id="nomor_coa" data-live-search="true" data-width="200px" data-size="5">
     <option value="-">-</option>
     <?php 
     $sql = mysqli_query($conn1, "SELECT no_coa AS id_coa, CONCAT(no_coa, ' ', nama_coa) AS coa FROM mastercoa_v2"); 
@@ -560,7 +610,13 @@ foreach ($sql3 as $fc) : ?>
 <input type="text" class="form-control tanggal" style="font-size: 12px;width: 150px;" name="reffdate[]" placeholder="" autocomplete="off">
 </td>
 <td>
-<select class="form-control selectpicker" name="buyer[]" id="buyer" data-live-search="true" data-width="200px">
+<input type="text" class="form-control" style="font-size: 12px;width: 150px;" name="faktur[]" placeholder="No Faktur" autocomplete="off">
+</td>
+<td>
+<input type="text" class="form-control tanggal" style="font-size: 12px;width: 150px;" name="fakturdate[]" placeholder="" autocomplete="off">
+</td>
+<td>
+<select class="form-control selectpicker" name="buyer[]" id="buyer" data-live-search="true" data-width="200px" data-size="5">
 <option value="-">-</option>
 <?php 
 $sql4 = mysqli_query($conn1, "SELECT DISTINCT(Supplier) AS buyer FROM mastersupplier WHERE tipe_sup = 'C' ORDER BY Supplier ASC"); 
@@ -571,7 +627,7 @@ foreach ($sql4 as $ms) :
 </select>
 </td>
 <td>
-<select class="form-control selectpicker" name="no_ws[]" id="no_ws" data-live-search="true" data-width="200px">
+<select class="form-control selectpicker" name="no_ws[]" id="no_ws" data-live-search="true" data-width="200px" data-size="5">
 <option value="-">-</option>
 <?php 
 $sql3 = mysqli_query($conn1, "SELECT a.kpno AS no_ws, b.Supplier FROM act_costing a 
@@ -584,7 +640,7 @@ foreach ($sql3 as $ws) :
 </select>
 </td>
 <td>
-<select class="form-control selectpicker" name="currenc[]" id="currenc" data-live-search="true">
+<select class="form-control selectpicker" name="currenc[]" id="currenc" data-live-search="true" data-size="5">
 <option value="IDR">IDR</option>
 <option value="USD">USD</option>
 </select>
@@ -1784,21 +1840,22 @@ $('#fileUpload').on('change', function(){
     }
 });
 
-// drag over
+// Umpan balik drag lewat KELAS, bukan .css() inline. Sebelumnya dragleave
+// mengembalikan latar ke '#f8f9fa' yang dipatok di JS, sehingga menimpa skin
+// .mju-upload-bar dan bar-nya berubah warna setelah sekali di-drag.
 $('#uploadBox').on('dragover', function(e){
     e.preventDefault();
-    $(this).css('background','#e9f3ff');
+    $(this).addClass('is-drag');
 });
 
-// drag leave
 $('#uploadBox').on('dragleave', function(e){
     e.preventDefault();
-    $(this).css('background','#f8f9fa');
+    $(this).removeClass('is-drag');
 });
 
-// drop file
 $('#uploadBox').on('drop', function(e){
     e.preventDefault();
+    $(this).removeClass('is-drag');
 
     let files = e.originalEvent.dataTransfer.files;
 
@@ -1864,6 +1921,11 @@ $(document).ready(function () {
             { data: 'cc_name' },
             { data: 'no_reff' },
             { data: 'reff_date' },
+            // Kolom baru dari template upload. Ditaruh setelah Reff Date karena
+            // sifatnya sama-sama identitas dokumen sumber, sebelum Buyer.
+            { data: 'faktur_pajak',     defaultContent: '' },
+            { data: 'tgl_faktur_pajak', defaultContent: '' },
+            { data: 'supplier',         defaultContent: '' },
             { data: 'buyer' },
             { data: 'no_ws' },
             { data: 'curr' },
@@ -1875,7 +1937,9 @@ $(document).ready(function () {
 
         columnDefs: [
             {
-                targets: [8, 9],
+                // Debit & Credit bergeser dari 8,9 ke 11,12 setelah 3 kolom baru
+                // (No Faktur / Faktur Date / Supplier) disisipkan di posisi 5-7.
+                targets: [11, 12],
                 className: "text-right",
                 render: function (data) {
                     let val = parseFloat(data || 0);

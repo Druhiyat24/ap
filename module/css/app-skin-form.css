@@ -14,13 +14,31 @@
      5. tombol aksi      (.app-btn)          <- opt-in, dipakai di form manapun
      6. loading overlay  (.app-loading)      <- opt-in, spinner saat memuat data
      7. modal            (.app-modal)        <- opt-in, modal Bootstrap 4 dipercantik
+     8. animasi ringan   (.app-anim)         <- opt-in, muncul-halus hemat GPU
    ============================================================================ */
+
+/* ----------------------------------------------------------------------------
+   Warna aksen bersama. Ganti di SINI kalau mau menyesuaikan seluruh skin:
+   dipakai oleh item dropdown terpilih (bootstrap-select & select2) dan ikon
+   kalender di setiap input tanggal, supaya ketiganya selalu senada.
+   ---------------------------------------------------------------------------- */
+:root{
+  --app-accent:        #17a2b8;   /* teal utama (ikon kalender, teks terpilih) */
+  --app-accent-dark:   #0e7c8f;   /* varian gelap utk teks hover */
+  --app-accent-soft:   #e4f6f9;   /* latar item saat hover */
+  --app-accent-soft-2: #d2eff5;   /* latar item saat TERPILIH */
+  --app-accent-ring:   rgba(23,162,184,.18);
+  /* Tinggi SEMUA kontrol form (dropdown, select2, input tanggal) dikunci di sini
+     supaya sebaris selalu rata. Kalau salah satu terlihat beda tinggi, ubah 1
+     angka ini saja. */
+  --app-ctl-h:         34px;
+}
 
 /* ============================================================================
    5. Tombol aksi (.app-btn) — OPT-IN, tidak menimpa .btn bawaan Bootstrap.
    Cara pakai:  <button class="app-btn app-btn-primary"><i class="fa fa-..."></i> Save</button>
-   Varian: -primary (biru) | -success (hijau) | -warning (kuning) |
-           -danger (merah) | -light (netral, garis tipis)
+   Varian: -primary (biru) | -info (biru muda) | -success (hijau) | -warning (kuning) |
+           -danger (merah) | -dark (navy pekat) | -light (netral) | -ghost (utk header gelap)
    Ukuran : tambahkan .app-btn-sm untuk versi kecil.
    Dipisah dari .btn-act/.btn-round yg sudah ada di app-skin.css (itu utk tombol
    di dalam tabel/list), yang ini untuk tombol aksi form & toolbar.
@@ -53,13 +71,33 @@
 .app-btn-warning:hover{ color:#4a3200; }
 .app-btn-danger{ background:linear-gradient(180deg,#f4635f,#e13c37); color:#fff; }
 .app-btn-danger:hover{ color:#fff; }
+.app-btn-info{ background:linear-gradient(180deg,#4fc3f7,#29b6f6); color:#06384f; }   /* biru muda */
+.app-btn-info:hover{ color:#06384f; }
 .app-btn-dark{ background:linear-gradient(180deg,#3f4756,#232a36); color:#fff; }
 .app-btn-dark:hover{ color:#fff; }
 .app-btn-light{ background:#fff; color:#475569; border-color:#dbe4f3; box-shadow:0 1px 3px rgba(15,23,42,.07); }
 .app-btn-light:hover{ background:#f5f8ff; color:#1e3a8a; border-color:#bfd3f5; }
+/* -ghost: utk tombol DI ATAS header gelap (card-header gradient). Kaca transparan
+   supaya menyatu dgn headernya, bukan kotak putih yang menempel. */
+.app-btn-ghost{
+  background:rgba(255,255,255,.14); color:#fff; border-color:rgba(255,255,255,.38);
+  box-shadow:0 1px 2px rgba(15,23,42,.12);
+}
+.app-btn-ghost:hover{ background:rgba(255,255,255,.26); color:#fff; border-color:rgba(255,255,255,.6); }
+.app-btn-ghost:focus{ box-shadow:0 0 0 3px rgba(255,255,255,.35); }
 
 /* Baris tombol aksi di bawah form */
 .app-actions{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+
+/* -ctl: tombol yang berdiri SEBARIS dgn input/dropdown (mis. Search & Export di
+   samping filter). Tingginya dikunci ke --app-ctl-h supaya sejajar dgn kontrol
+   lain, dan diberi lebar minimum supaya antar tombol terlihat seragam — bukan
+   melar-mengecil mengikuti panjang teksnya. */
+.app-btn-ctl{
+  height:var(--app-ctl-h); min-width:94px;
+  padding-top:0; padding-bottom:0; font-size:12px;
+}
+.app-btn-ctl.app-btn-sm{ height:var(--app-ctl-h); min-width:92px; }
 
 /* ============================================================================
    1. bootstrap-select (.selectpicker) — tombol & dropdown filter.
@@ -69,6 +107,7 @@
 .bootstrap-select > .dropdown-toggle{
   border:1px solid #dbe4f3 !important; border-radius:8px !important; background:#fff !important;
   color:#334155 !important; padding:8px 12px; font-size:13px; box-shadow:none !important; outline:none;
+  height:var(--app-ctl-h);
 }
 .bootstrap-select > .dropdown-toggle:focus,
 .bootstrap-select > .dropdown-toggle:active,
@@ -99,12 +138,14 @@
   white-space:normal; word-break:break-word;
 }
 .bootstrap-select .dropdown-item:hover,
-.bootstrap-select .dropdown-item:focus{ background:#eef4ff; color:#1e3a8a; }
+.bootstrap-select .dropdown-item:focus{ background:var(--app-accent-soft); color:var(--app-accent-dark); }
 .bootstrap-select .dropdown-item.active,
 .bootstrap-select .dropdown-item.selected,
-.bootstrap-select li.selected .dropdown-item{ background:#1E3A8A !important; color:#fff !important; }
+.bootstrap-select li.selected .dropdown-item{
+  background:var(--app-accent-soft-2) !important; color:var(--app-accent-dark) !important; font-weight:600;
+}
 .bootstrap-select .dropdown-item.active .check-mark,
-.bootstrap-select .dropdown-item.selected .check-mark{ color:#fff; }
+.bootstrap-select .dropdown-item.selected .check-mark{ color:var(--app-accent); }
 /* Scrollbar tipis di list */
 .bootstrap-select .dropdown-menu .inner::-webkit-scrollbar{ width:8px; }
 .bootstrap-select .dropdown-menu .inner::-webkit-scrollbar-thumb{ background:#cbd5e1; border-radius:8px; }
@@ -116,7 +157,8 @@
    ============================================================================ */
 .select2-container--default .select2-selection--single{
   border:1px solid #dbe4f3; border-radius:8px; background:#fff;
-  height:auto; padding:8px 12px; outline:none;
+  height:var(--app-ctl-h); padding:0 12px; outline:none;
+  display:flex; align-items:center;
 }
 .select2-container--default.select2-container--focus .select2-selection--single,
 .select2-container--default.select2-container--open .select2-selection--single{
@@ -146,10 +188,19 @@
   border-radius:7px; padding:8px 12px; font-size:13px; color:#334155;
   white-space:normal; word-break:break-word;
 }
-.select2-container--default .select2-results__option--highlighted[aria-selected]{ background:#eef4ff; color:#1e3a8a; }
-.select2-container--default .select2-results__option[aria-selected=true]{ background:#1E3A8A; color:#fff; }
+.select2-container--default .select2-results__option--highlighted[aria-selected]{ background:var(--app-accent-soft); color:var(--app-accent-dark); }
+.select2-container--default .select2-results__option[aria-selected=true]{
+  background:var(--app-accent-soft-2); color:var(--app-accent-dark); font-weight:600;
+}
 .select2-container--default .select2-results > .select2-results__options::-webkit-scrollbar{ width:8px; }
 .select2-container--default .select2-results > .select2-results__options::-webkit-scrollbar-thumb{ background:#cbd5e1; border-radius:8px; }
+
+/* ----------------------------------------------------------------------------
+   Label field (.app-flabel) — DIPINDAH dari app-skin.css ke sini supaya halaman
+   yang cuma memuat berkas form ini (mis. create_memorial_journal.php) ikut dapat.
+   app-skin.css meng-@import berkas ini, jadi halaman lama tidak berubah.
+   ---------------------------------------------------------------------------- */
+.app-flabel{ display:block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#64748b; margin-bottom:5px; }
 
 /* ============================================================================
    3. Input tanggal (.tanggal) — disamakan dgn tombol dropdown di atas supaya
@@ -157,8 +208,27 @@
    ============================================================================ */
 input.tanggal.form-control,
 input.tanggal{
-  border:1px solid #dbe4f3; border-radius:8px; background:#fff;
-  color:#334155; font-size:13px; padding:8px 12px; height:auto; box-shadow:none;
+  border:1px solid #dbe4f3; border-radius:8px; background-color:#fff;
+  color:#334155; font-size:13px; padding:0 34px 0 12px; height:var(--app-ctl-h); box-shadow:none;
+  cursor:pointer;
+  /* Ikon kalender ditempel lewat CSS (bukan markup), jadi SEMUA input tanggal
+     yang ber-class .tanggal langsung dapat ikon ini tanpa mengubah HTML.
+     Warnanya disamakan dgn --app-accent; kalau variabel itu diganti, ganti juga
+     nilai fill='%2317a2b8' di bawah (data URI tidak bisa membaca var()). */
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath fill='%2317a2b8' d='M0 464c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V192H0v272zm320-196c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zM192 268c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12v-40zM64 268c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H76c-6.6 0-12-5.4-12-12v-40zm0 128c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H76c-6.6 0-12-5.4-12-12v-40zM400 64h-48V12c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v52H160V12c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v52H48C21.5 64 0 85.5 0 112v48h448v-48c0-26.5-21.5-48-48-48z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 11px center;
+  background-size:14px 14px;
+}
+input.tanggal:disabled,
+input.tanggal[readonly]{ background-color:#f8fafc; cursor:not-allowed; opacity:.75; }
+
+/* .app-ctl-static — input TEKS BIASA (bukan .tanggal/.selectpicker) yang perlu
+   tinggi & gaya SAMA dgn kontrol lain di baris yang sama (mis. field readonly
+   "No Request" yg dulu ukurannya beda sendiri krn cuma .form-control polos). */
+.app-ctl-static{
+  height:var(--app-ctl-h); padding:0 12px; border:1px solid #dbe4f3; border-radius:8px;
+  font-size:13px; line-height:calc(var(--app-ctl-h) - 2px); box-shadow:none;
 }
 input.tanggal.form-control:focus,
 input.tanggal:focus{
@@ -256,8 +326,28 @@ input.tanggal:focus{
 }
 @keyframes appLoadPop{ from{ opacity:0; transform:translateY(6px) scale(.97); } to{ opacity:1; transform:none; } }
 
-/* Spinner cincin ganda (luar searah jarum jam, dalam berlawanan) */
-.app-spinner{ position:relative; width:44px; height:44px; }
+/* Spinner cincin ganda (luar searah jarum jam, dalam berlawanan).
+   Bagian tengahnya bisa diisi wordmark: <div class="app-spinner"><span>NAG</span></div>
+   Sengaja TEKS, bukan berkas logo: di lingkaran ~30px logo raster jadi buram,
+   dan warna merah logo bentrok dgn cincin biru. Teks tetap tajam di ukuran apa pun. */
+.app-spinner{
+  position:relative; width:44px; height:44px;
+  display:flex; align-items:center; justify-content:center;
+}
+.app-spinner > span{
+  /* Wordmark DIAM di tengah — yang berputar hanya cincinnya (::before/::after).
+     animation:none dipasang tegas supaya tidak ikut terbawa aturan animasi lain,
+     dan z-index menaruhnya di atas cincin. */
+  position:relative; z-index:1;
+  animation:none !important; transform:none !important;
+  display:inline-flex; align-items:center; justify-content:center;
+  width:24px; height:24px; border-radius:50%; background:#fff;
+  font-size:9px; font-weight:800; letter-spacing:.2px; line-height:1;
+  white-space:nowrap;   /* tanpa ini "NAG" pecah jadi NA / G di baris kedua */
+  color:#1E3A8A;                    /* senada cincin luar & header kartu */
+  user-select:none;
+}
+.app-loading-sm .app-spinner > span{ width:17px; height:17px; font-size:6.5px; letter-spacing:0; }
 .app-spinner::before,
 .app-spinner::after{ content:''; position:absolute; border-radius:50%; border:3px solid transparent; }
 .app-spinner::before{
@@ -354,10 +444,15 @@ input.tanggal:focus{
   display:block; font-size:10px; font-weight:700; text-transform:uppercase;
   letter-spacing:.5px; color:#94a3b8; margin-bottom:3px;
 }
-.app-modal .app-mod-info span{
+/* HANYA anak langsung: kalau pakai selector "span" biasa, elemen span di DALAM
+   nilai (mis. badge status <span class="kb-badge">) ikut jadi display:block dan
+   melar selebar sel. */
+.app-modal .app-mod-info > div > span{
   display:block; font-size:12.5px; color:#0f172a; font-weight:600;
   word-break:break-word; line-height:1.35;
 }
+/* Badge di dalam panel info tetap sepanjang isinya */
+.app-modal .app-mod-info .kb-badge{ display:inline-flex; width:auto; }
 
 /* Kotak search kecil ber-ikon (header seksi modal / toolbar tabel) */
 .app-search{ position:relative; display:inline-block; }
@@ -402,16 +497,29 @@ input.tanggal:focus{
    tabel, jadi modal (dan halaman di belakangnya) tidak ikut memanjang.
    Header & baris TOTAL dibuat sticky supaya tetap kelihatan saat discroll. */
 .app-modal .app-mod-scroll.h10{ max-height:400px; overflow-y:auto; }
+/* .h6 = kira-kira 6 baris data; sisanya discroll di dalam tabel */
+.app-modal .app-mod-scroll.h6{ max-height:262px; overflow-y:auto; }
 .app-modal table.app-mod-tbl tfoot th{ position:sticky; bottom:0; z-index:1; }
 /* Tabel PAS lebar modal — TIDAK dipaksa min-width, jadi tidak muncul scroll
-   horizontal. Kolom COA diberi jatah lebar tetap supaya namanya tidak terjepit
-   jadi 1 kata per baris; kolom angka & kode tidak boleh patah. */
+   horizontal. */
 .app-modal table.app-mod-tbl{ width:100%; }
-.app-modal table.app-mod-tbl td:first-child,
-.app-modal table.app-mod-tbl th:first-child{ width:22%; }
-.app-modal table.app-mod-tbl td:first-child b{ white-space:nowrap; }
-.app-modal table.app-mod-tbl td:first-child span{ font-size:11.5px; line-height:1.3; }
 .app-modal table.app-mod-tbl .nowrap{ white-space:nowrap; }
+
+/* .fixed-cols — lebar kolom ditetapkan sendiri lewat <th style="width:..">.
+   overflow:hidden WAJIB: dgn table-layout:fixed, isi sel yang tidak muat (apalagi
+   yang nowrap) meluber KELUAR sel dan menabrak kolom sebelahnya. */
+.app-modal table.app-mod-tbl.fixed-cols{ table-layout:fixed; }
+.app-modal table.app-mod-tbl.fixed-cols td,
+.app-modal table.app-mod-tbl.fixed-cols th{ overflow:hidden; text-overflow:ellipsis; }
+
+/* .coa-tbl — KHUSUS tabel detail jurnal (kolom pertama = nomor + nama COA).
+   Dulu aturan lebar ini generik utk semua .app-mod-tbl, akibatnya tabel modal
+   lain (mis. item Request Debit Note) ikut kena: kolom pertamanya dipaksa 22%
+   sehingga kolom lain terjepit. Sekarang dikunci ke tabel yg memang butuh. */
+.app-modal table.app-mod-tbl.coa-tbl td:first-child,
+.app-modal table.app-mod-tbl.coa-tbl th:first-child{ width:22%; }
+.app-modal table.app-mod-tbl.coa-tbl td:first-child b{ white-space:nowrap; }
+.app-modal table.app-mod-tbl.coa-tbl td:first-child span{ font-size:11.5px; line-height:1.3; }
 
 /* Link dokumen yang bisa diklik di dalam tabel report */
 a.ppn-doc{
@@ -420,3 +528,47 @@ a.ppn-doc{
 }
 a.ppn-doc:hover{ color:#0f2f9e; border-bottom-style:solid; text-decoration:none; }
 .ppn-doc-sep{ color:#94a3b8; }
+
+/* ============================================================================
+   8. Animasi ringan (.app-anim) — OPT-IN.
+
+   ATURAN yang dipakai di sini supaya TIDAK membebani browser user:
+     - Hanya menganimasikan `transform` dan `opacity`. Dua properti ini diproses
+       GPU (compositor) tanpa menghitung ulang layout, jadi praktis gratis.
+       Menganimasikan width/height/top/left/box-shadow/filter itu yang berat.
+     - SEKALI JALAN saat elemen muncul, bukan animasi berulang tanpa henti.
+       Animasi infinite membuat compositor terus bekerja; di skin ini hanya
+       dipakai pada overlay loading, yang tampil sebentar lalu hilang.
+     - Durasi pendek (<=280ms). Lebih lama terasa lambat, bukan halus.
+     - JANGAN dipasang per-baris tabel. Di tabel ribuan baris, animasi per baris
+       akan terasa berat. Cukup animasikan KARTU/wadahnya.
+     - Otomatis mati kalau OS/browser minta 'reduce motion'.
+
+   Pakai: <div class="card app-card app-anim">  |  jeda bertahap: .app-anim-2 / -3
+   ============================================================================ */
+@keyframes appFadeUp{ from{ opacity:0; transform:translateY(9px); } to{ opacity:1; transform:none; } }
+@keyframes appFadeIn{ from{ opacity:0; } to{ opacity:1; } }
+
+/* PENTING pakai 'backwards', BUKAN 'both': fill 'both' membuat elemen tetap
+   dianggap sedang beranimasi sehingga terus membentuk stacking context — akibatnya
+   dropdown di kartu atas tertutup oleh kartu di bawahnya. Dgn 'backwards',
+   efeknya hilang begitu animasi selesai dan tampilannya sama saja. */
+.app-anim  { animation:appFadeUp .28s cubic-bezier(.22,.7,.3,1) backwards; }
+.app-anim-2{ animation-delay:.07s; }
+.app-anim-3{ animation-delay:.14s; }
+.app-anim-fade{ animation:appFadeIn .25s ease-out both; }
+
+/* Baris tabel: transisi warna saja (tidak ada layout reflow) */
+table.app-dt tbody tr td{ transition:background-color .12s ease; }
+
+@media (prefers-reduced-motion: reduce){
+  .app-anim, .app-anim-2, .app-anim-3, .app-anim-fade{ animation:none !important; }
+  .app-btn{ transition:none !important; }
+  .app-btn:hover{ transform:none !important; }
+}
+
+/* Saat ada kontrol di dalam kartu yang sedang aktif (dropdown terbuka, kotak
+   search-nya fokus), kartu itu dinaikkan supaya popup-nya tidak tertutup kartu
+   berikutnya. Tanpa JS, dan tidak berbiaya saat idle. */
+.app-card{ position:relative; }
+.app-card:focus-within{ z-index:5; }

@@ -1,5 +1,6 @@
 <?php
 include '../../../conn/conn.php';
+require_once __DIR__ . '/mj_rate_helper.php';
 session_start();
 
 date_default_timezone_set('Asia/Jakarta');
@@ -13,6 +14,12 @@ try {
 ========================= */
 
     $mj_date = date('Y-m-d', strtotime($_POST['mj_date']));
+
+    // CLOSING PERIODE — dicek DI SERVER, bukan cuma di datepicker. Jurnal tidak
+    // boleh masuk ke periode yang bukunya sudah ditutup.
+    require_once __DIR__ . '/../closing_periode_guard.php';
+    $errClose = closing_error($conn2, $mj_date);
+    if ($errClose !== '') { throw new Exception($errClose); }
     $mj_type = $_POST['mj_type'];
     $profit_center = $_POST['profit_center'];
     $description = $_POST['pesan'];
@@ -83,6 +90,12 @@ VALUES
     $cc       = $_POST['nomor_cc'];
     $reff     = $_POST['reff'];
     $reffdate = $_POST['reffdate'];
+    // No Faktur / Tgl Faktur: HANYA disimpan ke tbl_list_journal (permintaan
+    // user) - TIDAK ke tbl_memorial_journal, sb_memorial_journal, atau
+    // sb_list_journal. Kolomnya (faktur_pajak, tgl_faktur_pajak) memang cuma
+    // ada di tbl_list_journal.
+    $faktur     = $_POST['faktur'] ?? [];
+    $fakturdate = $_POST['fakturdate'] ?? [];
     $buyer    = $_POST['buyer'];
     $ws       = $_POST['no_ws'];
     $curr     = $_POST['currenc'];
@@ -121,6 +134,16 @@ VALUES
             $reffdate_i = date('Y-m-d', strtotime($reffdate[$i]));
         }
 
+        // No Faktur/Tgl Faktur baris ini - null-safe, mengikuti pola berkas
+        // upload (strip "-"/kosong -> NULL, bukan '0000-00-00').
+        $faktur_i = mysqli_real_escape_string($conn2, trim((string) ($faktur[$i] ?? '')));
+        $fakturdate_raw = trim((string) ($fakturdate[$i] ?? ''));
+        $fakturdate_sql = 'NULL';
+        if ($fakturdate_raw !== '' && $fakturdate_raw !== '-') {
+            $ts_fak = strtotime($fakturdate_raw);
+            if ($ts_fak) { $fakturdate_sql = "'" . date('Y-m-d', $ts_fak) . "'"; }
+        }
+
 
         $sqlcoa = mysqli_query($conn2, "select nama_coa from mastercoa_v2 where no_coa = '$coa_i'");
         $rowcoa = mysqli_fetch_array($sqlcoa);
@@ -136,18 +159,17 @@ VALUES
        HITUNG EQV IDR
     ========================== */
 
-        $debit_idr  = $debit_i;
-        $credit_idr = $credit_i;
-
-        if ($curr_i != 'IDR') {
-            $debit_idr  = $debit_i * $rate;
-            $credit_idr = $credit_i * $rate;
-            $rate_det = $rate;
-        } else {
-            $debit_idr  = $debit_i;
-            $credit_idr = $credit_i;
-            $rate_det = 1;
-        }
+        // KURS: diambil dari TANGGAL JURNAL memakai kurs PAJAK untuk mata uang
+        // BARIS INI. Sebelumnya dipakai $rate tunggal dari $_POST['rate_mj'],
+        // yang diisi getRate() dengan lookup USD saja — sehingga baris ber-mata-uang
+        // lain (mis. EUR) ikut dikalikan kurs USD. Nilai kiriman tetap dihormati
+        // $_POST['rate_mj'] SENGAJA TIDAK dioper sebagai override: isinya bukan kurs
+        // ketikan manual, melainkan hasil lookup USD otomatis milik getRate(). Kalau
+        // dioper, baris EUR akan tetap memakai kurs USD — persis bug yang diperbaiki.
+        // Lihat mj_rate_helper.php.
+        $rate_det   = mj_resolve_rate($conn2, $curr_i, $mj_date, null);
+        $debit_idr  = $debit_i * $rate_det;
+        $credit_idr = $credit_i * $rate_det;
 
 
         mysqli_query($conn2, "
@@ -163,10 +185,10 @@ VALUES
         mysqli_query($conn2, "
 INSERT INTO tbl_list_journal
 (
-no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center
+no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center
 )
 VALUES
-('$no_mj', '$mj_date', '$nama_cmj', '$coa_i', '$nama_coa', '$cc_i', '$nama_cc', '$reff_i', '$reffdate_i', '$buyer_i', '$ws_i', '$curr_i', '$rate_det', '$debit_i', '$credit_i', '$debit_idr', '$credit_idr', '$status', '$ket_i', '$user', '$create_date', '', '', '', '', '$pc_i')
+('$no_mj', '$mj_date', '$nama_cmj', '$coa_i', '$nama_coa', '$cc_i', '$nama_cc', '$reff_i', '$reffdate_i', '$faktur_i', $fakturdate_sql, '$buyer_i', '$ws_i', '$curr_i', '$rate_det', '$debit_i', '$credit_i', '$debit_idr', '$credit_idr', '$status', '$ket_i', '$user', '$create_date', '', '', '', '', '$pc_i')
 ");
 
         if ($fil_sb1 == '1') {

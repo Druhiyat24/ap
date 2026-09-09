@@ -1983,10 +1983,10 @@ echo'</ul>
   // PPN Masukan (report baru). TODO(role): sebelum produksi bungkus dgn
   // if(strpos($id,'<menurole_id_baru>')!==false){...} + daftarkan menurole/useraccess.
   // Sementara ditampilkan tanpa gating agar bisa diakses saat pembangunan.
-//   echo'<a href="../AP/ppn_masukan_report.php" class="dropdown-item bg-dark text-white">
-//   <span class="fa fa-fax fa-fw"></span>
-//   <span class="menu-collapsed">PPN Masukan</span>
-//   </a>';
+  echo'<a href="../AP/ppn_masukan_report.php" class="dropdown-item bg-dark text-white">
+  <span class="fa fa-fax fa-fw"></span>
+  <span class="menu-collapsed">PPN Masukan</span>
+  </a>';
 
   echo'</ul>
   </li>';

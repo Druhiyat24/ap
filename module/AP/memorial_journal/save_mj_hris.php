@@ -3,6 +3,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 include '../../../conn/conn.php';
+require_once __DIR__ . '/mj_rate_helper.php';
 session_start();
 
 date_default_timezone_set('Asia/Jakarta');
@@ -16,6 +17,12 @@ try {
 
 
     $mj_date = date('Y-m-d', strtotime($_POST['mj_date2']));
+
+    // CLOSING PERIODE — dicek DI SERVER, bukan cuma di datepicker. Jurnal tidak
+    // boleh masuk ke periode yang bukunya sudah ditutup.
+    require_once __DIR__ . '/../closing_periode_guard.php';
+    $errClose = closing_error($conn2, $mj_date);
+    if ($errClose !== '') { throw new Exception($errClose); }
     $mj_type = $_POST['mj_type2'];
     $profit_center = $_POST['profit_center2'];
     $description = $_POST['pesan2'];
@@ -163,12 +170,24 @@ try {
         $credit        = floatval($row['credit']);
         $ket           = $row['deskripsi'];
 
+        // KURS: sebelumnya $rate dibaca dari $_POST['rate_mj2'] lalu TIDAK PERNAH
+        // dipakai — keempat INSERT di bawah menulis rate '1' dan debit_idr = debit
+        // secara harfiah. Itu hanya benar selama data HRIS selalu IDR; satu baris
+        // non-IDR saja sudah membuat nilai IDR-nya salah tanpa peringatan apa pun.
+        // Sekarang kurs diambil dari TANGGAL JURNAL memakai kurs PAJAK untuk mata
+        // uang baris ini (IDR tetap 1). $_POST['rate_mj2'] tidak dioper sebagai override
+        // karena itu pun lookup USD otomatis, bukan ketikan manual.
+        // Lihat mj_rate_helper.php.
+        $rate_det   = mj_resolve_rate($conn2, $curr, $mj_date, null);
+        $debit_idr  = $debit * $rate_det;
+        $credit_idr = $credit * $rate_det;
+
         // tbl_memorial_journal
         $q1 = mysqli_query($conn2, "
         INSERT INTO tbl_memorial_journal
         (no_mj, mj_date, id_cmj, no_coa, no_costcenter, no_reff, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, keterangan, status, create_by, create_date, profit_center)
         VALUES
-        ('$no_mj', '$mj_date', '$mj_type', '$no_coa', '$no_cc', '$reff', '$reff_date', '$buyer', '$ws', '$curr', '1', '$debit', '$credit', '$debit', '$credit', '$ket', '$status', '$user', '$create_date', '$pc_det')
+        ('$no_mj', '$mj_date', '$mj_type', '$no_coa', '$no_cc', '$reff', '$reff_date', '$buyer', '$ws', '$curr', '$rate_det', '$debit', '$credit', '$debit_idr', '$credit_idr', '$ket', '$status', '$user', '$create_date', '$pc_det')
         ");
 
         if(!$q1){
@@ -180,7 +199,7 @@ try {
         INSERT INTO tbl_list_journal
         (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
         VALUES
-        ('$no_mj', '$mj_date', '$nama_cmj', '$no_coa', '$nama_coa', '$no_cc', '$cc_name', '$reff', '$reff_date', '$buyer', '$ws', '$curr', '1', '$debit', '$credit', '$debit', '$credit', '$status', '$ket', '$user', '$create_date', '', '', '', '', '$pc_det')
+        ('$no_mj', '$mj_date', '$nama_cmj', '$no_coa', '$nama_coa', '$no_cc', '$cc_name', '$reff', '$reff_date', '$buyer', '$ws', '$curr', '$rate_det', '$debit', '$credit', '$debit_idr', '$credit_idr', '$status', '$ket', '$user', '$create_date', '', '', '', '', '$pc_det')
         ");
 
         if(!$q2){
@@ -193,7 +212,7 @@ try {
             INSERT INTO sb_memorial_journal
             (no_mj, mj_date, id_cmj, no_coa, no_costcenter, no_reff, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, keterangan, status, create_by, create_date, asal_data, profit_center)
             VALUES
-            ('$no_mj_sb', '$mj_date', '$mj_type', '$no_coa', '$no_cc', '$reff', '$reff_date', '$buyer', '$ws', '$curr', '1', '$debit', '$credit', '$debit', '$credit', '$ket', '$status', '$user', '$create_date', 'Input SB2', '$pc_det')
+            ('$no_mj_sb', '$mj_date', '$mj_type', '$no_coa', '$no_cc', '$reff', '$reff_date', '$buyer', '$ws', '$curr', '$rate_det', '$debit', '$credit', '$debit_idr', '$credit_idr', '$ket', '$status', '$user', '$create_date', 'Input SB2', '$pc_det')
             ");
 
             if(!$q3){
@@ -204,7 +223,7 @@ try {
             INSERT INTO sb_list_journal
             (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center)
             VALUES
-            ('$no_mj_sb', '$mj_date', '$nama_cmj', '$no_coa', '$nama_coa', '$no_cc', '$cc_name', '$reff', '$reff_date', '$buyer', '$ws', '$curr', '1', '$debit', '$credit', '$debit', '$credit', '$status', '$ket', '$user', '$create_date', '', '', '', '', '$pc_det')
+            ('$no_mj_sb', '$mj_date', '$nama_cmj', '$no_coa', '$nama_coa', '$no_cc', '$cc_name', '$reff', '$reff_date', '$buyer', '$ws', '$curr', '$rate_det', '$debit', '$credit', '$debit_idr', '$credit_idr', '$status', '$ket', '$user', '$create_date', '', '', '', '', '$pc_det')
             ");
 
             if(!$q4){

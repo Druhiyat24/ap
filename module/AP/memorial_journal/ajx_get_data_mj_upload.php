@@ -27,8 +27,8 @@ if ($search != '') {
 }
 
 
-    $sql = "select * from (select a.*, ifnull(filter,'-') filter from (select a.id, a.no_mj,a.mj_date,a.id_cmj,b.nama_cmj,concat(c.no_coa,' ', c.nama_coa) as coa , d.cc_name,a.no_coa,a.no_costcenter, a.no_reff, a.reff_date,a.buyer,a.no_ws,a.curr,a.rate,a.debit,a.credit,a.credit_idr,a.debit_idr,a.keterangan,a.status, kode_pc, CONCAT(mp.id_pc,' - ',nama_pc) nama_pc from tbl_memorial_journal_temp a left join master_category_mj b on b.id_cmj = a.id_cmj left join mastercoa_v2 c on c.no_coa = a.no_coa left join b_master_cc d on d.no_cc = a.no_costcenter LEFT JOIN master_pc mp on mp.kode_pc = a.profit_center where a.create_by = '$user') a LEFT JOIN
-                                (select id filter from (select a.id, a.no_mj,a.mj_date,a.id_cmj,b.nama_cmj,concat(c.no_coa,' ', c.nama_coa) as coa , d.cc_name,a.no_coa,a.no_costcenter, a.no_reff, a.reff_date,a.buyer,a.no_ws,a.curr,a.rate,a.debit,a.credit,a.credit_idr,a.debit_idr,a.keterangan,a.status, kode_pc, CONCAT(mp.id_pc,' - ',nama_pc) nama_pc from tbl_memorial_journal_temp a left join master_category_mj b on b.id_cmj = a.id_cmj left join mastercoa_v2 c on c.no_coa = a.no_coa left join b_master_cc d on d.no_cc = a.no_costcenter LEFT JOIN master_pc mp on mp.kode_pc = a.profit_center where a.create_by = '$user') a INNER JOIN 
+    $sql = "select * from (select a.*, ifnull(filter,'-') filter from (select a.id, a.no_mj,a.mj_date,a.id_cmj,b.nama_cmj,concat(c.no_coa,' ', c.nama_coa) as coa , d.cc_name,a.no_coa,a.no_costcenter, a.no_reff, a.reff_date,a.faktur_pajak,a.tgl_faktur_pajak,a.supplier,a.buyer,a.no_ws,a.curr,a.rate,a.debit,a.credit,a.credit_idr,a.debit_idr,a.keterangan,a.status, kode_pc, CONCAT(mp.id_pc,' - ',nama_pc) nama_pc from tbl_memorial_journal_temp a left join master_category_mj b on b.id_cmj = a.id_cmj left join mastercoa_v2 c on c.no_coa = a.no_coa left join b_master_cc d on d.no_cc = a.no_costcenter LEFT JOIN master_pc mp on mp.kode_pc = a.profit_center where a.create_by = '$user') a LEFT JOIN
+                                (select id filter from (select a.id, a.no_mj,a.mj_date,a.id_cmj,b.nama_cmj,concat(c.no_coa,' ', c.nama_coa) as coa , d.cc_name,a.no_coa,a.no_costcenter, a.no_reff, a.reff_date,a.faktur_pajak,a.tgl_faktur_pajak,a.supplier,a.buyer,a.no_ws,a.curr,a.rate,a.debit,a.credit,a.credit_idr,a.debit_idr,a.keterangan,a.status, kode_pc, CONCAT(mp.id_pc,' - ',nama_pc) nama_pc from tbl_memorial_journal_temp a left join master_category_mj b on b.id_cmj = a.id_cmj left join mastercoa_v2 c on c.no_coa = a.no_coa left join b_master_cc d on d.no_cc = a.no_costcenter LEFT JOIN master_pc mp on mp.kode_pc = a.profit_center where a.create_by = '$user') a INNER JOIN 
                                 (select no_coa, no_cc, id_pc from (select a.no_coa, b.no_cc, b.id_pc from (select no_coa, support_gen_adm, support_prod, prod, support_sell from mastercoa_v2 where support_gen_adm != 'N' OR support_prod != 'N' OR prod != 'N' OR support_sell != 'N') a inner join
                                 (select no_cc, cc_name, id_pc, 'Y' support_gen_adm from b_master_cc where group2 = 'SUPPORTING GENERAL & ADMINISTRATION' and status = 'Active') b on b.support_gen_adm = a. support_gen_adm
                                 UNION
@@ -61,6 +61,17 @@ if(!$sql){
 /* ================= EXECUTE ================= */
 
 $q = mysqli_query($conn2, $sql);
+
+// Query GAGAL != data kosong. Sebelumnya keduanya berakhir sama: tabel tampil
+// kosong tanpa penjelasan, sehingga kesalahan seperti kolom belum ada (migrasi
+// belum dijalankan) tidak kelihatan sama sekali oleh user.
+if ($q === false) {
+    echo json_encode([
+        "error" => "Query gagal: " . mysqli_error($conn2),
+        "data"  => []
+    ]);
+    exit;
+}
 
 if(mysqli_num_rows($q) == 0){
     echo json_encode([
