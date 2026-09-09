@@ -2196,6 +2196,7 @@ $menuGroups = [
                     'notes' => [
                         'Terdapat DUA "mesin hitung" berbeda dalam satu berkas yang sama: tanggal mulai ≥ 1 September 2025 memakai perhitungan baru (termasuk breakdown Profit Center & tabel penyesuaian manual), sedangkan tanggal sebelumnya memakai query lama yang lebih sederhana — dua ekspor Excel terpisah mengikuti percabangan tanggal yang sama.',
                         'Berkas menyimpan sisa versi query lama sebagai komentar di akhir berkas, tidak lagi dieksekusi — bukan bug, hanya jejak riwayat pengembangan.',
+                        'Saldo awal per baris (no_ftr) di-floor ke 0 kalau hasil hitung ≤0 (sudah habis/over-deduct), sehingga saldo minus di Ending Balance suatu periode normalnya TIDAK ikut terbawa sbg Beginning Balance minus di periode berikutnya. 3 no_ftr (FTR/C/NAG/0626/00639, /00644, /00646) sengaja dikecualikan dari floor ini (kasus over-deduction Jun-Jul 2026, atas permintaan user) supaya saldo minusnya ter-carry apa adanya — diterapkan di query utama & di ekspor_pa_report_new.php. FTR minus lain di luar 3 ini masih ke-floor 0 seperti semula (belum dikonfirmasi user apakah itu bug data atau legitimate).',
                     ],
                 ],
             ],
