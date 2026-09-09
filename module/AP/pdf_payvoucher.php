@@ -364,7 +364,7 @@ $sqlas = "select curr from tbl_pv_h where no_pv = '$no_pv'";
     // salah satu bank_account yang ada di master (mis. sama-sama berupa
     // angka), join-nya malah "berhasil" dan menampilkan nama bank/beneficiary
     // yang salah, bukan teks manual yang sebenarnya diisi.
-    $toccManualSuppliers = ['KANTOR PAJAK', 'KPPBC TMP A BANDUNG'];
+    $toccManualSuppliers = ['KANTOR PAJAK', 'KPPBC TMP A BANDUNG','KANTOR PELAYANAN UTAMA BEA DAN CUKAI TIPE A'];
     $isToccManual = in_array(strtoupper(trim($rs['nama_supp'] ?? '')), $toccManualSuppliers, true);
 
     if ($isToccManual) {
