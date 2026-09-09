@@ -1,22 +1,25 @@
 <?php
+// ============================================================================
+// Hapus (soft-delete) SATU dokumen lampiran req_dn_dok.
+// Dulu di-target lewat no_req saja (update ... where no_req = ...) — itu cocok
+// waktu cuma boleh 1 dokumen per request, tapi sekarang 1 request bisa punya
+// banyak dokumen sekaligus, jadi harus di-target per baris (id) supaya menghapus
+// satu dokumen tidak ikut menghapus dokumen lain milik request yang sama.
+// ============================================================================
 include '../../conn/conn.php';
 ini_set('date.timezone', 'Asia/Jakarta');
+header('Content-Type: application/json; charset=utf-8');
 
-$no_req = $_POST['no_req'];
-$cancel_date = date("Y-m-d H:i:s");
-$cancel_user = $_POST['cancel_user'];
+$id          = (int) ($_POST['id'] ?? 0);
+$cancel_user = trim($_POST['cancel_user'] ?? '');
 
-if(isset($no_req)){
-$sql = "update req_dn_dok set cancel_date = '$cancel_date', cancel_by = '$cancel_user', status = 'CANCEL' where no_req = '$no_req'";
-$execute = mysqli_query($conn2,$sql);
-}else{
-	die('Error: ' . mysqli_error());		
+if ($id <= 0) {
+    echo json_encode(['status' => 'error', 'message' => 'Invalid document id.']);
+    exit;
 }
 
-if($execute){
-echo 'Data Berhasil Di Cancel';
-}
+$e = function ($v) use ($conn2) { return mysqli_real_escape_string($conn2, (string) $v); };
+$sql = "update req_dn_dok set cancel_date = '" . date('Y-m-d H:i:s') . "', cancel_by = '" . $e($cancel_user) . "', status = 'CANCEL' where id = " . $id;
+$ok  = mysqli_query($conn2, $sql);
 
-mysqli_close($conn2);
-
-?>
+echo json_encode(['status' => $ok ? 'success' : 'error', 'message' => $ok ? '' : mysqli_error($conn2)]);

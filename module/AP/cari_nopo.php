@@ -16,7 +16,7 @@ $table = '';
 			while ($row = mysqli_fetch_assoc($sql)) {
 			
             $table .= '<tr>   
-                        <td style="width:10px;"><input type="checkbox" id="pilih_sj" name="pilih_sj" value="" <?php if(in_array("1",$_POST[select])) echo "checked=checked";? onclick="tambah_sj('.$row['id'].')"></td>    
+                        <td style="width:10px;"><input type="checkbox" id="pilih_sj" name="pilih_sj" value="" onclick="tambah_sj('.$row['id'].')"></td>
                         <td style="" value="'.$row['pono'].'">'.$row['pono'].'</td>
                         <td style="width:100px;" value="'.$row['podate'].'">'.date("d-M-Y",strtotime($row['podate'])).'</td>
                         <td style="" value="'.$row['Supplier'].'">'.$row['Supplier'].'</td>

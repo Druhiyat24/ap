@@ -25,7 +25,7 @@ $table = '';
                         <td style="" ><input type="text" class="form-control" id="mdl_disc" name="mdl_qty" style="width: 100px; text-align: center" oninput="mdl_input_qty()" readonly autocomplete="off"></td>
                         <td style="" value="'.$row['price'].'">'.$row['price'].'</td>
                          <td style="" ><input type="text" class="form-control" id="mdl_disc" name="mdl_price" style="width: 100px; text-align: center" oninput="mdl_input_price()" readonly autocomplete="off"></td>
-                        <td style="width:10px;"><input type="checkbox" id="mdl_cek_sj" name="mdl_cek_sj" <?php if(in_array("1",$_POST[select])) echo "checked=checked";? onclick="modal_sum_total_sj()"></td>
+                        <td style="width:10px;"><input type="checkbox" id="mdl_cek_sj" name="mdl_cek_sj" onclick="modal_sum_total_sj()"></td>
                         <td hidden> <input type="text" class="form-control" id="mdl_qty_h" name="mdl_qty_h" value = "'.$row['qty'].'" style="width: 80%; text-align: center"  readonly autocomplete="off"></td>
                         <td hidden> <input type="text" class="form-control" id="mdl_price_h" name="mdl_price_h" value = "'.$row['price'].'" style="width: 80%; text-align: center"  readonly autocomplete="off"></td>
                         <td hidden value="'.$row['id_item'].'"></td>

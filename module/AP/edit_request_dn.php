@@ -1,37 +1,116 @@
 <?php include '../header.php' ?>
 <?php
 // ============================================================================
-// FORM REQUEST DEBIT NOTE — direstyle mengikuti skin app-skin.css / app-skin-form.css
-// (pola yang sama dgn request_debitnote.php / kontrabon_new.php).
-// Struktur tabel item, seluruh id/name, dan logika JS di bawah TIDAK diubah:
-// JS membaca sel per indeks (cells[4], cells[5], cells[10], td:eq(11..15)),
-// jadi jumlah & urutan <td> harus tetap persis.
+// FORM EDIT REQUEST DEBIT NOTE — turunan dari create_request_dn.php.
+// Beda dgn create: no_req/unik_code/supplier SUDAH ADA (tidak dibuat baru),
+// supplier DIKUNCI (tidak boleh diubah lewat form ini), dan tabel item
+// di-preload dari baris req_dn yang sudah tersimpan. User cuma boleh
+// menambah baris baru (lewat Select PO / Add Row) atau menghapus baris yang
+// sudah ada (Delete Row) — sama seperti create, TIDAK mengubah struktur
+// kolom/urutan <td> supaya semua JS yang membaca cells[4]/cells[5]/td:eq(11..15)
+// tetap jalan tanpa perubahan.
+//
+// Cuma request berstatus "Post" yang boleh diedit — begitu statusnya
+// "Processed" artinya Debit Note sudah dibuat dari request ini di modul lain
+// (no_dn terisi), jadi item-nya tidak boleh diutak-atik lagi dari sini.
 // ============================================================================
 
-// Nomor request berikutnya: RQDN/NAG/<bulan><tahun>/<00001>
-$sqlNo   = mysqli_query($conn2, "select max(SUBSTR(no_req,15)) no_req from req_dn_h");
-$rowNo   = mysqli_fetch_array($sqlNo);
-$urutan  = ((int) substr($rowNo['no_req'], 0, 5)) + 1;
-$kodepay = 'RQDN/NAG/' . date('m') . date('y') . '/' . sprintf('%05s', $urutan);
+$noReqParam = trim($_GET['no_req'] ?? '');
 
-// Kode unik dokumen (dipakai utk mengikat baris detail ke header saat simpan)
-$karakter = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789!@#$%^&*()?';
-$unikCode = substr(str_shuffle($karakter), 0, 25);
+$sqlH = mysqli_query($conn2, "select no_req, tgl_req, nama_supp, deskripsi, total_amount, status, unik_code
+    from req_dn_h where no_req = '" . mysqli_real_escape_string($conn2, $noReqParam) . "'");
+$hdr  = $sqlH ? mysqli_fetch_assoc($sqlH) : null;
 
-// Kurs harian terakhir
-$sqlx  = mysqli_query($conn2, "select max(id) as id FROM masterrate where v_codecurr = 'HARIAN'");
-$rowx  = mysqli_fetch_array($sqlx);
-$sqly  = mysqli_query($conn2, "select ROUND(rate,2) as rate, tanggal FROM masterrate where id = '" . (int) $rowx['id'] . "' and v_codecurr = 'HARIAN'");
-$rowy  = mysqli_fetch_array($sqly);
-$rate  = $rowy['rate'] ?? 0;
+if (!$hdr) {
+    ?>
+    <div class="container-fluid mt-4 p-4">
+      <div class="card app-card border-0">
+        <div class="card-body p-4">
+          <div class="app-empty" style="padding:40px 0;">
+            <i class="fa fa-exclamation-triangle"></i>
+            Request "<?= htmlspecialchars($noReqParam) ?>" not found.
+          </div>
+          <div class="text-center"><a href="request_debitnote.php" class="app-btn app-btn-primary app-btn-ctl"><i class="fa fa-angle-double-left"></i> Back to List</a></div>
+        </div>
+      </div>
+    </div>
+    <?php
+    echo '</body></html>';
+    exit;
+}
+if ($hdr['status'] !== 'Post') {
+    ?>
+    <div class="container-fluid mt-4 p-4">
+      <div class="card app-card border-0">
+        <div class="card-body p-4">
+          <div class="app-empty" style="padding:40px 0;">
+            <i class="fa fa-lock"></i>
+            Request "<?= htmlspecialchars($hdr['no_req']) ?>" can no longer be edited (status: <?= htmlspecialchars($hdr['status']) ?>).
+          </div>
+          <div class="text-center"><a href="request_debitnote.php" class="app-btn app-btn-primary app-btn-ctl"><i class="fa fa-angle-double-left"></i> Back to List</a></div>
+        </div>
+      </div>
+    </div>
+    <?php
+    echo '</body></html>';
+    exit;
+}
 
-$ipInfo = gethostbyaddr($_SERVER['REMOTE_ADDR']) . ' '
-        . ($_SERVER['REMOTE_ADDR'] === '::1' ? 'LOCALHOST' : $_SERVER['REMOTE_ADDR']);
+$kodepay  = $hdr['no_req'];
+$unikCode = $hdr['unik_code'];
+$fSupp    = $hdr['nama_supp'];
+$fTglDoc  = !empty($hdr['tgl_req']) ? date('d-m-Y', strtotime($hdr['tgl_req'])) : date('d-m-Y');
+$fDesc    = $hdr['deskripsi'];
+$fStartPo = date('d-m-Y');
+$fEndPo   = date('d-m-Y');
 
-$fSupp    = $_POST['nama_supp'] ?? '';
-$fTglDoc  = !empty($_POST['tgl_doc']) ? $_POST['tgl_doc'] : date('d-m-Y');
-$fStartPo = !empty($_POST['startdate_bpb']) ? $_POST['startdate_bpb'] : date('d-m-Y');
-$fEndPo   = !empty($_POST['enddate_bpb']) ? $_POST['enddate_bpb'] : date('d-m-Y');
+// Baris item yg sudah tersimpan — dipreload persis dgn format yg dipakai
+// load_po_detail_temp.php (readonly, 16 kolom termasuk 5 hidden) utk baris
+// yg berasal dari BPB nyata (id_bpb terisi), atau format Add Row (11 kolom,
+// bebas diedit) utk baris manual (id_bpb kosong) — supaya kedua jenis baris
+// tetap berperilaku sama seperti waktu pertama kali dibuat di create.
+$existingRows = '';
+$sqlItems = mysqli_query($conn2, "select no_po, no_bpb, item, qty, price, attn, seasons, no_reff, id_bpb, tgl_bpb, id_jo, id_item, unit
+    from req_dn where no_req = '" . mysqli_real_escape_string($conn2, $kodepay) . "' order by id asc");
+while ($sqlItems && $ri = mysqli_fetch_assoc($sqlItems)) {
+    $total = (float) $ri['qty'] * (float) $ri['price'];
+    $esc   = function ($v) { return htmlspecialchars((string) $v); };
+
+    if (!empty($ri['id_bpb'])) {
+        $existingRows .= '<tr>'
+            . '<td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>'
+            . '<td><input style="font-size:12px;" type="text" class="form-control" name="keterangan[]" value="' . $esc($ri['no_po']) . '" autocomplete="off" readonly tabindex="-1"></td>'
+            . '<td><input style="font-size:12px;" type="text" class="form-control" name="keterangan[]" value="' . $esc($ri['no_bpb']) . '" autocomplete="off" readonly tabindex="-1"></td>'
+            . '<td><input style="font-size:12px;" type="text" class="form-control" name="keterangan[]" value="' . $esc($ri['item']) . '" autocomplete="off" readonly tabindex="-1"></td>'
+            . '<td><input style="text-align:right;font-size:12px;" type="number" min="1" value="' . $esc($ri['qty']) . '" class="form-control" id="txt_qty" name="txt_qty" oninput="modal_input_qty(value)" autocomplete="off" readonly tabindex="-1"></td>'
+            . '<td><input style="text-align:right;font-size:12px;" type="number" min="1" value="' . $esc($ri['price']) . '" class="form-control" id="txt_amount" name="txt_amount" oninput="modal_input_amt(value)" autocomplete="off" readonly tabindex="-1"></td>'
+            . '<td><input style="text-align:right;font-size:12px;" type="text" class="form-control" id="tot_row" name="tot_row" value="' . $esc($total) . '" autocomplete="off" readonly tabindex="-1"></td>'
+            . '<td><input style="font-size:12px;" type="text" class="form-control" name="keterangan[]" value="' . $esc($ri['attn']) . '" autocomplete="off"></td>'
+            . '<td><input style="font-size:12px;" type="text" class="form-control" name="keterangan[]" value="' . $esc($ri['seasons']) . '" autocomplete="off"></td>'
+            . '<td><input style="font-size:12px;" type="text" class="form-control" name="keterangan[]" value="' . $esc($ri['no_reff']) . '" autocomplete="off"></td>'
+            . '<td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td>'
+            . '<td hidden value="' . $esc($ri['id_bpb']) . '"></td>'
+            . '<td hidden value="' . $esc($ri['tgl_bpb']) . '"></td>'
+            . '<td hidden value="' . $esc($ri['id_jo']) . '"></td>'
+            . '<td hidden value="' . $esc($ri['id_item']) . '"></td>'
+            . '<td hidden value="' . $esc($ri['unit']) . '"></td>'
+            . '</tr>';
+    } else {
+        $existingRows .= '<tr>'
+            . '<td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>'
+            . '<td><input style="font-size:12px;" type="text" class="form-control" name="keterangan[]" value="' . $esc($ri['no_po']) . '" autocomplete="off"></td>'
+            . '<td><input style="font-size:12px;" type="text" class="form-control" name="keterangan[]" value="' . $esc($ri['no_bpb']) . '" autocomplete="off"></td>'
+            . '<td><input style="font-size:12px;" type="text" class="form-control" name="keterangan[]" value="' . $esc($ri['item']) . '" autocomplete="off"></td>'
+            . '<td><input style="text-align:right;font-size:12px;" type="number" min="1" value="' . $esc($ri['qty']) . '" class="form-control" id="txt_qty" name="txt_qty" oninput="modal_input_qty(value)" autocomplete="off"></td>'
+            . '<td><input style="text-align:right;font-size:12px;" type="number" min="1" value="' . $esc($ri['price']) . '" class="form-control" id="txt_amount" name="txt_amount" oninput="modal_input_amt(value)" autocomplete="off"></td>'
+            . '<td><input style="text-align:right;font-size:12px;" type="text" class="form-control" id="tot_row" name="tot_row" value="' . $esc($total) . '" autocomplete="off"></td>'
+            . '<td><input style="font-size:12px;" type="text" class="form-control" name="keterangan[]" value="' . $esc($ri['attn']) . '" autocomplete="off"></td>'
+            . '<td><input style="font-size:12px;" type="text" class="form-control" name="keterangan[]" value="' . $esc($ri['seasons']) . '" autocomplete="off"></td>'
+            . '<td><input style="font-size:12px;" type="text" class="form-control" name="keterangan[]" value="' . $esc($ri['no_reff']) . '" autocomplete="off"></td>'
+            . '<td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td>'
+            . '</tr>';
+    }
+}
 ?>
 
 <!-- Skin UI bersama (kartu, tabel, tombol, dropdown, tanggal, modal) -->
@@ -62,50 +141,30 @@ $fEndPo   = !empty($_POST['enddate_bpb']) ? $_POST['enddate_bpb'] : date('d-m-Y'
 /* Input di dalam baris item dibuat ringkas supaya barisnya tidak terlalu tinggi */
 #mytable tbody td{ padding:6px 7px !important; }
 #mytable tbody .form-control{ height:31px; font-size:12px; padding:4px 8px; }
-/* Baris hasil "Select PO" DIKUNCI (readonly, lihat load_po_detail_temp.php) —
-   ditampilkan seperti TEKS BIASA, bukan kotak input, supaya jelas kelihatan
-   sudah tidak bisa diedit lagi. Baris kosong dari Add Row/Interject Row TIDAK
-   readonly, jadi tetap tampil sbg input normal dan tidak kena aturan ini. */
+/* Baris hasil "Select PO" (atau baris BPB yg sudah ada sblm diedit) DIKUNCI
+   (readonly) — ditampilkan seperti TEKS BIASA, bukan kotak input, supaya
+   jelas kelihatan sudah tidak bisa diedit lagi. Baris manual (Add Row /
+   Interject Row / baris tanpa BPB yg sudah ada) TIDAK readonly. */
 #mytable tbody .form-control[readonly]{
   background:transparent; border-color:transparent; box-shadow:none;
   color:#334155; cursor:default;
 }
-/* Panah naik/turun bawaan browser pada input number readonly ikut disembunyikan
-   (readonly saja tidak selalu cukup mematikan interaksinya di semua browser). */
 #mytable tbody .form-control[readonly][type=number]{ -moz-appearance:textfield; }
 #mytable tbody .form-control[readonly][type=number]::-webkit-outer-spin-button,
 #mytable tbody .form-control[readonly][type=number]::-webkit-inner-spin-button{
   -webkit-appearance:none; margin:0;
 }
-/* Tabel item DIBATASI TINGGINYA — dulu .app-dt-scroll dipakai di markup tapi
-   TIDAK PERNAH didefinisikan di mana pun (typo bawaan dari halaman lain yang
-   memang punya class ini), jadi baris yang terus bertambah lewat Add Row /
-   Select PO bikin kartu memanjang tanpa batas ke bawah. Header dikunci sticky
-   supaya tetap terbaca saat digulir. */
 .app-dt-scroll{ max-height:420px; overflow:auto; border-radius:8px; }
 #mytable thead th{ position:sticky; top:0; z-index:2; }
-/* Toolbar Add Row/Interject Row/Delete Row DIPINDAH KELUAR dari .app-dt-scroll
-   (dulu jadi <tfoot> di dalam tabel yg sama, jadi ikut ter-scroll begitu baris
-   sudah banyak — user harus menggulir dulu utk mencapainya). Sekarang jadi
-   toolbar tetap di bawah kotak scroll, selalu kelihatan berapa pun baris. */
 .rdn-item-toolbar{ margin-top:10px; }
-/* Judul + search di atas tabel item */
 .rdn-item-head{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
 .rdn-item-title{ font-size:12px; font-weight:700; color:#1e3a8a; text-transform:uppercase; letter-spacing:.4px; }
-/* -------- Polesan tabel item -------- */
 #mytable tbody tr:nth-child(even) td{ background:#f8fafc; }
 #mytable tbody tr:hover td{ background:#eef4ff; }
-/* Kolom Total (ke-7) ditebalkan — angka yang paling penting dibaca */
 #mytable tbody td:nth-child(7) input{ font-weight:700; color:#0f172a; }
-/* Checkbox "-" (baris ini ikut disimpan) sengaja disabled selalu tercentang;
-   dulu tampil kelabu polos seperti error, sekarang jelas terlihat disengaja. */
 #mytable tbody td:first-child input[type=checkbox]{ accent-color:#10b981; cursor:not-allowed; }
 #mytable tbody td:last-child input[type=checkbox]{ accent-color:#e13c37; cursor:pointer; }
 
-/* -------- Kartu ringkasan Total Amount — SAMA persis dgn kartu 'Balance
-   Summary' di memorial_journal/mj_input.php (class mji-tot-*). Disalin ke sini
-   (bukan dipindah ke skin bersama) supaya berkas ini tetap berdiri sendiri,
-   sama seperti mj_input.php menyimpan gayanya sendiri. -------- */
 .mji-tot{
   border:1px solid #e6ebf3; border-left:4px solid #1d4ed8; border-radius:10px;
   background:#fff; box-shadow:0 1px 3px rgba(15,23,42,.05); padding:12px 14px 13px;
@@ -133,7 +192,7 @@ input.mji-tot-val{
   <!-- ===== Header form ===== -->
   <div class="card app-card border-0">
     <div class="card-header app-card-header">
-      <h5><i class="fa fa-plus-circle" aria-hidden="true"></i> FORM REQUEST DEBIT NOTE</h5>
+      <h5><i class="fa fa-pencil" aria-hidden="true"></i> FORM EDIT REQUEST DEBIT NOTE</h5>
     </div>
     <div class="card-body p-3">
       <form id="form-data" method="post">
@@ -148,17 +207,9 @@ input.mji-tot-val{
             <input type="hidden" name="unik_code" id="unik_code" value="<?= htmlspecialchars($unikCode) ?>" readonly>
           </div>
           <div class="col-md-4">
-            <label class="app-flabel">Supplier</label>
-            <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-live-search="true" data-size="5">
-              <option value="">Select Supplier</option>
-              <?php
-              $sqlSp = mysqli_query($conn1, "select distinct(Supplier) sup from mastersupplier where tipe_sup = 'S' order by Supplier ASC");
-              while ($sqlSp && $x = mysqli_fetch_assoc($sqlSp)) {
-                  $sel = ($x['sup'] === $fSupp) ? ' selected' : '';
-                  echo '<option value="' . htmlspecialchars($x['sup']) . '"' . $sel . '>' . htmlspecialchars($x['sup']) . '</option>';
-              }
-              ?>
-            </select>
+            <label class="app-flabel">Supplier <span style="font-weight:400;color:#94a3b8;">(locked, cannot be changed)</span></label>
+            <input type="text" readonly class="form-control app-ctl-static" id="nama_supp_disp" value="<?= htmlspecialchars($fSupp) ?>" style="background:#f8fafc;">
+            <input type="hidden" id="nama_supp_fixed" value="<?= htmlspecialchars($fSupp) ?>">
           </div>
           <div class="col-md-2 d-flex align-items-end">
             <button type="button" id="mysupp" name="v" data-toggle="modal" class="app-btn app-btn-primary app-btn-ctl">
@@ -170,12 +221,9 @@ input.mji-tot-val{
         <div class="row g-3 mt-1">
           <div class="col-md-8">
             <label class="app-flabel">Descriptions</label>
-            <textarea rows="2" class="form-control" name="pesan" id="pesan" placeholder="descriptions..." required style="font-size:13px;"></textarea>
+            <textarea rows="2" class="form-control" name="pesan" id="pesan" placeholder="descriptions..." required style="font-size:13px;"><?= htmlspecialchars($fDesc) ?></textarea>
           </div>
         </div>
-
-        <input type="hidden" id="ambil_ip" name="ambil_ip" value="<?= htmlspecialchars($ipInfo) ?>">
-        <input type="hidden" id="rat_pv" name="rat_pv" value="<?= htmlspecialchars($rate) ?>">
       </form>
     </div>
   </div>
@@ -234,6 +282,7 @@ input.mji-tot-val{
               <td><input type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td>
               <td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td>
             </tr>
+            <?php echo $existingRows; ?>
           </tbody>
         </table>
       </div>
@@ -388,10 +437,10 @@ input.mji-tot-val{
 
 <script>
   // Hide submenus
-  $('#body-row .collapse').collapse('hide'); 
+  $('#body-row .collapse').collapse('hide');
 
 // Collapse/Expand icon
-$('#collapse-icon').addClass('fa-angle-double-left'); 
+$('#collapse-icon').addClass('fa-angle-double-left');
 
 // Collapse click
 $('[data-toggle=sidebar-colapse]').click(function() {
@@ -403,7 +452,7 @@ function SidebarCollapse () {
     $('.sidebar-submenu').toggleClass('d-none');
     $('.submenu-icon').toggleClass('d-none');
     $('#sidebar-container').toggleClass('sidebar-expanded sidebar-collapsed');
-    
+
     // Treating d-flex/d-none on separators with title
     var SeparatorTitle = $('.sidebar-separator-title');
     if ( SeparatorTitle.hasClass('d-flex') ) {
@@ -411,7 +460,7 @@ function SidebarCollapse () {
     } else {
         SeparatorTitle.addClass('d-flex');
     }
-    
+
     // Collapse/Expand icon
     $('#collapse-icon').toggleClass('fa-angle-double-left fa-angle-double-right');
 }
@@ -436,19 +485,6 @@ function SidebarCollapse () {
     });
 </script>
 
-
-<script type="text/javascript">
-    $(document).ready(function() {
-        $('.select2_coa').select2({
-            dropdownAutoWidth : true
-        });
-
-        $('.select2_costcenter').select2({
-            dropdownAutoWidth : true
-        });
-    });
-</script>
-
 <script>
     $(function() {
         $('.selectpicker').selectpicker();
@@ -456,10 +492,10 @@ function SidebarCollapse () {
 </script>
 
 <script>
+    // Supplier SUDAH TETAP (lihat #nama_supp_fixed) — beda dgn create_request_dn.php
+    // yg membaca dari <select>, di sini tinggal pakai nilai yg sudah dikunci.
     $("#form-data").on("click", "#mysupp", function(){
-        var no_inv = $('select[name=nama_supp] option').filter(':selected').val();
-        var customer = $('select[name=nama_supp] option').filter(':selected').val();
-        var id_customer = $('select[name=nama_supp] option').filter(':selected').val();
+        var customer = $('#nama_supp_fixed').val();
         var create_user = '<?php echo $user ?>';
 
         $.ajax({
@@ -469,28 +505,19 @@ function SidebarCollapse () {
             cache: 'false',
             close: function(e){
                 e.preventDefault();
-                return false; 
+                return false;
             },
             success: function(data){
                 $('#tbody').html('');
-            // alert(data);  
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            console.log(xhr);
-            // alert(xhr);
-        }
-    }); 
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(xhr);
+            }
+        });
 
-        if (no_inv != '') {
-            $('[name="mdl_customer"]').val(customer); 
-            $('[name="mdl_idcustomer"]').val(id_customer);
-            $('#mymodal').modal('show');
-        }else{
-            // #no_inv tidak pernah ada di halaman ini (sisa kode lama) — .focus()
-            // ke situ selalu melempar error diam-diam di console. Dihapus.
-            Swal.fire({ icon: 'warning', title: 'Please Select Supplier' });
-        }
-
+        $('[name="mdl_customer"]').val(customer);
+        $('[name="mdl_idcustomer"]').val(customer);
+        $('#mymodal').modal('show');
     });
 
 </script>
@@ -499,7 +526,7 @@ function SidebarCollapse () {
     $("#modal-form2").on("click", "#send2", function(){
         var nama_supp = document.getElementById('mdl_idcustomer').value;
         var start_date = document.getElementById('startdate_bpb').value;
-        var end_date = document.getElementById('enddate_bpb').value;  
+        var end_date = document.getElementById('enddate_bpb').value;
 
         $.ajax({
             type:'POST',
@@ -508,19 +535,18 @@ function SidebarCollapse () {
             cache: 'false',
             close: function(e){
                 e.preventDefault();
-                return false; 
+                return false;
             },
             success: function(data){
                 $('#details').html(data);
-                // alert(data);  
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
                 Swal.fire({ icon: 'error', title: 'Error', text: String((xhr && xhr.responseText) || (xhr && xhr.statusText) || xhr) });
             }
-        });             
+        });
 
-        return false; 
+        return false;
     });
 
 
@@ -537,22 +563,20 @@ function SidebarCollapse () {
                     cache: 'false',
                     close: function(e){
                         e.preventDefault();
-                        return false; 
+                        return false;
                     },
                     success: function(data){
-                // console.log(data);
                 $('#details_sj').append(data);
-                // alert(data);  
             },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
                 Swal.fire({ icon: 'error', title: 'Error', text: String((xhr && xhr.responseText) || (xhr && xhr.statusText) || xhr) });
             }
-        }); 
+        });
             }
 
         });
-        return false; 
+        return false;
     };
 
     function modal_sum_total_sj(){
@@ -562,58 +586,42 @@ function SidebarCollapse () {
         var mdl_qty_h = document.getElementsByName("mdl_qty_h");
         var mdl_price_h = document.getElementsByName("mdl_price_h");
         var input = document.getElementsByName("mdl_cek_sj");
-        var total = 0;  
-        var grade = '';
-        var tgl_inv = '';
-        var curr = '';  
-    // 
-    for (var i = 0; i < input.length; i++) {     
-      for (var i = 0; i < mdl_qty.length; i++) {  
+        var total = 0;
+    for (var i = 0; i < input.length; i++) {
+      for (var i = 0; i < mdl_qty.length; i++) {
         for (var i = 0; i < mdl_price.length;  i++){
-            if (input[i].checked) {     
-                mdl_qty[i].readOnly = false; 
+            if (input[i].checked) {
+                mdl_qty[i].readOnly = false;
                 mdl_price[i].readOnly = false;
-                mdl_qty[i].value = mdl_qty_h[i].value;         
+                mdl_qty[i].value = mdl_qty_h[i].value;
                 mdl_price[i].value = mdl_price_h[i].value;
                 total += parseFloat(mdl_qty_h[i].value) * parseFloat(mdl_price_h[i].value);
-                // grade = mdl_grade[i].value;
-                // tgl_inv = mdl_tgl_inv[i].value;
-                // curr = mdl_curr[i].value;
-            } else {                
+            } else {
                 mdl_qty[i].readOnly = true;
                 mdl_qty[i].value = '';
                 mdl_price[i].readOnly = true;
                 mdl_price[i].value = '';
 
-            } 
-        }          
+            }
+        }
 
     }
 
 }
-document.getElementsByName("mdl_total")[0].value = formatMoney(total.toFixed(2));    
-document.getElementsByName("mdl_total_h")[0].value = total.toFixed(2);  
-    // alert(grade);
-    // var discount = $('[name="mdl_discount"]').val();
-    // var dp = $('[name="mdl_dp"]').val(); 
-    // var retur = $('[name="mdl_return"]').val(); 
-    // document.getElementsByName("grade_nya")[0].value = grade;   
-    // document.getElementsByName("tanggal_nya")[0].value = tgl_inv;
-    // document.getElementsByName("curr_nya")[0].value = curr;         
-    // document.getElementsByName("mdl_twot")[0].value = (total-discount-dp-retur).toFixed(2);
+document.getElementsByName("mdl_total")[0].value = formatMoney(total.toFixed(2));
+document.getElementsByName("mdl_total_h")[0].value = total.toFixed(2);
 
 }
 
 
-function mdl_input_qty(){ 
+function mdl_input_qty(){
 
     var input = document.getElementsByName("mdl_cek_sj");
     var qty = document.getElementsByName('mdl_qty');
     var qty_h = document.getElementsByName('mdl_qty_h');
     var price = document.getElementsByName('mdl_price');
 
-    var total = 0;  
-    var tot = 0;
+    var total = 0;
 
     for (var i = 0; i < input.length; i++) {
         if (input[i].checked) {
@@ -621,54 +629,44 @@ function mdl_input_qty(){
                 qty[i].value = qty_h[i].value;
             }
 
-            total += parseFloat(qty[i].value) * parseFloat(price[i].value);   
-        }        
-    }       
+            total += parseFloat(qty[i].value) * parseFloat(price[i].value);
+        }
+    }
 
-    document.getElementsByName("mdl_total")[0].value = formatMoney(total.toFixed(2));    
-    document.getElementsByName("mdl_total_h")[0].value = total.toFixed(2);  
+    document.getElementsByName("mdl_total")[0].value = formatMoney(total.toFixed(2));
+    document.getElementsByName("mdl_total_h")[0].value = total.toFixed(2);
 
 }
 
-function mdl_input_price(){ 
+function mdl_input_price(){
 
     var input = document.getElementsByName("mdl_cek_sj");
     var qty = document.getElementsByName('mdl_qty');
     var price = document.getElementsByName('mdl_price');
 
-    var total = 0;  
-    var tot = 0;
+    var total = 0;
 
     for (var i = 0; i < input.length; i++) {
         if (input[i].checked) {
-            total += parseFloat(qty[i].value) * parseFloat(price[i].value);   
-        }         
-    }       
+            total += parseFloat(qty[i].value) * parseFloat(price[i].value);
+        }
+    }
 
-    document.getElementsByName("mdl_total")[0].value = formatMoney(total.toFixed(2));    
-    document.getElementsByName("mdl_total_h")[0].value = total.toFixed(2);  
+    document.getElementsByName("mdl_total")[0].value = formatMoney(total.toFixed(2));
+    document.getElementsByName("mdl_total_h")[0].value = total.toFixed(2);
 
 }
 
-function save_data_po(){ 
+function save_data_po(){
 
-    //Tambah Data Potongan Invoice
-    var total       = $('[name="mdl_total_h"]').val();     
+    var total       = $('[name="mdl_total_h"]').val();
     $('[name="total_value_h"]').val(total);
     $('[name="total_value"]').val(formatMoney(total));
 
-    simpan_temp_po();  
+    simpan_temp_po();
 
 }
 
-// BULK INSERT — dulu tiap baris BPB yg dicentang menembak insert_po_detail_temp.php
-// SATU REQUEST SENDIRI-SENDIRI (N request paralel, tak ditunggu), lalu menunggu
-// setTimeout(1500ms) tebak-tebakan sebelum membaca balik. Kalau baris yg dicentang
-// banyak, sebagian request belum selesai saat batas waktu itu habis — jadi
-// "ceklis banyak, yang masuk cuma sedikit". Sekarang SEMUA baris dikumpulkan lalu
-// dikirim SEKALI lewat insert_po_detail_temp_bulk.php (satu multi-row INSERT, satu
-// transaksi) — begitu respons ini sukses, dijamin SEMUA baris sudah tersimpan,
-// tidak ada lagi tebakan waktu.
 async function simpan_temp_po(){
     var res = await simpan_po_detail_temporary();
     if (res && res.status === 'error') {
@@ -726,13 +724,7 @@ function load_po_detail_temporary() {
         success: function(data){
             $('#tbody2').append(data);
             mdl_input_price();
-            // Baris baru ditambahkan lewat innerHTML/.append(), bukan diketik
-            // user — jadi oninput pada Qty/Price TIDAK pernah terpicu, dan Total
-            // Amount tetap 0 walau datanya sudah masuk. Hitung ulang manual di
-            // sini supaya totalnya langsung benar begitu Save selesai.
             if (typeof hitungRow === 'function') { hitungRow(); }
-            // Modal sudah ditutup di atas; bawa tabel item ke depan mata supaya
-            // user langsung lihat baris yang baru masuk, tidak perlu scroll manual.
             var $card = $('#mytable').closest('.card');
             if ($card.length) {
                 $('html, body').animate({ scrollTop: Math.max(0, $card.offset().top - 80) }, 350);
@@ -776,12 +768,10 @@ function load_po_detail_temporary() {
         });
     });
     $(function() {
-      //Initialize Select2 Elements
       var selectcoba = rowCount;
       $('.rowCount').select2({
          theme: 'bootstrap4'
      })
-      //Initialize Select2 Elements
       $('.select2add').select2({
         theme: 'bootstrap4'
     })
@@ -790,10 +780,9 @@ function load_po_detail_temporary() {
     var element1 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="text-align: right;font-size: 12px;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_qty" name="txt_qty"  oninput="modal_input_qty(value)" autocomplete = "off"></td><td><input style="text-align: right;font-size: 12px;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="text-align: right;font-size: 12px;" type="text" class="form-control" id="tot_row" name="tot_row" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
 
 
-    row.innerHTML = element1;    
+    row.innerHTML = element1;
 }
-    //<td><select class="form-control selectpicker" name="supp" id="supp" data-live-search="true" data-width="250px" data-size="5"> <option value="-" > - </option><?php $sql = mysqli_query($conn1,"select distinct(Supplier) supp from mastersupplier where tipe_sup = 'S' order by Supplier ASC"); foreach ($sql as $coa) : ?> <option value="<?= $coa["supp"]; ?>"><?= $coa["supp"]; ?> </option><?php endforeach; ?></select></td>
-    
+
     function deleteRow()
     {
         try
@@ -847,7 +836,7 @@ function load_po_detail_temporary() {
                     var element2 = '<tr ><td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="text-align: right;font-size: 12px;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_qty" name="txt_qty"  oninput="modal_input_qty(value)" autocomplete = "off"></td><td><input style="text-align: right;font-size: 12px;" type="number" min="1" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td><td><input style="text-align: right;font-size: 12px;" type="text" class="form-control" id="tot_row" name="tot_row" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off"></td><td><input name="chk_a[]" type="checkbox" class="checkall_a" value=""></td></tr>';
                     var newRow = table.insertRow(i+1);
                     newRow.innerHTML = element2;
-                    
+
                 }
 
             }
@@ -889,8 +878,6 @@ function load_po_detail_temporary() {
 <script type="text/javascript">
 $(function () {
     // ---- Search tabel item (client-side, tanpa reload) -------------------------
-    // Baris template (.rdn-tpl-row, selalu display:none) SENGAJA dilewati supaya
-    // tidak ikut ditampilkan cuma karena kotak pencarian sedang kosong.
     $('#itemSearch').on('input', function () {
         var q = $(this).val().toLowerCase();
         $('#tbody2 tr').not('.rdn-tpl-row').each(function () {
@@ -899,9 +886,6 @@ $(function () {
     });
 
     // ---- Jumlah baris di judul tabel --------------------------------------------
-    // Dipantau lewat MutationObserver supaya otomatis ikut berubah dari MANA PUN
-    // baris ditambah/dihapus (Add Row, Interject Row, Delete Row, atau ajax
-    // load_po_detail_temp.php) — tanpa perlu menambah panggilan di tiap fungsi.
     function updateItemRowCount() {
         var n = $('#tbody2 tr').not('.rdn-tpl-row').length;
         $('#itemRowCount').text(n ? (n + ' rows') : '');
@@ -912,10 +896,6 @@ $(function () {
     }
 
     // ---- Isi-cepat Attn/Seasons utk semua baris ---------------------------------
-    // Mengisi #fillAttn/#fillSeasons langsung MENIMPA kolom Attn (td:eq(7)) /
-    // Seasons (td:eq(8)) di SEMUA baris yg sedang ada di #tbody2 (kecuali baris
-    // template yg selalu tersembunyi). Sesudah itu tiap baris tetap bisa diedit
-    // sendiri-sendiri seperti biasa — ini cuma pengisi awal, bukan binding hidup.
     $('#fillAttn').on('input', function () {
         var v = $(this).val();
         $('#tbody2 tr').not('.rdn-tpl-row').each(function () {
@@ -928,21 +908,22 @@ $(function () {
             $(this).find('td:eq(8) input').val(v);
         });
     });
+
+    // Total Amount dihitung ulang begitu halaman siap (baris yg sudah ada
+    // dimuat langsung dari PHP, bukan lewat ajax, jadi hitungRow() perlu
+    // dipanggil manual sekali di awal supaya kartu Total tidak nol/kosong).
+    if (typeof hitungRow === 'function') { hitungRow(); }
 });
 </script>
 
 
 
 <script type="text/javascript">
-  function modal_input_qty(){ 
+  function modal_input_qty(){
 
     var table = document.getElementById("tbody2");
     var tota = 0;
-    var tota_pph = 0;
-    var total_pph = 0;
-    var tota_ppn = 0;
     var harga = 0;
-    var totall = 0;
     for (var i = 1; i < (table.rows.length); i++) {
 
         var qty = document.getElementById("tbody2").rows[i].cells[4].children[0].value || 0;
@@ -960,15 +941,11 @@ $(function () {
     }
 }
 
-function modal_input_amt(){ 
+function modal_input_amt(){
 
     var table = document.getElementById("tbody2");
     var tota = 0;
-    var tota_pph = 0;
-    var total_pph = 0;
-    var tota_ppn = 0;
     var harga = 0;
-    var totall = 0;
     for (var i = 1; i < (table.rows.length); i++) {
 
         var qty = document.getElementById("tbody2").rows[i].cells[4].children[0].value || 0;
@@ -1006,257 +983,42 @@ function modal_input_amt(){
 };
 </script>
 
-
-<!-- <script type="text/javascript">
-    $("input[name=txt_amount]").keyup(function(){
-    var sum_kb = 0;
-    var sum_amount = 0;
-    var sum_total = 0;
-    var sum_balance = 0;        
-    $("input[type=checkbox]:checked").each(function () {        
-    var kb = parseFloat($(this).closest('tr').find('td:eq(5)').attr('data-out'),10) || 0;
-    var amount = parseFloat($(this).closest('tr').find('td:eq(6) input').val(),10) || 0;
-    var balance = parseFloat($(this).closest('tr').find('td:eq(5)').attr('data-out'),10) || 0;
-    var select_amount = $(this).closest('tr').find('td:eq(6) input');                
-    if(amount > balance){
-        sum_kb += kb;
-        select_amount.val(balance);
-        sum_amount += balance;
-        sum_total = sum_kb - sum_amount;
-    }else{
-    sum_kb += kb;
-    sum_amount += amount;
-    sum_total = sum_kb - sum_amount;        
-    }   
-    });
-    $("#subtotal").val(formatMoney(sum_kb));
-    $("#pajak").val(formatMoney(sum_amount));    
-    $("#total").val(formatMoney(sum_total));
-    });
-</script> -->
-
-<!-- -->
-
-<script type="text/javascript">
-    $("input[name=amount]").keyup(function(){
-        var sum_kb = 0;
-        var sum_amount = 0;
-        var sum_total = 0;
-        var sum_balance = 0;        
-        $("input[type=checkbox]:checked").each(function () {        
-            var amount = parseFloat($(this).closest('tr').find('td:eq(5) input').val(),10) || 0;
-
-            sum_amount += amount;
-
-
-        });
-
-        $("#nomrate1").val(formatMoney(sum_amount));    
-        $("#nomrate2").val(formatMoney(sum_amount));    
-
-    });
-</script>
-
-
-<!-- <script type="text/javascript"> 
-<?php echo $jsArray; ?>
-function changeValueACC(id){
-    var select_rate = document.getElementById('rate');   
-    document.getElementById('nama_bank').value = prdName[id].nama_bank;
-    document.getElementById('valuta').value = prdName[id].valuta;
-    document.getElementById('kode').value = prdName[id].kode;
-    if (prdName[id].valuta == 'IDR') {
-            select_rate.disabled = true;
-        }else{
-            select_rate.disabled = false;
-        }
-};
-</script>
--->
-<!-- <script type="text/javascript">
-    $("input[name=rate]").keyup(function(){
-    var ttl_jml = 0;
-    var rat = 0;
-    var valu = '';
-    $("input[type=text]").each(function () {         
-    var rate = parseFloat(document.getElementById('rate').value,10) || 1;
-    var ttl_h = parseFloat(document.getElementById('nominal_h').value,10) || 0;
-    var val = document.getElementById('valuta').value;
-    valu = val;
-    rat = rate;
-    if (valu == 'IDR') {
-    ttl_jml = ttl_h / rate;  
-    }else{
-    ttl_jml = ttl_h * rate;    
-    }
-    });
-   $("#nomrate").val(formatMoney(ttl_jml));
-   $("#nomrate_h").val(ttl_jml);
-   $("#rate_h").val(formatMoney(rat));
-
-    });
-</script> -->
-
-<script type="text/javascript">
-    $("input[name=nominal_h]").keyup(function(){
-        var ttl_jml = 0;
-        var rat = 0;
-        var valu = '';
-        $("input[type=text]").each(function () {         
-            var rate = parseFloat(document.getElementById('rate').value,10) || 1;
-            var ttl_h = parseFloat(document.getElementById('nominal_h').value,10) || 0;
-            var val = document.getElementById('valuta').value;
-            valu = val;
-            rat = ttl_h;
-            if (valu == 'IDR') {
-                ttl_jml = ttl_h / rate;  
-            }else{
-                ttl_jml = ttl_h * rate;    
-            }
-        });
-        $("#nomrate").val(formatMoney(ttl_jml));
-        $("#nomrate_h").val(ttl_jml);
-        $("#nominal").val(formatMoney(rat));
-
-    });
-</script>
-
-<script type="text/javascript">
-    $("#modal-form3").on("click", "#send3", function(){
-        var valu = '';
-        $("input[type=radio]:checked").each(function () {
-            var data = $(this).closest('tr').find('td:eq(1) input').val();
-            valu = data;
-            console.log(data);
-
-
-
-        });
-        $("#txt_forpay").val(valu);
-
-    });
-
-
-</script>
-
-
 <script type="text/javascript">
 // get all number fields
 var numInputs = document.querySelectorAll('input[type="number"]');
 
-// Loop through the collection and call addListener on each element
-Array.prototype.forEach.call(numInputs, addListener); 
+Array.prototype.forEach.call(numInputs, addListener);
 
 
 function addListener(elm,index){
-  elm.setAttribute('min', 1);  // set the min attribute on each field
-  
-  elm.addEventListener('keypress', function(e){  // add listener to each field 
+  elm.setAttribute('min', 1);
+
+  elm.addEventListener('keypress', function(e){
      var key = !isNaN(e.charCode) ? e.charCode : e.keyCode;
-     str = String.fromCharCode(key); 
+     str = String.fromCharCode(key);
      if (str.localeCompare('-') === 0){
        event.preventDefault();
    }
 
 });
-  
+
 }
 </script>
 
-<!-- 
-
 <script type="text/javascript">
-    $("#modal-form2").on("click", "#send2", function(){
-        $("input[type=checkbox]:checked").each(function () {
-            var doc_number = document.getElementById('no_doc').value;
-            var unik_code = document.getElementById('unik_code').value;        
-            var data = $(this).closest('tr').find('td:eq(1) input').val();
-
-
-            $.ajax({
-                type:'POST',
-                url:'insertdoc.php',
-                data: {'doc_number':doc_number, 'unik_code':unik_code, 'data':data},
-                cache: 'false',
-                close: function(e){
-                    e.preventDefault();
-                },
-                success: function(response){
-                    console.log(response);
-                // $('#modal-form2').modal('toggle');
-                // $('#modal-form2').modal('hide');
-                 // alert("Data saved successfully");
-                 window.location.reload(false);
-             },
-             error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                Swal.fire({ icon: 'error', title: 'Error', text: String((xhr && xhr.responseText) || (xhr && xhr.statusText) || xhr) });
-            }
-        });             
-        });
-                // return false; 
-
-            });
-
-
-        </script> -->
-
-<!-- <script type="text/javascript">
-    $("#form-data").on("click", "#btn2", function(){
-        $("input[type=checkbox]:checked").each(function () {
-        var doc_number = document.getElementById('no_doc').value;        
-         
-             
-        $.ajax({
-            type:'POST',
-            url:'hapusdoc.php',
-            data: {'doc_number':doc_number},
-            cache: 'false',
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){
-                console.log(response);
-                // $('#modal-form2').modal('toggle');
-
-                // return false; 
-                },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                Swal.fire({ icon: 'error', title: 'Error', text: String((xhr && xhr.responseText) || (xhr && xhr.statusText) || xhr) });
-            }
-        });             
-        });
- 
-    });
-
-
-</script> -->
-
-<script type="text/javascript">
-    // BULK INSERT — dulu tiap baris item yg dicentang menembak insert_req_dn.php
-    // SATU REQUEST SENDIRI-SENDIRI di dalam $.each() TANPA ditunggu, dan begitu
-    // request PERTAMA selesai langsung window.location = 'request_debitnote.php'
-    // (redirect) — kalau item-nya lebih dari satu, baris2 lain mungkin belum
-    // sempat terkirim/tersimpan saat browser sudah pindah halaman. Sama persis
-    // dgn masalah "ceklis BPB banyak, yg masuk cuma sedikit" yg sudah diperbaiki
-    // di insert_po_detail_temp_bulk.php — polanya sama: kumpulkan semua baris
-    // dulu di JS, baru kirim SEKALI ke insert_req_dn_bulk.php, redirect cuma
-    // sesudah bulk-nya benar2 sukses.
+    // BULK UPDATE — sama alasannya dgn create_request_dn.php: dulu tiap baris
+    // ditembak sendiri-sendiri, sekarang dikumpulkan lalu dikirim SEKALI ke
+    // update_req_dn_bulk.php (yg akan menghapus baris LAMA lalu memasukkan
+    // baris versi TERBARU dalam satu transaksi) supaya tidak ada baris yg
+    // "nanggung" tersimpan sebagian saja.
     $("#form-simpan").on("click", "#simpan", function(){
         var no_req = document.getElementById('no_doc').value;
         var tgl_req = document.getElementById('tgl_doc').value;
         var unik_code = document.getElementById('unik_code').value;
-        var nama_supp = $('select[name=nama_supp] option').filter(':selected').val();
         var deskripsi = document.getElementById('pesan').value;
         var total_amount = document.getElementById('total_value_h').value;
         var create_user = '<?php echo $user; ?>';
 
-        if (!nama_supp) {
-            Swal.fire({ icon: 'warning', title: 'Please Select Supplier' });
-            document.getElementById('nama_supp').focus();
-            return;
-        }
         if (total_amount === '') {
             Swal.fire({ icon: 'warning', title: 'Please Input Amount' });
             return;
@@ -1270,10 +1032,6 @@ function addListener(elm,index){
             return;
         }
 
-        // Kumpulkan semua baris item yg valid (qty & price > 0) dari #tbody2 —
-        // dibatasi ke tr yg ada di dalam #tbody2 (bukan input[type=checkbox]:checked
-        // global spt versi lama, yg bisa saja kena checkbox lain di halaman) dan
-        // tidak termasuk baris template yg selalu tersembunyi.
         var rows = [];
         $('#tbody2 tr').not('.rdn-tpl-row').each(function () {
             var $tr = $(this);
@@ -1290,9 +1048,6 @@ function addListener(elm,index){
                 attn:     $tr.find('td:eq(7) input').val(),
                 seasons:  $tr.find('td:eq(8) input').val(),
                 no_reff:  $tr.find('td:eq(9) input').val(),
-                // Kolom ke-11..15 cuma ada di baris hasil "Select PO" (lihat
-                // load_po_detail_temp.php); baris dari Add Row/Interject Row
-                // tidak punya td ini sama sekali — fallback ke default lama.
                 id_bpb:   $tr.find('td:eq(11)').attr('value') || '',
                 tgl_bpb:  $tr.find('td:eq(12)').attr('value') || '',
                 id_jo:    $tr.find('td:eq(13)').attr('value') || '-',
@@ -1308,22 +1063,26 @@ function addListener(elm,index){
 
         $.ajax({
             type:'POST',
-            url:'insert_req_dn_h.php',
-            data: {'no_req':no_req, 'tgl_req':tgl_req, 'unik_code':unik_code, 'nama_supp':nama_supp, 'deskripsi':deskripsi, 'total_amount':total_amount, 'create_user':create_user},
+            url:'update_req_dn_h.php',
+            data: {'no_req':no_req, 'tgl_req':tgl_req, 'unik_code':unik_code, 'deskripsi':deskripsi, 'total_amount':total_amount, 'create_user':create_user},
+            dataType: 'json',
             cache: 'false',
             close: function(e){
                 e.preventDefault();
             },
-            success: function(response){
-                console.log(response);
+            success: function(hres){
+                if (!hres || hres.status !== 'success') {
+                    Swal.fire({ icon: 'error', title: 'Failed to save request', text: (hres && hres.message) || 'Unknown error' });
+                    return;
+                }
                 $.ajax({
                     type: 'POST',
-                    url: 'insert_req_dn_bulk.php',
+                    url: 'update_req_dn_bulk.php',
                     data: { unik_code: unik_code, create_user: create_user, rows: JSON.stringify(rows) },
                     dataType: 'json'
                 }).done(function (res) {
                     if (res && res.status === 'success') {
-                        Swal.fire({ icon: 'success', title: 'Data Saved Successfully', text: 'Document Number ' + res.no_req }).then(function () {
+                        Swal.fire({ icon: 'success', title: 'Data Updated Successfully', text: 'Document Number ' + res.no_req }).then(function () {
                             window.location = 'request_debitnote.php';
                         });
                     } else {
@@ -1343,16 +1102,7 @@ function addListener(elm,index){
 </script>
 
 <script type="text/javascript">
-    $("#select_all").click(function() {
-      var c = this.checked;
-      $(':checkbox').prop('checked', c);
-  });
-</script>
-
-<script type="text/javascript">
     // ---- Search per tabel (client-side, tanpa reload) --------------------------
-    // Kedua tabel (PO & BPB) diisi via ajax .append(), jadi search-nya di-delegasi
-    // dari elemen yang statis (form-nya), bukan dari tbody yang isinya berganti.
     function tableRowFilter(inputSel, tbodySel) {
         $(document).on('input', inputSel, function () {
             var q = $(this).val().toLowerCase();
@@ -1365,86 +1115,15 @@ function addListener(elm,index){
     tableRowFilter('#bpbSearch', '#details_sj');
 
     // ---- Check All utk tabel BPB ------------------------------------------------
-    // Checkbox tiap baris BPB semuanya bernama sama (mdl_cek_sj) dan dipakai
-    // modal_sum_total_sj() utk menghitung ulang Total — dipanggil SEKALI setelah
-    // semua baris dicentang, bukan per baris (checkbox baris pakai onclick, bukan
-    // event change, jadi .prop() saja tidak memicu perhitungan).
     $(document).on('change', '#bpb_check_all', function () {
         var c = this.checked;
         $("#details_sj input[name='mdl_cek_sj']").prop('checked', c);
         if (typeof modal_sum_total_sj === 'function') { modal_sum_total_sj(); }
     });
-    // Kalau ada baris yang di-uncheck manual, lepas juga centang "check all"-nya
-    // supaya tidak menyesatkan (kelihatan tercentang semua padahal tidak).
     $(document).on('click', "#details_sj input[name='mdl_cek_sj']", function () {
         if (!this.checked) { $('#bpb_check_all').prop('checked', false); }
     });
 </script>
-
-<script type="text/javascript">
-    $("#form-simpan").on("click", "#batal", function(){
-        $("input[type=checkbox]:checked").each(function () {
-            var doc_number = document.getElementById('no_doc').value;        
-
-
-            $.ajax({
-                type:'POST',
-                url:'hapusdoc.php',
-                data: {'doc_number':doc_number},
-                cache: 'false',
-                close: function(e){
-                    e.preventDefault();
-                },
-                success: function(response){
-                    console.log(response);
-                // $('#modal-form2').modal('toggle');
-
-                // return false; 
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                Swal.fire({ icon: 'error', title: 'Error', text: String((xhr && xhr.responseText) || (xhr && xhr.statusText) || xhr) });
-            }
-        });             
-        });
-
-    });
-
-
-</script>
-<!--<script>
-    $(document).ready(){
-        $('#mybpb').click(function){
-            $('#mymodal').modal('show');
-        }
-    }
-</script>-->
-<!--<script>
-$(document).ready(function() {   
-    $("#send").click(function(e) {
-        e.preventDefault();
-        var datas= $(this).children("option:selected").val();
-        $.ajax({
-            type:"post",
-            url:"cek.php",
-            dataType: "json",
-            data: {datas:datas},
-            success: function(data){
-                alert("Success: " + data);
-            }
-        });               
-    });
-</script>-->
-<!--<script>
-$(document).ready(function (){
-    $("select.selectpicker").change(function(){
-        var selectedbpb = $(this).children("option:selected").val();
-        document.getElementById("bpbvalue").value = selectedbpb;             
-    });
-});
-</script>-->
-<!--<script src="//netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>-->
 
 </body>
 

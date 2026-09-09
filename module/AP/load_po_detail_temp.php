@@ -14,14 +14,24 @@ $table = '';
                 $qty = $row['qty_tagih'];
                 $total = $price * $qty;
 			
-            $table .= '<tr>       
+            // Kolom yg datanya berasal dari PO/BPB (No PO..Total) dikunci `readonly`:
+            // ini data hasil pilihan di modal "Add Data", bukan ketikan manual, jadi
+            // tidak boleh diubah lagi di sini. .form-control TETAP dipakai (bukan
+            // diganti <span>/teks polos) supaya semua JS yang membaca .val() dari
+            // sel ini (hitungRow, deleteRow, Save) tidak perlu diubah sama sekali —
+            // readonly cukup memblokir pengetikan; tampilannya dibuat mirip teks
+            // polos lewat CSS (lihat #mytable tbody .form-control[readonly] di
+            // create_request_dn.php). Baris kosong dari Add Row / Interject Row
+            // TIDAK lewat sini (dibuat oleh template JS-nya sendiri) jadi tetap
+            // bisa diisi manual seperti biasa.
+            $table .= '<tr>
                         <td><input type="checkbox" id="select" name="select[]" value="" checked disabled></td>
-                        <td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" value="'.$row['no_po'].'" placeholder="" autocomplete="off"></td>
-                        <td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" value="'.$row['no_bpb'].'" placeholder="" autocomplete="off"></td>
-                        <td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" value="'.$row['itemdesc'].'" placeholder="" autocomplete="off"></td>
-                        <td><input style="text-align: right;font-size: 12px;" type="number" min="1" value="'.$row['qty_tagih'].'" style="font-size: 12px;" class="form-control" id="txt_qty" name="txt_qty"  oninput="modal_input_qty(value)" autocomplete = "off"></td>
-                        <td><input style="text-align: right;font-size: 12px;" type="number" min="1" value="'.$row['price_tagih'].'" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off"></td>
-                        <td><input style="text-align: right;font-size: 12px;" type="text" class="form-control" id="tot_row" name="tot_row" value="'.$total.'" placeholder="" autocomplete="off"></td>
+                        <td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" value="'.$row['no_po'].'" placeholder="" autocomplete="off" readonly tabindex="-1"></td>
+                        <td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" value="'.$row['no_bpb'].'" placeholder="" autocomplete="off" readonly tabindex="-1"></td>
+                        <td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" value="'.$row['itemdesc'].'" placeholder="" autocomplete="off" readonly tabindex="-1"></td>
+                        <td><input style="text-align: right;font-size: 12px;" type="number" min="1" value="'.$row['qty_tagih'].'" style="font-size: 12px;" class="form-control" id="txt_qty" name="txt_qty"  oninput="modal_input_qty(value)" autocomplete = "off" readonly tabindex="-1"></td>
+                        <td><input style="text-align: right;font-size: 12px;" type="number" min="1" value="'.$row['price_tagih'].'" style="font-size: 12px;" class="form-control" id="txt_amount" name="txt_amount"  oninput="modal_input_amt(value)" autocomplete = "off" readonly tabindex="-1"></td>
+                        <td><input style="text-align: right;font-size: 12px;" type="text" class="form-control" id="tot_row" name="tot_row" value="'.$total.'" placeholder="" autocomplete="off" readonly tabindex="-1"></td>
                         <td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off" value=""></td>
                         <td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off" value=""></td>
                         <td><input style="font-size: 12px;" type="text" class="form-control" name="keterangan[]" placeholder="" autocomplete="off" value="'.$row['styleno'].'"></td>

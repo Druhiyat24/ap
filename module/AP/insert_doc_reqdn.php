@@ -1,45 +1,58 @@
-<?Php 
+<?php
+// ============================================================================
+// Upload dokumen lampiran Request Debit Note.
+// SEKARANG BOLEH BERULANG KALI per no_req — dulu tombol upload di list otomatis
+// disembunyikan begitu SATU dokumen sudah ada, jadi cuma bisa 1 dokumen per
+// request. Tabel req_dn_dok sendiri memang sudah dari dulu tidak punya unique
+// constraint di no_req (bisa banyak baris), cuma UI lama yang membatasinya.
+//
+// Nama file FISIK dibuat UNIK (kode no_req + timestamp + random) — dulu nama
+// file fisik = nama file asli (spasi dibuang saja), jadi 2 request BERBEDA yang
+// kebetulan upload file dgn nama sama akan SALING TIMPA file-nya di file_pdf/.
+// Sekarang risiko itu makin nyata karena 1 request bisa punya banyak dokumen
+// sekaligus. Nama asli tetap disimpan di file_name_as supaya user tetap lihat
+// nama yang mereka kenal di daftar dokumen.
+//
+// Dulu file ini POST biasa (submit form -> redirect penuh via Header()) dan
+// bahkan sempat memanggil alert() di PHP (fungsi yang tidak ada di PHP, cuma
+// tidak pernah kepanggil krn move_uploaded_file kedua selalu gagal/false sebab
+// file sementara sudah dipindah di baris sebelumnya). Sekarang dijadikan AJAX
+// murni (respons JSON) supaya modalnya tidak perlu reload halaman dan bisa
+// dipakai upload berkali-kali tanpa menutup modal.
+// ============================================================================
+ini_set('display_errors', '0');
+error_reporting(E_ERROR | E_PARSE);
 include '../../conn/conn.php';
 ini_set('date.timezone', 'Asia/Jakarta');
+header('Content-Type: application/json; charset=utf-8');
 
-$txt_no_req       = $_POST['txt_no_req'];
-$txt_nama_supp       = $_POST['txt_nama_supp'];
-$txt_user       = $_POST['txt_user'];
-$txt_status       = $_POST['txt_status'];
-$txt_start_date       = date("Y-m-d",strtotime($_POST['txt_start_date']));
-$txt_end_date       = date("Y-m-d",strtotime($_POST['txt_end_date']));
-$create_date    = date("Y-m-d H:i:s");
+function rdd_out($a) { echo json_encode($a); exit; }
 
- $name_upload = $txt_no_req.".pdf";
- $nameupload = str_replace('/', '', $name_upload);
-    
-if (isset($_FILES['txtfile'])) {
-        $nama_file = $_FILES['txtfile']['name'];
-        $tmp_file = $_FILES['txtfile']['tmp_name'];
-        $filename = str_replace(' ', '', $nama_file);
-        $path = "file_pdf/" . $filename;
-        // $path = "//10.10.5.2/xampp\htdocs\ap\module\AP\File;
-        move_uploaded_file($tmp_file, $path);
-    } else {
-        $nama_file = "";
-    }
+$txt_no_req = trim($_POST['txt_no_req'] ?? '');
+$txt_user   = trim($_POST['txt_user'] ?? '');
 
-$query = "INSERT INTO req_dn_dok (no_req, file_name, file_name_as, created_by, created_date) 
-VALUES 
-    ('$txt_no_req', '$filename','$nameupload', '$txt_user', '$create_date')";
-$execute = mysqli_query($conn2,$query);
-    If (move_uploaded_file($tmp_file, $path)) {
-        alert("Upload Berhasil!");
-        Header("Location: request_debitnote.Php?nama_supp=$txt_nama_supp&status=$txt_status&start_date=$txt_start_date&end_date=$txt_end_date");
-        Exit();
-    } Else {
-        // echo "Not uploaded because of error #".$_FILES["txtfile"]["error"];
-        // Echo $_FILES['txtfile']['tmp_name'];
-        // echo "<pre>";
-        // print_r($_FILES);
-        // echo "</pre>";
-        Header("Location: request_debitnote.Php?nama_supp=$txt_nama_supp&status=$txt_status&start_date=$txt_start_date&end_date=$txt_end_date");
-        Exit();
-    }
+if ($txt_no_req === '') { rdd_out(['status' => 'error', 'message' => 'No Request is empty.']); }
+if (empty($_FILES['txtfile']['name'])) { rdd_out(['status' => 'error', 'message' => 'Please choose a file to upload.']); }
+if ($_FILES['txtfile']['error'] !== UPLOAD_ERR_OK) { rdd_out(['status' => 'error', 'message' => 'Upload failed (error code ' . $_FILES['txtfile']['error'] . ').']); }
 
- ?>
+$origName = $_FILES['txtfile']['name'];
+$tmpFile  = $_FILES['txtfile']['tmp_name'];
+$ext      = strtolower(pathinfo($origName, PATHINFO_EXTENSION)) ?: 'pdf';
+$baseCode = preg_replace('/[^A-Za-z0-9]/', '', $txt_no_req);
+$physical = $baseCode . '_' . date('YmdHis') . '_' . mt_rand(1000, 9999) . '.' . $ext;
+$path     = 'file_pdf/' . $physical;
+
+if (!move_uploaded_file($tmpFile, $path)) {
+    rdd_out(['status' => 'error', 'message' => 'Failed to save the uploaded file on the server.']);
+}
+
+$e = function ($v) use ($conn2) { return mysqli_real_escape_string($conn2, (string) $v); };
+$sql = "INSERT INTO req_dn_dok (no_req, file_name, file_name_as, created_by, created_date) VALUES ('"
+     . $e($txt_no_req) . "', '" . $e($physical) . "', '" . $e($origName) . "', '" . $e($txt_user) . "', '" . date('Y-m-d H:i:s') . "')";
+
+if (!mysqli_query($conn2, $sql)) {
+    @unlink($path);
+    rdd_out(['status' => 'error', 'message' => 'Failed to save the record: ' . mysqli_error($conn2)]);
+}
+
+rdd_out(['status' => 'success']);
