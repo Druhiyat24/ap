@@ -2035,7 +2035,7 @@ $has_fs_menu = ($q_fsmenu && ($rw_fs = mysqli_fetch_assoc($q_fsmenu)) && (int)$r
 if($has_fs_menu){
  echo'<a href="../AP/financial_statement.php" class="dropdown-item bg-dark text-white">
  <span class="fa fa-balance-scale fa-fw"></span>
- <span class="menu-collapsed">Financial Statement (New)</span>
+ <span class="menu-collapsed">Financial Statement</span>
  </a>';
 }
 
