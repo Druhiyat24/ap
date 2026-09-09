@@ -1,147 +1,30 @@
 <?php include '../header.php' ?>
 
-<style type="text/css">
-     label {
-    font-size: 14px;
-    ;
-  }
-
-  input {
-    font-size: 14px;
-    ;
-  }
-
-
-  .tabcontent {
-    display: none;
-    animation: fadeEffect 0.3s;
-  }
-
-  @keyframes fadeEffect {
-    from {
-      opacity: 0;
-    }
-
-    to {
-      opacity: 1;
-    }
-  }
-
-  .tab-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 8px;
-    background: #f4f6f9;
-    border-radius: 10px;
-    border: 1px solid #ddd;
-  }
-
-  .tablinks {
-    border: none;
-    background: #ffffff;
-    color: #555;
-    padding: 8px 14px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  }
-
-  .tablinks:hover {
-    background: #007bff;
-    color: #fff;
-    transform: translateY(-1px);
-  }
-
-  .tablinks.active {
-    background: linear-gradient(135deg, #007bff, #0056b3);
-    color: #fff;
-    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.35);
-  }
-
-  table.dataTable th,
-  table.dataTable td {
-    white-space: nowrap;
-    vertical-align: middle;
-  }
-
-  .dataTables_scrollHeadInner,
-  .dataTables_scrollBody table {
-    width: 100% !important;
-  }
-
-  .select2-container .select2-selection--single {
-    height: calc(2.25rem + 2px);
-  }
-
-  .select2-container--default .select2-selection--single .select2-selection__rendered {
-    line-height: 2.25rem;
-  }
-
-  .select2-container--default .select2-selection--single .select2-selection__arrow {
-    height: calc(2.25rem + 2px);
-  }
-
-  .table-gradient th {
-    background: #1E3A8A;
-    color: #fff;
-    text-align: center;
-    vertical-align: middle;
-    white-space: nowrap;
-  }
-
-  div.dataTables_wrapper .dataTables_paginate {
-    float: right;
-    margin-top: 10px;
-  }
-
-  div.dataTables_wrapper .dataTables_info {
-    float: left;
-    margin-top: 10px;
-  }
-
-  #mytablenone .form-control {
-    width: 100% !important;
-  }
-
-  #mytablenone .bootstrap-select {
-    width: 100% !important;
-  }
-
-  .total-box{
-    border:1px solid #dcdcdc;
-    border-radius:6px;
-    padding:15px;
-    background:#fafafa;
-}
-
-.total-box h6{
-    font-weight:bold;
-    margin-bottom:15px;
-    border-bottom:1px solid #ddd;
-    padding-bottom:5px;
-}
-
+<!-- Skin UI bersama (kartu, tabel, badge, tombol, dropdown, tanggal, loading) -->
+<link rel="stylesheet" href="../css/app-skin.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-skin.css'); ?>">
+<style>
+/* Halaman-spesifik: tabel GL pakai scrollX/scrollY bawaan DataTables (bukan
+   .app-dt-scroll) supaya area tabel tetap terbatas tingginya (350px) spt semula. */
+#table-data td.text-right, #table-data th.text-right{ text-align:right; font-variant-numeric:tabular-nums; }
+/* No Journal jadi link supaya jelas bisa diklik utk lihat detail jurnalnya. */
+a.gl-doc-link{ color:#1d4ed8; font-weight:600; text-decoration:none; }
+a.gl-doc-link:hover{ text-decoration:underline; }
 </style>
 
 <!-- MAIN -->
 <div class="container-fluid mt-4 p-4">
   <!-- Card Filter -->
-  <div class="card shadow border-0">
-    <div class="card-header text-white py-2 px-3" 
-    style="background: linear-gradient(90deg, #191970, #1e90ff);">
-    <h5 class="mb-0"><i class="fas fa-file-alt"></i> GENERAL LEDGER</h5>
-</div>
+  <div class="card app-card border-0">
+    <div class="card-header app-card-header">
+      <h5><i class="fas fa-file-alt"></i> GENERAL LEDGER</h5>
+    </div>
 
-<div class="card-body p-3">
-  <form id="form-data" action="general_ledger.php" method="post">
-    <div class="row g-3">
-      <!-- Supplier -->
-      <div class="col-md-4">
-        <label for="nama_type"><b>No COA</b></label>   
+    <div class="card-body p-3">
+      <form id="form-data" action="general_ledger.php" method="post">
+        <div class="row g-3">
+          <!-- COA -->
+          <div class="col-md-3">
+            <label class="app-flabel">No COA</label>
             <select class="form-control select2" name="coa_number" id="coa_number" data-live-search="true">
                 <option value="">Select Coa Number</option>
                 <?php
@@ -153,10 +36,10 @@
                 }
                 ?>
             </select>
-      </div>
+          </div>
 
-      <div class="col-md-2">
-        <label for="nama_type"><b>Profit Center</b></label>   
+          <div class="col-md-2">
+            <label class="app-flabel">Profit Center</label>
             <select class="form-control select2" name="profit_center" id="profit_center" data-live-search="true">
                 <option value="ALL">ALL</option>
                 <?php
@@ -168,88 +51,81 @@
                 }
                 ?>
             </select>
-      </div>
+          </div>
 
-    <!-- Spacer biar rata -->
-    <div class="col-md-5"></div>
+          <div class="col-md-2">
+            <label class="app-flabel">From</label>
+            <input type="text" name="start_date" id="start_date" class="form-control form-control-sm tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off">
+          </div>
+          <div class="col-md-2">
+            <label class="app-flabel">To</label>
+            <input type="text" name="end_date" id="end_date" class="form-control form-control-sm tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off">
+          </div>
 
-    <div class="col-md-2 mb-2">
-        <label><b>From</b></label>
-        <input type="text" name="start_date" id="start_date" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off">
+          <div class="col-md-3 d-flex align-items-end">
+            <div class="app-actions">
+              <button type="button" class="app-btn app-btn-primary app-btn-ctl" onclick="dataTableReload()"><i class="fa fa-search"></i> Search</button>
+              <button type="button" class="app-btn app-btn-success app-btn-ctl" onclick="ExportGL()"><i class="fa fa-file-excel"></i> Excel</button>
+            </div>
+          </div>
+        </div>
+      </form>
     </div>
-    <div class="col-md-2 mb-2">
-        <label><b>To</b></label>
-        <input type="text" name="end_date" id="end_date" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off">
-    </div>
+  </div>
 
-    <div class="col-md-2 mb-2 d-flex align-items-end">
-        <button type="button" class="btn btn-info btn-sm mr-2" onclick="dataTableReload()">
-            <i class="fa fa-search"></i> Search
-        </button>
-
-        <button type="button" class="btn btn-success btn-sm" onclick="ExportGL()">
-            <i class="fa fa-file-excel"></i> Excel
-        </button>
-    </div>   
-
-</div>
-
-</form>
-</div>
-</div>
-
-<!-- Card Table -->
-<div class="card shadow border-0 mt-4">
+  <!-- Card Table -->
+  <div class="card app-card border-0 mt-4">
     <div class="card-body p-4">
-      <div class="table-responsive">
-          <table id="table-data" 
-          class="table table-striped table-bordered table-hover table-sm nowrap" >
-          <thead class="table-gradient">
+      <!-- .app-loading-wrap: area yg ditutup overlay loading saat tabel memuat data -->
+      <div class="app-loading-wrap" id="glLoad">
+        <div class="app-loading">
+          <div class="app-loading-box">
+            <div class="app-spinner"><span>NAG</span></div>
+            <div class="app-loading-text">Loading data...</div>
+          </div>
+        </div>
+        <table id="table-data" class="table table-hover app-dt nowrap" style="width:100%">
+          <thead>
             <tr>
-                <th style="text-align: center;vertical-align: middle;">No Journal</th>
-                <th style="text-align: center;vertical-align: middle;">Date</th>
-                <th style="text-align: center;vertical-align: middle;">Profit Center</th>
-                <th style="text-align: center;vertical-align: middle;">Reff Document</th>
-                <th style="text-align: center;vertical-align: middle;">Descriptions</th>
-                <th style="text-align: center;vertical-align: middle;">Debit</th>
-                <th style="text-align: center;vertical-align: middle;">Credit</th>
-                <th style="text-align: center;vertical-align: middle;">Saldo</th>
+              <th>No Journal</th>
+              <th>Date</th>
+              <th>Profit Center</th>
+              <th>Reff Document</th>
+              <th>Descriptions</th>
+              <th>Debit</th>
+              <th>Credit</th>
+              <th>Saldo</th>
             </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
-</div>
-</div>
-</div>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- CSS -->
-<style>
-  .table-gradient th {
-    background: #1E3A8A;
-    color: #fff;
-    text-align: center;
-    vertical-align: middle;
-    white-space: nowrap;
-}
-div.dataTables_wrapper .dataTables_paginate {
-    float: right;
-    margin-top: 10px;
-}
-div.dataTables_wrapper .dataTables_info {
-    float: left;
-    margin-top: 10px;
-}
-
-
-</style>
-
+<!-- ===== Modal detail jurnal (dipakai saat No Journal diklik) — pola sama
+     dgn popup detail dokumen di ppn_masukan_report.php. ===== -->
+<div class="modal fade" id="glDocModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog app-modal modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fa fa-file-text-o"></i> <span id="glDocTitle">Journal Detail</span></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span class="fa fa-times"></span></button>
+      </div>
+      <div class="modal-body" id="glDocBody"></div>
+      <div class="modal-footer">
+        <button type="button" class="app-btn app-btn-light app-btn-sm" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Bootstrap core JavaScript -->
 <script src="../vendor/jquery/jquery.min.js"></script>
 <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>  
+<script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
 <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/xlsx.full.min.js"></script>
@@ -313,13 +189,6 @@ div.dataTables_wrapper .dataTables_info {
 </script>
 
 <script type="text/javascript">
-  function toYmd(dmy) {
-    if (!dmy) return '';
-    let p = dmy.split('-'); // [dd, mm, yyyy]
-    return `${p[2]}-${p[1]}-${p[0]}`;
-  }
-
-
   let datatable = $("#table-data").DataTable({
     ordering: false,
     processing: true,
@@ -378,17 +247,37 @@ div.dataTables_wrapper .dataTables_info {
                   maximumFractionDigits: 4
                 });
               }
+            },
+            {
+              // No Journal jadi link (kecuali baris SALDO AWAL yg isinya '-')
+              // supaya bisa diklik utk lihat detail jurnalnya, spt di PPN Masukan.
+              targets: 0,
+              render: function (data, type) {
+                if (type !== 'display') { return data; }
+                if (!data || data === '-') { return data; }
+                var s = String(data);
+                var escd = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                return '<a href="javascript:void(0)" class="gl-doc-link" data-doc="' + escd + '">' + escd + '</a>';
+              }
             }
             ],
+
+      language: {
+        processing:  '<i class="fa fa-spinner fa-spin"></i> Loading...',
+        emptyTable:  '<div class="app-empty"><i class="fa fa-inbox"></i>No data found</div>',
+        zeroRecords: '<div class="app-empty"><i class="fa fa-search"></i>No matching records</div>',
+        info:        'Showing _START_&ndash;_END_ of _TOTAL_ entries',
+        infoEmpty:   'Showing 0 entries'
+      },
 
 initComplete: function () {
   this.api().columns.adjust();
 }
 });
 
-
-$('#table-pcs-bpb').on('draw.dt', function () {
-  datatable.columns.adjust();
+// Overlay loading (skin .app-loading) mengikuti status processing DataTables.
+datatable.on('processing.dt', function (e, settings, processing) {
+  $('#glLoad').toggleClass('is-loading', processing);
 });
 
 $("[data-toggle=tooltip]").tooltip();
@@ -398,6 +287,83 @@ function dataTableReload() {
     datatable.columns.adjust();
   });
 }
+
+// ===== Klik No Journal -> modal detail jurnal (pola sama dgn PPN Masukan
+// Sub Ledger's document detail popup) =====
+var glEsc = function (s) {
+  return String(s === null || s === undefined ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+};
+var glNf = function (v) {
+  v = parseFloat(v); if (isNaN(v)) { v = 0; }
+  return v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+var glDmy = function (s) {
+  if (!s || s === '0000-00-00') { return '-'; }
+  var p = String(s).substr(0, 10).split('-');
+  if (p.length !== 3) { return s; }
+  var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return p[2] + '-' + (m[parseInt(p[1], 10) - 1] || p[1]) + '-' + p[0];
+};
+var glInfo = function (label, val) {
+  return '<div><b>' + glEsc(label) + '</b><span>' + (val === '' || val === null || val === undefined ? '-' : glEsc(val)) + '</span></div>';
+};
+
+$('#table-data').on('click', 'a.gl-doc-link', function () {
+  var doc = $(this).data('doc') || '';
+  $('#glDocTitle').text(doc);
+  $('#glDocBody').html('<div class="text-center" style="padding:38px 0;">' +
+    '<div class="app-spinner" style="margin:0 auto;"><span>NAG</span></div>' +
+    '<div class="app-loading-text" style="margin-top:12px;">Loading detail...</div></div>');
+  $('#glDocModal').modal('show');
+
+  $.post('ajx_gl_detail.php', { no_journal: doc }, null, 'json')
+    .done(function (res) {
+      if (!res || res.status !== 'success') {
+        $('#glDocBody').html('<div class="app-empty" style="padding:30px 0;"><i class="fa fa-exclamation-triangle"></i>' +
+          glEsc((res && res.message) ? res.message : 'Failed to load detail.') + '</div>');
+        return;
+      }
+      var h = res.head, t = res.total, html = '';
+
+      html += '<div class="app-mod-info">' +
+        glInfo('Document No', h.no_journal) + glInfo('Document Date', glDmy(h.tgl_journal)) +
+        glInfo('Type', h.type_journal) + glInfo('Tax Invoice No', h.faktur_pajak) +
+        glInfo('Supplier', h.supplier) + glInfo('Profit Center', h.profit_center) +
+        glInfo('Status', h.status) + '</div>';
+
+      html += '<div class="app-mod-sec">Journal lines (' + res.lines.length + ')</div>' +
+        '<div class="app-mod-scroll"><table class="app-mod-tbl coa-tbl"><thead><tr>' +
+        '<th>COA</th><th>Cost Center</th><th>Reff Doc</th><th>Curr</th><th class="num">Rate</th>' +
+        '<th class="num">Debit</th><th class="num">Credit</th>' +
+        '<th class="num">Debit IDR</th><th class="num">Credit IDR</th><th>Description</th>' +
+        '</tr></thead><tbody>';
+      $.each(res.lines, function (i, r) {
+        html += '<tr>' +
+          '<td><b>' + glEsc(r.no_coa) + '</b><br><span style="color:#64748b;">' + glEsc(r.nama_coa) + '</span></td>' +
+          '<td>' + glEsc(r.no_costcenter) + '</td>' +
+          '<td class="nowrap">' + glEsc(r.reff_doc) + '</td>' +
+          '<td class="nowrap">' + glEsc(r.curr) + '</td>' +
+          '<td class="num">' + glNf(r.rate) + '</td>' +
+          '<td class="num">' + glNf(r.debit) + '</td>' +
+          '<td class="num">' + glNf(r.credit) + '</td>' +
+          '<td class="num">' + glNf(r.debit_idr) + '</td>' +
+          '<td class="num">' + glNf(r.credit_idr) + '</td>' +
+          '<td>' + glEsc(r.keterangan) + '</td></tr>';
+      });
+      html += '</tbody><tfoot><tr>' +
+        '<th colspan="5">TOTAL</th>' +
+        '<th class="num">' + glNf(t.debit) + '</th><th class="num">' + glNf(t.credit) + '</th>' +
+        '<th class="num">' + glNf(t.debit_idr) + '</th><th class="num">' + glNf(t.credit_idr) + '</th>' +
+        '<th></th></tr></tfoot></table></div>';
+
+      $('#glDocBody').html(html);
+    })
+    .fail(function () {
+      $('#glDocBody').html('<div class="app-empty" style="padding:30px 0;">' +
+        '<i class="fa fa-exclamation-triangle"></i>Failed to contact the server.</div>');
+    });
+});
 
 
 function ExportGL() {
