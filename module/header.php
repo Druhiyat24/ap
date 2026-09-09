@@ -1932,14 +1932,9 @@ echo'</ul>
          <span class="menu-collapsed">List Journal</span>
          </a>';
      }if(strpos($id, '52') !== false){ 
-         echo'<a href="../AP/general-ledger.php" class="dropdown-item bg-dark text-white">
+         echo'<a href="../AP/general_ledger.php" class="dropdown-item bg-dark text-white">
          <span class="fa fa-print fa-list"></span>
          <span class="menu-collapsed">General Ledger</span>
-         </a>';
-         if($user == 'indro' || $user == 'willy' || $user == 'steven'){
-            echo'<a href="../AP/general_ledger.php" class="dropdown-item bg-dark text-white">
-         <span class="fa fa-print fa-list"></span>
-         <span class="menu-collapsed">General Ledger New</span>
          </a>';
           }
      }if(strpos($id, '104') !== false){ // SEMENTARA tampil lagi utk pembanding (tampilan lama)
