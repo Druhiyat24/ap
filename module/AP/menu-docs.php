@@ -1964,6 +1964,7 @@ $menuGroups = [
                         ['name' => 'Input Manual', 'icon' => 'fa-keyboard-o', 'desc' => 'Mengisi baris jurnal langsung lewat form.'],
                         ['name' => 'Journal From HRIS', 'icon' => 'fa-users', 'desc' => 'Menarik data payroll dari basis data HRIS terpisah (hris_nag) dan mengonversinya menjadi baris jurnal.'],
                         ['name' => 'Upload', 'icon' => 'fa-upload', 'desc' => 'Mengunggah berkas berisi banyak baris jurnal sekaligus, diproses lewat tabel staging sementara.'],
+                        ['name' => 'PPN Masukan', 'icon' => 'fa-file-text-o', 'desc' => 'Tab ke-4: unggah rekap faktur pajak masukan, lalu dibentuk jurnal DEBIT 2.52.03 rinci per faktur dan CREDIT 1.52.04 yang DIGRUP per supplier+faktur (bukan 1:1 dgn baris debitnya).'],
                     ],
                     'flow' => [
                         ['title' => 'Buat jurnal', 'desc' => 'Ketiga jalur (Manual/HRIS/Upload) sama-sama menyimpan header+detail ke <code>tbl_memorial_journal</code> DAN ke <code>tbl_list_journal</code> (tabel jurnal umum tunggal yang dipakai bersama BPB, Bank Out, Kontrabon, Payment Voucher, dst.) — keduanya langsung berstatus "Post" saat disimpan, BUKAN "Draft".'],
@@ -1984,6 +1985,7 @@ $menuGroups = [
                         ['name' => 'jurnal', 'db' => 'MySQL hris_nag @ 10.10.5.111 (conn3)', 'actions' => ['update'], 'desc' => 'Khusus jalur "Journal From HRIS" — tautan dilepas (no_journal dikosongkan) saat jurnal hasil tarikan HRIS ini dibatalkan.'],
                         ['name' => 'log_jurnal_bpjs', 'db' => 'MySQL hris_nag @ 10.10.5.111 (conn3)', 'actions' => ['update'], 'desc' => 'Khusus jalur "Journal From HRIS" — ditandai status "CANCEL" saat jurnal hasil tarikan HRIS ini dibatalkan.'],
                         ['name' => 'tbl_memorial_journal_temp', 'actions' => ['delete'], 'desc' => 'Tabel staging khusus jalur Upload — baris dihapus setelah berhasil dipindahkan menjadi jurnal permanen.'],
+                        ['name' => 'tbl_ppn_masukan_upload', 'actions' => ['insert', 'update'], 'desc' => 'Penampung rinci faktur pajak masukan hasil unggahan (jalur PPN Masukan) — barisnya TIDAK dihapus setelah dijurnal, melainkan ditandai status "Post" + diisi no_mj, sehingga tetap bisa ditelusuri per faktur.'],
                     ],
                     'tables_read' => [
                         ['name' => 'mastercoa_v2', 'desc' => 'Master COA - flag grup (support_gen_adm, support_prod, prod, support_sell) menentukan Cost Center mana yang sah untuk COA tersebut, sekaligus menentukan COA wajib Cost Center atau tidak.'],
