@@ -100,37 +100,13 @@ function status_build_query($conn, $filter, $nama_supp, $start_date, $end_date)
                  inner join so on ac.id=so.id_cost
                  inner join jo_det jod on so.id=jod.id_so group by id_jo)";
 
-    // ---- Dokumen sumber: BPB UNION BPPB ------------------------------------
-    // Kolom kedua ('bpbno_int') menampung nomor BPB MAUPUN BPPB, sehingga
-    // seluruh join di bawahnya (verifikasi, kontrabon, list payment, pelunasan)
-    // tidak perlu diubah - cukup ikut mengenali nomor BPPB.
-    // No SJ / No WS / Style dikosongkan untuk BPPB: kolom `bppb`.invno TERBUKTI
-    // selalu kosong untuk dokumen BPPB (dicek 15 dokumen Agu 2026, semuanya
-    // kosong) - nomor surat jalan memang hanya dipakai di sisi penerimaan (BPB).
-    // Nomor BPB asal dari sebuah retur tersimpan di bppb_new.no_bpb, kalau nanti
-    // mau ditampilkan tinggal ditambah sbg kolom baru.
-    $sumber = "(select supplier nama_supp, bpbno_int, bpbdate, confirm_date, invno no_sj,
-                    COALESCE(GROUP_CONCAT(DISTINCT tmpjo.kpno),'-') no_ws,
-                    COALESCE(GROUP_CONCAT(DISTINCT tmpjo.styleno),'-') style
-                from bpb a
-                INNER JOIN mastersupplier b on b.id_supplier = a.id_supplier
-                left join $tmpjo tmpjo on tmpjo.id_jo=a.id_jo
-                where confirm = 'Y' and cancel = 'N' $srcBpb
-                GROUP BY bpbno_int
-                UNION ALL
-                select n.supplier nama_supp, n.no_bppb bpbno_int, n.tgl_bppb bpbdate,
-                    NULLIF(n.confirm_date,'0000-00-00 00:00:00') confirm_date,
-                    '-' no_sj, '-' no_ws, '-' style
-                from bppb_new n
-                where n.status != 'Cancel' $srcBppb
-                GROUP BY n.no_bppb) a";
 
     // ---- Tanggal verifikasi AP (bpb_new untuk BPB, bppb_new untuk BPPB) -----
     $verif = "(select no_bpb, create_date verif_date from bpb_new
                  where $verifBpb status != 'Cancel' GROUP BY no_bpb
                UNION ALL
                select no_bppb, create_date from bppb_new
-                 where $verifBppb status != 'Cancel' GROUP BY no_bppb) b";
+                 where $verifBppb status != 'Cancel' GROUP BY no_bppb)";
 
     // ---- Kontrabon --------------------------------------------------------
     // BPB nyambung lewat kontrabon.no_bpb. BPPB TIDAK ada di kolom itu, jadi
@@ -151,10 +127,10 @@ function status_build_query($conn, $filter, $nama_supp, $start_date, $end_date)
                       UNION ALL
                       select r.no_bpbrtn no_bpb, k.no_kbon, k.tgl_kbon, k.confirm_date
                         from return_kb r INNER JOIN $kbonSrc k on k.no_kbon = r.no_kbon
-                  ) z GROUP BY no_bpb) c";
+                  ) z GROUP BY no_bpb)";
 
     $listPayment = "(select no_payment, tgl_payment, no_kbon, confirm_date, closed_date
-                       from list_payment $lpWhere GROUP BY no_kbon) d";
+                       from list_payment $lpWhere GROUP BY no_kbon)";
 
     $pelunasan = "(select * from (
                       select b.no_bankout, b.bankout_date, no_reff
@@ -164,7 +140,84 @@ function status_build_query($conn, $filter, $nama_supp, $start_date, $end_date)
                       UNION ALL
                       select payment_ftr_id, tgl_pelunasan, COALESCE(NULLIF(list_payment_id,''), no_kbon) list_payment_id
                         from payment_ftr where $payWhereFtr AND status != 'Cancel'
-                  ) a GROUP BY no_reff) e";
+                  ) a GROUP BY no_reff)";
+
+    // ---- Penyaring dokumen di DEPAN (kunci kecepatan) ----------------------
+    // Untuk filter selain "BPB Date", tabel sumber TIDAK dibatasi tanggal, jadi
+    // apa adanya query ini membangun sisi kiri berisi 260.199 dokumen BPB lalu
+    // menyaringnya di ujung lewat INNER JOIN ke hasil pembayaran yang cuma 276
+    // baris - ditambah kondisi OR pada join terakhir yang tidak bisa memakai
+    // index. Itulah kenapa filter Payment Date bisa menggantung berjam-jam
+    // (terukur: 2.615 detik lalu koneksi diputus server).
+    //
+    // Perbaikannya: tentukan DULU daftar nomor dokumen yang relevan dari sisi
+    // yang sudah tersaring tanggal (kecil), lalu pakai daftar itu untuk memotong
+    // tabel sumber lewat index bpb.bpbno_int. Hasilnya identik - untuk ketiga
+    // filter ini tahap tsb memang INNER JOIN, jadi dokumen di luar daftar itu
+    // toh pasti terbuang di ujung.
+    $daftarDok = '';
+    if ($filter == 'tgl_kbon') {
+        // Kontrabon-nya yang disaring tanggal -> ambil dokumen dari situ.
+        $daftarDok = "select no_bpb dok from $kontrabon c0";
+    } elseif ($filter == 'tgl_lp') {
+        // List Payment yang disaring -> telusuri balik ke kontrabon lalu dokumen.
+        $daftarDok = "select c0.no_bpb dok from $kontrabon c0
+                        INNER JOIN $listPayment d0 on d0.no_kbon = c0.no_kbon";
+    } elseif ($filter == 'tgl_pay') {
+        // Pelunasan bisa mengacu ke nomor List Payment ATAU langsung ke nomor
+        // kontrabon - dua-duanya ditelusuri balik, digabung dgn UNION (bukan
+        // OR di dalam join) supaya tiap sisi tetap bisa memakai index.
+        $daftarDok = "select c0.no_bpb dok from $kontrabon c0
+                        INNER JOIN $pelunasan e0 on e0.no_reff = c0.no_kbon
+                      UNION
+                      select c0.no_bpb dok from $kontrabon c0
+                        INNER JOIN $listPayment d0 on d0.no_kbon = c0.no_kbon
+                        INNER JOIN $pelunasan e0 on e0.no_reff = d0.no_payment";
+    }
+
+    // Dipasang sbg INNER JOIN (bukan IN (subquery), yang di MySQL versi ini
+    // dieksekusi berulang per baris). w/w2 memotong tabel sumber lewat index
+    // bpb.bpbno_int sebelum GROUP BY & join ke tmpjo yang mahal itu berjalan.
+    $potongBpb  = $daftarDok ? "INNER JOIN ($daftarDok) w on w.dok = a.bpbno_int"   : '';
+    $potongBppb = $daftarDok ? "INNER JOIN ($daftarDok) w2 on w2.dok = n.no_bppb"   : '';
+
+    // Tabel turunan TIDAK punya index, jadi tiap baris kiri harus memindai
+    // seluruh isinya. Memotong tabel sumber saja belum cukup: peta verifikasi &
+    // kontrabon masih puluhan ribu baris (C sendiri 43.742), sehingga 1.005
+    // baris kiri x 43.742 tetap puluhan juta pembacaan. Keduanya ikut dipotong
+    // daftar dokumen yang sama - aman, karena sisi kiri toh sudah pasti berada
+    // di dalam daftar itu.
+    if ($daftarDok !== '') {
+        $verif     = "(select v.* from $verif v INNER JOIN ($daftarDok) wv on wv.dok = v.no_bpb)";
+        $kontrabon = "(select cc.* from $kontrabon cc INNER JOIN ($daftarDok) wc on wc.dok = cc.no_bpb)";
+    }
+
+    // ---- Dokumen sumber: BPB UNION BPPB ------------------------------------
+    // Kolom kedua ('bpbno_int') menampung nomor BPB MAUPUN BPPB, sehingga
+    // seluruh join di bawahnya (verifikasi, kontrabon, list payment, pelunasan)
+    // tidak perlu diubah - cukup ikut mengenali nomor BPPB.
+    // No SJ / No WS / Style dikosongkan untuk BPPB: kolom `bppb`.invno TERBUKTI
+    // selalu kosong untuk dokumen BPPB (dicek 15 dokumen Agu 2026, semuanya
+    // kosong) - nomor surat jalan memang hanya dipakai di sisi penerimaan (BPB).
+    // Nomor BPB asal dari sebuah retur tersimpan di bppb_new.no_bpb, kalau nanti
+    // mau ditampilkan tinggal ditambah sbg kolom baru.
+    $sumber = "(select supplier nama_supp, bpbno_int, bpbdate, confirm_date, invno no_sj,
+                    COALESCE(GROUP_CONCAT(DISTINCT tmpjo.kpno),'-') no_ws,
+                    COALESCE(GROUP_CONCAT(DISTINCT tmpjo.styleno),'-') style
+                from bpb a
+                INNER JOIN mastersupplier b on b.id_supplier = a.id_supplier
+                $potongBpb
+                left join $tmpjo tmpjo on tmpjo.id_jo=a.id_jo
+                where confirm = 'Y' and cancel = 'N' $srcBpb
+                GROUP BY bpbno_int
+                UNION ALL
+                select n.supplier nama_supp, n.no_bppb bpbno_int, n.tgl_bppb bpbdate,
+                    NULLIF(n.confirm_date,'0000-00-00 00:00:00') confirm_date,
+                    '-' no_sj, '-' no_ws, '-' style
+                from bppb_new n
+                $potongBppb
+                where n.status != 'Cancel' $srcBppb
+                GROUP BY n.no_bppb) a";
 
     $whereSupp = ($nama_supp == 'ALL' || $nama_supp === null || $nama_supp === '')
         ? '' : "where nama_supp = '$supp'";
@@ -174,10 +227,10 @@ function status_build_query($conn, $filter, $nama_supp, $start_date, $end_date)
                    d.no_payment, d.tgl_payment, d.confirm_date approve_lp, d.closed_date close_lp,
                    e.no_bankout no_pelunasan, e.bankout_date tgl_pelunasan, no_sj, no_ws, style
               from $sumber
-              LEFT JOIN $verif on b.no_bpb = a.bpbno_int
-              $kbonJoin $kontrabon on c.no_bpb = a.bpbno_int
-              $lpJoin $listPayment on d.no_kbon = c.no_kbon
-              $payJoin $pelunasan on (e.no_reff = d.no_payment OR e.no_reff = c.no_kbon)
+              LEFT JOIN $verif b on b.no_bpb = a.bpbno_int
+              $kbonJoin $kontrabon c on c.no_bpb = a.bpbno_int
+              $lpJoin $listPayment d on d.no_kbon = c.no_kbon
+              $payJoin $pelunasan e on (e.no_reff = d.no_payment OR e.no_reff = c.no_kbon)
               $whereSupp
              order by bpbdate asc";
 }
