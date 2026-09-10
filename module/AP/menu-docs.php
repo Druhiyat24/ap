@@ -1544,8 +1544,8 @@ $menuGroups = [
             'status' => [
                 'title' => 'Status', 'icon' => 'fa-paperclip', 'path' => 'module/AP/status.php',
                 'doc' => [
-                    'summary' => 'Pencarian status satu BPB di seluruh tahap siklus AP dalam satu baris — murni laporan baca, tidak ada aksi tulis apa pun.',
-                    'purpose' => 'Dipakai untuk menelusuri "sudah sampai mana" satu BPB: tanggal BPB, tanggal verifikasi, Kontrabon terkait, List Payment terkait beserta approval/closing-nya, sampai tanggal pembayaran — semua dalam satu baris per BPB. Filter tanggal dapat diarahkan ke salah satu dari 4 tahap (BPB/Kontrabon/List Payment/Payment Date).',
+                    'summary' => 'Pencarian status satu dokumen di seluruh tahap siklus AP dalam satu baris — murni laporan baca, tidak ada aksi tulis apa pun. Mencakup BPB (nomor .../IN/... &amp; .../RI/...) DAN BPPB (nomor .../OUT/... &amp; .../RO/...).',
+                    'purpose' => 'Dipakai untuk menelusuri "sudah sampai mana" satu dokumen: tanggal dokumen, tanggal verifikasi, Kontrabon terkait, List Payment terkait beserta approval/closing-nya, sampai tanggal pembayaran — semua dalam satu baris per dokumen. Filter tanggal dapat diarahkan ke salah satu dari 4 tahap (BPB/Kontrabon/List Payment/Payment Date).',
                     'variants' => [],
                     'flow' => [],
                     'status_flow' => [],
@@ -1557,6 +1557,8 @@ $menuGroups = [
                         ['name' => 'so', 'desc' => 'Sales Order terkait.'],
                         ['name' => 'jo_det', 'desc' => 'Detail Job Order, sumber WS/Style.'],
                         ['name' => 'bpb_new', 'desc' => 'Tanggal verifikasi BPB.'],
+                        ['name' => 'bppb_new', 'desc' => 'Sisi AP dokumen BPPB — sumber baris /OUT &amp; /RO sekaligus tanggal verifikasinya. Sengaja dipakai sbg sumber (bukan tabel gudang <code>bppb</code>) karena <code>bppb</code> memuat SEMUA pengeluaran barang termasuk kiriman ke customer/distributor yang bukan urusan hutang.'],
+                        ['name' => 'return_kb', 'desc' => 'SATU-SATUNYA penaut dokumen BPPB ke Kontrabon (no_bpbrtn -&gt; no_kbon).'],
                         ['name' => 'kontrabon', 'desc' => 'Kontrabon terkait.'],
                         ['name' => 'list_payment', 'desc' => 'List Payment terkait beserta tanggal approve/closed.'],
                         ['name' => 'b_bankout_det', 'desc' => 'Tanggal pembayaran via Bank Out.'],
@@ -1565,6 +1567,9 @@ $menuGroups = [
                     ],
                     'notes' => [
                         'Halaman ini tidak memiliki alur status sendiri — ia hanya membaca & menampilkan status yang sudah dimiliki oleh fitur BPB/Kontrabon/List Payment lain.',
+                        'JANGAN memetakan BPPB ke Kontrabon lewat kolom <code>bppb_new.no_kbon</code> — isinya tidak bisa dipercaya. Contoh nyata: GK/OUT/0726/00095, 00097, 00100, 00101, 00103, 00105 dan GK/RO/0726/00082 semuanya mencantumkan PV-AP/REG/NAG/2026/09/02259, padahal PV itu isinya cuma GEN/IN/0826/02513 (Rp450.000) dan jurnalnya tidak menyebut satu pun nomor BPPB tsb. Sebanyak 844 dokumen BPPB punya no_kbon terisi tanpa padanan di return_kb. Patokan yang benar HANYA <code>return_kb.no_bpbrtn</code>, yang sudah mencakup 878 dokumen /RO + 53 /OUT.',
+                        'Query-nya TIDAK lagi ditulis di halaman: dibangun di <code>status_query.php</code> (status_build_query) lalu dipakai bareng oleh tabel AJAX (<code>ajx_status.php</code>) dan ekspor Excel (<code>ekspor_status.php</code>), supaya isi Excel tidak mungkin berbeda dgn yang tampil di layar. Sebelumnya query yang sama ditulis ulang 16 kali di status.php, dan link Excel menempelkan seluruh teks SQL (~2.200 karakter) di URL.',
+                        'PERINGATAN KINERJA: untuk filter Kontrabon Date &amp; Payment Date, tabel sumber <code>bpb</code> (±691rb baris) TIDAK dibatasi tanggal sama sekali sehingga dipindai seluruhnya — Kontrabon Date terukur ~12,8 detik untuk satu bulan, sedangkan Payment Date bisa berjalan sangat lama sampai koneksi diputus server ("MySQL server has gone away"). Perilaku ini sudah ada sejak versi lama, bukan akibat penambahan BPPB.',
                     ],
                 ],
             ],
@@ -1964,6 +1969,7 @@ $menuGroups = [
                         ['name' => 'Input Manual', 'icon' => 'fa-keyboard-o', 'desc' => 'Mengisi baris jurnal langsung lewat form.'],
                         ['name' => 'Journal From HRIS', 'icon' => 'fa-users', 'desc' => 'Menarik data payroll dari basis data HRIS terpisah (hris_nag) dan mengonversinya menjadi baris jurnal.'],
                         ['name' => 'Upload', 'icon' => 'fa-upload', 'desc' => 'Mengunggah berkas berisi banyak baris jurnal sekaligus, diproses lewat tabel staging sementara.'],
+                        ['name' => 'PPN Masukan', 'icon' => 'fa-file-text-o', 'desc' => 'Tab ke-4: unggah rekap faktur pajak masukan, lalu dibentuk jurnal DEBIT 2.52.03 rinci per faktur dan CREDIT 1.52.04 yang DIGRUP per supplier+faktur (bukan 1:1 dgn baris debitnya).'],
                     ],
                     'flow' => [
                         ['title' => 'Buat jurnal', 'desc' => 'Ketiga jalur (Manual/HRIS/Upload) sama-sama menyimpan header+detail ke <code>tbl_memorial_journal</code> DAN ke <code>tbl_list_journal</code> (tabel jurnal umum tunggal yang dipakai bersama BPB, Bank Out, Kontrabon, Payment Voucher, dst.) — keduanya langsung berstatus "Post" saat disimpan, BUKAN "Draft".'],
@@ -1984,6 +1990,7 @@ $menuGroups = [
                         ['name' => 'jurnal', 'db' => 'MySQL hris_nag @ 10.10.5.111 (conn3)', 'actions' => ['update'], 'desc' => 'Khusus jalur "Journal From HRIS" — tautan dilepas (no_journal dikosongkan) saat jurnal hasil tarikan HRIS ini dibatalkan.'],
                         ['name' => 'log_jurnal_bpjs', 'db' => 'MySQL hris_nag @ 10.10.5.111 (conn3)', 'actions' => ['update'], 'desc' => 'Khusus jalur "Journal From HRIS" — ditandai status "CANCEL" saat jurnal hasil tarikan HRIS ini dibatalkan.'],
                         ['name' => 'tbl_memorial_journal_temp', 'actions' => ['delete'], 'desc' => 'Tabel staging khusus jalur Upload — baris dihapus setelah berhasil dipindahkan menjadi jurnal permanen.'],
+                        ['name' => 'tbl_ppn_masukan_upload', 'actions' => ['insert', 'update'], 'desc' => 'Penampung rinci faktur pajak masukan hasil unggahan (jalur PPN Masukan) — barisnya TIDAK dihapus setelah dijurnal, melainkan ditandai status "Post" + diisi no_mj, sehingga tetap bisa ditelusuri per faktur.'],
                     ],
                     'tables_read' => [
                         ['name' => 'mastercoa_v2', 'desc' => 'Master COA - flag grup (support_gen_adm, support_prod, prod, support_sell) menentukan Cost Center mana yang sah untuk COA tersebut, sekaligus menentukan COA wajib Cost Center atau tidak.'],

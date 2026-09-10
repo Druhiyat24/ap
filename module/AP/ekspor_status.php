@@ -40,11 +40,12 @@
     <table style="width:100%;font-size:10px;" border="1" >
         <tr>
             <th style="text-align: center; vertical-align: middle;">No</th>
+            <th style="text-align: center; vertical-align: middle;">Type</th>
             <th style="text-align: center; vertical-align: middle;">Supplier</th>
-            <th style="text-align: center; vertical-align: middle;">No BPB</th>
-            <th style="text-align: center; vertical-align: middle;">BPB Date</th>
-            <th style="text-align: center; vertical-align: middle;">BPB Approved Date</th>
-            <th style="text-align: center; vertical-align: middle;">BPB Verified Date</th>
+            <th style="text-align: center; vertical-align: middle;">No BPB / BPPB</th>
+            <th style="text-align: center; vertical-align: middle;">Doc Date</th>
+            <th style="text-align: center; vertical-align: middle;">Approved Date</th>
+            <th style="text-align: center; vertical-align: middle;">Verified Date</th>
             <th style="text-align: center; vertical-align: middle;">No SJ</th>
             <th style="text-align: center; vertical-align: middle;">No WS</th>
             <th style="text-align: center; vertical-align: middle;">Style</th>
@@ -58,16 +59,21 @@
             <th style="text-align: center; vertical-align: middle;">No Payment</th>
             <th style="text-align: center; vertical-align: middle;">Payment Date</th>
         </tr>
-        <?php 
+        <?php
         // koneksi database
         include '../../conn/conn.php';
+        require_once __DIR__ . '/status_query.php';
         $nama_supp=$_GET['nama_supp'];
         $filter=$_GET['filter'];
-        $query=$_GET['query'];
         $start_date = date("Y-m-d",strtotime($_GET['start_date']));
         $end_date = date("Y-m-d",strtotime($_GET['end_date']));
 
-        $sql = mysqli_query($conn2,$query);
+        // Query DIBANGUN ULANG di sini dari parameter filter (filter_key), bukan
+        // lagi diterima mentah lewat $_GET['query']. Dgn begitu isi Excel dijamin
+        // sama persis dgn tabel di layar - keduanya memanggil status_build_query()
+        // yang sama - dan URL-nya tidak lagi memuat ribuan karakter SQL.
+        $filter_key = isset($_GET['filter_key']) ? $_GET['filter_key'] : 'tgl_pay';
+        $sql = mysqli_query($conn2, status_build_query($conn2, $filter_key, $nama_supp, $start_date, $end_date));
 
         $no = 1;
 
@@ -95,10 +101,14 @@
             $lipa    = valueOrDash($row['no_payment'] ?? null);
             $payment = valueOrDash($row['no_pelunasan'] ?? null);
 
+            $noDok = (string) $row['no_bpb'];
+            $jenis = status_jenis_dokumen($noDok);
+
             echo '<tr style="font-size: 12px; text-align: center;">';
             echo '<td >'.$no++.'</td>';
+            echo '<td>'.$jenis.'</td>';
             echo '<td style="width: 250px; text-align: left;" value="'.$row['nama_supp'].'">'.$row['nama_supp'].'</td>';
-            echo '<td value="'.$row['no_bpb'].'">'.$row['no_bpb'].'</td>';
+            echo '<td value="'.$noDok.'">'.$noDok.'</td>';
             echo '<td value="'.$row['tgl_bpb'].'">'.formatDateOrDash($row['tgl_bpb']).'</td>';
             echo '<td value="'.$tgl_approve_bpb.'">'.$tgl_approve_bpb.'</td>';
             echo '<td value="'.$tgl_verif_bpb.'">'.$tgl_verif_bpb.'</td>';
