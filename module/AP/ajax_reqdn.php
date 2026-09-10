@@ -39,8 +39,8 @@ echo '<div class="app-mod-sec">Items <span class="ftot-sub">' . count($rows) . '
 // tetap: kolom Item & Reff yang isinya panjang dapat jatah lebar, kolom angka &
 // kode tidak melar. Tanpa ini kolom Item terjepit jadi 1-2 kata per baris.
 echo '<div class="app-mod-scroll h6">'
-   . '<table class="app-mod-tbl fixed-cols" style="min-width:1140px;"><thead><tr>'
-   . '<th style="width:115px;">No PO</th>'
+   . '<table class="app-mod-tbl fixed-cols" style="min-width:1180px;"><thead><tr>'
+   . '<th style="width:155px;">No PO</th>'
    . '<th style="width:140px;">No BPB</th>'
    . '<th style="width:225px;">Item</th>'
    . '<th class="num" style="width:75px;">Qty</th>'
@@ -53,7 +53,10 @@ echo '<div class="app-mod-scroll h6">'
 
 foreach ($rows as $r) {
     echo '<tr>'
-       . '<td class="nowrap">' . $esc($r['no_po']) . '</td>'
+       // No PO: beberapa data isinya gabungan beberapa nomor PO dipisah koma
+       // (bisa >35 karakter) - dibungkus (bukan nowrap+ellipsis) supaya nomornya
+       // selalu tampil utuh, tidak terpotong "...".
+       . '<td style="white-space:normal;word-break:break-word;">' . $esc($r['no_po']) . '</td>'
        . '<td class="nowrap">' . $esc($r['no_bpb']) . '</td>'
        . '<td style="white-space:normal;">' . $esc($r['item']) . '</td>'
        . '<td class="num">' . number_format((float) $r['qty'], 2) . '</td>'
