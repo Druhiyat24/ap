@@ -169,7 +169,7 @@ table.app-dt ul.dtr-details .dtr-data{ color:#0f172a; font-size:13px; }
   display:flex; flex-direction:column; align-items:center; gap:12px; padding:20px 28px;
   background:#fff; border-radius:14px; box-shadow:0 14px 38px rgba(15,23,42,.18);
 }
-/* .app-spinner DIHAPUS dari sini — definisinya SUDAH ADA di app-skin-form.css
+/* .app-spinner DIHAPUS dari sini — definisinya SUDAH ADA di app-loading.css
    (cincin ganda, bagian tengah bisa diisi wordmark). Versi lama di berkas ini
    memutar ELEMEN WADAHNYA sendiri, sehingga apa pun yang ditaruh di dalamnya
    (mis. tulisan NAG) ikut berputar. Dua definisi sekaligus juga bikin dua cincin
