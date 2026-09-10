@@ -28,6 +28,12 @@ $canCopySaldo = fsUserHasRole($conn2, $user, 'FS - Copy Saldo');
 $fsTbOnly = $hasFsTbOnly && !$hasFsAll;
 ?>
 
+<!-- Overlay loading milik skin (spinner cincin ganda + kotak putih). Sengaja
+     HANYA app-loading.css, BUKAN app-skin-form.css utuh: berkas itu juga mengubah
+     tinggi input tanggal & tombol dropdown, yang akan menggeser tata letak toolbar
+     halaman ini. -->
+<link rel="stylesheet" href="../css/app-loading.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-loading.css'); ?>">
+
 <style type="text/css">
     label {
         font-size: 14px;;
@@ -441,9 +447,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['start_date']) && !em
   <?php if ($tabKey === $activeTab): ?>
     <?php include $tabMap[$fs_system][$report_type]; ?>
   <?php else: ?>
-    <div class="text-center text-muted py-5" data-fs-tab-placeholder>
-      <i class="fa fa-spinner fa-spin fa-2x"></i>
-      <div class="mt-2">Memuat data...</div>
+    <div class="app-loading-wrap is-loading" data-fs-tab-placeholder>
+      <div class="app-loading">
+        <div class="app-loading-box">
+          <div class="app-spinner"><span>NAG</span></div>
+          <div class="app-loading-text">Memuat data...</div>
+        </div>
+      </div>
     </div>
   <?php endif; ?>
 </div>
@@ -1083,10 +1093,10 @@ $(document).on("click", "#btn-copy-saldo-all", function () {
     // Loader selama proses berjalan (cegah double-click & tutup halaman).
     Swal.fire({
       title: 'Processing Copy Saldo...',
-      html: 'Please wait, do not close this page.',
+      html: fsLoadingSwal('Please wait, do not close this page.'),
       allowOutsideClick: false,
       allowEscapeKey: false,
-      didOpen: function () { Swal.showLoading(); }
+      showConfirmButton: false
     });
 
     function refreshStaging(fsSystem) {
@@ -1194,9 +1204,30 @@ function fsTabOffsetSync(tabName) {
   }
 }
 
+// Kotak & spinner loading milik skin (module/css/app-loading.css) — dipakai
+// ulang utk placeholder tab dan dialog PDF supaya bentuknya sama di semua
+// halaman aplikasi.
+function fsLoadingBox(teks) {
+  return '<div class="app-loading-wrap is-loading">' +
+         '<div class="app-loading"><div class="app-loading-box">' +
+         '<div class="app-spinner"><span>NAG</span></div>' +
+         '<div class="app-loading-text">' + teks + '</div>' +
+         '</div></div></div>';
+}
+
+function fsLoadingSwal(teks) {
+  return '<div class="app-spinner" style="margin:6px auto 14px;"><span>NAG</span></div>' +
+         '<div style="font-size:12.5px;color:#475569;line-height:1.7">' + teks + '</div>';
+}
+
 function loadTabContent(tabName) {
   var $target = $('#' + tabName);
   loadedTabs[tabName] = true;
+  // Isi tab diganti kotak loading dulu. Untuk klik PERTAMA isinya memang sudah
+  // placeholder yang sama, tapi baris ini yang menampilkan loading saat tombol
+  // "Coba lagi" ditekan setelah gagal (isi tab waktu itu pesan error, bukan
+  // placeholder).
+  $target.html(fsLoadingBox('Memuat data...'));
   $.ajax({
     type: 'POST',
     url: 'fs_tab_fetch.php',
@@ -1354,11 +1385,10 @@ $(document).on('click', '#btnPDF-spl', function () {
   // 🔹 Tampilkan Swal loading
   Swal.fire({
     title: 'Sedang membuat PDF...',
-    text: 'Mohon tunggu sebentar',
+    html: fsLoadingSwal('Mohon tunggu sebentar'),
     allowOutsideClick: false,
-    didOpen: () => {
-      Swal.showLoading();
-    }
+    allowEscapeKey: false,
+    showConfirmButton: false
   });
 
   // 🔹 Opsi PDF — tingkatkan kualitas hasil render
@@ -1588,9 +1618,10 @@ $(document).on('click', '#btnPDF-spl', function () {
 
   Swal.fire({
     title: 'Sedang membuat PDF...',
-    text: 'Mohon tunggu sebentar',
+    html: fsLoadingSwal('Mohon tunggu sebentar'),
     allowOutsideClick: false,
-    didOpen: () => { Swal.showLoading(); }
+    allowEscapeKey: false,
+    showConfirmButton: false
   });
 
   const opt = {
@@ -1690,11 +1721,10 @@ $(document).on('click', '#btnPDF-cfdirect', function () {
   // 🔹 Tampilkan Swal loading
   Swal.fire({
     title: 'Sedang membuat PDF...',
-    text: 'Mohon tunggu sebentar',
+    html: fsLoadingSwal('Mohon tunggu sebentar'),
     allowOutsideClick: false,
-    didOpen: () => {
-      Swal.showLoading();
-    }
+    allowEscapeKey: false,
+    showConfirmButton: false
   });
 
   // 🔹 Opsi PDF — tingkatkan kualitas hasil render
@@ -1917,9 +1947,10 @@ $(document).on('click', '#btnPDF-cfdirect', function () {
 
   Swal.fire({
     title: 'Sedang membuat PDF...',
-    text: 'Mohon tunggu sebentar',
+    html: fsLoadingSwal('Mohon tunggu sebentar'),
     allowOutsideClick: false,
-    didOpen: () => { Swal.showLoading(); }
+    allowEscapeKey: false,
+    showConfirmButton: false
   });
 
   const opt = {
@@ -2019,11 +2050,10 @@ $(document).on('click', '#btnPDF-cfindirect', function () {
   // 🔹 Tampilkan Swal loading
   Swal.fire({
     title: 'Sedang membuat PDF...',
-    text: 'Mohon tunggu sebentar',
+    html: fsLoadingSwal('Mohon tunggu sebentar'),
     allowOutsideClick: false,
-    didOpen: () => {
-      Swal.showLoading();
-    }
+    allowEscapeKey: false,
+    showConfirmButton: false
   });
 
   // 🔹 Opsi PDF — tingkatkan kualitas hasil render
@@ -2246,9 +2276,10 @@ $(document).on('click', '#btnPDF-cfindirect', function () {
 
   Swal.fire({
     title: 'Sedang membuat PDF...',
-    text: 'Mohon tunggu sebentar',
+    html: fsLoadingSwal('Mohon tunggu sebentar'),
     allowOutsideClick: false,
-    didOpen: () => { Swal.showLoading(); }
+    allowEscapeKey: false,
+    showConfirmButton: false
   });
 
   const opt = {
