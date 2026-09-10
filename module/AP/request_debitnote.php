@@ -233,7 +233,7 @@ input[type=file]::file-selector-button:hover{ background:#15316f; }
 
 <!-- ===== Modal: detail request (BPB / faktur) ===== -->
 <div class="modal fade" id="mymodalftrdp" data-target="#mymodalftrdp" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-  <div class="modal-dialog app-modal modal-dialog-centered" role="document" style="max-width:1200px;">
+  <div class="modal-dialog app-modal modal-dialog-centered" role="document" style="max-width:1240px;">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="dtl_no"></h5>
