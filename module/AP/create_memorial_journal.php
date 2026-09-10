@@ -35,39 +35,81 @@
     }
   }
 
+  /* Segmented control ringkas (pola iOS/macOS): satu "track" abu-abu yang
+     lebarnya HANYA seukuran isinya (inline-flex), bukan melebar sepanjang
+     kartu. Tab aktif = pil PUTIH yang terangkat, bukan pil biru - supaya tidak
+     beradu perhatian dgn header kartu yang sudah biru pekat tepat di atasnya. */
   .tab-container {
-    display: flex;
+    display: inline-flex;
+    vertical-align: top;
+    max-width: 100%;
     flex-wrap: wrap;
-    gap: 6px;
-    padding: 8px;
-    background: #f4f6f9;
+    gap: 2px;
+    padding: 3px;
+    background: #eff2f7;
     border-radius: 10px;
-    border: 1px solid #ddd;
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, .06);
+    margin-bottom: 18px;
   }
 
   .tablinks {
+    position: relative;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
     border: none;
-    background: #ffffff;
-    color: #555;
-    padding: 8px 14px;
-    font-size: 0.9rem;
+    background: transparent;
+    color: #6b7688;
+    padding: 8px 14px 9px;
+    /* header.php memaksa button{font-size:13px !important}, jadi angka di sini
+       ditulis sama supaya tidak menyesatkan - menaikkannya tidak akan berefek. */
+    font-size: 13px;
     font-weight: 600;
+    white-space: nowrap;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.25s ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: background .18s ease, color .18s ease, box-shadow .18s ease;
+  }
+
+  .tablinks i {
+    font-size: 12px;
+    opacity: .7;
+  }
+
+  /* Garis aksen di DALAM pil aktif - melebar dari tengah saat tab berpindah.
+     Dipakai supaya tab aktif tetap tegas walau pilnya putih (bukan blok biru). */
+  .tablinks::after {
+    content: '';
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 4px;
+    height: 2px;
+    border-radius: 2px;
+    background: #2f6bdd;
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform .2s ease;
   }
 
   .tablinks:hover {
-    background: #007bff;
-    color: #fff;
-    transform: translateY(-1px);
+    color: #1E3A8A;
   }
 
   .tablinks.active {
-    background: linear-gradient(135deg, #007bff, #0056b3);
-    color: #fff;
-    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.35);
+    background: #ffffff;
+    color: #1E3A8A;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .10), 0 3px 8px rgba(15, 23, 42, .06);
+  }
+
+  .tablinks.active::after {
+    transform: scaleX(1);
+  }
+
+  .tablinks.active i {
+    opacity: 1;
+    color: #2f6bdd;
   }
 
   table.dataTable th,
@@ -168,10 +210,10 @@
       <div class="card-body p-4">
 
         <div class="tab-container">
-          <button class="tablinks active" onclick="openTab(event, 'mj_input')">Manual Journal Entry</button>
-          <button class="tablinks" onclick="openTab(event, 'mj_hris')">Journal From HRIS</button>
-          <button class="tablinks" onclick="openTab(event, 'mj_upload')">Upload Journal</button>
-          <button class="tablinks" onclick="openTab(event, 'mj_ppn')">PPN Masukan</button>
+          <button class="tablinks active" onclick="openTab(event, 'mj_input')"><i class="fa fa-pencil" aria-hidden="true"></i> Manual Journal Entry</button>
+          <button class="tablinks" onclick="openTab(event, 'mj_hris')"><i class="fa fa-users" aria-hidden="true"></i> Journal From HRIS</button>
+          <button class="tablinks" onclick="openTab(event, 'mj_upload')"><i class="fa fa-cloud-upload" aria-hidden="true"></i> Upload Journal</button>
+          <button class="tablinks" onclick="openTab(event, 'mj_ppn')"><i class="fa fa-file-text-o" aria-hidden="true"></i> PPN Masukan</button>
         </div>
 
 
