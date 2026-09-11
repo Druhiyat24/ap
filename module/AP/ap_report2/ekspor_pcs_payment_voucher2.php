@@ -66,6 +66,7 @@ td.num     { text-align: right; }
     <th rowspan="2" class="h-default">Addition</th>
     <th rowspan="2" class="h-default">Deduction Advance</th>
     <th rowspan="2" class="h-default">Deduction Others</th>
+    <th rowspan="2" class="h-default">Deduction PPN</th>
     <th rowspan="2" class="h-default">Deduction Bank</th>
     <th rowspan="2" class="h-default">Deduction Cash</th>
     <th rowspan="2" class="h-default">Deduction Non Bank</th>
@@ -119,6 +120,7 @@ while ($row = mysqli_fetch_assoc($q)):
     <td class="num"><?= $nf($row['total_in']) ?></td>
     <td class="num"><?= $nf($row['uang_muka']) ?></td>
     <td class="num"><?= $nf($row['potongan']) ?></td>
+    <td class="num"><?= $nf($row['ppn']) ?></td>
     <td class="num"><?= $nf($row['ded_bank']) ?></td>
     <td class="num"><?= $nf($row['ded_cash']) ?></td>
     <td class="num"><?= $nf($row['ded_nonbank']) ?></td>

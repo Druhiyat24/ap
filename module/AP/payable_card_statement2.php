@@ -719,6 +719,7 @@
       { data: 'total_in' },
       { data: 'uang_muka' },
       { data: 'potongan' },
+      { data: 'ppn' },
       { data: 'ded_bank' },
       { data: 'ded_cash' },
       { data: 'ded_nonbank' },
@@ -755,7 +756,7 @@
 
     columnDefs: [
       {
-        targets: [7, 8, 13],
+        targets: [7, 8, 14],
         className: "text-right",
         render: function (data, type) {
           let val = parseFloat(data);
@@ -770,9 +771,23 @@
         }
       },
       {
-        targets: [5, 6, 9, 10, 11, 12, 14, 15, 16,
-          23, 24, 25, 26, 27, 28, 29, 30, 31,
-          33, 34, 35, 36, 37, 38, 39, 40],
+        // Deduction PPN mengikuti TANDA aslinya, tidak dipaksa negatif spt
+        // kolom 7/8/14: negatif = memotong utang (tampil merah dlm kurung),
+        // positif = PPN tertagih yang menambah utang (tampil biasa).
+        targets: [9],
+        className: "text-right",
+        render: function (data, type) {
+          let val = parseFloat(data);
+          if (isNaN(val) || val === 0) return type === 'display' ? '0.00' : 0;
+          if (type !== 'display') return val;
+          let txt = Math.abs(val).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          return val < 0 ? '<span style="color:red;">(' + txt + ')</span>' : txt;
+        }
+      },
+      {
+        targets: [5, 6, 10, 11, 12, 13, 15, 16, 17,
+          24, 25, 26, 27, 28, 29, 30, 31, 32,
+          34, 35, 36, 37, 38, 39, 40, 41],
         className: "text-right",
         render: function (data) {
           let val = parseFloat(data);
@@ -798,16 +813,16 @@
       }
 
       const map = {
-        5: 'saldo_awal', 6: 'total_in', 7: 'uang_muka', 8: 'potongan',
-        9: 'ded_bank', 10: 'ded_cash', 11: 'ded_nonbank',
-        12: 'ded_gm', 13: 'reverse_kontrabon',
-        14: 'saldo_akhir', 16: 'saldo_akhir_idr',
-        23: 'due_current', 24: 'due_1_30', 25: 'due_31_60',
-        26: 'due_61_90', 27: 'due_91_120', 28: 'due_121_180',
-        29: 'due_181_360', 30: 'due_gt_360', 31: 'total_due',
-        33: 'pro_due', 34: 'pro_due0', 35: 'pro_due1',
-        36: 'pro_due2', 37: 'pro_due3', 38: 'pro_due4',
-        39: 'pro_due5', 40: 'tot_produe'
+        5: 'saldo_awal', 6: 'total_in', 7: 'uang_muka', 8: 'potongan', 9: 'ppn',
+        10: 'ded_bank', 11: 'ded_cash', 12: 'ded_nonbank',
+        13: 'ded_gm', 14: 'reverse_kontrabon',
+        15: 'saldo_akhir', 17: 'saldo_akhir_idr',
+        24: 'due_current', 25: 'due_1_30', 26: 'due_31_60',
+        27: 'due_61_90', 28: 'due_91_120', 29: 'due_121_180',
+        30: 'due_181_360', 31: 'due_gt_360', 32: 'total_due',
+        34: 'pro_due', 35: 'pro_due0', 36: 'pro_due1',
+        37: 'pro_due2', 38: 'pro_due3', 39: 'pro_due4',
+        40: 'pro_due5', 41: 'tot_produe'
       };
 
       Object.keys(map).forEach(function (i) {
@@ -821,7 +836,7 @@
       rowALL.find('th:eq(0)').html('<b>SUMMARY TOTAL</b>').css({'text-align':'left','font-weight':'bold'});
 
       for (let i = 1; i <= 4;  i++) { rowIDR.find('th:eq('+i+')').html(''); rowUSD.find('th:eq('+i+')').html(''); }
-      for (let i = 1; i <= 15; i++) { rowALL.find('th:eq('+i+')').html(''); }
+      for (let i = 1; i <= 16; i++) { rowALL.find('th:eq('+i+')').html(''); }
 
       rowIDR.find('th:not(:eq(0))').css('text-align', 'right');
       rowUSD.find('th:not(:eq(0))').css('text-align', 'right');

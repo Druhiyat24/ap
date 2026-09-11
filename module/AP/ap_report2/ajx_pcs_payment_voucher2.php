@@ -18,7 +18,7 @@ while ($r = mysqli_fetch_assoc($q)) $data[] = $r;
 
 /* ── footer totals ── */
 $cols = "SUM(saldo_awal) saldo_awal, SUM(total_in) total_in,
-    SUM(pph) pph, SUM(uang_muka) uang_muka, SUM(potongan) potongan,
+    SUM(pph) pph, SUM(uang_muka) uang_muka, SUM(potongan) potongan, SUM(ppn) ppn,
     SUM(ded_bank) ded_bank, SUM(ded_cash) ded_cash, SUM(ded_nonbank) ded_nonbank,
     SUM(ded_gm) ded_gm, SUM(reverse_kontrabon) reverse_kontrabon,
     SUM(saldo_akhir) saldo_akhir, SUM(saldo_akhir_idr) saldo_akhir_idr,
