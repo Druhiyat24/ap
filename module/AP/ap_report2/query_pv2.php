@@ -29,13 +29,18 @@ if ($search !== '') {
 }
 
 /*
- * POTONGAN PPN (CTE ppn / ppn_before)
+ * POTONGAN PPN (CTE ppn / ppn_before) -> DIGABUNG KE "Deduction Others"
  * Baris akun PPN Masukan (1.52.04 billed & 1.52.07 unbilled) di jurnal PV ikut
  * membentuk utang, tapi dulu tidak dihitung sama sekali. Contoh nyata:
  * PV-AP/REG/NAG/2026/08/02062 (USD) - GR/IR Dr 15.540, Uang Muka Cr 4.662,
  * PPN Unbilled Cr 1.540, dibayar BK 9.338 -> laporan menyisakan 1.540 padahal
- * utangnya sudah lunas. Kolom ini BERTANDA: negatif = memotong utang (34 PV),
- * positif = menambah utang (6 PV, PPN tertagih yang tidak ada di GR/IR).
+ * utangnya sudah lunas.
+ *
+ * Atas permintaan user TIDAK dibuat kolom baru: nilainya ditambahkan ke kolom
+ * `potongan` (Deduction Others) di CTE mutasi, sehingga semua tab & ekspor yang
+ * sudah menampilkan Deduction Others ikut benar tanpa perubahan tampilan.
+ * Nilainya BERTANDA: negatif = memotong utang (34 PV), positif = menambah utang
+ * (6 PV, PPN tertagih yang tidak ada di GR/IR).
  *
  * Dulu ada tambalan "- diff_ppn" di CTE potongan (Deduction Others) yang
  * mencoba menutup kasus ini, tapi hanya jalan kalau PV-nya kebetulan punya baris
@@ -149,11 +154,11 @@ select reff_doc, 0 reverse_kontrabon_before, 0 reverse_kontrabon, 0 uang_muka_be
 
 data_detail as (select supplier, no_kbon, tgl_kbon, duedate, curr, COALESCE(round(saldo_awal,2),0) saldo_awal, COALESCE(round(total_in,2),0) total_in, COALESCE(round(rate,2),1) rate, no_coa, nama_coa, item_type1, item_type2, relasi, COALESCE(round(reverse_kontrabon_before,2),0) reverse_kontrabon_before, COALESCE(round(reverse_kontrabon,2),0) reverse_kontrabon, COALESCE(round(uang_muka_before,2),0) uang_muka_before, COALESCE(round(uang_muka,2),0) uang_muka, COALESCE(round(pph_before,2),0) pph_before, COALESCE(round(pph,2),0) pph, COALESCE(round(potongan_before,2),0) potongan_before, COALESCE(round(potongan,2),0) potongan, COALESCE(round(ded_bank_before,2),0) ded_bank_before, COALESCE(round(ded_bank,2),0) ded_bank, COALESCE(round(ded_gm_before,2),0) ded_gm_before, COALESCE(round(ded_gm,2),0) ded_gm, COALESCE(round(ded_cash,2),0) ded_cash, COALESCE(round(ded_cash_before,2),0) ded_cash_before, COALESCE(round(ded_nonbank,2),0) ded_nonbank, COALESCE(round(ded_nonbank_before,2),0) ded_nonbank_before, COALESCE(round(pn.total,2),0) ppn, COALESCE(round(pnb.total,2),0) ppn_before from saldo_in a LEFT JOIN saldo_out b on b.no_journal = a.no_kbon LEFT JOIN ppn pn on pn.no_journal = a.no_kbon LEFT JOIN ppn_before pnb on pnb.no_journal = a.no_kbon),
 
-mutasi as (select supplier, no_kbon, tgl_kbon, duedate, curr, (saldo_awal + reverse_kontrabon_before + uang_muka_before + potongan_before + ppn_before - (if(ded_bank_before > 0,(ded_bank_before),0) + ded_gm_before + if(ded_cash_before > 0,(ded_cash_before),0) + if(ded_nonbank_before > 0,(ded_nonbank_before),0))) saldo_awal, total_in, pph, uang_muka, potongan, ppn, if(ded_bank > 0,(ded_bank),0) ded_bank, if(ded_cash > 0,(ded_cash),0) ded_cash, if(ded_nonbank > 0,(ded_nonbank),0) ded_nonbank, ded_gm, reverse_kontrabon, rate, no_coa, nama_coa, item_type1, item_type2, relasi from data_detail),
+mutasi as (select supplier, no_kbon, tgl_kbon, duedate, curr, (saldo_awal + reverse_kontrabon_before + uang_muka_before + potongan_before + ppn_before - (if(ded_bank_before > 0,(ded_bank_before),0) + ded_gm_before + if(ded_cash_before > 0,(ded_cash_before),0) + if(ded_nonbank_before > 0,(ded_nonbank_before),0))) saldo_awal, total_in, pph, uang_muka, (potongan + ppn) potongan, if(ded_bank > 0,(ded_bank),0) ded_bank, if(ded_cash > 0,(ded_cash),0) ded_cash, if(ded_nonbank > 0,(ded_nonbank),0) ded_nonbank, ded_gm, reverse_kontrabon, rate, no_coa, nama_coa, item_type1, item_type2, relasi from data_detail),
 
-report_mutasi as (select supplier, no_kbon, tgl_kbon, duedate, a.curr, saldo_awal, total_in, pph, uang_muka, potongan, ppn, ded_bank, ded_cash, ded_nonbank, ded_gm, reverse_kontrabon, (saldo_awal + total_in + reverse_kontrabon + uang_muka + potongan + ppn - (ded_bank + ded_gm + ded_cash + ded_nonbank)) saldo_akhir, IFNULL(b.rate,1) rate, ((saldo_awal + total_in  + reverse_kontrabon + uang_muka + potongan + ppn - (ded_bank + ded_gm + ded_cash + ded_nonbank)) * IFNULL(b.rate,1)) saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi from mutasi a LEFT JOIN rate b on b.curr = a.curr)
+report_mutasi as (select supplier, no_kbon, tgl_kbon, duedate, a.curr, saldo_awal, total_in, pph, uang_muka, potongan, ded_bank, ded_cash, ded_nonbank, ded_gm, reverse_kontrabon, (saldo_awal + total_in + reverse_kontrabon + uang_muka + potongan - (ded_bank + ded_gm + ded_cash + ded_nonbank)) saldo_akhir, IFNULL(b.rate,1) rate, ((saldo_awal + total_in  + reverse_kontrabon + uang_muka + potongan - (ded_bank + ded_gm + ded_cash + ded_nonbank)) * IFNULL(b.rate,1)) saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi from mutasi a LEFT JOIN rate b on b.curr = a.curr)
 
-select supplier, no_kbon, tgl_kbon, duedate, curr, saldo_awal, total_in, pph, uang_muka, potongan, ppn, ded_bank, ded_cash, ded_nonbank, ded_gm, reverse_kontrabon, saldo_akhir, rate, saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi,
+select supplier, no_kbon, tgl_kbon, duedate, curr, saldo_awal, total_in, pph, uang_muka, potongan, ded_bank, ded_cash, ded_nonbank, ded_gm, reverse_kontrabon, saldo_akhir, rate, saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi,
 CASE
 WHEN duedate > '$end_date' THEN saldo_akhir_idr
 ELSE 0

@@ -481,8 +481,8 @@ $sheet2->setTitle('AP-Payment Voucher');
 
 $sheet2->setCellValue('A1', 'Payable Card Statement - PAYMENT VOUCHER');
 $sheet2->setCellValue('A2', 'PERIODE: '.$start_date_text.' - '.$end_date_text);
-$sheet2->mergeCells('A1:AO1');
-$sheet2->mergeCells('A2:AO2');
+$sheet2->mergeCells('A1:AN1');
+$sheet2->mergeCells('A2:AN2');
 $sheet2->getStyle('A1:A2')->getFont()->setBold(true)->setSize(12);
 
 $rowHeader1 = 4;
@@ -490,7 +490,7 @@ $rowHeader2 = 5;
 
 $headersFix = [
     'No','Nama Supplier','Payment Voucher Number','PV Date','Due Date','Currency',
-    'Begining Balance','Addition','Deduction Advance','Deduction Others','Deduction PPN',
+    'Begining Balance','Addition','Deduction Advance','Deduction Others',
     'Deduction Bank','Deduction Cash','Deduction Non Bank','Deduction GM','Reverse','Ending Balance',
     'Rate','Ending Balance IDR','COA No','COA Name',
     'Item Type 1','Item Type 2','Relationship'
@@ -785,7 +785,6 @@ while($data = mysqli_fetch_assoc($sql)){
     $sheet2->setCellValueByColumnAndRow($col++, $rowNum, $data['total_in']);
     $sheet2->setCellValueByColumnAndRow($col++, $rowNum, $data['uang_muka']);
     $sheet2->setCellValueByColumnAndRow($col++, $rowNum, $data['potongan']);
-    $sheet2->setCellValueByColumnAndRow($col++, $rowNum, $data['ppn']);
     $sheet2->setCellValueByColumnAndRow($col++, $rowNum, $data['ded_bank']);
     $sheet2->setCellValueByColumnAndRow($col++, $rowNum, $data['ded_cash']);
     $sheet2->setCellValueByColumnAndRow($col++, $rowNum, $data['ded_nonbank']);
@@ -1386,7 +1385,7 @@ FROM (
     SELECT supplier, curr, saldo_awal, in_bpb addition, reverse_bpb reverse, 0 deduction_advance, 0 deduction_other, 0 ded_bank, 0 ded_cash, 0 ded_nonbank, gm deduction_gm, saldo_akhir, rate, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe
     FROM ($sql_bpb) bpb
     UNION ALL
-    SELECT supplier, curr, saldo_awal, 0 addition, 0 reverse, uang_muka deduction_advance, (potongan + ppn) deduction_other, ded_bank, ded_cash, ded_nonbank, ded_gm deduction_gm, saldo_akhir, rate, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe
+    SELECT supplier, curr, saldo_awal, 0 addition, 0 reverse, uang_muka deduction_advance, potongan deduction_other, ded_bank, ded_cash, ded_nonbank, ded_gm deduction_gm, saldo_akhir, rate, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe
     FROM ($sql_pv) pv
 ) a LEFT JOIN (select * from ap_masterrate where tanggal = '$end_date' and v_codecurr = CASE WHEN tanggal = LAST_DAY(tanggal) THEN 'HARIAN' ELSE 'PAJAK' END GROUP BY curr, rate) b on b.curr = a.curr
 GROUP BY supplier, a.curr ORDER BY supplier, a.curr ASC

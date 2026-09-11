@@ -21,7 +21,6 @@
         <th rowspan="2" class="grp-head-default">Addition</th>
         <th rowspan="2" class="grp-head-default">Deduction Advance</th>
         <th rowspan="2" class="grp-head-default">Deduction Others</th>
-        <th rowspan="2" class="grp-head-default">Deduction PPN</th>
         <th rowspan="2" class="grp-head-default">Deduction Bank</th>
         <th rowspan="2" class="grp-head-default">Deduction Cash</th>
         <th rowspan="2" class="grp-head-default">Deduction Non Bank</th>
@@ -64,7 +63,7 @@
     <tfoot>
       <tr class="pcs2-foot-idr">
         <th></th><th></th><th></th><th></th><th></th>
-        <th></th><th></th><th></th><th></th><th></th>
+        <th></th><th></th><th></th><th></th>
         <th></th><th></th><th></th><th></th>
         <th></th><th></th><th></th><th></th>
         <th></th><th></th><th></th><th></th><th></th>
@@ -77,7 +76,7 @@
       </tr>
       <tr class="pcs2-foot-usd">
         <th></th><th></th><th></th><th></th><th></th>
-        <th></th><th></th><th></th><th></th><th></th>
+        <th></th><th></th><th></th><th></th>
         <th></th><th></th><th></th><th></th>
         <th></th><th></th><th></th><th></th>
         <th></th><th></th><th></th><th></th><th></th>
@@ -90,7 +89,7 @@
       </tr>
       <tr class="pcs2-foot-all">
         <th></th><th></th><th></th><th></th><th></th>
-        <th></th><th></th><th></th><th></th><th></th>
+        <th></th><th></th><th></th><th></th>
         <th></th><th></th><th></th><th></th>
         <th></th><th></th><th></th><th></th>
         <th></th><th></th><th></th><th></th><th></th>

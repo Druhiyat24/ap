@@ -52,10 +52,8 @@ FROM (
     SELECT supplier, curr, saldo_awal, in_bpb addition, reverse_bpb reverse, 0 deduction_advance, 0 deduction_other, 0 ded_bank, 0 ded_cash, 0 ded_nonbank, gm deduction_gm, saldo_akhir, rate, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe
     FROM ($sql_bpb) bpb
     UNION ALL
-    -- Payment Voucher rows. Potongan PPN ikut digabung ke Deduction Others
-    -- (tab ringkasan tidak punya kolom PPN sendiri) supaya rinciannya tetap
-    -- menjumlah ke saldo_akhir. Lihat catatan di query_pv2.php.
-    SELECT supplier, curr, saldo_awal, 0 addition, 0 reverse, uang_muka deduction_advance, (potongan + ppn) deduction_other, ded_bank ded_bank, ded_cash ded_cash, ded_nonbank ded_nonbank, ded_gm deduction_gm, saldo_akhir, rate, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe
+    -- Payment Voucher rows
+    SELECT supplier, curr, saldo_awal, 0 addition, 0 reverse, uang_muka deduction_advance, potongan deduction_other, ded_bank ded_bank, ded_cash ded_cash, ded_nonbank ded_nonbank, ded_gm deduction_gm, saldo_akhir, rate, saldo_akhir_idr, due_current, due_1_30, due_31_60, due_61_90, due_91_120, due_121_180, due_181_360, due_gt_360, total_due, pro_due, pro_due0, pro_due1, pro_due2, pro_due3, pro_due4, pro_due5, tot_produe
     FROM ($sql_pv) pv
 ) a LEFT JOIN (select * from ap_masterrate where tanggal = '$end_date' and v_codecurr = CASE  WHEN tanggal = LAST_DAY(tanggal) THEN 'HARIAN' ELSE 'PAJAK' END GROUP BY  curr, rate) b on b.curr = a.curr GROUP BY supplier,a.curr order by supplier,a.curr asc
 ";
