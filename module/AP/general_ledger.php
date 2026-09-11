@@ -305,6 +305,12 @@ var glDmy = function (s) {
   var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return p[2] + '-' + (m[parseInt(p[1], 10) - 1] || p[1]) + '-' + p[0];
 };
+// Tanggal + jam (utk Created Date); '0000-00-00 00:00:00' dianggap kosong.
+var glDmyHm = function (s) {
+  if (!s || String(s).indexOf('0000-00-00') === 0) { return '-'; }
+  var jam = String(s).substr(11, 5);
+  return glDmy(s) + (jam ? ' ' + jam : '');
+};
 var glInfo = function (label, val) {
   return '<div><b>' + glEsc(label) + '</b><span>' + (val === '' || val === null || val === undefined ? '-' : glEsc(val)) + '</span></div>';
 };
@@ -330,7 +336,8 @@ $('#table-data').on('click', 'a.gl-doc-link', function () {
         glInfo('Document No', h.no_journal) + glInfo('Document Date', glDmy(h.tgl_journal)) +
         glInfo('Type', h.type_journal) + glInfo('Tax Invoice No', h.faktur_pajak) +
         glInfo('Supplier', h.supplier) + glInfo('Profit Center', h.profit_center) +
-        glInfo('Status', h.status) + '</div>';
+        glInfo('Status', h.status) +
+        glInfo('Created By', h.create_by) + glInfo('Created Date', glDmyHm(h.create_date)) + '</div>';
 
       html += '<div class="app-mod-sec">Journal lines (' + res.lines.length + ')</div>' +
         '<div class="app-mod-scroll"><table class="app-mod-tbl coa-tbl"><thead><tr>' +

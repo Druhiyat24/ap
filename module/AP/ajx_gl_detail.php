@@ -27,7 +27,8 @@ $q = mysqli_query($conn2, "select no_journal, tgl_journal, type_journal, no_coa,
         no_costcenter, nama_costcenter, reff_doc, reff_date, coalesce(faktur_pajak,'') faktur_pajak,
         curr, rate, debit, credit, debit_idr, credit_idr,
         coalesce(keterangan,'') keterangan, coalesce(supplier,'') supplier,
-        coalesce(profit_center,'') profit_center, coalesce(status,'') status
+        coalesce(profit_center,'') profit_center, coalesce(status,'') status,
+        coalesce(create_by,'') create_by, create_date
     from tbl_list_journal
     where no_journal = '$eDoc'
     order by no_coa, id");
@@ -47,7 +48,18 @@ while ($r = mysqli_fetch_assoc($q)) {
             'profit_center' => $r['profit_center'],
             'status'        => $r['status'],
             'keterangan'    => $r['keterangan'],
+            'create_by'     => '',
+            'create_date'   => '',
         ];
+    }
+    // Pembuat & tanggal dibuat diambil dari baris yang PALING AWAL dibuat, bukan
+    // sekadar baris pertama urutan tampil (urutannya per no_coa) - jaga-jaga
+    // kalau baris satu jurnal ternyata tidak tersimpan dalam satu waktu.
+    $cd = (string) $r['create_date'];
+    if ($cd !== '' && strpos($cd, '0000-00-00') !== 0
+        && ($head['create_date'] === '' || $cd < $head['create_date'])) {
+        $head['create_date'] = $cd;
+        $head['create_by']   = $r['create_by'];
     }
     $tot['debit']      += (float) $r['debit'];
     $tot['credit']     += (float) $r['credit'];
