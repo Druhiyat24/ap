@@ -31,11 +31,14 @@ $filter     = $val('filter', 'tgl_bpb');
 $start_date = date('Y-m-d', strtotime($val('start_date', date('Y-m-d'))));
 $end_date   = date('Y-m-d', strtotime($val('end_date', date('Y-m-d'))));
 
-$res = mysqli_query($conn2, status_build_query($conn2, $filter, $nama_supp, $start_date, $end_date));
+// status_siapkan_query() membuat dulu temporary table tahap-demi-tahap di
+// koneksi ini, baru mengembalikan SELECT akhirnya (lihat status_query.php).
+$sqlAkhir = status_siapkan_query($conn2, $filter, $nama_supp, $start_date, $end_date);
+$res      = $sqlAkhir !== '' ? mysqli_query($conn2, $sqlAkhir) : false;
 
 if (!$res) {
     http_response_code(500);
-    echo json_encode(['data' => [], 'error' => mysqli_error($conn2)]);
+    echo json_encode(['data' => [], 'error' => mysqli_error($conn2) ?: 'Gagal menyiapkan data.']);
     exit;
 }
 

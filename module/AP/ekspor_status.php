@@ -70,10 +70,11 @@
 
         // Query DIBANGUN ULANG di sini dari parameter filter (filter_key), bukan
         // lagi diterima mentah lewat $_GET['query']. Dgn begitu isi Excel dijamin
-        // sama persis dgn tabel di layar - keduanya memanggil status_build_query()
+        // sama persis dgn tabel di layar - keduanya memanggil status_siapkan_query()
         // yang sama - dan URL-nya tidak lagi memuat ribuan karakter SQL.
         $filter_key = isset($_GET['filter_key']) ? $_GET['filter_key'] : 'tgl_pay';
-        $sql = mysqli_query($conn2, status_build_query($conn2, $filter_key, $nama_supp, $start_date, $end_date));
+        $sqlAkhir = status_siapkan_query($conn2, $filter_key, $nama_supp, $start_date, $end_date);
+        $sql = $sqlAkhir !== '' ? mysqli_query($conn2, $sqlAkhir) : false;
 
         $no = 1;
 
