@@ -10,6 +10,20 @@
 // ppn_report_sql() mengembalikan STRING SQL; pemanggilnya yang menjalankan dan
 // memformat hasilnya (layar butuh tautan HTML, Excel butuh teks polos).
 // ============================================================================
+// ---------------------------------------------------------------------------
+// LANTAI PERIODE report ini — SATU-SATUNYA tempat nilai ini ditulis.
+// Jurnal sebelum tanggal ini TIDAK dibaca sama sekali; saldo sebelumnya masuk
+// lewat menu Beginning Balance (tbl_ppn_saldo_awal.as_of = tanggal yang sama).
+//
+// Nilainya dulu ditulis ulang di 8 berkas (report, ajx, ekspor, dan 5 berkas di
+// folder saldo_awal), jadi menggantinya di satu tempat menyisakan yang lain.
+// Sekarang semuanya memakai konstanta ini.
+//
+// 2026-09-14: diubah dari '2026-01-01' menjadi '2026-09-01' atas permintaan
+// user — periode sebelum September 2026 akan diisi lewat inject saldo awal.
+// ---------------------------------------------------------------------------
+if (!defined('PPN_MIN_DATE')) { define('PPN_MIN_DATE', '2026-09-01'); }
+
 if (!function_exists('ppn_report_sql')) {
 function ppn_report_sql($conn2, $nama_supp, $start_date, $end_date, $PPN_MIN_DATE) {
     // ===========================================================================
@@ -37,9 +51,9 @@ function ppn_report_sql($conn2, $nama_supp, $start_date, $end_date, $PPN_MIN_DAT
     //     Beginning = SALDO AWAL upload (tbl_ppn_saldo_awal, status Post)
     //               + SUM(debit-credit) baris dlm lingkup, $PPN_MIN_DATE <= tgl < From
     //     Ending    = SUM(debit-credit) baris dlm lingkup, $PPN_MIN_DATE <= tgl <= To
-    // Jurnal SEBELUM $PPN_MIN_DATE (2026-01-01) sengaja TIDAK dihitung: saldo lama
-    // harus dimasukkan lewat menu UPLOAD SALDO AWAL (belum dibuat). Jadi kalau From =
-    // 01-Jan-2026, Beginning dari jurnal = 0.
+    // Jurnal SEBELUM $PPN_MIN_DATE (2026-09-01) sengaja TIDAK dihitung: saldo lama
+    // harus dimasukkan lewat menu Beginning Balance (tbl_ppn_saldo_awal). Jadi kalau From =
+    // 01-Sep-2026, Beginning dari jurnal = 0 (yang tampil murni dari saldo awal upload).
     // Karena To bulan ini + 1 hari = From bulan depan, kedua angka itu membaca
     // himpunan baris yang PERSIS sama -> nyambung otomatis. Item yang sudah lunas
     // (Ending 0) otomatis hilang dari periode berikutnya.

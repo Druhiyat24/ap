@@ -2241,6 +2241,40 @@ $menuGroups = [
                     ],
                 ],
             ],
+            'ppn-masukan' => [
+                'title' => 'PPN Masukan', 'icon' => 'fa-fax', 'path' => 'module/AP/ppn_masukan_report.php',
+                'doc' => [
+                    'summary' => 'Laporan mutasi PPN Masukan (COA 1.52.04) yang saldonya diikuti PER NOMOR FAKTUR PAJAK, dilengkapi menu Beginning Balance (unggah saldo awal) yang hanya bisa dibuka user tertentu.',
+                    'purpose' => 'Menampilkan pergerakan PPN Masukan dari dokumen penambah (Invoice Received, Bank Out, Memo, Payment Voucher, Kas Kecil) sampai dipotong lewat memorial journal bernomor faktur, dengan jaminan Ending Balance periode ini = Beginning Balance periode berikutnya.',
+                    'variants' => [
+                        ['name' => 'Addition', 'icon' => 'fa-plus', 'desc' => 'Jurnal 1.52.04 dari SI/APR (Invoice Received), BK (Bank Out), MEMO, PV-AP (Payment Voucher), dan KKK (Kas Kecil).'],
+                        ['name' => 'Deduction', 'icon' => 'fa-minus', 'desc' => 'Memorial journal (%GM/%) bernomor faktur pajak dengan Type jurnal "VAT" — berasal dari tab PPN Masukan pada Memorial Journal.'],
+                        ['name' => 'Reclassification', 'icon' => 'fa-exchange', 'desc' => 'Memorial journal bernomor faktur dengan Type "OTHERS".'],
+                        ['name' => 'Adjustment', 'icon' => 'fa-wrench', 'desc' => 'Memorial journal bernomor faktur dengan Type "AUDIT ADJUSTMENT".'],
+                        ['name' => 'Beginning Balance', 'icon' => 'fa-upload', 'desc' => 'Modal unggah saldo awal (Excel) ke tbl_ppn_saldo_awal — draft dulu, baru disimpan jadi status "Post". Tombolnya hanya muncul untuk user yang terdaftar di saldo_awal/saldo_awal_guard.php (saat ini: indro, willy), dan endpoint-nya ikut memeriksa daftar yang sama sehingga tidak bisa ditembus lewat pemanggilan langsung.'],
+                    ],
+                    'flow' => [
+                        ['title' => 'Pilih filter', 'desc' => 'Supplier (atau ALL) dan rentang tanggal From/To. Tanggal tidak bisa dimundurkan melewati batas periode (lihat catatan).'],
+                        ['title' => 'Tarik jurnal', 'desc' => 'Seluruh baris tbl_list_journal ber-COA 1.52.04 dalam lingkup dokumen di atas diambil, lalu diberi KUNCI: nomor faktur pajak kalau ada, kalau tidak ada pakai no_journal. Profit Center sengaja TIDAK ikut kunci karena PC pada memorial journal bisa berbeda dari PC invoice asalnya.'],
+                        ['title' => 'Hitung Beginning &amp; Ending', 'desc' => 'Keduanya dihitung dari SALDO KUMULATIF jurnal (bukan dari penjumlahan kolom mutasi) ditambah saldo awal unggahan, supaya sambungan antar periode dijamin persis.'],
+                        ['title' => 'Ekspor', 'desc' => 'Tombol Export memakai SQL yang sama persis dengan tampilan layar (ppn_masukan_query.php), jadi angka di layar dan di file tidak mungkin berbeda.'],
+                    ],
+                    'status_flow' => [],
+                    'tables_write' => [
+                        ['name' => 'tbl_ppn_saldo_awal', 'actions' => ['insert', 'update', 'delete'], 'desc' => 'Saldo awal PPN Masukan hasil unggahan. Baris unggahan masuk sbg draft milik user, lalu berubah status "Post" saat disimpan; hanya baris status Post yang dibaca laporan.'],
+                    ],
+                    'tables_read' => [
+                        ['name' => 'tbl_list_journal', 'desc' => 'Sumber utama seluruh mutasi — hanya baris no_coa = 1.52.04. Kolom supplier &amp; faktur_pajak dibaca langsung dari tabel ini (tidak perlu JOIN ke dokumen asal).'],
+                        ['name' => 'mastersupplier', 'desc' => 'Dropdown supplier (tipe_sup = "S").'],
+                        ['name' => 'tbl_ppn_saldo_awal', 'desc' => 'Saldo awal per faktur, ditambahkan ke Beginning Balance.'],
+                    ],
+                    'notes' => [
+                        'LANTAI PERIODE — sejak 14 Sep 2026 laporan ini TIDAK membaca jurnal sebelum <b>1 September 2026</b> (sebelumnya 1 Januari 2026), atas permintaan user: saldo periode sebelumnya akan dimasukkan lewat Beginning Balance, bukan lewat jurnal. Filter From/To otomatis dinaikkan ke tanggal ini kalau pengguna memilih lebih mundur. Nilainya ditulis di SATU tempat saja — konstanta <code>PPN_MIN_DATE</code> di <code>module/AP/ppn_masukan_query.php</code>; halaman report, endpoint AJAX, ekspor Excel, dan seluruh endpoint saldo awal memakainya (dulu angka ini tersalin di 8 berkas).',
+                        'Selama tbl_ppn_saldo_awal masih kosong, Beginning Balance akan terbaca 0 dan laporan hanya menampilkan mutasi sejak 1 September 2026.',
+                        'Dokumen 1.52.04 di luar lingkup di atas (mis. memorial journal reklas tanpa nomor faktur, atau BM/) SENGAJA tidak ikut sama sekali — tidak di mutasi maupun di saldo — supaya tiap baris tutup buku persis.',
+                    ],
+                ],
+            ],
             '_s2' => ['section' => 'Financial Statement'],
             'fs-ytd' => [
                 'title' => 'Year To Date', 'icon' => 'fa-calendar', 'path' => 'module/AP/financial_statement.php?h_fs_system=1&h_report_type=ytd',

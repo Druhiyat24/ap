@@ -8,8 +8,10 @@
 // ============================================================================
 
 // Batas mundur filter From/To. Saldo yang lebih tua dari ini TIDAK boleh masuk lewat
-// jurnal; nanti harus lewat menu UPLOAD SALDO AWAL (belum dibuat).
-$PPN_MIN_DATE = '2026-01-01';
+// jurnal; harus lewat menu Beginning Balance. Nilainya didefinisikan SEKALI di
+// ppn_masukan_query.php (konstanta PPN_MIN_DATE) - jangan ditulis ulang di sini.
+require_once __DIR__ . '/ppn_masukan_query.php';
+$PPN_MIN_DATE = PPN_MIN_DATE;
 
 // Menu Set Opening Balance dibatasi user tertentu (daftar di saldo_awal_guard.php).
 require_once __DIR__ . '/saldo_awal/saldo_awal_guard.php';

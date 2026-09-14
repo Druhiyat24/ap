@@ -3,7 +3,7 @@
 // SEED CONTOH saldo awal PPN Masukan (dijalankan dari CLI / browser sekali saja).
 //
 // Mengambil 100 item dengan saldo terbesar dari JURNAL LAMA (COA 1.52.04,
-// tgl_journal < 2026-01-01) — yaitu justru bagian yang sengaja tidak lagi dibaca
+// tgl_journal < PPN_MIN_DATE) — yaitu justru bagian yang sengaja tidak lagi dibaca
 // report — lalu memasukkannya ke tbl_ppn_saldo_awal sebagai contoh isi.
 //
 // Ditandai create_by = 'sample' supaya gampang dikenali & dihapus:
@@ -13,10 +13,11 @@
 // Aman diulang: baris 'sample' lama dihapus dulu, jadi tidak menumpuk.
 // ============================================================================
 include __DIR__ . '/../../../conn/conn.php';
+require_once __DIR__ . '/../ppn_masukan_query.php';
 date_default_timezone_set('Asia/Jakarta');
 ini_set('max_execution_time', 0);
 
-$AS_OF = '2026-01-01';
+$AS_OF = PPN_MIN_DATE;
 $LIMIT = 100;
 $cli   = (php_sapi_name() === 'cli');
 $br    = $cli ? "\n" : "<br>\n";
@@ -26,7 +27,7 @@ $e = function ($s) use ($conn2) { return mysqli_real_escape_string($conn2, (stri
 mysqli_query($conn2, "DELETE FROM tbl_ppn_saldo_awal WHERE create_by = 'sample'");
 echo "baris contoh lama dihapus: " . mysqli_affected_rows($conn2) . $br;
 
-// Saldo per item sebelum 2026-01-01, kunci sama dgn report (faktur, atau no_journal)
+// Saldo per item sebelum $AS_OF, kunci sama dgn report (faktur, atau no_journal)
 $sql = "SELECT
         MIN(no_journal) si_no,
         MIN(tgl_journal) si_date,

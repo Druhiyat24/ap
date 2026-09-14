@@ -10,6 +10,10 @@
 // Pembandingan HURUF BESAR/KECIL diabaikan, tapi harus SAMA PERSIS — jadi
 // 'willy_herdiansyah' TIDAK ikut dapat akses walau namanya berawalan 'willy'.
 // ============================================================================
+// Konstanta PPN_MIN_DATE (lantai periode sub ledger) dipakai sebagai as_of bawaan
+// di seluruh endpoint saldo awal. Sumbernya satu: ppn_masukan_query.php.
+require_once __DIR__ . '/../ppn_masukan_query.php';
+
 if (!function_exists('ppn_sa_allowed_users')) {
 
 function ppn_sa_allowed_users() {

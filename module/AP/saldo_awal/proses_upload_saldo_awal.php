@@ -31,7 +31,7 @@ function sa_out($a) { if (ob_get_level() > 0) { ob_end_clean(); } echo json_enco
 $user = $_SESSION['username'] ?? '';
 ppn_sa_guard_json($user);
 
-$as_of = !empty($_POST['as_of']) ? date('Y-m-d', strtotime($_POST['as_of'])) : '2026-01-01';
+$as_of = !empty($_POST['as_of']) ? date('Y-m-d', strtotime($_POST['as_of'])) : PPN_MIN_DATE;
 
 if (!isset($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
     sa_out(['status' => 'error', 'message' => 'No file received. Please choose a file first.']);

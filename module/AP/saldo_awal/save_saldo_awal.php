@@ -28,7 +28,7 @@ function sa_save_out($a) { if (ob_get_level() > 0) { ob_end_clean(); } echo json
 $user = $_SESSION['username'] ?? '';
 ppn_sa_guard_json($user);
 
-$as_of = !empty($_POST['as_of']) ? date('Y-m-d', strtotime($_POST['as_of'])) : '2026-01-01';
+$as_of = !empty($_POST['as_of']) ? date('Y-m-d', strtotime($_POST['as_of'])) : PPN_MIN_DATE;
 $e  = function ($s) use ($conn2) { return mysqli_real_escape_string($conn2, (string) $s); };
 $eu = $e($user);
 $ea = $e($as_of);

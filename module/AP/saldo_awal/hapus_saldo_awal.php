@@ -25,7 +25,7 @@ ppn_sa_guard_json($user);
 
 $mode  = ($_POST['mode'] ?? 'row') === 'all' ? 'all' : 'row';
 $scope = ($_POST['scope'] ?? 'post') === 'temp' ? 'Temp' : 'Post';
-$as_of = !empty($_POST['as_of']) ? date('Y-m-d', strtotime($_POST['as_of'])) : '2026-01-01';
+$as_of = !empty($_POST['as_of']) ? date('Y-m-d', strtotime($_POST['as_of'])) : PPN_MIN_DATE;
 $e     = function ($s) use ($conn2) { return mysqli_real_escape_string($conn2, (string) $s); };
 
 if ($mode === 'row') {

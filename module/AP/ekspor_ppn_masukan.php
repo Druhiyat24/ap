@@ -30,7 +30,8 @@ include '../../conn/conn.php';
 require_once __DIR__ . '/ppn_masukan_query.php';
 date_default_timezone_set('Asia/Jakarta');
 
-$PPN_MIN_DATE = '2026-01-01';
+// Batas mundur didefinisikan di ppn_masukan_query.php (konstanta PPN_MIN_DATE).
+$PPN_MIN_DATE = PPN_MIN_DATE;
 $nama_supp  = $_REQUEST['nama_supp'] ?? 'ALL';
 $start_date = !empty($_REQUEST['start_date']) ? date('Y-m-d', strtotime($_REQUEST['start_date'])) : date('Y-m-d');
 $end_date   = !empty($_REQUEST['end_date'])   ? date('Y-m-d', strtotime($_REQUEST['end_date']))   : date('Y-m-d');

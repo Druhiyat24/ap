@@ -20,10 +20,14 @@
 include '../../conn/conn.php';
 header('Content-Type: application/json; charset=utf-8');
 
+// Query-nya ada di berkas terpisah supaya DIPAKAI BERSAMA dgn ekspor Excel
+// (ekspor_ppn_masukan.php) — angka di layar & di file dijamin dari SQL yang sama.
+// Berkas itu juga yg mendefinisikan batas mundur PPN_MIN_DATE.
+require_once __DIR__ . '/ppn_masukan_query.php';
+
 $nama_supp  = $_POST['nama_supp'] ?? 'ALL';
-// Batas mundur filter (samakan dgn ppn_masukan_report.php). Periode sebelum tanggal
-// ini tidak dilayani lewat jurnal — nanti lewat menu UPLOAD SALDO AWAL.
-$PPN_MIN_DATE = '2026-01-01';
+// Periode sebelum tanggal ini tidak dilayani lewat jurnal — lewat Beginning Balance.
+$PPN_MIN_DATE = PPN_MIN_DATE;
 $start_date = !empty($_POST['start_date']) ? date('Y-m-d', strtotime($_POST['start_date'])) : date('Y-m-d');
 $end_date   = !empty($_POST['end_date'])   ? date('Y-m-d', strtotime($_POST['end_date']))   : date('Y-m-d');
 if ($start_date < $PPN_MIN_DATE) { $start_date = $PPN_MIN_DATE; }
