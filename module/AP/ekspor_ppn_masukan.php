@@ -1,6 +1,6 @@
 <?php
 // ============================================================================
-// Ekspor Excel report SUB LEDGER — PPN MASUKAN.
+// Ekspor Excel report SUB LEDGER — VAT IN.
 //
 // Query-nya TIDAK ditulis ulang di sini: dipanggil dari ppn_masukan_query.php,
 // berkas yang sama dengan yang dipakai tampilan layar. Jadi isi file dijamin
@@ -43,10 +43,10 @@ if ($res === false) { header('Content-Type: text/plain'); echo 'Query failed: ' 
 
 $ss = new Spreadsheet();
 $sh = $ss->getActiveSheet();
-$sh->setTitle('PPN MASUKAN');
+$sh->setTitle('VAT IN');
 
 // ---- Judul & periode (teks polos, TANPA merge cell) ------------------------
-$sh->setCellValue('A1', 'SUB LEDGER - PPN MASUKAN');
+$sh->setCellValue('A1', 'SUB LEDGER - VAT IN');
 $sh->setCellValue('A2', 'Period : ' . date('d M Y', strtotime($start_date)) . ' s/d ' . date('d M Y', strtotime($end_date)));
 $sh->getStyle('A1')->getFont()->setBold(true)->setSize(12);
 

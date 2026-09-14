@@ -1959,13 +1959,13 @@ if($id == '78'){
     if(strpos($id, '105') !== false){
       echo'<a href="AP/prepaid_tax_report.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-fax fa-fw"></span>
-      <span class="menu-collapsed">Prepaid Tax</span>
+      <span class="menu-collapsed">VAT In Unbilled</span>
       </a>';
   }
     // PPN Masukan (report baru). TODO(role): tambahkan gating menurole sebelum produksi.
     echo'<a href="AP/ppn_masukan_report.php" class="dropdown-item bg-dark text-white">
     <span class="fa fa-fax fa-fw"></span>
-    <span class="menu-collapsed">PPN Masukan</span>
+    <span class="menu-collapsed">VAT In</span>
     </a>';
     echo'</ul>
     </li>';

@@ -142,7 +142,7 @@ if ($fEnd   < $PPN_MIN_DATE) { $fEnd   = $PPN_MIN_DATE; }
   <!-- ===== Filter card ===== -->
   <div class="card app-card border-0 app-anim">
     <div class="card-header app-card-header d-flex align-items-center justify-content-between">
-      <h5 class="mb-0"><i class="fa fa-book" aria-hidden="true"></i> SUB LEDGER &mdash; PPN MASUKAN</h5>
+      <h5 class="mb-0"><i class="fa fa-book" aria-hidden="true"></i> SUB LEDGER &mdash; VAT IN</h5>
       <?php if ($bolehSaldoAwal) { ?>
       <!-- .app-btn-ghost: tombol kaca utk header gelap, tidak lagi kotak putih menempel -->
       <button type="button" id="btnSaldoAwal" class="app-btn app-btn-ghost app-btn-sm"

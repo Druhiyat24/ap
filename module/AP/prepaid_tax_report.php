@@ -17,7 +17,7 @@
   <div class="card shadow border-0">
     <div class="card-header text-white py-2 px-3" 
     style="background: linear-gradient(90deg, #191970, #1e90ff);">
-    <h5 class="mb-0"><i class="fas fa-file-invoice"></i> PREPAID TAX REPORT</h5>
+    <h5 class="mb-0"><i class="fas fa-file-invoice"></i> VAT IN UNBILLED REPORT</h5>
 </div>
 
 <div class="card-body p-3">
@@ -57,7 +57,7 @@
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $no_coa = isset($_POST['no_coa']) ? $_POST['no_coa']: null;
             }                 
-            $sql = mysqli_query($conn1,"select no_coa, CONCAT(no_coa,' - ',nama_coa) nama_coa from mastercoa_v2 where eng_categori4 = 'PREPAID TAX'");
+            $sql = mysqli_query($conn1,"select no_coa, CONCAT(no_coa,' - ',nama_coa) nama_coa from mastercoa_v2 where eng_categori4 = 'PREPAID TAX' AND no_coa = '1.52.07'");
             while ($row = mysqli_fetch_array($sql)) {
                 $data = $row['no_coa'];
                 $tampil = $row['nama_coa'];

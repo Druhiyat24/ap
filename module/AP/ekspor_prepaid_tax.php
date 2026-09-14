@@ -35,7 +35,7 @@
 
     ?>
 
-    <h4>PREPAID TAX REPORT<br/> PERIODE: <?php echo $startdate; ?> - <?php echo $enddate; ?></h4>
+    <h4>VAT IN UNBILLED REPORT<br/> PERIODE: <?php echo $startdate; ?> - <?php echo $enddate; ?></h4>
 
     <table style="width:100%;font-size:10px;" border="1" width="100%">
         <tr>
