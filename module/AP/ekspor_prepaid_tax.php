@@ -28,7 +28,7 @@
 
     <?php
     header("Content-type: application/vnd-ms-excel");
-    header("Content-Disposition: attachment; filename=Prepaid Tax Report.xls");
+    header("Content-Disposition: attachment; filename=Vat In Unbilled Report.xls");
     include '../../conn/conn.php';
     $startdate = date("d F Y",strtotime($_GET['start_date']));
     $enddate = date("d F Y",strtotime($_GET['end_date']));
