@@ -51,8 +51,8 @@
       <div class="col-md-3">
         <label for="no_coa" class="form-label"><b>No Coa</b></label>
         <select class="form-control selectpicker" name="no_coa" id="no_coa" data-dropup-auto="false" data-live-search="true">
-            <option value="" selected disabled>Please select No COA</option>                                                
-            <?php
+<!--             <option value="" selected disabled>Please select No COA</option>                                                
+ -->            <?php
             $no_coa ='';
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $no_coa = isset($_POST['no_coa']) ? $_POST['no_coa']: null;
