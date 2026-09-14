@@ -888,17 +888,13 @@
 
       }
 
-      let row = tableData[0];
-
-      let no_journal = row.no_journal;
-      let tgl_journal = row.tgl_journal;
-      let no_coa = row.no_coa;
-      let profit_center = row.profit_center;
-      let no_cc = row.no_cc;
-      let curr = row.curr;
-      let debit = row.debit;
-      let rate = row.rate;
-      let debit_idr = row.debit_idr;
+      // Satu Bank Out BISA punya lebih dari satu baris (mis. POS SILANG dipecah
+      // per profit center). Dulu yang dikirim HANYA tableData[0], sehingga baris
+      // ke-2 dst tidak pernah masuk jurnal dan sisanya tertelan jadi baris
+      // "selisih kurs" 8.52.01 - padahal Amount di form memang diisi otomatis
+      // dari TOTAL seluruh baris (lihat get_amount_bank_out.php yg pakai SUM).
+      // Sekarang seluruh baris dikirim sbg JSON dan dijurnal satu per satu.
+      let refRow = tableData[0];
 
       // =====================
       // DATA POST
@@ -906,15 +902,19 @@
 
       let dataPost = new FormData(document.getElementById('form-data2'));
 
-      dataPost.append('no_journal', no_journal);
-      dataPost.append('tgl_journal', tgl_journal);
-      dataPost.append('no_coa', no_coa);
-      dataPost.append('profit_center', profit_center);
-      dataPost.append('no_cc', no_cc);
-      dataPost.append('curr', curr);
-      dataPost.append('debit', debit);
-      dataPost.append('rate', rate);
-      dataPost.append('debit_idr', debit_idr);
+      dataPost.append('no_journal', refRow.no_journal);
+      dataPost.append('tgl_journal', refRow.tgl_journal);
+      dataPost.append('detail', JSON.stringify(tableData.map(function (r) {
+        return {
+          no_coa: r.no_coa,
+          profit_center: r.profit_center,
+          no_cc: r.no_cc,
+          curr: r.curr,
+          debit: r.debit,
+          rate: r.rate,
+          debit_idr: r.debit_idr
+        };
+      })));
 
 
       console.log("===== DATA POST =====");

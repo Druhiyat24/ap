@@ -112,32 +112,73 @@ if (!$no_coa1) {
     throw new Exception('COA Bank untuk akun "'.$akun.'" tidak ditemukan di mastercoa_v2.');
 }
 
-$reff_doc       = $_POST['no_journal'] ?? '';
-$reff_date      = !empty($_POST['tgl_journal']) ? date('Y-m-d',strtotime($_POST['tgl_journal'])) : $doc_date;
-$coa            = $_POST['no_coa'] ?? '-';
-$pc             = $_POST['profit_center'] ?? '-';
-$cost           = $_POST['no_cc'] ?? '-';
-$curr_reff      = $_POST['curr'] ?? $curr;
-$rate_reff      = $_POST['rate'] ?? 1;
-$total_reff     = $_POST['debit'] ?? 0;
-$total_idr_reff = $_POST['debit_idr'] ?? 0;
+$reff_doc  = $_POST['no_journal'] ?? '';
+$reff_date = !empty($_POST['tgl_journal']) ? date('Y-m-d',strtotime($_POST['tgl_journal'])) : $doc_date;
 
 if ($reff_doc === '') {
     throw new Exception('Bank Out tidak boleh kosong.');
 }
 
-$sqlcoa = q($conn1,"select nama_coa from mastercoa_v2 where no_coa = '".mysqli_real_escape_string($conn1,$coa)."'");
-$rowcoa = mysqli_fetch_array($sqlcoa);
-$nama_coa = $rowcoa['nama_coa'] ?? '-';
+/* =========================
+   DETAIL BANK OUT (BISA >1 BARIS)
+   Dulu endpoint ini cuma menerima SATU baris ($_POST['no_coa'], ['debit'],
+   ...) padahal satu Bank Out bisa punya beberapa baris (mis. POS SILANG
+   dipecah per profit center). Akibatnya baris ke-2 dst hilang dari jurnal dan
+   selisihnya tertelan jadi baris "8.52.01 LABA/(RUGI) SELISIH KURS" - terjadi
+   di BM/BNI2000/NAG/0926/00001 (BK/BCA1979/NAG/0926/00032): POS SILANG
+   44.100.000 masuk, sisanya 3.450.000 salah jadi selisih kurs, padahal
+   dua-duanya IDR rate 1 sehingga selisih kurs mustahil.
+========================= */
 
-$nama_cc = null;
-if ($cost && $cost !== '-') {
-    $sqlcc = q($conn1,"select cc_name from b_master_cc where no_cc = '".mysqli_real_escape_string($conn1,$cost)."'");
-    $rowcc = mysqli_fetch_array($sqlcc);
-    $nama_cc = $rowcc['cc_name'] ?? null;
+$detail = json_decode($_POST['detail'] ?? '', true);
+
+if (!is_array($detail) || count($detail) === 0) {
+    throw new Exception('Detail Bank Out tidak boleh kosong.');
 }
-$nama_cc = $nama_cc ?: '-';
 
+$lines          = [];
+$total_idr_reff = 0;
+
+foreach ($detail as $d) {
+
+    $coa  = trim($d['no_coa'] ?? '');
+    $pc   = trim($d['profit_center'] ?? '') ?: '-';
+    $cost = trim($d['no_cc'] ?? '') ?: '-';
+
+    if ($coa === '') {
+        throw new Exception('Ada baris Bank Out tanpa COA.');
+    }
+
+    $sqlcoa = q($conn1,"select nama_coa from mastercoa_v2 where no_coa = '".mysqli_real_escape_string($conn1,$coa)."'");
+    $rowcoa = mysqli_fetch_array($sqlcoa);
+    $nama_coa = $rowcoa['nama_coa'] ?? '-';
+
+    $nama_cc = null;
+    if ($cost !== '-') {
+        $sqlcc = q($conn1,"select cc_name from b_master_cc where no_cc = '".mysqli_real_escape_string($conn1,$cost)."'");
+        $rowcc = mysqli_fetch_array($sqlcc);
+        $nama_cc = $rowcc['cc_name'] ?? null;
+    }
+    $nama_cc = $nama_cc ?: '-';
+
+    $lines[] = [
+        'coa'       => mysqli_real_escape_string($conn2,$coa),
+        'nama_coa'  => mysqli_real_escape_string($conn2,$nama_coa),
+        'pc'        => mysqli_real_escape_string($conn2,$pc),
+        'cost'      => mysqli_real_escape_string($conn2,$cost),
+        'nama_cc'   => mysqli_real_escape_string($conn2,$nama_cc),
+        'curr'      => mysqli_real_escape_string($conn2, ($d['curr'] ?? $curr)),
+        'rate'      => (float) ($d['rate'] ?? 1),
+        'total'     => (float) ($d['debit'] ?? 0),
+        'total_idr' => (float) ($d['debit_idr'] ?? 0),
+    ];
+
+    $total_idr_reff += (float) ($d['debit_idr'] ?? 0);
+}
+
+// Selisih kurs dihitung dari TOTAL seluruh baris, bukan baris pertama saja.
+// Untuk transaksi IDR-ke-IDR (rate 1) hasilnya 0, jadi tidak ada lagi baris
+// 8.52.01 palsu.
 $selisih = $eqv - $total_idr_reff;
 
 if ($selisih > 0) {
@@ -174,11 +215,15 @@ VALUES
 ");
 
 
+$noneValues = [];
+foreach ($lines as $ln) {
+    $noneValues[] = "('$doc_num', '{$ln['coa']}', '$reff_doc', '$reff_date', '$desc', '0', '{$ln['total']}', '{$ln['pc']}')";
+}
+
 q($conn2,"
 INSERT INTO b_bankin_none
 (no_bankin,id_coa,no_reff,reff_date,deskripsi,t_debit,t_credit,profit_center)
-VALUES
-('$doc_num', '$coa', '$reff_doc', '$reff_date', '$desc', '0', '$total_reff', '$pc')
+VALUES " . implode(',', $noneValues) . "
 ");
 
 
@@ -190,11 +235,20 @@ $journalValues = [];
 // Nama supplier/lawan transaksi ikut disimpan ke jurnal (kolom supplier).
 $supp_esc = mysqli_real_escape_string($conn2, $supp);
 
+// Sisi debit: bank yang menerima uang.
 $journalValues[] = "('$doc_num', '$doc_date', '$ref_num', '$no_coa1', '$nama_coa1', '-', '-', '$reff_doc', '$reff_date', '-', '-', '$curr', '$rate', '$amount', '0', '$eqv', '0', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc_bank', '$supp_esc')";
-$journalValues[] = "('$doc_num', '$doc_date', '$ref_num', '$coa', '$nama_coa', '-', '-', '$reff_doc', '$reff_date', '-', '-', '$curr_reff', '$rate_reff', '0', '$total_reff', '0', '$total_idr_reff', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc', '$supp_esc')";
 
+// Sisi kredit: SATU baris jurnal untuk SETIAP baris Bank Out, lengkap dgn
+// profit center & cost center-nya masing-masing.
+foreach ($lines as $ln) {
+    $journalValues[] = "('$doc_num', '$doc_date', '$ref_num', '{$ln['coa']}', '{$ln['nama_coa']}', '{$ln['cost']}', '{$ln['nama_cc']}', '$reff_doc', '$reff_date', '-', '-', '{$ln['curr']}', '{$ln['rate']}', '0', '{$ln['total']}', '0', '{$ln['total_idr']}', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '{$ln['pc']}', '$supp_esc')";
+}
+
+// Baris selisih kurs HANYA kalau memang ada selisih kurs sungguhan (mis. bank
+// penerima beda mata uang dgn Bank Out-nya), bukan karena baris yg tertinggal.
 if ($selisih != 0) {
-    $journalValues[] = "('$doc_num', '$doc_date', '$ref_num', '8.52.01', 'LABA / (RUGI) SELISIH KURS', '-', '-', '$reff_doc', '$reff_date', '-', '-', 'IDR', '1', '$debit_reff', '$credit_reff', '$debit_reff', '$credit_reff', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc', '$supp_esc')";
+    $pc_selisih = $lines[0]['pc'];
+    $journalValues[] = "('$doc_num', '$doc_date', '$ref_num', '8.52.01', 'LABA / (RUGI) SELISIH KURS', '-', '-', '$reff_doc', '$reff_date', '-', '-', 'IDR', '1', '$debit_reff', '$credit_reff', '$debit_reff', '$credit_reff', 'Draft', '$desc', '$user', '$create_date', '', '', '', '', '$pc_selisih', '$supp_esc')";
 }
 
 q($conn2, "

@@ -446,7 +446,21 @@ $no_bk_now = $row_bk['no_reff'] ?? '';
             return;
         }
 
+        // Satu Bank Out bisa punya lebih dari satu baris; dulu hanya baris
+        // pertama yang dikirim sehingga sisanya hilang dari jurnal dan tertelan
+        // jadi baris selisih kurs. Sekarang seluruh baris dikirim.
         let refRow = tableData[0];
+        let detail = JSON.stringify(tableData.map(function (r) {
+            return {
+                no_coa: r.no_coa,
+                profit_center: r.profit_center,
+                no_cc: r.no_cc,
+                curr: r.curr,
+                debit: r.debit,
+                rate: r.rate,
+                debit_idr: r.debit_idr
+            };
+        }));
 
         Swal.fire({
             title: "Are you sure?",
@@ -482,13 +496,7 @@ $no_bk_now = $row_bk['no_reff'] ?? '';
                         no_bk: no_bk,
                         no_journal: refRow.no_journal,
                         tgl_journal: refRow.tgl_journal,
-                        no_coa: refRow.no_coa,
-                        pc: refRow.profit_center,
-                        no_cc: refRow.no_cc,
-                        curr_reff: refRow.curr,
-                        rate_reff: refRow.rate,
-                        total_reff: refRow.debit,
-                        total_idr_reff: refRow.debit_idr
+                        detail: detail
                     },
                     success: function (res) {
                         let resTrim = res.trim();

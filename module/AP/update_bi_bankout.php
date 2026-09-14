@@ -42,13 +42,19 @@ try {
 	$no_bk = $_POST['no_bk'] ?? '';
 	$reff_doc = $_POST['no_journal'] ?? '';
 	$reff_date = !empty($_POST['tgl_journal']) ? date('Y-m-d', strtotime($_POST['tgl_journal'])) : $date;
-	$coa = $_POST['no_coa'] ?? '-';
-	$pc = $_POST['pc'] ?? '-';
-	$cost = $_POST['no_cc'] ?? '-';
-	$curr_reff = $_POST['curr_reff'] ?? $curr;
-	$rate_reff = $_POST['rate_reff'] ?? 1;
-	$total_reff = $_POST['total_reff'] ?? 0;
-	$total_idr_reff = $_POST['total_idr_reff'] ?? 0;
+
+	/* =========================
+	   DETAIL BANK OUT (BISA >1 BARIS)
+	   Sama seperti di bank_in/save_bankin_bankout.php: dulu hanya SATU baris yg
+	   diterima, sehingga baris ke-2 dst hilang dari jurnal dan selisihnya
+	   tertelan jadi baris "8.52.01 LABA/(RUGI) SELISIH KURS".
+	========================= */
+
+	$detail = json_decode($_POST['detail'] ?? '', true);
+
+	if (!is_array($detail) || count($detail) === 0) {
+		throw new Exception('Detail Bank Out tidak boleh kosong.');
+	}
 
 	if (!$akun) {
 		throw new Exception('Account tidak boleh kosong.');
@@ -151,10 +157,47 @@ try {
 		throw new Exception('COA Bank untuk akun "'.$akun.'" tidak ditemukan di mastercoa_v2.');
 	}
 
-	$sqlcoa = q($conn1, "select nama_coa from mastercoa_v2 where no_coa = '".mysqli_real_escape_string($conn1, $coa)."'");
-	$rowcoa = mysqli_fetch_array($sqlcoa);
-	$nama_coa = $rowcoa['nama_coa'] ?? '-';
+	$lines          = [];
+	$total_idr_reff = 0;
 
+	foreach ($detail as $d) {
+
+		$coa  = trim($d['no_coa'] ?? '');
+		$pc   = trim($d['profit_center'] ?? '') ?: '-';
+		$cost = trim($d['no_cc'] ?? '') ?: '-';
+
+		if ($coa === '') {
+			throw new Exception('Ada baris Bank Out tanpa COA.');
+		}
+
+		$sqlcoa = q($conn1, "select nama_coa from mastercoa_v2 where no_coa = '".mysqli_real_escape_string($conn1, $coa)."'");
+		$rowcoa = mysqli_fetch_array($sqlcoa);
+		$nama_coa = $rowcoa['nama_coa'] ?? '-';
+
+		$nama_cc = null;
+		if ($cost !== '-') {
+			$sqlcc = q($conn1, "select cc_name from b_master_cc where no_cc = '".mysqli_real_escape_string($conn1, $cost)."'");
+			$rowcc = mysqli_fetch_array($sqlcc);
+			$nama_cc = $rowcc['cc_name'] ?? null;
+		}
+		$nama_cc = $nama_cc ?: '-';
+
+		$lines[] = [
+			'coa'       => mysqli_real_escape_string($conn2, $coa),
+			'nama_coa'  => mysqli_real_escape_string($conn2, $nama_coa),
+			'pc'        => mysqli_real_escape_string($conn2, $pc),
+			'cost'      => mysqli_real_escape_string($conn2, $cost),
+			'nama_cc'   => mysqli_real_escape_string($conn2, $nama_cc),
+			'curr'      => mysqli_real_escape_string($conn2, ($d['curr'] ?? $curr)),
+			'rate'      => (float) ($d['rate'] ?? 1),
+			'total'     => (float) ($d['debit'] ?? 0),
+			'total_idr' => (float) ($d['debit_idr'] ?? 0),
+		];
+
+		$total_idr_reff += (float) ($d['debit_idr'] ?? 0);
+	}
+
+	// Selisih kurs dihitung dari TOTAL seluruh baris, bukan baris pertama saja.
 	$selisih = $eqv_idr - $total_idr_reff;
 
 	if ($selisih > 0) {
@@ -179,8 +222,13 @@ try {
 	q($conn2, "insert into b_bankin_none_cancel (select * from b_bankin_none where no_bankin='".mysqli_real_escape_string($conn2, $old_doc_num)."')");
 	q($conn2, "Delete from b_bankin_none where no_bankin='".mysqli_real_escape_string($conn2, $old_doc_num)."'");
 
+	$noneValues = [];
+	foreach ($lines as $ln) {
+		$noneValues[] = "('$doc_num', '{$ln['coa']}', '".mysqli_real_escape_string($conn2, $reff_doc)."', '$reff_date', '".mysqli_real_escape_string($conn2, $deskripsi)."', '0', '{$ln['total']}', '{$ln['pc']}')";
+	}
+
 	q($conn2, "INSERT INTO b_bankin_none (no_bankin,id_coa,no_reff,reff_date,deskripsi,t_debit,t_credit,profit_center)
-		VALUES ('$doc_num', '".mysqli_real_escape_string($conn2, $coa)."', '".mysqli_real_escape_string($conn2, $reff_doc)."', '$reff_date', '".mysqli_real_escape_string($conn2, $deskripsi)."', '0', '$total_reff', '".mysqli_real_escape_string($conn2, $pc)."')");
+		VALUES " . implode(',', $noneValues));
 
 	/* =========================
 	   INSERT JOURNAL (bulk)
@@ -189,10 +237,14 @@ try {
 	$journalValues = [];
 
 	$journalValues[] = "('$doc_num', '$date', '".mysqli_real_escape_string($conn2, $type_journal)."', '$no_coa1', '$nama_coa1', '-', '-', '".mysqli_real_escape_string($conn2, $reff_doc)."', '$reff_date', '-', '-', '$curr', '$rate', '$amount', '0', '$eqv_idr', '0', 'Draft', '".mysqli_real_escape_string($conn2, $deskripsi)."', '".mysqli_real_escape_string($conn2, $create_user)."', '$create_date', '', '', '', '', '$pc_bank_acc', '$customer_esc')";
-	$journalValues[] = "('$doc_num', '$date', '".mysqli_real_escape_string($conn2, $type_journal)."', '".mysqli_real_escape_string($conn2, $coa)."', '".mysqli_real_escape_string($conn2, $nama_coa)."', '-', '-', '".mysqli_real_escape_string($conn2, $reff_doc)."', '$reff_date', '-', '-', '".mysqli_real_escape_string($conn2, $curr_reff)."', '$rate_reff', '0', '$total_reff', '0', '$total_idr_reff', 'Draft', '".mysqli_real_escape_string($conn2, $deskripsi)."', '".mysqli_real_escape_string($conn2, $create_user)."', '$create_date', '', '', '', '', '".mysqli_real_escape_string($conn2, $pc)."', '$customer_esc')";
+	// SATU baris jurnal untuk SETIAP baris Bank Out.
+	foreach ($lines as $ln) {
+		$journalValues[] = "('$doc_num', '$date', '".mysqli_real_escape_string($conn2, $type_journal)."', '{$ln['coa']}', '{$ln['nama_coa']}', '{$ln['cost']}', '{$ln['nama_cc']}', '".mysqli_real_escape_string($conn2, $reff_doc)."', '$reff_date', '-', '-', '{$ln['curr']}', '{$ln['rate']}', '0', '{$ln['total']}', '0', '{$ln['total_idr']}', 'Draft', '".mysqli_real_escape_string($conn2, $deskripsi)."', '".mysqli_real_escape_string($conn2, $create_user)."', '$create_date', '', '', '', '', '{$ln['pc']}', '$customer_esc')";
+	}
 
 	if ($selisih != 0) {
-		$journalValues[] = "('$doc_num', '$date', '".mysqli_real_escape_string($conn2, $type_journal)."', '8.52.01', 'LABA / (RUGI) SELISIH KURS', '-', '-', '".mysqli_real_escape_string($conn2, $reff_doc)."', '$reff_date', '-', '-', 'IDR', '1', '$debit_reff', '$credit_reff', '$debit_reff', '$credit_reff', 'Draft', '".mysqli_real_escape_string($conn2, $deskripsi)."', '".mysqli_real_escape_string($conn2, $create_user)."', '$create_date', '', '', '', '', '".mysqli_real_escape_string($conn2, $pc)."', '$customer_esc')";
+		$pc_selisih = $lines[0]['pc'];
+		$journalValues[] = "('$doc_num', '$date', '".mysqli_real_escape_string($conn2, $type_journal)."', '8.52.01', 'LABA / (RUGI) SELISIH KURS', '-', '-', '".mysqli_real_escape_string($conn2, $reff_doc)."', '$reff_date', '-', '-', 'IDR', '1', '$debit_reff', '$credit_reff', '$debit_reff', '$credit_reff', 'Draft', '".mysqli_real_escape_string($conn2, $deskripsi)."', '".mysqli_real_escape_string($conn2, $create_user)."', '$create_date', '', '', '', '', '$pc_selisih', '$customer_esc')";
 	}
 
 	q($conn2, "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
