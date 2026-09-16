@@ -2154,6 +2154,9 @@ $menuGroups = [
                         ['name' => 'req_dn', 'desc' => 'Detail Request Debit Note.'],
                     ],
                     'notes' => [
+                        'COA 1.34.05 — kolom <b>Forex Gain / (Loss)</b> pada dasarnya SELALU 0 untuk BPB bermata uang USD. Rumusnya <code>tot_dn - total_alk2</code> membandingkan dua angka yang sama-sama dikali kurs ALOKASI, jadi selisih kurs antara tanggal BPB dan tanggal alokasi tidak pernah tertangkap. Rumus itu memang dirancang untuk kasus sebaliknya (BPB IDR + alokasi valas) dan dibiarkan apa adanya. Selisih kurs pada praktiknya ditutup akuntansi lewat jurnal reklas GM, sehingga muncul di kolom Deduction (GM).',
+                        'PENGECUALIAN PENYAJIAN (16 Sep 2026, permintaan user): untuk 12 BPB yang alokasinya di 0043/ALK/NAG/0826, selisih kurs DIHITUNG SENDIRI dari <b>jumlah USD x (kurs PAJAK tgl BPB - kurs alokasi 17.796)</b> lalu ditampilkan di kolom <b>Forex Gain / (Loss)</b>, tanpa mengambil angka dari jurnal <code>GM/NAG/0826/00197</code> (31-Ags-2026, total 472.818,49), karena jurnal itu akan dibatalkan user. Jurnal GM-nya SENGAJA TETAP DITAMPILKAN apa adanya di kolom Deduction (GM) — atas permintaan user — supaya perbedaan sebelum &amp; sesudah cancel terlihat: <b>selama GM belum dibatalkan</b> nilainya terhitung dua kali sehingga saldo akhir 12 baris ini tampil MINUS 472.818,49 (disengaja, sebagai penanda bahwa jurnal GM masih perlu dibatalkan — bukan bug); <b>sesudah GM dibatalkan</b> Deduction (GM) jadi 0, tinggal kolom Forex, saldo akhir Agustus 2026 = 0 dan saldo awal September 2026 = 0. Sudah diuji di dua kondisi: database live (GM masih ada) memberi saldo akhir -472.818,49, database lokal (GM tidak ada) memberi 0. Dibandingkan baris-per-baris dgn versi sebelumnya, hanya 12 baris ini yang berubah di periode Agustus; periode Juli &amp; September tidak ada satu baris pun yang bergeser. JANGAN menambah perhitungan selisih kurs lain di atas ini — nilainya akan terhitung dua kali dan saldo akhir jadi minus.',
+                        'Kalau ada laporan "saldo menggantung" di menu ini, cek dulu tanggal To filter-nya: jurnal reklas GM sering bertanggal akhir bulan (mis. 31-Ags), sehingga export yang berhenti di tanggal 30 belum memuat pengurangnya.',
                         'Dua ekspor Excel terpisah: satu untuk mode Memo generik, satu untuk mode Uang Muka Material.',
                         'Terdapat tombol "Copy Saldo" yang sudah disembunyikan dari tampilan (dikomentari), namun handler JS-nya masih tersambung ke endpoint copy_saldo_tb.php yang sesungguhnya aktif — endpoint tersebut mengabaikan parameter akun & selalu memproses seluruh tabel staging, sehingga saat ini praktis hanya benar-benar terjangkau lewat menu Financial Statement (tombol Copy Saldo Trial Balance), bukan dari halaman ini.',
                         'Terdapat beberapa batas tanggal & pengecualian satu dokumen tertentu yang tertanam tetap di kode — kemungkinan tambalan perbaikan data historis, bukan aturan bisnis umum.',
@@ -3750,6 +3753,57 @@ $menuGroups = [
                     'notes' => [
                         'Baris menurole dengan id = "35" sengaja dikecualikan dari daftar menu yang bisa di-assign lewat UI ini — kemungkinan menu internal/tersembunyi yang aksesnya tidak dimaksudkan untuk diberikan lewat halaman ini.',
                         'Komentar kode pada berkas backend (ajx_userrole.php) secara eksplisit menegaskan bahwa conn1/conn2 menunjuk ke basis data fisik yang sama, hanya beda resource koneksi — konsisten dengan catatan sumber data pada panel "Ringkasan Tabel Database" di halaman ini.',
+                    ],
+                ],
+            ],
+        ],
+    ],
+    'project' => [
+        'title' => 'Project',
+        'icon'  => 'fa-rocket',
+        'items' => [
+            'project-dashboard' => [
+                'title' => 'Project Dashboard', 'icon' => 'fa-rocket', 'path' => 'module/AP/project.php',
+                'doc' => [
+                    'summary' => 'Dashboard eksekutif untuk melacak setiap fitur/perbaikan yang dikerjakan tim IT untuk tim Finance — 5 cara pandang (Board, Table, Calendar, Timeline, Insights) plus panel rekam jejak pengiriman. AKSES DIKUNCI: hanya user "indro" yang bisa membukanya, user lain melihat halaman "Restricted Page".',
+                    'purpose' => 'Menggantikan pencatatan manual daftar pekerjaan pengembangan: apa yang diminta, siapa yang meminta, kapan target &amp; kapan benar-benar selesai. Selain untuk kerja harian, halaman ini dirancang untuk DIPRESENTASIKAN — bagian Delivery Performance merangkum rekam jejak (jumlah fitur terkirim, ketepatan waktu, lead time) supaya kinerja tim terbaca dalam hitungan detik.',
+                    'variants' => [
+                        ['name' => 'Delivery Performance', 'icon' => 'fa-line-chart', 'desc' => 'Panel di bawah hero: Features delivered, On-time delivery, Avg. lead time (rata-rata &amp; median hari dari start ke actual), Active now, Modules covered, dan Delivered bulan berjalan. SELALU dihitung dari SELURUH data (all-time) dan TIDAK terpengaruh filter di bawahnya. Pembanding bulan berjalan memakai periode yang sama di bulan lalu (month-to-date), bukan bulan lalu penuh.'],
+                        ['name' => 'Board', 'icon' => 'fa-columns', 'desc' => 'Kanban 4 kolom status. Kartu bisa di-drag antar kolom untuk mengubah status (memanggil quick_update_status.php). Kolom kosong menampilkan placeholder "Drag a card here".'],
+                        ['name' => 'Table', 'icon' => 'fa-table', 'desc' => 'Tabel bisa diurutkan per kolom, lengkap dengan kolom Description (dipotong 2 baris, teks penuh di tooltip) dan dropdown status untuk ubah cepat tanpa membuka form.'],
+                        ['name' => 'Calendar', 'icon' => 'fa-calendar', 'desc' => 'Kalender bulanan; tiap project digambar sebagai bar dari start_date sampai target_date. Sabtu/Minggu &amp; hari libur diwarnai, plus ringkasan jumlah hari kerja bulan tsb.'],
+                        ['name' => 'Timeline', 'icon' => 'fa-tasks', 'desc' => 'Gantt sederhana satu bulan: satu baris per project, panjang bar mengikuti rentang tanggal dan isian bar mengikuti % progress. Kolom akhir pekan &amp; hari libur ikut diwarnai.'],
+                        ['name' => 'Insights', 'icon' => 'fa-pie-chart', 'desc' => 'Delivery trend 6 bulan, donat On-time Delivery, Workload by Module, Requests by Requester, Priority Mix, Upcoming Deadlines 7 hari, dan Recent Activity.'],
+                        ['name' => 'Detail drawer', 'icon' => 'fa-columns', 'desc' => 'Panel geser dari kanan saat kartu/baris diklik: deskripsi, Task List (milestone, bisa tambah/centang/hapus — mencentang semua otomatis menaikkan progress), dan riwayat aktivitas.'],
+                    ],
+                    'flow' => [
+                        ['title' => 'Buat / ubah project', 'desc' => 'Modal 2 kolom: kiri pratinjau kartu yang berubah LANGSUNG mengikuti isian, kanan formulir (nama, module, requester, deskripsi, status, prioritas, progress, tanggal). Kolom Actual Completion Date hanya muncul kalau status = Done.'],
+                        ['title' => 'Filter', 'desc' => 'Status (BOLEH LEBIH DARI SATU — tiap tombol nyala/mati sendiri, tombol All mengosongkan), Module, Bulan, dan pencarian nama. Filter bulan default ke bulan berjalan saat halaman dibuka. Satu project menempati SEMUA bulan sepanjang start_date s.d. target_date, bukan hanya bulan targetnya.'],
+                        ['title' => 'Hitung status khusus', 'desc' => 'Overdue = status Planned/On Progress dan target_date sudah lewat (dihitung di SQL ajax_project.php; On Hold tidak pernah overdue). At Risk = On Progress, belum overdue, tapi progress tertinggal lebih dari 15 poin dari yang seharusnya menurut waktu berjalan. Completion tile mengeluarkan item overdue dari basis hitungan.'],
+                        ['title' => 'Hari kerja &amp; hari libur', 'desc' => 'Sabtu &amp; Minggu dianggap libur. Hari libur diambil dari tabel <code>mgt_rep_hari_libur</code> (sinkron dgn HRIS): LN = Libur Nasional dan CT = Cuti Bersama tidak dihitung sebagai hari kerja, LP = Libur Produksi hanya ditandai (pabrik libur, kantor jalan). Libur yang jatuh di akhir pekan tidak dihitung dua kali.'],
+                        ['title' => 'Export Excel', 'desc' => 'ekspor_project.php mengikuti filter module/bulan/pencarian, tetapi isinya SELALU hanya project berstatus Done (permintaan user) — jadi filter status tidak mengubah isi file. Untuk yang Done, bulan diambil dari actual_date, bukan target_date.'],
+                    ],
+                    'status_flow' => [
+                        ['label' => 'Planned', 'cls' => 'planned'],
+                        ['label' => 'On Progress', 'cls' => 'progress'],
+                        ['label' => 'On Hold', 'cls' => 'hold'],
+                        ['label' => 'Done', 'cls' => 'done'],
+                    ],
+                    'tables_write' => [
+                        ['name' => 'master_project', 'actions' => ['insert', 'update', 'delete'], 'desc' => 'Tabel utama project (save_project.php, delete_project.php, quick_update_status.php).'],
+                        ['name' => 'project_milestones', 'actions' => ['insert', 'update', 'delete'], 'desc' => 'Task list per project di drawer; jumlah task selesai dipakai menghitung ulang progress project.'],
+                        ['name' => 'project_activity_log', 'actions' => ['insert'], 'desc' => 'Jejak perubahan (dibuat, field berubah, task ditambah/selesai/dihapus) yang tampil di bagian Activity.'],
+                    ],
+                    'tables_read' => [
+                        ['name' => 'userpassword', 'desc' => 'Mengambil FullName untuk sapaan di hero.'],
+                        ['name' => 'mgt_rep_hari_libur', 'desc' => 'Sumber hari libur (LN/CT/LP) untuk Calendar, Timeline, dan hitungan hari kerja. Dibaca dengan @mysqli_query: kalau tabelnya tidak ada, halaman tetap jalan tanpa hari libur.'],
+                    ],
+                    'notes' => [
+                        'Halaman ini DIREDESAIN (Sep 2026) mengikuti warna brand aplikasi navy-&gt;biru, memakai font Poppins lokal di <code>ap_dev/fonts/poppins</code> (tanpa CDN, aman untuk intranet). Seluruh CSS diberi nama kelas khusus halaman ini dan tidak menyentuh navbar/halaman lain. Tersedia dark mode yang disimpan per browser (localStorage "projTheme").',
+                        'Angka di 6 stat tile MENGIKUTI filter yang aktif (bukan total keseluruhan), sedangkan panel Delivery Performance sengaja tidak — supaya cerita rekam jejak tetap utuh saat data disaring.',
+                        'Hari libur TIDAK ditanam di kode: begitu SKB libur tahun berikutnya diinput di HRIS, kalender ikut otomatis. Perlu diperhatikan, data sumbernya kadang berisi baris uji coba/duplikat (mis. "tess" 14 Jan 2026 berkode CT) yang ikut mengurangi hari kerja — kalau ada keanehan hitungan, periksa tabelnya dulu.',
+                        'Perbaikan bug lama saat redesain: tombol navigasi bulan di tampilan Timeline dulu selalu memanggil render kalender sehingga terlihat tidak berfungsi (kini mengikuti view aktif), kalender selalu menampilkan satu baris minggu berlebih dari bulan berikutnya, dan ikon watermark di stat tile tampil sebagai kotak kosong karena masih memanggil Font Awesome 4.',
+                        'Kalau kalender digeser ke bulan yang berbeda dgn filter bulan yang aktif, muncul keterangan beserta tombol "Show all months" — sebelumnya bulan itu hanya tampil kosong tanpa penjelasan.',
                     ],
                 ],
             ],

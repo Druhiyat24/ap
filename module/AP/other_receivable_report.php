@@ -165,7 +165,43 @@ if ($coa_number == '1.34.05') {
                     <tr class="thead-dark">
                         <?php if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             $coa_number = isset($_POST['coa_number']) ? $_POST['coa_number']: null;
-                            if ($coa_number == '1.34.05') {
+                // ---------------------------------------------------------------------------
+// PENYAJIAN SELISIH KURS 12 BPB (permintaan user, 16 Sep 2026).
+//
+// Ke-12 BPB ini BPB USD: nilai awalnya dibukukan pakai kurs PAJAK tanggal BPB,
+// sedangkan alokasi DN-nya (0043/ALK/NAG/0826, 28-Ags-2026) pakai kurs 17.796.
+// Sisanya = jumlah USD x selisih kurs, dan sudah ditutup akuntansi lewat jurnal
+// reklas GM/NAG/0826/00197 (31-Ags-2026, total 472.818,49).
+//
+// Karena sisanya memang selisih kurs, user minta angka itu TAMPIL di kolom
+// Forex Gain/(Loss), bukan di Deduction (GM), DAN jurnal GM-nya akan dibatalkan.
+// Maka forex 12 BPB ini dihitung SENDIRI dari SELISIH KURS:
+//     jumlah USD x (kurs PAJAK tgl BPB - kurs alokasi)
+// tanpa mengambil angka dari jurnal GM, karena jurnal itu akan dibatalkan.
+//
+// Jurnal GM SENGAJA TETAP DITAMPILKAN apa adanya di kolom Deduction (GM)
+// (permintaan user 16 Sep 2026) supaya beda sebelum & sesudah cancel kelihatan:
+//   - SELAMA GM belum dibatalkan: nilainya terhitung dua kali (GM + Forex),
+//     saldo akhir 12 baris ini tampil MINUS 472.818,49. Ini DISENGAJA sbg
+//     penanda bahwa jurnal GM masih perlu dibatalkan - bukan bug.
+//   - SESUDAH GM dibatalkan: Deduction (GM) jadi 0, tinggal kolom Forex,
+//     saldo akhir Agustus 2026 = 0 dan saldo awal September 2026 = 0.
+// Pengecualian ini SENGAJA dibatasi ke 12 nomor di bawah; ratusan alokasi BPB
+// USD lain yang kolom Forex-nya juga 0 DIBIARKAN apa adanya (belum diminta).
+//
+// Kolom ded_fgl yang umum (tot_dn - total_alk2) memang selalu 0 untuk BPB USD -
+// kedua sisinya sama-sama dikali kurs alokasi. Rumus itu dibuat untuk kasus
+// sebaliknya (BPB IDR + alokasi valas) dan sengaja dibiarkan apa adanya.
+//
+// Catatan: query 1.34.05 ini disalin utuh di other_receivable_report.php dan
+// ekspor_or_report_material.php - kalau salah satu diubah, ubah dua-duanya.
+// ---------------------------------------------------------------------------
+$OR_FX_GM  = 'GM/NAG/0826/00197';   // jurnal reklas yang digantikan perhitungan di bawah
+$OR_FX_BPB = "'GACC/IN/0626/03136','GACC/IN/0626/03144','GACC/IN/0626/03357',"
+           . "'GACC/IN/0626/03445','GACC/IN/0626/03446','GACC/IN/0626/03518',"
+           . "'GACC/IN/0626/03522','GACC/IN/0626/03572','GACC/IN/0626/03573',"
+           . "'GACC/IN/0726/03977','GACC/IN/0726/04267','GACC/IN/0726/04388'";
+            if ($coa_number == '1.34.05') {
                                 echo '<th style="text-align: center;vertical-align: middle;width: 9%;">No PO</th>
                                 <th style="text-align: center;vertical-align: middle;width: 8%;">No BPB</th>
                                 <th style="text-align: center;vertical-align: middle;width: 8%;">BPB Date</th>
@@ -267,9 +303,9 @@ if ($coa_number == '1.34.05') {
                     left join po_header ph on a.pono = ph.pono
                     left join po_header_draft phd on phd.id = ph.id_draft where phd.tipe_com = 'Buyer' and bpbdate >= '2024-10-01' and a.bpbdate >= '$start_date' and a.bpbdate <= '$end_date' and a.cancel != 'Y' and a.confirm = 'Y' GROUP BY a.bpbno_int) a 
                 LEFT JOIN
-                (select no_bpb,curr_alk,curr_bpb,sum(if(curr_alk = curr_bpb,total_alk,total_alk2)) ded_alk, sum(if(curr_alk = 'IDR' and curr_bpb = 'IDR',0,(tot_dn - total_alk2))) ded_fgl from (select no_bpb, curr_alk, curr_bpb, total_alk,total_alk2,tot_dn from (SELECT DISTINCT g.no_alk,g.tgl_alk, c.nm_memo no_bpb, g.curr curr_alk, h.curr curr_bpb, g.rate, IF(h.curr != 'IDR',(c.value * rate),value) tot_dn,c.amount amount_dn,(c.amount * g.rate) total_alk2,if(f.amount > c.amount,IF(e.from_curr = 'USD',(c.value * rate),c.value),(f.amount * rate)) total_alk, f.amount amount from (select id,no_dn,SUM(value) value, SUM(amount) amount,nm_memo from tbl_debitnote_det where nm_memo != '' and id_memo_det = '' GROUP BY no_dn,nm_memo) c INNER JOIN tbl_debitnote_h e on e.no_dn = c.no_dn INNER JOIN (select * from tbl_alokasi_detail where coa = '1.34.05') f on f.no_ref = e.no_dn INNER JOIN tbl_alokasi g on g.no_alk = f.no_alk INNER JOIN (select bpbno_int,curr from bpb a inner join po_header b on b.pono = a.pono INNER JOIN po_header_draft c on c.id = b.id_draft where c.tipe_com = 'Buyer' and bpbdate >= '2024-10-01' GROUP BY bpbno_int) h on h.bpbno_int = c.nm_memo where g.tgl_alk BETWEEN '$start_date' and '$end_date' and g.status != 'Cancel' and c.nm_memo is not null  order by c.nm_memo asc) a) a GROUP BY no_bpb) b on b.no_bpb = a.bpbno_int
+                (select no_bpb,curr_alk,curr_bpb,sum(if(curr_alk = curr_bpb,total_alk,total_alk2)) ded_alk, sum(COALESCE(fgl_fix, if(curr_alk = 'IDR' and curr_bpb = 'IDR',0,(tot_dn - total_alk2)))) ded_fgl from (select no_bpb, curr_alk, curr_bpb, total_alk,total_alk2,tot_dn,fgl_fix from (SELECT DISTINCT g.no_alk,g.tgl_alk, c.nm_memo no_bpb, g.curr curr_alk, h.curr curr_bpb, g.rate, IF(h.curr != 'IDR',(c.value * rate),value) tot_dn,c.amount amount_dn,(c.amount * g.rate) total_alk2,if(f.amount > c.amount,IF(e.from_curr = 'USD',(c.value * rate),c.value),(f.amount * rate)) total_alk, f.amount amount, IF(c.nm_memo IN ($OR_FX_BPB), ROUND(IF(f.amount > c.amount, c.amount, f.amount) * (COALESCE((select mr.rate from masterrate mr where mr.v_codecurr = 'PAJAK' and mr.curr = h.curr and mr.tanggal = h.bpbdate limit 1), g.rate) - g.rate), 2), NULL) fgl_fix from (select id,no_dn,SUM(value) value, SUM(amount) amount,nm_memo from tbl_debitnote_det where nm_memo != '' and id_memo_det = '' GROUP BY no_dn,nm_memo) c INNER JOIN tbl_debitnote_h e on e.no_dn = c.no_dn INNER JOIN (select * from tbl_alokasi_detail where coa = '1.34.05') f on f.no_ref = e.no_dn INNER JOIN tbl_alokasi g on g.no_alk = f.no_alk INNER JOIN (select bpbno_int,curr,min(bpbdate) bpbdate from bpb a inner join po_header b on b.pono = a.pono INNER JOIN po_header_draft c on c.id = b.id_draft where c.tipe_com = 'Buyer' and bpbdate >= '2024-10-01' GROUP BY bpbno_int) h on h.bpbno_int = c.nm_memo where g.tgl_alk BETWEEN '$start_date' and '$end_date' and g.status != 'Cancel' and c.nm_memo is not null  order by c.nm_memo asc) a) a GROUP BY no_bpb) b on b.no_bpb = a.bpbno_int
                 LEFT JOIN
-                (select no_bpb no_bpb_bfr, (ded_alk + ded_fgl) ded_alk_bfr from (select no_bpb,curr_alk,curr_bpb,sum(if(curr_alk = curr_bpb,total_alk,total_alk2)) ded_alk, sum(if(curr_alk = 'IDR' and curr_bpb = 'IDR',0,(tot_dn - total_alk2))) ded_fgl from (select no_bpb, curr_alk, curr_bpb, total_alk,total_alk2,tot_dn from (SELECT DISTINCT g.no_alk,g.tgl_alk, c.nm_memo no_bpb, g.curr curr_alk, h.curr curr_bpb, g.rate, IF(h.curr != 'IDR',(c.value * rate),value) tot_dn,c.amount amount_dn,(c.amount * g.rate) total_alk2,if(f.amount > c.amount,IF(e.from_curr = 'USD',(c.value * rate),c.value),(f.amount * rate)) total_alk, f.amount amount from (select id,no_dn,SUM(value) value, SUM(amount) amount,nm_memo from tbl_debitnote_det where nm_memo != '' and id_memo_det = '' GROUP BY no_dn,nm_memo) c INNER JOIN tbl_debitnote_h e on e.no_dn = c.no_dn INNER JOIN (select * from tbl_alokasi_detail where coa = '1.34.05') f on f.no_ref = e.no_dn INNER JOIN tbl_alokasi g on g.no_alk = f.no_alk INNER JOIN (select bpbno_int,curr from bpb a inner join po_header b on b.pono = a.pono INNER JOIN po_header_draft c on c.id = b.id_draft where c.tipe_com = 'Buyer' and bpbdate >= '2024-10-01' GROUP BY bpbno_int) h on h.bpbno_int = c.nm_memo where g.tgl_alk < '$start_date' and g.status != 'Cancel' and c.nm_memo is not null  order by c.nm_memo asc) a) a GROUP BY no_bpb) a) c on c.no_bpb_bfr = a.bpbno_int
+                (select no_bpb no_bpb_bfr, (ded_alk + ded_fgl) ded_alk_bfr from (select no_bpb,curr_alk,curr_bpb,sum(if(curr_alk = curr_bpb,total_alk,total_alk2)) ded_alk, sum(COALESCE(fgl_fix, if(curr_alk = 'IDR' and curr_bpb = 'IDR',0,(tot_dn - total_alk2)))) ded_fgl from (select no_bpb, curr_alk, curr_bpb, total_alk,total_alk2,tot_dn,fgl_fix from (SELECT DISTINCT g.no_alk,g.tgl_alk, c.nm_memo no_bpb, g.curr curr_alk, h.curr curr_bpb, g.rate, IF(h.curr != 'IDR',(c.value * rate),value) tot_dn,c.amount amount_dn,(c.amount * g.rate) total_alk2,if(f.amount > c.amount,IF(e.from_curr = 'USD',(c.value * rate),c.value),(f.amount * rate)) total_alk, f.amount amount, IF(c.nm_memo IN ($OR_FX_BPB), ROUND(IF(f.amount > c.amount, c.amount, f.amount) * (COALESCE((select mr.rate from masterrate mr where mr.v_codecurr = 'PAJAK' and mr.curr = h.curr and mr.tanggal = h.bpbdate limit 1), g.rate) - g.rate), 2), NULL) fgl_fix from (select id,no_dn,SUM(value) value, SUM(amount) amount,nm_memo from tbl_debitnote_det where nm_memo != '' and id_memo_det = '' GROUP BY no_dn,nm_memo) c INNER JOIN tbl_debitnote_h e on e.no_dn = c.no_dn INNER JOIN (select * from tbl_alokasi_detail where coa = '1.34.05') f on f.no_ref = e.no_dn INNER JOIN tbl_alokasi g on g.no_alk = f.no_alk INNER JOIN (select bpbno_int,curr,min(bpbdate) bpbdate from bpb a inner join po_header b on b.pono = a.pono INNER JOIN po_header_draft c on c.id = b.id_draft where c.tipe_com = 'Buyer' and bpbdate >= '2024-10-01' GROUP BY bpbno_int) h on h.bpbno_int = c.nm_memo where g.tgl_alk < '$start_date' and g.status != 'Cancel' and c.nm_memo is not null  order by c.nm_memo asc) a) a GROUP BY no_bpb) a) c on c.no_bpb_bfr = a.bpbno_int
                 LEFT JOIN
                 (select reff_doc, if(curr = 'IDR',sum((credit * rate) - (debit * rate)),(credit - debit)) tot_gm from tbl_list_journal where no_coa = '1.34.05' and no_journal like '%GM/%' and tgl_journal BETWEEN '$start_date' and '$end_date' GROUP BY reff_doc) d on d.reff_doc = a.bpbno_int
                 LEFT JOIN
