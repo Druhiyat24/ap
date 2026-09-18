@@ -90,6 +90,20 @@ pph as (select a.no_kbon, round(COALESCE(pph_idr,0) + COALESCE(potongan_pph,0),2
 
 pph_before as (select no_kbon, 0 pph from kontrabon_h where DATE_FORMAT(create_date, '%Y-%m-%d') > '2026-06-30' and DATE_FORMAT(create_date, '%Y-%m-%d') < '$start_date' and status != 'Cancel' GROUP BY no_kbon),
 
+pph_um_all as (select h.no_kbon, MAX(j.tgl_journal) tgl_um,
+    round(COALESCE(h.pph_idr,0) / IF(h.curr = 'IDR' OR COALESCE(h.rate,0) = 0, 1, h.rate), 2) pph_um,
+    MAX(h.subtotal) subtotal_doc, SUM(j.credit - j.debit) um_jurnal
+  from kontrabon_h h
+  INNER JOIN tbl_list_journal j on j.no_journal = h.no_kbon and j.type_journal = 'AP - Kontrabon' and j.nama_coa like '%UANG MUKA%'
+  where h.status != 'Cancel' and COALESCE(h.pph_idr,0) > 0
+    and not exists (select 1 from tbl_list_journal p where p.reff_doc = h.no_kbon and p.type_journal like '%Payment%')
+  GROUP BY h.no_kbon
+  having round(um_jurnal - (subtotal_doc - pph_um), 2) = 0),
+
+pph_um as (select no_kbon, pph_um from pph_um_all where tgl_um BETWEEN '$start_date' and '$end_date'),
+
+pph_um_before as (select no_kbon, pph_um from pph_um_all where tgl_um > '2026-06-30' and tgl_um < '$start_date'),
+
 potongan as (select b.nama_supp, a.no_journal, a.tgl_journal, tgl_tempo, a.curr, sum(debit - credit) total, a.rate from tbl_list_journal a INNER JOIN kontrabon_h b on b.no_kbon = a.no_journal where tgl_journal > '2026-06-30' and tgl_journal BETWEEN '$start_date' and '$end_date' and type_journal = 'AP - Kontrabon' and a.nama_coa like '%BEBAN%' and b.status != 'Cancel' GROUP BY no_journal),
 
 potongan_before as (select b.nama_supp, a.no_journal, a.tgl_journal, tgl_tempo, a.curr, sum(debit - credit) total, a.rate from tbl_list_journal a INNER JOIN kontrabon_h b on b.no_kbon = a.no_journal where tgl_journal > '2026-06-30' and tgl_journal < '$start_date' and type_journal = 'AP - Kontrabon' and a.nama_coa like '%BEBAN%' and b.status != 'Cancel' GROUP BY no_journal),
@@ -126,7 +140,13 @@ select no_journal, 0 reverse_kontrabon_before, total reverse_kontrabon, 0 uang_m
 UNION ALL
 select no_journal, 0 reverse_kontrabon_before, 0 reverse_kontrabon, total uang_muka_before, 0 uang_muka, 0 pph_before, 0 pph, 0 potongan_before, 0 potongan, 0 ded_bank_before, 0 ded_bank, 0 ded_gm_before, 0 ded_gm, 0 ded_cash, 0 ded_cash_before, 0 ded_nonbank, 0 ded_nonbank_before from uang_muka_before
 UNION ALL
+/* PPh atas uang muka periode sebelumnya -> memperbesar pengurang uang muka */
+select no_kbon no_journal, 0 reverse_kontrabon_before, 0 reverse_kontrabon, -pph_um uang_muka_before, 0 uang_muka, 0 pph_before, 0 pph, 0 potongan_before, 0 potongan, 0 ded_bank_before, 0 ded_bank, 0 ded_gm_before, 0 ded_gm, 0 ded_cash, 0 ded_cash_before, 0 ded_nonbank, 0 ded_nonbank_before from pph_um_before
+UNION ALL
 select no_journal, 0 reverse_kontrabon_before, 0 reverse_kontrabon, 0 uang_muka_before, total uang_muka, 0 pph_before, 0 pph, 0 potongan_before, 0 potongan, 0 ded_bank_before, 0 ded_bank, 0 ded_gm_before, 0 ded_gm, 0 ded_cash, 0 ded_cash_before, 0 ded_nonbank, 0 ded_nonbank_before from uang_muka
+UNION ALL
+/* PPh atas uang muka periode berjalan -> memperbesar pengurang uang muka */
+select no_kbon no_journal, 0 reverse_kontrabon_before, 0 reverse_kontrabon, 0 uang_muka_before, -pph_um uang_muka, 0 pph_before, 0 pph, 0 potongan_before, 0 potongan, 0 ded_bank_before, 0 ded_bank, 0 ded_gm_before, 0 ded_gm, 0 ded_cash, 0 ded_cash_before, 0 ded_nonbank, 0 ded_nonbank_before from pph_um
 UNION ALL
 select no_kbon, 0 reverse_kontrabon_before, 0 reverse_kontrabon, 0 uang_muka_before, 0 uang_muka, pph pph_before, 0 pph, 0 potongan_before, 0 potongan, 0 ded_bank_before, 0 ded_bank, 0 ded_gm_before, 0 ded_gm, 0 ded_cash, 0 ded_cash_before, 0 ded_nonbank, 0 ded_nonbank_before from pph_before
 UNION ALL
