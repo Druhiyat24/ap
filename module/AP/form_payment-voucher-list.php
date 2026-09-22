@@ -196,14 +196,21 @@ include 'pv_data_functions.php';
                             // Exclude PV yang sudah pernah dimasukkan ke Payment List ATAU
                             // Payment Voucher List lain (belum dibatalkan) - supaya tidak ada
                             // PV yang diklaim dua kali oleh dua feature "list" ini.
+                            // Kunci penyaring: nomor dokumen + PROFIT CENTER (lihat catatan sama
+                            // di form_payment-list.php) supaya PV lintas profit center tidak hilang
+                            // seluruhnya begitu salah satu PC-nya diambil.
+                            $pvlKey = function ($no_kbon, $pc) {
+                                $pc = trim((string) $pc);
+                                return $no_kbon . '|' . ($pc === '' ? '-' : $pc);
+                            };
                             $alreadyListed = [];
                             
-                            $sqlListed2 = mysqli_query($conn2, "select no_kbon from pv_payment_voucher_list_det where status != 'Cancel'");
+                            $sqlListed2 = mysqli_query($conn2, "select no_kbon, profit_center from pv_payment_voucher_list_det where status != 'Cancel'");
                             while ($rowListed2 = mysqli_fetch_assoc($sqlListed2)) {
-                                $alreadyListed[$rowListed2['no_kbon']] = true;
+                                $alreadyListed[$pvlKey($rowListed2['no_kbon'], $rowListed2['profit_center'])] = true;
                             }
-                            $rowsAll = array_filter($rowsAll, function ($r) use ($alreadyListed) {
-                                return !isset($alreadyListed[$r['no_kbon']]);
+                            $rowsAll = array_filter($rowsAll, function ($r) use ($alreadyListed, $pvlKey) {
+                                return !isset($alreadyListed[$pvlKey($r['no_kbon'], $r['profit_center'] ?? '')]);
                             });
 
                             foreach ($rowsAll as $r) {

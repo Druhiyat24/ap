@@ -89,19 +89,30 @@ if (!empty($type_pv)) {
         return true;
     });
 
-    // Build set of no_kbon already in this PVL (to exclude from Section B)
-    $currentKbons = array_column($currentPVs, 'no_kbon');
-    $currentKbonsSet = array_flip($currentKbons);
+    // Kunci penyaring memakai nomor dokumen + PROFIT CENTER, bukan nomor saja:
+    // kandidat dihasilkan per (dokumen x profit center), jadi PV lintas PC yang
+    // sebagian PC-nya sudah diambil tetap boleh dipilih untuk PC sisanya.
+    $plKey = function ($no_kbon, $pc) {
+        $pc = trim((string) $pc);
+        return $no_kbon . '|' . ($pc === '' ? '-' : $pc);
+    };
+
+    // Baris yang SUDAH ada di PVL ini (disembunyikan dari Section B)
+    $currentKbonsSet = [];
+    foreach ($currentPVs as $cur) {
+        $currentKbonsSet[$plKey($cur['no_kbon'], $cur['profit_center'] ?? '')] = true;
+    }
 
     // Exclude PVs already in other PVLs (non-cancelled)
     $alreadyListed = [];
-    $sqlListed = mysqli_query($conn2, "SELECT no_kbon FROM pv_payment_voucher_list_det WHERE pl_number != '$pl_esc' AND status != 'Cancel'");
+    $sqlListed = mysqli_query($conn2, "SELECT no_kbon, profit_center FROM pv_payment_voucher_list_det WHERE pl_number != '$pl_esc' AND status != 'Cancel'");
     while ($rr = mysqli_fetch_assoc($sqlListed)) {
-        $alreadyListed[$rr['no_kbon']] = true;
+        $alreadyListed[$plKey($rr['no_kbon'], $rr['profit_center'])] = true;
     }
 
-    $rowsAll = array_filter($rowsAll, function ($r) use ($alreadyListed, $currentKbonsSet) {
-        return !isset($alreadyListed[$r['no_kbon']]) && !isset($currentKbonsSet[$r['no_kbon']]);
+    $rowsAll = array_filter($rowsAll, function ($r) use ($alreadyListed, $currentKbonsSet, $plKey) {
+        $k = $plKey($r['no_kbon'], $r['profit_center'] ?? '');
+        return !isset($alreadyListed[$k]) && !isset($currentKbonsSet[$k]);
     });
 
     $searchRows = array_values($rowsAll);

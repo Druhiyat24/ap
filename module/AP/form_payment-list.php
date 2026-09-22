@@ -235,14 +235,23 @@ include 'pv_data_functions.php';
                             // Exclude PV yang sudah pernah dimasukkan ke Payment List ATAU
                             // Payment Voucher List lain (belum dibatalkan) - supaya tidak ada
                             // PV yang diklaim dua kali oleh dua feature "list" ini.
+                            // Kunci penyaring memakai nomor dokumen + PROFIT CENTER, bukan nomor saja:
+                            // daftar kandidat dihasilkan per (dokumen x profit center) - lihat
+                            // getDataBiaya() yang GROUP BY no_pv, profit_center - sehingga PV lintas
+                            // PC yang baru diambil sebagian (mis. NAK) tidak lagi menyembunyikan
+                            // bagian PC lainnya (NAG).
+                            $plKey = function ($no_kbon, $pc) {
+                                $pc = trim((string) $pc);
+                                return $no_kbon . '|' . ($pc === '' ? '-' : $pc);
+                            };
                             $alreadyListed = [];
-                            $sqlListed = mysqli_query($conn2, "select no_kbon from pv_payment_list_det where status != 'Cancel'");
+                            $sqlListed = mysqli_query($conn2, "select no_kbon, profit_center from pv_payment_list_det where status != 'Cancel'");
                             while ($rowListed = mysqli_fetch_assoc($sqlListed)) {
-                                $alreadyListed[$rowListed['no_kbon']] = true;
+                                $alreadyListed[$plKey($rowListed['no_kbon'], $rowListed['profit_center'])] = true;
                             }
                             
-                            $rowsAll = array_filter($rowsAll, function ($r) use ($alreadyListed) {
-                                return !isset($alreadyListed[$r['no_kbon']]);
+                            $rowsAll = array_filter($rowsAll, function ($r) use ($alreadyListed, $plKey) {
+                                return !isset($alreadyListed[$plKey($r['no_kbon'], $r['profit_center'] ?? '')]);
                             });
 
                             foreach ($rowsAll as $r) {
