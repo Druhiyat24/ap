@@ -197,8 +197,20 @@ $pc_bank_now = $row_acc_now['kode_pc'] ?? '';
 
             <div class="col-md-3 mb-2">
               <label><b>Cash Flow Category</b></label>
-              <input type="text" class="form-control" value="PIUTANG USAHA" readonly>
-              <input type="hidden" name="cash_flow" id="cash_flow" value="1">
+              <?php
+              // Kategori diambil dari DOKUMEN, bukan ditanam tetap. Dulu hidden-nya
+              // selalu "1" sehingga mengedit Bank In berkategori lain (6/7/11/5/4)
+              // diam-diam mengubah kategorinya jadi Piutang Usaha.
+              $cf_id = (int) ($row['id_cash_flow'] ?? 0);
+              if ($cf_id <= 0) { $cf_id = 1; }
+              $cf_nama = 'PIUTANG USAHA';
+              $cf_q = mysqli_query($conn2, "select nama_subcategory from master_cash_flow where id = '" . $cf_id . "' limit 1");
+              if ($cf_q && ($cf_r = mysqli_fetch_assoc($cf_q)) && trim((string) $cf_r['nama_subcategory']) !== '') {
+                  $cf_nama = strtoupper($cf_r['nama_subcategory']);
+              }
+              ?>
+              <input type="text" class="form-control" value="<?= htmlspecialchars($cf_nama) ?>" readonly>
+              <input type="hidden" name="cash_flow" id="cash_flow" value="<?= $cf_id ?>">
             </div>
 
             <div class="col-md-4 mb-2">

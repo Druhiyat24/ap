@@ -157,7 +157,7 @@ $customer_esc = mysqli_real_escape_string($conn2, $customer);
 
 	q($conn2, "UPDATE b_bankout_h SET no_bankout = '".mysqli_real_escape_string($conn2, $doc_num)."', bankout_date = '$date', nama_supp = '".mysqli_real_escape_string($conn2, $customer)."', akun = '".mysqli_real_escape_string($conn2, $akun)."', bank = '".mysqli_real_escape_string($conn2, $bank)."', curr = '".mysqli_real_escape_string($conn2, $curr)."', profit_center = '".mysqli_real_escape_string($conn2, $profit_center)."', amount = '$amount', outstanding = '$amount', rate = '$rate', eqv_idr = '$eqv_idr', deskripsi = '".mysqli_real_escape_string($conn2, $deskripsi)."', id_cash_flow = '$cash_flow' WHERE no_bankout = '".mysqli_real_escape_string($conn2, $old_doc_num)."'");
 
-	q($conn2, "UPDATE b_reportbank set no_doc = '".mysqli_real_escape_string($conn2, $doc_num)."', transaksi_date = '$date', credit = '$amount', deskripsi = '".mysqli_real_escape_string($conn2, $deskripsi)."' where no_doc = '".mysqli_real_escape_string($conn2, $old_doc_num)."'");
+	q($conn2, "UPDATE b_reportbank set no_doc = '".mysqli_real_escape_string($conn2, $doc_num)."', transaksi_date = '$date', credit = '$amount', deskripsi = '".mysqli_real_escape_string($conn2, $deskripsi)."', id_cash_flow = '$cash_flow' where no_doc = '".mysqli_real_escape_string($conn2, $old_doc_num)."'");
 
 	q($conn2, "insert into b_bankout_none_cancel (select * from b_bankout_none where no_bankout='".mysqli_real_escape_string($conn2, $old_doc_num)."')");
 	q($conn2, "Delete from b_bankout_none where no_bankout='".mysqli_real_escape_string($conn2, $old_doc_num)."'");
