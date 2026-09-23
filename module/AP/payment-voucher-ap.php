@@ -146,7 +146,8 @@ div.dataTables_wrapper .dataTables_info {
                     $status = isset($_POST['status']) ? $_POST['status'] : 'ALL';
                 }
                 $statusOpts = ['ALL', 'Draft', 'Cancel', '1st Approval PV', '2nd Approval PV',
-                               '3rd Approval PV List', '1st Approval PL', '2nd Approval PL', 'Paid'];
+                               'Waiting 3rd Approval PV List', '3rd Approval PV List',
+                               '1st Approval PL', '2nd Approval PL', 'Paid'];
                 foreach ($statusOpts as $opt) {
                     $sel = ($opt == $status) ? ' selected="selected"' : '';
                     echo '<option value="' . htmlspecialchars($opt) . '"' . $sel . '>' . htmlspecialchars($opt) . '</option>';

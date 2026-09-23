@@ -812,7 +812,11 @@ function computeStatusLabel($status, $statusPvl, $statusPl, $isPaid)
 
     if ($plUp  === 'SECOND APPROVED')    return '2nd Approval PL';
     if ($plUp  === 'FIRST APPROVED')     return '1st Approval PL';
-    if ($pvlUp && $pvlUp !== 'CANCEL')   return '3rd Approval PV List';
+    // PV List yang masih Draft BELUM bisa ditarik ke Payment List (form_payment-list.php
+    // mensyaratkan status_pvl = 'APPROVED'), jadi labelnya dibedakan supaya tidak
+    // tertukar dgn yang sudah di-approve.
+    if ($pvlUp === 'APPROVED')           return '3rd Approval PV List';
+    if ($pvlUp && $pvlUp !== 'CANCEL')   return 'Waiting 3rd Approval PV List';
 
     $stUp = strtoupper(trim($status));
     if ($stUp === 'SECOND APPROVED' || $status === 'Approved') return '2nd Approval PV';
@@ -832,6 +836,7 @@ function buildStatusBadge($label)
         '2nd Approval PL'      => '#1e8449',
         '1st Approval PL'      => '#b7950b',
         '3rd Approval PV List' => '#6f42c1',
+        'Waiting 3rd Approval PV List' => '#d97706',
         '2nd Approval PV'      => '#1e3a8a',
         '1st Approval PV'      => '#2980b9',
         'Draft'                => '#546e7a',
@@ -863,7 +868,9 @@ function buildComputedStatusWhere($conn2, $status, $statusCol, $plCol, $pvlCol, 
         case '2nd Approval PV':
             return " AND $statusCol IN ('SECOND APPROVED', 'Approved')";
         case '3rd Approval PV List':
-            return " AND $pvlCol IS NOT NULL AND $pvlCol != '' AND UPPER($pvlCol) != 'CANCEL'";
+            return " AND UPPER($pvlCol) = 'APPROVED'";
+        case 'Waiting 3rd Approval PV List':
+            return " AND $pvlCol IS NOT NULL AND $pvlCol != '' AND UPPER($pvlCol) NOT IN ('CANCEL', 'APPROVED')";
         case '1st Approval PL':
             return " AND $plCol = 'FIRST APPROVED'";
         case '2nd Approval PL':
