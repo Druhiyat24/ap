@@ -59,7 +59,7 @@
 	</div>
 	
 
-	<script src="<?= base_url('assets_sb/'); ?>plugins/jQuery/jquery-2.2.3.min.js"></script>
+<!-- 	<script src="<?= base_url('assets_sb/'); ?>plugins/jQuery/jquery-2.2.3.min.js"></script>
     <script src="<?= base_url('assets_sb/'); ?>bootstrap/js/popper.js"></script>
     <script src="<?= base_url('assets_sb/'); ?>bootstrap/js/bootstrap.min.js"></script>
     <script src="<?= base_url('assets_sb/'); ?>bootstrap/tilt/tilt.jquery.min.js"></script>
@@ -68,6 +68,6 @@
 			scale: 1.1
 		})
 	</script>
-    <script src="<?= base_url('assets_sb/'); ?>bootstrap/js/main.js"></script>
+    <script src="<?= base_url('assets_sb/'); ?>bootstrap/js/main.js"></script> -->
 </body>
 </html>
