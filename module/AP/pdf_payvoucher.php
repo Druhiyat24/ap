@@ -364,8 +364,10 @@ $sqlas = "select curr from tbl_pv_h where no_pv = '$no_pv'";
     // salah satu bank_account yang ada di master (mis. sama-sama berupa
     // angka), join-nya malah "berhasil" dan menampilkan nama bank/beneficiary
     // yang salah, bukan teks manual yang sebenarnya diisi.
-    $toccManualSuppliers = ['KANTOR PAJAK', 'KPPBC TMP A BANDUNG','KANTOR PELAYANAN UTAMA BEA DAN CUKAI TIPE A'];
-    $isToccManual = in_array(strtoupper(trim($rs['nama_supp'] ?? '')), $toccManualSuppliers, true);
+    // Daftar supplier manual dibaca dari mastersupplier.to_account_manual
+    // (lihat tocc_manual_suppliers.php), tidak lagi disalin per berkas.
+    require_once __DIR__ . '/tocc_manual_suppliers.php';
+    $isToccManual = isToccManualSupplier([$conn1, $conn2], $rs['nama_supp'] ?? '');
 
     if ($isToccManual) {
         echo strtoupper($rs['to_akun'] ?? '') !== '' ? strtoupper($rs['to_akun']) : '-';

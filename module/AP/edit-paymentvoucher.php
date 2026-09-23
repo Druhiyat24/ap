@@ -1147,7 +1147,11 @@ $(function() {
 <script type="text/javascript">
     // Supplier ini tidak punya rekening tetap di master_supplier_bank (kantor
     // pajak/bea cukai) - To Account diganti isian bebas, bukan dropdown.
-    var TOCC_MANUAL_SUPPLIERS = ['KANTOR PAJAK', 'KPPBC TMP A BANDUNG', 'KANTOR PELAYANAN UTAMA BEA DAN CUKAI TIPE A'];
+    // Daftarnya DATA, bukan kode: kolom mastersupplier.to_account_manual
+    // (lihat tocc_manual_suppliers.php). Menambah supplier baru cukup
+    // menandainya di master supplier, tanpa mengubah berkas ini.
+    <?php require_once __DIR__ . '/tocc_manual_suppliers.php'; ?>
+    var TOCC_MANUAL_SUPPLIERS = <?php echo json_encode(toccManualSuppliers([$conn1, $conn2])); ?>;
 
     // To Account yang TERSIMPAN untuk PV ini (dari tbl_pv_h, lihat $toccVal di
     // atas) - dipakai sekali di awal supaya refreshToAccount() bisa

@@ -57,8 +57,18 @@ function getDueDateAndBank($conn2, $type_pv, $no_kbon)
         // pdf_payvoucher.php) - bukan "kalau join gagal berarti manual",
         // supaya isian manual yang kebetulan sama dengan bank_account lain
         // tidak salah ke-join dan tidak menampilkan kolom kosong.
-        $toccManualSuppliers = ['KANTOR PAJAK', 'KPPBC TMP A BANDUNG'];
-        $isToccManual = in_array(strtoupper(trim($row['nama_supp'] ?? '')), $toccManualSuppliers, true);
+        // Daftarnya dibaca dari mastersupplier.to_account_manual (lihat
+        // tocc_manual_suppliers.php). Dulu daftar ini HARDCODE dan disalin ke 6
+        // berkas; salinan DI SINI ketinggalan "KANTOR PELAYANAN UTAMA BEA DAN
+        // CUKAI TIPE A", sehingga kode billing-nya gagal di-join ke master bank
+        // dan keempat kolom To Account tampil KOSONG di PDF Payment List -
+        // padahal di PDF Payment Voucher-nya tampil benar.
+        // $conn1 di-global-kan karena blok ini ada di DALAM fungsi (yang hanya
+        // menerima $conn2 sebagai parameter) - master supplier bisa dipegang
+        // koneksi mana pun tergantung blok aktif di conn/conn.php.
+        global $conn1;
+        require_once __DIR__ . '/tocc_manual_suppliers.php';
+        $isToccManual = isToccManualSupplier([$conn1, $conn2], $row['nama_supp'] ?? '');
 
         if (!empty($row['to_akun'])) {
             if ($isToccManual) {
