@@ -210,17 +210,27 @@ $beban = [
     ['v' => $moq1,       'coa' => '5.97.99', 'nm' => 'BEBAN PABRIK LAINNYA',                          'inv' => false],
     ['v' => $pot_beli1,  'coa' => '5.97.02', 'nm' => 'BEBAN SELISIH HARGA',                           'inv' => true],  // inverted sign
 ];
+// CATATAN (23 Sep 2026) - uji tanda di blok beban header di bawah ini memakai
+// "> 0", BUKAN ">= 1" seperti sebelumnya. Yang diuji adalah TANDA nilainya
+// (positif -> satu sisi, negatif -> sisi lawan, lihat komentar tiap blok),
+// jadi ambang 1 keliru: nilai positif pecahan seperti 0,05 (selisih pembulatan
+// DPP+PPN vs total faktur) ikut masuk cabang negatif dan dijurnal terbalik.
+// Dampaknya jurnal PV tidak balance sebesar 2x nilai itu, dan di AP Report
+// kolom Deduction Others (= SUM(debit - credit) baris BEBAN) muncul MINUS
+// padahal user mengisi plus. Nilai 0 sudah disaring oleh penjaga "== 0" di
+// tiap blok, jadi "> 0" aman. Ambang "$tax_h >= 1" di bawah SENGAJA dibiarkan:
+// itu bukan uji tanda, melainkan penjaga ada/tidaknya PPN.
 foreach ($beban as $b) {
     $v = (float) $b['v'];
     if ($v == 0) { continue; }
     $mag = abs($v) * $rate;
     if (!$b['inv']) {
         // normal: positif -> debit, negatif -> credit
-        if ($v >= 1) { pvj($conn2, $kode, $create_date, $b['coa'], $b['nm'], $no_cc, $nama_cc, '-', '', $curr_h, $rate, $v,        '0',       $mag, '0',  $keter, $create_user_h, $profit_center); }
+        if ($v > 0) { pvj($conn2, $kode, $create_date, $b['coa'], $b['nm'], $no_cc, $nama_cc, '-', '', $curr_h, $rate, $v,        '0',       $mag, '0',  $keter, $create_user_h, $profit_center); }
         else         { pvj($conn2, $kode, $create_date, $b['coa'], $b['nm'], $no_cc, $nama_cc, '-', '', $curr_h, $rate, '0',       abs($v),   '0',  $mag, $keter, $create_user_h, $profit_center); }
     } else {
         // potongan beli: positif -> credit, negatif -> debit
-        if ($v >= 1) { pvj($conn2, $kode, $create_date, $b['coa'], $b['nm'], $no_cc, $nama_cc, '-', '', $curr_h, $rate, '0',       $v,        '0',  $mag, $keter, $create_user_h, $profit_center); }
+        if ($v > 0) { pvj($conn2, $kode, $create_date, $b['coa'], $b['nm'], $no_cc, $nama_cc, '-', '', $curr_h, $rate, '0',       $v,        '0',  $mag, $keter, $create_user_h, $profit_center); }
         else         { pvj($conn2, $kode, $create_date, $b['coa'], $b['nm'], $no_cc, $nama_cc, '-', '', $curr_h, $rate, abs($v),   '0',       $mag, '0',  $keter, $create_user_h, $profit_center); }
     }
 }

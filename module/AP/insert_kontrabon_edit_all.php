@@ -180,10 +180,20 @@ if ($profit_center == 'NAG') {
 	$nama_cc = 'KNITTING PRODUCTION';
 }
 
+// CATATAN (23 Sep 2026) - uji tanda di blok beban header di bawah ini memakai
+// "> 0", BUKAN ">= 1" seperti sebelumnya. Yang diuji adalah TANDA nilainya
+// (positif -> satu sisi, negatif -> sisi lawan, lihat komentar tiap blok),
+// jadi ambang 1 keliru: nilai positif pecahan seperti 0,05 (selisih pembulatan
+// DPP+PPN vs total faktur) ikut masuk cabang negatif dan dijurnal terbalik.
+// Dampaknya jurnal PV tidak balance sebesar 2x nilai itu, dan di AP Report
+// kolom Deduction Others (= SUM(debit - credit) baris BEBAN) muncul MINUS
+// padahal user mengisi plus. Nilai 0 sudah disaring oleh penjaga "== 0" di
+// tiap blok, jadi "> 0" aman. Ambang "$tax_h >= 1" di bawah SENGAJA dibiarkan:
+// itu bukan uji tanda, melainkan penjaga ada/tidaknya PPN.
 if ($lr_kurs1 == 0) {
 	
 }else{
-	if ($lr_kurs1 >=1 ) {
+	if ($lr_kurs1 > 0 ) {
 		$querykurs = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier) 
 		VALUES 
 		('$kode', '$create_date', 'AP - Kontrabon', '8.52.02', 'LABA / (RUGI) SELISIH KURS BELUM TEREALISASI', '$no_cc', '$nama_cc', '-', '', '-', '-', '$curr_h', '$rate', '$lr_kurs1', '0', '$idr_kurs', '0', 'Draft', '$keter', '$create_user_h', '$create_date', '', '', '', '','$profit_center', '$nama_supp_h_esc')";
@@ -205,7 +215,7 @@ if ($lr_kurs1 == 0) {
 if ($s_qty1 == 0) {
 	
 }else{
-	if ($s_qty1 >=1 ) {
+	if ($s_qty1 > 0 ) {
 		$querykurs = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier) 
 		VALUES 
 		('$kode', '$create_date', 'AP - Kontrabon', '5.97.03', 'BEBAN SELISIH KUANTITAS', '$no_cc', '$nama_cc', '-', '', '-', '-', '$curr_h', '$rate', '$s_qty1', '0', '$idr_qty', '0', 'Draft', '$keter', '$create_user_h', '$create_date', '', '', '', '', '$profit_center', '$nama_supp_h_esc')";
@@ -227,7 +237,7 @@ if ($s_qty1 == 0) {
 if ($s_harga1 == 0) {
 	
 }else{
-	if ($s_harga1 >=1 ) {
+	if ($s_harga1 > 0 ) {
 		$querykurs = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier) 
 		VALUES 
 		('$kode', '$create_date', 'AP - Kontrabon', '5.97.02', 'BEBAN SELISIH HARGA', '$no_cc', '$nama_cc', '-', '', '-', '-', '$curr_h', '$rate', '$s_harga1', '0', '$idr_harga', '0', 'Draft', '$keter', '$create_user_h', '$create_date', '', '', '', '', '$profit_center', '$nama_supp_h_esc')";
@@ -249,7 +259,7 @@ if ($s_harga1 == 0) {
 if ($materai1 == 0) {
 	
 }else{
-	if ($materai1 >=1 ) {
+	if ($materai1 > 0 ) {
 		$querykurs = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier) 
 		VALUES 
 		('$kode', '$create_date', 'AP - Kontrabon', '5.97.99', 'BEBAN PABRIK LAINNYA', '$no_cc', '$nama_cc', '-', '', '-', '-', '$curr_h', '$rate', '$materai1', '0', '$idr_materai', '0', 'Draft', '$keter', '$create_user_h', '$create_date', '', '', '', '', '$profit_center', '$nama_supp_h_esc')";
@@ -271,7 +281,7 @@ if ($materai1 == 0) {
 if ($ekspedisi1 == 0) {
 	
 }else{
-	if ($ekspedisi1 >=1 ) {
+	if ($ekspedisi1 > 0 ) {
 		$querykurs = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier) 
 		VALUES 
 		('$kode', '$create_date', 'AP - Kontrabon', '5.84.03', 'BEBAN EKSPEDISI ANGKUTAN', '$no_cc', '$nama_cc', '-', '', '-', '-', '$curr_h', '$rate', '$ekspedisi1', '0', '$idr_ekspedisi', '0', 'Draft', '$keter', '$create_user_h', '$create_date', '', '', '', '', '$profit_center', '$nama_supp_h_esc')";
@@ -293,7 +303,7 @@ if ($ekspedisi1 == 0) {
 if ($moq1 == 0) {
 	
 }else{
-	if ($moq1 >=1 ) {
+	if ($moq1 > 0 ) {
 		$querykurs = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier) 
 		VALUES 
 		('$kode', '$create_date', 'AP - Kontrabon', '5.97.99', 'BEBAN PABRIK LAINNYA', '$no_cc', '$nama_cc', '-', '', '-', '-', '$curr_h', '$rate', '$moq1', '0', '$idr_moq', '0', 'Draft', '$keter', '$create_user_h', '$create_date', '', '', '', '', '$profit_center', '$nama_supp_h_esc')";
@@ -315,7 +325,7 @@ if ($moq1 == 0) {
 if ($pot_beli1 == 0) {
 	
 }else{
-	if ($pot_beli1 >=1 ) {
+	if ($pot_beli1 > 0 ) {
 		$querykurs = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier) 
 		VALUES 
 		('$kode', '$create_date', 'AP - Kontrabon', '5.97.02', 'BEBAN SELISIH HARGA', '$no_cc', '$nama_cc', '-', '', '-', '-', '$curr_h', '$rate', '0', '$pot_beli1', '0', '$idr_pot_beli', 'Draft', '$keter', '$create_user_h', '$create_date', '', '', '', '', '$profit_center', '$nama_supp_h_esc')";
