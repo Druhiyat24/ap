@@ -372,9 +372,19 @@ $sqlas = "select curr from tbl_pv_h where no_pv = '$no_pv'";
     if ($isToccManual) {
         echo strtoupper($rs['to_akun'] ?? '') !== '' ? strtoupper($rs['to_akun']) : '-';
     } else {
-        $sql3 = mysqli_query($conn2," select UPPER(IFNULL(NULLIF(to_akun, ''), '-')) AS to_akun from (select CONCAT(beneficiary_name,' - ',bank_name,' - ',to_akun) to_akun from tbl_pv_h a INNER JOIN master_supplier_bank b on b.bank_account = a.to_akun where no_pv = '$no_pv'
+        // CONCAT_WS, BUKAN CONCAT: CONCAT() mengembalikan NULL begitu salah satu
+        // argumennya NULL, sehingga rekening yang beneficiary_name-nya kosong
+        // membuat SELURUH teks To Account hilang dan PDF menampilkan "-" -
+        // padahal nama bank & nomor rekeningnya ada (kasus PV/NAG/0926/00157 &
+        // 00158, rekening sendiri BRI 013201001623307 dan Mandiri
+        // 130-0002077777 di b_masterbank). CONCAT_WS melewati bagian yang NULL,
+        // dan NULLIF(TRIM(...),'') membuat string kosong diperlakukan sama.
+        // Pemisahnya sengaja dipertahankan apa adanya per cabang (' - ' untuk
+        // master_supplier_bank, spasi sebelum nomor rekening untuk b_masterbank)
+        // supaya dokumen yang selama ini tampil benar tidak ikut berubah.
+        $sql3 = mysqli_query($conn2," select UPPER(IFNULL(NULLIF(to_akun, ''), '-')) AS to_akun from (select CONCAT_WS(' - ', NULLIF(TRIM(beneficiary_name),''), NULLIF(TRIM(bank_name),''), to_akun) to_akun from tbl_pv_h a INNER JOIN master_supplier_bank b on b.bank_account = a.to_akun where no_pv = '$no_pv'
         UNION ALL
-        select CONCAT(beneficiary_name,' - ',bank_name,' ',to_akun) to_akun from tbl_pv_h a INNER JOIN b_masterbank b on b.bank_account = a.to_akun where no_pv = '$no_pv' and b.status = 'Active') a limit 1");
+        select CONCAT_WS(' - ', NULLIF(TRIM(beneficiary_name),''), CONCAT_WS(' ', NULLIF(TRIM(bank_name),''), to_akun)) to_akun from tbl_pv_h a INNER JOIN b_masterbank b on b.bank_account = a.to_akun where no_pv = '$no_pv' and b.status = 'Active') a limit 1");
         $rows3 = mysqli_fetch_array($sql3);
         echo $rows3['to_akun'] ?? '-';
     }
