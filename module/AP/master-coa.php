@@ -175,7 +175,7 @@
 </div>
 </form> 
 
-<?php
+<!-- <?php
         $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create List payment'");
         $rs = mysqli_fetch_array($querys);
         $id = isset($rs['id']) ? $rs['id'] : 0;
@@ -185,7 +185,8 @@
         }else{
     echo '';
     }
-?>
+?> -->
+<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>
     </div>             
     <div class="box body">
         <div class="row">       
