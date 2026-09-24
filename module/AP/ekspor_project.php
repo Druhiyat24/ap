@@ -23,8 +23,11 @@ try {
     $filter_month  = $_GET['month']  ?? '';   // YYYY-MM
     $filter_search = $_GET['search'] ?? '';
 
-    // Excel HANYA menampilkan project yang sudah DONE (per permintaan user).
-    $where = "WHERE status = 'Done'";
+    // Excel HANYA menampilkan project yang sudah SELESAI (per permintaan user).
+    // 'Live' ikut masuk: user minta semua yang Done ditarik ke Excel, baik
+    // yang sudah live di produksi maupun yang belum - keduanya dipetakan ke
+    // kolom STATUS bernilai DONE (lihat map_status).
+    $where = "WHERE status IN ('Done', 'Live')";
     if ($filter_module !== '') {
         $fm = mysqli_real_escape_string($conn2, $filter_module);
         $where .= " AND category = '$fm'";
@@ -83,9 +86,9 @@ try {
         return date('d/m/Y', strtotime($d));
     }
     function map_status($s) {
-        if ($s === 'Done') return 'DONE';
+        if ($s === 'Done' || $s === 'Live') return 'DONE';
         if ($s === 'On Progress') return 'ON PROGRESS';
-        return 'PENDING'; // Planned / On Hold
+        return 'PENDING'; // Planned
     }
 
     $GREEN  = 'C6E0B4';
@@ -243,6 +246,9 @@ try {
         $sheet->setCellValue("C{$r}", $row['project_name']);
         $sheet->setCellValue("D{$r}", $row['description'] ?: '');
         $sheet->setCellValue("E{$r}", fmt_tgl($row['target_date']));
+        // SENGAJA actual_date (tanggal DONE / selesai dikerjakan), BUKAN
+        // live_date - lihat quick_update_status.php yang menjaga actual_date
+        // tidak tertimpa saat kartu dipindah ke kolom Live.
         $sheet->setCellValue("F{$r}", fmt_tgl($row['actual_date']));
         $sheet->setCellValue("N{$r}", map_status($row['status']));
 

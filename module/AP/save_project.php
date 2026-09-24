@@ -21,23 +21,34 @@ $pic          = trim($_POST['pic']          ?? '');
 $start_date   = trim($_POST['start_date']   ?? '');
 $target_date  = trim($_POST['target_date']  ?? '');
 $actual_date  = trim($_POST['actual_date']  ?? '');
+// Tanggal DONE (actual_date) dan tanggal LIVE (live_date) disimpan TERPISAH.
+// Ekspor Excel memakai actual_date, jadi memindahkan project ke Live tidak
+// boleh menimpa tanggal selesainya.
+$live_date    = trim($_POST['live_date']    ?? '');
 
 if (!$project_name) {
     echo json_encode(['status' => 'error', 'message' => 'Project Name is required.']);
     exit;
 }
 
-$valid_status   = ['Planned', 'On Progress', 'On Hold', 'Done'];
+// 'On Hold' dihapus; 'Done' (selesai, belum deploy) dipecah dari 'Live'
+// (sudah jalan di produksi) - lihat DONE_STATUSES di project.php.
+$valid_status   = ['Planned', 'On Progress', 'Done', 'Live'];
 $valid_priority = ['Low', 'Medium', 'High'];
 if (!in_array($status, $valid_status))     $status   = 'Planned';
 if (!in_array($priority, $valid_priority)) $priority = 'Medium';
 if ($progress < 0)   $progress = 0;
 if ($progress > 100) $progress = 100;
-if ($status === 'Done') $progress = 100;
+if ($status === 'Done' || $status === 'Live') $progress = 100;
 
 $start_date  = $start_date  !== '' ? $start_date  : null;
 $target_date = $target_date !== '' ? $target_date : null;
 $actual_date = $actual_date !== '' ? $actual_date : null;
+$live_date   = $live_date   !== '' ? $live_date   : null;
+// Project yang langsung dibuat/diubah jadi Live tanpa mengisi tanggal:
+// keduanya distempel hari ini - tidak ada informasi lain yang bisa dipakai.
+if ($status === 'Live' && $live_date === null)  $live_date   = date('Y-m-d');
+if ($status === 'Live' && $actual_date === null) $actual_date = $live_date;
 
 $user = $_SESSION['username'] ?? 'system';
 // Server's default PHP timezone is misconfigured (Europe/Berlin, not Asia/Jakarta) -
@@ -61,12 +72,12 @@ if ($id === 0) {
     $stmt = mysqli_prepare($conn2,
         "INSERT INTO master_project
             (project_name, description, category, status, priority, progress,
-             pic, start_date, target_date, actual_date, created_by, created_date)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+             pic, start_date, target_date, actual_date, live_date, created_by, created_date)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     );
-    mysqli_stmt_bind_param($stmt, 'sssssissssss',
+    mysqli_stmt_bind_param($stmt, 'sssssisssssss',
         $project_name, $description, $category, $status, $priority, $progress,
-        $pic, $start_date, $target_date, $actual_date, $user, $now
+        $pic, $start_date, $target_date, $actual_date, $live_date, $user, $now
     );
 
 // ===== UPDATE =====
@@ -79,12 +90,12 @@ if ($id === 0) {
     $stmt = mysqli_prepare($conn2,
         "UPDATE master_project
          SET project_name = ?, description = ?, category = ?, status = ?, priority = ?,
-             progress = ?, pic = ?, start_date = ?, target_date = ?, actual_date = ?, updated_by = ?, updated_date = ?
+             progress = ?, pic = ?, start_date = ?, target_date = ?, actual_date = ?, live_date = ?, updated_by = ?, updated_date = ?
          WHERE id = ?"
     );
-    mysqli_stmt_bind_param($stmt, 'sssssissssssi',
+    mysqli_stmt_bind_param($stmt, 'sssssisssssssi',
         $project_name, $description, $category, $status, $priority,
-        $progress, $pic, $start_date, $target_date, $actual_date, $user, $now, $id
+        $progress, $pic, $start_date, $target_date, $actual_date, $live_date, $user, $now, $id
     );
 }
 
@@ -105,7 +116,8 @@ if ($ok) {
             'progress'     => ['label' => 'Progress',     'new' => $progress . '%'],
             'start_date'   => ['label' => 'Start Date',   'new' => $start_date],
             'target_date'  => ['label' => 'Target Date',  'new' => $target_date],
-            'actual_date'  => ['label' => 'Actual Date',  'new' => $actual_date],
+            'actual_date'  => ['label' => 'Done Date',    'new' => $actual_date],
+            'live_date'    => ['label' => 'Go-Live Date', 'new' => $live_date],
             'description'  => ['label' => 'Description',  'new' => $description],
         ];
         foreach ($diffFields as $col => $meta) {
