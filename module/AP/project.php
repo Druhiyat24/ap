@@ -308,12 +308,12 @@ if ($hq) {
   .tile-note .fa { color: var(--pj-good-2); margin-right: 3px; }
   .stat-tile.wm-total    { --tint: #1e3a8a; --tint-soft: #e8eefc; --tint-bar: linear-gradient(90deg,#191970,#1e90ff); }
   .stat-tile.wm-progress { --tint: #2451d6; --tint-soft: #e6eefe; }
-  .stat-tile.wm-hold     { --tint: #d97706; --tint-soft: #fdf1dc; }
+  .stat-tile.wm-live     { --tint: #7c3aed; --tint-soft: #ede9fe; }
   .stat-tile.wm-done     { --tint: #059669; --tint-soft: #e2f5ec; }
   .stat-tile.wm-overdue  { --tint: #dc2626; --tint-soft: #fdeaea; }
   .proj-page[data-theme="dark"] .stat-tile.wm-total    { --tint: #8fb2ff; --tint-soft: rgba(96,145,255,.14); }
   .proj-page[data-theme="dark"] .stat-tile.wm-progress { --tint: #7fb0ff; --tint-soft: rgba(96,145,255,.14); }
-  .proj-page[data-theme="dark"] .stat-tile.wm-hold     { --tint: #fbbf4d; --tint-soft: rgba(251,191,36,.13); }
+  .proj-page[data-theme="dark"] .stat-tile.wm-live     { --tint: #c4b5fd; --tint-soft: rgba(167,139,250,.15); }
   .proj-page[data-theme="dark"] .stat-tile.wm-done     { --tint: #34d399; --tint-soft: rgba(52,211,153,.13); }
   .proj-page[data-theme="dark"] .stat-tile.wm-overdue  { --tint: #f87171; --tint-soft: rgba(248,113,113,.14); }
   .tile-rate {
@@ -425,7 +425,7 @@ if ($hq) {
   .badge-priority-Medium::before { background: var(--pj-warn-2); }
   .badge-status-Planned    { background: var(--pj-sunken); color: var(--pj-muted); }
   .badge-status-OnProgress { background: var(--pj-accent-soft); color: var(--pj-accent); }
-  .badge-status-OnHold     { background: var(--pj-warn-soft); color: var(--pj-warn); }
+  .badge-status-Live       { background: #ede9fe; color: #6d28d9; }
   .badge-status-Done       { background: var(--pj-good-soft); color: var(--pj-good); }
   .badge-ontime { background: var(--pj-good-soft); color: var(--pj-good); }
   .badge-late   { background: var(--pj-bad-soft); color: var(--pj-bad); }
@@ -539,7 +539,7 @@ if ($hq) {
   }
   .status-select.ss-Planned    { background-color: var(--pj-sunken); color: var(--pj-muted); }
   .status-select.ss-OnProgress { background-color: var(--pj-accent-soft); color: var(--pj-accent); }
-  .status-select.ss-OnHold     { background-color: var(--pj-warn-soft); color: var(--pj-warn); }
+  .status-select.ss-Live       { background-color: #ede9fe; color: #6d28d9; }
   .status-select.ss-Done       { background-color: var(--pj-good-soft); color: var(--pj-good); }
   .status-select option { background: var(--pj-surface); color: var(--pj-ink); }
   .status-select:focus { outline: 2px solid #7aa2f7; outline-offset: 1px; }
@@ -587,14 +587,14 @@ if ($hq) {
   .cal-bar, .tl-bar { border-left: 3px solid transparent; }
   .st-planned    { border-left-color: #94a3b8; }
   .st-onprogress { border-left-color: #2563eb; }
-  .st-onhold     { border-left-color: #f59e0b; }
+  .st-live       { border-left-color: #7c3aed; }
   .st-done       { border-left-color: #10b981; }
   .st-planned .status-ico    { color: #94a3b8; }
   .st-onprogress .status-ico { color: #2563eb; }
-  .st-onhold .status-ico     { color: #d97706; }
+  .st-live .status-ico       { color: #7c3aed; }
   .st-done .status-ico       { color: #059669; }
   .cal-bar.st-done { opacity: .8; }
-  .st-onhold { background-image: repeating-linear-gradient(135deg, rgba(15,23,42,.06) 0 6px, transparent 6px 12px) !important; }
+  .cal-bar.st-live, .tl-bar.st-live { opacity: .8; }
   .cal-bar.overdue-bar, .tl-bar.overdue-bar { box-shadow: 0 0 0 2px rgba(239,68,68,.55); }
   .proj-page[data-theme="dark"] .cal-bar, .proj-page[data-theme="dark"] .tl-bar { background-color: #1a2548; background-color: color-mix(in srgb, var(--mc) 26%, #111931); }
   .proj-page[data-theme="dark"] .st-done .status-ico { color: #34d399; }
@@ -773,7 +773,7 @@ if ($hq) {
   .drawer-badges { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
   .drawer-head .badge-status-Done { background: rgba(52,211,153,.18); color: #7ef0bf; }
   .drawer-head .badge-status-OnProgress { background: rgba(96,165,250,.2); color: #b3d4ff; }
-  .drawer-head .badge-status-OnHold { background: rgba(251,191,36,.18); color: #fcd57a; }
+  .drawer-head .badge-status-Live { background: rgba(167,139,250,.22); color: #d3c4ff; }
   .drawer-head .badge-status-Planned { background: rgba(255,255,255,.12); color: rgba(255,255,255,.85); }
   .drawer-head .badge-priority-High, .drawer-head .badge-priority-Medium, .drawer-head .badge-priority-Low { background: rgba(255,255,255,.1); color: rgba(255,255,255,.88); }
   .drawer-head .badge-ontime { background: rgba(52,211,153,.18); color: #7ef0bf; }
@@ -849,7 +849,7 @@ if ($hq) {
   .prev-card .pic-avatar { box-shadow: 0 0 0 2px #fff; }
   .prev-card .badge-status-Planned { background: #edf1f8; color: #64748b; }
   .prev-card .badge-status-OnProgress { background: #eef2ff; color: #2451d6; }
-  .prev-card .badge-status-OnHold { background: #fef3e0; color: #b45309; }
+  .prev-card .badge-status-Live { background: #ede9fe; color: #6d28d9; }
   .prev-card .badge-status-Done { background: #e5f6ee; color: #047857; }
   .prev-card .badge-priority-High, .prev-card .badge-priority-Medium, .prev-card .badge-priority-Low { background: #edf1f8; color: #334155; }
   .modal-preview .prev-tip { margin-top: auto; padding-top: 22px; font-size: 11.5px; line-height: 1.6; color: rgba(255,255,255,.7); }
@@ -877,7 +877,7 @@ if ($hq) {
   .pill-opt.active { font-weight: 600; }
   .pill-opt.active[data-value="Planned"]     { background: var(--pj-sunken); border-color: #94a3b8; color: var(--pj-ink); }
   .pill-opt.active[data-value="On Progress"] { background: var(--pj-accent-soft); border-color: #2563eb; color: var(--pj-accent); }
-  .pill-opt.active[data-value="On Hold"]     { background: var(--pj-warn-soft); border-color: #f59e0b; color: var(--pj-warn); }
+  .pill-opt.active[data-value="Live"]        { background: #ede9fe; border-color: #7c3aed; color: #6d28d9; }
   .pill-opt.active[data-value="Done"]        { background: var(--pj-good-soft); border-color: #10b981; color: var(--pj-good); }
   .pill-opt.active[data-value="Low"]         { background: var(--pj-sunken); border-color: #94a3b8; color: var(--pj-ink); }
   .pill-opt.active[data-value="Medium"]      { background: var(--pj-warn-soft); border-color: #f59e0b; color: var(--pj-warn); }
@@ -1030,13 +1030,13 @@ if ($hq) {
       <div class="num" id="st-progress" data-rawval="0">0<span class="live-dot" id="progress-live-dot" style="display:none;"></span></div>
       <div class="tile-foot"><span class="tile-meter"><span id="st-progress-bar"></span></span><span class="tile-note" id="st-progress-note">0%</span></div>
     </div>
-    <div class="stat-tile wm-hold">
-      <div class="tile-top"><span class="lbl">On Hold</span><span class="icon-badge ic-hold"><i class="fa fa-pause-circle"></i></span></div>
-      <div class="num" id="st-hold" data-rawval="0">0</div>
-      <div class="tile-foot"><span class="tile-meter"><span id="st-hold-bar"></span></span><span class="tile-note" id="st-hold-note">0%</span></div>
+    <div class="stat-tile wm-live">
+      <div class="tile-top"><span class="lbl">Live</span><span class="icon-badge ic-live"><i class="fa fa-rocket"></i></span></div>
+      <div class="num" id="st-live" data-rawval="0">0</div>
+      <div class="tile-foot"><span class="tile-meter"><span id="st-live-bar"></span></span><span class="tile-note" id="st-live-note">0%</span></div>
     </div>
     <div class="stat-tile wm-done">
-      <div class="tile-top"><span class="lbl">Done</span><span class="icon-badge ic-done"><i class="fa fa-check-circle"></i></span></div>
+      <div class="tile-top"><span class="lbl">Done + Live</span><span class="icon-badge ic-done"><i class="fa fa-check-circle"></i></span></div>
       <div class="num" id="st-done" data-rawval="0">0</div>
       <div class="tile-foot"><span class="tile-meter"><span id="st-done-bar"></span></span><span class="tile-note" id="st-done-note">0%</span></div>
     </div>
@@ -1072,8 +1072,8 @@ if ($hq) {
           <span class="proj-filter-pill active" data-status="" onclick="setFilter('', this)">All</span>
           <span class="proj-filter-pill" data-status="On Progress" onclick="setFilter('On Progress', this)">On Progress</span>
           <span class="proj-filter-pill" data-status="Planned" onclick="setFilter('Planned', this)">Planned</span>
-          <span class="proj-filter-pill" data-status="On Hold" onclick="setFilter('On Hold', this)">On Hold</span>
           <span class="proj-filter-pill" data-status="Done" onclick="setFilter('Done', this)">Done</span>
+          <span class="proj-filter-pill" data-status="Live" onclick="setFilter('Live', this)">Live</span>
         </div>
         <div class="select-wrap">
           <i class="fa fa-cubes"></i>
@@ -1185,8 +1185,8 @@ if ($hq) {
                   <div class="pill-select" id="pill-status">
                     <button type="button" class="pill-opt active" data-value="Planned">Planned</button>
                     <button type="button" class="pill-opt" data-value="On Progress">On Progress</button>
-                    <button type="button" class="pill-opt" data-value="On Hold">On Hold</button>
                     <button type="button" class="pill-opt" data-value="Done">Done</button>
+                    <button type="button" class="pill-opt" data-value="Live">Live</button>
                   </div>
                   <input type="hidden" id="pj-status" value="Planned">
                 </div>
@@ -1226,9 +1226,14 @@ if ($hq) {
                 </div>
               </div>
               <div class="form-group mb-0" id="pj-actual-row" style="display:none;">
-                <label class="field-label">Actual Completion Date</label>
+                <label class="field-label">Done Date &mdash; work finished</label>
                 <input type="date" class="form-control form-control-modern" id="pj-actual" style="max-width:220px;">
-                <small class="text-muted d-block mt-1">Used to flag on-time vs late delivery.</small>
+                <small class="text-muted d-block mt-1">Flags on-time vs late delivery, and this is the date used by Export Excel. Keep it as the date the work was finished &mdash; it must NOT be replaced by the go-live date.</small>
+              </div>
+              <div class="form-group mb-0 mt-3" id="pj-live-row" style="display:none;">
+                <label class="field-label">Go-Live Date &mdash; running in production</label>
+                <input type="date" class="form-control form-control-modern" id="pj-live" style="max-width:220px;">
+                <small class="text-muted d-block mt-1">Kept separate from the Done Date on purpose, so moving a card to Live never overwrites when the work was actually finished.</small>
               </div>
             </div>
           </div>
@@ -1318,12 +1323,23 @@ if ($hq) {
   var calYear, calMonth; // 0-based month
   var MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
+  // Kolom 'On Hold' dihapus (24 Sep 2026, permintaan user) dan 'Done' dipecah
+  // dua: Done = pekerjaan selesai TAPI BELUM di-deploy, Live = sudah jalan di
+  // produksi. Urutannya sengaja kiri->kanan mengikuti alur kerja nyata:
+  // Planned -> On Progress -> Done -> Live.
   var STATUS_COLS = [
     { key: 'Planned',     dot: '#94a3b8' },
     { key: 'On Progress', dot: '#2563eb' },
-    { key: 'On Hold',     dot: '#f59e0b' },
-    { key: 'Done',        dot: '#10b981' }
+    { key: 'Done',        dot: '#10b981' },
+    { key: 'Live',        dot: '#7c3aed' }
   ];
+
+  // Dua status di bawah ini sama-sama berarti 'pekerjaan sudah selesai'. Semua
+  // perhitungan penyelesaian (on-time, lead time, completion rate, ekspor
+  // Excel, sembunyikan hitungan mundur due date) memakai helper ini supaya
+  // tidak ada satu pun tempat yang cuma mengecek 'Done' lalu melewatkan 'Live'.
+  var DONE_STATUSES = ['Done', 'Live'];
+  function isDoneStatus(s) { return DONE_STATUSES.indexOf(s) !== -1; }
 
   // Status marker language shared by Calendar bars + Timeline bars: a left border
   // stripe + small icon so status reads at a glance without losing the module color
@@ -1331,8 +1347,8 @@ if ($hq) {
   var STATUS_META = {
     'Planned':     { cls: 'st-planned',    icon: 'fa-circle-o',     dot: '#94a3b8' },
     'On Progress': { cls: 'st-onprogress', icon: 'fa-play-circle',  dot: '#2563eb' },
-    'On Hold':     { cls: 'st-onhold',     icon: 'fa-pause-circle', dot: '#f59e0b' },
-    'Done':        { cls: 'st-done',       icon: 'fa-check-circle', dot: '#10b981' }
+    'Done':        { cls: 'st-done',       icon: 'fa-check-circle', dot: '#10b981' },
+    'Live':        { cls: 'st-live',       icon: 'fa-rocket',       dot: '#7c3aed' }
   };
   function statusMeta(s) { return STATUS_META[s] || STATUS_META['Planned']; }
   function statusLegendHtml() {
@@ -1399,8 +1415,8 @@ if ($hq) {
   function statusClass(s) { return 'badge-status-' + s.replace(/\s+/g, ''); }
   function progressColor(s) {
     if (s === 'Done') return '#10b981';
+    if (s === 'Live') return '#7c3aed';
     if (s === 'On Progress') return '#2563eb';
-    if (s === 'On Hold') return '#f59e0b';
     return '#94a3b8';
   }
   function fmtDate(d, opts) {
@@ -1410,7 +1426,7 @@ if ($hq) {
     return dt.toLocaleDateString('en-US', opts || { day: '2-digit', month: 'short', year: 'numeric' });
   }
   function daysInfo(target, status) {
-    if (!target || status === 'Done') return '';
+    if (!target || isDoneStatus(status)) return '';
     var today = new Date(); today.setHours(0,0,0,0);
     var t = new Date(target + 'T00:00:00');
     var diff = Math.round((t - today) / 86400000);
@@ -1488,7 +1504,7 @@ if ($hq) {
   // not the all-time total — so "Total Projects" matches what's actually on screen.
   function updateStats(list) {
     var total = list.length;
-    var c = { 'On Progress': 0, 'On Hold': 0, 'Done': 0 };
+    var c = { 'On Progress': 0, 'Done': 0, 'Live': 0 };
     var overdue = 0, progressSum = 0;
     list.forEach(function (p) {
       if (c[p.status] !== undefined) c[p.status]++;
@@ -1497,14 +1513,18 @@ if ($hq) {
     });
     // Completion tidak menghitung item overdue (dikeluarkan dari basis).
     var base = total - overdue;
-    var rate = base > 0 ? Math.round((c['Done'] / base) * 100) : 0;
+    // Done DAN Live sama-sama sudah selesai, jadi dua-duanya masuk hitungan
+    // completion - kalau cuma 'Done', angka completion akan anjlok begitu
+    // project dipindahkan ke kolom Live.
+    var doneAll = c['Done'] + c['Live'];
+    var rate = base > 0 ? Math.round((doneAll / base) * 100) : 0;
 
     animateNumber('st-total', total);
     animateNumber('st-progress', c['On Progress'], function (v) {
       document.getElementById('st-progress').firstChild.textContent = v;
     });
-    animateNumber('st-hold', c['On Hold']);
-    animateNumber('st-done', c['Done']);
+    animateNumber('st-live', c['Live']);
+    animateNumber('st-done', doneAll);
     animateNumber('st-overdue', overdue);
     animateNumber('st-rate', rate, function (v) {
       document.getElementById('st-rate').textContent = v + '%';
@@ -1515,23 +1535,23 @@ if ($hq) {
     $('#progress-live-dot').toggle(c['On Progress'] > 0);
     $('#overdue-tile').toggleClass('overdue-alert', overdue > 0);
 
-    updateTileMeters(total, c, overdue, progressSum, base);
+    updateTileMeters(total, c, overdue, progressSum, base, doneAll);
     updateStatScope(total);
   }
 
   // Thin share-of-selection meters + one-line context under each stat tile.
-  function updateTileMeters(total, c, overdue, progressSum, base) {
+  function updateTileMeters(total, c, overdue, progressSum, base, doneAll) {
     function share(n) { return total ? Math.round((n / total) * 100) : 0; }
     var avg = total ? Math.round(progressSum / total) : 0;
     $('#st-total-bar').css('width', avg + '%');
     $('#st-total-note').text(total ? avg + '% avg. progress' : 'No projects');
-    [['progress', c['On Progress']], ['hold', c['On Hold']], ['done', c['Done']]].forEach(function (t) {
+    [['progress', c['On Progress']], ['live', c['Live']], ['done', doneAll]].forEach(function (t) {
       $('#st-' + t[0] + '-bar').css('width', share(t[1]) + '%');
       $('#st-' + t[0] + '-note').text(share(t[1]) + '% of selection');
     });
     $('#st-overdue-bar').css('width', share(overdue) + '%');
     $('#st-overdue-note').html(overdue ? share(overdue) + '% need attention' : '<i class="fa fa-check"></i>All on schedule');
-    $('#st-rate-note').text(c['Done'] + ' of ' + base + ' delivered');
+    $('#st-rate-note').text(doneAll + ' of ' + base + ' delivered');
   }
 
   function updateStatScope(total) {
@@ -1550,7 +1570,7 @@ if ($hq) {
   // On-time rule mirrors Insights: Done + actual_date; no target or actual <= target = on time.
   function portfolioStats() {
     var s = {
-      total: allProjects.length, delivered: 0, onTime: 0, late: 0, lead: [], active: [], planned: 0, onHold: 0,
+      total: allProjects.length, delivered: 0, onTime: 0, late: 0, lead: [], active: [], planned: 0, live: 0,
       modules: {}, moduleOrder: [], byMonth: {}, first: '', lastTs: '', pics: {}, picOrder: []
     };
     allProjects.forEach(function (p) {
@@ -1562,8 +1582,9 @@ if ($hq) {
       if (firstDate && (!s.first || firstDate < s.first)) s.first = firstDate;
       var ts = p.updated_date || p.created_date || '';
       if (ts > s.lastTs) s.lastTs = ts;
-      if (p.status === 'Done') {
+      if (isDoneStatus(p.status)) {
         s.delivered++;
+        if (p.status === 'Live') s.live++;
         if (p.actual_date) {
           var m = p.actual_date.substring(0, 7);
           s.byMonth[m] = (s.byMonth[m] || 0) + 1;
@@ -1574,7 +1595,6 @@ if ($hq) {
           }
         }
       } else if (p.status === 'On Progress') s.active.push(p);
-      else if (p.status === 'On Hold') s.onHold++;
       else s.planned++;
     });
     s.moduleOrder.sort(function (a, b) { return s.modules[b] - s.modules[a]; });
@@ -1657,10 +1677,10 @@ if ($hq) {
     var act = s.active[0];
     var actFoot = act
       ? '<b>' + escHtml(act.project_name) + '</b> &middot; ' + (daysInfo(act.target_date, act.status).replace(/<[^>]+>/g, '') || 'no target')
-      : (s.planned + s.onHold) ? s.planned + ' planned &middot; ' + s.onHold + ' on hold' : 'Nothing in flight';
+      : s.planned ? s.planned + ' planned' : 'Nothing in flight';
     html += cell('', 'fa-play-circle', 'Active now', (s.active.length ? '<span class="kpi-live"></span>' : '') + s.active.length, 'in progress',
       actFoot,
-      '<div class="kpi-meter"><span style="width:' + (s.total ? Math.round(((s.active.length + s.planned + s.onHold) / s.total) * 100) : 0) + '%;opacity:.55;"></span></div>');
+      '<div class="kpi-meter"><span style="width:' + (s.total ? Math.round(((s.active.length + s.planned) / s.total) * 100) : 0) + '%;opacity:.55;"></span></div>');
 
     var seg = '<div class="kpi-segbar">' + s.moduleOrder.map(function (k) {
       var mc = moduleColor(k === 'General' ? null : k);
@@ -1892,7 +1912,7 @@ if ($hq) {
     var targetTxt = fmtDate(p.target_date);
     var dateLine  = (startTxt || '?') + ' &rarr; ' + (targetTxt || '?');
     var mc = moduleColor(p.category);
-    var secondaryInfo = p.status === 'Done' ? completionBadge(p.target_date, p.actual_date) : daysInfo(p.target_date, p.status);
+    var secondaryInfo = isDoneStatus(p.status) ? completionBadge(p.target_date, p.actual_date) : daysInfo(p.target_date, p.status);
     var cardCls = 'proj-card proj-card-enter' + (compact ? ' compact' : '');
     var dragAttrs = compact ? ' draggable="true" data-id="' + p.id + '"' : '';
     var progress = parseInt(p.progress) || 0;
@@ -1924,8 +1944,8 @@ if ($hq) {
   var BOARD_EMPTY = {
     'Planned':     { icon: 'fa-lightbulb-o',  title: 'Nothing planned' },
     'On Progress': { icon: 'fa-play-circle',  title: 'Nothing in progress' },
-    'On Hold':     { icon: 'fa-pause-circle', title: 'Nothing on hold' },
-    'Done':        { icon: 'fa-check-circle', title: 'Nothing delivered yet' }
+    'Done':        { icon: 'fa-check-circle', title: 'Nothing waiting to go live' },
+    'Live':        { icon: 'fa-rocket',       title: 'Nothing live yet' }
   };
   function renderBoard() {
     var list = getFiltered();
@@ -1940,7 +1960,7 @@ if ($hq) {
       var avg = items.length ? Math.round(items.reduce(function (a, p) { return a + (parseInt(p.progress) || 0); }, 0) / items.length) : 0;
       html += '<div class="board-col" style="--col:' + col.dot + ';">' +
         '<div class="board-col-head"><span class="title"><span class="dot"></span>' + col.key +
-          (items.length && col.key !== 'Done' ? '<span class="board-col-sub">&middot; avg ' + avg + '%</span>' : '') + '</span>' +
+          (items.length && !isDoneStatus(col.key) ? '<span class="board-col-sub">&middot; avg ' + avg + '%</span>' : '') + '</span>' +
           '<span class="count">' + items.length + '</span></div>' +
         '<div class="board-col-body" data-status="' + col.key + '">';
       if (items.length === 0) {
@@ -1988,10 +2008,10 @@ if ($hq) {
       '</tr></thead><tbody>';
     list.forEach(function (p, idx) {
       var mc = moduleColor(p.category);
-      var secondary = (p.status === 'Done' ? completionBadge(p.target_date, p.actual_date) : daysInfo(p.target_date, p.status)) +
+      var secondary = (isDoneStatus(p.status) ? completionBadge(p.target_date, p.actual_date) : daysInfo(p.target_date, p.status)) +
         (isAtRisk(p) ? ' ' + atRiskBadgeHtml(p) : '');
       var dash = '<span class="muted-dash">&mdash;</span>';
-      var statusOpts = ['Planned', 'On Progress', 'On Hold', 'Done'].map(function (s) {
+      var statusOpts = ['Planned', 'On Progress', 'Done', 'Live'].map(function (s) {
         return '<option value="' + s + '"' + (s === p.status ? ' selected' : '') + '>' + s + '</option>';
       }).join('');
       html += '<tr style="cursor:pointer;" onclick="openDrawer(' + p.id + ')">' +
@@ -2314,7 +2334,7 @@ if ($hq) {
     var todayD = new Date(); todayD.setHours(0, 0, 0, 0);
 
     // ---- Delivery trend (last 6 months incl. current) ----
-    var doneList = list.filter(function (p) { return p.status === 'Done' && p.actual_date; });
+    var doneList = list.filter(function (p) { return isDoneStatus(p.status) && p.actual_date; });
     var monthCounts = {};
     doneList.forEach(function (p) {
       var m = p.actual_date.substring(0, 7);
@@ -2455,7 +2475,7 @@ if ($hq) {
     // ---- Upcoming deadlines (next 7 days, not yet Done) ----
     var horizon = addD(todayD, 7);
     var upcoming = list.filter(function (p) {
-      if (p.status === 'Done' || !p.target_date) return false;
+      if (isDoneStatus(p.status) || !p.target_date) return false;
       var t = dOnly(p.target_date);
       return t <= horizon;
     }).sort(function (a, b) { return a.target_date.localeCompare(b.target_date); });
@@ -2468,7 +2488,7 @@ if ($hq) {
         var mc = moduleColor(p.category);
         var t = dOnly(p.target_date);
         var diff = Math.round((t - todayD) / 86400000);
-        var isOd = parseInt(p.is_overdue) === 1;   // On Hold tidak dihitung overdue
+        var isOd = parseInt(p.is_overdue) === 1;   // hanya Planned & On Progress yang dihitung overdue
         var when = isOd ? '<span class="overdue-flag"><i class="fa fa-exclamation-triangle"></i> ' + Math.abs(diff) + 'd overdue</span>'
           : diff < 0 ? '<span class="text-muted">' + Math.abs(diff) + 'd past</span>'
           : diff === 0 ? '<span class="overdue-flag">Due today</span>'
@@ -2562,19 +2582,20 @@ if ($hq) {
     selectPill('pill-priority', 'pj-priority', $(this).data('value'));
     updatePreview();
   });
-  $(document).on('input change', '#pj-name, #pj-category, #pj-pic, #pj-description, #pj-start, #pj-target, #pj-actual', updatePreview);
+  $(document).on('input change', '#pj-name, #pj-category, #pj-pic, #pj-description, #pj-start, #pj-target, #pj-actual, #pj-live', updatePreview);
 
   function onStatusChange() {
     var status = $('#pj-status').val();
-    $('#pj-actual-row').toggle(status === 'Done');
-    if (status === 'Done') syncProgress(100);
+    $('#pj-actual-row').toggle(isDoneStatus(status));
+    $('#pj-live-row').toggle(status === 'Live');
+    if (isDoneStatus(status)) syncProgress(100);
   }
 
   // ===== OPEN CREATE =====
   function openCreate() {
     $('#modal-proj-eyebrow').text('New Project');
     $('#pj-id').val('');
-    $('#pj-name, #pj-category, #pj-pic, #pj-description, #pj-start, #pj-target, #pj-actual').val('');
+    $('#pj-name, #pj-category, #pj-pic, #pj-description, #pj-start, #pj-target, #pj-actual, #pj-live').val('');
     selectPill('pill-status', 'pj-status', 'Planned');
     selectPill('pill-priority', 'pj-priority', 'Medium');
     syncProgress(0);
@@ -2601,6 +2622,7 @@ if ($hq) {
         $('#pj-start').val(r.start_date);
         $('#pj-target').val(r.target_date);
         $('#pj-actual').val(r.actual_date);
+        $('#pj-live').val(r.live_date);
         onStatusChange();
         updatePreview();
         $('#modalProject').modal('show');
@@ -2627,13 +2649,14 @@ if ($hq) {
         progress: $('#pj-progress').val(),
         start_date: $('#pj-start').val(),
         target_date: $('#pj-target').val(),
-        actual_date: $('#pj-actual').val()
+        actual_date: $('#pj-actual').val(),
+        live_date: $('#pj-live').val()
       },
       success: function (r) {
         if (r.status === 'success') {
           $('#modalProject').modal('hide');
           Swal.fire({ icon: 'success', title: 'Success!', text: 'Project saved successfully.', timer: 1500, showConfirmButton: false });
-          if ($('#pj-status').val() === 'Done') fireConfetti();
+          if (isDoneStatus($('#pj-status').val())) fireConfetti();
           loadProjects();
         } else {
           Swal.fire('Failed', r.message || 'An error occurred.', 'error');
@@ -2699,7 +2722,7 @@ if ($hq) {
       success: function (r) {
         if (r.status === 'success') {
           Swal.fire({ icon: 'success', title: 'Status updated', timer: 1000, showConfirmButton: false });
-          if (newStatus === 'Done') fireConfetti();
+          if (isDoneStatus(newStatus)) fireConfetti();
         } else {
           Swal.fire('Failed', r.message || 'An error occurred.', 'error');
         }
@@ -2751,7 +2774,7 @@ if ($hq) {
 
     var mc = moduleColor(p.category);
     var progress = parseInt(p.progress) || 0;
-    var secondaryInfo = p.status === 'Done' ? completionBadge(p.target_date, p.actual_date) : daysInfo(p.target_date, p.status);
+    var secondaryInfo = isDoneStatus(p.status) ? completionBadge(p.target_date, p.actual_date) : daysInfo(p.target_date, p.status);
     $('#drawer-head').html(
       '<span class="drawer-close" onclick="closeDrawer()"><i class="fa fa-times"></i></span>' +
       '<div class="drawer-eyebrow">' +
@@ -2822,7 +2845,7 @@ if ($hq) {
       var p = allProjects.filter(function (x) { return x.id === drawerProjectId; })[0];
       if (p) {
         p.progress = newProgress;
-        if (newProgress === 100 && p.status !== 'Done') { p.status = 'Done'; fireConfetti(); }
+        if (newProgress === 100 && !isDoneStatus(p.status)) { p.status = 'Done'; fireConfetti(); }
       }
     }
     loadProjects();

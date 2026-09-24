@@ -12,7 +12,8 @@ if ($current_user !== 'indro') {
 
 $id     = intval($_POST['id'] ?? 0);
 $status = trim($_POST['status'] ?? '');
-$valid_status = ['Planned', 'On Progress', 'On Hold', 'Done'];
+// Lihat catatan valid_status di save_project.php.
+$valid_status = ['Planned', 'On Progress', 'Done', 'Live'];
 
 if ($id === 0 || !in_array($status, $valid_status)) {
     echo json_encode(['status' => 'error', 'message' => 'Invalid request.']);
@@ -28,9 +29,24 @@ $now  = (new DateTime('now', new DateTimeZone('Asia/Jakarta')))->format('Y-m-d H
 $oldRes = mysqli_query($conn2, "SELECT status FROM master_project WHERE id = " . intval($id));
 $oldStatus = mysqli_fetch_assoc($oldRes)['status'] ?? null;
 
-if ($status === 'Done') {
+if ($status === 'Live') {
+    // Pindah ke Live: stempel live_date, dan actual_date (tanggal DONE) HANYA
+    // diisi kalau memang masih kosong - COALESCE menjaga tanggal selesai yang
+    // sudah ada supaya TIDAK tertimpa tanggal go-live. Ini yang membuat kolom
+    // tanggal di Export Excel tetap tanggal DONE, bukan tanggal live.
+    $stmt = mysqli_prepare($conn2,
+        "UPDATE master_project
+         SET status = ?, progress = 100,
+             actual_date = COALESCE(actual_date, CURDATE()),
+             live_date   = COALESCE(live_date, CURDATE()),
+             updated_by = ?, updated_date = ?
+         WHERE id = ?"
+    );
+} elseif ($status === 'Done') {
     // Completing via the quick-change control also marks it 100% and stamps
     // an actual date if one hasn't been set yet, mirroring the full edit form.
+    // live_date sengaja TIDAK disentuh (tidak dihapus) supaya tanggal yang
+    // pernah diisi manual tidak hilang kalau kartu sempat digeser bolak-balik.
     $stmt = mysqli_prepare($conn2,
         "UPDATE master_project
          SET status = ?, progress = 100, actual_date = COALESCE(actual_date, CURDATE()), updated_by = ?, updated_date = ?

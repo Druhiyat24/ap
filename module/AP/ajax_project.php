@@ -32,9 +32,9 @@ $q = mysqli_query($conn2,
         END AS is_overdue,
         CASE status
             WHEN 'On Progress' THEN 1
-            WHEN 'On Hold'     THEN 2
-            WHEN 'Planned'     THEN 3
-            WHEN 'Done'        THEN 4
+            WHEN 'Planned'     THEN 2
+            WHEN 'Done'        THEN 3
+            WHEN 'Live'        THEN 4
             ELSE 5
         END AS status_order
      FROM master_project
