@@ -161,9 +161,12 @@ if (strpos($cuplikan, '%PDF') === false) {
 if (!is_dir($DIR) && !@mkdir($DIR, 0775, true)) {
     kembali('Folder penyimpanan dokumen tidak ada dan gagal dibuat di server. Dokumen TIDAK tersimpan - hubungi IT.');
 }
-if (!is_writable($DIR)) {
-    kembali('Folder penyimpanan dokumen tidak bisa ditulis di server. Dokumen TIDAK tersimpan - hubungi IT.');
-}
+// SENGAJA TIDAK memakai is_writable() sebagai penjaga. Di Windows fungsi itu
+// hanya melihat atribut read-only dan tidak benar-benar mengevaluasi ACL
+// (apalagi kalau foldernya share/UNC), jadi sering melaporkan "tidak bisa
+// ditulis" untuk folder yang sebenarnya bisa - dan upload yang valid ikut
+// diblokir (kejadian 25 Sep 2026 di server produksi). Penentu yang sebenarnya
+// adalah hasil move_uploaded_file() di bawah.
 
 // Jangan menimpa berkas lain yang namanya kebetulan sama - beri akhiran angka.
 $dasar = pathinfo($filename, PATHINFO_FILENAME);
@@ -178,7 +181,11 @@ $path = $DIR . '/' . $filename;
 
 // ---- 5. Pindahkan SEKALI, lalu pastikan benar-benar ada ---------------------
 if (!move_uploaded_file($tmp_file, $path)) {
-    kembali('Server gagal menyimpan berkas. Dokumen TIDAK dicatat, silakan unggah ulang.');
+    $galat = error_get_last();
+    kembali('Server gagal menyimpan berkas ke folder dokumen. Dokumen TIDAK dicatat, silakan unggah ulang. '
+        . 'Kalau terus berulang, hubungi IT untuk memeriksa izin tulis folder '
+        . 'file_pdf/bank_out.'
+        . (!empty($galat['message']) ? ' (' . $galat['message'] . ')' : ''));
 }
 if (!is_file($path) || filesize($path) <= 0) {
     @unlink($path);
