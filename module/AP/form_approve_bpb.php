@@ -499,64 +499,84 @@ $(document).ready(function(){
 </script>-->
 
 <script type="text/javascript">
-    $("#form-simpan").on("click", "#approve", function(){
-        $("input[name='select[]']:checked").each(function () {                
-        var no_dok = $(this).closest('tr').find('td:eq(1)').attr('value');
-        var no_bpb = $(this).closest('tr').find('td:eq(3)').attr('value');
-        var approve_user = '<?php echo $user ?>';
+(function () {
+    // Dulu tombol Accept punya DUA handler terpisah (approve utk yang dicentang,
+    // cancel utk yang tidak), masing-masing menembak satu AJAX PER BARIS di
+    // dalam .each(), dan setiap respons sukses langsung menjalankan
+    // window.location. Begitu respons PERTAMA datang, halaman berpindah dan
+    // SELURUH request yang masih berjalan dibatalkan browser - jadi hanya
+    // sebagian baris yang tersimpan. Kasus nyata TBPB/NAG/0926/01749: dari 84
+    // baris hanya 35 yang ter-Approve, sisanya tetap 'Transfer'. Alert
+    // "Data Berhasil Di Approve" pun muncul SEBELUM satu pun request selesai,
+    // sehingga user mengira sudah beres.
+    //
+    // Sekarang: seluruh nomor dikirim SEKALI sebagai array (server memprosesnya
+    // dalam satu UPDATE), tombol dikunci selama proses, dan redirect baru
+    // dijalankan SETELAH semua request benar-benar selesai. Pesan yang
+    // ditampilkan memakai jumlah baris yang dihitung ulang oleh server.
+    var APPROVE_USER = <?php echo json_encode($user); ?>;
+    var SELF_URL     = <?php echo json_encode($SELF); ?>;
 
-        $.ajax({
-            type:'POST',
-            url:'approve_whstoacc.php',
-            data: {'no_dok':no_dok, 'no_bpb':no_bpb, 'approve_user':approve_user},
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){                
-                console.log(response);
-                window.location = '<?= $SELF ?>';
-                                               
-            },
-            error:  function (xhr, ajaxOptions, thrownError) {
-               alert(xhr);
-            }
+    // Kolom tersembunyi: td:eq(1) = No Document, td:eq(3) = No BPB
+    // (lihat <thead> tabel modal di atas).
+    function kumpulkan(filter) {
+        var no_dok = null, no_bpb = [];
+        $("input[name='select[]']" + filter).each(function () {
+            var $tr = $(this).closest('tr');
+            if (no_dok === null) { no_dok = $tr.find('td:eq(1)').attr('value'); }
+            var v = $tr.find('td:eq(3)').attr('value');
+            if (v) { no_bpb.push(v); }
         });
+        return { no_dok: no_dok, no_bpb: no_bpb };
+    }
+
+    $("#form-simpan").on("click", "#approve", function () {
+        var $btn = $(this);
+        if ($btn.data('busy')) { return; }
+
+        var app = kumpulkan(':checked');
+        var can = kumpulkan(':not(:checked)');
+        if (!app.no_bpb.length && !can.no_bpb.length) {
+            alert('Tidak ada baris yang dapat diproses.');
+            return;
+        }
+
+        var ringkas = 'Accept ' + app.no_bpb.length + ' baris' +
+            (can.no_bpb.length ? ', dan CANCEL ' + can.no_bpb.length + ' baris yang tidak dicentang' : '') +
+            '.\n\nLanjutkan?';
+        if (!confirm(ringkas)) { return; }
+
+        $btn.data('busy', true).prop('disabled', true);
+
+        var hasil = [];
+        function kirim(url, paket) {
+            return $.ajax({ type: 'POST', url: url, dataType: 'json', data: paket })
+                    .done(function (r) { hasil.push(r); });
+        }
+
+        var jobs = [];
+        if (app.no_bpb.length) {
+            jobs.push(kirim('approve_whstoacc.php',
+                { no_dok: app.no_dok, no_bpb: app.no_bpb, approve_user: APPROVE_USER }));
+        }
+        if (can.no_bpb.length) {
+            jobs.push(kirim('cancel_whstoacc.php',
+                { no_dok: can.no_dok, no_bpb: can.no_bpb, approve_user: APPROVE_USER }));
+        }
+
+        $.when.apply($, jobs).done(function () {
+            var pesan = hasil.map(function (r) {
+                return (r && r.pesan) ? r.pesan : 'Respons server tidak dikenali.';
+            });
+            alert(pesan.join('\n'));
+            window.location = SELF_URL;
+        }).fail(function (xhr) {
+            $btn.data('busy', false).prop('disabled', false);
+            alert('Gagal menghubungi server (status ' + (xhr && xhr.status ? xhr.status : '?') +
+                  ').\nSilakan muat ulang halaman dan periksa status dokumennya.');
         });
-        
-            alert("Data Berhasil Di Approve");
-               
     });
-</script>
-
-<script type="text/javascript">
-    $("#form-simpan").on("click", "#approve", function(){
-        $("input[name='select[]']:not(:checked)").each(function () {                     
-        var no_dok = $(this).closest('tr').find('td:eq(1)').attr('value');
-        var no_bpb = $(this).closest('tr').find('td:eq(3)').attr('value');
-        var approve_user = '<?php echo $user ?>';
-
-        $.ajax({
-            type:'POST',
-            url:'cancel_whstoacc.php',
-            data: {'no_dok':no_dok, 'no_bpb':no_bpb, 'approve_user':approve_user},
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){                
-                console.log(response);
-                window.location = '<?= $SELF ?>';                                               
-            },
-            error:  function (xhr, ajaxOptions, thrownError) {
-               alert(xhr);
-            }
-        });
-        });
-        // if(document.querySelectorAll("input[name='select[]']:checked").length >= 1){
-        //     alert("Data Berhasil Di Cancel");
-        // }else{
-        //     alert("Silahkan Ceklist No Kontrabon");
-        // }        
-    });
+})();
 </script>
 
 <script type="text/javascript">
