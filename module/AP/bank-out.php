@@ -8,6 +8,20 @@ $startdate = isset($_GET['start_date']) ? $_GET['start_date'] : date("Y-m-d");
 $enddate = isset($_GET['end_date']) ? $_GET['end_date'] : date("Y-m-d");  
 $start_date = date("Y-m-d",strtotime($startdate));
 $end_date = date("Y-m-d",strtotime($enddate));
+
+// Hasil upload dokumen dititipkan insert_doc_bankout.php lewat SESSION (bukan
+// query string - isinya bisa panjang dan tidak perlu terlihat di address bar).
+// Dibaca sekali lalu dihapus, supaya pesannya tidak muncul lagi saat refresh.
+// Dulu upload yang gagal TIDAK memberi kabar apa pun: barisnya tetap masuk
+// database tetapi berkasnya tidak ada, dan baru ketahuan saat dibuka (muncul
+// "Not Found" dari Apache di dalam <embed>).
+$upload_msg = '';
+$upload_ok  = false;
+if (!empty($_SESSION['bankout_upload'])) {
+    $upload_msg = (string) $_SESSION['bankout_upload']['msg'];
+    $upload_ok  = (bool) $_SESSION['bankout_upload']['ok'];
+    unset($_SESSION['bankout_upload']);
+}
 ?>
 
 <style>
@@ -72,6 +86,14 @@ $end_date = date("Y-m-d",strtotime($enddate));
 
 <!-- MAIN -->
 <div class="container-fluid mt-4 p-4">
+<?php if ($upload_msg !== '') { ?>
+    <div class="alert alert-<?= $upload_ok ? 'success' : 'danger' ?> alert-dismissible fade show" role="alert">
+        <i class="fa fa-<?= $upload_ok ? 'check-circle' : 'exclamation-triangle' ?> mr-2"></i>
+        <?= htmlspecialchars($upload_msg) ?>
+        <?php if (!$upload_ok) { ?><br><small>Dokumen TIDAK tersimpan - silakan unggah ulang.</small><?php } ?>
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+<?php } ?>
     <div class="card shadow border-0">
         <div class="card-header text-white py-2 px-3" style="background: linear-gradient(90deg, #191970, #1e90ff);">
             <h5 class="mb-0"><i class="fa fa-university" aria-hidden="true"></i> OUTGOING BANK</h5>
@@ -521,7 +543,12 @@ $(document).on("click", ".btn-cancel-bankout", function() {
 
             for (var i = 0; i < namafiles.length; i++) {
                 var label = labelfiles[i] ? `<label><b>${labelfiles[i]}</b></label>` : '';
-                var embed = `<embed src="file_pdf/bank_out/${namafiles[i]}" type="application/pdf" width="100%" height="400px" style="margin-bottom: 20px;">`;
+                // encodeURIComponent: nama berkas dari bank sering mengandung spasi
+                // (mis. "..._CV MATAHAR_IDR_...pdf"). Tanpa di-encode, URL-nya bisa
+                // terpotong/salah sehingga <embed> menampilkan "Not Found" padahal
+                // berkasnya ada.
+                var src = 'file_pdf/bank_out/' + encodeURIComponent(namafiles[i]);
+                var embed = `<embed src="${src}" type="application/pdf" width="100%" height="400px" style="margin-bottom: 20px;">`;
                 output += label + '<br>' + embed + '<hr>';
             }
 
