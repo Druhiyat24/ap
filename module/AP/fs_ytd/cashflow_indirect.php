@@ -840,6 +840,19 @@
             $profit_center = isset($_POST['h_profit_center']) ? $_POST['h_profit_center']: null;
           }
 
+          // $kata_filter = nama KOLOM bulan di fs_saldo_awal_tb (jan_2026, feb_2026, ...).
+          // Berkas ini dulu memakainya tanpa pernah mendefinisikannya, sehingga SQL-nya
+          // jadi "..., as saldo from fs_saldo_awal_tb ..." = SYNTAX ERROR; query gagal
+          // diam-diam dan Kas dan Setara Kas pada Awal Periode selalu tampil 0.
+          // Disusun dari $bulan_awal/$tahun_awal yang SUDAH disiapkan pemanggil
+          // (financial_statement.php / fs_tab_fetch.php) - bukan dari $_POST langsung,
+          // supaya tetap benar saat tab ini dimuat lewat AJAX. Pola nilainya sama
+          // dengan statement_financial_position.php: <3 huruf bulan>_<tahun>.
+          $bln_kf = (int) ($bulan_awal ?? date('m'));
+          $thn_kf = (int) ($tahun_awal ?? date('Y'));
+          if ($bln_kf < 1 || $bln_kf > 12) { $bln_kf = (int) date('m'); }
+          $kata_filter = strtolower(date('M', mktime(0, 0, 0, $bln_kf, 1, $thn_kf))) . '_' . $thn_kf;
+
           $sql5 = mysqli_query($conn2,"select a.id_ctg4, b.total total_nag, c.total total_nak, (c.total + b.total) total_all from (select id_ctg4 from master_coa_ctg4 where id_ctg4 = '111') a LEFT JOIN
   (select id_ctg2,id_ctg4,ind_categori4,saldo total,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4, sum(saldo) saldo, sum(debit_idr) debit, sum(credit_idr) credit,eng_categori4 from (select id_ctg2,id_ctg4,ind_categori4,eng_categori4,COALESCE(saldo,0) saldo,COALESCE(credit_idr,0) credit_idr,COALESCE(debit_idr,0) debit_idr from 
                         (select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from fs_saldo_awal_tb where no_coa != '1.10.01' and no_coa != '1.10.02' and profit_center = 'NAG' UNION select no_coa nocoa,nama_coa namacoa,$kata_filter as saldo from fs_saldo_awal_tb where no_coa = '1.10.01' and $kata_filter > 0 and profit_center = 'NAG' OR no_coa = '1.10.02' and $kata_filter > 0 and profit_center = 'NAG') saldo
