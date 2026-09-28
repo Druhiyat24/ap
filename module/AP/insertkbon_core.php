@@ -390,8 +390,16 @@ if ($pot_beli1 == 0) {
 
 $sqlcoa = mysqli_query($conn1,"SELECT no_coa, nama_coa from mastercoa_v2 where cus_ctg like '%$cus_ctg%' and mattype like '%$mattype%' and matclass like '%$matclass%' and n_code_category like '%$n_code_category%' and inv_type like '%kbn_credit%' Limit 1");
 $rowcoa = mysqli_fetch_array($sqlcoa);
-$no_coa_cre = $rowcoa['no_coa'];
-$nama_coa_cre = $rowcoa['nama_coa'];
+$no_coa_cre = $rowcoa['no_coa'] ?? '';
+$nama_coa_cre = $rowcoa['nama_coa'] ?? '';
+// Lihat catatan sama di insertkbon_bulk_edit.php: COA utang kosong membuat
+// baris jurnal Utang Usaha tanpa no_coa dan dokumennya hilang dari AP Report.
+// Dihentikan di sini supaya pemanggil (insertkbon_bulk.php) me-rollback.
+if (trim((string) $no_coa_cre) === '') {
+    return ['ok' => false, 'msg' => 'COA Utang Usaha tidak ditemukan di master COA '
+        . '(kombinasi Customer Category / Mattype / Matclass / N-Code tidak cocok dengan '
+        . 'satu pun baris inv_type kbn_credit). Tidak ada yang tersimpan.'];
+}
 
 $queryjrnl = "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier) 
 VALUES 

@@ -447,12 +447,34 @@ $bank_currency = $row_bank['bank_currency'];
 			</td>
 			<td width="48%"></td>
 
+			<?php
+			// Kotak ringkasan (SubTotal/Ppn/Pph/Total/Grand Total) SEMUANYA dibaca dari
+			// kontrabon_h - angka yang BENAR-BENAR TERSIMPAN saat PV dibuat.
+			// Dulu SubTotal/Ppn/Pph DIHITUNG ULANG di sini: SubTotal & Ppn dari
+			// SUM(qty*price ...) mentah di bpb_new, Pph dari SUM(kontrabon.pph_value).
+			// Penjumlahan nilai mentah lalu dibulatkan SEKALI di akhir menghasilkan
+			// angka yang beda tipis dari yang disimpan (yang menjumlahkan nilai
+			// per-baris yang SUDAH dibulatkan) - user melaporkan PPN 58.209.752,48
+			// tersimpan tapi tercetak 58.209.752,49 dan PPh 10.583.591,36 tersimpan
+			// tapi tercetak 10.583.591,33 (PV-AP/REG/NAK/2026/09/02395-REV_01).
+			// Grand Total memang SUDAH memakai kontrabon_h.total sejak awal, jadi
+			// kotaknya pun tidak pernah benar-benar menjumlah. Sekarang seragam.
+			// Nilai potongan (adjustment/PPN/PPh) SUDAH termasuk di angka header,
+			// jadi tidak boleh ditambahkan lagi di sini.
+			$rowHdr = mysqli_fetch_assoc(mysqli_query($conn2,
+				"select subtotal, tax, pph_idr, total from kontrabon_h where no_kbon = '$no_kbon'"));
+			$hdr_sub   = (float) ($rowHdr['subtotal'] ?? 0);
+			$hdr_ppn   = (float) ($rowHdr['tax'] ?? 0);
+			$hdr_pph   = (float) ($rowHdr['pph_idr'] ?? 0);
+			$hdr_total = (float) ($rowHdr['total'] ?? 0);
+			?>
+
 			<td>
 				SubTotal
 			</td>
 			<td style="width:1%">:</td>
 			<td style="text-align:right">
-				<?php echo $curr." ".number_format($sum_sub, 2); ?>
+				<?php echo $curr." ".number_format($hdr_sub, 2); ?>
 			</td>
 		</tr>
 
@@ -488,7 +510,7 @@ $bank_currency = $row_bank['bank_currency'];
 			</td>
 			<td style="width:1%">:</td>
 			<td style="text-align:right">
-				<?php echo $curr." ".number_format($sum_sub + $potong, 2); ?>
+				<?php echo $curr." ".number_format($hdr_sub + $potong, 2); ?>
 			</td>
 		</tr>
 
@@ -504,10 +526,7 @@ $bank_currency = $row_bank['bank_currency'];
 			<td style="width:1%">:</td>
 			<td style="text-align:right">
 				<?php
-				$sqltax = mysqli_query($conn2,"select tax from kontrabon_h where no_kbon = '$no_kbon'");
-				$rowstax = mysqli_fetch_array($sqltax);
-				$jml_tax = $rowstax['tax'];
-				echo $curr." ".number_format($ppn + $potongan_ppn, 2).""; ?>
+				echo $curr." ".number_format($hdr_ppn, 2).""; ?>
 			</td>
 		</tr>
 
@@ -522,7 +541,7 @@ $bank_currency = $row_bank['bank_currency'];
 			</td>
 			<td style="width:1%">:</td>
 			<td style="text-align:right;">
-				<?php echo $curr." ( - ".number_format($pph + $potongan_pph, 2)." )"; ?>
+				<?php echo $curr." ( - ".number_format($hdr_pph, 2)." )"; ?>
 			</td>
 		</tr>
 
@@ -549,9 +568,7 @@ $bank_currency = $row_bank['bank_currency'];
 			<td style="width:1%">:</td>
 			<td style="text-align:right;font-weight: bold;">
 				<?php
-				$sqltotal = mysqli_query($conn2,"select total from kontrabon_h where no_kbon = '$no_kbon'");
-				$rowstotal = mysqli_fetch_array($sqltotal);
-				$jml_total = $rowstotal['total'];
+				$jml_total = $hdr_total;
 				echo $curr." ".number_format($jml_total, 2).""; ?>
 			</td>
 		</tr>

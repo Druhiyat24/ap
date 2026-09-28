@@ -240,6 +240,20 @@ $sqlcoa = mysqli_query($conn1, "SELECT no_coa, nama_coa from mastercoa_v2 where 
 $rowcoa = $sqlcoa ? mysqli_fetch_array($sqlcoa) : null;
 $no_coa_cre = $rowcoa['no_coa'] ?? '';
 $nama_coa_cre = $rowcoa['nama_coa'] ?? '';
+// Kalau lookup COA utang GAGAL, JANGAN diteruskan. Sebelumnya string kosong
+// ikut tertulis apa adanya: baris jurnal Utang Usaha jadi TANPA no_coa, dan
+// AP Report - yang menyaring berdasarkan COA utang - tidak pernah melihat
+// dokumen itu, sehingga 'Amount PV berbeda dengan Report AP' (kasus
+// PV-AP/REG/NAK/2026/09/02395-REV_01, 28 Sep 2026). Lebih baik simpan GAGAL
+// total dan user tahu, daripada dokumen tersimpan tapi hilang dari laporan.
+if (trim((string) $no_coa_cre) === '') {
+    mysqli_rollback($conn2);
+    pv_edit_out(['ok' => false, 'msg' => 'COA Utang Usaha tidak ditemukan di master COA '
+        . '(kombinasi Customer Category / Mattype / Matclass / N-Code tidak cocok dengan '
+        . 'satu pun baris inv_type kbn_credit). Tidak ada yang tersimpan - hubungi IT '
+        . 'untuk melengkapi master COA-nya.']);
+    exit;
+}
 pvj($conn2, $kode, $create_date, $no_coa_cre, $nama_coa_cre, '-', '-', '-', '', $curr_h, $rate, '0', $ttl_kbon, '0', $idr_total_h, $keter, $create_user_h, $profit_center);
 
 // -- DP (debit dp_h to payable COA) ------------------------------------------

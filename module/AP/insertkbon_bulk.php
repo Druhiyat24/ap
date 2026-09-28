@@ -63,7 +63,11 @@ if (isset($rh['ir_used'])) {
 }
 if (empty($rh['ok'])) {
     mysqli_rollback($conn2);
-    pv_bulk_out(['ok' => false, 'msg' => 'Gagal menyimpan header PV (kontrabon_h). Tidak ada yang tersimpan.']);
+    // Pesan spesifik dari pv_reg_save_header() diteruskan apa adanya kalau ada
+    // (mis. COA Utang Usaha tidak ketemu di master) - jauh lebih berguna buat user
+    // daripada pesan umum di bawahnya.
+    pv_bulk_out(['ok' => false, 'msg' => $rh['msg']
+        ?? 'Gagal menyimpan header PV (kontrabon_h). Tidak ada yang tersimpan.']);
     exit;
 }
 $kode      = $rh['kode'];
