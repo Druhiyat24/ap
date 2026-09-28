@@ -480,6 +480,54 @@ div.dataTables_wrapper .dataTables_info {
     margin-top: 10px;
 }
 
+/* ===========================================================================
+   CSS BERSAMA ANTAR TAB - dipasang di HALAMAN INDUK supaya SELALU ADA, tidak
+   peduli tab mana yang dibuka user lebih dulu.
+
+   Masalahnya: tiap partial tab (fs_monthly/*, fs_ytd/*) membawa blok <style>
+   sendiri-sendiri, dan blok itu baru masuk DOM saat tab-nya dimuat. Dua class
+   di bawah ini DIPAKAI oleh beberapa partial tetapi hanya DIDEFINISIKAN di
+   partial SFP - jadi kalau user membuka CF Direct/CF Indirect/SPL lebih dulu,
+   aturannya belum pernah masuk halaman dan tampilan tabelnya berantakan
+   (header tidak sejajar, garis tidak rapi). Begitu SFP dibuka sekali, CSS-nya
+   ikut nempel di halaman dan tab lain ikut 'sembuh' - itu sebabnya gejalanya
+   terasa bergantung pada URUTAN membuka tab.
+
+   Ditaruh di induk, BUKAN disalin ke tiap partial, supaya tidak ada lagi
+   salinan yang bisa ketinggalan. Partial yang sudah punya aturannya sendiri
+   tetap menang (blok <style>-nya disisipkan belakangan dgn specificity sama),
+   jadi tidak ada tampilan lama yang berubah.
+   =========================================================================== */
+<?php if ($report_type === 'monthly') { ?>
+/* Pembungkus header beku (tabel header terpisah di luar area scroll). Dipakai
+   4 partial monthly, dulu cuma didefinisikan di SFP. overflow-x WAJIB 'scroll'
+   (bukan 'hidden') - lihat catatan panjang di statement_financial_position_monthly.php. */
+.sfp-header-clip {
+  overflow-x: scroll;
+  overflow-y: hidden;
+  background: #fafafa;
+  padding: 10px 25px 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.sfp-header-clip::-webkit-scrollbar {
+  display: none;
+}
+/* Judul section (mis. "ARUS KAS DARI AKTIVITAS OPERASI"). Versi MONTHLY. */
+.section-left {
+  font-weight: bold;
+  color: #1e3a8a;
+  font-size: 13px;
+  letter-spacing: .2px;
+  text-align: left;
+}
+<?php } else { ?>
+/* Versi YTD sengaja beda (lebih polos) - mengikuti
+   fs_ytd/statement_financial_position.php, jangan disamakan dgn monthly. */
+.section-left {
+  text-align: left;
+}
+<?php } ?>
 
 </style>
 
