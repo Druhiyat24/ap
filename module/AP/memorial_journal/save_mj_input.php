@@ -18,8 +18,25 @@ try {
     // CLOSING PERIODE — dicek DI SERVER, bukan cuma di datepicker. Jurnal tidak
     // boleh masuk ke periode yang bukunya sudah ditutup.
     require_once __DIR__ . '/../closing_periode_guard.php';
-    $errClose = closing_error($conn2, $mj_date);
-    if ($errClose !== '') { throw new Exception($errClose); }
+    $cekClose = closing_check($conn2, $mj_date);
+    if (!$cekClose['ok']) {
+        // Dibalas LANGSUNG (bukan lewat Exception umum) supaya halaman tahu ini
+        // penolakan closing, bukan kegagalan teknis - lihat kode 'CLOSING' yang
+        // dipakai create_memorial_journal.php untuk memilih pesan yang tepat.
+        // Kalimatnya disusun DI SINI dalam bahasa Indonesia mengikuti UI halaman
+        // Memorial Journal; pesan bawaan closing_check() berbahasa Inggris karena
+        // dipakai juga oleh endpoint lain.
+        $detail = $cekClose['kode_periode'] !== ''
+            ? 'Periode ' . $cekClose['kode_periode'] . ' (' . date('M Y', strtotime($mj_date)) . ') sudah ditutup.'
+            : 'Tanggal ' . date('d M Y', strtotime($mj_date)) . ' berada di periode yang sudah ditutup.';
+        echo json_encode([
+            'status'  => 'error',
+            'kode'    => 'CLOSING',
+            'message' => 'Jurnal tidak bisa disimpan karena periode tersebut sudah ditutup.',
+            'detail'  => $detail,
+        ]);
+        exit;
+    }
     $mj_type = $_POST['mj_type'];
     $profit_center = $_POST['profit_center'];
     $description = $_POST['pesan'];

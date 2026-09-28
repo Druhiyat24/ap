@@ -1344,6 +1344,45 @@ if(result.isConfirmed){
 
             console.log('Response dari server :',res);
 
+            // Server BISA membalas status 'error' dengan HTTP 200 - mis. saat
+            // periode sudah di-closing, jurnal SENGAJA tidak dibuat. Dulu blok ini
+            // langsung memasang "Berhasil Disimpan" tanpa memeriksa res.status,
+            // sehingga penolakan pun tampil sebagai sukses dengan No Journal
+            // "undefined" - pesan yang menyesatkan. Sekarang diperiksa dulu.
+            if (!res || res.status !== 'success' || !res.no_journal) {
+
+                var pesan = (res && res.message) ? res.message : 'Jurnal tidak tersimpan.';
+
+                if (res && res.kode === 'CLOSING') {
+                    // Kalimat utamanya datang dari server (res.message) supaya bunyinya
+                    // seragam di semua tempat; res.detail hanya menyebut periode mana.
+                    var detail = (res.detail || '');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Periode Sudah Ditutup',
+                        html: '<div style="text-align:center;font-size:15px">' +
+                              '<p style="margin-bottom:10px">' + $('<div>').text(pesan).html() + '</p>' +
+                              (detail ? '<p style="margin:0;font-size:13px;color:#6c757d">' +
+                                        $('<div>').text(detail).html() +
+                                        ' Ubah Journal Date ke periode yang masih Open.</p>' : '') +
+                              '</div>',
+                        confirmButtonText: 'Mengerti'
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal Disimpan',
+                        html: '<div style="text-align:left;font-size:14px">' +
+                              '<p style="margin-bottom:10px">Jurnal <b>TIDAK dibuat</b>. Penyebabnya:</p>' +
+                              '<div style="background:#fdecea;border-left:4px solid #d9534f;padding:10px 12px">' +
+                              $('<div>').text(pesan).html() + '</div>' +
+                              '</div>'
+                    });
+                }
+
+                return;   // JANGAN pindah halaman - isian tetap utuh supaya bisa diperbaiki
+            }
+
             Swal.fire({
     icon: 'success',
     title: 'Berhasil Disimpan',

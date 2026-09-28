@@ -28,7 +28,10 @@ function closing_min_date($conn) {
  */
 function closing_check($conn, $ymd) {
     $min = closing_min_date($conn);
-    $out = ['ok' => true, 'message' => '', 'min' => $min];
+    // 'kode_periode' sengaja ikut dikembalikan: pemanggil yang UI-nya berbahasa
+    // Indonesia (mis. Memorial Journal) bisa menyusun pesannya sendiri tanpa harus
+    // menampilkan kalimat bahasa Inggris di bawah ini apa adanya.
+    $out = ['ok' => true, 'message' => '', 'min' => $min, 'kode_periode' => ''];
 
     if (empty($ymd) || $ymd === '0000-00-00') {
         return ['ok' => false, 'message' => 'Journal date is empty.', 'min' => $min];
@@ -50,6 +53,7 @@ function closing_check($conn, $ymd) {
     $p = $q ? mysqli_fetch_assoc($q) : null;
     if ($p && strtolower($p['status_closing']) !== 'open') {
         $out['ok'] = false;
+        $out['kode_periode'] = $p['kode_closing'];
         $out['message'] = 'Period ' . $p['kode_closing'] . ' (' . date('M Y', strtotime($ymd)) . ') is '
                         . $p['status_closing'] . '. Journal cannot be posted to a closed period.';
     }
