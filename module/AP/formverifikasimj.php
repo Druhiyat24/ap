@@ -117,11 +117,19 @@
             $end_date = date("Y-m-d",strtotime($_POST['end_date']));            
             }
 
+            // Jurnal REVALUASI KURS (nomornya berawalan FX/, mis. FX/BCA1982/NAG/0926/00021)
+            // SENGAJA tidak ditampilkan di daftar verifikasi - permintaan user 29 Sep 2026.
+            // Dokumen FX dibuat otomatis dan tidak melewati verifikasi manual, tetapi selama
+            // ini ikut nongkrong di daftar dan menutupi jurnal GM yang benar-benar perlu
+            // diverifikasi (83 dari 176 baris sepanjang 2026). Disaring di KEDUA cabang
+            // (ALL & per Type) supaya tidak bisa lolos lewat salah satu jalur. Aman memakai
+            // awalan 'FX%': dicek ke data, TIDAK ADA no_mj yang mengandung FX di tengah -
+            // hanya awalan GM dan FX yang dipakai.
             if($nama_type == 'ALL'){
-            $sql = mysql_query("select * from (select a.no_mj,a.mj_date,a.id_cmj,b.nama_cmj,a.curr,sum(a.debit) debit,sum(a.credit) credit,a.keterangan,a.status from tbl_memorial_journal a left join master_category_mj b on b.id_cmj = a.id_cmj where a.mj_date between '$start_date' and '$end_date' and status = 'Post' group by a.no_mj) a left JOIN
+            $sql = mysql_query("select * from (select a.no_mj,a.mj_date,a.id_cmj,b.nama_cmj,a.curr,sum(a.debit) debit,sum(a.credit) credit,a.keterangan,a.status from tbl_memorial_journal a left join master_category_mj b on b.id_cmj = a.id_cmj where a.mj_date between '$start_date' and '$end_date' and status = 'Post' and a.no_mj not like 'FX%' group by a.no_mj) a left JOIN
                 (select no_mj mjno from status_memorial_journal where status = 'Post' GROUP BY no_mj) b on b.mjno = a.no_mj where b.mjno is null",$conn1);                
             }else {
-            $sql = mysql_query("select * from (select a.no_mj,a.mj_date,a.id_cmj,b.nama_cmj,a.curr,sum(a.debit) debit,sum(a.credit) credit,a.keterangan,a.status from tbl_memorial_journal a left join master_category_mj b on b.id_cmj = a.id_cmj where a.id_cmj = '$nama_type' and a.mj_date between '$start_date' and '$end_date' and status = 'Post' group by a.no_mj) a left JOIN
+            $sql = mysql_query("select * from (select a.no_mj,a.mj_date,a.id_cmj,b.nama_cmj,a.curr,sum(a.debit) debit,sum(a.credit) credit,a.keterangan,a.status from tbl_memorial_journal a left join master_category_mj b on b.id_cmj = a.id_cmj where a.id_cmj = '$nama_type' and a.mj_date between '$start_date' and '$end_date' and status = 'Post' and a.no_mj not like 'FX%' group by a.no_mj) a left JOIN
                 (select no_mj mjno from status_memorial_journal where status = 'Post' GROUP BY no_mj) b on b.mjno = a.no_mj where b.mjno is null",$conn1);
             }
                             
