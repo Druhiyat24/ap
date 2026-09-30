@@ -33,6 +33,20 @@ input.mjh-sb1-note {
     width: 100%; box-shadow: none; outline: none;
 }
 .mjh-head textarea.form-control { min-height: 38px; font-size: 13px; }
+/* Keterangan kecil di bawah dropdown Payroll Source: menyebut RENTANG TANGGAL
+   yang sedang dipilih — rentangnya sengaja TIDAK ditulis di label pilihan,
+   karena "26th - 25th" tidak menyebut bulan dan justru membingungkan. Di mode
+   Month-End keterangan ini juga menyebut tanggal jurnal akrual & pembaliknya.
+   Nada netral untuk mode biasa, nada perhatian untuk mode Month-End yang
+   membentuk dua jurnal sekaligus. */
+.mjh-hint {
+    display: none; margin-top: 5px;
+    font-size: 11px; font-weight: 600; line-height: 1.45; color: #64748b;
+}
+.mjh-hint.is-on { display: block; }
+.mjh-hint b { color: #334155; }
+.mjh-hint.is-accrual { color: #b45309; }
+.mjh-hint.is-accrual b { color: #92400e; }
 
 /* -------- Judul seksi -------- */
 .mjh-sec-head {
@@ -94,14 +108,11 @@ input.mjh-sb1-note {
 .mjh-tbl tbody tr:nth-child(even) td { background: #fbfcfe; }
 .mjh-tbl tbody tr:hover td { background: #eaf1ff; }
 .mjh-tbl .text-right { text-align: right; font-variant-numeric: tabular-nums; }
-/* Tiga kolom teks terpanjang dipotong supaya Debit/Credit tidak terdorong keluar
-   layar. Nilai utuhnya dikembalikan sebagai tooltip oleh skrip di bawah. */
-#table-hris tbody td:nth-child(1) { max-width: 200px; }
-#table-hris tbody td:nth-child(2) { max-width: 230px; }
-#table-hris tbody td:nth-child(11) { max-width: 190px; }
-#table-hris tbody td:nth-child(1),
-#table-hris tbody td:nth-child(2),
-#table-hris tbody td:nth-child(11) { overflow: hidden; text-overflow: ellipsis; }
+/* Kolom teks TIDAK dipotong: permintaan user, isinya harus terbaca utuh saat
+   dilihat. Konsekuensinya tabel bisa lebih lebar dari layar - itu sudah
+   ditangani .mjh-tbl-wrap yang memang overflow:auto, jadi digulir mendatar.
+   Dulu tiga kolom terpanjang dipotong elipsis dan nilai utuhnya hanya muncul
+   sebagai tooltip; tooltip itu ikut dilepas karena alasannya sudah hilang. */
 
 /* Chrome bawaan DataTables disembunyikan HANYA setelah skrip berhasil
    memindahkan info & pagination keluar kotak scroll. Kalau skrip tidak jalan,
@@ -166,6 +177,36 @@ input.mjh-tot-val:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2p
     .mjh-tot-col.is-cre { border-left: 0; padding-left: 0; margin-top: 8px; }
 }
 
+/* -------- Tab pemilih tabel & seksi jurnal pembalik -------- */
+/* Kedua tabel ditumpuk sebagai TAB, bukan disusun ke bawah (permintaan user):
+   dengan ratusan baris per tabel, versi bertumpuk memaksa menggulir jauh
+   sekali cuma untuk membandingkan. Tab pembalik hanya muncul pada mode
+   Month-End. Isinya BUKAN tarikan kedua dari server: barisnya dibentuk di
+   browser dari tabel pertama dengan sisi debit/credit ditukar - persis
+   seperti yang nanti dibentuk server saat Save. */
+.mjh-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.mjh-tab {
+    display: inline-flex; align-items: center; gap: 8px;
+    border: 1px solid #dbe4f3; border-radius: 8px; background: #fff;
+    padding: 6px 13px; margin: 0;
+    font-size: 13px; font-weight: 600; color: #64748b; cursor: pointer;
+}
+.mjh-tab:hover { background: #eaf1ff; color: #1e293b; }
+.mjh-tab.is-active { background: #1E3A8A; border-color: #1E3A8A; color: #fff; }
+.mjh-tab.is-active .mjh-pill { background: rgba(255, 255, 255, .22); color: #fff; }
+.mjh-tab[hidden] { display: none; }
+.mjh-pane { display: none; }
+.mjh-pane.is-on { display: block; }
+.mjh-rev-note {
+    font-size: 11px; font-weight: 600; color: #b45309; margin: 0 0 8px;
+}
+.mjh-rev-note b { color: #92400e; }
+/* Warna kepala tabel dibedakan supaya tidak tertukar dengan tabel utama
+   ketika halaman digulir dan kedua kepala tabel sama-sama menempel. */
+#table-hris-rev thead tr { background: linear-gradient(90deg, #92400e, #b45309); }
+#table-hris-rev thead th { border-bottom: 2px solid #7c3508; }
+
+
 .mjh-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 </style>
 
@@ -211,11 +252,26 @@ input.mjh-tot-val:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2p
                         </select>
                     </div>
 
+                    <!-- Pengisi baris pertama (Date + Type + Profit Center = 8 kolom). -->
                     <div class="col-md-4 mb-3"></div>
 
                     <div class="col-md-2 mb-3">
                         <label class="mjh-flabel" for="hris_date">Period Filter</label>
                         <input type="text" name="hris_date" id="hris_date" class="form-control tanggal_hris" value="<?php echo date('M Y'); ?>" autocomplete="off">
+                    </div>
+
+                    <!-- PAYROLL SOURCE: memilih tabel HRIS mana yang dibaca. Lihat
+                         catatan lengkap di ajx_get_data_hris.php & save_mj_hris.php.
+                         "Month-End Accrual" membentuk DUA nomor jurnal sekaligus.
+                         Kelas .select2 disamakan dengan Type & Profit Center supaya
+                         tampilannya seragam; init-nya ikut $('.select2') di induk. -->
+                    <div class="col-md-3 mb-3">
+                        <label class="mjh-flabel" for="hris_source">Payroll Source</label>
+                        <select class="form-control select2" name="hris_source" id="hris_source">
+                            <option value="jurnal">Regular Payroll Period</option>
+                            <option value="jurnal_akhir">Month-End Accrual</option>
+                        </select>
+                        <div class="mjh-hint" id="hris_source_hint"></div>
                     </div>
 
                     <!-- Tombol sejajar dengan field di sebelahnya: label kosong (&nbsp;)
@@ -245,11 +301,21 @@ input.mjh-tot-val:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2p
                 </div>
             </div>
 
-            <!-- ============ Baris jurnal ============ -->
+            <!-- ============ Baris jurnal (2 tab) ============ -->
+            <!-- Tab kedua adalah PRATINJAU, bukan data terpisah: dibentuk di
+                 browser dari tab pertama. Yang dikirim saat Save tetap SATU set
+                 baris; servernya sendiri yang menukar sisi dan memberi nomor
+                 jurnal kedua. -->
             <div class="mjh-sec-head">
-                <h6 class="mjh-sec-title">Journal Lines</h6>
-                <span class="mjh-pill" id="mjh_count">0 rows</span>
-                <div class="mjh-tools">
+                <div class="mjh-tabs" id="mjh_tabs">
+                    <button type="button" class="mjh-tab is-active" data-mjh-pane="main">
+                        Journal Lines <span class="mjh-pill" id="mjh_count">0 rows</span>
+                    </button>
+                    <button type="button" class="mjh-tab" id="mjh_tab_rev" data-mjh-pane="rev" hidden>
+                        Reversing Journal <span class="mjh-pill" id="mjh_rev_count">0 rows</span>
+                    </button>
+                </div>
+                <div class="mjh-tools" id="mjh_tools">
                     <label for="mjh_len">Rows</label>
                     <select id="mjh_len">
                         <option value="10">10</option>
@@ -264,28 +330,56 @@ input.mjh-tot-val:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2p
                 </div>
             </div>
 
-            <div class="mjh-tbl-wrap" id="mjh_wrap">
-                <table id="table-hris" class="table table-hover table-sm mjh-tbl">
-                    <thead>
-                        <tr>
-                            <th>Profit Center</th>
-                            <th>COA</th>
-                            <th>Cost Center</th>
-                            <th>Reff Document</th>
-                            <th>Reff Date</th>
-                            <th>Buyer</th>
-                            <th>Worksheet</th>
-                            <th>Curr</th>
-                            <th>Debit</th>
-                            <th>Credit</th>
-                            <th>Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
+            <div class="mjh-pane is-on" data-mjh-pane="main">
+                <div class="mjh-tbl-wrap" id="mjh_wrap">
+                    <table id="table-hris" class="table table-hover table-sm mjh-tbl">
+                        <thead>
+                            <tr>
+                                <th>Profit Center</th>
+                                <th>COA</th>
+                                <th>Cost Center</th>
+                                <th>Reff Document</th>
+                                <th>Reff Date</th>
+                                <th>Buyer</th>
+                                <th>Worksheet</th>
+                                <th>Curr</th>
+                                <th>Debit</th>
+                                <th>Credit</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mjh-tbl-foot" id="mjh_foot"></div>
             </div>
-            <div class="mjh-tbl-foot" id="mjh_foot"></div>
+
+            <div class="mjh-pane" data-mjh-pane="rev">
+                <p class="mjh-rev-note" id="mjh_rev_note"></p>
+                <div class="mjh-tbl-wrap">
+                    <table id="table-hris-rev" class="table table-hover table-sm mjh-tbl">
+                        <thead>
+                            <tr>
+                                <th>Profit Center</th>
+                                <th>COA</th>
+                                <th>Cost Center</th>
+                                <th>Reff Document</th>
+                                <th>Reff Date</th>
+                                <th>Buyer</th>
+                                <th>Worksheet</th>
+                                <th>Curr</th>
+                                <th>Debit</th>
+                                <th>Credit</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mjh-tbl-foot" id="mjh_rev_foot"></div>
+            </div>
 
             <!-- ============ Ringkasan saldo ============ -->
             <div class="mjh-sec-head mt-4">
@@ -368,78 +462,97 @@ document.addEventListener('DOMContentLoaded', function () {
     if (typeof jQuery === 'undefined') { return; }
 
     jQuery(function ($) {
-        var SEL = '#table-hris';
 
-        function dt() {
-            return ($.fn.DataTable && $.fn.DataTable.isDataTable(SEL)) ? $(SEL).DataTable() : null;
+        /* DUA tabel diperlakukan sama: masing-masing punya foot sendiri untuk
+           info & pagination. Kotak Rows & Search DIPAKAI BERSAMA dan selalu
+           mengarah ke tabel yang tabnya sedang terbuka — dua set kontrol yang
+           nyaris kembar di tempat yang sama justru bikin ragu yang mana milik
+           siapa. */
+        var TABEL = [
+            { sel: '#table-hris',     pane: 'main', foot: '#mjh_foot',     pill: '#mjh_count' },
+            { sel: '#table-hris-rev', pane: 'rev',  foot: '#mjh_rev_foot', pill: '#mjh_rev_count' }
+        ];
+
+        function dt(sel) {
+            return ($.fn.DataTable && $.fn.DataTable.isDataTable(sel)) ? $(sel).DataTable() : null;
+        }
+
+        function tabelAktif() {
+            var p = $('.mjh-pane.is-on').data('mjh-pane') || 'main';
+            for (var i = 0; i < TABEL.length; i++) {
+                if (TABEL[i].pane === p) { return dt(TABEL[i].sel); }
+            }
+            return null;
         }
 
         /* Pindahkan info & pagination bawaan KELUAR dari kotak scroll, lalu baru
            sembunyikan chrome asli. Urutannya penting: kalau .mjh-js dipasang
            duluan dan pemindahan gagal, user kehilangan pagination sepenuhnya. */
-        function wireTools() {
-            var wrap = $(SEL).closest('.dataTables_wrapper');
+        function pindahChrome(t) {
+            var wrap = $(t.sel).closest('.dataTables_wrapper');
             if (!wrap.length) { return false; }
-
-            $('#mjh_foot').append(wrap.find('.dataTables_info'))
-                          .append(wrap.find('.dataTables_paginate'));
+            $(t.foot).append(wrap.find('.dataTables_info'))
+                     .append(wrap.find('.dataTables_paginate'));
             $('body').addClass('mjh-js');
-
-            // Kontrol pengganti diikat ke API DataTables, bukan ke elemen aslinya.
-            var t = dt();
-            if (t) {
-                $('#mjh_len').val(t.page.len()).off('change.mjh').on('change.mjh', function () {
-                    t.page.len(parseInt(this.value, 10)).draw();
-                });
-                var timer = null;
-                $('#mjh_search').off('input.mjh').on('input.mjh', function () {
-                    var v = this.value;
-                    clearTimeout(timer);
-                    timer = setTimeout(function () { t.search(v).draw(); }, 250);
-                });
-            }
             return true;
         }
 
-        /* Kolom teks panjang dipotong elipsis lewat CSS; tanpa title, isi yang
-           terpotong tidak bisa dibaca sama sekali. Hanya baris yang sedang
-           tampil (maks 1 halaman), jadi biayanya kecil. */
-        function syncTitles() {
-            $(SEL + ' tbody tr').each(function () {
-                var td = this.cells;
-                [0, 1, 10].forEach(function (i) {
-                    if (td[i]) {
-                        var txt = (td[i].textContent || '').trim();
-                        if (txt && txt !== '-') { td[i].setAttribute('title', txt); }
-                    }
-                });
-            });
-        }
-
-        function refresh() {
-            var t = dt();
-            if (!t) { return; }
-            var info = t.page.info();
-            $('#mjh_count').text(
+        function isiPill(t) {
+            var api = dt(t.sel);
+            if (!api) { return; }
+            var info = api.page.info();
+            $(t.pill).text(
                 info.recordsDisplay === info.recordsTotal
                     ? info.recordsTotal + ' rows'
                     : info.recordsDisplay + ' of ' + info.recordsTotal + ' rows'
             );
-            syncTitles();
         }
 
-        // DataTables induk dibuat di $(document).ready juga; urutan handler tidak
-        // dijamin, jadi coba beberapa kali sampai tabelnya benar-benar ada.
-        var tries = 0;
-        (function attach() {
-            if (dt()) {
-                wireTools();
-                $(SEL).off('draw.dt.mjh').on('draw.dt.mjh', refresh);
-                refresh();
-                return;
-            }
-            if (++tries < 40) { setTimeout(attach, 150); }
-        })();
+        /* Karena kotak Rows & Search dipakai bersama, isinya harus mengikuti
+           tabel yang sedang tampil — kalau tidak, panjang halaman & kata kunci
+           milik tabel lain terbaca seolah milik tabel ini. Dipasang di window
+           supaya bisa dipanggil mjhPilihTab() di halaman induk. */
+        window.mjhSyncTools = function () {
+            var api = tabelAktif();
+            if (!api) { return; }
+            $('#mjh_len').val(api.page.len());
+            $('#mjh_search').val(api.search());
+        };
+
+        var timer = null;
+        $('#mjh_len').off('change.mjh').on('change.mjh', function () {
+            var api = tabelAktif();
+            if (api) { api.page.len(parseInt(this.value, 10)).draw(); }
+        });
+        $('#mjh_search').off('input.mjh').on('input.mjh', function () {
+            var v = this.value;
+            clearTimeout(timer);
+            timer = setTimeout(function () {
+                var api = tabelAktif();
+                if (api) { api.search(v).draw(); }
+            }, 250);
+        });
+
+        /* Dulu di sini ada syncTitles(): isi kolom panjang dipotong elipsis oleh
+           CSS, jadi teks utuhnya perlu dikembalikan sebagai tooltip. Pemotongan
+           itu sudah dilepas (teks tampil utuh, tabel digulir mendatar), jadi
+           tooltip-nya ikut dibuang supaya tidak muncul di tiap sel tanpa guna. */
+
+        // Kedua DataTables dibuat di $(document).ready milik halaman induk dan
+        // urutan handler tidak dijamin, jadi tiap tabel ditunggu sendiri-sendiri.
+        TABEL.forEach(function (t) {
+            var tries = 0;
+            (function attach() {
+                if (dt(t.sel)) {
+                    pindahChrome(t);
+                    $(t.sel).off('draw.dt.mjh').on('draw.dt.mjh', function () { isiPill(t); });
+                    isiPill(t);
+                    window.mjhSyncTools();
+                    return;
+                }
+                if (++tries < 40) { setTimeout(attach, 150); }
+            })();
+        });
     });
 });
 </script>

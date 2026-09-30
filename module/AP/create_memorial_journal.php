@@ -194,28 +194,131 @@
 
 
 
+  /* ========================================================================
+     CANGKANG HALAMAN (kosakata .mjc-). Disamakan dgn halaman List Memorial
+     Journal supaya kedua menu ini terbaca sebagai satu keluarga: latar
+     #f4f6fb, kartu bersudut 16px, kepala bergradien navy #1E3A8A -> #3b82f6.
+     Isi tiap tab TIDAK disentuh - masing-masing sudah punya gayanya sendiri
+     (.mji-, .mjh-, .mju-, .ppn-) dan memakai app-skin-form.css yang sama.
+     ======================================================================== */
+  body { background-color: #f4f6fb; }
+
+  .mjc-card {
+    background: #fff;
+    border: 1px solid #e6ebf3;
+    border-radius: 16px;
+    box-shadow: 0 10px 26px rgba(15, 23, 42, .06);
+    overflow: hidden;
+  }
+
+  /* Dulu dua .card BERSARANG (kartu di dalam kartu) - dua garis tepi dan dua
+     bayangan bertumpuk tepat di bawah header, terlihat seperti garis ganda.
+     Sekarang satu kartu saja: kepala, bilah tab, lalu isi. */
+  .mjc-head {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 11px;
+    padding: 11px 18px;
+    background: linear-gradient(90deg, #1E3A8A 0%, #2f5bbf 55%, #3b82f6 100%);
+  }
+  /* Kotak ikon KACA, bukan blok navy: latarnya sendiri sudah navy, jadi kotak
+     navy akan hilang menyatu. Kaca transparan terbaca di sepanjang gradien. */
+  .mjc-head-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .16);
+    border: 1px solid rgba(255, 255, 255, .3);
+    color: #fff;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+  }
+  .mjc-head h1 {
+    margin: 0;
+    font-size: 15.5px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: .01em;
+  }
+  /* Putih diredupkan, bukan abu - abu apa pun terbaca kotor di atas navy. */
+  .mjc-head .mjc-crumb {
+    display: block;
+    margin-top: 2px;
+    font-size: 11.5px;
+    color: rgba(255, 255, 255, .78);
+  }
+
+  /* Bilah tab diberi pita abu tipis sendiri, sejajar dgn panel filter di
+     halaman List. Gunanya memisahkan "pemilih cara input" dari isi tabnya -
+     sebelumnya tab dan isinya duduk di latar putih yang sama persis. */
+  .mjc-tabbar {
+    padding: 12px 18px 0;
+    background: #fafbfe;
+    border-bottom: 1px solid #eef1f7;
+  }
+  .mjc-tabbar .tab-container { margin-bottom: 12px; }
+
+  .mjc-body { padding: 16px 18px 18px; }
+
+  /* Tiap berkas tab membungkus isinya dgn .card shadow-sm SENDIRI. Di dalam
+     .mjc-card itu jadi kotak-di-dalam-kotak: dua garis tepi & dua bayangan
+     bersarang tepat di bawah bilah tab. Kartu dalamnya diratakan jadi sekadar
+     permukaan - ruang napasnya sudah disediakan .mjc-body. Aman: tiap tab
+     hanya punya SATU .card, di tingkat teratas (tiga di dalam <form>, satu
+     langsung). !important dibutuhkan karena .shadow-sm bawaan Bootstrap 4
+     memang ditulis dgn !important. */
+  .mjc-body > .tabcontent > .card,
+  .mjc-body > .tabcontent > form > .card {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none !important;
+  }
+  .mjc-body > .tabcontent > .card > .card-body,
+  .mjc-body > .tabcontent > form > .card > .card-body {
+    padding: 0;
+  }
+
+  /* Ponsel & tablet sempit: padding dikecilkan, dan judul tidak lagi berdesak
+     dgn kotak ikonnya. Bilah tab sudah membungkus sendiri (flex-wrap). */
+  @media (max-width: 575.98px) {
+    .mjc-head { padding: 10px 14px; gap: 9px; }
+    .mjc-head h1 { font-size: 14px; }
+    .mjc-head-icon { width: 30px; height: 30px; font-size: 15px; }
+    .mjc-tabbar { padding: 10px 12px 0; }
+    .mjc-body { padding: 14px 12px 16px; }
+  }
 </style>
 
 <!-- MAIN -->
-<div class="container-fluid mt-4 p-4">
-  <!-- Card Filter -->
-  <div class="card shadow border-0">
-    <div class="card-header text-white py-2 px-3"
-      style="background: linear-gradient(90deg, #191970, #1e90ff);">
-      <h5 class="mb-0"><i class="fas fa-edit"></i> FORM MEMORIAL JOURNAL</h5>
+<div class="container-fluid mt-3 p-3">
+  <div class="mjc-card">
+    <!-- Kepala kartu sama persis dgn halaman List Memorial Journal: kotak ikon
+         kaca + judul + jejak menu. Judul lama "FORM MEMORIAL JOURNAL" ditulis
+         huruf besar semua; diganti nama menunya sendiri supaya sejalan dgn
+         "List Memorial Journal" di halaman sebelah. -->
+    <div class="mjc-head">
+      <span class="mjc-head-icon"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></span>
+      <div>
+        <h1>Create Memorial Journal</h1>
+        <span class="mjc-crumb">Accounting &rsaquo; Memorial Journal &rsaquo; Create</span>
+      </div>
     </div>
 
-    <!-- Card Table -->
-    <div class="card shadow border-0 mt-1">
-      <div class="card-body p-4">
-
-        <div class="tab-container">
+    <div class="mjc-tabbar">
+      <div class="tab-container">
           <button class="tablinks active" onclick="openTab(event, 'mj_input')"><i class="fa fa-pencil" aria-hidden="true"></i> Manual Journal Entry</button>
           <button class="tablinks" onclick="openTab(event, 'mj_hris')"><i class="fa fa-users" aria-hidden="true"></i> Journal From HRIS</button>
           <button class="tablinks" onclick="openTab(event, 'mj_upload')"><i class="fa fa-cloud-upload" aria-hidden="true"></i> Upload Journal</button>
           <button class="tablinks" onclick="openTab(event, 'mj_ppn')"><i class="fa fa-file-text-o" aria-hidden="true"></i> PPN Masukan</button>
-        </div>
+      </div>
+    </div><!-- /.mjc-tabbar -->
 
+    <div class="mjc-body">
 
         <div id="mj_input" class="tabcontent">
           <?php include 'memorial_journal/mj_input.php'; ?>
@@ -233,9 +336,8 @@
           <?php include 'memorial_journal/mj_ppn_masukan.php'; ?>
         </div>
 
-      </div>
-    </div>
-  </div>
+    </div><!-- /.mjc-body -->
+  </div><!-- /.mjc-card -->
 
 
   <style type="text/css">
@@ -345,6 +447,17 @@
       $('.select2').select2({
         width: '100%'
       });
+
+      // Payroll Source (tab HRIS) cuma punya DUA pilihan, jadi kotak pencarian
+      // bawaan select2 di dalamnya mubazir. Kotaknya sendiri tetap select2 yang
+      // sama dengan Type & Profit Center - hanya pencariannya yang dimatikan.
+      // Di-destroy dulu (berpagar) karena elemen ini ikut tersapu $('.select2')
+      // di atas; tanpa itu select2 akan menumpuk dua kali di elemen yang sama.
+      var $payrollSrc = $('#hris_source');
+      if ($payrollSrc.length) {
+        if ($payrollSrc.data('select2')) { $payrollSrc.select2('destroy'); }
+        $payrollSrc.select2({ width: '100%', minimumResultsForSearch: Infinity });
+      }
 
       $('.selectpicker').selectpicker();
 
@@ -1532,6 +1645,191 @@ $("#to2_sb1").on("change", function(){
 
 });
 
+/* ==========================================================================
+   SOURCE tab JOURNAL FROM HRIS — memilih tabel payroll mana yang dibaca.
+
+     jurnal        -> periode berjalan (26 s/d 25). Perilaku lama, 1 jurnal.
+     jurnal_akhir  -> potongan akhir bulan (26 s/d akhir bulan). Membentuk DUA
+                      jurnal: akhir bulan + pembaliknya di tanggal 1 bulan
+                      berikutnya.
+
+   Tanggalnya diturunkan dari Period Filter, bukan diketik. Yang di sini hanya
+   cerminan supaya user melihat kedua tanggal SEBELUM menekan Save; yang
+   menentukan tetap save_mj_hris.php, karena form bisa dikirim tanpa lewat
+   layar ini sama sekali.
+   ========================================================================== */
+var BULAN_HRIS = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+                   Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
+
+// Pemisahan akhir bulan HANYA berlaku untuk WAGES & SALARY (CMJ001) — kategori
+// lain (mis. BPJS) sumbernya bukan tabel jurnal HRIS. Di luar CMJ001 nilainya
+// dipaksa Normal supaya tidak ada mode yang sebenarnya tidak berlaku.
+function hrisSourceAktif() {
+    if ($('#mj_type2').val() !== 'CMJ001') { return 'jurnal'; }
+    return $('#hris_source').val() || 'jurnal';
+}
+
+// Tanggal-tanggal yang berhubungan dengan satu Period Filter. new Date dipakai
+// supaya pergantian bulan/tahun terurus sendiri:
+//   (thn, bln,     26) = 26 bulan itu          (thn, bln,   0) = akhir bulan sebelumnya
+//   (thn, bln + 1,  0) = akhir bulan itu       (thn, bln + 1, 1) = tanggal 1 bulan depan
+//
+// Untuk satu label periode YYYY-MM, HRIS memakai dua rentang yang BERBEDA:
+//   jurnal        -> 26 bulan SEBELUMNYA s/d 25 bulan itu
+//   jurnal_akhir  -> 26 bulan itu s/d akhir bulan itu
+function hrisTanggal() {
+    var v = ($('#hris_date').val() || '').split(' ');
+    var b = BULAN_HRIS[v[0]];
+    var t = parseInt(v[1], 10);
+    if (b === undefined || isNaN(t)) { return null; }
+    return {
+        regAwal:  new Date(t, b - 1, 26),
+        regAkhir: new Date(t, b, 25),
+        akrAwal:  new Date(t, b, 26),
+        akhir:    new Date(t, b + 1, 0),
+        balik:    new Date(t, b + 1, 1)
+    };
+}
+
+function hrisFmtTgl(d) {
+    function p(x) { return (x < 10 ? '0' : '') + x; }
+    return p(d.getDate()) + '-' + p(d.getMonth() + 1) + '-' + d.getFullYear();
+}
+
+// Baris jurnal pembalik dibentuk DI BROWSER dari baris tabel utama — bukan
+// tarikan kedua ke server. Aturannya sama persis dengan yang dilakukan
+// save_mj_hris.php saat menyimpan: sisi debit & credit ditukar, keterangan
+// diberi awalan "REKLAS " — bentuk yang dipakai user selama ini, mis.
+// "REKLAS LEMBUR DEPT DRIVER 26 - 31 MAY 2026 EX GM/NAG/0526/00038".
+// Rujukan "EX <no jurnal>" belum bisa ikut di sini karena nomornya baru
+// terbit saat Save; itu ditambahkan server.
+var revtable;
+
+function mjhBarisPembalik(rows) {
+    return rows.map(function (r) {
+        var x = $.extend({}, r);
+        x.debit     = r.credit;
+        x.credit    = r.debit;
+        x.deskripsi = 'REKLAS ' + (r.deskripsi || '');
+        return x;
+    });
+}
+
+// Perpindahan tab tabel. Dibuat sendiri, TIDAK memakai openTab() milik tab
+// besar halaman ini (Manual / HRIS / Upload / PPN) supaya keduanya tidak
+// saling menimpa.
+function mjhPilihTab(nama) {
+    $('.mjh-tab').each(function () {
+        $(this).toggleClass('is-active', $(this).data('mjh-pane') === nama);
+    });
+    $('.mjh-pane').each(function () {
+        $(this).toggleClass('is-on', $(this).data('mjh-pane') === nama);
+    });
+
+    // Rows & Search dipakai BERSAMA oleh kedua tabel, jadi tidak disembunyikan —
+    // hanya nilainya yang disetel ulang mengikuti tabel yang baru terbuka.
+    if (window.mjhSyncTools) { window.mjhSyncTools(); }
+
+    // Baru sekarang tabelnya punya ukuran nyata, jadi kolomnya baru bisa diukur.
+    if (nama === 'rev' && revtable) { revtable.columns.adjust(); }
+    if (nama === 'main' && typeof datatable !== 'undefined' && datatable) {
+        datatable.columns.adjust();
+    }
+}
+
+$(document).on('click', '.mjh-tab', function () {
+    mjhPilihTab($(this).data('mjh-pane'));
+});
+
+function syncTabelPembalik() {
+    if (!revtable) { return; }
+
+    var akhir = hrisSourceAktif() === 'jurnal_akhir';
+    $('#mjh_tab_rev').prop('hidden', !akhir);
+
+    if (!akhir) {
+        // Tab pembalik menghilang — kalau ia yang sedang aktif, user akan
+        // menatap panel kosong tanpa tahu kenapa. Kembalikan ke tab pertama.
+        if ($('#mjh_tab_rev').hasClass('is-active')) { mjhPilihTab('main'); }
+        // Angka di pill diperbarui handler draw.dt di mj_from_hris.php — kalau
+        // disetel juga dari sini, hasil pencarian ("x of y rows") ikut tertimpa.
+        revtable.clear().draw();
+        return;
+    }
+
+    var rows = (typeof datatable !== 'undefined' && datatable)
+        ? datatable.rows().data().toArray() : [];
+
+    revtable.clear().rows.add(mjhBarisPembalik(rows)).draw();
+    // Lebar kolom hanya bisa diukur kalau elemennya benar-benar tampil —
+    // DataTables tidak bisa mengukur apa pun yang display:none. Kalau tab ini
+    // sedang tersembunyi, pengukurannya ditunda sampai tabnya dibuka
+    // (lihat mjhPilihTab).
+    if ($('.mjh-pane[data-mjh-pane="rev"]').hasClass('is-on')) { revtable.columns.adjust(); }
+
+    var tgl = hrisTanggal();
+    $('#mjh_rev_note').html(tgl
+        ? 'Journal date <b>' + hrisFmtTgl(tgl.balik) + '</b> &middot; debit and credit reversed. ' +
+          'The reference <b>EX &lt;accrual journal no.&gt;</b> is appended on save.'
+        : '');
+}
+
+function syncHrisSource() {
+
+    // Dropdown ini dibungkus select2, jadi mengubah value/disabled lewat kode
+    // TIDAK otomatis terlihat — kotak yang tampil adalah elemen buatan select2,
+    // bukan <select> aslinya. 'change.select2' hanya membangunkan select2 dan
+    // TIDAK memicu handler change milik kita, jadi tidak ada putaran balik.
+    var isWages = $('#mj_type2').val() === 'CMJ001';
+    var $src = $('#hris_source');
+    if (!isWages && $src.val() !== 'jurnal') { $src.val('jurnal'); }
+    $src.prop('disabled', !isWages).trigger('change.select2');
+
+    var akhir = hrisSourceAktif() === 'jurnal_akhir';
+    var tgl   = hrisTanggal();
+    var $hint = $('#hris_source_hint');
+
+    if (!tgl) {
+        // Period Filter belum terbaca — tidak ada yang bisa diterangkan.
+        $('#mj_date2').prop('readonly', false);
+        $hint.removeClass('is-on is-accrual').empty();
+        syncTabelPembalik();
+        return;
+    }
+
+    if (akhir) {
+        // Date dikunci, bukan sekadar diisi: kalau tetap bisa diketik, user
+        // berhak mengira tanggal ketikannya dipakai — padahal server
+        // menghitung sendiri dari Period Filter dan mengabaikannya.
+        $('#mj_date2').val(hrisFmtTgl(tgl.akhir)).prop('readonly', true);
+        $hint.addClass('is-on is-accrual').html(
+            'Period <b>' + hrisFmtTgl(tgl.akrAwal) + '</b> to <b>' + hrisFmtTgl(tgl.akhir) + '</b><br>' +
+            'Accrual journal <b>' + hrisFmtTgl(tgl.akhir) + '</b><br>' +
+            'Reversing journal <b>' + hrisFmtTgl(tgl.balik) + '</b> (debit &harr; credit)'
+        );
+        getRate2();
+    } else {
+        $('#mj_date2').prop('readonly', false);
+        $hint.addClass('is-on').removeClass('is-accrual').html(
+            'Period <b>' + hrisFmtTgl(tgl.regAwal) + '</b> to <b>' + hrisFmtTgl(tgl.regAkhir) + '</b>'
+        );
+    }
+
+    syncTabelPembalik();
+}
+
+// SENGAJA tidak menarik ulang data di sini — penarikan tetap lewat tombol
+// Search, sama seperti Type & Period Filter. Mengganti pilihan hanya
+// memperbarui keterangan tanggal di layar, tidak menyentuh tabel.
+$('#hris_source').on('change', syncHrisSource);
+
+// Ganti Type bisa membuat dropdown ini tidak berlaku lagi; ganti periode
+// menggeser rentang & tanggalnya. Keduanya ikut menyegarkan keterangan.
+$('#mj_type2').on('change', syncHrisSource);
+$('#hris_date').on('change changeDate', syncHrisSource);
+$(function () { syncHrisSource(); });
+
+
 let datatable;
 
     $(document).ready(function() {
@@ -1556,6 +1854,8 @@ let datatable;
         data: function(d) {
 
             d.mj_type2 = $('#mj_type2').val();
+            // Tabel HRIS mana yang dibaca — lihat ajx_get_data_hris.php.
+            d.hris_source = hrisSourceAktif();
 
             let val = $('#hris_date').val();
 
@@ -1696,7 +1996,58 @@ let datatable;
 
        });
 
-      function dataTableReload() {
+      // Tabel kedua: pratinjau jurnal pembalik. Paging, search & info DIHIDUPKAN
+// sama seperti tabel utama. Chrome bawaan DataTables di dalam .mjh-tbl-wrap
+// disembunyikan CSS tab ini, jadi info & pagination-nya DIPINDAHKAN keluar ke
+// #mjh_rev_foot oleh skrip di mj_from_hris.php — tanpa pemindahan itu,
+// pagination-nya hilang tanpa pengganti. Kotak Rows & Search dipakai bersama
+// dengan tabel utama dan mengarah ke tabel yang tabnya sedang terbuka.
+$(function () {
+    if (!$('#table-hris-rev').length) { return; }
+
+    revtable = $('#table-hris-rev').DataTable({
+        ordering: false,
+        paging: true,
+        pageLength: 10,
+        lengthMenu: [10, 25, 50, 100],
+        searching: true,
+        info: true,
+        autoWidth: false,
+        data: [],
+        language: { emptyTable: 'No data available in table' },
+        columns: [
+            { data: 'profit_center' },
+            { data: 'nama_coa' },
+            { data: 'cc_name' },
+            { data: 'reff_number' },
+            { data: 'reff_date' },
+            { data: 'buyer' },
+            { data: 'ws' },
+            { data: 'curr' },
+            { data: 'debit' },
+            { data: 'credit' },
+            { data: 'deskripsi' }
+        ],
+        columnDefs: [{
+            targets: [8, 9],
+            className: 'text-right',
+            render: function (data) {
+                return (parseFloat(data || 0)).toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+        }]
+    });
+
+    // Setiap kali tabel utama selesai digambar (tarik data baru, cari, ganti
+    // halaman), cerminannya ikut disusun ulang dari SELURUH baris - bukan
+    // hanya halaman yang sedang tampil.
+    $('#table-hris').on('draw.dt', syncTabelPembalik);
+    syncTabelPembalik();
+});
+
+function dataTableReload() {
 
       datatable.ajax.reload(function() {
 
@@ -1787,6 +2138,7 @@ if(val){
     let payload = {
         mj_date2: mj_date,
         mj_type2: mj_type,
+        hris_source: hrisSourceAktif(),
         profit_center2: pc,
         pesan2: desc,
         rate_mj2: rate,
@@ -1821,6 +2173,18 @@ if(val){
 
                     let no_journal = json.no_journal;
 
+                    // Mode Month-End membentuk DUA nomor sekaligus. Kalau hanya
+                    // satu yang ditampilkan, user tidak punya cara tahu nomor
+                    // pembaliknya tanpa mencari sendiri di List Journal.
+                    let no_reverse = json.no_journal_reverse || '';
+                    let teks_copy  = no_reverse ? (no_journal + ' | ' + no_reverse) : no_journal;
+                    let blok_rev   = no_reverse
+                        ? `<div style="font-size:14px">Reversing Journal</div>
+                           <div style="font-size:18px;font-weight:bold;color:#b45309;margin-bottom:15px">
+                               ${no_reverse}
+                           </div>`
+                        : '';
+
                     Swal.fire({
     icon: 'success',
     title: 'Berhasil Disimpan',
@@ -1830,6 +2194,8 @@ if(val){
             <div style="font-size:22px;font-weight:bold;color:#007bff;margin-bottom:15px">
                 ${no_journal}
             </div>
+
+            ${blok_rev}
 
             <div style="display:flex;justify-content:center;gap:10px">
                 <button id="copyJournal" class="swal2-confirm swal2-styled" style="background:#28a745">
@@ -1848,7 +2214,7 @@ if(val){
 
         // 🔥 COPY BUTTON
         $('#copyJournal').on('click', function(){
-            navigator.clipboard.writeText(no_journal);
+            navigator.clipboard.writeText(teks_copy);
 
             // efek kecil (tanpa popup baru biar smooth)
             $(this).text('Copied!').css('background','#17a2b8');
