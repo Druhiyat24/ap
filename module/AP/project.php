@@ -396,11 +396,18 @@ if ($hq) {
   .proj-page[data-theme="dark"] .btn-export { background: var(--pj-surface-2); }
   .proj-page[data-theme="dark"] .btn-export i { color: #34d399; }
 
-  /* Kolom Description di Table: teks panjang dipotong 2 baris, lengkap di tooltip. */
-  .proj-table td.desc-cell { white-space: normal; max-width: 340px; min-width: 200px; }
+  /* Kolom Description di Table: ditampilkan PENUH.
+     Sebelumnya dipotong 2 baris (-webkit-line-clamp) dan selebihnya hanya bisa
+     dibaca lewat tooltip - deskripsi di sini rata-rata satu kalimat panjang,
+     jadi yang terbaca cuma pembukaannya dan isi sebenarnya justru tersembunyi.
+     Barisnya sekarang boleh ikut meninggi; kolomnya juga dilebarkan sedikit.
+     Tooltip di <td> dibiarkan - tidak mengganggu, dan tetap berguna kalau
+     kolomnya dipersempit browser pada layar kecil. */
+  .proj-table td.desc-cell { white-space: normal; max-width: 460px; min-width: 240px; vertical-align: top; }
   .proj-table .desc-clamp {
     font-size: 11.5px; line-height: 1.5; color: var(--pj-muted);
-    display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    white-space: pre-line;      /* baris baru yang diketik user ikut terlihat */
+    overflow-wrap: anywhere;    /* kata/URL sangat panjang tidak melebarkan tabel */
   }
   /* Pill status: bisa pilih lebih dari satu, yang aktif diberi centang. */
   .proj-filter-pill.active::before {
@@ -1094,6 +1101,16 @@ if ($hq) {
           <i class="fa fa-search"></i>
           <input type="text" id="search-box" placeholder="Search project..." onkeyup="renderActive()">
         </div>
+        <!-- Dua ekspor yang BERBEDA, sengaja dipisah:
+             - "Export List"  : isi tabel apa adanya, mengikuti filter & urutan
+                                yang sedang tampil. Dibentuk di sisi browser.
+             - "Export Excel" : laporan KPI "PROGRESS PROJECT IT" di
+                                ekspor_project.php - hanya project Done/Live,
+                                berformat matriks penilaian, dan dibatasi user
+                                tertentu. Bukan pengganti yang satunya. -->
+        <button type="button" class="btn-export" onclick="exportListExcel()">
+          <i class="fa fa-table"></i> Export List
+        </button>
         <button type="button" class="btn-export" onclick="exportExcel()">
           <i class="fa fa-file-excel-o"></i> Export Excel
         </button>
@@ -1281,6 +1298,9 @@ if ($hq) {
 <script src="../vendor/jquery/jquery.min.js"></script>
 <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="../css/4.1.1/sweetalert2@11.js"></script>
+<!-- SheetJS: dipakai tombol "Export List". header.php tidak memuat pustaka JS
+     apa pun, jadi tiap halaman memuat sendiri yang dibutuhkannya. -->
+<script src="../css/4.1.1/xlsx.full.min.js"></script>
 
 <script>
   // Sidebar collapse (shared shell behaviour)
@@ -1862,6 +1882,104 @@ if ($hq) {
     $('#module-summary').html(html);
   }
 
+  // ===== Export List: isi tabel apa adanya =====
+  // Dibentuk di BROWSER, bukan di server: yang diekspor adalah baris yang
+  // benar-benar sedang tampil, lengkap dgn filter status/module/bulan/pencarian
+  // dan urutan kolom yang sedang dipakai. Versi server (ekspor_project.php)
+  // tidak tahu-menahu soal urutan kolom di layar.
+  function teksPolos(html) {
+    var d = document.createElement('div');
+    d.innerHTML = html || '';
+    return (d.textContent || '').replace(/\s+/g, ' ').trim();
+  }
+
+  // Tanggal ditulis sebagai SERIAL Excel (angka), BUKAN objek Date.
+  //
+  // Memakai `new Date('2026-10-01T00:00:00')` membuat tengah malam WAKTU
+  // SETEMPAT (WIB = UTC+7), lalu SheetJS mengubahnya ke serial lewat UTC -
+  // hasilnya MUNDUR SATU HARI: 01 Okt jadi 30 Sep. Terbukti saat diuji, dan
+  // kesalahan seperti ini tidak kelihatan sampai ada yang mencocokkan tanggal
+  // di Excel dgn tanggal di layar.
+  //
+  // Serialnya dihitung sendiri dari angka tahun/bulan/tanggal lewat Date.UTC,
+  // jadi zona waktu browser tidak ikut campur sama sekali. 25569 = selisih
+  // hari antara titik nol Excel (1899-12-30) dan titik nol Unix (1970-01-01).
+  function tglExcel(s) {
+    if (!s || !/^\d{4}-\d{2}-\d{2}$/.test(s)) { return ''; }
+    var p = s.split('-');
+    var hari = Date.UTC(+p[0], +p[1] - 1, +p[2]) / 86400000;
+    return isNaN(hari) ? '' : Math.round(hari) + 25569;
+  }
+
+  function exportListExcel() {
+    if (typeof XLSX === 'undefined') {
+      Swal.fire('Export unavailable', 'The spreadsheet library did not load.', 'error');
+      return;
+    }
+    var list = getListTersortir();
+    if (!list.length) {
+      Swal.fire('Nothing to export', 'No project matches the current filters.', 'info');
+      return;
+    }
+
+    var aoa = [[
+      'No', 'Module', 'Project', 'Description', 'Priority', 'Req. By',
+      'Progress (%)', 'Status', 'Start', 'Target', 'Delivery', 'Actual', 'Live'
+    ]];
+
+    list.forEach(function (p, i) {
+      // Kolom Delivery di layar berisi lencana ber-HTML ("6d left", "On time",
+      // ...). Diambil teksnya saja supaya yang masuk Excel sama dgn yang dibaca
+      // user, bukan potongan markup.
+      var delivery = isDoneStatus(p.status)
+        ? completionBadge(p.target_date, p.actual_date)
+        : daysInfo(p.target_date, p.status);
+
+      aoa.push([
+        i + 1,
+        p.category || 'General',
+        p.project_name || '',
+        p.description || '',
+        p.priority || '',
+        p.pic || '',
+        parseInt(p.progress) || 0,
+        p.status || '',
+        tglExcel(p.start_date),
+        tglExcel(p.target_date),
+        teksPolos(delivery),
+        tglExcel(p.actual_date),
+        tglExcel(p.live_date)
+      ]);
+    });
+
+    var ws = XLSX.utils.aoa_to_sheet(aoa);
+
+    // Kolom Start, Target, Actual & Live berisi angka serial - diberi format
+    // tanggal supaya Excel MENAMPILKANNYA sebagai tanggal (dan bisa dipakai
+    // untuk hitung selisih hari), bukan sebagai angka lima digit.
+    [8, 9, 11, 12].forEach(function (kol) {
+      for (var r = 1; r < aoa.length; r++) {
+        var alamat = XLSX.utils.encode_cell({ r: r, c: kol });
+        if (ws[alamat] && ws[alamat].t === 'n') { ws[alamat].z = 'yyyy-mm-dd'; }
+      }
+    });
+    // Lebar kolom dipatok supaya Description tidak tergencet jadi satu huruf.
+    ws['!cols'] = [
+      { wch: 5 }, { wch: 12 }, { wch: 28 }, { wch: 70 }, { wch: 10 }, { wch: 16 },
+      { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 12 }
+    ];
+    ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: aoa.length - 1, c: 12 } }) };
+    ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Project List');
+
+    var t = new Date();
+    var cap = t.getFullYear() + ('0' + (t.getMonth() + 1)).slice(-2) + ('0' + t.getDate()).slice(-2)
+            + '-' + ('0' + t.getHours()).slice(-2) + ('0' + t.getMinutes()).slice(-2);
+    XLSX.writeFile(wb, 'project-list-' + cap + '.xlsx');
+  }
+
   // ===== Export to Excel (respects current filters) =====
   function exportExcel() {
     var params = {
@@ -1981,13 +2099,21 @@ if ($hq) {
     if (listSortKey !== key) return '<span class="sort-arrow">&#9650;</span>';
     return '<span class="sort-arrow active">' + (listSortDir === 1 ? '&#9650;' : '&#9660;') + '</span>';
   }
-  function renderList() {
-    var list = getFiltered();
+  // Dipakai BERSAMA oleh tabel di layar dan tombol Export List, supaya isi
+  // berkas Excel-nya persis sama dgn yang sedang dilihat - termasuk urutan
+  // kolom yang sedang diklik user.
+  function getListTersortir() {
+    var list = getFiltered().slice();
     list.sort(function (a, b) {
       var av = a[listSortKey] || '', bv = b[listSortKey] || '';
       if (listSortKey === 'progress') { av = parseInt(av); bv = parseInt(bv); }
       return (av > bv ? 1 : av < bv ? -1 : 0) * listSortDir;
     });
+    return list;
+  }
+
+  function renderList() {
+    var list = getListTersortir();
     if (list.length === 0) {
       $('#view-list').html(emptyStateHtml('fa-table', 'No projects found', 'Try another month, module or status filter.'));
       return;
