@@ -171,7 +171,22 @@ $ttl_kbon = (($sub_h + $lr_kurs1 + $s_qty1 + $s_harga1 + $materai1 + $ekspedisi1
 $queryss = "INSERT INTO potongan (no_kbon, tgl_kbon, nama_supp, jml_return, lr_kurs, s_qty, s_harga, materai, pot_beli, ekspedisi, moq, jml_potong, potongan_ppn, potongan_pph, status)
     VALUES
     ('" . $ke . "','" . $e($tgl_kbon_h) . "', '" . $e($nama_supp_h) . "', '$jml_return', '$lr_kurs1', '$s_qty1', '$s_harga1', '$materai1', '$pot_beli1', '$ekspedisi1', '$moq1', '$jml_potong1', '$potongan_ppn', '$potongan_pph', '$status')";
-if (mysqli_query($conn2, $queryss) === false) {
+// PENJAGA BARIS GANDA DI TABEL potongan.
+// Satu dokumen HARUS punya tepat SATU baris di sini - baris ini memuat total
+// potongan tingkat dokumen, dan halaman Payment Voucher mengambilnya lewat
+// INNER JOIN. Kalau barisnya dua, seluruh nilai dokumen itu TERBACA GANDA di
+// daftar (SubTotal, PPN, dst.) padahal datanya sendiri benar.
+// Terjadi di produksi pada 13 dokumen, antara lain PV-AP/REG/NAG/2026/08/02088
+// dan PV-AP/REG/NAK/2026/08/02150 - keduanya hasil SATU dokumen yang tersimpan
+// dua kali (permintaan simpan terkirim dobel), bukan dua potongan berbeda.
+// Kalau barisnya sudah ada, INSERT dilewati dan alur di bawah diteruskan
+// seperti biasa - bukan dianggap gagal, karena datanya memang sudah benar.
+// CATATAN: penjaga ini menutup jalur ini saja. Pengaman yang sesungguhnya
+// adalah UNIQUE KEY pada kolom no_kbon - lihat module/AP/fix_potongan_ganda.sql,
+// yang menutup SEMUA jalur sekaligus, termasuk yang belum ketahuan.
+$potSudahAda = mysqli_query($conn2, "select 1 from potongan where no_kbon = '" . $ke . "' limit 1");
+$potLewati   = ($potSudahAda && mysqli_num_rows($potSudahAda) > 0);
+if (!$potLewati && mysqli_query($conn2, $queryss) === false) {
     mysqli_rollback($conn2);
     pv_edit_out(['ok' => false, 'msg' => 'Gagal menyimpan potongan revisi. Tidak ada yang tersimpan.']);
     exit;

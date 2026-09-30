@@ -111,7 +111,22 @@ $kode = isset($rowno['nomor']) ? $rowno['nomor'] : 0;
 $queryss = "INSERT INTO potongan (no_kbon, tgl_kbon, nama_supp, jml_return, lr_kurs, s_qty, s_harga, materai, pot_beli, ekspedisi, moq, jml_potong, status)
 VALUES 
 ('$kode','$tgl_kbon_h', '$nama_supp_h', '$jml_return', '$lr_kurs1', '$s_qty1', '$s_harga1', '$materai1', '$pot_beli1', '$ekspedisi1', '$moq1', '$jml_potong1', '$status')";
-$executess = mysqli_query($conn2,$queryss);
+// PENJAGA BARIS GANDA DI TABEL potongan.
+// Satu dokumen HARUS punya tepat SATU baris di sini - baris ini memuat total
+// potongan tingkat dokumen, dan halaman Payment Voucher mengambilnya lewat
+// INNER JOIN. Kalau barisnya dua, seluruh nilai dokumen itu TERBACA GANDA di
+// daftar (SubTotal, PPN, dst.) padahal datanya sendiri benar.
+// Terjadi di produksi pada 13 dokumen, antara lain PV-AP/REG/NAG/2026/08/02088
+// dan PV-AP/REG/NAK/2026/08/02150 - keduanya hasil SATU dokumen yang tersimpan
+// dua kali (permintaan simpan terkirim dobel), bukan dua potongan berbeda.
+// Kalau barisnya sudah ada, INSERT dilewati dan alur di bawah diteruskan
+// seperti biasa - bukan dianggap gagal, karena datanya memang sudah benar.
+// CATATAN: penjaga ini menutup jalur ini saja. Pengaman yang sesungguhnya
+// adalah UNIQUE KEY pada kolom no_kbon - lihat module/AP/fix_potongan_ganda.sql,
+// yang menutup SEMUA jalur sekaligus, termasuk yang belum ketahuan.
+$potSudahAda = mysqli_query($conn2, "select 1 from potongan where no_kbon = '" . $kode . "' limit 1");
+$potLewati   = ($potSudahAda && mysqli_num_rows($potSudahAda) > 0);
+$executess = $potLewati ? true : mysqli_query($conn2,$queryss);
 
 if ($curr_h != 'IDR') {
 	$sqlx = mysqli_query($conn1,"select ROUND(rate,2) as rate , tanggal  FROM masterrate where tanggal = '$create_date' and v_codecurr = 'PAJAK'");
