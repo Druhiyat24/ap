@@ -1,0 +1,353 @@
+/* ============================================================================
+   app-ftr-list.css - kosakata .ftl- untuk HALAMAN DAFTAR DOKUMEN.
+
+   DIPAKAI OLEH: ftrcbd.php, ftrdp.php, petty-cashout.php.
+
+   Awalan ".ftl-" lahir dari "FTR List", tapi isinya generik (kartu,
+   kepala kartu, panel filter, tabel, tombol mini, pil status). Dipakai
+   bersama dgn SENGAJA: kalau tiap halaman daftar menyalin aturannya
+   sendiri, cepat atau lambat tampilannya melenceng satu dari yang lain.
+
+   Dipisah jadi berkas sendiri karena kedua halaman itu kembar: kalau aturannya
+   disalin di masing-masing halaman, cepat atau lambat keduanya melenceng.
+
+   DITAUT HANYA OLEH DUA HALAMAN ITU - bukan dari header.php - supaya menu lain
+   tidak ikut berubah tanpa diminta. Taut-nya memakai penanda versi dari
+   filemtime, jadi perubahan di sini langsung sampai ke user.
+
+   Modal rincian dipilih lewat kelas .ftl-modal, bukan id-nya, karena id modal
+   di kedua halaman berbeda (#mymodalftrcbd vs #mymodalftrdp).
+   ============================================================================ */
+/* ========================================================================
+   Kosakata .ftl- (FTR List). Bentuk & warnanya disamakan dgn halaman List
+   Memorial Journal dan form FTR CBD/DP supaya semuanya terasa satu keluarga.
+   ======================================================================== */
+body { background-color: #f4f6fb; }
+
+.ftl-card {
+  background: #fff; border: 1px solid #e6ebf3; border-radius: 16px;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, .06); overflow: hidden;
+}
+.ftl-head {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 11px;
+  padding: 11px 18px;
+  background: linear-gradient(90deg, #1E3A8A 0%, #2f5bbf 55%, #3b82f6 100%);
+}
+.ftl-head-icon {
+  width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+  background: rgba(255, 255, 255, .16); border: 1px solid rgba(255, 255, 255, .3);
+  color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 16px;
+}
+.ftl-head h1 { margin: 0; font-size: 15.5px; font-weight: 700; color: #fff; letter-spacing: .01em; }
+.ftl-head .ftl-crumb { display: block; margin-top: 2px; font-size: 11.5px; color: rgba(255, 255, 255, .78); }
+
+.ftl-panel { padding: 14px 18px 6px; background: #fafbfe; }
+.ftl-body  { padding: 14px 18px 16px; }
+
+.ftl-panel label {
+  display: block; margin-bottom: 4px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: #64748b;
+}
+.ftl-panel .form-control {
+  height: 34px !important; font-size: 13px;
+  border: 1px solid #dbe4f3; border-radius: 9px; color: #334155;
+}
+.ftl-panel .form-control:focus {
+  border-color: #93b4f5; box-shadow: 0 0 0 3px rgba(59, 130, 246, .18);
+}
+/* bootstrap-select menggambar tombolnya sendiri, jadi tingginya & tepinya
+   harus disetel di .dropdown-toggle, bukan di select yg disembunyikan. */
+.ftl-panel .bootstrap-select { width: 100% !important; }
+.ftl-panel .bootstrap-select > .dropdown-toggle {
+  height: 34px; font-size: 13px !important; padding: 6px 10px;
+  display: flex; align-items: center;
+  background: #fff !important; color: #334155 !important;
+  border: 1px solid #dbe4f3 !important; border-radius: 9px !important;
+  box-shadow: none !important;
+}
+.ftl-panel .bootstrap-select > .dropdown-toggle:focus {
+  outline: none !important; border-color: #93b4f5 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, .18) !important;
+}
+.ftl-panel .bootstrap-select .dropdown-menu {
+  border: 1px solid #e2e8f4; border-radius: 10px; font-size: 13px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, .12);
+}
+/* Tombol Search & Reset sejajar DASAR kolomnya, bukan melayang di tengah -
+   kolom di sebelahnya punya label di atas isiannya. */
+.ftl-actions { display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap; }
+.ftl-actions .app-btn { height: 34px; }
+
+/* Jarak Bootstrap di dalam .ftl-body dinolkan supaya tabel lurus dgn panel
+   di atasnya - tiap lapis row/col menyumbang 15px yg tidak selalu
+   terimbangi margin negatifnya. */
+.ftl-body > .row { margin-left: 0 !important; margin-right: 0 !important; }
+.ftl-body > .row > [class*="col-"] { padding-left: 0 !important; padding-right: 0 !important; }
+
+/* ---- Tabel daftar ----
+   TIDAK ADA gulir mendatar di sini. Pembungkus bergulir akan membuat
+   DataTables Responsive mengira ruangnya selalu cukup, sehingga kolomnya
+   tidak pernah dikolaps - itu jebakan yang sama dgn .table-responsive. */
+.ftl-tblwrap {
+  border: 1px solid #e6ebf3; border-radius: 10px; background: #fff; overflow: hidden;
+}
+.ftl-tbl {
+  margin-bottom: 0;
+  border-collapse: separate; border-spacing: 0;
+}
+
+/* ---- Tombol "+" milik Responsive ----
+   Responsive menambah kelas .collapsed pada tabel begitu ada kolom yang
+   disembunyikan - TAPI hanya mode dtr-inline yang memakai kelas itu untuk
+   menyembunyikan ikonnya. Mode dtr-column (yang dipakai di sini, karena
+   kontrolnya diberi kolom sendiri) menggambar ikonnya TERUS, bahkan saat
+   seluruh kolom muat. Jadi digerbangi sendiri di bawah ini, sekalian
+   dinolkan lebarnya supaya tidak menyisakan lajur kosong di kiri tabel. */
+.ftl-tbl thead th:first-child,
+.ftl-tbl tbody td.dtr-control {
+  width: 0; padding-left: 0 !important; padding-right: 0 !important;
+}
+.ftl-tbl tbody td.dtr-control:before { display: none !important; }
+.ftl-tbl.collapsed thead th:first-child,
+.ftl-tbl.collapsed tbody td.dtr-control {
+  width: 1%; padding-left: 8px !important; padding-right: 0 !important;
+}
+.ftl-tbl.collapsed tbody td.dtr-control { cursor: pointer; }
+.ftl-tbl.collapsed tbody td.dtr-control:before { display: block !important; }
+.ftl-tbl tbody td.dtr-control:before {
+  background-color: #1E3A8A !important; border: 0 !important; color: #fff !important;
+  box-shadow: 0 2px 5px rgba(30, 58, 138, .3) !important; font-weight: 700;
+}
+.ftl-tbl tbody tr.dtr-expanded td.dtr-control:before { background-color: #b3312c !important; }
+
+/* ---- Baris rincian hasil bukaan "+" ---- */
+.ftl-tbl tbody tr.child td { background-color: #f8fafc !important; }
+.ftl-tbl ul.dtr-details { display: block; width: 100%; padding: 4px 0; margin: 0; }
+.ftl-tbl ul.dtr-details > li {
+  display: flex; gap: 12px; padding: 7px 4px; align-items: baseline;
+  border-bottom: 1px solid #e8edf5;
+}
+.ftl-tbl ul.dtr-details > li:last-child { border-bottom: 0; }
+.ftl-tbl ul.dtr-details .dtr-title {
+  min-width: 8.5rem; font-weight: 700; color: #64748b;
+  font-size: 10px; text-transform: uppercase; letter-spacing: .05em;
+}
+.ftl-tbl ul.dtr-details .dtr-data { color: #0f172a; font-size: 12px; text-align: left; }
+/* Di dalam baris rincian, tombol aksi dibiarkan rata kiri - bukan di tengah
+   seperti saat berada di kolomnya sendiri. */
+.ftl-tbl tbody tr.child .ftl-act { justify-content: flex-start; }
+/* Kepala tabel dilembutkan seperti di List Memorial Journal: biru muda dgn
+   teks navy, BUKAN navy pekat. Di halaman ini kepala kartunya sudah navy
+   pekat; kalau kepala tabelnya ikut pekat, dua blok itu saling beradu dan
+   tidak ada yang terlihat lebih penting. */
+.ftl-tbl thead th {
+  background-color: #eef3fb !important; color: #1e3a8a !important;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+  padding: 9px 10px; border: 0 !important;
+  border-bottom: 2px solid #c9d8f0 !important;
+  white-space: nowrap; vertical-align: middle;
+}
+.ftl-tbl thead th:first-child { border-top-left-radius: 10px; }
+.ftl-tbl thead th:last-child  { border-top-right-radius: 10px; }
+
+/* Tanpa garis pemisah tegak, dan tanpa belang. Yang menandai baris cukup
+   garis tipis di bawahnya + sorotan saat kursor lewat - sama dgn Memorial
+   Journal, dan jauh lebih tenang untuk tabel selebar ini. */
+.ftl-tbl tbody td {
+  padding: 8px 10px; border: 0 !important;
+  border-bottom: 1px solid #eef2f7 !important;
+  vertical-align: middle; font-size: 12px; line-height: 1.35; color: #334155;
+}
+.ftl-tbl tbody tr:last-child > td { border-bottom: 0 !important; }
+.ftl-tbl tbody tr:hover > td { background-color: #f5f8ff; }
+/* Barisnya membuka modal rincian kalau diklik - tanpa ini tidak ada
+   petunjuknya. Kolom Action dikecualikan: isinya tombol sendiri. */
+.ftl-tbl tbody tr { cursor: pointer; }
+.ftl-tbl tbody td:last-child { cursor: default; }
+
+/* Nomor dokumen & nilai uang diberi penekanan sendiri. tabular-nums membuat
+   angka sejajar antar baris, jadi besar-kecilnya langsung terbaca. */
+.ftl-tbl td.ftl-doc { font-weight: 700; color: #1e3a8a; white-space: nowrap; }
+.ftl-tbl td.ftl-amt { font-weight: 600; color: #0f172a; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.ftl-act-cell { white-space: nowrap; }
+.ftl-act { display: flex; gap: 5px; flex-wrap: nowrap; justify-content: center; }
+/* min-width: tanpa itu lebar tombol mengikuti panjang teksnya, jadi "Approve"
+   selalu lebih lebar dari "Pdf" dan kolom Action terlihat tidak rata dari
+   baris ke baris. 74px diambil dari label terpanjang di kolom ini. */
+.ftl-mini {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 74px; flex: 0 0 auto; gap: 5px; height: 28px; padding: 0 10px;
+  border: 0; border-radius: 8px;
+  font-size: 11px; font-weight: 700; white-space: nowrap;
+  cursor: pointer; text-decoration: none;
+  transition: transform .12s ease, filter .15s ease;
+}
+.ftl-mini:hover { transform: translateY(-1px); filter: brightness(.97); text-decoration: none; }
+
+/* Di layar sempit tiga tombol ber-min-width 74px butuh ~240px - cukup untuk
+   memaksa tabelnya melebar melewati layar, persis gulir menyamping yang
+   ingin dihindari. Di bawah md tombolnya dibiarkan membungkus di DALAM sel. */
+@media (max-width: 767.98px) {
+  .ftl-act { flex-wrap: wrap; }
+  .ftl-mini { min-width: 0; padding: 0 9px; }
+}
+.ftl-mini.is-approve { background: #eef4ff; color: #1d4ed8; }
+/* Dipakai daftar Petty Cash Out: tombol "Show" pembuka modal rincian. */
+.ftl-mini.is-show    { background: #f1f5fb; color: #334155; }
+.ftl-mini.is-cancel  { background: #fdecec; color: #b3312c; }
+.ftl-mini.is-pdf     { background: #eaf8f1; color: #15724a; }
+.ftl-mini.is-edit    { background: #fdf7e9; color: #8a5a06; }
+.ftl-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 11px; border-radius: 20px; font-size: 11px; font-weight: 700;
+  background: #fdecec; color: #b3312c;
+}
+/* Lencana status. Teksnya dibiarkan apa adanya supaya cari & urut
+   DataTables tetap bekerja seperti semula. */
+.ftl-st {
+  display: inline-flex; align-items: center; padding: 3px 11px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; white-space: nowrap;
+}
+.ftl-st.is-draft    { background: #fff6e5; color: #8a5a00; }
+.ftl-st.is-approved { background: #eaf8f1; color: #15724a; }
+.ftl-st.is-cancel   { background: #fdecec; color: #b3312c; }
+
+/* ---- Perkakas DataTables ---- */
+.ftl-tblwrap .dataTables_wrapper .dataTables_length,
+.ftl-tblwrap .dataTables_wrapper .dataTables_filter { margin-bottom: 10px; }
+.ftl-tblwrap .dataTables_wrapper .dataTables_length label,
+.ftl-tblwrap .dataTables_wrapper .dataTables_filter label {
+  font-size: 12px; font-weight: 600; color: #475569;
+  text-transform: none; letter-spacing: 0; margin-bottom: 0;
+}
+.ftl-tblwrap .dataTables_wrapper .dataTables_length select {
+  height: 30px; min-width: 76px; width: auto;
+  border: 1px solid #dbe4f3; border-radius: 8px;
+  font-size: 12px; padding: 0 26px 0 10px; color: #334155;
+}
+.ftl-tblwrap .dataTables_wrapper .dataTables_filter input {
+  height: 30px; border: 1px solid #dbe4f3; border-radius: 8px;
+  font-size: 12px; padding: 0 8px; color: #334155;
+}
+.ftl-tblwrap .dataTables_wrapper .dataTables_filter input:focus,
+.ftl-tblwrap .dataTables_wrapper .dataTables_length select:focus {
+  outline: none; border-color: #93b4f5; box-shadow: 0 0 0 3px rgba(59, 130, 246, .18);
+}
+.ftl-tblwrap .dataTables_wrapper .dataTables_info { font-size: 11.5px; color: #64748b; padding-top: 12px; }
+.ftl-tblwrap .dataTables_wrapper .pagination { margin-bottom: 0; }
+.ftl-tblwrap .dataTables_wrapper .page-link {
+  border: 0; border-radius: 8px; margin: 0 2px; font-size: 12px; color: #1d4ed8;
+}
+.ftl-tblwrap .dataTables_wrapper .page-item.active .page-link { background: #1d4ed8; color: #fff; }
+.ftl-tblwrap .dataTables_wrapper .page-item.disabled .page-link { color: #b6c2d6; }
+
+/* ---- Modal detail FTR ---- */
+.ftl-modal .modal-dialog { max-width: 780px; }
+/* Tinggi modal dibatasi setinggi layar supaya kotaknya tetap utuh di tengah
+   walau rincian PO-nya panjang - yg menggulir isinya, bukan halamannya. */
+.ftl-modal .modal-content { max-height: calc(100vh - 3.5rem); }
+.ftl-modal .container { overflow-y: auto; }
+.ftl-modal .modal-content {
+  border: 0; border-radius: 14px; overflow: hidden;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, .28);
+}
+/* Di markup aslinya tombol tutup ditulis SEBELUM judulnya. Dgn row-reverse
+   judulnya tetap di kiri dan tombol tutup di kanan, tanpa mengubah markup. */
+.ftl-modal .modal-header {
+  display: flex; flex-direction: row-reverse; justify-content: space-between;
+  align-items: center; border: 0; padding: 12px 20px;
+  background: linear-gradient(90deg, #1E3A8A 0%, #2f5bbf 55%, #3b82f6 100%);
+}
+.ftl-modal .modal-title { margin: 0; font-size: 15px; font-weight: 700; color: #fff; }
+.ftl-modal .modal-header .close {
+  color: #fff; opacity: 1; text-shadow: none; font-size: 14px;
+  background: rgba(255, 255, 255, .18); border-radius: 7px;
+  width: 26px; height: 26px; padding: 0; margin: 0; flex-shrink: 0;
+}
+.ftl-modal .modal-header .close:hover { background: rgba(255, 255, 255, .3); }
+/* Tiap keterangan ringkas aslinya memakai kelas .modal-body sendiri, jadi
+   masing-masing dapat padding modal penuh dan jaraknya renggang tak
+   beraturan. Dinolkan, lalu diatur dari pembungkusnya. */
+.ftl-modal .container { padding: 14px 20px 18px; background: #f8fafd; }
+/* Enam keterangan ringkas: label kecil di atas, nilainya di bawah. Dulu
+   ditulis satu kalimat ("Supplier : X") sehingga nilainya tidak pernah
+   sejajar antar kolom karena panjang labelnya berbeda-beda. */
+.ftl-modal .modal-body { padding: 0 8px 11px !important; font-size: 12px !important; color: #475569; }
+.ftl-modal .ftl-k {
+  display: block; margin-bottom: 2px;
+  font-size: 10px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: #94a3b8;
+}
+.ftl-modal .ftl-v {
+  display: block; font-size: 12.5px; font-weight: 600; color: #1f2937;
+  overflow-wrap: anywhere;
+}
+/* Rincian PO memakai sisa ruang yg ada; yg menggulir ISI modalnya, bukan
+   seluruh halaman, jadi kepala modal tetap terlihat. */
+.ftl-modal #details { padding: 12px 0 0 !important; margin-top: 3px; border-top: 1px solid #e7ecf5; }
+.ftl-modal #mytdmodal {
+  border: 1px solid #e6ebf3; border-radius: 10px; overflow: hidden; margin-bottom: 12px;
+}
+.ftl-modal #mytdmodal thead th {
+  background-color: #e8eefb !important; color: #1e3a8a;
+  font-size: 9.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  padding: 9px 8px; border: 0 !important; border-bottom: 2px solid #b9cdee !important;
+  border-right: 1px solid #d7e3f6 !important; vertical-align: middle;
+}
+.ftl-modal #mytdmodal thead th:last-child { border-right: 0 !important; }
+.ftl-modal #mytdmodal tbody td {
+  padding: 8px; border: 0 !important; border-bottom: 1px solid #e6ebf3 !important;
+  vertical-align: middle; font-size: 12px; color: #334155;
+}
+.ftl-modal #mytdmodal tbody tr:last-child td { border-bottom: 0 !important; }
+.ftl-modal #mytdmodal.table-striped tbody tr:nth-of-type(odd) { background-color: #fafbfe; }
+/* Tabel ringkasan di bawahnya (Subtotal/Tax/Total) tidak punya id, jadi
+   dipilih sebagai tabel yg BUKAN tabel rincian. */
+.ftl-modal #details table:not(#mytdmodal) { font-variant-numeric: tabular-nums; }
+.ftl-modal #details table:not(#mytdmodal) td { padding: 3px 0; font-size: 12px; color: #475569; }
+.ftl-modal #details table:not(#mytdmodal) tr:last-child td {
+  font-weight: 700; color: #1e3a8a; font-size: 13px;
+}
+
+/* ---- Nuansa biru untuk SweetAlert ----
+   Selektornya SENGAJA tidak berawalan .ftl-: SweetAlert menempelkan popup-nya
+   langsung di body, DI LUAR kartu, jadi selektor ber-awalan tidak akan
+   mengenainya sama sekali. Aman karena blok CSS ini hanya termuat di halaman
+   ini. */
+.swal2-popup { border-radius: 14px; }
+.swal2-title { color: #1e3a8a; font-size: 19px; font-weight: 700; }
+.swal2-html-container { color: #475569; font-size: 13.5px; }
+.swal2-actions .swal2-confirm {
+  background: #1d4ed8 !important; border-radius: 9px; font-weight: 600;
+  padding: 8px 20px; box-shadow: none !important;
+}
+.swal2-actions .swal2-cancel {
+  background: #eef1f7 !important; color: #475569 !important;
+  border-radius: 9px; font-weight: 600; padding: 8px 20px; box-shadow: none !important;
+}
+.swal2-icon.swal2-success { border-color: #bcd3f6 !important; }
+.swal2-icon.swal2-success [class^="swal2-success-line"] { background-color: #2f6bdd !important; }
+.swal2-icon.swal2-success .swal2-success-ring { border-color: rgba(47, 107, 221, .3) !important; }
+.swal2-icon.swal2-question { border-color: #93b4f5 !important; color: #2f6bdd !important; }
+.swal2-loader { border-color: #2f6bdd transparent #2f6bdd transparent !important; }
+
+/* ---- Tablet & layar sempit ---- */
+@media (max-width: 1199.98px) {
+  /* Di bawah xl isian-isian itu turun jadi dua kolom, jadi barisan tombol
+     butuh jarak atas sendiri - tidak lagi sejajar dgn isian di sebelahnya. */
+  .ftl-actions { padding-top: 2px; }
+}
+@media (max-width: 575.98px) {
+  .ftl-head { padding: 10px 14px; gap: 9px; }
+  .ftl-head h1 { font-size: 14px; }
+  .ftl-head-icon { width: 30px; height: 30px; font-size: 15px; }
+  .ftl-panel, .ftl-body { padding-left: 12px; padding-right: 12px; }
+  .ftl-actions .app-btn { flex: 1 1 auto; justify-content: center; }
+  .ftl-tblwrap .dataTables_wrapper .dataTables_filter { text-align: left; }
+  .ftl-tblwrap .dataTables_wrapper .dataTables_filter input { width: 100%; }
+  .ftl-tblwrap .dataTables_wrapper .dataTables_info { padding-top: 6px; }
+  .ftl-modal .modal-dialog { margin: 10px; }
+  .ftl-modal .container { padding-left: 14px; padding-right: 14px; }
+}
