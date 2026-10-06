@@ -813,7 +813,7 @@
                                     ) f on f.no_ftr = d.no_reff
                                     where d.type_pv in ('FTR-CBD','FTR-DP') and h.nama_supp = '$nama_supp'
                                     group by d.no_pco, d.no_reff, f.tgl_ftr, f.no_po, f.tgl_po, f.no_pi, h.curr, h.nama_supp, h.tgl_pco
-                                    order by tgl_ftr_cbd asc) a LEFT JOIN (select no_ftr, a.no_po, no_bankout, total_ftr from kontrabon_ftr a INNER JOIN kontrabon_h b on b.no_kbon = a.no_kbon WHERE a.nama_supp = '$nama_supp' and b.status != 'Cancel') b on b.no_ftr = a.no_ftr_cbd and b.no_po = a.no_po and b.no_bankout = a.no_bankout where (a.total - COALESCE(b.total_ftr,0)) > 0");
+                                    order by tgl_ftr_cbd asc) a LEFT JOIN (select no_ftr, a.no_po, no_bankout, SUM(total_ftr) total_ftr from kontrabon_ftr a INNER JOIN kontrabon_h b on b.no_kbon = a.no_kbon WHERE a.nama_supp = '$nama_supp' and b.status not in ('Cancel','Updated') GROUP BY no_ftr, a.no_po, no_bankout) b on b.no_ftr = a.no_ftr_cbd and b.no_po = a.no_po and b.no_bankout = a.no_bankout where (a.total - COALESCE(b.total_ftr,0)) > 0");
 
 
                                 while($row_ftr = mysqli_fetch_array($query_ftr)){
