@@ -793,6 +793,26 @@
                                     select no_cbd no_ftr_cbd, NULL tgl_ftr_cbd, h.nama_supp supp, d.no_po, d.tgl_po, NULL no_pi, h.curr, MAX(bd.total) total, h.no_kbon, h.tgl_kbon, NULL no_payment, NULL tgl_payment, h.no_kbon no_pv, bd.no_bankout, bd.bankout_date, h.no_coa coa from kontrabon_h_cbd h INNER JOIN kontrabon_cbd d on d.no_kbon = h.no_kbon INNER JOIN (select a.no_reff, MAX(b.no_bankout) no_bankout, MAX(b.bankout_date) bankout_date, SUM(a.total + COALESCE(a.pph,0)) total from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where a.type_pv = 'CBD' and b.status != 'Cancel' GROUP BY a.no_reff) bd on bd.no_reff = h.no_kbon where h.nama_supp = '$nama_supp' GROUP BY d.no_kbon, d.no_cbd
                                     UNION ALL
                                     select no_dp no_ftr_cbd, NULL tgl_ftr_cbd, h.nama_supp supp, d.no_po, d.tgl_po, NULL no_pi, h.curr, MAX(bd.total) total, h.no_kbon, h.tgl_kbon, NULL no_payment, NULL tgl_payment, h.no_kbon no_pv, bd.no_bankout, bd.bankout_date, h.no_coa coa from kontrabon_h_dp h INNER JOIN kontrabon_dp d on d.no_kbon = h.no_kbon INNER JOIN (select a.no_reff, MAX(b.no_bankout) no_bankout, MAX(b.bankout_date) bankout_date, SUM(a.total + COALESCE(a.pph,0)) total from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where a.type_pv = 'DP' and b.status != 'Cancel' GROUP BY a.no_reff) bd on bd.no_reff = h.no_kbon where h.nama_supp = '$nama_supp' GROUP BY d.no_kbon, d.no_dp
+                                    
+                                    UNION
+                                    /* Cabang KAS KECIL: FTR yang dibayar langsung lewat Petty Cash Out,
+                                       tanpa melewati bank out. no_bankout sengaja diisi nomor dokumen kas
+                                       kecilnya supaya penjaga anti-dobel di bawah bekerja sama persis. */
+                                    select d.no_reff no_ftr_cbd, f.tgl_ftr tgl_ftr_cbd, h.nama_supp supp, f.no_po, f.tgl_po, f.no_pi,
+                                           h.curr, SUM(d.amount) total,
+                                           NULL no_kbon, NULL tgl_kbon, NULL no_payment, NULL tgl_payment, NULL no_pv,
+                                           h.no_pco no_bankout, h.tgl_pco bankout_date, '1.49.98' coa
+                                    from c_petty_cashout_det d
+                                    inner join c_petty_cashout_h h on h.no_pco = d.no_pco and h.status <> 'Cancel'
+                                    inner join (
+                                        select no_ftr_cbd no_ftr, MIN(tgl_ftr_cbd) tgl_ftr, MIN(no_po) no_po, MIN(tgl_po) tgl_po, MIN(no_pi) no_pi
+                                          from ftr_cbd group by no_ftr_cbd
+                                        union all
+                                        select no_ftr_dp, MIN(tgl_ftr_dp), MIN(no_po), MIN(tgl_po), MIN(no_pi)
+                                          from ftr_dp group by no_ftr_dp
+                                    ) f on f.no_ftr = d.no_reff
+                                    where d.type_pv in ('FTR-CBD','FTR-DP') and h.nama_supp = '$nama_supp'
+                                    group by d.no_pco, d.no_reff, f.tgl_ftr, f.no_po, f.tgl_po, f.no_pi, h.curr, h.nama_supp, h.tgl_pco
                                     order by tgl_ftr_cbd asc) a LEFT JOIN (select no_ftr, a.no_po, no_bankout, total_ftr from kontrabon_ftr a INNER JOIN kontrabon_h b on b.no_kbon = a.no_kbon WHERE a.nama_supp = '$nama_supp' and b.status != 'Cancel') b on b.no_ftr = a.no_ftr_cbd and b.no_po = a.no_po and b.no_bankout = a.no_bankout where (a.total - COALESCE(b.total_ftr,0)) > 0");
 
 
@@ -1504,7 +1524,16 @@ $("input[name=potongan_pph]").keyup(function(){
         var select_amount = $(this).closest('tr').find('td:eq(6) input');
         var price = parseFloat($(this).closest('tr').find('td:eq(4)').attr('data-subtotal'),10) || 0;
         var price_ro = parseFloat($(this).closest('tr').find('td:eq(5)').attr('data-total-ro'),10) || 0;
-        var price_ftr = parseFloat($(this).closest('tr').find('td:eq(5)').attr('total-ftr'),10) || 0;
+        /* Dibaca dari ISIAN barisnya, bukan lagi dari sisa FTR - itulah yang
+           membuat potongan selalu penuh. Hanya baris FTR yang ikut: barisnya
+           dikenali dari atribut total-ftr, supaya isian di tabel BPB & RO
+           (yang kebetulan juga di td ke-6) tidak ikut terjumlah. */
+        var sisa_ftr_attr = $(this).closest('tr').find('td:eq(5)').attr('total-ftr');
+        var price_ftr = 0;
+        if (typeof sisa_ftr_attr !== 'undefined') {
+            var v_inp_ftr = parseFloat($(this).closest('tr').find('td:eq(6) input[name=amount_ftr]').val(), 10);
+            price_ftr = isNaN(v_inp_ftr) ? (parseFloat(sisa_ftr_attr, 10) || 0) : v_inp_ftr;
+        }
         var a = parseFloat($(this).closest('tr').find('td:eq(8)').attr('data'),10) || 0;
         var tax = parseFloat($(this).closest('tr').find('td:eq(5)').attr('data-tax'),10) ||0;
         var cbd = parseFloat($(this).closest('tr').find('td:eq(8)').attr('data'),10) ||0;
@@ -1721,25 +1750,109 @@ if (!processedPO.includes(po)) {
     });
 
 
-    $("#mytable2 input[name=amount_ftr]").keyup(function(){
-        var sum_amount = 0;
-        var sum_total = 0;
-        var sum_balance = 0;        
-        $("#form-simpan input[type=checkbox]:checked").each(function () {        
-            var amount = parseFloat($(this).closest('tr').find('td:eq(6) input').val(),10) || 0;
-            var balance = parseFloat($(this).closest('tr').find('td:eq(5)').attr('total-ftr'),10) || 0;
-            var select_amount = $(this).closest('tr').find('td:eq(6) input');                
-            if(amount > balance){
-                select_amount.val(balance);
-                sum_amount += balance;
-                sum_total = sum_amount;
-            }else{
-                sum_amount += amount;
-                sum_total = sum_amount;        
-            }   
+    /* ====================================================================
+       POTONGAN CBD / DP - BISA SEBAGIAN
+
+       Penjaga lama hanya membatasi ketikan pada sisa FTR, dan itu pun tidak
+       pernah jalan karena isiannya dirender `disabled` dan tidak pernah
+       dibuka. Sekarang isiannya dibuka saat barisnya dicentang, dan
+       dibatasi pada DUA angka:
+
+         a. sisa FTR itu sendiri  (atribut total-ftr, sudah bersih dari yang
+            terpakai PV lain - jadi satu FTR tetap bisa dipakai beberapa PV)
+         b. yang MASIH HARUS DIBAYAR PV ini
+
+       Tanpa batas (b), uang muka satu PO penuh bisa terpotong ke satu PV yang
+       barangnya baru datang sebagian - persis yang terjadi pada
+       PV-AP/REG/NAG/2026/10/02482.
+       ==================================================================== */
+
+    /* Yang masih harus dibayar PV ini, SEBELUM potongan FTR. */
+    function ubfSisaBayarPv() {
+        var sub  = parseFloat($('#subtotal_h').val(), 10) || 0;
+        var ppn  = parseFloat($('#pajak_h').val(), 10) || 0;
+        var pph  = parseFloat($('#pph_h').val(), 10) || 0;
+        var ro   = parseFloat($('#potongan_h').val(), 10) || 0;
+        return sub + ppn - pph - ro;
+    }
+
+    function ubfBarisFtrTercentang() {
+        return $('#mytable2 tbody tr').filter(function () {
+            return $(this).find('input[type=checkbox]').is(':checked');
         });
-        $("#ttl_dp").val(formatMoney(sum_total));
-        $("#ttl_dp_h").val(roundHalfUp(sum_total, 4).toFixed(4));
+    }
+
+    /* Menjumlah ulang potongan FTR dari ISIAN tiap baris, sekaligus menjaga
+       agar totalnya tidak melewati sisa bayar PV. Baris yang kelebihan
+       dipangkas - bukan ditolak diam-diam. */
+    function ubfHitungTotalFtr() {
+        var sisaBayar = ubfSisaBayarPv();
+        var terpakai = 0;
+
+        ubfBarisFtrTercentang().each(function () {
+            var $inp  = $(this).find('td:eq(6) input[name=amount_ftr]');
+            var sisaF = parseFloat($(this).find('td:eq(5)').attr('total-ftr'), 10) || 0;
+            var nilai = parseFloat($inp.val(), 10);
+            if (isNaN(nilai) || nilai < 0) { nilai = 0; }
+
+            var batas = Math.min(sisaF, Math.max(0, sisaBayar - terpakai));
+            if (nilai > batas) { nilai = batas; }
+
+            $inp.val(ubfBulat2(nilai));
+            terpakai += nilai;
+        });
+
+        $('#ttl_dp').val(formatMoney(terpakai));
+        $('#ttl_dp_h').val(roundHalfUp(terpakai, 2).toFixed(2));
+        return terpakai;
+    }
+
+    function ubfBulat2(n) {
+        return Math.round((parseFloat(n) || 0) * 100) / 100;
+    }
+
+    /* Mencentang baris FTR: isiannya dibuka dan diisi sebesar yang masih
+       harus dibayar (atau sisa FTR, mana yang lebih kecil) - bukan sisa FTR
+       penuh seperti sebelumnya. Melepas centang: dikunci & dikosongkan lagi. */
+    $('#mytable2').on('change', 'input[type=checkbox]', function () {
+        var $tr  = $(this).closest('tr');
+        var $inp = $tr.find('td:eq(6) input[name=amount_ftr]');
+
+        if (this.checked) {
+            $inp.prop('disabled', false);
+        } else {
+            $inp.prop('disabled', true)
+                .val($tr.find('td:eq(5)').attr('total-ftr') || '');
+        }
+
+        /* Dijalankan setelah penghitung bawaan selesai, supaya #subtotal_h,
+           #pajak_h, #pph_h & #potongan_h sudah berisi angka terbaru. */
+        setTimeout(function () {
+            if (!$inp.prop('disabled')) {
+                var sisaF = parseFloat($tr.find('td:eq(5)').attr('total-ftr'), 10) || 0;
+                var lain  = 0;
+                ubfBarisFtrTercentang().each(function () {
+                    if (this === $tr[0]) { return; }
+                    lain += parseFloat($(this).find('td:eq(6) input[name=amount_ftr]').val(), 10) || 0;
+                });
+                $inp.val(ubfBulat2(Math.min(sisaF, Math.max(0, ubfSisaBayarPv() - lain))));
+            }
+            ubfHitungTotalFtr();
+        }, 0);
+    });
+
+    /* Mencentang BPB / RO mengubah nilai yang harus dibayar, jadi potongannya
+       dihitung ulang - kalau tidak, potongan yang tadinya pas bisa jadi
+       kelebihan setelah ada baris yang dilepas. */
+    $('#form-simpan').on('change', 'input[type=checkbox]', function () {
+        if ($(this).closest('#mytable2').length) { return; }
+        setTimeout(ubfHitungTotalFtr, 0);
+    });
+
+    /* 'input' (bukan hanya keyup) supaya panah naik-turun dan tempel-salin
+       ikut tertangkap. */
+    $('#mytable2').on('input', 'input[name=amount_ftr]', function () {
+        ubfHitungTotalFtr();
     });
 </script>
 
