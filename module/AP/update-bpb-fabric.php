@@ -28,7 +28,7 @@ $K     = ubf_konf($jenis);
       <span class="ftl-head-icon"><i class="fa fa-cubes" aria-hidden="true"></i></span>
       <div>
         <h1>Update BPB <?php echo htmlspecialchars($K['label']); ?></h1>
-        <span class="ftl-crumb">Cost Accounting &rsaquo; Update BPB &rsaquo; <?php echo htmlspecialchars($K['label']); ?> &rsaquo; List</span>
+        <span class="ftl-crumb">Cost Accounting &rsaquo; Update BPB &rsaquo; <?php echo htmlspecialchars($K['label']); ?> &rsaquo; Request</span>
       </div>
     </div><!-- /.ftl-head -->
 

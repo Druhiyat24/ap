@@ -2226,13 +2226,9 @@ if(strpos($id, '108') !== false){
           <span class="menu-collapsed">' . $m['label'] . '</span>
           </a>
           <ul class="dropdown-menu bg-dark text-white" role="menu">
-            <a href="../AP/form_update_bpb_fabric.php?jenis=' . $jns . '" class="dropdown-item bg-dark text-white">
-            <span class="fas fa-plus-circle fa-fw "></span>
-            <span class="menu-collapsed">Create</span>
-            </a>
             <a href="../AP/update-bpb-fabric.php?jenis=' . $jns . '" class="dropdown-item bg-dark text-white">
-            <span class="fas fa-list fa-fw "></span>
-            <span class="menu-collapsed">List</span>
+            <span class="fas fa-file-invoice fa-fw "></span>
+            <span class="menu-collapsed">Request</span>
             </a>
             <a href="../AP/approve_update_bpb_fabric.php?jenis=' . $jns . '" class="dropdown-item bg-dark text-white d-flex justify-content-between align-items-center">
             <span><span class="fas fa-check-circle fa-fw "></span>
