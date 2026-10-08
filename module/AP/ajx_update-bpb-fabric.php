@@ -1,5 +1,8 @@
 <?php
 include '../../conn/conn.php';
+require_once __DIR__ . '/ubf_jenis.php';
+$jenis = ubf_jenis();
+$jenis_esc = mysqli_real_escape_string($conn1, $jenis);
 header('Content-Type: application/json');
 
 /* FILTER TANGGAL. Sebelumnya query ini sama sekali TIDAK punya WHERE,
@@ -27,7 +30,7 @@ if ($start_date !== '' && $end_date !== '') {
 
 $sql = mysqli_query($conn1, "SELECT no_pengajuan, tgl_pengajuan, status, deskripsi, created_by, created_at
     FROM update_bpb_fabric_h
-    $where
+    $where AND jenis = '$jenis_esc'
     ORDER BY id DESC");
 
 $data = [];
@@ -51,7 +54,7 @@ while ($row = mysqli_fetch_assoc($sql)) {
                    . htmlspecialchars($statusRaw, ENT_QUOTES) . '</span>';
     $row['action'] = '<div class="ftl-act">'
         . '<button type="button" class="ftl-mini is-info btn-view-pengajuan" title="Show the request detail" data-no="' . htmlspecialchars($row['no_pengajuan'], ENT_QUOTES) . '"><i class="fa fa-eye" aria-hidden="true"></i> View</button>'
-        . '<a href="pdf_update_bpb_fabric.php?no_pengajuan=' . urlencode($row['no_pengajuan']) . '" target="_blank" class="ftl-mini is-pdf" title="Open the printable PDF"><i class="fa fa-file-pdf-o" aria-hidden="true"></i> Pdf</a>';
+        . '<a href="pdf_update_bpb_fabric.php?jenis=' . urlencode($jenis) . '&no_pengajuan=' . urlencode($row['no_pengajuan']) . '" target="_blank" class="ftl-mini is-pdf" title="Open the printable PDF"><i class="fa fa-file-pdf-o" aria-hidden="true"></i> Pdf</a>';
 
     if ($statusRaw != 'Approved' && $statusRaw != 'Cancel') {
         $row['action'] .= '<button type="button" class="ftl-mini is-cancel btn-cancel-pengajuan" title="Cancel this request" data-no="' . htmlspecialchars($row['no_pengajuan'], ENT_QUOTES) . '"><i class="fa fa-trash" aria-hidden="true"></i> Cancel</button>';

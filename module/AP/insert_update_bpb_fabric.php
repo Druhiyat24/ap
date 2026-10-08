@@ -1,5 +1,8 @@
 <?php
 include '../../conn/conn.php';
+require_once __DIR__ . '/ubf_jenis.php';
+$jenis = ubf_jenis();
+$jenis_esc = mysqli_real_escape_string($conn1, $jenis);
 header('Content-Type: application/json');
 ini_set('date.timezone', 'Asia/Jakarta');
 
@@ -22,8 +25,10 @@ $nama_supp_esc     = mysqli_real_escape_string($conn1, $nama_supp);
 $created_by_esc    = mysqli_real_escape_string($conn1, $created_by);
 $created_at        = date('Y-m-d H:i:s');
 
-$insertHeader = mysqli_query($conn1, "INSERT INTO update_bpb_fabric_h (no_pengajuan, tgl_pengajuan, nama_supp, deskripsi, status, created_by, created_at)
-    VALUES ('$no_pengajuan_esc', '$tgl_pengajuan_esc', '$nama_supp_esc', '$deskripsi_esc', 'Draft', '$created_by_esc', '$created_at')");
+/* Jenisnya ikut disimpan - inilah yang memisahkan daftar Fabric dgn
+   Accessories walau tabelnya sama. */
+$insertHeader = mysqli_query($conn1, "INSERT INTO update_bpb_fabric_h (no_pengajuan, tgl_pengajuan, nama_supp, deskripsi, status, jenis, created_by, created_at)
+    VALUES ('$no_pengajuan_esc', '$tgl_pengajuan_esc', '$nama_supp_esc', '$deskripsi_esc', 'Draft', '$jenis_esc', '$created_by_esc', '$created_at')");
 
 if (!$insertHeader) {
     echo json_encode(['success' => false, 'message' => 'Failed to save header']);

@@ -22,6 +22,9 @@
     header("Content-type: application/vnd-ms-excel");
     header("Content-Disposition: attachment; filename=Update BPB Fabric.xls");
     include '../../conn/conn.php';
+require_once __DIR__ . '/ubf_jenis.php';
+$jenis = ubf_jenis();
+$jenis_esc = mysqli_real_escape_string($conn1, $jenis);
 
     $start_date_disp = date("d F Y", strtotime($_GET['start_date']));
     $end_date_disp   = date("d F Y", strtotime($_GET['end_date']));

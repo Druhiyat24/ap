@@ -1,10 +1,13 @@
 <?php
 include '../../conn/conn.php';
+require_once __DIR__ . '/ubf_jenis.php';
+$jenis = ubf_jenis();
+$jenis_esc = mysqli_real_escape_string($conn1, $jenis);
 header('Content-Type: application/json');
 
 $sql = mysqli_query($conn1, "SELECT no_pengajuan, tgl_pengajuan, status, deskripsi, created_by, created_at
     FROM update_bpb_fabric_h
-    WHERE status NOT IN ('Approved','Cancel')
+    WHERE status NOT IN ('Approved','Cancel') AND jenis = '$jenis_esc'
     ORDER BY id DESC");
 
 $data = [];

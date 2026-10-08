@@ -1,5 +1,7 @@
 <?php
 include '../../conn/conn.php';
+require_once __DIR__ . '/ubf_jenis.php';
+$jenis = ubf_jenis();
 header('Content-Type: application/json');
 
 $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : 'ALL';
@@ -8,11 +10,16 @@ $end_date = isset($_POST['end_date']) ? $_POST['end_date'] : '';
 
 $whereIn = "a.status != 'Cancel' AND a.no_po IS NOT NULL AND a.no_po != ''";
 $whereOut = "h.status != 'Cancel' AND r.price IS NOT NULL AND r.price > 0";
+/* Accessories: dokumennya langsung di `bpb`. GACC/IN maupun GACC/RI
+   sama-sama ikut - keduanya dijurnal sbg penerimaan. */
+$whereAcc = "a.bpbno_int LIKE 'GACC/%' AND IFNULL(a.cancel,'N') <> 'Y'"
+          . " AND a.pono IS NOT NULL AND a.pono != '' AND a.price > 0";
 
 if ($nama_supp !== 'ALL' && $nama_supp !== '') {
     $nama_supp_esc = mysqli_real_escape_string($conn1, $nama_supp);
     $whereIn .= " AND a.supplier = '$nama_supp_esc'";
     $whereOut .= " AND h.tujuan = '$nama_supp_esc'";
+    $whereAcc .= " AND ms.Supplier = '$nama_supp_esc'";
 }
 
 if (!empty($start_date) && !empty($end_date)) {
@@ -20,8 +27,36 @@ if (!empty($start_date) && !empty($end_date)) {
     $end_date_esc = mysqli_real_escape_string($conn1, $end_date);
     $whereIn .= " AND a.tgl_dok BETWEEN '$start_date_esc' AND '$end_date_esc'";
     $whereOut .= " AND h.tgl_bppb BETWEEN '$start_date_esc' AND '$end_date_esc'";
+    $whereAcc .= " AND a.bpbdate BETWEEN '$start_date_esc' AND '$end_date_esc'";
 }
 
+if ($jenis === 'accessories') {
+    /* Bentuk kolomnya SAMA dgn cabang Fabric di bawah, jadi pengolahan
+       hasilnya (ppn, total, is_match) tidak perlu dibedakan. */
+    $sql = mysqli_query($conn1, "SELECT t.no_dok, t.tgl_dok, t.supplier, t.no_po, MAX(t.curr) curr,
+            ROUND(SUM(t.qty_good),2) qty,
+            ROUND(SUM(t.qty_good * t.price),2) dpp,
+            MAX(t.ppn_rate) ppn_rate,
+            MIN(t.item_match) is_match
+        FROM (
+            SELECT a.bpbno_int no_dok, a.bpbdate tgl_dok, ms.Supplier supplier, IFNULL(a.pono,'-') no_po,
+                (a.qty - IFNULL(a.qty_reject,0)) qty_good, a.price, a.curr,
+                IFNULL(a.ppn, d.tax) ppn_rate,
+                CASE
+                    WHEN pi.price IS NULL OR d.tax IS NULL THEN 0
+                    WHEN ABS(a.price - pi.price) < 0.0001 AND ABS(IFNULL(a.ppn,d.tax) - d.tax) < 0.0001 THEN 1
+                    ELSE 0
+                END item_match
+            FROM bpb a
+            INNER JOIN mastersupplier ms ON ms.Id_Supplier = a.id_supplier
+            LEFT JOIN po_header d ON d.pono = a.pono
+            LEFT JOIN masteritem pm ON pm.id_item = a.id_item
+            LEFT JOIN po_item pi ON pi.id_po = d.id AND pi.id_jo = a.id_jo AND pi.id_gen = pm.id_gen AND pi.cancel = 'N'
+            WHERE $whereAcc
+        ) t
+        GROUP BY t.no_dok, t.tgl_dok, t.supplier, t.no_po
+        ORDER BY t.tgl_dok DESC, t.no_dok DESC");
+} else {
 $sql = mysqli_query($conn1, "SELECT t.no_dok, t.tgl_dok, t.supplier, t.no_po, MAX(t.curr) curr,
         ROUND(SUM(t.qty_good),2) qty,
         ROUND(SUM(t.qty_good * t.price),2) dpp,
@@ -62,6 +97,7 @@ $sql = mysqli_query($conn1, "SELECT t.no_dok, t.tgl_dok, t.supplier, t.no_po, MA
     ) t
     GROUP BY t.no_dok, t.tgl_dok, t.supplier, t.no_po
     ORDER BY t.tgl_dok DESC, t.no_dok DESC");
+}
 
 $data = [];
 while ($row = mysqli_fetch_assoc($sql)) {

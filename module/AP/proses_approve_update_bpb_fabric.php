@@ -1,5 +1,7 @@
 <?php
 include '../../conn/conn.php';
+require_once __DIR__ . '/ubf_jenis.php';
+$jenis = ubf_jenis();
 header('Content-Type: application/json');
 
 $action = $_POST['action'] ?? '';
@@ -56,8 +58,16 @@ foreach ($list as $no_pengajuan) {
             // Detect whether this no_bpb is a Penerimaan (GK/IN, whs_inmaterial_fabric)
             // or a Pengeluaran (GK/RO, whs_bppb_h) document - same draft table,
             // same approve flow, different source/master tables to update.
-            $headerCheck = mysqli_query($conn2, "SELECT 1 FROM whs_inmaterial_fabric WHERE no_dok = '$no_bpb_esc' LIMIT 1");
-            $isPenerimaan = $headerCheck && mysqli_num_rows($headerCheck) > 0;
+            /* Accessories tidak ada di KEDUA tabel itu - dokumennya langsung di
+               `bpb` - jadi tanpa cabang ini ia jatuh ke cabang retur dan salah.
+               GACC/IN maupun GACC/RI sama-sama penerimaan (jurnalnya searah). */
+            $isAcc = ($jenis === 'accessories');
+            if ($isAcc) {
+                $isPenerimaan = true;
+            } else {
+                $headerCheck = mysqli_query($conn2, "SELECT 1 FROM whs_inmaterial_fabric WHERE no_dok = '$no_bpb_esc' LIMIT 1");
+                $isPenerimaan = $headerCheck && mysqli_num_rows($headerCheck) > 0;
+            }
 
             // Apply the new price/PPN to the source records regardless of
             // journal status, so the BPB always reflects the corrected values.
@@ -68,7 +78,8 @@ foreach ($list as $no_pengajuan) {
                     SET a.price = b.price_new, a.ppn = b.ppn_new");
                 if (!$okbpb) { $gagalFatal = true; $journalWarnings[] = "$no_bpb: gagal menulis harga ke bpb"; }
 
-                $okwhs_inmaterial_fabric_det = mysqli_query($conn2, "UPDATE whs_inmaterial_fabric_det a
+                /* Aksesoris tidak punya tabel detail gudang - cukup `bpb`. */
+                $okwhs_inmaterial_fabric_det = $isAcc ? true : mysqli_query($conn2, "UPDATE whs_inmaterial_fabric_det a
                     INNER JOIN (SELECT no_bpb, id_jo, id_item, price_new, ppn_new FROM update_bpb_fabric WHERE no_pengajuan = '$no_pengajuan_esc' AND no_bpb = '$no_bpb_esc') b
                         ON b.no_bpb = a.no_dok AND b.id_jo = a.id_jo AND b.id_item = a.id_item
                     SET a.price = b.price_new, a.ppn = b.ppn_new");
@@ -76,7 +87,12 @@ foreach ($list as $no_pengajuan) {
 
                 // Only already-journaled BPBs (status bpb = Approved) have
                 // tbl_list_journal rows that need a reversal/correction.
-                $statusCheck = mysqli_query($conn2, "SELECT status FROM whs_inmaterial_fabric WHERE no_dok = '$no_bpb_esc' LIMIT 1");
+                /* Aksesoris tidak punya kolom status tabel kepala, jadi yang
+                   diperiksa langsung ADA-TIDAKNYA jurnalnya. Hasilnya dibungkus
+                   supaya bentuknya sama dgn cabang Fabric di bawah. */
+                $statusCheck = $isAcc
+                    ? mysqli_query($conn2, "SELECT IF(COUNT(*) > 0, 'Approved', '-') status FROM tbl_list_journal WHERE no_journal = '$no_bpb_esc' AND status IN ('Approved','POST')")
+                    : mysqli_query($conn2, "SELECT status FROM whs_inmaterial_fabric WHERE no_dok = '$no_bpb_esc' LIMIT 1");
             } else {
                 $okbppb = mysqli_query($conn2, "UPDATE bppb a
                     INNER JOIN (SELECT no_bpb, id_jo, id_item, price_new, ppn_new FROM update_bpb_fabric WHERE no_pengajuan = '$no_pengajuan_esc' AND no_bpb = '$no_bpb_esc') b

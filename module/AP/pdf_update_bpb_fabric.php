@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <?php
 include '../../conn/conn.php';
+require_once __DIR__ . '/ubf_jenis.php';
+$jenis = ubf_jenis();
+$jenis_esc = mysqli_real_escape_string($conn1, $jenis);
 
 $no_pengajuan = isset($_GET['no_pengajuan']) ? $_GET['no_pengajuan'] : '';
 $no_pengajuan_esc = mysqli_real_escape_string($conn1, $no_pengajuan);

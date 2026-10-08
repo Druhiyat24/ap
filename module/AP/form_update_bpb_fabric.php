@@ -41,9 +41,23 @@ mysqli_query($conn1, "CREATE TABLE IF NOT EXISTS update_bpb_fabric (
 
 mysqli_query($conn1, "ALTER TABLE update_bpb_fabric ADD COLUMN IF NOT EXISTS id_jo VARCHAR(50) DEFAULT NULL AFTER no_ws");
 
+/* Kolom pembeda jenis barang (fabric / accessories / menyusul yang lain).
+   Dibuat di sini supaya basis data yang belum dimigrasi ikut tertata saat
+   halaman ini pertama dibuka - pola yang sama dgn id_jo di atas. */
+mysqli_query($conn1, "ALTER TABLE update_bpb_fabric_h ADD COLUMN IF NOT EXISTS jenis VARCHAR(20) NOT NULL DEFAULT 'fabric' AFTER status");
+
+require_once __DIR__ . '/ubf_jenis.php';
+$jenis = ubf_jenis();
+$K     = ubf_konf($jenis);
+
 // Generate next transaction number: UPD/GK/MMYY/00001
-$prefix = 'UPD/GK/' . date('my') . '/';
-$cek = mysqli_query($conn1, "SELECT MAX(CAST(SUBSTRING(no_pengajuan,13) AS UNSIGNED)) mx FROM update_bpb_fabric_h WHERE no_pengajuan LIKE '$prefix%'");
+/* Awalannya beda per jenis (UPD/GK/ vs UPD/GACC/) supaya penomorannya
+   tidak pernah bertabrakan antar menu. */
+$prefix = $K['prefix_dok'] . date('my') . '/';
+/* Angka urutnya dipotong sepanjang awalan - DULU dipatok 13, yang hanya
+   benar untuk 'UPD/GK/1026/' (12 huruf). Awalan aksesoris lebih panjang. */
+$potong = strlen($prefix) + 1;
+$cek = mysqli_query($conn1, "SELECT MAX(CAST(SUBSTRING(no_pengajuan,$potong) AS UNSIGNED)) mx FROM update_bpb_fabric_h WHERE no_pengajuan LIKE '$prefix%'");
 $row_cek = mysqli_fetch_assoc($cek);
 $next_no = (!empty($row_cek['mx'])) ? ((int) $row_cek['mx'] + 1) : 1;
 $no_pengajuan = $prefix . str_pad($next_no, 5, '0', STR_PAD_LEFT);
@@ -62,8 +76,8 @@ $no_pengajuan = $prefix . str_pad($next_no, 5, '0', STR_PAD_LEFT);
     <div class="ftl-head">
       <span class="ftl-head-icon"><i class="fas fa-edit" aria-hidden="true"></i></span>
       <div>
-        <h1>Update BPB Fabric</h1>
-        <span class="ftl-crumb">Cost Accounting &rsaquo; Update BPB Fabric &rsaquo; Create</span>
+        <h1>Update BPB <?php echo htmlspecialchars($K['label']); ?></h1>
+        <span class="ftl-crumb">Cost Accounting &rsaquo; Update BPB &rsaquo; <?php echo htmlspecialchars($K['label']); ?> &rsaquo; Create</span>
       </div>
     </div><!-- /.ftl-head -->
 
@@ -186,7 +200,7 @@ $no_pengajuan = $prefix . str_pad($next_no, 5, '0', STR_PAD_LEFT);
     <div class="ub-foot">
       <span class="ub-foot-sisi">
         <span class="ub-foot-count"><b id="ub-count">0</b> row(s) ready to save</span>
-        <button type="button" class="app-btn app-btn-danger app-btn-sm" onclick="location.href='update-bpb-fabric.php'">
+        <button type="button" class="app-btn app-btn-danger app-btn-sm" onclick="location.href='update-bpb-fabric.php?jenis=<?php echo urlencode($jenis); ?>'">
           <i class="fa fa-angle-double-left" aria-hidden="true"></i> Back
         </button>
         <button type="button" id="btnSave" class="app-btn ub-btn-brand app-btn-sm">
@@ -284,6 +298,9 @@ $no_pengajuan = $prefix . str_pad($next_no, 5, '0', STR_PAD_LEFT);
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+  /* Jenis yang sedang dibuka, dipakai seluruh panggilan AJAX di halaman ini. */
+  var UBF_JENIS = '<?php echo htmlspecialchars($jenis, ENT_QUOTES); ?>';
+
   // Hide submenus
   $('#body-row .collapse').collapse('hide');
 
@@ -404,7 +421,7 @@ $no_pengajuan = $prefix . str_pad($next_no, 5, '0', STR_PAD_LEFT);
           $.ajax({
               type: 'POST',
               url: 'cari_data_bpb_fabric_edit.php',
-              data: { nama_supp: nama_supp, start_date: start_date, end_date: end_date },
+              data: { jenis: UBF_JENIS, nama_supp: nama_supp, start_date: start_date, end_date: end_date },
               dataType: 'json',
               success: function (res) {
                   res.forEach(function (r) {
@@ -466,7 +483,7 @@ $no_pengajuan = $prefix . str_pad($next_no, 5, '0', STR_PAD_LEFT);
           $.ajax({
               type: 'GET',
               url: 'get_detail_bpb_fabric_edit.php',
-              data: { no_bpb: noBpb },
+              data: { jenis: UBF_JENIS, no_bpb: noBpb },
               dataType: 'json',
               success: function (res) {
                   const tbody = $('#table-modal-detail tbody');
@@ -790,7 +807,7 @@ $no_pengajuan = $prefix . str_pad($next_no, 5, '0', STR_PAD_LEFT);
 
               $.ajax({
                   type: 'POST',
-                  url: 'insert_update_bpb_fabric.php',
+                  url: 'insert_update_bpb_fabric.php?jenis=' + encodeURIComponent(UBF_JENIS),
                   data: {
                       no_pengajuan: noPengajuan,
                       tgl_pengajuan: $('#tgl_pengajuan').val(),

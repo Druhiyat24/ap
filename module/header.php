@@ -2183,6 +2183,20 @@ if(strpos($id, '108') !== false){
       $id_update = isset($rs_update['id']) ? $rs_update['id'] :0;
     }
 
+      /* Hak akses jenis Accessories - barisnya sendiri di menurole,
+         supaya Fabric & Accessories bisa dipisah per pengguna. */
+      require_once __DIR__ . '/AP/ubf_jenis.php';
+      $id_update_acc = 0;
+      $query_update_acc = mysqli_query($conn2, "select GROUP_CONCAT(menurole.id) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Update BPB Accessories' and menurole.status = 'Menu' group by useraccess.username");
+      if ($query_update_acc && ($rs_acc = mysqli_fetch_array($query_update_acc))) {
+          $id_update_acc = isset($rs_acc['id']) ? $rs_acc['id'] : 0;
+      }
+
+      /* $id_update TIDAK pernah diisi kalau pengguna ini memang tidak punya
+         aksesnya - perulangan di atas tidak jalan sama sekali. Disetel di sini
+         supaya pemeriksaannya pasti, dan menu kosong tidak ikut tampil. */
+      $id_update = isset($id_update) ? $id_update : 0;
+      if (!empty($id_update) || !empty($id_update_acc)) {
       echo '
       <li class="dropdown-submenu ">
       <a class="dropdown-item bg-dark text-white" href="#">
@@ -2191,31 +2205,50 @@ if(strpos($id, '108') !== false){
       </a>
       <ul class="dropdown-menu bg-dark text-white" role="menu">';
 
-      if(strpos($id_update, '112') !== false){
-        echo '<a href="../AP/update-bpb-fabric.php" class="dropdown-item bg-dark text-white">
-        <span class="fas fa-warehouse fa-fw "></span>
-        <span class="menu-collapsed">Fabric</span>
-        </a>';
+      /* Tiap jenis barang jadi satu tingkat sendiri, isinya Create /
+         List / Approval. Berkasnya sama untuk semua jenis - yang
+         membedakan parameter ?jenis= (lihat AP/ubf_jenis.php). */
+      $ubfMenu = array();
+      if (strpos($id_update, '112') !== false) {
+          $ubfMenu[] = array('jenis' => 'fabric', 'label' => 'Fabric', 'ikon' => 'fas fa-warehouse');
+      }
+      if ($id_update_acc !== 0) {
+          $ubfMenu[] = array('jenis' => 'accessories', 'label' => 'Accessories', 'ikon' => 'fas fa-puzzle-piece');
+      }
 
-        $pendingApproveCount = 0;
-        $cntApproveRs = mysqli_query($conn1, "SELECT COUNT(*) as cnt FROM update_bpb_fabric_h WHERE status NOT IN ('Approved','Cancel')");
-        if ($cntApproveRs) {
-            $cntApproveRow = mysqli_fetch_assoc($cntApproveRs);
-            $pendingApproveCount = (int) ($cntApproveRow['cnt'] ?? 0);
-        }
-
-        echo '<a href="../AP/approve_update_bpb_fabric.php" class="dropdown-item bg-dark text-white d-flex justify-content-between align-items-center">
-        <span><span class="fas fa-check-circle fa-fw "></span>
-        <span class="menu-collapsed">Approve Fabric</span></span>';
-        if ($pendingApproveCount > 0) {
-            echo '<span class="badge badge-danger ml-2">' . $pendingApproveCount . '</span>';
-        }
-        echo '</a>';
+      foreach ($ubfMenu as $m) {
+          $jns     = $m['jenis'];
+          $pending = ubf_jml_pending($conn1, $jns);
+          echo '
+          <li class="dropdown-submenu">
+          <a class="dropdown-item bg-dark text-white" href="#">
+          <span class="' . $m['ikon'] . ' fa-fw "></span>
+          <span class="menu-collapsed">' . $m['label'] . '</span>
+          </a>
+          <ul class="dropdown-menu bg-dark text-white" role="menu">
+            <a href="../AP/form_update_bpb_fabric.php?jenis=' . $jns . '" class="dropdown-item bg-dark text-white">
+            <span class="fas fa-plus-circle fa-fw "></span>
+            <span class="menu-collapsed">Create</span>
+            </a>
+            <a href="../AP/update-bpb-fabric.php?jenis=' . $jns . '" class="dropdown-item bg-dark text-white">
+            <span class="fas fa-list fa-fw "></span>
+            <span class="menu-collapsed">List</span>
+            </a>
+            <a href="../AP/approve_update_bpb_fabric.php?jenis=' . $jns . '" class="dropdown-item bg-dark text-white d-flex justify-content-between align-items-center">
+            <span><span class="fas fa-check-circle fa-fw "></span>
+            <span class="menu-collapsed">Approval</span></span>';
+          if ($pending > 0) {
+              echo '<span class="badge badge-danger ml-2">' . $pending . '</span>';
+          }
+          echo '</a>
+          </ul>
+          </li>';
       }
 
       echo '
       </ul>
       </li>';
+      }
 
       $query_close = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Closing Fabric Warehouse' and menurole.status = 'Menu' group by username");
       while($rs_close = mysqli_fetch_array($query_close)){

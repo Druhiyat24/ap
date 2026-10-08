@@ -1,4 +1,16 @@
 <?php include '../header.php' ?>
+<?php require_once __DIR__ . '/ubf_jenis.php';
+/* Satu berkas dipakai semua jenis barang; yang membedakan cuma parameter
+   `jenis` di tautan menu. Lihat ubf_jenis.php. */
+$jenis = ubf_jenis();
+$K     = ubf_konf($jenis);
+?>
+<script>
+  /* Jenis yang sedang dibuka. Ditaruh paling atas supaya seluruh blok
+     <script> di bawahnya bisa memakainya saat menyusun panggilan AJAX. */
+  var UBF_JENIS = '<?php echo htmlspecialchars($jenis, ENT_QUOTES); ?>';
+</script>
+
 
 <!-- Tiap berkas CSS ditaut sendiri dgn penanda versi dari filemtime.
      Kosakata .ftl- dipakai bersama daftar FTR CBD/DP, Petty Cash Out, dan
@@ -15,8 +27,8 @@
     <div class="ftl-head">
       <span class="ftl-head-icon"><i class="fa fa-cubes" aria-hidden="true"></i></span>
       <div>
-        <h1>Update BPB Fabric</h1>
-        <span class="ftl-crumb">Cost Accounting &rsaquo; Update BPB Fabric</span>
+        <h1>Update BPB <?php echo htmlspecialchars($K['label']); ?></h1>
+        <span class="ftl-crumb">Cost Accounting &rsaquo; Update BPB &rsaquo; <?php echo htmlspecialchars($K['label']); ?> &rsaquo; List</span>
       </div>
     </div><!-- /.ftl-head -->
 
@@ -65,7 +77,7 @@
   <button type="button" class="app-btn app-btn-primary app-btn-sm" onclick="dataTableReload()">
         <i class="fa fa-search"></i> Search
       </button>
-    <button type="button" id="btnCreateNew" class="app-btn app-btn-success app-btn-sm" onclick="location.href='form_update_bpb_fabric.php'">
+    <button type="button" id="btnCreateNew" class="app-btn app-btn-success app-btn-sm" onclick="location.href='form_update_bpb_fabric.php?jenis=<?php echo urlencode($jenis); ?>'">
         <i class="fa fa-plus-circle" aria-hidden="true"></i> Create New
     </button>
     <a id="btnExportExcel" target="_blank">
@@ -256,7 +268,7 @@ function SidebarCollapse () {
     },
 
       ajax: {
-        url: 'ajx_update-bpb-fabric.php',
+        url: 'ajx_update-bpb-fabric.php?jenis=' + encodeURIComponent(UBF_JENIS),
         type: 'POST',
         data: function (d) {
           d.start_date      = $('#start_date').val();
@@ -332,7 +344,7 @@ $('#table-data').on('click', '.btn-view-pengajuan', function () {
     $('#mymodal').modal('show');
 
     $.ajax({
-        url: 'get_detail_update_bpb_fabric.php',
+        url: 'get_detail_update_bpb_fabric.php?jenis=' + encodeURIComponent(UBF_JENIS),
         type: 'GET',
         data: { no_pengajuan: noPengajuan },
         dataType: 'json',
@@ -434,7 +446,7 @@ $('#table-data').on('click', '.btn-cancel-pengajuan', function () {
         if (!result.isConfirmed) return;
 
         $.ajax({
-            url: 'cancel_update_bpb_fabric.php',
+            url: 'cancel_update_bpb_fabric.php?jenis=' + encodeURIComponent(UBF_JENIS),
             type: 'POST',
             data: { no_pengajuan: noPengajuan },
             dataType: 'json',
@@ -545,7 +557,7 @@ document.getElementById('btnExportExcel').addEventListener('click', function(e) 
   let start_date = toYmd(document.getElementById('start_date').value);
   let end_date = toYmd(document.getElementById('end_date').value);
 
-  this.href = `ekspor_update-bpb-fabric.php?start_date=${start_date}&end_date=${end_date}`;
+  this.href = `ekspor_update-bpb-fabric.php?jenis=${encodeURIComponent(UBF_JENIS)}&start_date=${start_date}&end_date=${end_date}`;
 });
 
 </script>

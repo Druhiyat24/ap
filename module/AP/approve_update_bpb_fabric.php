@@ -1,4 +1,16 @@
 <?php include '../header.php' ?>
+<?php require_once __DIR__ . '/ubf_jenis.php';
+/* Satu berkas dipakai semua jenis barang; yang membedakan cuma parameter
+   `jenis` di tautan menu. Lihat ubf_jenis.php. */
+$jenis = ubf_jenis();
+$K     = ubf_konf($jenis);
+?>
+<script>
+  /* Jenis yang sedang dibuka. Ditaruh paling atas supaya seluruh blok
+     <script> di bawahnya bisa memakainya saat menyusun panggilan AJAX. */
+  var UBF_JENIS = '<?php echo htmlspecialchars($jenis, ENT_QUOTES); ?>';
+</script>
+
 
 <!-- Kosakata .ftl- dipakai bersama halaman daftar Update BPB Fabric, FTR
      CBD/DP, dan Petty Cash Out - bentuknya sama dgn List Memorial Journal.
@@ -14,8 +26,8 @@
     <div class="ftl-head">
       <span class="ftl-head-icon"><i class="fa fa-check-circle" aria-hidden="true"></i></span>
       <div>
-        <h1>Approve Update BPB Fabric</h1>
-        <span class="ftl-crumb">Cost Accounting &rsaquo; Approve Update BPB Fabric</span>
+        <h1>Approve Update BPB <?php echo htmlspecialchars($K['label']); ?></h1>
+        <span class="ftl-crumb">Cost Accounting &rsaquo; Update BPB &rsaquo; <?php echo htmlspecialchars($K['label']); ?> &rsaquo; Approval</span>
       </div>
     </div><!-- /.ftl-head -->
 
@@ -155,7 +167,7 @@ let datatable = $("#table-data").DataTable({
     autoWidth: false,
 
     ajax: {
-        url: 'ajx_approve_update_bpb_fabric.php',
+        url: 'ajx_approve_update_bpb_fabric.php?jenis=' + encodeURIComponent(UBF_JENIS),
         type: 'POST'
     },
 
@@ -237,7 +249,7 @@ function prosesApproveCancel(action) {
         if (!result.isConfirmed) return;
 
         $.ajax({
-            url: 'proses_approve_update_bpb_fabric.php',
+            url: 'proses_approve_update_bpb_fabric.php?jenis=' + encodeURIComponent(UBF_JENIS),
             type: 'POST',
             data: { action: action, no_pengajuan: selected, approve_user: '<?php echo htmlspecialchars($user, ENT_QUOTES); ?>' },
             dataType: 'json',
@@ -288,7 +300,7 @@ $('#table-data').on('click', '.btn-view-pengajuan', function () {
     $('#mymodal').modal('show');
 
     $.ajax({
-        url: 'get_detail_update_bpb_fabric.php',
+        url: 'get_detail_update_bpb_fabric.php?jenis=' + encodeURIComponent(UBF_JENIS),
         type: 'GET',
         data: { no_pengajuan: noPengajuan },
         dataType: 'json',
