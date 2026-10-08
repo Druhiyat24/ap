@@ -242,9 +242,11 @@ a.gl-doc-link:hover{ text-decoration:underline; }
                 let val = parseFloat(data);
                 if (isNaN(val)) return data;
 
+                // Dua angka di belakang koma, seragam dgn ekspor Excel-nya
+                // (ekspor_general_ledger.php sudah memakai number_format(...,2)).
                 return val.toLocaleString('en-US', {
-                  minimumFractionDigits: 4,
-                  maximumFractionDigits: 4
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
                 });
               }
             },
