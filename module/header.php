@@ -50,6 +50,18 @@ if ($user == '') {
           box-shadow: 0 0 0 2px rgba(255,255,255,0.08), 0 1px 3px rgba(0,0,0,0.4), 0 0 0 0 rgba(214,40,40,0);
       }
   }
+  /* Submenu tingkat ketiga menu Update BPB. Warna ikon disamakan supaya
+     ketiganya terbaca satu keluarga - sebelumnya ikon Approval tampil putih
+     sendirian karena strukturnya beda (ikonnya dibungkus span tambahan).
+     Dibatasi ke .ubf-sub supaya tidak mengubah menu lain. */
+  .ubf-sub .dropdown-item > .fa-fw {
+      color: #4ea9ff;
+      margin-right: 6px;
+  }
+  .ubf-sub .dropdown-item:hover > .fa-fw,
+  .ubf-sub .dropdown-item:focus > .fa-fw {
+      color: #fff;
+  }
   .box {
       border-style: outset;
       box-sizing: border-box;
@@ -2225,16 +2237,16 @@ if(strpos($id, '108') !== false){
           <span class="' . $m['ikon'] . ' fa-fw "></span>
           <span class="menu-collapsed">' . $m['label'] . '</span>
           </a>
-          <ul class="dropdown-menu bg-dark text-white" role="menu">
+          <ul class="dropdown-menu bg-dark text-white ubf-sub" role="menu">
             <a href="../AP/update-bpb-fabric.php?jenis=' . $jns . '" class="dropdown-item bg-dark text-white">
             <span class="fas fa-file-invoice fa-fw "></span>
             <span class="menu-collapsed">Request</span>
             </a>
-            <a href="../AP/approve_update_bpb_fabric.php?jenis=' . $jns . '" class="dropdown-item bg-dark text-white d-flex justify-content-between align-items-center">
-            <span><span class="fas fa-check-circle fa-fw "></span>
-            <span class="menu-collapsed">Approval</span></span>';
+            <a href="../AP/approve_update_bpb_fabric.php?jenis=' . $jns . '" class="dropdown-item bg-dark text-white d-flex align-items-center">
+            <span class="fas fa-check-circle fa-fw "></span>
+            <span class="menu-collapsed">Approval</span>';
           if ($pending > 0) {
-              echo '<span class="badge badge-danger ml-2">' . $pending . '</span>';
+              echo '<span class="badge badge-danger ml-auto">' . $pending . '</span>';
           }
           echo '</a>
           </ul>
