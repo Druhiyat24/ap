@@ -577,11 +577,42 @@ function SidebarCollapse () {
 </script>
 
 <script type="text/javascript">
+/* Dipakai dua blok <script>: pengatur batas kalender di bawah DAN
+   pemeriksaan saat tombol Save ditekan. Karena itu ditaruh di luar
+   $(document).ready() - di dalamnya, namanya tidak dikenal blok lain. */
+function ftrAngkaTgl(s) {            // 'dd-mm-yyyy' -> 'yyyymmdd'
+    var p = String(s || '').split('-');
+    return (p.length === 3) ? (p[2] + p[1] + p[0]) : '';
+}
+
     $(document).ready(function () {
         $('.tanggal').datepicker({
             format: "dd-mm-yyyy",
             autoclose:true
         });
+
+        /* Payment Date tidak boleh mendahului FTR Date.
+           Batas bawah kalendernya dikunci ke FTR Date, dan ikut bergeser
+           kalau FTR Date-nya diubah. Kalau Payment Date yang sudah terisi
+           ternyata lebih awal, isiannya DIKOSONGKAN - kalau dibiarkan,
+           angka lama itu tetap terkirim walau kalendernya sudah dibatasi. */
+        var $tglFtr   = $('#tanggal');
+        var $tglBayar = $('#payment_date');
+
+        function ftrSelaraskanBatas(kosongkanKalauLebihAwal) {
+            var vFtr = $tglFtr.val();
+            if (!vFtr || vFtr === '-') { return; }
+            $tglBayar.datepicker('setStartDate', vFtr);
+
+            var vBayar = $tglBayar.val();
+            if (kosongkanKalauLebihAwal && vBayar && vBayar !== '-'
+                && ftrAngkaTgl(vBayar) < ftrAngkaTgl(vFtr)) {
+                $tglBayar.val('');
+            }
+        }
+
+        ftrSelaraskanBatas(false);      // saat halaman dibuka: batasi saja
+        $tglFtr.on('changeDate change', function () { ftrSelaraskanBatas(true); });
     });
 </script>
 
@@ -778,6 +809,15 @@ $(document).on('keyup input', "input[name=txt_amount]", function () {
         if (tgl_bayar === '' || tgl_bayar === '-') {
             Swal.fire({ icon: 'warning', title: 'Payment Date is required',
                 text: 'Please fill in the Payment Date.' })
+                .then(function () { document.getElementById('payment_date').focus(); });
+            return;
+        }
+        /* Diperiksa lagi di sini: isian tanggalnya masih bisa DIKETIK,
+           jadi batas kalender saja tidak cukup. */
+        var tgl_ftr_form = document.getElementById('tanggal').value;
+        if (ftrAngkaTgl(tgl_bayar) < ftrAngkaTgl(tgl_ftr_form)) {
+            Swal.fire({ icon: 'warning', title: 'Payment Date is too early',
+                html: 'Payment Date <b>' + tgl_bayar + '</b> cannot be earlier than FTR CBD Date <b>' + tgl_ftr_form + '</b>.' })
                 .then(function () { document.getElementById('payment_date').focus(); });
             return;
         }

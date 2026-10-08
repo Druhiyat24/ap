@@ -5,6 +5,17 @@ ini_set('date.timezone', 'Asia/Jakarta');
 $noftrcbd = $_POST['noftrcbd'];
 $tglftrcbd = date("Y-m-d",strtotime($_POST['tglftrcbd']));
 $tgl_bayar = date("Y-m-d",strtotime($_POST['tgl_bayar']));
+
+/* Payment Date tidak boleh mendahului FTR Date. Penjaga di form bisa
+   dilewati (devtools / permintaan langsung), jadi ditutup juga di sini.
+   Balasannya 400 + teks biasa: pengirimnya memang menampilkan
+   xhr.responseText apa adanya kalau permintaannya gagal. */
+if ($tgl_bayar !== '' && $tglftrcbd !== '' && $tgl_bayar < $tglftrcbd) {
+    http_response_code(400);
+    echo 'Payment Date (' . date('d-M-Y', strtotime($tgl_bayar))
+        . ') cannot be earlier than FTR CBD Date (' . date('d-M-Y', strtotime($tglftrcbd)) . ').';
+    exit;
+}
 $nama_supp = $_POST['nama_supp'];
 $no_pi = $_POST['no_pi'];
 $curr = $_POST['curr'];

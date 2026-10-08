@@ -33,6 +33,12 @@ $tgl_ftr   = !empty($_POST['tglftrcbd']) ? date('Y-m-d', strtotime($_POST['tglft
 $tgl_bayar = !empty($_POST['tgl_bayar']) && $_POST['tgl_bayar'] !== '-' ? date('Y-m-d', strtotime($_POST['tgl_bayar'])) : '';
 if ($tgl_ftr === '' || $tgl_ftr <= '1970-01-01')     { jawab(400, array('ok' => false, 'message' => 'FTR CBD Date is required.')); }
 if ($tgl_bayar === '' || $tgl_bayar <= '1970-01-01') { jawab(400, array('ok' => false, 'message' => 'Payment Date is required.')); }
+/* Payment Date tidak boleh mendahului FTR Date - penjaga di form bisa dilewati. */
+if ($tgl_ftr !== '' && $tgl_bayar < $tgl_ftr) {
+    jawab(400, array('ok' => false, 'message' =>
+        'Payment Date (' . date('d-M-Y', strtotime($tgl_bayar))
+        . ') cannot be earlier than FTR CBD Date (' . date('d-M-Y', strtotime($tgl_ftr)) . ').'));
+}
 
 /* Cara bayar & jenis barang diperiksa SAMA KETATNYA dgn saat dibuat - kalau di
    sini lebih longgar, nilai yang tidak mungkin lolos lewat Create bisa masuk

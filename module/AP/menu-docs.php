@@ -867,6 +867,8 @@ $menuGroups = [
                         ['name' => 'mastersupplier', 'desc' => 'Master Supplier.'],
                     ],
                     'notes' => [
+                        'Pembatasan (8 Okt 2026) - PAYMENT DATE TIDAK BOLEH MENDAHULUI TANGGAL FTR. Ditutup DUA lapis. (1) DI FORM: kalender Payment Date diberi batas bawah = tanggal FTR lewat <code>datepicker(\'setStartDate\')</code>, dan batasnya ikut bergeser kalau tanggal FTR diubah; kalau Payment Date yang sudah terisi ternyata lebih awal, isiannya DIKOSONGKAN - kalau dibiarkan, angka lama itu tetap terkirim walau kalendernya sudah dibatasi. Ditambah pemeriksaan sekali lagi saat tombol Save ditekan, karena isian tanggalnya masih bisa DIKETIK langsung tanpa lewat kalender. (2) DI SERVER: penjaga di form bisa dilewati lewat devtools atau permintaan langsung, jadi endpoint-nya menolak juga - <code>insertftrcbd.php</code> &amp; <code>insertftrdp.php</code> membalas HTTP 400 + teks (pengirimnya memang menampilkan <code>xhr.responseText</code> apa adanya), sedangkan <code>update_ftrcbd.php</code> &amp; <code>update_ftrdp.php</code> memakai pembantu <code>jawab(400, ...)</code> yang sudah ada. Berlaku di EMPAT form: formftrcbd.php, formftrdp.php, edit_ftrcbd.php, edit_ftrdp.php.',
+                        'JEBAKAN LINGKUP yang ketahuan saat memasangnya: pembantu <code>ftrAngkaTgl()</code> (mengubah dd-mm-yyyy jadi yyyymmdd supaya dua tanggal bisa dibandingkan sebagai teks) semula ditaruh DI DALAM <code>$(document).ready()</code>. Pemeriksaan saat tombol Save ada di blok &lt;script&gt; yang BERBEDA, jadi di sana namanya tidak dikenal dan akan melempar "ftrAngkaTgl is not defined" - penjaganya justru tidak jalan. Sekarang dideklarasikan di luar ready() supaya dikenal seluruh halaman. CATATAN: di keempat berkas ini ada 2 blok &lt;script&gt; yang MEMANG sudah bermasalah sejak sebelum perubahan ini (salah satunya memuat <code>$(document).ready(){</code> tanpa function) - diperiksa ke versi ter-commit, keduanya sudah gagal <code>node --check</code> sejak dulu dan TIDAK disentuh.',
                         'Pembayaran CBD/DP TIDAK diposting ke jurnal umum (tbl_list_journal) maupun Kartu Hutang di titik manapun dalam siklusnya — murni dicatat di subledger FTR/Kontra Bon CBD-DP. Ini perbedaan fungsional nyata dari alur BPB biasa, bukan sekadar beda penamaan.',
                         'Menggantikan peran BPB: pada alur normal, BPB-lah yang memicu Kontra Bon; pada alur CBD/DP, FTR yang berperan sebagai pemicu karena barang belum diterima saat pembayaran harus dilakukan.',
                     ],
@@ -896,6 +898,7 @@ $menuGroups = [
                         ['name' => 'mastersupplier', 'desc' => 'Master Supplier.'],
                     ],
                     'notes' => [
+                        'Pembatasan (8 Okt 2026) - Payment Date tidak boleh mendahului tanggal FTR, sama persis dgn FTR CBD: dibatasi di kalender, diperiksa lagi saat Save, dan ditolak juga di <code>insertftrdp.php</code> / <code>update_ftrdp.php</code>. Penjelasan lengkapnya ada di catatan menu FTR CBD.',
                         'Sama seperti FTR CBD, pembayaran DP tidak diposting ke jurnal umum maupun Kartu Hutang — murni subledger.',
                     ],
                 ],
