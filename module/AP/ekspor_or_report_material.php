@@ -94,10 +94,20 @@
         // ekspor_or_report_material.php - kalau salah satu diubah, ubah dua-duanya.
         // ---------------------------------------------------------------------------
         $OR_FX_GM  = 'GM/NAG/0826/00197';   // jurnal reklas yang digantikan perhitungan di bawah
-        $OR_FX_BPB = "'GACC/IN/0626/03136','GACC/IN/0626/03144','GACC/IN/0626/03357',"
-                   . "'GACC/IN/0626/03445','GACC/IN/0626/03446','GACC/IN/0626/03518',"
-                   . "'GACC/IN/0626/03522','GACC/IN/0626/03572','GACC/IN/0626/03573',"
-                   . "'GACC/IN/0726/03977','GACC/IN/0726/04267','GACC/IN/0726/04388'";
+        $OR_FX_ARR = array(
+           'GACC/IN/0626/03136','GACC/IN/0626/03144','GACC/IN/0626/03357',
+           'GACC/IN/0626/03445','GACC/IN/0626/03446','GACC/IN/0626/03518',
+           'GACC/IN/0626/03522','GACC/IN/0626/03572','GACC/IN/0626/03573',
+           'GACC/IN/0726/03977','GACC/IN/0726/04267','GACC/IN/0726/04388',
+           // Ditambahkan 8 Okt 2026 - alokasi 0033/ALK/NAG/0926 (kurs 17.863)
+           // vs kurs pajak tgl BPB 17.937. Dicek ke produksi: TIDAK ADA jurnal
+           // GM di 1.34.05 untuk keenamnya, jadi tidak ada risiko dobel hitung.
+           'GACC/IN/0726/04456','GACC/IN/0726/04475','GACC/IN/0726/04502',
+           'GACC/IN/0726/04503','GACC/IN/0726/04504','GACC/IN/0726/04508'
+        );
+        /* Versi teks utk dipakai di dalam SQL. Satu daftar, dua bentuk -
+           supaya penambahan BPB baru cukup di satu tempat. */
+        $OR_FX_BPB = "'" . implode("','", $OR_FX_ARR) . "'";
                 $sql = mysqli_query($conn2,"SELECT pono, bpbno_int, bpbdate, supplier, buyer,no_req, tgl_req, no_dn, tgl_dn, curr, round(COALESCE(saldo_awal,0) - COALESCE(ded_alk_bfr,0) - COALESCE(tot_gm_before,0),2) saldo_awal, coalesce(tambah,0) tambah, COALESCE(ded_alk,0) ded_alk, COALESCE(tot_gm,0) ded_gm, COALESCE(ded_fgl,0) ded_fgl, round(COALESCE(saldo_awal,0) - COALESCE(ded_alk_bfr,0)  - COALESCE(tot_gm_before,0) - COALESCE(tot_gm,0) + COALESCE(tambah,0) - (COALESCE(ded_alk,0) + COALESCE(ded_fgl,0)),2) saldo_akhir from (select a.pono, a.bpbno_int, a.bpbdate, b.supplier, buyer, curr, round(if(a.curr = 'IDR', (sum((qty - COALESCE(qty_reject,0)) * price) + (sum((qty - COALESCE(qty_reject,0)) * price) * (ph.ppn/ 100))), (round(sum((qty - COALESCE(qty_reject,0)) * price) + (sum((qty - COALESCE(qty_reject,0)) * price) * (ph.ppn/ 100)),4) * rate)),2) saldo_awal, 0 tambah from bpb a 
                     inner join mastersupplier b on b.id_supplier = a.id_supplier 
                     left join (select id_jo,kpno,styleno, b.supplier buyer from act_costing ac inner join so on ac.id=so.id_cost 
@@ -143,6 +153,23 @@ while($row2 = mysqli_fetch_array($sql)){
     $ded_fgl = isset($row2['ded_fgl']) ? $row2['ded_fgl'] : 0;
     $saldo_akhir = isset($row2['saldo_akhir']) ? $row2['saldo_akhir'] : 0;
 
+    /* BPB yang selisih kursnya diakui sbg Forex Gain/(Loss).
+       Dipakai SISA SEBENARNYA, bukan selisih kurs yang dihitung ulang:
+       saldo awal BPB tidak selalu sama persis dgn amount DN x kurs pajak,
+       dan perbedaan kecil itu menyisakan angka di Ending Balance.
+       Deduction (GM) ikut dikurangkan, jadi kalau selisihnya sudah
+       ditutup lewat jurnal GM, Forex-nya jadi 0 dgn sendirinya - tidak
+       pernah terhitung dua kali. */
+    /* PENJAGA: hanya kalau BPB itu MEMANG dialokasi pada periode ini.
+       Tanpa penjaga ini, pada periode SEBELUM alokasinya terjadi seluruh
+       saldo BPB ikut tersapu ke Forex dan Ending-nya jadi nol - padahal
+       saat itu saldonya memang masih menggantung. Ketahuan saat menguji
+       periode Jun-Agu 2026 ke data produksi. */
+    if ($ded_alk != 0 && in_array($row2['bpbno_int'], $OR_FX_ARR)) {
+        $ded_fgl = round($saldo_awal + $tambah - $ded_alk - $ded_gm, 2);
+        $saldo_akhir = 0;
+    }
+
 
     $ttl_beg +=$saldo_awal;
     $ttl_add +=$tambah;
@@ -166,8 +193,8 @@ while($row2 = mysqli_fetch_array($sql)){
         <td style="text-align : left;" value = "'.$row2['no_dn'].'">'.$row2['no_dn'].'</td>
         <td style="text-align : left;" value = "'.$row2['tgl_dn'].'">'.$row2['tgl_dn'].'</td>
         <td style="text-align : right;" value = "'.$saldo_awal.'">'.number_format($saldo_awal,2).'</td>
-        <td style="text-align : right;" value = "'.$row2['tambah'].'">'.number_format($row2['tambah'],2).'</td>
-        <td style="text-align : right;" value = "'.$row2['ded_alk'].'">'.number_format($row2['ded_alk'],2).'</td>
+        <td style="text-align : right;" value = "'.$tambah.'">'.number_format($tambah,2).'</td>
+        <td style="text-align : right;" value = "'.$ded_alk.'">'.number_format($ded_alk,2).'</td>
         <td style="text-align : right;" value = "'.$ded_gm.'">'.number_format($ded_gm,2).'</td>
         <td style="text-align : right;" value = "'.$ded_fgl.'">'.number_format($ded_fgl,2).'</td>
         <td style="text-align : right;" value = "'.$saldo_akhir.'">'.number_format($saldo_akhir,2).'</td>
