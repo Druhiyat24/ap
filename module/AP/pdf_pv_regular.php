@@ -467,6 +467,18 @@ $bank_currency = $row_bank['bank_currency'];
 			$hdr_ppn   = (float) ($rowHdr['tax'] ?? 0);
 			$hdr_pph   = (float) ($rowHdr['pph_idr'] ?? 0);
 			$hdr_total = (float) ($rowHdr['total'] ?? 0);
+			// kontrabon_h.subtotal TIDAK memotong retur, sedangkan kontrabon_h.total
+			// memotongnya - itulah sebabnya kotak ini dulu melompat tanpa penjelasan
+			// (keluhan PV-AP/REG/NAG/2026/10/02434: SubTotal 26.863.176,60 tapi Grand
+			// Total 6.887.994,00). Di sini retur dipotong langsung dari SubTotal -
+			// TANPA menambah baris - sehingga SubTotal menampilkan angka yang sama
+			// dgn baris "Jumlah" di tabel item, yang memang sudah memotong retur.
+			// Sumbernya potongan.jml_return, sama dgn yang dipakai saat
+			// kontrabon_h.total dihitung, jadi kotaknya dijamin turun persis ke
+			// Grand Total. Dibaca dari $rowl (bukan dari $jml_return milik
+			// perulangan item) supaya tetap benar walau PV-nya tidak punya item.
+			$hdr_return = (float) ($rowl['jml_return'] ?? 0);
+			$hdr_sub    = $hdr_sub - $hdr_return;
 			?>
 
 			<td>

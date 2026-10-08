@@ -1,0 +1,883 @@
+/* ============================================================================
+   app-pco-form.css - kosakata .pco- untuk FORM PETTY CASH OUT.
+
+   DIPAKAI OLEH 6 halaman:
+     create-pettycash-out.php
+     form_edit_pettycash_out_none.php
+     form_edit_pettycash_out_settle.php
+     form_edit_pettycash_out_lp.php
+     form_edit_pettycash_out_pv.php
+     form_edit_pettycash_out_ftr.php
+
+   Dipisah jadi berkas sendiri karena keenam halaman itu bersaudara: kepala
+   kartu, panel isian, tabel jurnal, dan kotak total NAG/NAK/Grand-nya sama
+   persis. Dulu aturannya DISALIN di blok <style> masing-masing halaman -
+   enam salinan yang sudah mulai melenceng satu dari yang lain (yang "lp"
+   bahkan sudah beda sendiri).
+
+   DITAUT HANYA OLEH KEENAM HALAMAN ITU - bukan dari header.php - supaya menu
+   lain tidak ikut berubah tanpa diminta. Taut-nya memakai penanda versi dari
+   filemtime, jadi perubahan di sini langsung sampai ke user.
+
+   Bentuk & warnanya disamakan dgn List Memorial Journal, daftar FTR
+   (app-ftr-list.css), dan form FTR (app-ftr-form.css) supaya semuanya terasa
+   satu keluarga.
+
+   PENTING - berkas ini TIDAK mengubah satu pun nama id, nama kelas pengait
+   JavaScript, atau struktur isian. Yang diubah hanya tampilannya. Aturan di
+   sini menempel pada kelas yang MEMANG SUDAH ADA di halaman-halaman itu
+   (.tab-container, .tablinks, .table-gradient, .total-box, .total-stat),
+   jadi markup-nya hampir tidak perlu disentuh.
+   ============================================================================ */
+
+body { background-color: #f4f6fb; }
+
+/* ========================================================================
+   1. Kartu luar & kepala kartu
+   ======================================================================== */
+.pco-card {
+  background: #fff;
+  border: 1px solid #e6ebf3;
+  border-radius: 16px;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, .06);
+  overflow: hidden;
+}
+
+/* Pita gradien selebar kartu diganti kotak ikon + judul + jejak menu, sama
+   spt List Memorial Journal: warnanya jadi aksen, bukan latar, dan judulnya
+   yang paling menonjol. */
+.pco-head {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 11px;
+  padding: 11px 18px;
+  background: linear-gradient(90deg, #1E3A8A 0%, #2f5bbf 55%, #3b82f6 100%);
+}
+/* Kotak ikon KACA, bukan blok navy: latarnya sendiri sudah navy, jadi kotak
+   navy akan hilang menyatu. */
+.pco-head-icon {
+  width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+  background: rgba(255, 255, 255, .16);
+  border: 1px solid rgba(255, 255, 255, .3);
+  color: #fff;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 16px;
+}
+.pco-head h1 {
+  margin: 0; font-size: 15.5px; font-weight: 700; color: #fff; letter-spacing: .01em;
+}
+/* Putih diredupkan, bukan abu - abu apa pun terbaca kotor di atas navy. */
+.pco-head .pco-crumb {
+  display: block; margin-top: 2px; font-size: 11.5px; color: rgba(255, 255, 255, .78);
+}
+
+/* ========================================================================
+   2. Kartu-kartu DI DALAM kartu besar jadi panel rata
+   ------------------------------------------------------------------------
+   Halaman-halaman ini menumpuk .card di dalam .card (sampai tiga lapis),
+   masing-masing dgn border dan shadow sendiri, sehingga tampak seperti
+   kotak-kotak lepas yang bertumpuk. Lapisan dalamnya dinolkan: yang
+   membentuk bingkai hanya .pco-card paling luar.
+   ======================================================================== */
+.pco-card .card {
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent;
+  margin-bottom: 0 !important;
+  border-radius: 0;
+}
+.pco-card .card-body { padding: 14px 18px 6px; }
+/* Blok tabel di HALAMAN EDIT ditulis class="card-body p-2" (8px), sedangkan
+   blok isian di atasnya 18px - sekat judulnya jadi tidak lurus. Disamakan jadi
+   18px mendatar; !important dibutuhkan karena utilitas .p-2 Bootstrap ditulis
+   dgn !important. Di halaman create aturan ini kalah oleh aturan .pco-body di
+   bagian 4 (selektornya lebih khusus), yang menolkannya - di sana jarak tepi
+   sudah disediakan .pco-body. */
+.pco-card .card-body.p-2 { padding: 0 18px 8px !important; }
+/* Blok isian paling atas diberi latar sedikit beda supaya terbaca sbg
+   "kepala dokumen", terpisah dari tabel di bawahnya. */
+.pco-card > form > .card:first-child > .card-body,
+.pco-card > .pco-panel {
+  background: #fafbfe;
+  border-bottom: 1px solid #eef1f7;
+}
+
+/* DataTables menyisipkan .row > .col-sm-12 sendiri di sekitar tabelnya. Tiap
+   lapis menyumbang padding 15px yang tidak selalu terimbangi margin negatif
+   .row-nya, sehingga blok tabel menjorok ke dalam dan tidak lurus dgn isian
+   di atasnya.
+
+   SENGAJA dibatasi pada .row BUATAN DATATABLES saja. Versi sebelumnya juga
+   mengenai ".card-body > .row" mana pun - itu ikut menghapus jarak antar
+   kolom di baris lain, mis. tiga kotak total NAG/NAK/Grand yang jadi
+   berdempetan. */
+.pco-card .dataTables_wrapper > .row {
+  margin-left: 0 !important; margin-right: 0 !important;
+}
+.pco-card .dataTables_wrapper > .row > [class*="col-"] {
+  padding-left: 0 !important; padding-right: 0 !important;
+}
+
+/* ========================================================================
+   3. Label & isian
+   ------------------------------------------------------------------------
+   DISARANGKAN di dalam .pco-card dgn sengaja: blok <style> lama menulis
+   "label { font-size: 14px }" telanjang, yang ikut mengubah tulisan di
+   sidebar dan di setiap modal halaman ini.
+   ======================================================================== */
+.pco-card label {
+  font-size: 11.5px; font-weight: 700; color: #475569;
+  letter-spacing: .02em; margin-bottom: 4px;
+}
+.pco-card label b { font-weight: 700; }
+/* Tanda bintang wajib: merah, dan tidak dimiringkan. */
+.pco-card label i { color: #dc2626 !important; font-style: normal; }
+
+/* Blok style lama menulis "input { font-size: 14px }" TELANJANG. Aturan itu
+   ikut mengubah tulisan di sidebar; di sini disarangkan ke dalam kartu saja.
+   Ditulis utk input/select/textarea polos juga - tidak semua isian di dalam
+   tabel memakai kelas .form-control. */
+.pco-card input,
+.pco-card select,
+.pco-card textarea { font-size: 13px; }
+
+.pco-card .form-control {
+  height: 34px; font-size: 13px; color: #334155;
+  border: 1px solid #dbe4f3; border-radius: 9px; padding: 4px 10px;
+  background: #fff;
+}
+.pco-card textarea.form-control { height: auto; }
+.pco-card .form-control:focus {
+  border-color: #93b4f5; box-shadow: 0 0 0 3px rgba(59, 130, 246, .18);
+  background: #fff;
+}
+.pco-card .form-control[readonly],
+.pco-card .form-control:disabled {
+  background: #f4f6fb; color: #64748b;
+}
+
+/* Aturan bootstrap-select yang dulu ada di sini DIBUANG. Keenam halaman Petty
+   Cash Out tidak lagi memuat pustaka itu: dropdown di dalam baris kini select2
+   juga - seluruh pemanggilan .selectpicker() lama dialihkan lewat shim
+   $.fn.selectpicker di masing-masing halaman. Selektor .bootstrap-select tidak
+   akan pernah cocok lagi, jadi lebih baik hilang daripada menyesatkan. */
+
+/* select2 dibuat setinggi dan sebentuk .form-control - kalau tidak, tiap baris
+   isian tingginya berbeda-beda. */
+.pco-card .select2-container { width: 100% !important; }
+.pco-card .select2-container .select2-selection--single {
+  height: 34px; border: 1px solid #dbe4f3; border-radius: 9px;
+}
+.pco-card .select2-container--default .select2-selection--single .select2-selection__rendered {
+  line-height: 32px; font-size: 13px; color: #334155; padding-left: 10px;
+}
+.pco-card .select2-container--default .select2-selection--single .select2-selection__arrow {
+  height: 32px;
+}
+.pco-card .select2-container--default.select2-container--focus .select2-selection--single,
+.pco-card .select2-container--default.select2-container--open .select2-selection--single {
+  border-color: #93b4f5; box-shadow: 0 0 0 3px rgba(59, 130, 246, .18);
+}
+
+
+/* Aturan .bootstrap-select DIBUANG: keenam halaman Petty Cash Out tidak lagi
+   memuat pustaka itu - dropdown barisnya kini select2, lewat shim
+   $.fn.selectpicker di masing-masing halaman. Aturannya tidak akan pernah
+   cocok lagi, jadi lebih baik hilang daripada menyesatkan. */
+
+/* ---- select2 DI DALAM SEL TABEL ----
+   Dropdown baris (COA / Profit Center / Cost Center / Currency) kini select2
+   juga, bukan bootstrap-select lagi. Dibuat sepadat isian lain di sel (30px),
+   bukan setinggi isian kepala dokumen (34px).
+
+   Teksnya MEMBUNGKUS, bukan dipotong elipsis - bawaan select2 memotong, dan
+   dgn lebar kolom yang sudah dikunci itu berarti nama akun panjang jadi tidak
+   terbaca. Barisnya yang meninggi, sama seperti sebelumnya. */
+.pco-card .table td .select2-container--default .select2-selection--single {
+  height: auto; min-height: 30px;
+  border: 1px solid #dfe5ef; border-radius: 7px;
+}
+.pco-card .table td .select2-container--default .select2-selection--single .select2-selection__rendered {
+  white-space: normal; overflow: visible; text-overflow: clip;
+  line-height: 1.25; font-size: 12px;
+  padding: 4px 26px 4px 8px;
+  overflow-wrap: anywhere;
+}
+.pco-card .table td .select2-container--default .select2-selection--single .select2-selection__arrow {
+  height: 100%; top: 0; right: 4px;
+}
+/* Tanda "x" penghapus pilihan tidak dipakai di sini. */
+.pco-card .table td .select2-selection__clear { display: none; }
+
+/* ========================================================================
+   4. Deretan tab
+   ------------------------------------------------------------------------
+   DISALIN dari create_memorial_journal.php supaya kedua menu benar-benar
+   sama, bukan sekadar mirip. Nama kelasnya kebetulan sudah sama persis
+   (.tab-container / .tablinks), jadi markup-nya tidak perlu diganti.
+
+   Pola segmented control (gaya iOS/macOS): satu "track" abu-abu yang
+   lebarnya HANYA seukuran isinya (inline-flex), bukan melebar sepanjang
+   kartu. Tab aktif = pil PUTIH yang terangkat, BUKAN pil biru - supaya
+   tidak beradu perhatian dgn kepala kartu yang sudah biru pekat tepat di
+   atasnya.
+   ======================================================================== */
+.tabcontent { display: none; animation: pcoFade .3s; }
+@keyframes pcoFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* Strip terang tempat bilah tab berdiri - memisahkannya dari kepala kartu
+   di atas dan dari isi tab di bawah. */
+.pco-tabbar {
+  padding: 12px 18px 0;
+  background: #fafbfe;
+  border-bottom: 1px solid #eef1f7;
+}
+.pco-tabbar .tab-container { margin-bottom: 12px; }
+
+.pco-body { padding: 16px 18px 18px; }
+
+/* Tiap berkas tab membungkus isinya dgn .card shadow-sm SENDIRI. Di dalam
+   .pco-card itu jadi kotak-di-dalam-kotak: dua garis tepi & dua bayangan
+   bersarang tepat di bawah bilah tab. Kartu dalamnya diratakan jadi sekadar
+   permukaan - ruang napasnya sudah disediakan .pco-body. !important
+   dibutuhkan karena .shadow-sm bawaan Bootstrap 4 memang ditulis dgn
+   !important. */
+.pco-body > .tabcontent > .card,
+.pco-body > .tabcontent > form > .card {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none !important;
+}
+/* !important + menyebut .p-2 secara terpisah: blok tabel di dalam tab ditulis
+   class="card-body p-2", dan utilitas .p-2 Bootstrap memang ber-!important.
+   Tanpa ini blok tabel menjorok 8px sementara blok isian 0 - sekat judul tiap
+   bagian jadi tidak lurus satu sama lain. Semua dinolkan; yang memberi jarak
+   tepi cukup .pco-body. */
+.pco-body > .tabcontent > .card > .card-body,
+.pco-body > .tabcontent > form > .card > .card-body {
+  padding: 0 !important;
+}
+
+.tab-container {
+  display: inline-flex;
+  vertical-align: top;
+  max-width: 100%;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 3px;
+  background: #eff2f7;
+  border-radius: 10px;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, .06);
+  margin-bottom: 18px;
+}
+
+.tablinks {
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: none;
+  background: transparent;
+  color: #6b7688;
+  padding: 8px 14px 9px;
+  /* header.php memaksa button{font-size:13px !important}, jadi angka di sini
+     ditulis sama supaya tidak menyesatkan - menaikkannya tidak akan berefek. */
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .18s ease, color .18s ease, box-shadow .18s ease;
+}
+
+.tablinks i { font-size: 12px; opacity: .7; }
+
+/* Garis aksen di DALAM pil aktif - melebar dari tengah saat tab berpindah.
+   Dipakai supaya tab aktif tetap tegas walau pilnya putih (bukan blok biru). */
+.tablinks::after {
+  content: '';
+  position: absolute;
+  left: 14px; right: 14px; bottom: 4px;
+  height: 2px; border-radius: 2px;
+  background: #2f6bdd;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform .2s ease;
+}
+
+.tablinks:hover { color: #1E3A8A; }
+
+.tablinks.active {
+  background: #ffffff;
+  color: #1E3A8A;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, .10), 0 3px 8px rgba(15, 23, 42, .06);
+}
+.tablinks.active::after { transform: scaleX(1); }
+.tablinks.active i { opacity: 1; color: #2f6bdd; }
+
+/* ========================================================================
+   4b. Sekat judul antar bagian + keadaan kosong
+   ------------------------------------------------------------------------
+   Isi tiap tab sebenarnya empat bagian berurutan - isian kepala dokumen,
+   tabel dokumen yang dibayar, tabel jurnal, lalu kotak total - tapi semuanya
+   ditulis sbg <div class="card-body"> berturut-turut di dalam SATU kartu.
+   Hasilnya: saat tabelnya masih kosong yang terlihat cuma dua strip kepala
+   tabel yang menempel, tanpa batas dan tanpa petunjuk.
+
+   Pilihan yang dipakai (user, 02 Okt 2026): TETAP satu kartu, tiap bagian
+   diberi judul kecil dengan garis memanjang sbg sekat. Dipilih di atas
+   "tiap bagian jadi kartu sendiri" karena form ini sudah panjang dan kartu
+   tambahan menaikkan tingginya tanpa memberi kejelasan yang sepadan.
+   ======================================================================== */
+.pco-card .pco-sec {
+  display: flex; align-items: center; gap: 9px;
+  margin: 0 0 11px; padding-top: 12px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: #64748b;
+}
+.pco-card .pco-sec i { color: #2f6bdd; font-size: 12px; flex-shrink: 0; }
+/* Garis memanjang sampai tepi kanan - menandai awal bagian baru tanpa
+   menambah kotak. */
+.pco-card .pco-sec:after {
+  content: ''; flex: 1 1 auto; height: 1px; background: #e9eef7;
+}
+
+/* ---- Tabel yang masih kosong ----
+   Pesannya adalah <div class="pco-empty"> tepat DI BAWAH </table>, bukan di
+   dalamnya.
+
+   Dua hal yang menentukan bentuk ini:
+
+   1. TIDAK berupa baris <tr> penanda. Rutin simpan menelusuri baris di dalam
+      tbody untuk menyusun jurnal ($('#tbodyN tr').each), jadi baris penanda
+      berisiko ikut terkirim sbg baris kosong.
+
+   2. TIDAK berupa ::after pada tbody - itu percobaan pertama dan hasilnya
+      jelek. Menurut aturan perbaikan tata letak tabel, isi yang bukan
+      baris/sel dibungkus sel semu, dan sel itu masuk ke KOLOM PERTAMA; di
+      tabel jurnal lebarnya 10px sehingga kalimatnya jatuh satu kata per
+      baris. colspan tidak bisa diatur dari CSS, jadi tidak ada jalan keluar
+      selama pesannya masih di dalam <table>.
+
+   Kapan tampilnya diatur :has(tbody:empty) pada pembungkusnya - tetap tanpa
+   menambah apa pun ke dalam tabel. :empty hanya berlaku kalau tbody
+   BENAR-BENAR tidak punya anak (spasi pun dihitung), karena itu markup-nya
+   ditulis rapat "<tbody ...></tbody>".
+
+   Kalau peramban belum mengenal :has(), div-nya tetap tersembunyi - yaitu
+   persis keadaan sebelum ada pesan ini, tidak ada yang rusak. */
+.pco-card .pco-empty {
+  display: none;
+  padding: 26px 16px;
+  text-align: center; font-size: 12.5px; color: #94a3b8;
+  background: #fbfcfe;
+  border: 1px solid #e6ebf3; border-top: 0;
+  border-radius: 0 0 6px 6px;
+}
+/* Di tabel jurnal pesannya berada DI DALAM sel tfoot ber-colspan, jadi bingkai
+   & latarnya sudah disediakan tabelnya sendiri - kalau dibiarkan, akan tampak
+   kotak di dalam kotak. Di tabel daftar dokumen (tanpa tfoot) pesannya tetap
+   di bawah </table> dan bingkainya masih diperlukan. */
+.pco-card td > .pco-empty {
+  background: transparent; border: 0; border-radius: 0;
+  padding: 20px 12px 4px;
+}
+/* Pemilih keturunan (bukan anak langsung) supaya kedua letak itu sama-sama
+   terjangkau. */
+.pco-card .table-responsive:has(tbody:empty) .pco-empty { display: block; }
+
+/* ---- Barisan tombol Add / Insert / Delete Row ----
+   Dulu ditulis sbg baris tfoot DI DALAM tabel, sehingga saat tabelnya kosong
+   urutan yang terlihat jadi: kepala tabel -> tombol -> pesan "belum ada
+   baris", dan kotak pesannya tampak menggantung lepas di bawah tombol.
+   Sekarang di luar tabel, jadi urutannya wajar: kepala -> pesan -> tombol.
+   Saat tabelnya sudah berisi, tombol tetap di bawah baris terakhir. */
+.pco-card .pco-rowbtn {
+  display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+  padding: 12px 0 4px;
+}
+
+/* ========================================================================
+   5. Tabel di dalam form
+   ------------------------------------------------------------------------
+   .table-gradient (kepala navy pekat) dan .table-gradient2 (biru muda)
+   dipertahankan sbg NAMA KELAS - keenam halaman memakainya - tapi
+   tampilannya disamakan dgn tabel form FTR: kepala berlatar biru muda dgn
+   tulisan navy kecil berhuruf kapital, bukan blok navy pekat yang membuat
+   seluruh tabel terasa berat.
+   ======================================================================== */
+.pco-card .table { margin-bottom: 0; }
+
+.pco-card .table-gradient th,
+.pco-card .table-gradient2 th,
+.pco-card table.dataTable thead th {
+  background: #e8eefb !important; color: #1e3a8a !important;
+  font-size: 9.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  padding: 10px 8px; border: 0 !important;
+  border-bottom: 2px solid #b9cdee !important;
+  border-right: 1px solid #d7e3f6 !important;
+  white-space: nowrap; vertical-align: middle; text-align: center;
+}
+/* .table-gradient2 dipakai utk tabel tingkat kedua (mis. baris adjustment) -
+   dibedakan tipis saja supaya hierarkinya masih terbaca. */
+.pco-card .table-gradient2 th {
+  background: #f0f4fc !important;
+  border-bottom-color: #cfdcf5 !important;
+}
+.pco-card .table-gradient th:last-child,
+.pco-card .table-gradient2 th:last-child,
+.pco-card table.dataTable thead th:last-child { border-right: 0 !important; }
+
+.pco-card .table td,
+.pco-card table.dataTable tbody td {
+  padding: 8px; border: 0 !important;
+  border-bottom: 1px solid #e6ebf3 !important;
+  vertical-align: middle; font-size: 12px; color: #334155;
+}
+.pco-card .table tbody tr:last-child > td { border-bottom: 0 !important; }
+/* .table-striped bawaan Bootstrap melawan warna hover, jadi dinetralkan. */
+.pco-card .table-striped tbody tr:nth-of-type(odd) { background-color: transparent; }
+.pco-card .table-hover tbody tr:hover > td,
+.pco-card table.dataTable tbody tr:hover > td { background: #f3f7ff; }
+
+/* Isian DI DALAM sel diberi batas yang jelas - sebelumnya tampil sbg
+   gumpalan abu tanpa tepi. */
+.pco-card .table td .form-control,
+.pco-card table.dataTable tbody td .form-control {
+  height: 30px; font-size: 12px; padding: 2px 8px;
+  border: 1px solid #dfe5ef; border-radius: 7px; background: #fff;
+}
+.pco-card .table td .form-control[readonly],
+.pco-card .table td .form-control:disabled {
+  background: #f4f6fb; color: #94a3b8;
+}
+.pco-card .table td input[type="checkbox"],
+.pco-card .table td input[type="radio"] {
+  width: 15px; height: 15px; cursor: pointer;
+}
+/* Angka dibuat rata lebar supaya digitnya berbaris lurus antar baris. */
+.pco-card .table td input[style*="text-align:right"],
+.pco-card .table td input[style*="text-align: right"],
+.pco-card .table .text-right {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tabel lebar TETAP boleh digulir ke samping di dalam pembungkusnya -
+   halaman form ini tidak memakai modul Responsive DataTables, jadi
+   white-space: nowrap di sini memang yang diinginkan. */
+.pco-card table.dataTable th,
+.pco-card table.dataTable td { white-space: nowrap; vertical-align: middle; }
+.pco-card .dataTables_scrollHeadInner,
+.pco-card .dataTables_scrollBody table { width: 100% !important; }
+
+/* ========================================================================
+   5b. Tabel jurnal: lebar kolom DIKUNCI
+   ------------------------------------------------------------------------
+   Selama tata letak tabelnya otomatis, lebar kolom ditentukan lebar ALAMI
+   isi sel. Akibatnya serba salah: kalau dropdown dibiarkan, kolom COA melar
+   mengikuti nama akun terpanjang dan menggencet Debit/Credit/Description;
+   kalau dropdown dibatasi max-width, kolomnya tetap lebar tapi dropdown-nya
+   tidak penuh - terlihat menggantung.
+
+   table-layout: fixed memutus ketergantungan itu: lebar kolom ditentukan
+   aturan di bawah, isi sel tidak lagi ikut menentukan. Dengan begitu
+   dropdown boleh 100% penuh dan kolomnya tetap diam berapa pun panjang
+   nama akun yang dipilih.
+
+   min-width menjaga kolom tidak terlalu sempit di laptop; kalau ruangnya
+   kurang, .table-responsive yang menggulir - bukan kolomnya yang menciut
+   sampai tak terbaca.
+   ======================================================================== */
+.pco-card .pco-jtbl {
+  table-layout: fixed;
+  width: 100%;
+  min-width: 1040px;
+}
+/* Dgn lebar terkunci, nowrap hanya akan membuat isi meluber keluar sel. */
+.pco-card .pco-jtbl th,
+.pco-card .pco-jtbl td { white-space: normal; }
+
+/* 11 kolom - dipakai 10 dari 11 berkas.
+   Dua kolom centang memakai px (isinya memang tetap); sisanya persen. */
+.pco-card .pco-jtbl th:nth-child(1)  { width: 34px; }   /* - (centang)   */
+.pco-card .pco-jtbl th:nth-child(2)  { width: 18%; }    /* Coa           */
+.pco-card .pco-jtbl th:nth-child(3)  { width: 12%; }    /* Profit Center */
+.pco-card .pco-jtbl th:nth-child(4)  { width: 12%; }    /* Cost Center   */
+.pco-card .pco-jtbl th:nth-child(5)  { width: 10%; }    /* Buyer/Reff Doc */
+.pco-card .pco-jtbl th:nth-child(6)  { width: 10%; }    /* WS/Reff Date  */
+.pco-card .pco-jtbl th:nth-child(7)  { width: 6%; }     /* Currency      */
+.pco-card .pco-jtbl th:nth-child(8)  { width: 8%; }     /* Debit         */
+.pco-card .pco-jtbl th:nth-child(9)  { width: 8%; }     /* Credit        */
+.pco-card .pco-jtbl th:nth-child(10) { width: 10%; }    /* Description   */
+.pco-card .pco-jtbl th:nth-child(11) { width: 34px; }   /* Cek           */
+
+/* form_edit_pettycash_out_lp.php: 10 kolom, tanpa Currency - nomor kolom
+   sesudahnya bergeser, jadi lebarnya ditulis ulang. */
+.pco-card .pco-jtbl-10 { min-width: 980px; }
+.pco-card .pco-jtbl-10 th:nth-child(7)  { width: 9%; }    /* Debit       */
+.pco-card .pco-jtbl-10 th:nth-child(8)  { width: 9%; }    /* Credit      */
+.pco-card .pco-jtbl-10 th:nth-child(9)  { width: 12%; }   /* Description */
+.pco-card .pco-jtbl-10 th:nth-child(10) { width: 34px; }  /* cek         */
+.pco-card .pco-jtbl-10 th:nth-child(11) { width: auto; }
+
+/* ---- Perkakas DataTables (Show N entries, Search, info, halaman) ---- */
+.pco-card .dataTables_length label,
+.pco-card .dataTables_filter label {
+  font-size: 12px; font-weight: 600; color: #475569;
+  text-transform: none; letter-spacing: 0; margin-bottom: 0;
+}
+.pco-card .dataTables_length select {
+  height: 30px; min-width: 76px; width: auto;
+  border: 1px solid #dbe4f3; border-radius: 8px;
+  font-size: 12px; padding: 0 26px 0 10px; color: #334155;
+}
+.pco-card .dataTables_filter input {
+  height: 30px; border: 1px solid #dbe4f3; border-radius: 8px;
+  font-size: 12px; padding: 0 8px; color: #334155;
+}
+.pco-card .dataTables_filter input:focus,
+.pco-card .dataTables_length select:focus {
+  outline: none; border-color: #93b4f5; box-shadow: 0 0 0 3px rgba(59, 130, 246, .18);
+}
+.pco-card div.dataTables_wrapper .dataTables_info {
+  float: left; margin-top: 10px; font-size: 11.5px; color: #64748b;
+}
+.pco-card div.dataTables_wrapper .dataTables_paginate { float: right; margin-top: 10px; }
+.pco-card .pagination { margin-bottom: 0; }
+.pco-card .page-link {
+  border: 0; border-radius: 8px; margin: 0 2px; font-size: 12px; color: #1d4ed8;
+}
+.pco-card .page-item.active .page-link { background: #1d4ed8; color: #fff; }
+.pco-card .page-item.disabled .page-link { color: #b6c2d6; }
+
+/* ========================================================================
+   6. Kotak total NAG / NAK / Grand
+   ------------------------------------------------------------------------
+   Bentuknya "aksen garis kiri" (pilihan B dari halaman contoh, dipilih user
+   02 Okt 2026): pita berwarna selebar kartu DIGANTI garis tipis di tepi kiri,
+   dan nama perusahaan turun jadi label kecil. Alasannya: yang penting di kotak
+   ini angkanya, sementara pita selebar kartu menarik perhatian lebih dulu dan
+   beradu dgn kepala kartu biru yang sudah ada tepat di atasnya.
+
+   Nama kelasnya DIPERTAHANKAN semua (.total-box, tone-nag/nak/all,
+   .total-box-header, .total-box-body, .total-stat) - jadi perubahan bentuk ini
+   murni CSS, tidak satu pun markup di 10 berkas yang perlu disentuh.
+   ======================================================================== */
+.total-box {
+  border: 1px solid #e6ebf3;
+  /* Garis aksen: tebal 4px hanya di kiri. Warnanya ditentukan .tone-* . */
+  border-left: 4px solid #2f5bbf;
+  border-radius: 12px; background: #fff;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, .05);
+  overflow: hidden; height: 100%;
+  padding: 13px 15px;
+  display: flex; flex-direction: column;
+}
+.total-box.tone-nag { border-left-color: #2f5bbf; }
+.total-box.tone-nak { border-left-color: #0f766e; }
+/* Grand Total dibedakan dgn latar sedikit kebiruan, bukan warna garis yang
+   lebih mencolok - supaya tetap terbaca sbg "jumlah dari dua di sebelahnya". */
+.total-box.tone-all { border-left-color: #1E3A8A; background: #fbfcff; }
+
+/* Judul kartu: bukan lagi pita berlatar warna, melainkan label kecil berhuruf
+   kapital. Yang berwarna tinggal ikonnya. */
+.total-box .total-box-header {
+  display: flex; align-items: center; gap: 7px;
+  padding: 0; margin-bottom: 9px;
+  background: none; color: #64748b;
+  font-weight: 700; font-size: 10.5px;
+  letter-spacing: .06em; text-transform: uppercase;
+}
+.total-box .total-box-header i { font-size: 12px; opacity: 1; flex-shrink: 0; }
+.total-box.tone-nag .total-box-header i { color: #2f5bbf; }
+.total-box.tone-nak .total-box-header i { color: #0f766e; }
+.total-box.tone-all .total-box-header i { color: #1E3A8A; }
+
+/* flex: 1 -> isi kotak mengisi sisa tinggi, jadi ketiga kotak dalam satu baris
+   berakhir di garis bawah yang sama walau judulnya ada yang membungkus. */
+.total-box .total-box-body {
+  flex: 1 1 auto;
+  padding: 0; display: flex; flex-direction: column;
+}
+.total-stat {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  padding: 7px 0; border-bottom: 1px dashed #e9eef7;
+}
+.total-stat:last-child { border-bottom: 0; }
+.total-stat-label {
+  font-size: 10px; font-weight: 700; color: #94a3b8;
+  text-transform: uppercase; letter-spacing: .05em; white-space: nowrap;
+}
+/* Pembungkus nilai mengambil sisa lebar baris, jadi angkanya rata kanan di
+   tepi kotak - bukan mengambang di tengah ruang kosong. */
+.total-stat-value-wrap { flex: 1 1 auto; min-width: 0; text-align: right; }
+/* Nilainya tetap <input> (dibaca & diisi JavaScript), hanya dibuat tampak
+   seperti tulisan biasa. */
+.total-stat input.total-stat-value {
+  border: 0; background: transparent; padding: 0;
+  font-size: 16px; font-weight: 700; text-align: right;
+  width: 100%; height: auto;
+  color: #0f172a; font-variant-numeric: tabular-nums;
+}
+.total-stat input.total-stat-value:focus { outline: none; box-shadow: none; }
+/* Saat belum ada baris yang dipilih, isiannya MEMANG kosong - dan kotaknya
+   jadi terbaca seperti rusak. placeholder "0.00" (ditambahkan di markup)
+   diredupkan supaya jelas itu keadaan kosong, bukan angka sungguhan. */
+.total-stat input.total-stat-value::placeholder { color: #cbd5e1; font-weight: 600; }
+.total-stat input.total-stat-value::-ms-input-placeholder { color: #cbd5e1; font-weight: 600; }
+
+/* ========================================================================
+   7. Kaki form - tombol Save & Back
+   ======================================================================== */
+.pco-foot {
+  padding: 16px 18px 18px; border-top: 1px solid #eef1f7; background: #fafbfe;
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+}
+.pco-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ========================================================================
+   8. Nuansa biru untuk SweetAlert
+   ------------------------------------------------------------------------
+   Selektornya SENGAJA tidak berawalan .pco-: SweetAlert menempelkan popup-nya
+   langsung di <body>, DI LUAR kartu, jadi selektor ber-awalan tidak akan
+   mengenainya sama sekali. Aman karena berkas ini hanya termuat di halaman
+   Petty Cash Out.
+   ======================================================================== */
+.swal2-popup { border-radius: 14px; }
+.swal2-title { color: #1e3a8a; font-size: 19px; font-weight: 700; }
+.swal2-html-container { color: #475569; font-size: 13.5px; }
+.swal2-actions .swal2-confirm {
+  background: #1d4ed8 !important; border-radius: 9px; font-weight: 600;
+  padding: 8px 20px; box-shadow: none !important;
+}
+.swal2-actions .swal2-cancel {
+  background: #eef1f7 !important; color: #475569 !important;
+  border-radius: 9px; font-weight: 600; padding: 8px 20px; box-shadow: none !important;
+}
+.swal2-icon.swal2-success { border-color: #bcd3f6 !important; }
+.swal2-icon.swal2-success [class^="swal2-success-line"] { background-color: #2f6bdd !important; }
+.swal2-icon.swal2-success .swal2-success-ring { border-color: rgba(47, 107, 221, .3) !important; }
+.swal2-icon.swal2-question { border-color: #93b4f5 !important; color: #2f6bdd !important; }
+.swal2-loader { border-color: #2f6bdd transparent #2f6bdd transparent !important; }
+
+/* ========================================================================
+   8b. select2 & datepicker
+   ------------------------------------------------------------------------
+   Sama spt SweetAlert, keduanya menempelkan panelnya LANGSUNG DI <body> -
+   di luar .pco-card - jadi selektor berawalan .pco- tidak akan mengenainya.
+   Karena itu di bawah ini sengaja tanpa awalan. Aman: berkas CSS ini hanya
+   dimuat oleh enam halaman Petty Cash Out.
+   ======================================================================== */
+
+/* ---- select2: panel pilihan ----
+
+   Selektornya SENGAJA tidak menyebut tema (tanpa .select2-container--default
+   atau --bootstrap4). Dulu ditulis khusus tema bawaan, lalu dropdown di KEPALA
+   dokumen tetap tampil polos - ternyata di sana select2 dipanggil dgn
+   theme:'bootstrap4' sementara dropdown di baris memakai tema bawaan, jadi dua
+   tema berbeda dalam satu halaman dan aturannya cuma kena salah satu.
+   Pemanggilannya kini sudah disamakan ke tema bawaan, tapi aturan di bawah
+   dibuat netral-tema supaya tidak gampang patah lagi.
+
+   !important dipakai karena select2-bootstrap4.min.css (dimuat header.php)
+   menulis aturannya dgn selektor yang lebih khusus. */
+.select2-dropdown {
+  border: 1px solid #e3e9f4 !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, .14);
+}
+.select2-search--dropdown { padding: 7px 7px 4px !important; }
+.select2-search--dropdown .select2-search__field {
+  height: 30px; font-size: 12.5px; color: #334155;
+  border: 1px solid #dbe4f3 !important; border-radius: 7px !important; padding: 0 8px;
+}
+.select2-search--dropdown .select2-search__field:focus {
+  outline: none; border-color: #93b4f5 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, .18);
+}
+.select2-results__options { padding: 4px; }
+.select2-results__option {
+  font-size: 12.5px; padding: 6px 10px !important;
+  border-radius: 7px; color: #334155;
+}
+.select2-results__option--highlighted,
+.select2-results__option--highlighted[aria-selected] {
+  background: #eef4ff !important; color: #1e3a8a !important;
+}
+.select2-results__option[aria-selected="true"],
+.select2-results__option[data-selected="true"],
+.select2-results__option.select2-results__option--selected {
+  background: #1d4ed8 !important; color: #fff !important;
+}
+/* Pesan "No results found" */
+.select2-results__message { font-size: 12px; color: #94a3b8; padding: 8px 10px; }
+
+/* ---- datepicker (bootstrap-datepicker) ---- */
+.datepicker.dropdown-menu {
+  border: 1px solid #e3e9f4; border-radius: 12px; padding: 8px;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, .14); font-size: 12.5px;
+}
+.datepicker table { margin: 0; }
+.datepicker table tr td,
+.datepicker table tr th { border-radius: 8px; width: 30px; height: 28px; }
+.datepicker .datepicker-switch,
+.datepicker .prev, .datepicker .next {
+  color: #1e3a8a; font-weight: 700; border-radius: 8px;
+}
+.datepicker .datepicker-switch:hover,
+.datepicker .prev:hover, .datepicker .next:hover { background: #eef4ff; }
+.datepicker table tr th.dow {
+  color: #94a3b8; font-size: 10.5px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .05em;
+}
+.datepicker table tr td.day:hover,
+.datepicker table tr td.focused { background: #eef4ff; color: #1e3a8a; }
+/* Tanggal terpilih & hari ini: datepicker3.css memakai gradien + !important,
+   jadi harus ditimpa dgn !important juga dan gradiennya dimatikan. */
+.datepicker table tr td.active,
+.datepicker table tr td.active:hover,
+.datepicker table tr td.active.active,
+.datepicker table tr td.active.active:hover {
+  background: #1d4ed8 !important; background-image: none !important;
+  color: #fff !important; text-shadow: none !important;
+}
+.datepicker table tr td.today,
+.datepicker table tr td.today:hover {
+  background: #fff6e5 !important; background-image: none !important;
+  color: #8a5a00 !important;
+}
+.datepicker table tr td.old,
+.datepicker table tr td.new { color: #cbd5e1; }
+
+/* ========================================================================
+   9. Tombol
+   ------------------------------------------------------------------------
+   Diatur DARI SINI, bukan dgn mengganti kelas di markup: tombol-tombol itu
+   tersebar di 11 berkas (6 halaman + 6 berkas tab) dan beberapa di antaranya
+   ditulis tanpa kelas .btn sama sekali - mis. class="btn-outline-primary
+   btn-sm" pada tombol Save. Karena itu yang dipilih adalah ELEMEN-nya
+   (button/a) yang kelasnya memuat "btn", bukan kelas .btn.
+   ======================================================================== */
+/* :not(.dropdown-toggle) PENTING. bootstrap-select mengganti <select> dgn
+   sebuah <button class="btn btn-light dropdown-toggle">, jadi tanpa pengecualian
+   ini setiap dropdown COA / Profit Center / Cost Center / Currency di dalam
+   tabel ikut berubah jadi tombol-pil: menciut seukuran isinya (inline-flex),
+   tulisannya rata tengah, dan berbayang. Itu yang membuat baris hasil Add Row
+   terlihat kacau. */
+.pco-card button[class*="btn"]:not(.dropdown-toggle),
+.pco-card a[class*="btn"]:not(.dropdown-toggle),
+.pco-card input[type="button"][class*="btn"] {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 32px; padding: 0 14px;
+  border: 0;
+  /* !important: tombol Save & Back menulis border-radius: 6px langsung di
+     atribut style, dan aturan inline selalu menang tanpa ini. */
+  border-radius: 9px !important;
+  font-size: 12px; font-weight: 600; line-height: 1;
+  text-decoration: none; cursor: pointer;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, .12);
+  transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+}
+.pco-card button[class*="btn"]:not(.dropdown-toggle):hover,
+.pco-card a[class*="btn"]:not(.dropdown-toggle):hover {
+  transform: translateY(-1px); filter: brightness(.97); text-decoration: none;
+}
+.pco-card button[class*="btn"]:not(.dropdown-toggle):focus,
+.pco-card a[class*="btn"]:not(.dropdown-toggle):focus {
+  outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, .28);
+}
+.pco-card button[class*="btn"]:not(.dropdown-toggle):disabled,
+.pco-card button[class*="btn"]:not(.dropdown-toggle).disabled {
+  opacity: .55; box-shadow: none; transform: none; cursor: not-allowed;
+}
+/* Tombol yang isinya hanya ikon (tambah/hapus baris) dibuat persegi. */
+.pco-card button[class*="btn"]:not(.dropdown-toggle).btn-sm { height: 30px; padding: 0 11px; font-size: 11.5px; }
+
+/* Warna. Varian "outline" tidak lagi berupa garis tepi kosong - di dalam
+   tabel yang padat, tombol bergaris tipis nyaris tak terlihat. */
+.pco-card .btn-primary,
+.pco-card .btn-outline-primary { background: linear-gradient(180deg, #2f6bdd, #1d4ed8); color: #fff; }
+.pco-card .btn-primary:hover,
+.pco-card .btn-outline-primary:hover { color: #fff; }
+.pco-card .btn-success,
+.pco-card .btn-outline-success { background: linear-gradient(180deg, #22c07f, #10b981); color: #fff; }
+.pco-card .btn-success:hover,
+.pco-card .btn-outline-success:hover { color: #fff; }
+.pco-card .btn-warning,
+.pco-card .btn-outline-warning { background: linear-gradient(180deg, #fbbf24, #f0a413); color: #4a3200; }
+.pco-card .btn-warning:hover,
+.pco-card .btn-outline-warning:hover { color: #4a3200; }
+.pco-card .btn-danger,
+.pco-card .btn-outline-danger { background: linear-gradient(180deg, #f4635f, #e13c37); color: #fff; }
+.pco-card .btn-danger:hover,
+.pco-card .btn-outline-danger:hover { color: #fff; }
+.pco-card .btn-info,
+.pco-card .btn-outline-info { background: linear-gradient(180deg, #4fc3f7, #29b6f6); color: #06384f; }
+.pco-card .btn-secondary,
+.pco-card .btn-outline-secondary,
+.pco-card .btn-light:not(.dropdown-toggle) { background: #fff; color: #475569; border: 1px solid #dbe4f3; box-shadow: 0 1px 3px rgba(15, 23, 42, .07); }
+
+/* ========================================================================
+   10. .custom-col - hanya dipakai form_edit_pettycash_out_lp.php
+   ------------------------------------------------------------------------
+   Delapan kolom sama lebar dalam satu baris (100 / 8 = 12,5%). Dipindah ke
+   sini dari blok <style> halaman itu supaya tidak ada lagi aturan tampilan
+   yang tertinggal di dalam halaman.
+   ======================================================================== */
+.custom-col { flex: 0 0 12.5%; max-width: 12.5%; }
+/* Di tablet & HP delapan kolom 12,5% tinggal ~60px - tidak terpakai. */
+@media (max-width: 1199.98px) { .custom-col { flex: 0 0 25%; max-width: 25%; } }
+@media (max-width: 575.98px)  { .custom-col { flex: 0 0 50%; max-width: 50%; } }
+
+/* ========================================================================
+   11. Layar lebar, tablet, dan HP
+   ------------------------------------------------------------------------
+   Sidebar aplikasi ini lebarnya TETAP 230px dan tidak pernah menciut, jadi
+   ruang isi di 768px cuma ~506px. Karena itu titik-titik di bawah dipilih
+   dari ruang ISI, bukan dari lebar layar saja.
+   ======================================================================== */
+/* 24"-32": kartu tidak dibiarkan melebar tanpa batas - baris isian yang
+   terlalu lebar membuat mata harus menyapu jauh untuk satu baris. */
+@media (min-width: 1800px) {
+  .pco-card .card-body { padding-left: 24px; padding-right: 24px; }
+  .pco-head { padding-left: 24px; padding-right: 24px; }
+  .pco-tabbar { padding-left: 24px; padding-right: 24px; }
+  .pco-body { padding-left: 24px; padding-right: 24px; }
+  .pco-foot { padding-left: 24px; padding-right: 24px; }
+}
+/* Tablet & laptop 14": bilah tab mulai membungkus sendiri (flex-wrap), jadi
+   yang perlu dirapatkan hanya jarak dalamnya. */
+@media (max-width: 1199.98px) {
+  .tablinks { padding: 7px 11px 8px; gap: 6px; }
+  .tablinks::after { left: 11px; right: 11px; }
+  .total-stat input.total-stat-value { font-size: 15px; }
+}
+/* HP: tab jadi dua-tiga per baris dan melebar penuh supaya mudah ditekan;
+   kotak total ditumpuk, bukan dipaksa sebaris. */
+@media (max-width: 767.98px) {
+  .pco-card { border-radius: 13px; }
+  .pco-head { padding: 10px 14px; gap: 9px; }
+  .pco-head h1 { font-size: 14px; }
+  .pco-head-icon { width: 30px; height: 30px; font-size: 15px; }
+  .pco-card .card-body { padding-left: 12px; padding-right: 12px; }
+  .pco-tabbar { padding-left: 12px; padding-right: 12px; }
+  .pco-body { padding-left: 12px; padding-right: 12px; }
+  .pco-foot { padding-left: 12px; padding-right: 12px; }
+  /* Track tab dibiarkan melebar penuh di HP supaya tiap tab cukup lebar untuk
+     ditekan jempol - di layar lebar ia tetap seukuran isinya. */
+  .tab-container { display: flex; width: 100%; }
+  .tablinks { flex: 1 1 auto; justify-content: center; padding-left: 10px; padding-right: 10px; }
+  .tablinks::after { left: 10px; right: 10px; }
+  .total-box { margin-bottom: 12px; }
+  .pco-card .dataTables_filter { text-align: left; }
+  .pco-card .dataTables_filter input { width: 100%; }
+  .pco-card div.dataTables_wrapper .dataTables_info,
+  .pco-card div.dataTables_wrapper .dataTables_paginate { float: none; text-align: left; }
+  .pco-actions .app-btn, .pco-foot .app-btn { flex: 1 1 auto; justify-content: center; }
+  /* Save & Back dilebarkan supaya mudah ditekan dgn jempol. Dipilih lewat
+     id-nya (simpan1..simpan6, batal) karena pembungkusnya cuma .col-md-3
+     tanpa kelas khas - dan JANGAN semua tombol, supaya tombol +/- di dalam
+     tabel tidak ikut melebar. */
+  .pco-card [id^="simpan"], .pco-card #batal { flex: 1 1 42%; }
+  .pco-card [id^="simpan"] + [id="batal"] { margin-left: 0; }
+}

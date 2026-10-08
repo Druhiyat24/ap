@@ -463,7 +463,7 @@ input[type=number] {
 <title>SB V2.0</title>
 
 <!-- Bootstrap core CSS -->
-<link href="../css/4.1.1/main.css" rel="stylesheet">  
+<link href="../css/4.1.1/main.css?v=<?php echo @filemtime(__DIR__ . '/css/4.1.1/main.css'); ?>" rel="stylesheet">
 <link href="../css/4.1.1/bootstrap.min.css" rel="stylesheet">
 <link href="../css/4.1.1/datatables.min.css" rel="stylesheet">
 <link href="../css/4.1.1/bootstrap-select.min.css" rel="stylesheet">

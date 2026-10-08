@@ -34,8 +34,8 @@ $sql = mysqli_query($conn2,"select no_po, tgl_po, no_pi, supp, SUM(subtotal) as 
                             <td style="width:50px;text-align: right;" value="'.$row['tax'].'">'.number_format($row['tax'],2).'</td>
                             <td style="width:50px;text-align: right;" value="'.$row['total'].'">'.number_format($row['total'],2).'</td>                            
                        </tr>';
-            $table .= '</tbody>';
         }
+            $table .= '</tbody>';
             $table .= '</table>';
 
 echo $table;

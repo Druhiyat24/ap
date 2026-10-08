@@ -1,0 +1,362 @@
+/* ============================================================================
+   app-ftr-form.css - kosakata .ftr- untuk FORM PEMBUATAN FTR
+   (formftrcbd.php & formftrdp.php).
+
+   Dipisah jadi berkas sendiri karena kedua form itu bersaudara: tata letak,
+   kepala kartu, tabel PO, kotak ringkasan, dua modalnya (#mymodal "Choose
+   Supplier" dan #mymodalpo rincian PO), dan nuansa SweetAlert-nya sama persis.
+   Kalau aturannya disalin di masing-masing halaman, cepat atau lambat keduanya
+   melenceng.
+
+   DITAUT HANYA OLEH DUA HALAMAN ITU - bukan dari header.php - supaya menu lain
+   tidak ikut berubah tanpa diminta. Taut-nya memakai penanda versi dari
+   filemtime, jadi perubahan di sini langsung sampai ke user.
+   ============================================================================ */
+/* ========================================================================
+   Kosakata .ftr-. Warnanya disamakan dgn menu Memorial Journal supaya
+   keduanya terbaca sebagai satu keluarga: latar #f4f6fb, kartu 16px,
+   kepala bergradien navy #1E3A8A -> #3b82f6, kepala tabel soft #eef3fb.
+   Ditulis DI HALAMAN INI, bukan di app-skin*.css, supaya menu lain tidak
+   ikut berubah tanpa diminta.
+   ======================================================================== */
+body { background-color: #f4f6fb; }
+
+.ftr-card {
+  background: #fff;
+  border: 1px solid #e6ebf3;
+  border-radius: 16px;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, .06);
+  overflow: hidden;
+}
+.ftr-head {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 11px;
+  padding: 11px 18px;
+  background: linear-gradient(90deg, #1E3A8A 0%, #2f5bbf 55%, #3b82f6 100%);
+}
+/* Kotak ikon KACA, bukan blok navy: latarnya sendiri sudah navy, jadi kotak
+   navy akan hilang menyatu. */
+.ftr-head-icon {
+  width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+  background: rgba(255, 255, 255, .16);
+  border: 1px solid rgba(255, 255, 255, .3);
+  color: #fff;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 16px;
+}
+.ftr-head h1 { margin: 0; font-size: 15.5px; font-weight: 700; color: #fff; letter-spacing: .01em; }
+/* Putih diredupkan, bukan abu - abu apa pun terbaca kotor di atas navy. */
+.ftr-head .ftr-crumb { display: block; margin-top: 2px; font-size: 11.5px; color: rgba(255, 255, 255, .78); }
+
+.ftr-panel { padding: 14px 18px 2px; background: #fafbfe; border-bottom: 1px solid #eef1f7; }
+.ftr-body  { padding: 14px 18px 4px; }
+/* Tabelnya dibungkus .row > .col-md-12 milik Bootstrap, dan DataTables
+   menambah satu lapis .row > .col-sm-12 lagi. Tiap lapis menyumbang padding
+   15px yang TIDAK selalu terimbangi margin negatif .row-nya, sehingga seluruh
+   blok tabel menjorok ke dalam dan tidak lurus dgn kotak Description di
+   atasnya. Jaraknya dinolkan di dalam .ftr-body saja. */
+.ftr-body > .row,
+.ftr-body .dataTables_wrapper > .row { margin-left: 0 !important; margin-right: 0 !important; }
+.ftr-body > .row > [class*="col-"],
+.ftr-body .dataTables_wrapper > .row > [class*="col-"],
+.ftr-body > .row > .col-md-12 { padding-left: 0 !important; padding-right: 0 !important; }
+/* .ftr-foot berada DI DALAM .ftr-body yang sudah memberi jarak 18px.
+   Padding mendatarnya sendiri membuat jaraknya MENUMPUK jadi 36px,
+   sehingga tombol Save & blok total menjorok lebih dalam daripada
+   tabel. Yang mendatar dinolkan; yang tegak tetap. */
+.ftr-foot  { padding: 20px 0 16px; }
+
+/* ---- Nuansa biru untuk SweetAlert ----
+   Selektornya SENGAJA tidak berawalan .ftr-: SweetAlert menempelkan popup-nya
+   langsung di <body>, DI LUAR kartu, jadi selektor ber-awalan tidak akan
+   mengenainya sama sekali. Aman karena blok CSS ini hanya termuat di halaman
+   ini. */
+.swal2-popup { border-radius: 14px; }
+.swal2-title { color: #1e3a8a; font-size: 19px; font-weight: 700; }
+.swal2-html-container { color: #475569; font-size: 13.5px; }
+/* ================= Dua modal halaman ini =================
+   "Choose Supplier" (#mymodal) & detail PO (#mymodalpo). Keduanya memakai
+   kepala bergradien navy yang SAMA dgn kepala kartu, supaya tidak terasa
+   datang dari aplikasi lain. Markup aslinya tidak diubah - semuanya dari
+   sini, jadi tidak ada risiko merusak isian atau tombol yang sudah jalan. */
+#mymodal .modal-content,
+#mymodalpo .modal-content {
+  border: 0; border-radius: 14px; overflow: hidden;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, .28);
+}
+#mymodal .modal-header,
+#mymodalpo .modal-header {
+  background: linear-gradient(90deg, #1E3A8A 0%, #2f5bbf 55%, #3b82f6 100%);
+  border: 0; padding: 12px 20px; align-items: center;
+}
+#mymodal .modal-title,
+#mymodalpo .modal-title {
+  margin: 0; font-size: 15px; font-weight: 700; color: #fff; letter-spacing: .01em;
+}
+/* Tombol tutup bawaan Bootstrap hitam & nyaris tak terlihat di atas navy. */
+#mymodal .modal-header .close,
+#mymodalpo .modal-header .close {
+  color: #fff; opacity: 1; text-shadow: none; font-size: 14px;
+  background: rgba(255, 255, 255, .18); border-radius: 7px;
+  width: 26px; height: 26px; padding: 0; margin: 0; flex-shrink: 0;
+}
+#mymodal .modal-header .close:hover,
+#mymodalpo .modal-header .close:hover { background: rgba(255, 255, 255, .3); }
+
+/* ---- Choose Supplier ---- */
+#mymodal .modal-content { max-height: calc(100vh - 3.5rem); }
+#mymodal .modal-body { padding: 16px 20px 6px; background: #f8fafd; overflow-y: auto; }
+#mymodal .modal-footer { border-top: 0; padding: 4px 20px 16px; background: #f8fafd; }
+#mymodal label {
+  display: block; margin-bottom: 4px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: #64748b;
+}
+/* Label "-" pemisah dua tanggal: dibuat sejajar TENGAH dgn kotaknya, bukan
+   menempel di atas seperti label lain. */
+#mymodal label.col-md-1 {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 34px; margin: 0; color: #94a3b8;
+}
+#mymodal .form-control,
+#mymodal .bootstrap-select > .dropdown-toggle { height: 34px; font-size: 13px !important; }
+#mymodal .bootstrap-select { width: 100% !important; }
+
+/* ---- Detail PO ---- */
+#mymodalpo .modal-dialog { max-width: 720px; }
+/* Tinggi dibatasi setinggi layar supaya kotaknya tetap utuh di tengah walau
+   rincian PO-nya panjang - yg menggulir isinya, bukan halamannya. */
+#mymodalpo .modal-content { max-height: calc(100vh - 3.5rem); }
+#mymodalpo .container { overflow-y: auto; }
+/* Tiga keterangan ringkas (Tgl PO / Supplier / Currency) aslinya memakai
+   kelas .modal-body masing-masing, sehingga tiap potong dapat padding modal
+   penuh dan jaraknya jadi renggang tak beraturan. Dinolkan, lalu diatur
+   dari pembungkusnya. */
+#mymodalpo .container { padding: 14px 20px 18px; background: #f8fafd; }
+#mymodalpo .modal-body { padding: 0 !important; }
+#mymodalpo #txt_tgl_po,
+#mymodalpo #txt_supp2,
+#mymodalpo #txt_curr { padding: 0 8px 11px !important; }
+#mymodalpo .ftr-k {
+  display: block; margin-bottom: 2px;
+  font-size: 10px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: #94a3b8;
+}
+#mymodalpo .ftr-v {
+  display: block; font-size: 12.5px; font-weight: 600; color: #1f2937;
+  overflow-wrap: anywhere;
+}
+#mymodalpo #details { margin-top: 4px; }
+#mymodalpo #mytdmodal {
+  border: 1px solid #e6ebf3; border-radius: 10px; overflow: hidden; margin-bottom: 12px;
+}
+#mymodalpo #mytdmodal thead th {
+  background: #e8eefb !important; color: #1e3a8a;
+  font-size: 9.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  padding: 9px 8px; border: 0 !important; border-bottom: 2px solid #b9cdee !important;
+  border-right: 1px solid #d7e3f6 !important; vertical-align: middle;
+}
+#mymodalpo #mytdmodal thead th:last-child { border-right: 0 !important; }
+#mymodalpo #mytdmodal tbody td {
+  padding: 8px; border: 0 !important; border-bottom: 1px solid #e6ebf3 !important;
+  vertical-align: middle; font-size: 12px; color: #334155;
+}
+#mymodalpo #mytdmodal tbody tr:last-child td { border-bottom: 0 !important; }
+#mymodalpo #mytdmodal.table-striped tbody tr:nth-of-type(odd) { background-color: #fafbfe; }
+/* Tabel ringkasan di bawahnya (Subtotal/Tax/Total) - tanpa id, jadi dipilih
+   sebagai tabel yang BUKAN tabel detail. */
+#mymodalpo #details table:not(#mytdmodal) {
+  font-variant-numeric: tabular-nums;
+}
+#mymodalpo #details table:not(#mytdmodal) td { padding: 3px 0; color: #475569; font-size: 12px; }
+#mymodalpo #details table:not(#mytdmodal) tr:last-child td { font-weight: 700; color: #1e3a8a; font-size: 13px; }
+
+/* Ponsel: modal tidak lagi menempel ke tepi layar. */
+@media (max-width: 575.98px) {
+  #mymodal .modal-dialog, #mymodalpo .modal-dialog { margin: 10px; }
+  #mymodal .modal-body, #mymodalpo .container { padding-left: 14px; padding-right: 14px; }
+}
+
+.swal2-actions .swal2-confirm {
+  background: #1d4ed8 !important;
+  border-radius: 9px; font-weight: 600; padding: 8px 20px; box-shadow: none !important;
+}
+.swal2-actions .swal2-cancel {
+  background: #eef1f7 !important; color: #475569 !important;
+  border-radius: 9px; font-weight: 600; padding: 8px 20px; box-shadow: none !important;
+}
+/* Ikonnya ikut dibiru-kan - bawaan SweetAlert hijau & kuning terang yang
+   tidak nyambung dgn warna aplikasi ini. */
+.swal2-icon.swal2-success { border-color: #bcd3f6 !important; }
+.swal2-icon.swal2-success [class^="swal2-success-line"] { background-color: #2f6bdd !important; }
+.swal2-icon.swal2-success .swal2-success-ring { border-color: rgba(47, 107, 221, .3) !important; }
+.swal2-icon.swal2-question { border-color: #93b4f5 !important; color: #2f6bdd !important; }
+.swal2-loader { border-color: #2f6bdd transparent #2f6bdd transparent !important; }
+
+/* Label seragam - halaman ini aslinya memakai <b> berukuran bawaan. */
+.ftr-panel label, .ftr-foot label {
+  display: block; margin-bottom: 4px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: #64748b;
+}
+.ftr-panel label i, .ftr-foot label i { color: #dc2626 !important; font-style: normal; }
+
+/* Nomor dokumen read-only dibuat terbaca sebagai NILAI, bukan input kosong. */
+#noftrcbd.form-control-plaintext {
+  padding: 4px 10px; background: #eef3fb; border: 1px solid #d7e3f6;
+  border-radius: 8px; font-weight: 700; color: #1e3a8a;
+}
+
+/* ---- Tabel PO ----
+   Dipertegas: kepala tabel berlatar lebih pekat dgn garis pemisah antar
+   kolom, garis antar baris dinaikkan dari #f2f5fa (nyaris tak terlihat) ke
+   #e6ebf3, dan kotak isian di dalam sel diberi garis tepi - sebelumnya
+   tampil sebagai gumpalan abu tanpa batas yang jelas. */
+.ftr-tbl { border: 1px solid #e6ebf3; border-radius: 10px; overflow: hidden; }
+.ftr-tbl thead th {
+  background: #e8eefb !important; color: #1e3a8a;
+  font-size: 9.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  padding: 10px 8px; border: 0 !important;
+  border-bottom: 2px solid #b9cdee !important;
+  border-right: 1px solid #d7e3f6 !important;
+  white-space: nowrap; vertical-align: middle;
+}
+.ftr-tbl thead th:last-child { border-right: 0 !important; }
+.ftr-tbl tbody td {
+  padding: 8px; border: 0 !important; border-bottom: 1px solid #e6ebf3 !important;
+  vertical-align: middle; font-size: 12px; color: #334155;
+}
+.ftr-tbl tbody tr:last-child td { border-bottom: 0 !important; }
+/* .table-striped bawaan Bootstrap melawan warna hover, jadi dinetralkan. */
+.ftr-tbl.table-striped tbody tr:nth-of-type(odd) { background-color: transparent; }
+.ftr-tbl tbody tr:hover td { background: #f3f7ff; }
+/* Angka dibuat rata lebar supaya digitnya berbaris lurus antar baris. */
+.ftr-tbl .dt_price, .ftr-tbl .dt_tax, .ftr-tbl .dt_total {
+  font-variant-numeric: tabular-nums; font-weight: 600; color: #0f172a;
+}
+/* Kotak isian di dalam sel (No PI & Amount) diberi batas yang jelas. */
+.ftr-tbl tbody td .form-control {
+  height: 30px; font-size: 12px; padding: 2px 8px;
+  border: 1px solid #dfe5ef; border-radius: 7px; background: #fff;
+}
+.ftr-tbl tbody td .form-control:disabled,
+.ftr-tbl tbody td .form-control[readonly] { background: #f4f6fb; color: #94a3b8; }
+.ftr-tbl tbody td input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; }
+
+/* ---- Ringkasan nilai di kaki ---- */
+.ftr-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Tombol Select supplier: seluruh gayanya dulu ditulis inline di atribut
+   style. Dipindah ke sini supaya seragam dgn tombol lain. */
+#mysupp {
+  border: 0; border-radius: 9px; padding: 0 14px; height: 31px;
+  font-size: 12px; font-weight: 600; color: #fff;
+  background: linear-gradient(180deg, #2f6bdd, #1d4ed8);
+  cursor: pointer;
+}
+#mysupp:hover { filter: brightness(1.06); }
+
+/* ---- Responsif: Android, tablet, monitor 14"-32" ---- */
+/* Tabel ini 10 kolom dan beberapa di antaranya berisi kotak isian - di
+   ponsel maupun tablet tidak mungkin muat. Kotak tabelnya digulir mendatar
+   sendiri; kelas .ftr-scroll dipasang JavaScript sesudah DataTables jadi,
+   karena DataTables membungkus tabelnya dgn lapisannya sendiri. */
+.ftr-scroll { overflow-x: auto; }
+.ftr-tbl { min-width: 860px; }
+
+/* Tablet & monitor kecil: ringkasan nilai boleh memanjang penuh supaya
+   angkanya tidak terjepit di kotak 420px. */
+@media (max-width: 991.98px) {
+  .ftr-sum { max-width: 100%; }
+  .ftr-sum-row input { width: auto; flex: 1 1 auto; }
+}
+
+@media (max-width: 575.98px) {
+  .ftr-head { padding: 10px 14px; gap: 9px; }
+  .ftr-head h1 { font-size: 14px; }
+  .ftr-panel, .ftr-body { padding-left: 12px; padding-right: 12px; }
+  .ftr-actions { width: 100%; }
+  .ftr-actions .app-btn { flex: 1 1 auto; justify-content: center; }
+}
+
+/* ---- Perapian tata letak (01 Okt 2026) ---- */
+
+/* Tinggi kontrol diseragamkan. Bawaan Bootstrap 4 (.form-control = 38px)
+   bertabrakan dgn selectpicker & tombol Select yang tingginya sendiri-sendiri,
+   sehingga satu baris isian terlihat bergelombang. */
+/* !important dipakai SENGAJA di sini: markup lama menulis
+   style="font-size: 14px;" LANGSUNG di atribut tiap input, dan gaya inline
+   mengalahkan stylesheet biasa - tanpa !important ukurannya tetap
+   campur-campur 13px/14px dalam satu baris isian. */
+.ftr-panel .form-control,
+.ftr-panel .bootstrap-select > .dropdown-toggle { height: 34px; font-size: 13px !important; }
+.ftr-panel .bootstrap-select { width: 100% !important; }
+
+/* Kotak Supplier + tombol Select jadi SATU kesatuan: tombolnya menempel di
+   ujung kanan kotak, bukan melayang terpisah. */
+.ftr-panel .input-group { flex-wrap: nowrap; }
+.ftr-panel .input-group > .form-control {
+  border-top-right-radius: 0; border-bottom-right-radius: 0;
+}
+.ftr-panel .input-group-append { margin-left: -1px; }
+#mysupp {
+  height: 34px; border-radius: 0 8px 8px 0; padding: 0 16px;
+}
+
+/* Kotak read-only (Supplier) dibuat jelas-jelas read-only, bukan terlihat
+   seperti isian yang lupa diisi. */
+.ftr-panel input[readonly]:not(#noftrcbd) { background: #f8fafd; color: #475569; }
+
+/* ---- Perabot DataTables ---- */
+/* text-transform dikembalikan ke normal: "SHOW 10 ENTRIES" / "SEARCH:" itu
+   huruf besar semua karena aturan label di halaman ini ikut mengenainya. */
+.ftr-body .dataTables_wrapper label {
+  text-transform: none; letter-spacing: 0; font-size: 12px;
+  font-weight: 500; color: #64748b; display: inline-flex;
+  align-items: center; gap: 6px; margin-bottom: 0;
+}
+.ftr-body .dataTables_length,
+.ftr-body .dataTables_filter { margin-bottom: 10px; }
+.ftr-body .dataTables_length select,
+.ftr-body .dataTables_filter input {
+  height: 30px; font-size: 12px; border: 1px solid #dfe5ef; border-radius: 7px;
+  padding: 2px 8px; background: #fff;
+}
+.ftr-body .dataTables_info { font-size: 11.5px; color: #94a3b8; padding-top: 10px; }
+.ftr-body .dataTables_paginate .page-link { font-size: 12px; border-radius: 7px; margin: 0 2px; }
+.ftr-body .dataTables_empty { color: #94a3b8; font-size: 12px; padding: 18px 0 !important; }
+
+/* ---- Ringkasan nilai di kaki ----
+   Aturan ".ftr-foot .form-row { max-width: 360px }" yang lama DILEPAS: batas
+   itu ikut mengenai baris TOMBOL, sehingga Save & Back terjepit di lebar
+   180px dan menumpuk ke bawah. Ringkasan sekarang punya kotaknya sendiri,
+   tombolnya bebas. */
+/* Kotak total diletakkan di KANAN (permintaan user) lewat flex pada <form>
+   pembungkusnya; tombol didorong balik ke kiri dgn margin-right:auto. */
+.ftr-foot form { display: flex; flex-direction: column; align-items: flex-end; }
+.ftr-actions { margin-right: auto; }
+.ftr-sum {
+  width: 100%; max-width: 420px;
+  border: 1px solid #e6ebf3; border-radius: 10px; background: #fff;
+  padding: 2px 13px; margin-bottom: 14px;
+}
+.ftr-sum-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 8px 0; border-bottom: 1px solid #f2f5fa;
+}
+.ftr-sum-row:last-child { border-bottom: 0; }
+.ftr-sum-row > span {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: #64748b; white-space: nowrap;
+}
+/* Kotak angkanya dibuat POLOS: ini nilai hasil hitungan, bukan isian -
+   garis tepi kotak input justru mengundang orang mengetiknya. */
+.ftr-sum-row input {
+  border: 0; background: transparent; padding: 0; width: 190px;
+  text-align: right; font-size: 13px; font-weight: 600; color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+.ftr-sum-row input:focus { outline: 0; }
+/* Baris Total dipisah garis navy - itu angka yang benar-benar dibaca. */
+.ftr-sum-row.is-total { border-top: 2px solid #1E3A8A; border-bottom: 0; margin-top: 2px; padding-top: 9px; }
+.ftr-sum-row.is-total > span { color: #1e3a8a; }
+.ftr-sum-row.is-total input { font-size: 15px; font-weight: 700; }
+

@@ -196,6 +196,23 @@ body { background-color: #f4f6fb; }
 .ftl-mini.is-approve { background: #eef4ff; color: #1d4ed8; }
 /* Dipakai daftar Petty Cash Out: tombol "Show" pembuka modal rincian. */
 .ftl-mini.is-show    { background: #f1f5fb; color: #334155; }
+/* Varian "info" - biru muda. Dipakai tombol View yang membuka rincian:
+   abu gelap bawaan .is-show membuatnya terbaca seperti tombol mati. */
+.ftl-mini.is-info    { background: #e4f4fd; color: #0b6a8f; }
+
+/* ---- Tombol Excel ----
+   Varian sendiri, bukan .app-btn-success: hijau Create New sudah dipakai di
+   sebelahnya, jadi kalau Excel ikut hijau yang sama keduanya jadi sulit
+   dibedakan sekilas. Hijau di sini lebih pekat - warna yang memang dikenali
+   sebagai Excel - sehingga tetap jelas beda perannya.
+
+   Diletakkan di berkas ini (bukan app-skin-form.css) supaya tetap terbatas
+   pada halaman daftar yang memang menautnya. */
+.app-btn-excel {
+  background: linear-gradient(180deg, #1aa05a, #107c41);
+  color: #fff;
+}
+.app-btn-excel:hover { color: #fff; }
 .ftl-mini.is-cancel  { background: #fdecec; color: #b3312c; }
 .ftl-mini.is-pdf     { background: #eaf8f1; color: #15724a; }
 .ftl-mini.is-edit    { background: #fdf7e9; color: #8a5a06; }
@@ -244,7 +261,10 @@ body { background-color: #f4f6fb; }
 .ftl-tblwrap .dataTables_wrapper .page-item.disabled .page-link { color: #b6c2d6; }
 
 /* ---- Modal detail FTR ---- */
-.ftl-modal .modal-dialog { max-width: 780px; }
+/* :not(...) PENTING. Modal di halaman lain memakai .modal-xl / .modal-lg karena
+   tabelnya lebar; tanpa pengecualian ini batas 780px menimpanya dan isinya
+   meluber keluar kotak. */
+.ftl-modal .modal-dialog:not(.modal-xl):not(.modal-lg) { max-width: 780px; }
 /* Tinggi modal dibatasi setinggi layar supaya kotaknya tetap utuh di tengah
    walau rincian PO-nya panjang - yg menggulir isinya, bukan halamannya. */
 .ftl-modal .modal-content { max-height: calc(100vh - 3.5rem); }
@@ -267,6 +287,86 @@ body { background-color: #f4f6fb; }
   width: 26px; height: 26px; padding: 0; margin: 0; flex-shrink: 0;
 }
 .ftl-modal .modal-header .close:hover { background: rgba(255, 255, 255, .3); }
+/* TIDAK semua modal menulis tombol tutup lebih dulu. Update BPB Fabric menulis
+   JUDUL lebih dulu, dan di sana row-reverse di atas justru membalik keduanya -
+   tombol tutup jadi di kiri. Modal seperti itu memakai .is-titlefirst. */
+.ftl-modal.is-titlefirst .modal-header { flex-direction: row; }
+
+/* ---- Modal LEBAR, untuk tabel banyak kolom ----
+   Geometrinya disalin dari modal List Memorial Journal yang sudah terbukti enak
+   dipakai untuk tabel lebar.
+
+   Kuncinya TIDAK mengandalkan .modal-xl bawaan Bootstrap: kelas itu baru melebar
+   pada layar >= 1200px, jadi di jendela yang lebih sempit modalnya justru
+   menciut dan isinya meluber. Lebarnya disetel sendiri - 96vw dgn batas 1360px -
+   sehingga selalu lebar, berapa pun lebar jendelanya. */
+.ftl-modal.is-wide .modal-dialog { max-width: 1360px; width: 96vw; }
+.ftl-modal.is-wide .modal-body {
+  padding: 12px 16px 14px; max-height: 78vh; overflow: auto; background: #eef3fb;
+}
+/* Keterangan ringkas jadi kartu putih kecil, bukan teks menggantung. Label
+   ditulis <b> di markup aslinya, jadi <b> itu yang dijadikan label kecil. */
+.ftl-modal.is-wide .modal-body > .row { margin-left: -5px; margin-right: -5px; }
+.ftl-modal.is-wide .modal-body > .row > [class*="col-"] {
+  background: #fff; border: 1px solid #e6ebf3; border-radius: 10px;
+  padding: 9px 12px; margin: 0 5px 10px; font-size: 12.5px; color: #334155;
+  flex: 0 0 calc(25% - 10px); max-width: calc(25% - 10px);
+}
+.ftl-modal.is-wide .modal-body > .row > .col-12 {
+  flex: 0 0 calc(100% - 10px); max-width: calc(100% - 10px);
+}
+.ftl-modal.is-wide .modal-body > .row > [class*="col-"] b {
+  display: block; margin-bottom: 2px; font-size: 10px; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase; color: #94a3b8;
+}
+/* #details memuat tabelnya - tidak perlu bingkai kartu sendiri. */
+.ftl-modal.is-wide .modal-body > .row > #details {
+  background: transparent; border: 0; padding: 0; margin-bottom: 0;
+  flex: 0 0 calc(100% - 10px); max-width: calc(100% - 10px);
+}
+/* Tabelnya diberi permukaan putih sendiri supaya menonjol di atas latar biru
+   muda modal. */
+.ftl-modal.is-wide #details .ftl-tbl {
+  background: #fff; border: 1px solid #e6ebf3; border-radius: 10px; overflow: hidden;
+}
+/* Jarak sel dilonggarkan: sebelumnya kolom pendek saling menempel sampai
+   terbaca menyatu ("GK/IN/0626/0020522-Jun-2026"). */
+.ftl-modal.is-wide #details .ftl-tbl td,
+.ftl-modal.is-wide #details .ftl-tbl th { padding: 9px 12px; }
+/* Kolom pendek tidak boleh dipatahkan; hanya kolom Item yang boleh membungkus,
+   dan diberi lebar minimum supaya tidak terjepit jadi satu huruf per baris. */
+.ftl-modal.is-wide #details .ftl-tbl .nw { white-space: nowrap; }
+.ftl-modal.is-wide #details .ftl-tbl .ub-item { min-width: 280px; }
+
+/* Isi <tbody> modal rincian: HITAM BIASA, tidak ditebalkan sama sekali.
+
+   Modal ini hanya untuk dibaca - tidak ada yang bisa diklik atau diubah di
+   dalamnya - jadi tidak ada sel yang perlu ditonjolkan di atas sel lain.
+   Penekanan .ftl-doc / .ftl-amt sengaja dimatikan DI SINI saja; di tabel
+   daftar keduanya tetap berlaku seperti biasa.
+
+   Ini sekaligus menutup gejala lama: satu baris pernah tampil tebal biru
+   sementara baris lain normal dan penyebabnya tidak pernah ketemu. Aturan
+   di bawah berlaku untuk SETIAP sel, berkelas atau tidak, jadi gejala itu
+   tidak bisa muncul lagi - meski sebabnya tetap belum diketahui. */
+.ftl-modal.is-wide #details .ftl-tbl tbody td,
+.ftl-modal.is-wide #details .ftl-tbl tbody td.ftl-doc,
+.ftl-modal.is-wide #details .ftl-tbl tbody td.ftl-amt {
+  font-weight: 400 !important; color: #1f2937 !important;
+}
+
+/* Kartu info yang kebetulan kosong disembunyikan, bukan tampil sbg kotak putih
+   melompong. */
+.ftl-modal.is-wide .modal-body > .row > [class*="col-"]:empty { display: none; }
+@media (max-width: 991.98px) {
+  .ftl-modal.is-wide .modal-body > .row > [class*="col-"] {
+    flex: 0 0 calc(50% - 10px); max-width: calc(50% - 10px);
+  }
+  .ftl-modal.is-wide .modal-body > .row > .col-12,
+  .ftl-modal.is-wide .modal-body > .row > #details {
+    flex: 0 0 calc(100% - 10px); max-width: calc(100% - 10px);
+  }
+}
 /* Tiap keterangan ringkas aslinya memakai kelas .modal-body sendiri, jadi
    masing-masing dapat padding modal penuh dan jaraknya renggang tak
    beraturan. Dinolkan, lalu diatur dari pembungkusnya. */
@@ -274,7 +374,11 @@ body { background-color: #f4f6fb; }
 /* Enam keterangan ringkas: label kecil di atas, nilainya di bawah. Dulu
    ditulis satu kalimat ("Supplier : X") sehingga nilainya tidak pernah
    sejajar antar kolom karena panjang labelnya berbeda-beda. */
-.ftl-modal .modal-body { padding: 0 8px 11px !important; font-size: 12px !important; color: #475569; }
+/* Dibatasi pada sel keterangan ringkas - yang memang memakai .modal-body
+   BERSAMA kelas kolom (.modal-body.col-6 / .col-12). Tanpa batas itu, modal yang
+   memakai .modal-body sebagai pembungkus utama ikut kehilangan padding-nya dan
+   isinya menempel ke tepi kotak. */
+.ftl-modal .modal-body[class*="col-"] { padding: 0 8px 11px !important; font-size: 12px !important; color: #475569; }
 .ftl-modal .ftl-k {
   display: block; margin-bottom: 2px;
   font-size: 10px; font-weight: 700; letter-spacing: .06em;
@@ -310,6 +414,56 @@ body { background-color: #f4f6fb; }
 .ftl-modal #details table:not(#mytdmodal) tr:last-child td {
   font-weight: 700; color: #1e3a8a; font-size: 13px;
 }
+
+/* ---- Riwayat dokumen di dalam modal rincian ----
+   Garis waktu tegak: satu baris per langkah (dibuat, tiap suntingan, approve,
+   cancel). Langkah yang BELUM terjadi tetap ditampilkan tapi diredupkan -
+   supaya terlihat alurnya sampai di mana, bukan dihilangkan begitu saja. */
+.ftl-modal .ftl-hist {
+  margin-top: 14px; padding-top: 12px; border-top: 1px solid #e7ecf5;
+}
+.ftl-modal .ftl-hist-title {
+  display: flex; align-items: center; gap: 7px; margin-bottom: 10px;
+  font-size: 10px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: #94a3b8;
+}
+.ftl-modal .ftl-hist-title i { color: #2f6bdd; font-size: 11px; }
+
+.ftl-modal .ftl-hist-list { list-style: none; margin: 0; padding: 0 0 0 2px; }
+.ftl-modal .ftl-hist-list > li {
+  position: relative; display: flex; align-items: flex-start; gap: 10px;
+  padding: 0 0 14px 0;
+}
+/* Garis penghubung antar langkah - tidak digambar di langkah terakhir. */
+.ftl-modal .ftl-hist-list > li:before {
+  content: ''; position: absolute; left: 10px; top: 22px; bottom: 0;
+  width: 2px; background: #e7ecf5;
+}
+.ftl-modal .ftl-hist-list > li:last-child { padding-bottom: 0; }
+.ftl-modal .ftl-hist-list > li:last-child:before { display: none; }
+
+.ftl-modal .ftl-hist-ic {
+  flex: 0 0 auto; width: 22px; height: 22px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 10px; background: #eef4ff; color: #1d4ed8; z-index: 1;
+}
+.ftl-modal .ftl-hist-list > li.is-approve .ftl-hist-ic { background: #eaf8f1; color: #15724a; }
+.ftl-modal .ftl-hist-list > li.is-cancel  .ftl-hist-ic { background: #fdecec; color: #b3312c; }
+.ftl-modal .ftl-hist-list > li.is-edit    .ftl-hist-ic { background: #fdf7e9; color: #8a5a06; }
+/* Langkah yang memang sedang ditunggu (dokumen masih Draft). Hanya SATU yang
+   pernah muncul, dan hanya kalau benar-benar menunggu - langkah yang tidak
+   akan terjadi tidak ditampilkan sama sekali, supaya tidak terbaca seolah ada
+   tahap tertunda padahal dokumennya sudah selesai. */
+.ftl-modal .ftl-hist-list > li.is-nanti   .ftl-hist-ic { background: #fff6e5; color: #b8860b; }
+
+.ftl-modal .ftl-hist-txt { display: flex; flex-direction: column; line-height: 1.35; }
+.ftl-modal .ftl-hist-txt b { font-size: 12px; font-weight: 700; color: #1f2937; }
+.ftl-modal .ftl-hist-txt > span { font-size: 11.5px; color: #64748b; }
+
+/* Langkah yang belum terjadi. */
+.ftl-modal .ftl-hist-list > li.is-belum .ftl-hist-ic { background: #f1f5f9; color: #cbd5e1; }
+.ftl-modal .ftl-hist-list > li.is-belum .ftl-hist-txt b { color: #94a3b8; font-weight: 600; }
+.ftl-modal .ftl-hist-list > li.is-belum .ftl-hist-txt > span { color: #cbd5e1; font-style: italic; }
 
 /* ---- Nuansa biru untuk SweetAlert ----
    Selektornya SENGAJA tidak berawalan .ftl-: SweetAlert menempelkan popup-nya

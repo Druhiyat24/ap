@@ -30,35 +30,42 @@ while ($row = mysqli_fetch_assoc($sql)) {
     $reff = $row['reff'];
     $noPco = $row['no_pco'];
 
+    /* Pil status: hanya ada tiga nilai di tabel ini - Draft, Approved,
+       Cancel - dan ketiganya punya kelas sendiri di app-ftr-list.css.
+       Dipetakan tegas, bukan lewat strtolower($status), supaya status
+       bernama dua kata tidak pernah menghasilkan nama kelas rusak. */
+    $kelasStatus = array('draft' => 'is-draft', 'approved' => 'is-approved', 'cancel' => 'is-cancel');
+    $kunci = strtolower(trim($status));
+    $statusLabel = '<span class="ftl-st ' . (isset($kelasStatus[$kunci]) ? $kelasStatus[$kunci] : '') . '">'
+                 . htmlspecialchars($status, ENT_QUOTES) . '</span>';
+
     if (strcasecmp($status, 'Cancel') === 0) {
-        $action = '<span class="text-danger font-weight-bold">Cancelled</span>';
-        $statusLabel = '<span class="kbon-status-label" style="background:#fdecea;color:#b71c1c;"><i class="fa fa-ban"></i> Cancel</span>';
+        $action = '<div class="ftl-act"><span class="ftl-badge"><i class="fa fa-ban" aria-hidden="true"></i> Cancelled</span></div>';
     } else {
-        $btnShow = '<button type="button" class="btn btn-sm btn-outline-warning btn-show-pco" title="Show"><i class="fas fa-eye"></i> Show</button>';
-        $btnPdf = '<a href="pdf_petty_cashout.php?no_pco=' . htmlspecialchars(rawurlencode($noPco)) . '" target="_blank" class="btn btn-sm btn-outline-success" title="View PDF"><i class="fa fa-file-pdf-o"></i> Pdf</a>';
+        $btnShow = '<button type="button" class="ftl-mini is-show btn-show-pco" title="Show the document detail"><i class="fa fa-eye" aria-hidden="true"></i> Show</button>';
+        $btnPdf = '<a href="pdf_petty_cashout.php?no_pco=' . htmlspecialchars(rawurlencode($noPco)) . '" target="_blank" class="ftl-mini is-pdf" title="Open the printable PDF"><i class="fa fa-file-pdf-o" aria-hidden="true"></i> Pdf</a>';
 
         $btnEdit = '';
         $btnCancel = '';
         if (strcasecmp($status, 'Draft') === 0) {
             if ($reff === 'None' || $reff === 'Advance') {
-                $btnEdit = '<button type="button" class="btn btn-sm btn-outline-primary edit-none" data-pettycash="' . htmlspecialchars($noPco) . '" title="Edit"><i class="fa fa-edit"></i> Edit</button>';
+                $btnEdit = '<button type="button" class="ftl-mini is-edit edit-none" data-pettycash="' . htmlspecialchars($noPco) . '" title="Edit this draft"><i class="fa fa-pencil" aria-hidden="true"></i> Edit</button>';
             } elseif ($reff === 'Settlement') {
-                $btnEdit = '<button type="button" class="btn btn-sm btn-outline-primary edit-settle" data-pettycash="' . htmlspecialchars($noPco) . '" title="Edit"><i class="fa fa-edit"></i> Edit</button>';
+                $btnEdit = '<button type="button" class="ftl-mini is-edit edit-settle" data-pettycash="' . htmlspecialchars($noPco) . '" title="Edit this draft"><i class="fa fa-pencil" aria-hidden="true"></i> Edit</button>';
             } elseif ($reff === 'List Payment') {
-                $btnEdit = '<button type="button" class="btn btn-sm btn-outline-primary edit-lp" data-pettycash="' . htmlspecialchars($noPco) . '" title="Edit"><i class="fa fa-edit"></i> Edit</button>';
+                $btnEdit = '<button type="button" class="ftl-mini is-edit edit-lp" data-pettycash="' . htmlspecialchars($noPco) . '" title="Edit this draft"><i class="fa fa-pencil" aria-hidden="true"></i> Edit</button>';
+            } elseif ($reff === 'FTR (CBD / DP)') {
+                $btnEdit = '<button type="button" class="ftl-mini is-edit edit-ftr" data-pettycash="' . htmlspecialchars($noPco) . '" title="Edit this draft"><i class="fa fa-pencil" aria-hidden="true"></i> Edit</button>';
             } elseif ($reff === 'Payment Voucher') {
-                $btnEdit = '<button type="button" class="btn btn-sm btn-outline-primary edit-pv" data-pettycash="' . htmlspecialchars($noPco) . '" title="Edit"><i class="fa fa-edit"></i> Edit</button>';
+                $btnEdit = '<button type="button" class="ftl-mini is-edit edit-pv" data-pettycash="' . htmlspecialchars($noPco) . '" title="Edit this draft"><i class="fa fa-pencil" aria-hidden="true"></i> Edit</button>';
             }
 
             // Selama ini cancel cuma bisa dari menu approve-petty-cashout.php -
             // dokumen yang masih Draft sekarang bisa langsung di-cancel dari sini juga.
-            $btnCancel = '<button type="button" class="btn btn-sm btn-outline-danger cancel-pco" data-pettycash="' . htmlspecialchars($noPco) . '" title="Cancel"><i class="fa fa-ban"></i> Cancel</button>';
+            $btnCancel = '<button type="button" class="ftl-mini is-cancel cancel-pco" data-pettycash="' . htmlspecialchars($noPco) . '" title="Cancel this draft"><i class="fa fa-trash" aria-hidden="true"></i> Cancel</button>';
         }
 
-        $action = '<div class="kbon-action-buttons">' . $btnShow . $btnEdit . $btnCancel . $btnPdf . '</div>';
-        $statusLabel = strcasecmp($status, 'Draft') === 0
-            ? '<span class="kbon-status-label" style="background:#fff4e5;color:#b26a00;"><i class="fa fa-pencil"></i> Draft</span>'
-            : '<span class="kbon-status-label" style="background:#eef2f9;color:#1e3a8a;"><i class="fa fa-check"></i> ' . htmlspecialchars($status) . '</span>';
+        $action = '<div class="ftl-act">' . $btnShow . $btnEdit . $btnCancel . $btnPdf . '</div>';
     }
 
     $data[] = [

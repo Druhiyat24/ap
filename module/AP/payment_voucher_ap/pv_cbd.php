@@ -60,13 +60,14 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
                      <!--    <div class="col-md-2 mb-3">
                             <label for="cbd_matauang"><b>Currency</b></label> -->
                             <?php
-                            $value = null;
-                            if (!empty($nama_supp)) {
-                                $sql = mysqli_query($conn2, "select curr from ftr_cbd where supp = '" . mysqli_real_escape_string($conn2, $nama_supp) . "'");
-                                $row = mysqli_fetch_array($sql);
-                                $value = isset($row['curr']) ? $row['curr'] : null;
-                            }
-                            echo '<input type="hidden" readonly class="form-control form-control-sm" id="cbd_matauang" name="matauang" value="' . htmlspecialchars((string) $value) . '">';
+                            /* Mata uang diisi dari FTR yang DICENTANG - lihat data-curr pada
+                               input pilihan di tabel dan penangan change-nya. Dulu di sini ada
+                               tebakan "select curr from ftr_cbd where supp = ..." tanpa
+                               penyaring nomor FTR dan tanpa ORDER BY, jadi mata uang yang
+                               terpakai milik baris mana saja. Supplier yang pernah memakai dua
+                               mata uang jadi tertukar - PV-AP/CBD/NAG/2026/09/00169 tercatat USD
+                               padahal FTR-nya RMB. Awalnya kosong, diisi JavaScript. */
+                            echo '<input type="hidden" readonly class="form-control form-control-sm" id="cbd_matauang" name="matauang" value="">';
                             ?>
                        <!--  </div> -->
 
@@ -292,7 +293,7 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
                                 }
 
                                 $nama_supp_esc = mysqli_real_escape_string($conn2, (string) $nama_supp);
-                                $sql = mysqli_query($conn2, "select no_ftr_cbd, tgl_ftr_cbd, no_po, tgl_po, SUM(subtotal + biaya_tambahan) as sub, SUM(tax) as tax, SUM(total + biaya_tambahan) as total, supp as supplier, status, keterangan, create_user from ftr_cbd where supp = '$nama_supp_esc' and tgl_ftr_cbd between '$start_date' and '$end_date' and is_invoiced != 'Invoiced' and status = 'Approved' group by no_ftr_cbd");
+                                $sql = mysqli_query($conn2, "select no_ftr_cbd, tgl_ftr_cbd, no_po, tgl_po, SUM(subtotal + biaya_tambahan) as sub, SUM(tax) as tax, SUM(total + biaya_tambahan) as total, supp as supplier, status, keterangan, create_user, MAX(curr) as curr from ftr_cbd where supp = '$nama_supp_esc' and tgl_ftr_cbd between '$start_date' and '$end_date' and is_invoiced != 'Invoiced' and status = 'Approved' and COALESCE(payment_method,'') <> 'Cash' group by no_ftr_cbd");
                                 while ($row = mysqli_fetch_array($sql)) {
                                     $cbd = $row['no_ftr_cbd'];
                                     $cbd_esc = mysqli_real_escape_string($conn2, $cbd);
@@ -307,7 +308,7 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
                                         echo '';
                                     } else {
                                         echo '<tr>
-                                        <td style="text-align:center;"><input type="radio" class="cbd_chk" name="select_cbd[]" value=""></td>
+                                        <td style="text-align:center;"><input type="radio" class="cbd_chk" name="select_cbd[]" value="" data-curr="' . htmlspecialchars((string) $row['curr'], ENT_QUOTES) . '"></td>
                                         <td value="' . $row['no_ftr_cbd'] . '">' . $row['no_ftr_cbd'] . '</td>
                                         <td value="' . $row['no_po'] . '">' . $row['no_po'] . '</td>
                                         <td value="' . $row['tgl_po'] . '">' . date("d-M-Y", strtotime($row['tgl_po'])) . '</td>
@@ -622,6 +623,13 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
         });
 
         $("#cbd_mytable input.cbd_chk").prop('disabled', false);
+
+        /* Mata uang PV = mata uang FTR yang dicentang. CBD memakai radio, jadi
+           selalu tepat satu baris. Kalau centangnya dilepas, isiannya dikosongkan
+           supaya tidak ada sisa nilai dari pilihan sebelumnya. */
+        var baris_tercentang = $("#cbd_mytable input.cbd_chk:checked").first();
+        $('#cbd_matauang').val(baris_tercentang.length ? (baris_tercentang.data('curr') || '') : '');
+
         $("#cbd_subtotal").val(formatMoneyCbd(sum_sub));
         $("#cbd_subtotal_h").val(sum_sub);
         $("#cbd_pajak").val(formatMoneyCbd(sum_tax));
@@ -716,6 +724,12 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
             Swal.fire({icon: 'warning', title: 'Oops...', text: 'Please select at least 1 row to calculate the total'});
             return;
         }
+        /* Penjaga terakhir: PV tanpa mata uang pernah lolos dan tersimpan dgn
+           mata uang tebakan. Lebih baik ditolak di sini. */
+        if (!curr_h) {
+            Swal.fire({icon: 'warning', title: 'Oops...', text: 'Currency of the selected FTR CBD is empty. Please fix the FTR first.'});
+            return;
+        }
 
         $.ajax({
             type: 'POST',
@@ -770,7 +784,10 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
         var noftrcbd = $(this).closest('tr').find('td:eq(1)').attr('value');
         var tgl_cbd = $(this).closest('tr').find('td:eq(12)').text();
         var supp = $(this).closest('tr').find('td:eq(8)').attr('value');
-        var curr = document.getElementById('cbd_matauang').value;
+        /* Modal rincian memakai mata uang BARIS yang diklik - barisnya belum tentu
+           yang dicentang, jadi tidak boleh ikut isian kepala. */
+        var curr = $(this).closest('tr').find('input.cbd_chk').data('curr')
+                || document.getElementById('cbd_matauang').value;
         var create_user = $(this).closest('tr').find('td:eq(11)').attr('value');
         var status = $(this).closest('tr').find('td:eq(9)').attr('value');
         var keterangan = $(this).closest('tr').find('td:eq(10)').attr('value');

@@ -1,0 +1,221 @@
+/* ============================================================================
+   app-ubf-form.css - kosakata .ub- untuk FORM "Update BPB" (pengajuan koreksi
+   harga & PPN).
+
+   DIPAKAI OLEH: form_update_bpb_fabric.php
+
+   ALUR halaman ini seperti semula: cari BPB -> tabel BPB di halaman -> tombol
+   "Edit Items" membuka modal -> centang & ketik -> "Add Selected" -> baris
+   masuk tabel kedua ("Items to Update") -> Save. Jadi dua tabel tetap di
+   depan, penyuntingannya tetap di modal.
+
+   Berkas ini hanya mengatur perabot yang TIDAK ada di halaman daftar: modal
+   lebar, isian di dalam sel, tombol isi-dari-PO, kaki form. Kartu, kepala
+   kartu, tabel, dan perkakas DataTables tetap memakai kosakata .ftl- dari
+   app-ftr-list.css supaya satu keluarga dgn menu lain.
+
+   Rencananya pola yang sama dipakai varian Aksesoris / General / WIP - berkas
+   ini tinggal ditaut ulang, tidak perlu disalin.
+   ============================================================================ */
+
+/* ---- Sekat judul antar bagian (sama dgn pola Petty Cash Out) ---- */
+.ub-sec {
+  display: flex; align-items: center; gap: 9px;
+  margin: 0 0 11px; padding-top: 12px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: #64748b;
+}
+.ub-sec i { color: #2f6bdd; font-size: 12px; flex-shrink: 0; }
+.ub-sec:after { content: ''; flex: 1 1 auto; height: 1px; background: #e9eef7; }
+
+/* ---- Tabel BPB (DataTable di halaman) ----
+   Tidak ada gulir mendatar: kolom Supplier & No PO boleh berganti baris.
+   Memotong tulisan tidak dilakukan - yang panjang dibiarkan turun. */
+.ub-bpbtbl tbody td { vertical-align: middle; }
+.ub-bpbtbl tbody td:nth-child(3),
+.ub-bpbtbl tbody td:nth-child(4) { white-space: normal; word-break: break-word; }
+/* Semburat tipis penanda beda-dari-PO. Dulu seluruh barisnya hijau/merah
+   pekat; sekarang statusnya sudah punya kolom sendiri, jadi barisnya cukup
+   diberi isyarat samar supaya tetap mudah dipindai. */
+.ub-bpb-diff > td { background-color: #fffaf5; }
+.ub-bpb-diff:hover > td { background-color: #fff4ea; }
+.ub-bpb-ok > td { background-color: #fbfefc; }
+
+/* Tombol "Edit Items" - varian biru dari tombol mini bersama. */
+.ftl-mini.is-biru { background: #eef4ff; color: #1d4ed8; }
+
+/* ---- Tabel "Items to Update" ---- */
+.ub-listtbl tbody td { vertical-align: middle; }
+.ub-listtbl tbody td:nth-child(3) { white-space: normal; word-break: break-word; }
+/* Nilai BARU - itulah inti dokumen ini, jadi dibedakan dari nilai lamanya. */
+.ub-baru { color: #15724a !important; font-weight: 700; }
+
+/* Keadaan kosong: satu ajakan di dalam tabelnya sendiri, bukan bingkai
+   kosong tersendiri. */
+.ub-blankcell { padding: 40px 20px !important; text-align: center; white-space: normal !important; }
+.ub-blankcell i { display: block; margin-bottom: 11px; font-size: 26px; color: #b9cbe8; }
+.ub-blankcell b { display: block; margin-bottom: 4px; font-size: 13.5px; color: #475569; }
+.ub-blankcell span { font-size: 12px; color: #94a3b8; }
+.ub-blankcell span b { display: inline; font-size: 12px; color: #1e3a8a; }
+
+/* ---- Tabel item di dalam modal ----
+   Lebar tiap kolom dikunci (table-layout: fixed + width di <th>). Tanpa itu
+   kolom merentang asal mengikuti isi - paling kentara saat tabelnya masih
+   kosong: header-nya berpencar tak beraturan. min-width menjaga kolom isian
+   tetap utuh; di layar sempit yang terjadi gulir mendatar, BUKAN tulisan
+   terpotong. */
+.ub-tblwrap { border: 1px solid #e6ebf3; border-radius: 10px; overflow: auto; background: #fff; }
+.ub-itemtbl { table-layout: fixed; width: 100%; min-width: 1120px; margin-bottom: 0; }
+.ub-itemtbl tbody tr { cursor: default; }
+.ub-itemtbl tbody td { white-space: nowrap; vertical-align: middle; }
+/* Nama barang boleh berganti baris - tidak dipotong, tidak diberi elipsis. */
+.ub-itemtbl tbody td:nth-child(3),
+.ub-itemtbl thead th:nth-child(3) { white-space: normal; word-break: break-word; }
+
+/* ---- Isian di dalam sel ---- */
+.ub-inp {
+  width: 100%; height: 28px; border: 1px solid #dfe5ef; border-radius: 7px;
+  padding: 2px 8px; font-size: 12px; text-align: right;
+  font-variant-numeric: tabular-nums; background: #fff;
+}
+.ub-inp:focus { outline: none; border-color: #93b4f5; box-shadow: 0 0 0 3px rgba(59, 130, 246, .18); }
+.ub-inp:disabled { background: #f4f6fb; color: #94a3b8; }
+/* Nilai yang baru diisi dari PO ditandai supaya kelihatan mana yang berubah. */
+.ub-inp.is-dari-po { background: #eef8f1; border-color: #bfe3cd; color: #15724a; font-weight: 600; }
+
+/* Harga PO ditampilkan di sebelah harga BPB - angkanya memang sudah dikirim
+   server (po_price / po_ppn), dulu tidak pernah dipakai sehingga angkanya
+   diketik ulang padahal sistem sudah tahu. */
+.ub-po { color: #15724a; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* Tombol kecil "isi dari PO" / "hapus baris" */
+.ub-mini {
+  border: 0; border-radius: 7px; padding: 3px 9px;
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  background: #eef4ff; color: #1d4ed8; white-space: nowrap;
+}
+.ub-mini:hover { filter: brightness(.97); }
+.ub-mini:disabled { opacity: .5; cursor: not-allowed; }
+.ub-mini.is-hapus { background: #fdeaea; color: #b3312c; }
+
+/* Penanda harga vs PO */
+.ub-tag {
+  display: inline-block; padding: 2px 9px; border-radius: 999px;
+  font-size: 9.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+}
+.ub-tag.is-ok   { background: #eaf8f1; color: #15724a; }
+.ub-tag.is-beda { background: #fdf0e6; color: #9a4b06; }
+
+/* Baris yang sudah sesuai PO - diredupkan & dikunci, seperti semula. Bisa
+   disembunyikan lewat sakelar di kepala modal, tapi tidak pernah dibuang. */
+.ub-row-sesuai > td { color: #9aa6b8; background: #fcfdfe; }
+.ub-row-sesuai.is-sembunyi { display: none; }
+
+.ub-empty { padding: 26px 12px; text-align: center; font-size: 12.5px; color: #94a3b8; white-space: normal !important; }
+
+/* ===========================================================================
+   MODAL PENYUNTINGAN
+   Lebarnya ditentukan sendiri: .modal-xl bawaan Bootstrap 4 baru melebar di
+   >=1200px dan tetap kurang untuk tabel 12 kolom berisi isian. Pola ukurannya
+   mengikuti modal Memorial Journal.
+   =========================================================================== */
+.ub-modal .modal-dialog { max-width: 1500px; width: 96vw; margin: 1.3rem auto; }
+.ub-modal .modal-content { border: 0; border-radius: 14px; overflow: hidden; box-shadow: 0 18px 44px rgba(15, 23, 42, .22); }
+.ub-modal .modal-header {
+  align-items: center; gap: 11px; padding: 11px 16px; border: 0;
+  background: linear-gradient(90deg, #1E3A8A 0%, #2f5bbf 60%, #3b82f6 100%);
+}
+.ub-mhead-icon {
+  width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+  background: rgba(255, 255, 255, .16); border: 1px solid rgba(255, 255, 255, .3);
+  color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 14px;
+}
+.ub-modal .modal-title { font-size: 13.5px; font-weight: 700; color: #fff; }
+.ub-modal .modal-header small { display: block; margin-top: 1px; font-size: 11.5px; color: rgba(255, 255, 255, .8); }
+.ub-modal .modal-header .close { margin: 0 0 0 auto; padding: 0 4px; color: #fff; opacity: .85; text-shadow: none; }
+.ub-modal .modal-body { padding: 14px 16px; background: #eef3fb; max-height: 76vh; overflow: auto; }
+.ub-modal .modal-footer { padding: 10px 16px; border-top: 1px solid #e6ebf3; background: #fafbfe; }
+.ub-mfoot-note { margin-right: auto; font-size: 12px; color: #64748b; }
+.ub-mfoot-note b { color: #1e3a8a; }
+
+/* ---- Palang di kepala isi modal ---- */
+.ub-crumb {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-bottom: 11px; font-size: 12px; color: #64748b;
+}
+.ub-crumb b { color: #1e3a8a; }
+.ub-crumb-tools { margin-left: auto; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+/* Sakelar "sembunyikan baris yang sudah sesuai PO" */
+.ub-switch {
+  display: inline-flex; align-items: center; gap: 6px; margin: 0;
+  font-size: 11.5px; font-weight: 600; color: #475569; cursor: pointer;
+}
+.ub-switch input { width: 14px; height: 14px; cursor: pointer; }
+
+/* ---- Kaki form ---- */
+.ub-foot {
+  padding: 13px 18px 16px; border-top: 1px solid #eef1f7; background: #fafbfe;
+  display: flex; gap: 9px; flex-wrap: wrap; align-items: center;
+}
+.ub-foot-sisi { margin-left: auto; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.ub-foot-count { font-size: 12px; color: #475569; }
+.ub-foot-count b { color: #1e3a8a; }
+
+/* ---- Tablet & layar sempit ----
+   Sidebar aplikasi lebarnya TETAP 230px dan tidak pernah menciut. Tabel di
+   halaman sudah membungkus barisnya sendiri; yang perlu diatur ulang hanya
+   penempatan palang & kaki supaya tidak saling berdesakan. */
+@media (max-width: 991.98px) {
+  .ub-crumb-tools { margin-left: 0; width: 100%; }
+  .ub-foot-sisi { margin-left: 0; width: 100%; justify-content: space-between; }
+  .ub-modal .modal-dialog { width: 98vw; margin: .6rem auto; }
+  .ub-modal .modal-body { max-height: 80vh; }
+}
+
+/* ---- Palang judul yang membawa perkakas di kanannya ----
+   Dipakai di kepala "BPB List": judulnya tetap sekat biasa, tapi garis
+   panjangnya dimatikan supaya tidak mendorong sakelar ke tepi layar. */
+.ub-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 0 11px; min-height: 34px; }
+.ub-bar-tools { margin-left: auto; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.ub-sec-inline { flex: 0 0 auto; margin: 0; padding-top: 0; }
+.ub-sec-inline:after { display: none; }
+/* Jumlah baris yang sedang disembunyikan - supaya tidak terkesan datanya hilang. */
+.ub-switch-n { color: #94a3b8; font-weight: 600; }
+
+@media (max-width: 767.98px) {
+  .ub-bar-tools { margin-left: 0; width: 100%; }
+}
+
+/* ---- Tombol Save ----
+   Biru RATA, warnanya diambil dari ujung kiri gradasi kepala kartu (#1E3A8A)
+   supaya satu nada dgn kepala halaman - sengaja tanpa gradasi. Variannya
+   ditaruh di sini, bukan di app-skin-form.css, karena baru dipakai halaman
+   ini; kalau nanti dipakai menu lain tinggal dipindahkan ke sana. */
+.ub-btn-brand { background: #1e3a8a; color: #fff; border-color: #1e3a8a; }
+.ub-btn-brand:hover,
+.ub-btn-brand:focus { background: #24479f; color: #fff; }
+.ub-btn-brand:disabled,
+.ub-btn-brand.disabled { background: #1e3a8a; color: #fff; }
+
+/* ===========================================================================
+   HALAMAN APPROVE UPDATE BPB FABRIC (.aub-)
+   =========================================================================== */
+.aub-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 4px 0 8px; }
+.aub-note {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 13px; border-radius: 9px;
+  background: #fff8ea; border: 1px solid #f3e2c0;
+  font-size: 12.5px; color: #8a5a06;
+}
+.aub-note i { color: #c98a16; }
+.aub-note b { color: #6b4504; }
+.aub-tools { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+/* Kolom Description boleh berganti baris; sisanya tetap satu baris supaya
+   nomor & tanggal tidak terpenggal. */
+.aub-tbl tbody td { vertical-align: middle; }
+.aub-tbl tbody td:nth-child(5) { white-space: normal; word-break: break-word; }
+
+@media (max-width: 767.98px) {
+  .aub-tools { margin-left: 0; width: 100%; }
+}

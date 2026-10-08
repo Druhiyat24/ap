@@ -1,93 +1,81 @@
 <?php include '../header.php' ?>
 
-<style type="text/css">
-    .table-gradient th {
-        background: #1E3A8A;
-        color: #fff;
-        text-align: center;
-        vertical-align: middle;
-        white-space: nowrap;
-    }
-
-    #table-data {
-        width: 100% !important;
-    }
-
-    #table-data th,
-    #table-data td {
-        vertical-align: top;
-    }
-
-    #table-data td:last-child {
-        white-space: nowrap;
-    }
-
-    @media (min-width: 992px) {
-        #mymodal .modal-dialog {
-            max-width: 75%;
-        }
-    }
-</style>
+<!-- Kosakata .ftl- dipakai bersama halaman daftar Update BPB Fabric, FTR
+     CBD/DP, dan Petty Cash Out - bentuknya sama dgn List Memorial Journal.
+     Perabot khas halaman approve ini (.aub-) ada di app-ubf-form.css. -->
+<link rel="stylesheet" href="../css/app-skin-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-skin-form.css'); ?>">
+<link rel="stylesheet" href="../css/app-loading.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-loading.css'); ?>">
+<link rel="stylesheet" href="../css/app-ftr-list.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-ftr-list.css'); ?>">
+<link rel="stylesheet" href="../css/app-ubf-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-ubf-form.css'); ?>">
 
 <!-- MAIN -->
-<div class="container-fluid mt-4 p-4">
-  <!-- Card Header -->
-  <div class="card shadow border-0">
-    <div class="card-header text-white py-2 px-3"
-    style="background: linear-gradient(90deg, #191970, #1e90ff);">
-    <h5 class="mb-0"><i class="fa fa-check-circle" aria-hidden="true"></i> APPROVE UPDATE BPB FABRIC</h5>
-</div>
+<div class="container-fluid mt-3 p-3">
+  <div class="ftl-card">
+    <div class="ftl-head">
+      <span class="ftl-head-icon"><i class="fa fa-check-circle" aria-hidden="true"></i></span>
+      <div>
+        <h1>Approve Update BPB Fabric</h1>
+        <span class="ftl-crumb">Cost Accounting &rsaquo; Approve Update BPB Fabric</span>
+      </div>
+    </div><!-- /.ftl-head -->
 
-<div class="card-body p-3">
-    <div class="alert alert-warning d-flex align-items-center mb-3">
-        <i class="fa fa-info-circle mr-2" aria-hidden="true"></i>
-        Number of requests pending approval: <b class="ml-1" id="pendingCount">0</b>
+    <div class="ftl-panel">
+      <div class="aub-bar">
+        <span class="aub-note">
+          <i class="fa fa-info-circle" aria-hidden="true"></i>
+          Requests pending approval: <b id="pendingCount">0</b>
+        </span>
+      </div>
+    </div><!-- /.ftl-panel -->
+
+    <div class="ftl-body">
+      <div class="ftl-tblwrap">
+        <table id="table-data" class="table ftl-tbl aub-tbl" style="width:100%">
+          <thead>
+            <tr class="thead-dark">
+              <th style="width:36px;"><input type="checkbox" id="select_all"></th>
+              <th style="width:168px;">No. Trans</th>
+              <th style="width:110px;">Trans Date</th>
+              <th style="width:104px;">Status</th>
+              <th class="text-left">Description</th>
+              <th style="width:210px;">Created By</th>
+              <th style="width:104px;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /.ftl-body -->
+
+    <!-- Tombolnya di kaki kartu, sejajar dgn form Update BPB Fabric.
+         Penghitung di kirinya memberi tahu berapa baris yang tercentang -
+         sebelumnya baru ketahuan sesudah tombolnya ditekan. -->
+    <div class="ub-foot">
+      <span class="ub-foot-count"><b id="selectedCount">0</b> request(s) selected</span>
+      <span class="ub-foot-sisi">
+        <button type="button" id="btnCancel" class="app-btn app-btn-danger app-btn-sm">
+          <i class="fa fa-times" aria-hidden="true"></i> Cancel
+        </button>
+        <button type="button" id="btnApprove" class="app-btn app-btn-success app-btn-sm">
+          <i class="fa fa-check" aria-hidden="true"></i> Approve
+        </button>
+      </span>
     </div>
 
-    <button type="button" id="btnApprove" class="btn btn-success btn-sm">
-        <i class="fa fa-check" aria-hidden="true"></i> Approve
-    </button>
-    <button type="button" id="btnCancel" class="btn btn-danger btn-sm ml-2">
-        <i class="fa fa-times" aria-hidden="true"></i> Cancel
-    </button>
-</div>
-</div>
+  </div><!-- /.ftl-card -->
+</div><!-- /.container-fluid -->
 
-<!-- Card Table -->
-<div class="card shadow border-0 mt-4">
-    <div class="card-body p-4">
-      <div style="overflow-x:auto;">
-          <table id="table-data"
-           class="table table-striped table-bordered table-hover table-sm" style="width:100%">
-          <thead class="table-gradient">
-            <tr>
-                <th style="text-align: center;vertical-align: middle;width:36px;"><input type="checkbox" id="select_all"></th>
-                <th style="text-align: center;vertical-align: middle;">No. Trans</th>
-                <th style="text-align: center;vertical-align: middle;">Trans Date</th>
-                <th style="text-align: center;vertical-align: middle;">Status</th>
-                <th style="text-align: center;vertical-align: middle;">Description</th>
-                <th style="text-align: center;vertical-align: middle;">Created By</th>
-                <th style="text-align: center;vertical-align: middle;">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
-</div>
-</div>
-</div>
-</div>
-
-
-<!-- Modal Detail -->
-<div class="modal fade" id="mymodal" tabindex="-1" role="dialog" aria-hidden="true">
+<!-- Modal Detail. Bentuknya mengikuti modal rincian di halaman daftar
+     (ftl-modal is-titlefirst is-wide) supaya satu keluarga. -->
+<div class="modal fade ftl-modal is-titlefirst is-wide" id="mymodal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header text-white" style="background: linear-gradient(90deg, #191970, #1e90ff);">
         <h5 class="modal-title" id="txt_bpb"></h5>
         <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
-    </div>
-    <div class="modal-body">
+      </div>
+      <div class="modal-body">
         <div class="row">
           <div id="txt_tglbpb" class="col-md-3 mb-2"></div>
           <div id="txt_supp" class="col-md-3 mb-2"></div>
@@ -95,10 +83,10 @@
           <div id="txt_created_by" class="col-md-3 mb-2"></div>
           <div id="txt_deskripsi" class="col-12 mb-2"></div>
           <div id="details" class="col-12 mt-2"></div>
+        </div>
       </div>
+    </div>
   </div>
-</div>
-</div>
 </div>
 
 
@@ -182,13 +170,19 @@ let datatable = $("#table-data").DataTable({
     ],
 
     columnDefs: [
-        { targets: [0, 3, 6], className: 'text-center' },
-        { targets: 6, width: '170px' }
+        /* Nomor dokumen ditebalkan spt di halaman daftar; kolom teks
+           panjang dibiarkan rata kiri supaya tidak melayang di tengah. */
+        { targets: [0, 2, 3, 6], className: 'text-center' },
+        { targets: [1], className: 'text-center ftl-doc' },
+        { targets: [4, 5], className: 'text-left' }
     ],
 
     drawCallback: function () {
         $('#select_all').prop('checked', false);
         $('#pendingCount').text(this.api().data().count());
+        /* Centang ikut hilang tiap tabel digambar ulang, jadi penghitungnya
+           harus ikut dinolkan - kalau tidak, angkanya tertinggal. */
+        $('#selectedCount').text($('#table-data tbody .chk-pengajuan:checked').length);
     },
 });
 
@@ -196,11 +190,17 @@ function dataTableReload() {
     datatable.ajax.reload();
 }
 
+function perbaruiTercentang() {
+    $('#selectedCount').text($('#table-data tbody .chk-pengajuan:checked').length);
+}
+
 // Select all checkbox
 $('#select_all').on('click', function () {
     const checked = this.checked;
     $('#table-data tbody .chk-pengajuan').prop('checked', checked);
+    perbaruiTercentang();
 });
+$('#table-data').on('change', '.chk-pengajuan', perbaruiTercentang);
 
 function getSelectedPengajuan() {
     const selected = [];
@@ -307,31 +307,51 @@ $('#table-data').on('click', '.btn-view-pengajuan', function () {
                 return;
             }
 
-            let html = '<div class="table-responsive"><table class="table table-bordered table-striped table-sm text-center">';
-            html += '<thead class="table-gradient text-white"><tr>'
-                + '<th>No BPB</th><th>BPB Date</th><th>Supplier</th><th>No WS</th><th>Item</th><th>Qty</th><th>Unit</th><th>Curr</th>'
-                + '<th>Price (Old)</th><th>Price (New)</th><th>PPN % (Old)</th><th>PPN % (New)</th>'
+            /* Tabel rincian dijadikan DataTable spt modal di halaman daftar:
+               punya pencarian, jumlah baris, dan penomoran halaman - sebuah
+               pengajuan bisa memuat puluhan baris. Tiap sel diberi kelas
+               perataannya sendiri; kalau tidak, angka rata kiri dan kolom
+               pendek saling menempel. */
+            let html = '<table id="table-detail-approve" class="table ftl-tbl" style="width:100%">';
+            html += '<thead><tr class="thead-dark">'
+                + '<th class="nw">No BPB</th><th class="nw">BPB Date</th><th class="text-left">Supplier</th>'
+                + '<th class="nw">No WS</th><th class="text-left">Item</th>'
+                + '<th class="text-right">Qty</th><th class="nw">Unit</th><th class="nw">Curr</th>'
+                + '<th class="text-right">Price (Old)</th><th class="text-right">Price (New)</th>'
+                + '<th class="text-right">PPN % (Old)</th><th class="text-right">PPN % (New)</th>'
                 + '</tr></thead><tbody>';
 
             res.items.forEach(function (it) {
                 html += '<tr>'
-                    + '<td>' + escapeHtml(it.no_bpb) + '</td>'
-                    + '<td>' + escapeHtml(it.tgl_bpb) + '</td>'
-                    + '<td>' + escapeHtml(it.nama_supp || '-') + '</td>'
-                    + '<td>' + escapeHtml(it.no_ws || '-') + '</td>'
-                    + '<td class="text-left">' + escapeHtml(it.desc_item || it.id_item) + '</td>'
-                    + '<td>' + formatMoney(it.qty) + '</td>'
-                    + '<td>' + escapeHtml(it.unit || '-') + '</td>'
-                    + '<td>' + escapeHtml(it.curr || '-') + '</td>'
-                    + '<td>' + formatMoney(it.price_old, 4) + '</td>'
-                    + '<td>' + formatMoney(it.price_new, 4) + '</td>'
-                    + '<td>' + formatMoney(it.ppn_old) + '</td>'
-                    + '<td>' + formatMoney(it.ppn_new) + '</td>'
+                    + '<td class="ftl-doc">' + escapeHtml(it.no_bpb) + '</td>'
+                    + '<td class="nw">' + escapeHtml(it.tgl_bpb) + '</td>'
+                    + '<td class="text-left">' + escapeHtml(it.nama_supp || '-') + '</td>'
+                    + '<td class="nw">' + escapeHtml(it.no_ws || '-') + '</td>'
+                    + '<td class="text-left ub-item">' + escapeHtml(it.desc_item || it.id_item) + '</td>'
+                    + '<td class="text-right ftl-amt">' + formatMoney(it.qty) + '</td>'
+                    + '<td class="nw">' + escapeHtml(it.unit || '-') + '</td>'
+                    + '<td class="nw">' + escapeHtml(it.curr || '-') + '</td>'
+                    + '<td class="text-right ftl-amt">' + formatMoney(it.price_old, 4) + '</td>'
+                    + '<td class="text-right ftl-amt">' + formatMoney(it.price_new, 4) + '</td>'
+                    + '<td class="text-right ftl-amt">' + formatMoney(it.ppn_old) + '</td>'
+                    + '<td class="text-right ftl-amt">' + formatMoney(it.ppn_new) + '</td>'
                     + '</tr>';
             });
 
-            html += '</tbody></table></div>';
+            html += '</tbody></table>';
+            /* Instance lama dibuang dulu: modal ini dibuka berulang kali untuk
+               dokumen berbeda, dan DataTables menolak diinisialisasi dua kali
+               pada id yang sama. */
+            if ($.fn.DataTable.isDataTable('#table-detail-approve')) {
+                $('#table-detail-approve').DataTable().destroy();
+            }
             $('#details').html(html);
+            $('#table-detail-approve').DataTable({
+                ordering: false,
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']],
+                language: { emptyTable: 'No item in this request.' }
+            });
         },
         error: function () {
             $('#details').html('<div class="text-center p-3 text-danger">Failed to load detail</div>');

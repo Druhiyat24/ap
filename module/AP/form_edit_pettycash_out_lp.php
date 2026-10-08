@@ -1,31 +1,14 @@
 <?php include '../header.php' ?>
 
-<style type="text/css">
-    label {
-        font-size: 13px;;
-    }
+<!-- Berkas CSS ditaut dgn penanda versi dari filemtime, jadi perubahan di
+     dalamnya langsung sampai ke user dan tidak tertahan cache.
 
-    input {
-        font-size: 13px;;
-    }
-
-    .card-header {
-      display: flex !important;
-      justify-content: flex-start !important;
-      align-items: center !important;
-  }
-
-  .card-header h5 {
-      margin-left: 0 !important;
-  }
-
-  .custom-col {
-      flex: 0 0 12.5%; 
-      max-width: 12.5%;
-  }
-
-
-</style>
+     Kosakata .pco- dipakai BERSAMA oleh halaman create dan kelima halaman
+     edit Petty Cash Out. Sebelumnya aturannya disalin di blok style
+     masing-masing halaman - enam salinan yang sudah mulai melenceng satu
+     dari yang lain. Ditaut hanya oleh halaman-halaman itu, bukan dari
+     header.php, supaya menu lain tidak ikut berubah tanpa diminta. -->
+<link rel="stylesheet" href="../css/app-pco-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-pco-form.css'); ?>">
 
 <?php 
 $doc_num = base64_decode($_GET['doc_num']); 
@@ -35,19 +18,24 @@ $row = mysqli_fetch_array($sql);                        ;
 ?>
 
 <!-- MAIN -->
-<div class="container-fluid mt-4 p-4">
-  <div class="card border-secondary mb-3">
-    <div class="card-header" style="background: linear-gradient(90deg, #191970, #1e90ff);">
-      <div class="d-flex align-items-center justify-content-start">
-        <img src="../../images/note.png" alt="Bank Logo" 
-        style="width:25px; height:auto; margin-right:10px;">
-        <h5 class="mb-0 text-white">FORM EDIT PETTY CASH OUT</h5>
-    </div>
-</div>
+<div class="container-fluid mt-3 p-3">
+  <div class="pco-card">
+    <!-- Kepala kartu: kotak ikon + judul + jejak menu, mengikuti List
+         Memorial Journal. Pita gradien selebar kartu diganti ini supaya
+         warnanya jadi aksen, bukan latar - judulnya yang paling
+         menonjol. -->
+    <div class="pco-head">
+      <span class="pco-head-icon"><i class="fas fa-edit"></i></span>
+      <div>
+        <h1>Edit Petty Cash Out</h1>
+        <span class="pco-crumb">AP &rsaquo; Petty Cash Out &rsaquo; Edit (List Payment)</span>
+      </div>
+    </div><!-- /.pco-head -->
 
 <form id="form-data" method="post">
     <div class="card shadow-sm mb-4">
         <div class="card-body p-2">
+          <div class="pco-sec"><i class="fa fa-file-text-o" aria-hidden="true"></i> Header</div>
             <div class="form-row">
 
                 <div class="col-md-3 mb-3">            
@@ -227,6 +215,7 @@ $row = mysqli_fetch_array($sql);                        ;
 
 <div class="card shadow-sm mb-4">
     <div class="card-body p-2">
+      <div class="pco-sec"><i class="fa fa-list" aria-hidden="true"></i> List Payment to pay</div>
         <div class="table-responsive">
             <table id="mytable" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
                 <thead>
@@ -280,8 +269,9 @@ $row = mysqli_fetch_array($sql);                        ;
 
 <div class="card shadow-sm mb-4">
     <div class="card-body p-2">
+      <div class="pco-sec"><i class="fa fa-book" aria-hidden="true"></i> Journal detail</div>
         <div class="table-responsive">
-            <table id="mytablenone" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
+            <table id="mytablenone" class="table table-striped table-bordered pco-jtbl pco-jtbl-10" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
                 <thead>
                     <tr class="text-white" style="background-color: #2563EB;">
                         <th style="width:10px;">-</th>
@@ -389,19 +379,19 @@ $row = mysqli_fetch_array($sql);                        ;
                 }
                 ?>
             </tbody> 
-            <?php
-            echo '
-            <tfoot>
-            <tr>
-            <td colspan="11" align="center">
-            <button type="button" class="btn btn-primary" onclick=addRow("tbody2");>Add Row</button>
+                               
+              <tfoot>
+        <tr>
+          <td colspan="11" align="center">
+          <div class="pco-rowbtn">
+<button type="button" class="btn btn-primary" onclick=addRow("tbody2");>Add Row</button>
             <button type="button" class="btn btn-warning" onclick=InsertRow("tbody2");>Interject Row</button>
             <button type="button" class="btn btn-danger" onclick=deleteRow("tbody2");>Delete Row</button>
-            </td>
-            </tr>
-            </tfoot>';
-            ?>                   
-        </table>
+          </div>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
     </div>
     <div class="form-row col mt-3">
         <label for="subtotal" class="col-form-label" style="width: 150px; font-size: 13px;;"><b>Total Debit</b></label>
@@ -452,8 +442,53 @@ $row = mysqli_fetch_array($sql);                        ;
 <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
-<script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
+  <!-- bootstrap-select TIDAK dimuat lagi: dropdown baris kini memakai
+       select2, lewat shim $.fn.selectpicker di bawah. -->
 <script language="JavaScript" src="../css/4.1.1/select2.min.js"></script>
+<script>
+/* ----------------------------------------------------------------------------
+   $.fn.selectpicker DIDEFINISIKAN ULANG DI ATAS select2.
+
+   Halaman ini tidak lagi memuat bootstrap-select. Dropdown di dalam baris
+   (COA / Profit Center / Cost Center / Currency) dulu memakainya, sementara
+   isian kepala memakai select2 - dua bentuk berbeda di satu halaman.
+
+   Seluruh pemanggilan lama (.selectpicker(), 'refresh', 'destroy') dibiarkan
+   apa adanya dan dialihkan ke select2 di sini, supaya tidak ada satu pun titik
+   pemanggilan yang perlu disunting - titik-titik itu yang memberi makan proses
+   simpan.
+
+   'refresh' sengaja destroy + init ulang: di bootstrap-select 'refresh' membaca
+   ulang daftar opsi, dan di select2 satu-satunya cara setara adalah membangun
+   ulang. Itu dipakai cascade Cost Center setelah opsinya diganti.
+
+   Elemen <select> aslinya tidak diubah select2 (hanya disembunyikan), jadi
+   name="...[]", .val(), dan .serialize() tetap sama persis.
+---------------------------------------------------------------------------- */
+(function ($) {
+  function opsiSelect2($el) {
+    var o = { width: '100%' };
+    /* Daftar pendek (mis. Currency) tidak perlu kotak cari. */
+    if ($el.find('option').length < 8) { o.minimumResultsForSearch = Infinity; }
+    /* Panel select2 menempel di <body>, jadi TIDAK terpotong .table-responsive
+       - masalah yang dulu harus ditambal untuk bootstrap-select. */
+    return o;
+  }
+  $.fn.selectpicker = function (perintah) {
+    return this.each(function () {
+      var $s = $(this);
+      var hidup = $s.hasClass('select2-hidden-accessible');
+      if (perintah === 'destroy') { if (hidup) { $s.select2('destroy'); } return; }
+      if (perintah === 'refresh') {
+        if (hidup) { $s.select2('destroy'); }
+        $s.select2(opsiSelect2($s));
+        return;
+      }
+      if (!hidup) { $s.select2(opsiSelect2($s)); }
+    });
+  };
+})(jQuery);
+</script>
 <script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
 
 
@@ -651,6 +686,28 @@ function updateCostCenter(profCtr, noCoa, row) {
 function initializePlugins() {
     $(function () {
         $('.selectpicker').selectpicker();
+      /* Menu dropdown selectpicker terpotong oleh pembungkus scroll
+         (.table-responsive). Bootstrap 4 hanya menyetel overflow-x: auto,
+         tapi menurut spesifikasi CSS kalau satu sumbu bukan 'visible' maka
+         sumbu lainnya ikut diperlakukan 'auto' - itulah yang memotongnya
+         secara tegak.
+
+         SENGAJA TIDAK memakai opsi container:'body' milik bootstrap-select:
+         opsi itu memicu galat internal plugin "Cannot read properties of
+         undefined (reading 'length')" saat menu dibuka. Catatan yang sama
+         ada di create_memorial_journal.php, tempat cara ini dipakai lebih
+         dulu.
+
+         Gantinya: overflow pembungkus dilepas HANYA selagi menu terbuka.
+         Didelegasikan ke document supaya baris baru dari addRow() /
+         InsertRow() ikut tertangani tanpa diikat ulang. */
+      $(document).on('show.bs.dropdown', '.table-responsive', function () {
+          $(this).css('overflow', 'visible');
+      });
+      $(document).on('hide.bs.dropdown', '.table-responsive', function () {
+          $(this).css({ 'overflow-x': 'auto', 'overflow-y': '' });
+      });
+
         $('.tanggal').datepicker({
             format: "dd-mm-yyyy",
             autoclose: true
@@ -660,7 +717,7 @@ function initializePlugins() {
             autoclose: true
         });
         $('.select2').select2({
-            theme: 'bootstrap4'
+            width: '100%'
         });
     });
 }
@@ -690,11 +747,11 @@ function initializePlugins() {
       //Initialize Select2 Elements
       var selectcoba = rowCount;
       $('.rowCount').select2({
-         theme: 'bootstrap4'
+         width: '100%'
      })
       //Initialize Select2 Elements
       $('.select2add').select2({
-        theme: 'bootstrap4'
+        width: '100%'
     })
   });
     $coa = '';

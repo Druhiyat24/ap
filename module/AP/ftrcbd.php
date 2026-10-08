@@ -1,15 +1,27 @@
 <?php include '../header.php' ?>
 
+<link rel="stylesheet" href="../css/app-skin-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-skin-form.css'); ?>">
+<link rel="stylesheet" href="../css/app-loading.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-loading.css'); ?>">
+
+<link rel="stylesheet" href="../css/app-ftr-list.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-ftr-list.css'); ?>">
+
 <!-- MAIN -->
-<div class="col p-4">
-    <h3 class="text-center">FORM TRANSFER REQUEST (CBD)</h3>
-    <div class="box">
-        <div class="box header">
+<div class="container-fluid mt-3 p-3">
+  <div class="ftl-card">
+    <div class="ftl-head">
+      <span class="ftl-head-icon"><i class="fa fa-exchange" aria-hidden="true"></i></span>
+      <div>
+        <h1>Form Transfer Request (CBD)</h1>
+        <span class="ftl-crumb">AP &rsaquo; FTR CBD</span>
+      </div>
+    </div><!-- /.ftl-head -->
+
+    <div class="ftl-panel">
 
 
             <form id="form-data" action="ftrcbd.php" method="post">        
                 <div class="form-row">
-                    <div class="col-md-3">
+                    <div class="col-12 col-sm-6 col-xl-3 mb-2">
                         <label for="nama_supp"><b>Supplier</b></label>            
                         <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true">
                             <option value="ALL" selected="true">ALL</option>                                                
@@ -31,7 +43,7 @@
                         </select>
 
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-12 col-sm-6 col-xl-2 mb-2">
                         <label for="status"><b>Status</b></label>            
                         <select class="form-control selectpicker" name="status" id="status" data-dropup-auto="false" data-live-search="true">
                             <option value="ALL" <?php
@@ -89,7 +101,7 @@
                         </select>
                     </div>
 
-                    <div class="col-md-2">
+                    <div class="col-12 col-sm-6 col-xl-2 mb-2">
                       <label for="start_date"><b>From</b></label>
                       <input type="text" class="form-control tanggal" id="start_date" name="start_date" 
                       value="<?php
@@ -101,12 +113,12 @@
                        echo $_POST['start_date'];
                    }
                    else{
-                       echo '';
+                       echo date("d-m-Y");
                    } ?>" 
-                   placeholder="Start Date" autocomplete='off' style="height: 33px;font-size:13px;">   
+                   autocomplete="off">
                </div>
 
-               <div class="col-md-2">
+                    <div class="col-12 col-sm-6 col-xl-2 mb-2">
                  <label for="end_date"><b>To</b></label>        
                  <input type="text" class="form-control tanggal" id="end_date" name="end_date" 
                  value="<?php
@@ -120,53 +132,47 @@
                else{
                    echo date("d-m-Y");
                } ?>" 
-               placeholder="Tanggal Akhir" style="height: 33px;font-size:13px;"> 
+               autocomplete="off">
            </div>
 
-           <div class="input-group-append col">                                   
-            <button type="submit" id="submit" value=" Search " style="margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
-            line-height: 1;
-            padding: -2px 8px;
-            font-size: 1rem;
-            text-align: center;
-            color: #fff;
-            text-shadow: 1px 1px 1px #000;
-            border-radius: 6px;
-            background-color: rgb(46, 139, 87);"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
-            <button type="button" id="reset" value=" Reset " style="margin-top: 30px; margin-bottom: 5px;border: 0;
-            line-height: 1;
-            padding: -2px 8px;
-            font-size: 1rem;
-            text-align: center;
-            color: #fff;
-            text-shadow: 1px 1px 1px #000;
-            border-radius: 6px;
-            background-color:rgb(250, 69, 1)"><i class="fa fa-repeat" aria-hidden="true"></i> Reset </button>
-        </div>                                                            
-    </div>
-    <br>
-</div>
-</form>        
+           <div class="col-12 col-sm-6 col-xl-3 mb-2 ftl-actions">
+            <button type="submit" id="submit" class="app-btn app-btn-primary app-btn-sm"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
 <?php
+/* Tombol Create berdiri di samping Search. Hak aksesnya (id menu = 5)
+   ditanyakan di sini supaya query-nya dekat dgn tempat tombolnya dipakai. */
 $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create FTR'");
 $rs = mysqli_fetch_array($querys);
 $id = isset($rs['id']) ? $rs['id'] : 0;
-
-if($id == '5'){
-    echo '<button id="btncreate" type="button" class="btn-primary btn-xs"><span class="fa fa-pencil-square-o"></span> Create</button>';
-}else{
-    echo '';
+if ($id == '5') {
+    echo '<button id="btncreate" type="button" class="app-btn app-btn-success app-btn-sm"><i class="fa fa-pencil-square-o"></i> Create</button>';
 }
 ?>
+        </div>                                                            
+    </div>
 </div>
-<div class="box body">
+</form>
+</div><!-- /.ftl-card: kartu filter -->
+<div class="ftl-card mt-3">
+<div class="ftl-body">
     <div class="row">       
         <div class="col-md-12">
 
-          <div class="table-responsive">          
-            <table id="datatable" class="table table-striped table-bordered" role="grid" cellspacing="0" width="100%">
+          <!-- .app-loading-wrap: area yang ditutup overlay saat data ditarik.
+               Markup & kelasnya milik css/app-loading.css (dipakai bersama
+               halaman lain), jadi tampilannya seragam antar menu. -->
+          <div class="app-loading-wrap" id="ftrLoad">
+            <div class="app-loading">
+              <div class="app-loading-box">
+                <div class="app-spinner"></div>
+                <div class="app-loading-text">Loading data...</div>
+              </div>
+            </div>
+
+          <div class="ftl-tblwrap">
+            <table id="datatable" class="table ftl-tbl" role="grid" cellspacing="0" width="100%">
                 <thead>
                     <tr class="thead-dark">
+                        <th style="text-align: center;vertical-align: middle;"></th>
                         <th style="text-align: center;vertical-align: middle;">No FTR CBD</th>
                         <th style="text-align: center;vertical-align: middle;width: 100px">FTR CBD Date</th>
                         <th style="text-align: center;vertical-align: middle;">Supplier</th>            
@@ -177,158 +183,26 @@ if($id == '5'){
                         <th style="text-align: center;vertical-align: middle;">Currency</th>
                         <th style="text-align: center;vertical-align: middle;">Create By</th>
                         <th style="text-align: center;vertical-align: middle;">Status</th>
-                        <th style="text-align: center;vertical-align: middle;display: none;">Keterangan</th>                                                           
-                        <th style="text-align: center;vertical-align: middle;width: 170px">Action</th>
+                        <th style="text-align: center;vertical-align: middle;width: 200px">Action</th>
 
                     </tr>
                 </thead>
 
-                <tbody>
-                    <?php
-                    $nama_supp ='';
-                    $status = '';
-                    $start_date ='';
-                    $end_date ='';
-                    $date_now = date("Y-m-d");                
-                    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                        $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null; 
-                        $status = isset($_POST['status']) ? $_POST['status']: null;
-                        $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-                        $end_date = date("Y-m-d",strtotime($_POST['end_date']));                
-                    }
-                    if(empty($nama_supp) and empty($status) and empty($start_date) and empty($end_date)){
-                        $sql = mysqli_query($conn2,"select no_ftr_cbd, tgl_ftr_cbd, no_po, supp, SUM(subtotal + biaya_tambahan) as subtotal, SUM(tax) as tax, SUM(total + biaya_tambahan) as total, curr, create_user, status, keterangan from ftr_cbd where tgl_ftr_cbd = '$date_now' group by no_ftr_cbd");
-                    }
-                    elseif ($nama_supp == 'ALL' and $status == 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {            
-                        $sql = mysqli_query($conn2,"select no_ftr_cbd, tgl_ftr_cbd, no_po, supp, SUM(subtotal + biaya_tambahan) as subtotal, SUM(tax) as tax, SUM(total + biaya_tambahan) as total, curr, create_user, status, keterangan from ftr_cbd group by no_ftr_cbd");
-                    }
-                    elseif ($nama_supp == 'ALL' and $status == 'ALL' and !empty($start_date) and !empty($end_date)) {
-                        $sql = mysqli_query($conn2,"select no_ftr_cbd, tgl_ftr_cbd, no_po, supp, SUM(subtotal + biaya_tambahan) as subtotal, SUM(tax) as tax, SUM(total + biaya_tambahan) as total, curr, create_user, status, keterangan from ftr_cbd where tgl_ftr_cbd between '$start_date' and '$end_date' group by no_ftr_cbd");
-                    }
-                    elseif ($nama_supp != 'ALL' and $status == 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-                        $sql = mysqli_query($conn2,"select no_ftr_cbd, tgl_ftr_cbd, no_po, supp, SUM(subtotal + biaya_tambahan) as subtotal, SUM(tax) as tax, SUM(total + biaya_tambahan) as total, curr, create_user, status, keterangan from ftr_cbd where supp = '$nama_supp' group by no_ftr_cbd");
-                    }
-                    elseif ($nama_supp != 'ALL' and $status == 'ALL' and !empty($start_date) and !empty($end_date)) {
-                        $sql = mysqli_query($conn2,"select no_ftr_cbd, tgl_ftr_cbd, no_po, supp, SUM(subtotal + biaya_tambahan) as subtotal, SUM(tax) as tax, SUM(total + biaya_tambahan) as total, curr, create_user, status, keterangan from ftr_cbd where supp = '$nama_supp' and tgl_ftr_cbd between '$start_date' and '$end_date' group by no_ftr_cbd");
-                    }
-                    elseif ($nama_supp == 'ALL' and $status != 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-                        $sql = mysqli_query($conn2,"select no_ftr_cbd, tgl_ftr_cbd, no_po, supp, SUM(subtotal + biaya_tambahan) as subtotal, SUM(tax) as tax, SUM(total + biaya_tambahan) as total, curr, create_user, status, keterangan from ftr_cbd where status = '$status' group by no_ftr_cbd");
-                    }
-                    elseif ($nama_supp == 'ALL' and $status != 'ALL' and !empty($start_date) and !empty($end_date)) {
-                        $sql = mysqli_query($conn2,"select no_ftr_cbd, tgl_ftr_cbd, no_po, supp, SUM(subtotal + biaya_tambahan) as subtotal, SUM(tax) as tax, SUM(total + biaya_tambahan) as total, curr, create_user, status, keterangan from ftr_cbd where status = '$status' and tgl_ftr_cbd between '$start_date' and '$end_date' group by no_ftr_cbd");
-                    }
-                    elseif ($nama_supp != 'ALL' and $status != 'ALL' and $start_date == '1970-01-01' and $end_date == '1970-01-01') {
-                        $sql = mysqli_query($conn2,"select no_ftr_cbd, tgl_ftr_cbd, no_po, supp, SUM(subtotal) as subtotal, SUM(tax) as tax, SUM(total) as total, curr, create_user, status, keterangan from ftr_cbd where status = '$status' and supp = '$nama_supp' group by no_ftr_cbd");
-                    }
-                    else{
-                        $sql = mysqli_query($conn2,"select no_ftr_cbd, tgl_ftr_cbd, no_po, supp, SUM(subtotal + biaya_tambahan) as subtotal, SUM(tax) as tax, SUM(total + biaya_tambahan) as total, curr, create_user, status, keterangan from ftr_cbd where status = '$status' and supp = '$nama_supp' and tgl_ftr_cbd between '$start_date' and '$end_date' group by no_ftr_cbd");
-                    }
-
-                    while($row = mysqli_fetch_array($sql)){
-                        if (!empty($row)) {
-                            $status = $row['status'];         
-                            echo '<tr style="font-size: 12px;text-align: center;">
-                            <td style="width: 100px;" value = "'.$row['no_ftr_cbd'].'">'.$row['no_ftr_cbd'].'</td>
-                            <td style="width: 100px;" value = "'.$row['tgl_ftr_cbd'].'">'.date("d-M-Y",strtotime($row['tgl_ftr_cbd'])).'</td>
-                            <td style="width: 250px;"value = "'.$row['supp'].'">'.$row['supp'].'</td>
-                            <td value = "'.$row['no_po'].'">'.$row['no_po'].'</td>            
-                            <td style="text-align: right;" value = "'.$row['subtotal'].'">'.number_format($row['subtotal'],2).'</td>
-                            <td style="text-align: right;" value = "'.$row['tax'].'">'.number_format($row['tax'],2).'</td>            
-                            <td style="text-align: right;" value = "'.$row['total'].'">'.number_format($row['total'],2).'</td>
-                            <td value = "'.$row['curr'].'">'.$row['curr'].'</td>
-                            <td value = "'.$row['create_user'].'">'.$row['create_user'].'</td>
-                            <td value = "'.$row['status'].'">'.$row['status'].'</td>
-                            <td style = "display: none;" value = "'.$row['keterangan'].'">'.$row['keterangan'].'</td>';
-
-                            $querys = mysqli_query($conn1,"select Groupp, purchasing, approve_po from userpassword where username = '$user'");
-                            $rs = mysqli_fetch_array($querys);
-                            $group = $rs['Groupp'];
-                            $pur = $rs['purchasing'];
-                            $app_po = $rs['approve_po'];
-
-                            echo '<td width="150px;">';
-                            if($status == 'Approved' and $group != 'STAFF' and $pur == '1' ){
-                                echo '<a id="approve" href="">
-                                <i class="fa fa-paper-plane" style="padding:0 3px;" hidden></i>
-                                </a>                
-                                <a id="delete" href="">
-                                <i class="fa fa-trash" style="padding:0 3px;" hidden></i>
-                                </a>
-                                <a style="margin-right:5px;" href="pdf_ftrcbd.php?noftrcbd='.$row['no_ftr_cbd'].'" target="_blank">
-                                <button style="border-radius:4px; font-size:11px; line-height:1.2; padding:2px 6px;" 
-                                type="button" class="btn btn-success btn-xs">
-                                <i class="fa fa-file-pdf-o" aria-hidden="true" style="margin-right:3px;"></i>Pdf
-                                </button>
-                                </a>';
-
-                            }elseif($status == 'Approved' and $group == 'STAFF' and $pur == '1'){
-                                echo '<a id="approve" href="">
-                                <i class="fa fa-paper-plane" style="padding:0 3px;" hidden></i>
-                                </a>                
-                                <a id="delete" href="">
-                                <i class="fa fa-trash" style="padding:0 3px;" hidden></i>
-                                </a>
-                                <a style="margin-right:5px;" href="pdf_ftrcbd.php?noftrcbd='.$row['no_ftr_cbd'].'" target="_blank">
-                                <button style="border-radius:4px; font-size:11px; line-height:1.2; padding:2px 6px;" 
-                                type="button" class="btn btn-success btn-xs">
-                                <i class="fa fa-file-pdf-o" aria-hidden="true" style="margin-right:3px;"></i>Pdf
-                                </button>
-                                </a>';
-
-                            }elseif($status == 'draft' and $group != 'STAFF' and $pur == '1'){
-                                echo '<div style="display:flex; gap:4px; font-size:11px;">
-                                <a id="approve" href="">
-                                <button style="border-radius:4px; padding:2px 6px; font-size:11px;" type="button" class="btn btn-info btn-xs">
-                                <i style="color:white; margin-right:3px;" class="fa fa-paper-plane" aria-hidden="true"></i>Approve
-                                </button>
-                                </a>                
-                                <a id="delete" href="">
-                                <button style="border-radius:4px; padding:2px 6px; font-size:11px;" type="button" class="btn btn-danger btn-xs">
-                                <i style="color:white; margin-right:3px;" class="fa fa-trash" aria-hidden="true"></i>Cancel
-                                </button>
-                                </a>
-                                <a href="pdf_ftrcbd.php?noftrcbd='.$row['no_ftr_cbd'].'" target="_blank">
-                                <i class="fa fa-print" style="padding:0 3px;" hidden></i>
-                                </a>
-                                </div>';
-
-                            }elseif($status == 'draft' and $group == 'STAFF' and $pur == '1') {
-                                echo '<a style="margin-right:5px;" href="pdf_ftrcbd.php?noftrcbd='.$row['no_ftr_cbd'].'" target="_blank">
-                                <button style="border-radius:4px; padding:2px 6px; font-size:11px;" type="button" class="btn btn-success btn-xs">
-                                <i class="fa fa-file-pdf-o" style="margin-right:4px;" aria-hidden="true"></i>Pdf
-                                </button>
-                                </a>';
-
-                            }elseif($status == 'Cancel' and $group != 'STAFF' and $pur == '1' ) {
-                                echo '<p style="font-size:11px; margin-bottom:-1px">
-                                <i class="fa fa-ban fa-lg" style="padding-right:3px; padding-left:5px; color:red"></i>
-                                <b>Canceled</b>
-                                </p>';
-
-                            }elseif($status == 'Cancel' and $group == 'STAFF' and $pur == '1') {
-                                echo '<p style="font-size:11px; margin-bottom:-1px">
-                                <i class="fa fa-ban fa-lg" style="padding-right:3px; padding-left:5px; color:red"></i>
-                                <b>Canceled</b>
-                                </p>';
-                            }                 
-                            echo '</td>';
-
-                            echo '</tr>';
-                        }
-                    }?>
-                </tbody>                    
+                <tbody></tbody>
             </table>
         </div>
+          </div><!-- /.app-loading-wrap -->
 
     </div>
 </div>
-</div>
-</div><!-- body-row END -->
+</div><!-- /.ftl-body -->
+</div><!-- /.ftl-card: kartu tabel -->
+</div><!-- /.container-fluid -->
 </div>
 </div>
 
-<div class="modal fade" id="mymodalftrcbd" data-target="#mymodalftrcbd" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-    <div class="modal-dialog">
+<div class="modal fade ftl-modal" id="mymodalftrcbd" data-target="#mymodalftrcbd" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
@@ -361,6 +235,7 @@ if($id == '5'){
 <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>  
+<script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
 <script>
   // Hide submenus
   $('#body-row .collapse').collapse('hide'); 
@@ -392,13 +267,112 @@ function SidebarCollapse () {
 }
 </script>
 <script>
-    $(document).ready(function() {
-        $('#datatable').dataTable();
+    var PENGGUNA = '<?php echo $user; ?>';
+
+    /* Dibiarkan di lingkup global supaya blok skrip di bawah (Approve, Cancel,
+       modal rincian) bisa membaca data barisnya lewat ftrTable.row(...). */
+    var ftrTable = null;
+
+
+    function muatUlang() {
+        if (ftrTable) { ftrTable.ajax.reload(null, false); }
+    }
+
+    $(document).ready(function () {
+        ftrTable = $('#datatable').DataTable({
+            autoWidth: false,
+            processing: true,
+            serverSide: false,
+            order: [[1, 'asc']],   // kolom 0 kini tombol "+"
+
+            /* RESPONSIVE: kolom yang tidak muat DIKOLAPS jadi baris rincian
+               yang dibuka lewat tanda "+", bukan dipaksa digulir ke samping.
+               Modulnya sudah terbundel di datatables.min.js dan CSS-nya sudah
+               dimuat header.php (responsive.bootstrap4.min.css). */
+            responsive: {
+                details: { type: 'column', target: 0 }
+            },
+
+            ajax: {
+                url: 'ajx_ftrcbd.php',
+                type: 'POST',
+                data: function (d) {
+                    d.nama_supp  = $('#nama_supp').val();
+                    d.status     = $('#status').val();
+                    d.start_date = $('#start_date').val();
+                    d.end_date   = $('#end_date').val();
+                    d.user       = PENGGUNA;
+                },
+                dataSrc: 'data',
+                error: function (xhr) {
+                    $('#ftrLoad').removeClass('is-loading');
+                    Swal.fire({
+                        icon: 'error', title: 'Failed to load the list',
+                        text: 'HTTP ' + xhr.status + ' - ' + (xhr.responseText || 'no response')
+                    });
+                }
+            },
+
+            /* Kolom tanggal & nilai uang dikirim DUA RUPA oleh ajx_ftrcbd.php:
+               satu untuk ditampilkan, satu untuk diurutkan. Tanpa itu
+               "01-Oct-2026" diurutkan sbg teks dan "1,234.56" sbg kalimat. */
+            /* responsivePriority: makin KECIL angkanya, makin lama kolom itu
+               dipertahankan saat layar menyempit. Urutannya diambil dari cara
+               orang membaca daftar ini: nomor dokumen & tombol aksi harus
+               selalu ada, lalu status, lalu nilai Total, baru sisanya. */
+            columns: [
+                { data: null, defaultContent: '', orderable: false, className: 'dtr-control', responsivePriority: 1 },
+                { data: 'no_ftr_cbd', responsivePriority: 1 },
+                { data: { _: 'tgl_urut',   display: 'tgl_tampil' }, responsivePriority: 6 },
+                { data: 'supp',  responsivePriority: 5 },
+                { data: 'no_po', responsivePriority: 7 },
+                { data: { _: 'subtotal_n', display: 'subtotal' }, responsivePriority: 8 },
+                { data: { _: 'tax_n',      display: 'tax' },      responsivePriority: 9 },
+                { data: { _: 'total_n',    display: 'total' },    responsivePriority: 4 },
+                { data: 'curr', responsivePriority: 10 },
+                { data: 'create_user', responsivePriority: 11 },
+                { data: { _: 'status',     display: 'status_html' }, responsivePriority: 3 },
+                { data: 'action', orderable: false, searchable: false, responsivePriority: 2 }
+            ],
+
+            /* Kelas "all" milik Responsive = kolom ini TIDAK PERNAH dikolaps,
+               seberapa pun sempit layarnya. responsivePriority saja tidak cukup:
+               itu hanya menentukan URUTAN dibuang. Tiga yang dikunci: nomor
+               dokumen, Status, dan Action - sisanya boleh masuk baris rincian.
+               Nomor kolom bergeser +1 karena kolom "+" disisipkan di depan. */
+            columnDefs: [
+                { targets: [1],        className: 'text-left ftl-doc all' },
+                { targets: [10],       className: 'text-center all' },
+                { targets: [11],       className: 'text-center ftl-act-cell all' },
+                { targets: [3, 4],     className: 'text-left' },            // Supplier, No PO
+                { targets: [5, 6, 7],  className: 'text-right ftl-amt' },  // SubTotal, Tax, Total
+                { targets: [2, 8, 9],  className: 'text-center' }          // tanggal, Currency, Create By
+            ],
+
+            language: {
+                emptyTable: 'No FTR CBD found for this filter.',
+                zeroRecords: 'No FTR CBD matches your search.'
+            }
+        });
+
+        /* Overlay mengikuti status processing DataTables - kotak "Processing"
+           bawaannya otomatis disembunyikan app-loading.css, jadi tidak muncul
+           dua-duanya. */
+        ftrTable.on('processing.dt', function (e, settings, processing) {
+            $('#ftrLoad').toggleClass('is-loading', processing);
+        });
+
+
+        /* Tombol Search ada DI DALAM form, jadi cukup satu pengait submit:
+           menangani klik tombol DAN tombol Enter di isian filter sekaligus.
+           Halaman tidak lagi dimuat ulang - hanya datanya yang ditarik. */
+        $('#form-data').on('submit', function (e) {
+            e.preventDefault();
+            ftrTable.ajax.reload();
+        });
 
         $("[data-toggle=tooltip]").tooltip();
-
-
-    } );
+    });
 </script>
 
 <script type="text/javascript">
@@ -417,96 +391,172 @@ function SidebarCollapse () {
 </script>
 
 <script type="text/javascript">
-    $("table tbody tr").on("click", "#approve", function(){                 
-        var noftrcbd = $(this).closest('tr').find('td:eq(0)').attr('value');
-        var confirm_user = '<?php echo $user ?>';
+    /* Semua pengait di bawah dipasang pada #datatable tbody (delegasi), BUKAN
+       pada baris-barisnya langsung: barisnya kini dibuat ulang setiap kali data
+       ditarik, jadi pengait yang menempel ke baris akan ikut hilang. */
+
+    /* Satu baris = satu objek data dari ajx_ftrcbd.php. Jauh lebih aman
+       daripada membaca ulang isi sel: urutan kolom boleh berubah tanpa
+       membuat tombol Approve mengirim nomor dokumen yang salah. */
+    function dataBaris(el) {
+        return ftrTable.row($(el).closest('tr')).data();
+    }
+
+    /* Approve & Cancel sama-sama lewat sini. approveftrcbd.php dan
+       cancelftrcbd.php kini menjawab JSON {ok, message}, jadi pesan "berhasil"
+       hanya muncul kalau datanya MEMANG berubah - dulu pesan itu selalu
+       muncul asal permintaannya terkirim, termasuk saat dokumennya ternyata
+       sudah di-approve orang lain. */
+    function kirimAksi(opsi) {
+        Swal.fire({
+            title: 'Working...',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: function () { Swal.showLoading(); }
+        });
 
         $.ajax({
-            type:'POST',
-            url:'approveftrcbd.php',
-            data: {'noftrcbd':noftrcbd, 'confirm_user':confirm_user},
-            // close: function(e){
-            //     e.preventDefault();
-            // },
-            success: function(data){
-                console.log(data);
-                alert('Data Berhasil Di Approve');
-                window.location.reload();                               
-            },
-            error:  function (xhr, ajaxOptions, thrownError) {
-               alert(xhr);
-           }
-       });
+            type: 'POST',
+            url: opsi.url,
+            data: opsi.kirim,
+            dataType: 'json'
+        }).done(function (jwb) {
+            if (!jwb || jwb.ok !== true) {
+                Swal.fire({ icon: 'error', title: opsi.judulGagal,
+                    text: (jwb && jwb.message) ? jwb.message : 'The server did not confirm the change.' });
+                return;
+            }
+            Swal.fire({
+                icon: 'success',
+                title: opsi.judulBerhasil,
+                html: jwb.message + '<div style="font-size:11.5px;color:#94a3b8;margin-top:6px">'
+                    + jwb.rows + (jwb.rows === 1 ? ' PO row updated.' : ' PO rows updated.') + '</div>',
+                confirmButtonText: 'OK'
+            }).then(muatUlang);
+        }).fail(function (xhr) {
+            /* Pesan dari server dipakai kalau ada - jauh lebih berguna
+               daripada sekadar nomor galat HTTP. */
+            var pesan = '';
+            try { pesan = (JSON.parse(xhr.responseText) || {}).message || ''; } catch (err) { pesan = ''; }
+            Swal.fire({
+                icon: 'error',
+                title: opsi.judulGagal,
+                text: pesan || ('HTTP ' + xhr.status + ' - ' + (xhr.responseText || 'no response'))
+            });
+        });
+    }
+
+    $('#datatable tbody').on('click', '.ftl-mini.is-approve', function () {
+        var d = dataBaris(this);
+        if (!d) { return; }
+
+        Swal.fire({
+            icon: 'question',
+            title: 'Approve this FTR CBD?',
+            html: '<b>' + d.no_ftr_cbd + '</b>',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Approve',
+            cancelButtonText: 'Cancel'
+        }).then(function (jawab) {
+            if (!jawab.isConfirmed) { return; }
+            kirimAksi({
+                url: 'approveftrcbd.php',
+                kirim: { noftrcbd: d.no_ftr_cbd, confirm_user: PENGGUNA },
+                judulGagal: 'Approve failed',
+                judulBerhasil: 'Approved'
+            });
+        });
     });
-</script>
 
-<script type="text/javascript">
-    $("table tbody tr").on("click", "#delete", function(){                 
-        var noftrcbd = $(this).closest('tr').find('td:eq(0)').attr('value');
-        var cancel_user = '<?php echo $user ?>';
+    $('#datatable tbody').on('click', '.ftl-mini.is-cancel', function () {
+        var d = dataBaris(this);
+        if (!d) { return; }
 
-        $.ajax({
-            type:'POST',
-            url:'cancelftrcbd.php',
-            data: {'noftrcbd':noftrcbd, 'cancel_user':cancel_user},
-            // close: function(e){
-            //     e.preventDefault();
-            // },
-            success: function(data){                
-                console.log(data);
-                alert("Data Berhasil di Cancel");
-                window.location.reload();                                                            
-            },
-            error:  function (xhr, exc, ajaxOptions, thrownError) {
-               alert(xhr.status);
-               alert(exc);               
-           }
-       });
+        /* Cancel tidak bisa dibatalkan dari menu ini, jadi ditanya dulu. */
+        Swal.fire({
+            icon: 'warning',
+            title: 'Cancel this FTR CBD?',
+            html: '<b>' + d.no_ftr_cbd + '</b><br>This cannot be undone from this menu.',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Cancel It',
+            cancelButtonText: 'Back'
+        }).then(function (jawab) {
+            if (!jawab.isConfirmed) { return; }
+            kirimAksi({
+                url: 'cancelftrcbd.php',
+                kirim: { noftrcbd: d.no_ftr_cbd, cancel_user: PENGGUNA },
+                judulGagal: 'Cancel failed',
+                judulBerhasil: 'Canceled'
+            });
+        });
     });
-</script>
 
-<script type="text/javascript">     
-    $('table tbody tr').on('click', 'td:eq(0)', function(){                
+    /* SELURUH BARIS membuka rinciannya kalau diklik - sama dgn menu List
+       Memorial Journal, dan .ftl-tbl tbody tr sudah diberi cursor:pointer
+       sbg petunjuknya. */
+    /* Menyorot teks untuk disalin diakhiri peristiwa "click" juga, jadi tanpa
+       penjaga di bawah ini setiap kali user mem-blok nomor atau nilai di dalam
+       tabel, modalnya ikut terbuka. Dua tanda yang membedakannya:
+         1. kursor bergeser lebih dari 4px antara ditekan dan dilepas
+         2. masih ada teks tersorot saat tombol dilepas
+       Pada klik biasa, peramban membersihkan sorotan di peristiwa mousedown,
+       jadi saat click dijalankan sorotannya memang sudah kosong. */
+    var tekanX = 0, tekanY = 0;
+    $('#datatable tbody').on('mousedown', 'tr', function (e) {
+        tekanX = e.clientX;
+        tekanY = e.clientY;
+    });
+
+    $('#datatable tbody').on('click', 'tr', function (e) {
+        if (Math.abs(e.clientX - tekanX) > 4 || Math.abs(e.clientY - tekanY) > 4) { return; }
+        var tersorot = window.getSelection ? String(window.getSelection()) : '';
+        if (tersorot.length > 0) { return; }
+
+        /* Tiga hal di dalam tbody yang TIDAK boleh membuka modal: tombol "+"
+           milik Responsive, baris rincian hasil bukaannya, dan kolom Action
+           yang isinya tombol sendiri. */
+        if ($(e.target).closest('td.dtr-control').length) { return; }
+        if ($(e.target).closest('.ftl-act-cell').length) { return; }
+        if ($(this).hasClass('child')) { return; }
+        var d = dataBaris(this);
+        if (!d) { return; }
+
+        $('#txt_cbd').html(d.no_ftr_cbd);
+        /* Label dan nilai ditulis sbg dua elemen terpisah supaya bisa
+           disejajarkan lewat CSS - tidak lagi satu kalimat utuh. */
+        function isiInfo(sel, label, nilai, mentah) {
+            $(sel).html('<span class="ftl-k">' + label + '</span>'
+                      + '<span class="ftl-v">' + (mentah ? nilai : $('<i>').text(nilai == null || nilai === '' ? '-' : nilai).html()) + '</span>');
+        }
+
+        isiInfo('#txt_tgl_cbd',     'FTR CBD Date', d.tgl_tampil);
+        isiInfo('#txt_nama_supp',   'Supplier',     d.supp);
+        isiInfo('#txt_curr',        'Currency',     d.curr);
+        isiInfo('#txt_create_user', 'Created By',   d.create_user);
+        isiInfo('#txt_status',      'Status',       d.status_html, true);
+        isiInfo('#txt_keterangan',  'Remark',       d.keterangan);
+        $('#details').html('');
         $('#mymodalftrcbd').modal('show');
-        var noftrcbd = $(this).closest('tr').find('td:eq(0)').attr('value');
-        var tgl_cbd = $(this).closest('tr').find('td:eq(1)').text();
-        var supp = $(this).closest('tr').find('td:eq(2)').attr('value');
-        var curr = $(this).closest('tr').find('td:eq(7)').attr('value');
-        var create_user = $(this).closest('tr').find('td:eq(8)').attr('value');
-        var status = $(this).closest('tr').find('td:eq(9)').attr('value');
-        var keterangan = $(this).closest('tr').find('td:eq(10)').attr('value');                    
 
         $.ajax({
-            type : 'post',
-            url : 'ajaxcbd.php',
-            data : {'noftrcbd': noftrcbd},
-            success : function(data){
-    $('#details').html(data); //menampilkan data ke dalam modal
-}
-});         
-        //make your ajax call populate items or what even you need
-        $('#txt_cbd').html(noftrcbd);
-        $('#txt_tgl_cbd').html('Tgl FTR CBD : ' + tgl_cbd + '');
-        $('#txt_nama_supp').html('Supplier : ' + supp + '');
-        $('#txt_curr').html('Currency : ' + curr + '');        
-        $('#txt_create_user').html('Create By : ' + create_user + '');
-        $('#txt_status').html('Status : ' + status + '');
-        $('#txt_keterangan').html('Keterangan : ' + keterangan + '');                                        
+            type: 'post',
+            url: 'ajaxcbd.php',
+            data: { noftrcbd: d.no_ftr_cbd },
+            success: function (data) { $('#details').html(data); },
+            error: function () { $('#details').html('<div style="color:#b3312c">Failed to load the PO detail.</div>'); }
+        });
     });
-
 </script>
 
 <script type="text/javascript">
-    document.getElementById('btncreate').onclick = function () {
-        location.href = "formftrcbd.php";
-    };
+    /* Tombol Create hanya dicetak utk user ber-hak (id menu = 5). Tanpa
+       penjaga ini, di user lain barisnya melempar galat dan blok skrip mati. */
+    var tombolCreate = document.getElementById('btncreate');
+    if (tombolCreate) {
+        tombolCreate.onclick = function () { location.href = "formftrcbd.php"; };
+    }
 </script>
 
-<script type="text/javascript">
-    document.getElementById('reset').onclick = function () {
-        location.href = "ftrcbd.php";
-    };
-</script>
 
 <!--
 <script>

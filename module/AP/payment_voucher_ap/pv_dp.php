@@ -35,13 +35,14 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
                        <!--  <div class="col-md-2 mb-3">
                             <label for="dp_matauang"><b>Currency</b></label> -->
                             <?php
-                            $value = null;
-                            if (!empty($nama_supp)) {
-                                $sql = mysqli_query($conn2, "select curr from ftr_dp where supp = '" . mysqli_real_escape_string($conn2, $nama_supp) . "'");
-                                $row = mysqli_fetch_array($sql);
-                                $value = isset($row['curr']) ? $row['curr'] : null;
-                            }
-                            echo '<input type="hidden" readonly class="form-control form-control-sm" id="dp_matauang" name="matauang" value="' . htmlspecialchars((string) $value) . '">';
+                            /* Mata uang diisi dari FTR yang DICENTANG - lihat data-curr pada
+                               input pilihan di tabel dan penangan change-nya. Dulu di sini ada
+                               tebakan "select curr from ftr_dp where supp = ..." tanpa
+                               penyaring nomor FTR dan tanpa ORDER BY, jadi mata uang yang
+                               terpakai milik baris mana saja. Supplier yang pernah memakai dua
+                               mata uang jadi tertukar - PV-AP/CBD/NAG/2026/09/00169 tercatat USD
+                               padahal FTR-nya RMB. Awalnya kosong, diisi JavaScript. */
+                            echo '<input type="hidden" readonly class="form-control form-control-sm" id="dp_matauang" name="matauang" value="">';
                             ?>
                        <!--  </div> -->
 
@@ -264,7 +265,7 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
                                 }
 
                                 $nama_supp_esc = mysqli_real_escape_string($conn2, (string) $nama_supp);
-                                $sql = mysqli_query($conn2, "select no_ftr_dp, tgl_ftr_dp, no_po, tgl_po, SUM(total) as sub, SUM(dp_value) as dp, SUM(balance) as balance, supp as supplier, status, keterangan, create_user from ftr_dp where supp = '$nama_supp_esc' and tgl_ftr_dp between '$start_date' and '$end_date' and status = 'Approved' and is_invoiced != 'Invoiced' group by no_ftr_dp");
+                                $sql = mysqli_query($conn2, "select no_ftr_dp, tgl_ftr_dp, no_po, tgl_po, SUM(total) as sub, SUM(dp_value) as dp, SUM(balance) as balance, supp as supplier, status, keterangan, create_user, MAX(curr) as curr from ftr_dp where supp = '$nama_supp_esc' and tgl_ftr_dp between '$start_date' and '$end_date' and status = 'Approved' and is_invoiced != 'Invoiced' and COALESCE(payment_method,'') <> 'Cash' group by no_ftr_dp");
                                 while ($row = mysqli_fetch_array($sql)) {
                                     $dp_no = $row['no_ftr_dp'];
                                     $dp_no_esc = mysqli_real_escape_string($conn2, $dp_no);
@@ -279,7 +280,7 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
                                         echo '';
                                     } else {
                                         echo '<tr>
-                                        <td style="text-align:center;"><input type="checkbox" class="dp_chk" name="select[]" value=""></td>
+                                        <td style="text-align:center;"><input type="checkbox" class="dp_chk" name="select[]" value="" data-curr="' . htmlspecialchars((string) $row['curr'], ENT_QUOTES) . '"></td>
                                         <td value="' . $row['no_ftr_dp'] . '">' . $row['no_ftr_dp'] . '</td>
                                         <td value="' . $row['no_po'] . '">' . $row['no_po'] . '</td>
                                         <td value="' . $row['tgl_po'] . '">' . date("d-M-Y", strtotime($row['tgl_po'])) . '</td>
@@ -542,6 +543,29 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
     }
 
     $("#dp_mytable").on("change", "input.dp_chk", function () {
+        /* DP memakai centang, jadi beberapa FTR bisa masuk satu PV. Satu PV cuma
+           punya SATU kolom mata uang, jadi mencampur mata uang mustahil disimpan
+           dgn benar - baris yang beda mata uangnya ditolak di sini, bukan
+           dibiarkan lalu diam-diam memakai mata uang salah satunya. */
+        var curr_baris = ($(this).data('curr') || '').toString();
+        if ($(this).is(':checked')) {
+            var bentrok = '';
+            $("#dp_mytable input.dp_chk:checked").each(function () {
+                var c = ($(this).data('curr') || '').toString();
+                if (c !== curr_baris) { bentrok = c; }
+            });
+            if (bentrok !== '') {
+                $(this).prop('checked', false);
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Different Currency',
+                    text: 'This FTR is in ' + (curr_baris || '-') + ' while the selected rows are in '
+                        + (bentrok || '-') + '. One Payment Voucher can only hold one currency.'
+                });
+                return;
+            }
+        }
+
         var sum_sub = 0;
         var sum_dp = 0;
 
@@ -551,6 +575,11 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
             sum_sub += price;
             sum_dp += dp;
         });
+
+        /* Mata uang PV = mata uang baris yang dicentang (sudah dijamin seragam di
+           atas). Tanpa centang, isiannya dikosongkan. */
+        var baris_tercentang = $("#dp_mytable input.dp_chk:checked").first();
+        $('#dp_matauang').val(baris_tercentang.length ? (baris_tercentang.data('curr') || '') : '');
 
         $("#dp_subtotal").val(formatMoneyDp(sum_sub));
         $("#dp_subtotal_h").val(sum_sub);
@@ -617,6 +646,12 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
             Swal.fire({icon: 'warning', title: 'Oops...', text: 'Please select at least 1 row to calculate the total'});
             return;
         }
+        /* Penjaga terakhir: PV tanpa mata uang pernah lolos dan tersimpan dgn
+           mata uang tebakan. Lebih baik ditolak di sini. */
+        if (!curr_h) {
+            Swal.fire({icon: 'warning', title: 'Oops...', text: 'Currency of the selected FTR DP is empty. Please fix the FTR first.'});
+            return;
+        }
 
         $.ajax({
             type: 'POST',
@@ -671,7 +706,10 @@ $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : null;
         var noftrdp = $(this).closest('tr').find('td:eq(1)').attr('value');
         var tgl_dp = $(this).closest('tr').find('td:eq(9)').text();
         var supp = $(this).closest('tr').find('td:eq(7)').attr('value');
-        var curr = document.getElementById('dp_matauang').value;
+        /* Modal rincian memakai mata uang BARIS yang diklik - barisnya belum tentu
+           yang dicentang, jadi tidak boleh ikut isian kepala. */
+        var curr = $(this).closest('tr').find('input.dp_chk').data('curr')
+                || document.getElementById('dp_matauang').value;
         var create_user = $(this).closest('tr').find('td:eq(8)').attr('value');
         var status = $(this).closest('tr').find('td:eq(10)').attr('value');
         var keterangan = $(this).closest('tr').find('td:eq(11)').attr('value');

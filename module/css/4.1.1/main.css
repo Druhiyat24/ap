@@ -67,9 +67,22 @@ padding:0px !important;
 margin:0px !important;
 border:none !important;
 }
-.modal-backdrop {
-  z-index: -1 !important;
-}
+/* Aturan ".modal-backdrop { z-index: -1 !important; }" DIBUANG 01 Okt 2026.
+
+   Backdrop bawaan Bootstrap itu lapisan hitam 50% selebar layar. Dengan
+   z-index -1 ia terdorong ke belakang seluruh isi halaman - TAPI masih di
+   depan LATAR halaman. Akibatnya tiap kali modal dibuka, bagian halaman yang
+   tidak punya latar sendiri (ruang kosong di bawah kartu) tersaput abu-abu,
+   sementara menu & kartu tetap normal. Terlihat jelas sejak halaman-halaman
+   baru memakai latar terang #f4f6fb.
+
+   Sekarang backdrop-nya kembali ke z-index bawaannya (1040): halaman
+   diredupkan merata saat modal terbuka, seperti modal pada umumnya.
+
+   Sudah diperiksa sebelum dibuang: dari 414 berkas ber-modal, TIDAK ADA satu
+   pun modal yang bersarang di dalam elemen ber-stacking context (z-index /
+   transform / opacity inline, .table-responsive, .app-card, atau modal lain),
+   jadi tidak ada modal yang berisiko tertutup backdrop. */
 /*
 Fix to show in full screen demo
 */

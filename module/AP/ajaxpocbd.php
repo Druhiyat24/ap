@@ -56,8 +56,8 @@ where po_header.app = 'A' and po_header.pono = '$no_po' and po_item.cancel = 'N'
                             <td style="width:50px;" value="'.$row['unit'].'">'.$row['unit'].'</td>                            
                             <td style="width:50px;text-align:right;" value="'.$row['price'].'">'.number_format($row['price'],2).'</td>
                        </tr>';
-            $table .= '</tbody>';
         }
+            $table .= '</tbody>';
             $table .= '</table>';
 
 echo $table;

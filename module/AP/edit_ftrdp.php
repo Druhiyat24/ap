@@ -1,4 +1,71 @@
 <?php include '../header.php' ?>
+<?php
+/* ============================================================================
+   HALAMAN EDIT FTR DP.
+
+   HANYA untuk dokumen berstatus draft. Dokumen yang sudah Approved dirujuk
+   kontrabon_ftr / payment_ftrdp / pa_saldo_awal, jadi menambah atau membuang
+   PO di sana akan membuat angka di dokumen hilir tidak cocok lagi.
+   ============================================================================ */
+$ftr_no = isset($_GET['no']) ? trim(base64_decode($_GET['no'], true)) : '';
+if ($ftr_no === '' && isset($_POST['noftrdp'])) { $ftr_no = trim($_POST['noftrdp']); }
+
+function ftrEditGagal($pesan) {
+    echo '<div class="container-fluid mt-3 p-3"><div class="alert alert-warning" style="border-radius:12px">'
+       . '<b>FTR DP cannot be edited.</b><br>' . htmlspecialchars($pesan, ENT_QUOTES)
+       . '<div style="margin-top:10px"><a class="app-btn app-btn-light app-btn-sm" href="ftrdp.php">'
+       . '<i class="fa fa-angle-double-left"></i> Back to list</a></div></div></div>';
+    echo '<link rel="stylesheet" href="../css/app-skin-form.css">';
+    exit;
+}
+
+if ($ftr_no === '') { ftrEditGagal('No document number was given.'); }
+
+$ftr_no_esc = mysqli_real_escape_string($conn2, $ftr_no);
+$q_head = mysqli_query($conn2, "select * from ftr_dp where no_ftr_dp = '$ftr_no_esc' order by id");
+if (!$q_head) { ftrEditGagal('Database error: ' . mysqli_error($conn2)); }
+
+$ftr_head  = null;
+$ftr_baris = array();
+while ($r = mysqli_fetch_assoc($q_head)) {
+    if ($ftr_head === null) { $ftr_head = $r; }
+    $ftr_baris[$r['no_po']] = $r;
+}
+if ($ftr_head === null)              { ftrEditGagal('FTR DP ' . $ftr_no . ' was not found.'); }
+if ($ftr_head['status'] !== 'draft') { ftrEditGagal('FTR DP ' . $ftr_no . ' is ' . $ftr_head['status'] . '. Only a draft can be edited.'); }
+
+$ftr_supp      = (string) $ftr_head['supp'];
+$ftr_tanggal   = (!empty($ftr_head['tgl_ftr_dp']) && $ftr_head['tgl_ftr_dp'] > '1970-01-01') ? date('d-m-Y', strtotime($ftr_head['tgl_ftr_dp'])) : '';
+$ftr_tgl_bayar = (!empty($ftr_head['tgl_bayar'])   && $ftr_head['tgl_bayar']   > '1970-01-01') ? date('d-m-Y', strtotime($ftr_head['tgl_bayar']))   : '';
+$po_tampil     = array();
+
+/* Satu baris tabel PO untuk FTR DP. $b = baris tersimpan di ftr_dp, atau null
+   kalau PO ini belum ada di dokumen. $total_po = nilai PO penuh, $ost = sisa
+   yang masih bisa di-DP-kan. */
+function barisEditFtrDp($po, $podate, $total_po, $ost, $curr, $supplier, $b) {
+    $pilih = ($b !== null);
+    $pi    = $pilih ? (string) $b['no_pi'] : '';
+    $dp    = $pilih ? (string) ($b['dp'] + 0) : '';
+    $dpval = $pilih ? number_format((float) $b['dp_value'], 2, '.', ',') : '';
+    $dpraw = $pilih ? (float) $b['dp_value'] : '';
+    $mati  = $pilih ? '' : ' disabled';
+    $tgl   = (!empty($podate) && $podate > '1970-01-01') ? date('d-M-Y', strtotime($podate)) : '-';
+    $e     = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES); };
+
+    return '<tr>'
+        . '<td style="width:10px;"><input type="checkbox" name="select[]" value="1"' . ($pilih ? ' checked' : '') . '></td>'
+        . '<td style="width:50px;" value="' . $e($po) . '">' . $e($po) . '</td>'
+        . '<td style="width:100px;"><input type="text" style="font-size: 14px;" class="form-control" id="txt_pi" name="txt_pi" value="' . $e($pi) . '"' . $mati . '></td>'
+        . '<td style="width:100px;" value="' . $e($podate) . '">' . $tgl . '</td>'
+        . '<td class="dt_total" style="width:100px;text-align: right;" data-total="' . $e($total_po) . '">' . number_format((float) $total_po, 2) . '</td>'
+        . '<td class="dt_total" style="width:100px;text-align: right;" data-total="' . $e($ost) . '">' . number_format((float) $ost, 2) . '</td>'
+        . '<td style="width:100px;"><input type="number" style="font-size: 14px;text-align: right;" class="form-control" id="txt_dp" name="txt_dp" data-value="' . $e($dp) . '" value="' . $e($dp) . '"' . $mati . '></td>'
+        . '<td style="width:100px;"><input type="text" style="font-size: 12px;text-align: right;" class="form-control" id="txt_dp_value" name="txt_dp_value" data-value="' . $e($dpraw) . '" value="' . $e($dpval) . '"' . $mati . '></td>'
+        . '<td style="width:50px;" value="' . $e($curr) . '">' . $e($curr) . '</td>'
+        . '<td style="display: none;" value="' . $e($supplier) . '">' . $e($supplier) . '</td>'
+        . '</tr>';
+}
+?>
 
 <!-- Skin kontrol form (selectpicker & input tanggal) - potongan dari
      app-skin.css. Ditaut SENDIRI dgn mtime-nya, BUKAN lewat app-skin.css:
@@ -17,7 +84,7 @@
       <span class="ftr-head-icon"><i class="fa fa-exchange" aria-hidden="true"></i></span>
       <div>
         <h1>Form Transfer Request (DP)</h1>
-        <span class="ftr-crumb">AP &rsaquo; FTR DP &rsaquo; Create</span>
+        <span class="ftr-crumb">AP &rsaquo; FTR DP &rsaquo; Edit</span>
       </div>
     </div>
 
@@ -26,26 +93,29 @@
                 <div class="form-row">
                     <div class="col-12 col-sm-6 col-xl-3 mb-3">
                         <label for="noftrdp"><b>No FTR DP</b></label>
-                        <?php
-                        $sql = mysqli_query($conn2,"select max(no_ftr_dp) from ftr_dp where id = (select max(id) from ftr_dp)");
-                        $row = mysqli_fetch_array($sql);
-                        $kodeftr = $row['max(no_ftr_dp)'];
-                        $urutan = (int) substr($kodeftr, 15, 5);
-                        $urutan++;
-                        $bln = date("m");
-                        $thn = date("y");
-                        $huruf = "FTR/D/NAG/$bln$thn/";
-                        $kodeftr = $huruf . sprintf("%05s", $urutan);
+                        <?php echo '<input type="text" readonly style="font-size: 13px;" class="form-control-plaintext" id="noftrdp" name="noftrdp" value="' . htmlspecialchars($ftr_no, ENT_QUOTES) . '">'; ?>
 
-                        echo'<input type="text" readonly style="font-size: 13px;" class="form-control-plaintext" id="noftrdp" name="noftrdp" value="'.$kodeftr.'">'
-                        ?>
+
+
+
+
+
+
+
+
+
+
+
                     </div>
                     <div class="col-12 col-sm-6 col-xl-2 mb-3">
                         <label for="tanggal"><b>FTR DP Date<i style="color: red;">*</i></b></label>          
                         <input type="text" style="font-size: 13px;" name="tanggal" id="tanggal" class="form-control tanggal" 
                         value="<?php             
-                        if(!empty($_POST['tanggal'])) {
+                        if (!empty($_POST['tanggal'])) {
                             echo $_POST['tanggal'];
+                        } elseif ($ftr_tanggal !== '') {
+                            echo $ftr_tanggal;
+
                         }
                         else{
                             echo date("d-m-Y");
@@ -56,8 +126,11 @@
                         <label for="payment_date"><b>Payment Date<i style="color: red;">*</i></b></label>          
                         <input type="text" style="font-size: 13px;" name="payment_date" id="payment_date" class="form-control tanggal" 
                         value="<?php             
-                        if(!empty($_POST['payment_date'])) {
+                        if (!empty($_POST['payment_date'])) {
                             echo $_POST['payment_date'];
+                        } elseif ($ftr_tgl_bayar !== '') {
+                            echo $ftr_tgl_bayar;
+
                         }
                         else{
                             echo '-';
@@ -73,7 +146,7 @@
                         <label for="payment_method"><b>Payment Method <i style="color: red;">*</i></b></label>
                         <select class="form-control selectpicker" name="payment_method" id="payment_method" data-dropup-auto="false">
                             <?php
-                            $payment_method = isset($_POST['payment_method']) ? $_POST['payment_method'] : '';
+                            $payment_method = isset($_POST['payment_method']) ? $_POST['payment_method'] : (string) $ftr_head['payment_method'];
                             echo '<option value="" disabled' . ($payment_method === '' ? ' selected' : '') . '>Select Payment Method</option>';
                             foreach (array('Transfer', 'Cash') as $pm) {
                                 echo '<option value="' . $pm . '"' . ($pm === $payment_method ? ' selected' : '') . '>' . $pm . '</option>';
@@ -102,7 +175,7 @@
                         <select class="form-control selectpicker" name="profit_center" id="profit_center" data-dropup-auto="false" data-live-search="true" onchange="updateKodeFTR()">
                             <option value="" disabled selected="true">Select Profit Center</option>                                                 
                             <?php
-                            $profit_center = isset($_POST['profit_center']) ? $_POST['profit_center']: null;               
+                            $profit_center = isset($_POST['profit_center']) ? $_POST['profit_center'] : (string) $ftr_head['profit_center'];               
                             $sql = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
                             while ($row = mysqli_fetch_array($sql)) {
                                 $data = $row['kode_pc'];
@@ -123,7 +196,7 @@
                         <select class="form-control selectpicker" name="item_type" id="item_type" data-dropup-auto="false" data-live-search="true">
                             <option value="" disabled selected>Select Item Type</option>
                             <?php
-                            $item_type = isset($_POST['item_type']) ? $_POST['item_type'] : null;
+                            $item_type = isset($_POST['item_type']) ? $_POST['item_type'] : $ftr_head['item_type'];
                             $sqlIt = mysqli_query($conn1, "select item_type from pv_mapping_jurnal_dp where status = 'Y' group by item_type order by item_type");
                             while ($rowIt = mysqli_fetch_assoc($sqlIt)) {
                                 $itv = $rowIt['item_type'];
@@ -138,7 +211,7 @@
                         <div class="input-group">
                             <input type="text" readonly style="font-size: 13px;" class="form-control" name="txt_supp" id="txt_supp" 
                             value="<?php 
-                            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
+                            $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : $ftr_supp;
                             echo $nama_supp; 
                         ?>">
 
@@ -224,11 +297,14 @@
         <label for="memo"><b>Description</b></label>          
         <input type="text" style="font-size: 14px;" class="form-control" name="memo" id="memo" 
         value="<?php             
-        if(!empty($_POST['memo'])) {
-            echo $_POST['memo'];
-        }
-        else{
-            echo '';
+        if (isset($_POST['memo']) && $_POST['memo'] !== '') {
+            echo htmlspecialchars($_POST['memo'], ENT_QUOTES);
+        } else {
+            echo htmlspecialchars((string) $ftr_head['keterangan'], ENT_QUOTES);
+
+
+
+
         } ?>">
     </div>                  
 </div>
@@ -281,7 +357,7 @@
                             left JOIN po_header_draft on po_header_draft.id = po_header.id_draft
                             inner join mastersupplier on mastersupplier.Id_Supplier = po_header.id_supplier
                             inner join masterpterms on masterpterms.id = po_header.id_terms
-                            where po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and supplier = '$nama_supp' and masterpterms.kode_pterms like '%DP%' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com is null || po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and supplier = '$nama_supp' and masterpterms.kode_pterms like '%DP%' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com = 'REGULAR' group by no_po) a left join (select no_po, SUM(dp_value) dp_value from ftr_dp where status != 'Cancel' GROUP BY no_po) b on b.no_po = a.no_po where (a.total - COALESCE(b.dp_value,0)) != 0");
+                            where po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and supplier = '$nama_supp' and masterpterms.kode_pterms like '%DP%' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com is null || po_header.app = 'A' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and supplier = '$nama_supp' and masterpterms.kode_pterms like '%DP%' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com = 'REGULAR' group by no_po) a left join (select no_po, SUM(dp_value) dp_value from ftr_dp where status != 'Cancel' and no_ftr_dp <> '$ftr_no_esc' GROUP BY no_po) b on b.no_po = a.no_po where (a.total - COALESCE(b.dp_value,0)) != 0");
                     }else{
                         $sql = mysqli_query($conn1,"select id_po, a.no_po, podate, supplier, sub, tax, a.total total_po, (a.total - COALESCE(b.dp_value,0)) total, matauang, app, cancel, kode_pterms, tipe_com from (select po_header.id as id_po, po_header.pono as no_po, jo.jo_no, po_header.podate as podate, mastersupplier.Supplier as supplier, masterpterms.kode_pterms, po_item.curr as matauang,
                             SUM(po_item.qty * po_item.price) as sub,  SUM((po_item.qty * po_item.price) * (po_header.tax / 100)) as tax, SUM((po_item.qty * po_item.price) + ((po_item.qty * po_item.price) * (po_header.tax / 100))) as total, po_header_draft.tipe_com
@@ -301,39 +377,44 @@
                             inner join mastercolor on mastercolor.id_weight = masterweight.id
                             inner join masterdesc on masterdesc.id_color = mastercolor.id
                             and po_item.id_gen = masterdesc.id
-                            where po_header.app = 'A' and supplier = '$nama_supp' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and masterpterms.kode_pterms like '%DP%' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com is null || po_header.app = 'A' and supplier = '$nama_supp' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and masterpterms.kode_pterms like '%DP%' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com = 'REGULAR' group by no_po) a left join (select no_po, SUM(dp_value) dp_value from ftr_dp where status != 'Cancel' GROUP BY no_po) b on b.no_po = a.no_po where (a.total - COALESCE(b.dp_value,0)) != 0");
+                            where po_header.app = 'A' and supplier = '$nama_supp' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and masterpterms.kode_pterms like '%DP%' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com is null || po_header.app = 'A' and supplier = '$nama_supp' and po_header.podate BETWEEN '$start_date' and '$end_date' and po_item.cancel = 'N' and masterpterms.kode_pterms like '%DP%' and masterpterms.aktif = 'Y' and po_header_draft.tipe_com = 'REGULAR' group by no_po) a left join (select no_po, SUM(dp_value) dp_value from ftr_dp where status != 'Cancel' and no_ftr_dp <> '$ftr_no_esc' GROUP BY no_po) b on b.no_po = a.no_po where (a.total - COALESCE(b.dp_value,0)) != 0");
                     }
 
                     while($row = mysqli_fetch_array($sql)){
                         $po = $row['no_po'];
-                        $sub = $row['sub'];
-                        $tax = $row['tax'];
-                        $total = $row['total'];
+                        $po_tampil[$po] = true;
+                        $b = isset($ftr_baris[$po]) ? $ftr_baris[$po] : null;
+                        echo barisEditFtrDp($po, $row['podate'], $row['total_po'], $row['total'], $row['matauang'], $row['supplier'], $b);
+                    }
 
-                        if($po == $n_po && $stat != 'Cancel' or $po == $n_pok && $sta != 'Cancel'){
-                            echo '';
-                        }else{                    
-                            echo '<tr>
-                            <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" <?php if(in_array("1",$_POST[select])) echo "checked=checked";?></td>                        
-                            <td style="width:50px;" value="'.$row['no_po'].'">'.$row['no_po'].'</td>
-                            <td style="width:100px;">
-                            <input type="text" style="font-size: 14px;" class="form-control" id="txt_pi" name="txt_pi" value="" disabled>
-                            </td>                            
-                            <td style="width:100px;" value="'.$row['podate'].'">'.date("d-M-Y",strtotime($row['podate'])).'</td>                            
-                            <td class="dt_total" style="width:100px;text-align: right;" data-total="'.$row['total_po'].'">'.number_format($row['total_po'],2).'</td>
-                            <td class="dt_total" style="width:100px;text-align: right;" data-total="'.$row['total'].'">'.number_format($row['total'],2).'</td>
-                            <td style="width:100px;">
-                            <input type="number" style="font-size: 14px;text-align: right;" class="form-control" id="txt_dp" name="txt_dp" data-value="" value="" disabled>
-                            </td>                            
-                            <td style="width:100px;">
-                            <input type="text" style="font-size: 12px;text-align: right;" class="form-control" id="txt_dp_value" name="txt_dp_value" value="" disabled>
-                            </td>
-                            <td style="width:50px;" value="'.$row['matauang'].'">'.$row['matauang'].'</td>                                                                                                                                          
-                            <td style="display: none;" value="'.$row['supplier'].'">'.$row['supplier'].'</td>
-                            </tr>';
 
-                        }
-                    }    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
                     }else{
 
@@ -341,36 +422,48 @@
 
                     while($row = pg_fetch_assoc($sql)){
                         $po = $row['no_po'];
-                        $sub = $row['sub'];
-                        $tax = $row['tax'];
-                        $total = $row['total'];
+                        $po_tampil[$po] = true;
+                        $b = isset($ftr_baris[$po]) ? $ftr_baris[$po] : null;
+                        echo barisEditFtrDp($po, $row['podate'], $row['total_po'], $row['total'], $row['matauang'], $row['supplier'], $b);
+                    }
 
-                        if($po == $n_po && $stat != 'Cancel' or $po == $n_pok && $sta != 'Cancel'){
-                            echo '';
-                        }else{                    
-                            echo '<tr>
-                            <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" <?php if(in_array("1",$_POST[select])) echo "checked=checked";?></td>                        
-                            <td style="width:50px;" value="'.$row['no_po'].'">'.$row['no_po'].'</td>
-                            <td style="width:100px;">
-                            <input type="text" style="font-size: 14px;" class="form-control" id="txt_pi" name="txt_pi" value="" disabled>
-                            </td>                            
-                            <td style="width:100px;" value="'.$row['podate'].'">'.date("d-M-Y",strtotime($row['podate'])).'</td>                            
-                            <td class="dt_total" style="width:100px;text-align: right;" data-total="'.$row['total_po'].'">'.number_format($row['total_po'],2).'</td>
-                            <td class="dt_total" style="width:100px;text-align: right;" data-total="'.$row['total'].'">'.number_format($row['total'],2).'</td>
-                            <td style="width:100px;">
-                            <input type="number" style="font-size: 14px;text-align: right;" class="form-control" id="txt_dp" name="txt_dp" data-value="" value="" disabled>
-                            </td>                            
-                            <td style="width:100px;">
-                            <input type="text" style="font-size: 12px;text-align: right;" class="form-control" id="txt_dp_value" name="txt_dp_value" value="" disabled>
-                            </td>
-                            <td style="width:50px;" value="'.$row['matauang'].'">'.$row['matauang'].'</td>                                                                                                                                          
-                            <td style="display: none;" value="'.$row['supplier'].'">'.$row['supplier'].'</td>
-                            </tr>';
 
-                        }
-                    } 
 
-                    }            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    }
+
+                    /* Sisa baris milik dokumen ini yang tidak muncul di hasil
+                       pencarian - ditampilkan apa adanya dari ftr_dp. */
+                    foreach ($ftr_baris as $po_sisa => $b) {
+                        if (isset($po_tampil[$po_sisa])) { continue; }
+                        echo barisEditFtrDp($po_sisa, $b['tgl_po'], $b['total'], $b['total'], $b['curr'], $ftr_supp, $b);
+                    }
                     ?>
                 </tbody>                    
             </table>                    
@@ -802,7 +895,7 @@ function addListener(elm,index){
            PO masih bisa dibatalkan di sini. */
         Swal.fire({
             icon: 'question',
-            title: 'Save this FTR DP?',
+            title: 'Save changes to this FTR DP?',
             html: '<div style="text-align:left;font-size:13px;line-height:1.95;color:#475569">'
                 + '<div style="font-size:15px;font-weight:700;color:#1e3a8a;margin-bottom:6px">' + noFtr + '</div>'
                 + 'Payment Method : <b>' + payment_method + '</b><br>'
@@ -823,68 +916,131 @@ function addListener(elm,index){
        seluruh blok kirim ikut masuk satu tingkat lebih dalam dan susunannya
        jadi sulit dibaca. */
     function kirimFtrDp($dipilih, jumlah, noFtr, payment_method, item_type, tgl_bayar) {
-        var selesai = 0, adaGagal = false, pesanGagal = '';
         Swal.fire({
-            title: 'Saving...', text: 'Saving ' + jumlah + (jumlah === 1 ? ' row.' : ' rows.'),
+            title: 'Saving...', text: 'Updating ' + jumlah + (jumlah === 1 ? ' row.' : ' rows.'),
             allowOutsideClick: false, allowEscapeKey: false,
             didOpen: function () { Swal.showLoading(); }
         });
 
+        /* Seluruh baris dikemas jadi SATU muatan. Server menghapus baris lama
+           dan menulis yang baru di dalam satu transaksi, jadi dokumen tidak
+           pernah berada dalam keadaan setengah terganti. */
+        var baris = [];
         $dipilih.each(function () {
             var $row     = $(this).closest('tr');
             var total    = parseFloat($row.find('td:eq(5)').attr('data-total')) || 0;
             var dp_value = parseFloat($row.find('td:eq(7) input').attr('data-value')) || 0;
-            $.ajax({
-                type: 'POST',
-                url: 'insertftrdp.php',
-                cache: false,
-                data: {
-                    noftrdp: document.getElementById('noftrdp').value,
-                    tglftrdp: document.getElementById('tanggal').value,
-                    tgl_bayar: tgl_bayar,
-                    keterangan: document.getElementById('memo').value,
-                    payment_method: payment_method,
-                    item_type: item_type,
-                    profit_center: document.getElementById('profit_center').value,
-                    nama_supp: $('select[name=nama_supp] option').filter(':selected').val(),
-                    curr: $row.find('td:eq(8)').attr('value'),
-                    no_po: $row.find('td:eq(1)').attr('value'),
-                    no_pi: $row.find('td:eq(2) input').val(),
-                    tgl_po: $row.find('td:eq(3)').attr('value'),
-                    create_user: '<?php echo $user; ?>',
-                    total: total,
-                    dp_code: $row.find('td:eq(6) input').val(),
-                    dp_value: dp_value,
-                    balance: total - dp_value
-                },
-                error: function (xhr) {
-                    adaGagal = true;
-                    pesanGagal = (xhr.responseText || '').substring(0, 200) || ('Server responded ' + xhr.status + '.');
-                },
-                complete: function () {
-                    selesai++;
-                    if (selesai < jumlah) { return; }
-                    if (adaGagal) {
-                        Swal.fire({ icon: 'error', title: 'Failed to save', text: pesanGagal });
-                    } else {
-                        /* Nomor FTR ditampilkan di sini: sesudah OK ditekan
-                           halaman kembali ke daftar, jadi inilah satu-satunya
-                           kesempatan user mencatat nomor yang baru terbit. */
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Saved',
-                            html: '<div style="font-size:12.5px;color:#64748b;letter-spacing:.04em">FTR DP NUMBER</div>'
-                                + '<div style="font-size:18px;font-weight:700;color:#1e3a8a;margin:5px 0 12px">' + noFtr + '</div>'
-                                + '<div style="font-size:13px;color:#475569">' + jumlah
-                                + (jumlah === 1 ? ' PO row saved.' : ' PO rows saved.') + '</div>',
-                            confirmButtonText: 'OK'
-                        })
-                            .then(function () { window.location = 'ftrdp.php'; });
-                    }
-                }
+            baris.push({
+                no_po:    $row.find('td:eq(1)').attr('value'),
+                no_pi:    $row.find('td:eq(2) input').val(),
+                tgl_po:   $row.find('td:eq(3)').attr('value'),
+                curr:     $row.find('td:eq(8)').attr('value'),
+                total:    total,
+                dp_code:  $row.find('td:eq(6) input').val(),
+                dp_value: dp_value,
+                balance:  total - dp_value
             });
         });
+
+        $.ajax({
+            type: 'POST',
+            url: 'update_ftrdp.php',
+            dataType: 'json',
+            data: {
+                noftrdp: noFtr,
+                tglftrdp: document.getElementById('tanggal').value,
+                tgl_bayar: tgl_bayar,
+                keterangan: document.getElementById('memo').value,
+                payment_method: payment_method,
+                item_type: item_type,
+                profit_center: document.getElementById('profit_center').value,
+                nama_supp: document.getElementById('txt_supp').value,
+                edit_user: '<?php echo $user; ?>',
+                baris: JSON.stringify(baris)
+            }
+        }).done(function (jwb) {
+            if (!jwb || jwb.ok !== true) {
+                Swal.fire({ icon: 'error', title: 'Failed to save',
+                    text: (jwb && jwb.message) ? jwb.message : 'The server did not confirm the change.' });
+                return;
+            }
+            Swal.fire({
+                icon: 'success',
+                title: 'Updated',
+                html: '<div style="font-size:12.5px;color:#64748b;letter-spacing:.04em">FTR DP NUMBER</div>'
+                    + '<div style="font-size:18px;font-weight:700;color:#1e3a8a;margin:5px 0 12px">' + noFtr + '</div>'
+                    + '<div style="font-size:13px;color:#475569">' + jwb.rows
+                    + (jwb.rows === 1 ? ' PO row saved.' : ' PO rows saved.') + '</div>',
+                confirmButtonText: 'OK'
+            }).then(function () { window.location = 'ftrdp.php'; });
+        }).fail(function (xhr) {
+            var pesan = '';
+            try { pesan = (JSON.parse(xhr.responseText) || {}).message || ''; } catch (err) { pesan = ''; }
+            Swal.fire({ icon: 'error', title: 'Failed to save',
+                text: pesan || ('HTTP ' + xhr.status + ' - ' + (xhr.responseText || 'no response')) });
+        });
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </script>
 
 <script type="text/javascript">

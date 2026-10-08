@@ -2,121 +2,15 @@
 include '../header.php';
 ?>
 
-<style type="text/css">
-  label { font-size: 14px; }
-  input { font-size: 14px; }
+<!-- Berkas CSS ditaut dgn penanda versi dari filemtime, jadi perubahan di
+     dalamnya langsung sampai ke user dan tidak tertahan cache.
 
-  table.dataTable th,
-  table.dataTable td {
-    white-space: nowrap;
-    vertical-align: middle;
-  }
-
-  .dataTables_scrollHeadInner,
-  .dataTables_scrollBody table {
-    width: 100% !important;
-  }
-
-  .select2-container .select2-selection--single {
-    height: calc(2.25rem + 2px);
-  }
-
-  .select2-container--default .select2-selection--single .select2-selection__rendered {
-    line-height: 2.25rem;
-  }
-
-  .select2-container--default .select2-selection--single .select2-selection__arrow {
-    height: calc(2.25rem + 2px);
-  }
-
-  .table-gradient th {
-    background: #1E3A8A;
-    color: #fff;
-    text-align: center;
-    vertical-align: middle;
-    white-space: nowrap;
-  }
-
-  div.dataTables_wrapper .dataTables_paginate {
-    float: right;
-    margin-top: 10px;
-  }
-
-  div.dataTables_wrapper .dataTables_info {
-    float: left;
-    margin-top: 10px;
-  }
-
-  .total-box{
-    border:0;
-    border-radius:10px;
-    background:#fff;
-    box-shadow:0 2px 10px rgba(0,0,0,0.08);
-    overflow:hidden;
-    height:100%;
-    padding:0;
-  }
-
-  .total-box .total-box-header{
-    padding:12px 16px;
-    color:#fff;
-    font-weight:700;
-    font-size:14px;
-  }
-
-  .total-box.tone-nag .total-box-header{
-    background:linear-gradient(90deg, #5b7ba8, #7fa0c9);
-  }
-
-  .total-box.tone-nak .total-box-header{
-    background:linear-gradient(90deg, #4f8a6b, #74ad8f);
-  }
-
-  .total-box.tone-all .total-box-header{
-    background:linear-gradient(90deg, #4a5578, #6b7699);
-  }
-
-  .total-box .total-box-body{
-    padding:16px;
-    display:flex;
-    flex-direction:column;
-    gap:14px;
-  }
-
-  .total-stat{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-end;
-    padding-bottom:12px;
-    border-bottom:1px dashed #e5e5e5;
-  }
-
-  .total-stat:last-child{
-    border-bottom:0;
-    padding-bottom:0;
-  }
-
-  .total-stat-label{
-    font-size:12px;
-    font-weight:600;
-    color:#8a8a8a;
-    text-transform:uppercase;
-    letter-spacing:.03em;
-  }
-
-  .total-stat input.total-stat-value{
-    border:0;
-    background:transparent;
-    padding:0;
-    font-size:19px;
-    font-weight:700;
-    text-align:right;
-    width:auto;
-    max-width:100%;
-    height:auto;
-    color:#212529;
-  }
-</style>
+     Kosakata .pco- dipakai BERSAMA oleh halaman create dan kelima halaman
+     edit Petty Cash Out. Sebelumnya aturannya disalin di blok style
+     masing-masing halaman - enam salinan yang sudah mulai melenceng satu
+     dari yang lain. Ditaut hanya oleh halaman-halaman itu, bukan dari
+     header.php, supaya menu lain tidak ikut berubah tanpa diminta. -->
+<link rel="stylesheet" href="../css/app-pco-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-pco-form.css'); ?>">
 
 <?php
 $doc_num = base64_decode($_GET['doc_num']);
@@ -126,13 +20,13 @@ $sqlH = mysqli_query($conn2, "select a.*, concat(a.coa_akun,' ',b.nama_coa) nama
 $rowH = mysqli_fetch_assoc($sqlH);
 
 if (!$rowH) {
-    echo '<div class="container-fluid mt-4 p-4"><div class="alert alert-danger">Data tidak ditemukan.</div></div>';
+    echo '<div class="container-fluid mt-3 p-3"><div class="alert alert-danger">Data tidak ditemukan.</div></div>';
     include '../footer.php';
     exit;
 }
 
 if ($rowH['status'] !== 'Draft') {
-    echo '<div class="container-fluid mt-4 p-4"><div class="alert alert-danger">Data sudah bukan Draft, tidak bisa diedit.</div></div>';
+    echo '<div class="container-fluid mt-3 p-3"><div class="alert alert-danger">Data sudah bukan Draft, tidak bisa diedit.</div></div>';
     include '../footer.php';
     exit;
 }
@@ -142,16 +36,25 @@ $rowPcAkun = mysqli_fetch_assoc($sqlPcAkun);
 ?>
 
 <!-- MAIN -->
-<div class="container-fluid mt-4 p-4">
-  <div class="card border-secondary mb-3">
-    <div class="card-header text-white py-2 px-3" style="background: linear-gradient(90deg, #191970, #1e90ff);">
-      <h5 class="mb-0"><i class="fas fa-edit"></i> FORM EDIT PETTY CASH OUT</h5>
-    </div>
+<div class="container-fluid mt-3 p-3">
+  <div class="pco-card">
+    <!-- Kepala kartu: kotak ikon + judul + jejak menu, mengikuti List
+         Memorial Journal. Pita gradien selebar kartu diganti ini supaya
+         warnanya jadi aksen, bukan latar - judulnya yang paling
+         menonjol. -->
+    <div class="pco-head">
+      <span class="pco-head-icon"><i class="fas fa-edit"></i></span>
+      <div>
+        <h1>Edit Petty Cash Out</h1>
+        <span class="pco-crumb">AP &rsaquo; Petty Cash Out &rsaquo; Edit</span>
+      </div>
+    </div><!-- /.pco-head -->
 
 <form id="form-data1" method="post">
     <input type="hidden" id="doc_num1" value="<?= htmlspecialchars($doc_num); ?>">
     <div class="card shadow-sm">
         <div class="card-body">
+          <div class="pco-sec"><i class="fa fa-file-text-o" aria-hidden="true"></i> Header</div>
             <div class="form-row">
 
                 <div class="col-md-3 mb-2">
@@ -236,9 +139,10 @@ $rowPcAkun = mysqli_fetch_assoc($sqlPcAkun);
 
             </div>
             <div class="card-body p-2">
+              <div class="pco-sec"><i class="fa fa-book" aria-hidden="true"></i> Journal detail</div>
                 <div class="table-responsive">
                     <table id="mytablenone"
-                        class="table table-striped table-bordered table-hover table-sm nowrap">
+                        class="table table-striped table-bordered table-hover table-sm nowrap pco-jtbl">
 
                         <thead class="table-gradient">
                             <tr>
@@ -324,11 +228,11 @@ $rowPcAkun = mysqli_fetch_assoc($sqlPcAkun);
                             ?>
                         </tbody>
 
-                        <tfoot>
-                            <tr>
-                                <td colspan="11" align="center">
-
-                                    <button type="button" class="btn btn-primary"
+                              <tfoot>
+        <tr>
+          <td colspan="11" align="center">
+          <div class="pco-rowbtn">
+<button type="button" class="btn btn-primary"
                                         onclick="addRow1('tbody1')">
                                         Add Row
                                     </button>
@@ -342,27 +246,27 @@ $rowPcAkun = mysqli_fetch_assoc($sqlPcAkun);
                                         onclick="deleteRow1('tbody1')">
                                         Delete Row
                                     </button>
-
-                                </td>
-                            </tr>
-                        </tfoot>
-
-                    </table>
+          </div>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
 
                 </div>
             </div>
             <div class="row mt-1 p-3">
+              <div class="col-12"><div class="pco-sec"><i class="fa fa-calculator" aria-hidden="true"></i> Totals</div></div>
 
                 <!-- NAG -->
                 <div class="col-md-4">
                     <div class="total-box tone-nag">
-                        <div class="total-box-header"><i class="fa fa-building"></i> Total PT. Nirwana Alabare Garment</div>
+                        <div class="total-box-header"><i class="fa fa-building"></i> PT. Nirwana Alabare Garment</div>
                         <div class="total-box-body">
 
                             <div class="total-stat is-debit">
                                 <span class="total-stat-label">Total Debit</span>
                                 <div class="total-stat-value-wrap">
-                                    <input type="text" class="total-stat-value" id="tot_debit_nag1" name="tot_debit_nag1" readonly>
+                                    <input type="text" class="total-stat-value" placeholder="0.00" id="tot_debit_nag1" name="tot_debit_nag1" readonly>
                                     <input type="hidden" id="h_tot_debit_nag1" name="h_tot_debit_nag1" readonly>
                                 </div>
                             </div>
@@ -370,7 +274,7 @@ $rowPcAkun = mysqli_fetch_assoc($sqlPcAkun);
                             <div class="total-stat is-credit">
                                 <span class="total-stat-label">Total Credit</span>
                                 <div class="total-stat-value-wrap">
-                                    <input type="text" class="total-stat-value" id="tot_credit_nag1" name="tot_credit_nag1" readonly>
+                                    <input type="text" class="total-stat-value" placeholder="0.00" id="tot_credit_nag1" name="tot_credit_nag1" readonly>
                                     <input type="hidden" id="h_tot_credit_nag1" name="h_tot_credit_nag1" readonly>
                                 </div>
                             </div>
@@ -383,13 +287,13 @@ $rowPcAkun = mysqli_fetch_assoc($sqlPcAkun);
                 <!-- NAK -->
                 <div class="col-md-4">
                     <div class="total-box tone-nak">
-                        <div class="total-box-header"><i class="fa fa-industry"></i> Total PT. Nirwana Alabare Knitting</div>
+                        <div class="total-box-header"><i class="fa fa-industry"></i> PT. Nirwana Alabare Knitting</div>
                         <div class="total-box-body">
 
                             <div class="total-stat is-debit">
                                 <span class="total-stat-label">Total Debit</span>
                                 <div class="total-stat-value-wrap">
-                                    <input type="text" class="total-stat-value" id="tot_debit_nak1" name="tot_debit_nak1" readonly>
+                                    <input type="text" class="total-stat-value" placeholder="0.00" id="tot_debit_nak1" name="tot_debit_nak1" readonly>
                                     <input type="hidden" id="h_tot_debit_nak1" name="h_tot_debit_nak1" readonly>
                                 </div>
                             </div>
@@ -397,7 +301,7 @@ $rowPcAkun = mysqli_fetch_assoc($sqlPcAkun);
                             <div class="total-stat is-credit">
                                 <span class="total-stat-label">Total Credit</span>
                                 <div class="total-stat-value-wrap">
-                                    <input type="text" class="total-stat-value" id="tot_credit_nak1" name="tot_credit_nak1" readonly>
+                                    <input type="text" class="total-stat-value" placeholder="0.00" id="tot_credit_nak1" name="tot_credit_nak1" readonly>
                                     <input type="hidden" id="h_tot_credit_nak1" name="h_tot_credit_nak1" readonly>
                                 </div>
                             </div>
@@ -415,7 +319,7 @@ $rowPcAkun = mysqli_fetch_assoc($sqlPcAkun);
                             <div class="total-stat is-debit">
                                 <span class="total-stat-label">Total Debit</span>
                                 <div class="total-stat-value-wrap">
-                                    <input type="text" class="total-stat-value" id="tot_debit1" name="tot_debit1" readonly>
+                                    <input type="text" class="total-stat-value" placeholder="0.00" id="tot_debit1" name="tot_debit1" readonly>
                                     <input type="hidden" id="h_tot_debit1" name="h_tot_debit1" readonly>
                                 </div>
                             </div>
@@ -423,7 +327,7 @@ $rowPcAkun = mysqli_fetch_assoc($sqlPcAkun);
                             <div class="total-stat is-credit">
                                 <span class="total-stat-label">Total Credit</span>
                                 <div class="total-stat-value-wrap">
-                                    <input type="text" class="total-stat-value" id="tot_credit1" name="tot_credit1" readonly>
+                                    <input type="text" class="total-stat-value" placeholder="0.00" id="tot_credit1" name="tot_credit1" readonly>
                                     <input type="hidden" id="h_tot_credit1" name="h_tot_credit1" readonly>
                                 </div>
                             </div>
@@ -450,15 +354,82 @@ $rowPcAkun = mysqli_fetch_assoc($sqlPcAkun);
 <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
 <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
-<script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
+  <!-- bootstrap-select TIDAK dimuat lagi: dropdown baris kini memakai
+       select2, lewat shim $.fn.selectpicker di bawah. -->
 <script language="JavaScript" src="../css/4.1.1/select2.min.js"></script>
+<script>
+/* ----------------------------------------------------------------------------
+   $.fn.selectpicker DIDEFINISIKAN ULANG DI ATAS select2.
+
+   Halaman ini tidak lagi memuat bootstrap-select. Dropdown di dalam baris
+   (COA / Profit Center / Cost Center / Currency) dulu memakainya, sementara
+   isian kepala memakai select2 - dua bentuk berbeda di satu halaman.
+
+   Seluruh pemanggilan lama (.selectpicker(), 'refresh', 'destroy') dibiarkan
+   apa adanya dan dialihkan ke select2 di sini, supaya tidak ada satu pun titik
+   pemanggilan yang perlu disunting - titik-titik itu yang memberi makan proses
+   simpan.
+
+   'refresh' sengaja destroy + init ulang: di bootstrap-select 'refresh' membaca
+   ulang daftar opsi, dan di select2 satu-satunya cara setara adalah membangun
+   ulang. Itu dipakai cascade Cost Center setelah opsinya diganti.
+
+   Elemen <select> aslinya tidak diubah select2 (hanya disembunyikan), jadi
+   name="...[]", .val(), dan .serialize() tetap sama persis.
+---------------------------------------------------------------------------- */
+(function ($) {
+  function opsiSelect2($el) {
+    var o = { width: '100%' };
+    /* Daftar pendek (mis. Currency) tidak perlu kotak cari. */
+    if ($el.find('option').length < 8) { o.minimumResultsForSearch = Infinity; }
+    /* Panel select2 menempel di <body>, jadi TIDAK terpotong .table-responsive
+       - masalah yang dulu harus ditambal untuk bootstrap-select. */
+    return o;
+  }
+  $.fn.selectpicker = function (perintah) {
+    return this.each(function () {
+      var $s = $(this);
+      var hidup = $s.hasClass('select2-hidden-accessible');
+      if (perintah === 'destroy') { if (hidup) { $s.select2('destroy'); } return; }
+      if (perintah === 'refresh') {
+        if (hidup) { $s.select2('destroy'); }
+        $s.select2(opsiSelect2($s));
+        return;
+      }
+      if (!hidup) { $s.select2(opsiSelect2($s)); }
+    });
+  };
+})(jQuery);
+</script>
 <script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
 
 <script type="text/javascript">
     $(document).ready(function () {
         $('.tanggal').datepicker({ format: "dd-mm-yyyy", autoclose: true });
-        $('.select2').select2({ theme: 'bootstrap4' });
+        $('.select2').select2({ width: '100%' });
         $('.selectpicker').selectpicker();
+      /* Menu dropdown selectpicker terpotong oleh pembungkus scroll
+         (.table-responsive). Bootstrap 4 hanya menyetel overflow-x: auto,
+         tapi menurut spesifikasi CSS kalau satu sumbu bukan 'visible' maka
+         sumbu lainnya ikut diperlakukan 'auto' - itulah yang memotongnya
+         secara tegak.
+
+         SENGAJA TIDAK memakai opsi container:'body' milik bootstrap-select:
+         opsi itu memicu galat internal plugin "Cannot read properties of
+         undefined (reading 'length')" saat menu dibuka. Catatan yang sama
+         ada di create_memorial_journal.php, tempat cara ini dipakai lebih
+         dulu.
+
+         Gantinya: overflow pembungkus dilepas HANYA selagi menu terbuka.
+         Didelegasikan ke document supaya baris baru dari addRow() /
+         InsertRow() ikut tertangani tanpa diikat ulang. */
+      $(document).on('show.bs.dropdown', '.table-responsive', function () {
+          $(this).css('overflow', 'visible');
+      });
+      $(document).on('hide.bs.dropdown', '.table-responsive', function () {
+          $(this).css({ 'overflow-x': 'auto', 'overflow-y': '' });
+      });
+
     });
 
     function getNumber(val) {

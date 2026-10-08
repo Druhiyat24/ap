@@ -18,14 +18,17 @@ while ($row = mysqli_fetch_assoc($sql)) {
 
     $statusRaw = $row['status'];
 
-    $badge = 'secondary';
-    if ($statusRaw == 'Waiting') $badge = 'warning';
+    /* Pil status memakai kosakata .ftl- yang sama dgn halaman daftar;
+       badge bawaan Bootstrap warnanya beradu dgn kepala kartu navy. */
+    $kelasStatus = array('approved' => 'is-approved', 'cancel' => 'is-cancel');
+    $kunci = strtolower($statusRaw);
+    $kelas = isset($kelasStatus[$kunci]) ? $kelasStatus[$kunci] : 'is-draft';
 
-    $row['status'] = '<span class="badge badge-' . $badge . ' p-2">' . htmlspecialchars($statusRaw) . '</span>';
+    $row['status'] = '<span class="ftl-st ' . $kelas . '">' . htmlspecialchars($statusRaw) . '</span>';
 
     $row['checkbox'] = '<input type="checkbox" class="chk-pengajuan" value="' . htmlspecialchars($row['no_pengajuan']) . '">';
 
-    $row['action'] = '<button type="button" class="btn btn-sm btn-primary btn-view-pengajuan" data-no="' . htmlspecialchars($row['no_pengajuan']) . '"><i class="fa fa-eye"></i> View</button>';
+    $row['action'] = '<div class="ftl-act"><button type="button" class="ftl-mini is-info btn-view-pengajuan" title="Show the request detail" data-no="' . htmlspecialchars($row['no_pengajuan'], ENT_QUOTES) . '"><i class="fa fa-eye" aria-hidden="true"></i> View</button></div>';
 
     $data[] = $row;
 }

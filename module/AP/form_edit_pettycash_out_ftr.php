@@ -17,7 +17,7 @@ include 'pv_data_functions.php';
 $doc_num = base64_decode($_GET['doc_num']);
 $doc_num_esc = mysqli_real_escape_string($conn2, $doc_num);
 
-$sqlH = mysqli_query($conn2, "select a.*, concat(a.coa_akun,' ',b.nama_coa) nama_akun from c_petty_cashout_h a left join mastercoa_v2 b on b.no_coa = a.coa_akun where a.no_pco = '$doc_num_esc' and a.reff = 'Payment Voucher'");
+$sqlH = mysqli_query($conn2, "select a.*, concat(a.coa_akun,' ',b.nama_coa) nama_akun from c_petty_cashout_h a left join mastercoa_v2 b on b.no_coa = a.coa_akun where a.no_pco = '$doc_num_esc' and a.reff = 'FTR (CBD / DP)'");
 $rowH = mysqli_fetch_assoc($sqlH);
 
 if (!$rowH) {
@@ -37,7 +37,7 @@ $sqlPcAkun = mysqli_query($conn2, "select IF(no_coa = '1.01.11','NAK','NAG') pro
 $rowPcAkun = mysqli_fetch_assoc($sqlPcAkun);
 
 // Rate fallback utk DP/CBD (tidak punya kolom rate sendiri) - sama seperti
-// bank-out/get_pv_ajax.php.
+// petty-out/get_ftr_ajax.php.
 function getRateByCurrDate($conn2, $curr, $tgl)
 {
     if (empty($curr) || empty($tgl)) {
@@ -64,8 +64,8 @@ function getRateByCurrDate($conn2, $curr, $tgl)
       </div>
     </div><!-- /.pco-head -->
 
-<form id="form-data5" method="post">
-    <input type="hidden" id="doc_num5" value="<?= htmlspecialchars($doc_num); ?>">
+<form id="form-data6" method="post">
+    <input type="hidden" id="doc_num6" value="<?= htmlspecialchars($doc_num); ?>">
     <div class="card shadow-sm">
         <div class="card-body">
           <div class="pco-sec"><i class="fa fa-file-text-o" aria-hidden="true"></i> Header</div>
@@ -78,12 +78,12 @@ function getRateByCurrDate($conn2, $curr, $tgl)
 
                 <div class="col-md-2 mb-2">
                     <label><b>Date</b></label>
-                    <input type="text" name="tgl_active5" id="tgl_active5" class="form-control tanggal" value="<?= date("d-m-Y", strtotime($rowH['tgl_pco'])); ?>" autocomplete="off" >
+                    <input type="text" name="tgl_active6" id="tgl_active6" class="form-control tanggal" value="<?= date("d-m-Y", strtotime($rowH['tgl_pco'])); ?>" autocomplete="off" >
                 </div>
 
                 <div class="col-md-3 mb-2">
                     <label><b>Supplier</b></label>
-                    <select class="form-control select2" name="nama_supp5" id="nama_supp5" data-live-search="true">
+                    <select class="form-control select2" name="nama_supp6" id="nama_supp6" data-live-search="true">
                         <option value="<?= htmlspecialchars($rowH['nama_supp']); ?>" selected><?= htmlspecialchars($rowH['nama_supp']); ?></option>
                         <?php
                         $sql = mysqli_query($conn1, "SELECT DISTINCT Supplier FROM mastersupplier WHERE tipe_sup='S' and supplier != '' and supplier != '" . mysqli_real_escape_string($conn1, $rowH['nama_supp']) . "' ORDER BY Supplier ASC");
@@ -96,23 +96,23 @@ function getRateByCurrDate($conn2, $curr, $tgl)
 
                 <div class="col-md-2 mb-2">
                     <label><b>Reference</b></label>
-                    <input type="text" name="ref_num5" id="ref_num5" class="form-control" value="Payment Voucher" readonly>
+                    <input type="text" name="ref_num6" id="ref_num6" class="form-control" value="FTR (CBD / DP)" readonly>
                 </div>
 
                 <div class="col-md-3 mb-2">
                     <label><b>Profit Center</b></label>
-                    <input type="text" class="form-control angka" id="profit_center_kas_show5" name="profit_center_kas_show5" value="<?= htmlspecialchars($rowPcAkun['nama_pc'] ?? ''); ?>" readonly>
+                    <input type="text" class="form-control angka" id="profit_center_kas_show6" name="profit_center_kas_show6" value="<?= htmlspecialchars($rowPcAkun['nama_pc'] ?? ''); ?>" readonly>
                 </div>
                 <div class="col-md-2 mb-2">
                     <label><b>Reff Date</b></label>
-                    <input type="text" name="tgl_filawal5" id="tgl_filawal5" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off">
+                    <input type="text" name="tgl_filawal6" id="tgl_filawal6" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off">
                 </div>
                 <div class="col-md-2 mb-2">
                     <label><b>-</b></label>
-                    <input type="text" name="tgl_filakhir5" id="tgl_filakhir5" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off">
+                    <input type="text" name="tgl_filakhir6" id="tgl_filakhir6" class="form-control tanggal" value="<?php echo date("d-m-Y"); ?>" autocomplete="off">
                 </div>
                 <div class="col-md-2 mb-2 d-flex align-items-end">
-                    <button type="button" id="btn_tarik_pv5" class="btn btn-primary">
+                    <button type="button" id="btn_tarik_ftr6" class="btn btn-primary">
                      <i class="fas fa-search"></i> Search
                  </button>
              </div>
@@ -120,13 +120,13 @@ function getRateByCurrDate($conn2, $curr, $tgl)
 
              <div class="col-md-3 mb-2">
                     <label><b>Account</b></label>
-                    <select class="form-control select2" id="account5" name="account5" data-live-search="true">
+                    <select class="form-control select2" id="account6" name="account6" data-live-search="true">
                         <option value="">Select Account</option>
                         <?php
                         $sql = mysqli_query($conn1, "select no_coa as id_coa,concat(no_coa,' ', nama_coa) as coa, kode_cash, IF(no_coa = '1.01.11','NAK','NAG') profit_center, IF(no_coa = '1.01.11','PCP002 - NIRWANA ALABARE KNITTING','PCP001 - NIRWANA ALABARE GARMENT') nama_pc from mastercoa_v2 where no_coa like '%1.01%' and nama_coa like '%kas kecil%'");
                         while ($row = mysqli_fetch_assoc($sql)) {
                             $selected = ($row['id_coa'] == $rowH['coa_akun']) ? 'selected' : '';
-                            echo "<option value='" . $row['id_coa'] . "' data-kode5='" . $row['kode_cash'] . "' data-pc5='" . $row['profit_center'] . "' data-namapc5='" . $row['nama_pc'] . "' $selected>" . $row['coa'] . " </option>";
+                            echo "<option value='" . $row['id_coa'] . "' data-kode6='" . $row['kode_cash'] . "' data-pc6='" . $row['profit_center'] . "' data-namapc6='" . $row['nama_pc'] . "' $selected>" . $row['coa'] . " </option>";
                         }
                         ?>
                     </select>
@@ -134,28 +134,28 @@ function getRateByCurrDate($conn2, $curr, $tgl)
 
                 <div class="col-md-2 mb-2">
                     <label><b>Currency</b></label>
-                    <input type="text" class="form-control" id="currency5" name="currency5" value="<?= htmlspecialchars($rowH['curr']); ?>" readonly>
-                    <input type="hidden" class="form-control" id="kode_kas5" name="kode_kas5" value="<?= htmlspecialchars($rowPcAkun['kode_cash'] ?? ''); ?>" readonly>
-                    <input type="hidden" class="form-control" id="profit_center_kas5" name="profit_center_kas5" value="<?= htmlspecialchars($rowPcAkun['profit_center'] ?? ''); ?>" readonly>
+                    <input type="text" class="form-control" id="currency6" name="currency6" value="<?= htmlspecialchars($rowH['curr']); ?>" readonly>
+                    <input type="hidden" class="form-control" id="kode_kas6" name="kode_kas6" value="<?= htmlspecialchars($rowPcAkun['kode_cash'] ?? ''); ?>" readonly>
+                    <input type="hidden" class="form-control" id="profit_center_kas6" name="profit_center_kas6" value="<?= htmlspecialchars($rowPcAkun['profit_center'] ?? ''); ?>" readonly>
                 </div>
 
                 <div class="col-md-3 mb-2">
                     <label><b>Amount</b></label>
-                    <input type="text" class="form-control angka" id="amount_kas5" name="amount_kas5" value="<?= number_format($rowH['amount'], 2); ?>">
+                    <input type="text" class="form-control angka" id="amount_kas6" name="amount_kas6" value="<?= (float) $rowH['amount']; ?>">
                 </div>
 
             <div class="col-md-2 mb-2"> </div>
 
             <div class="col-md-3 mb-2">
                 <label><b>Cash Flow Category</b></label>
-                <select class="form-control select2" name="cash_flow5" id="cash_flow5" data-live-search="true">
+                <select class="form-control select2" name="cash_flow6" id="cash_flow6" data-live-search="true">
                     <option value="">Select Cash Flow Category</option>
                     <?php
-                    $id_cash_flow5 = $rowH['id_cash_flow'] ?? '';
-                    $sqlCf5 = mysqli_query($conn2, "select id, show_subcategory from master_cash_flow where type_cashflow = 'Cash Out' and status = 'Y' order by nama_category asc, urutan asc");
-                    while ($rowCf5 = mysqli_fetch_assoc($sqlCf5)) {
-                        $selectedCf5 = ($rowCf5['id'] == $id_cash_flow5) ? ' selected="selected"' : '';
-                        echo '<option value="'.$rowCf5['id'].'"'.$selectedCf5.'>'.$rowCf5['show_subcategory'].'</option>';
+                    $id_cash_flow6 = $rowH['id_cash_flow'] ?? '';
+                    $sqlCf6 = mysqli_query($conn2, "select id, show_subcategory from master_cash_flow where type_cashflow = 'Cash Out' and status = 'Y' order by nama_category asc, urutan asc");
+                    while ($rowCf6 = mysqli_fetch_assoc($sqlCf6)) {
+                        $selectedCf5 = ($rowCf6['id'] == $id_cash_flow6) ? ' selected="selected"' : '';
+                        echo '<option value="'.$rowCf6['id'].'"'.$selectedCf5.'>'.$rowCf6['show_subcategory'].'</option>';
                     }
                     ?>
                 </select>
@@ -163,120 +163,35 @@ function getRateByCurrDate($conn2, $curr, $tgl)
 
             <div class="col-md-7 mb-2">
                 <label><b>Description</b></label>
-                <textarea style="font-size: 15px; text-align: left;height: 40px;" cols="30" type="text" class="form-control " name="pesan5" id="pesan5" placeholder="descriptions..." required><?= htmlspecialchars($rowH['deskripsi']); ?></textarea>
+                <textarea style="font-size: 15px; text-align: left;height: 40px;" cols="30" type="text" class="form-control " name="pesan6" id="pesan6" placeholder="descriptions..." required><?= htmlspecialchars($rowH['deskripsi']); ?></textarea>
             </div>
 
         </div>
        <div class="card-body p-2">
-         <div class="pco-sec"><i class="fa fa-file-text-o" aria-hidden="true"></i> Payment Voucher to pay</div>
+         <div class="pco-sec"><i class="fa fa-exchange" aria-hidden="true"></i> FTR to pay</div>
           <div class="table-responsive">
-              <table id="table-pv5"
+              <table id="table-ftr6"
               class="table table-striped table-bordered table-hover table-sm nowrap" >
               <thead class="table-gradient">
                 <tr>
                     <th style="text-align: center;vertical-align: middle;">Check</th>
-                    <th style="text-align: center;vertical-align: middle;">Profit Center</th>
-                    <th style="text-align: center;vertical-align: middle;">No PV</th>
-                    <th style="text-align: center;vertical-align: middle;">PV Date</th>
-                    <th style="text-align: center;vertical-align: middle;">Due Date</th>
-                    <th style="text-align: center;vertical-align: middle;">DPP</th>
-                    <th style="text-align: center;vertical-align: middle;">PPN</th>
-                    <th style="text-align: center;vertical-align: middle;">PPH</th>
+                    <th style="text-align: center;vertical-align: middle;">Type</th>
+                    <th style="text-align: center;vertical-align: middle;">No FTR</th>
+                    <th style="text-align: center;vertical-align: middle;">FTR Date</th>
+                    <th style="text-align: center;vertical-align: middle;">Payment Date</th>
+                    <th style="text-align: center;vertical-align: middle;">SubTotal</th>
+                    <th style="text-align: center;vertical-align: middle;">Tax</th>
+                    <th style="text-align: center;vertical-align: middle;">Item Type</th>
                     <th style="text-align: center;vertical-align: middle;">Total</th>
                     <th style="text-align: center;vertical-align: middle;">Rate</th>
                     <th style="text-align: center;vertical-align: middle;">Amount</th>
                     <th style="text-align: center;vertical-align: middle;">Amount IDR Eqv</th>
                 </tr>
             </thead>
+            <!-- Baris yang sudah tertaut ditarik JavaScript lewat
+                 get_ftr_ajax.php dgn linked_only=1 - bentuknya jadi SAMA
+                 PERSIS dgn hasil tombol Search, bukan salinan terpisah. -->
             <tbody>
-            <?php
-            // =========================
-            // PRE-LOAD PV YANG SUDAH TERTAUT KE DOKUMEN INI
-            // (sama seperti update_pv_cash.php: outstanding dihitung dengan
-            // mengecualikan alokasi dokumen ini sendiri, supaya user bisa
-            // menaikkan/menurunkan amount PV yang sama)
-            // =========================
-            $sqlDet = mysqli_query($conn2, "select no_reff, type_pv, amount from c_petty_cashout_det where no_pco = '$doc_num_esc'");
-            while ($rowDet = mysqli_fetch_assoc($sqlDet)) {
-
-                $no_pv = $rowDet['no_reff'];
-                $type_pv = !empty($rowDet['type_pv']) ? $rowDet['type_pv'] : 'Regular';
-                $currentAmount = (float) $rowDet['amount'];
-
-                $filtersOne = [
-                    'nama_supp'   => 'ALL',
-                    'status'      => 'ALL',
-                    'filter_date' => 'tgl_kbon',
-                    'start_date'  => '',
-                    'end_date'    => '',
-                ];
-
-                $rowOne = null;
-
-                if ($type_pv === 'Regular') {
-                    $filtersOne['no_kbon'] = $no_pv;
-                    $rows = getDataRegular($conn1, $conn2, $filtersOne, '1', '1', '');
-                    $rowOne = $rows[0] ?? null;
-                } elseif ($type_pv === 'Installment') {
-                    $filtersOne['no_kbon_det'] = $no_pv;
-                    $rows = getDataInstallment($conn1, $conn2, $filtersOne, '1', '1', '');
-                    $rowOne = $rows[0] ?? null;
-                } elseif ($type_pv === 'DP') {
-                    $filtersOne['no_kbon'] = $no_pv;
-                    $rows = getDataDp($conn1, $conn2, $filtersOne, '1', '1', '');
-                    $rowOne = $rows[0] ?? null;
-                } elseif ($type_pv === 'CBD') {
-                    $filtersOne['no_kbon'] = $no_pv;
-                    $rows = getDataCbd($conn1, $conn2, $filtersOne, '1', '1', '');
-                    $rowOne = $rows[0] ?? null;
-                } elseif ($type_pv === 'SaldoAwal') {
-                    $filtersOne['no_kbon'] = $no_pv;
-                    $rows = getDataSaldoAwal($conn2, $filtersOne);
-                    $rowOne = $rows[0] ?? null;
-                }
-
-                if (!$rowOne) {
-                    continue;
-                }
-
-                $pc = $rowOne['profit_center'];
-                $pcLabelRow = mysqli_fetch_assoc(mysqli_query($conn2, "select CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where kode_pc = '" . mysqli_real_escape_string($conn2, $pc) . "'"));
-                $namaPc = $pcLabelRow['tampil'] ?? $pc;
-
-                if ($type_pv === 'DP' || $type_pv === 'CBD') {
-                    $rate = getRateByCurrDate($conn2, $rowOne['curr'], $rowOne['tgl_kbon_raw'] ?? null);
-                } else {
-                    $rate = !empty($rowOne['rate']) ? (float) $rowOne['rate'] : 1;
-                }
-
-                $alreadyPaidOther = getAlreadyPaidFor($conn2, $type_pv, $no_pv) - $currentAmount;
-                $outstanding = (float) $rowOne['total_raw'] - $alreadyPaidOther;
-
-                $totalIdr = $currentAmount * $rate;
-                ?>
-                <tr>
-                    <td>
-                        <input type="checkbox" class="chk_pv" checked>
-                    </td>
-                    <td class="pc_pv" data-pcpv="<?= htmlspecialchars($pc); ?>"><?= htmlspecialchars($namaPc); ?></td>
-                    <td class="no_pv" data-nopv="<?= htmlspecialchars($no_pv); ?>" data-typepv="<?= htmlspecialchars($type_pv); ?>" data-account="<?= htmlspecialchars($rowH['coa_akun']); ?>"><?= htmlspecialchars($no_pv); ?></td>
-                    <td><?= !empty($rowOne['tgl_kbon_raw']) ? date("d-M-Y", strtotime($rowOne['tgl_kbon_raw'])) : '-'; ?></td>
-                    <td><?= !empty($rowOne['tgl_tempo_raw']) ? date("d-M-Y", strtotime($rowOne['tgl_tempo_raw'])) : '-'; ?></td>
-                    <td><?= number_format($rowOne['subtotal_raw'], 2); ?></td>
-                    <td><?= number_format($rowOne['tax_raw'], 2); ?></td>
-                    <td><?= number_format($rowOne['pph_raw'], 2); ?></td>
-                    <td class="total_pv" data-total="<?= $outstanding; ?>"><?= number_format($outstanding, 2); ?></td>
-                    <td class="rate_pv" data-ratepv="<?= $rate; ?>" data-curr="<?= htmlspecialchars($rowOne['curr']); ?>"><?= number_format($rate, 2); ?></td>
-                    <td style="width: 170px;">
-                        <input type="text" class="form-control txt_amount_pv" style="text-align:right" value="<?= number_format($currentAmount, 2); ?>">
-                    </td>
-                    <td style="width: 170px;">
-                        <input type="text" class="form-control txt_amount_pv_idr" style="text-align:right" value="<?= number_format($totalIdr, 2); ?>">
-                    </td>
-                </tr>
-                <?php
-            }
-            ?>
             </tbody>
         </table>
     </div>
@@ -284,7 +199,7 @@ function getRateByCurrDate($conn2, $curr, $tgl)
 <div class="card-body p-2">
   <div class="pco-sec"><i class="fa fa-book" aria-hidden="true"></i> Adjustment Value</div>
   <div class="table-responsive">
-    <table id="table-pv5_adjust"
+    <table id="table-ftr6_adjust"
     class="table table-striped table-bordered table-hover table-sm nowrap pco-jtbl" >
     <thead class="table-gradient2">
         <tr>
@@ -301,7 +216,7 @@ function getRateByCurrDate($conn2, $curr, $tgl)
             <th style="width:40px;">Cek</th>
         </tr>
     </thead>
-    <tbody id="tbody5">
+    <tbody id="tbody6">
         <?php
         $sqlAdj = mysqli_query($conn2, "select a.id_coa, concat(b.no_coa,' ',b.nama_coa) nama_coa, a.profit_center, a.no_cc, concat(c.no_cc,' - ',c.cc_name) nama_cc, a.reff_doc, a.reff_date, a.t_debit, a.t_credit, a.deskripsi from c_petty_cashout_adj_det a left join mastercoa_v2 b on b.no_coa = a.id_coa left join b_master_cc c on c.no_cc = a.no_cc where a.no_pco = '$doc_num_esc'");
         while ($rowAdj = mysqli_fetch_assoc($sqlAdj)) {
@@ -310,7 +225,7 @@ function getRateByCurrDate($conn2, $curr, $tgl)
             <td><input type="checkbox" id="select5" name="select5[]" value="" checked disabled></td>
 
             <td>
-            <select class="form-control selectpicker no_coa5" name="nomor_coa5[]" data-live-search="true" data-width="100%" data-size="5">
+            <select class="form-control selectpicker no_coa6" name="nomor_coa5[]" data-live-search="true" data-width="100%" data-size="5">
                 <option value="<?= htmlspecialchars($rowAdj['id_coa']); ?>" selected><?= htmlspecialchars($rowAdj['nama_coa']); ?></option>
                 <option value="-">-</option>
                 <?php
@@ -322,7 +237,7 @@ function getRateByCurrDate($conn2, $curr, $tgl)
             </td>
 
             <td>
-            <select class="form-control selectpicker prof_ctr5" name="prof_ctr5[]" data-live-search="true" data-width="100%">
+            <select class="form-control selectpicker prof_ctr6" name="prof_ctr6[]" data-live-search="true" data-width="100%">
                 <?php
                 $sqlPc = mysqli_query($conn1, "select kode_pc,id_pc,nama_pc,CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status='Active'");
                 while ($fc = mysqli_fetch_assoc($sqlPc)) {
@@ -334,7 +249,7 @@ function getRateByCurrDate($conn2, $curr, $tgl)
             </td>
 
             <td>
-            <select class="form-control selectpicker cost_ctr5" name="cost_ctr5[]" data-live-search="true" data-width="100%">
+            <select class="form-control selectpicker cost_ctr6" name="cost_ctr6[]" data-live-search="true" data-width="100%">
                 <option value="<?= htmlspecialchars($rowAdj['no_cc']); ?>" selected><?= htmlspecialchars($rowAdj['nama_cc']); ?></option>
                 <?php
                 $sqlCc = mysqli_query($conn1, "select no_cc as code_combine, concat(no_cc,' - ',cc_name) as cost_name from b_master_cc where status = 'Active' and no_cc != '" . mysqli_real_escape_string($conn1, $rowAdj['no_cc']) . "'");
@@ -344,21 +259,21 @@ function getRateByCurrDate($conn2, $curr, $tgl)
             </select>
             </td>
 
-            <td><input style="font-size:12px;width:100%" type="text" class="form-control" name="no_reff5[]" value="<?= htmlspecialchars($rowAdj['reff_doc']); ?>" autocomplete="off"></td>
+            <td><input style="font-size:12px;width:100%" type="text" class="form-control" name="no_reff6[]" value="<?= htmlspecialchars($rowAdj['reff_doc']); ?>" autocomplete="off"></td>
 
-            <td><input style="font-size:12px;width:100%" type="text" class="form-control tanggal" name="reff_date5[]" value="<?= !empty($rowAdj['reff_date']) && $rowAdj['reff_date'] != '1970-01-01' ? date('d-m-Y', strtotime($rowAdj['reff_date'])) : ''; ?>" autocomplete="off"></td>
+            <td><input style="font-size:12px;width:100%" type="text" class="form-control tanggal" name="reff_date6[]" value="<?= !empty($rowAdj['reff_date']) && $rowAdj['reff_date'] != '1970-01-01' ? date('d-m-Y', strtotime($rowAdj['reff_date'])) : ''; ?>" autocomplete="off"></td>
 
             <td>
-            <select class="form-control selectpicker currenc5" name="currenc5[]">
+            <select class="form-control selectpicker currenc6" name="currenc6[]">
                 <option value="IDR" selected>IDR</option>
             </select>
             </td>
 
-            <td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_amount5[]" value="<?= $rowAdj['t_debit'] > 0 ? $rowAdj['t_debit'] : ''; ?>" <?= $rowAdj['t_debit'] == 0 ? 'readonly' : ''; ?> oninput="modal_input_amt5(this)" autocomplete="off"></td>
+            <td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_amount6[]" value="<?= $rowAdj['t_debit'] > 0 ? $rowAdj['t_debit'] : ''; ?>" <?= $rowAdj['t_debit'] == 0 ? 'readonly' : ''; ?> oninput="modal_input_amt5(this)" autocomplete="off"></td>
 
-            <td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_credit5[]" value="<?= $rowAdj['t_credit'] > 0 ? $rowAdj['t_credit'] : ''; ?>" <?= $rowAdj['t_credit'] == 0 ? 'readonly' : ''; ?> oninput="modal_input_cre5(this)" autocomplete="off"></td>
+            <td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_credit6[]" value="<?= $rowAdj['t_credit'] > 0 ? $rowAdj['t_credit'] : ''; ?>" <?= $rowAdj['t_credit'] == 0 ? 'readonly' : ''; ?> oninput="modal_input_cre5(this)" autocomplete="off"></td>
 
-            <td><input style="font-size:12px;width:100%" type="text" class="form-control" name="keterangan5[]" value="<?= htmlspecialchars($rowAdj['deskripsi']); ?>" autocomplete="off"></td>
+            <td><input style="font-size:12px;width:100%" type="text" class="form-control" name="keterangan6[]" value="<?= htmlspecialchars($rowAdj['deskripsi']); ?>" autocomplete="off"></td>
 
             <td><input name="chk_a5[]" type="checkbox" class="checkall_a5"></td>
             </tr>
@@ -372,17 +287,17 @@ function getRateByCurrDate($conn2, $curr, $tgl)
           <td colspan="11" align="center">
           <div class="pco-rowbtn">
 <button type="button" class="btn btn-primary"
-                onclick="addRow5('tbody5')">
+                onclick="addRow6('tbody6')">
                 Add Row
             </button>
 
             <button type="button" class="btn btn-warning"
-            onclick="InsertRow5('tbody5')">
+            onclick="InsertRow6('tbody6')">
             Insert Row
         </button>
 
         <button type="button" class="btn btn-danger"
-        onclick="deleteRow5('tbody5')">
+        onclick="deleteRow6('tbody6')">
         Delete Row
     </button>
           </div>
@@ -404,16 +319,16 @@ function getRateByCurrDate($conn2, $curr, $tgl)
                 <div class="total-stat is-debit">
                     <span class="total-stat-label">Total Debit</span>
                     <div class="total-stat-value-wrap">
-                        <input type="text" class="total-stat-value" placeholder="0.00" id="tot_debit_nag_pv5" name="tot_debit_nag_pv5" readonly>
-                        <input type="hidden" id="h_tot_debit_nag_pv5" name="h_tot_debit_nag_pv5" readonly>
+                        <input type="text" class="total-stat-value" placeholder="0.00" id="tot_debit_nag_ftr6" name="tot_debit_nag_ftr6" readonly>
+                        <input type="hidden" id="h_tot_debit_nag_ftr6" name="h_tot_debit_nag_ftr6" readonly>
                     </div>
                 </div>
 
                 <div class="total-stat is-credit">
                     <span class="total-stat-label">Total Credit</span>
                     <div class="total-stat-value-wrap">
-                        <input type="text" class="total-stat-value" placeholder="0.00" id="tot_credit_nag_pv5" name="tot_credit_nag_pv5" readonly>
-                        <input type="hidden" id="h_tot_credit_nag_pv5" name="h_tot_credit_nag_pv5" readonly>
+                        <input type="text" class="total-stat-value" placeholder="0.00" id="tot_credit_nag_ftr6" name="tot_credit_nag_ftr6" readonly>
+                        <input type="hidden" id="h_tot_credit_nag_ftr6" name="h_tot_credit_nag_ftr6" readonly>
                     </div>
                 </div>
 
@@ -431,16 +346,16 @@ function getRateByCurrDate($conn2, $curr, $tgl)
                 <div class="total-stat is-debit">
                     <span class="total-stat-label">Total Debit</span>
                     <div class="total-stat-value-wrap">
-                        <input type="text" class="total-stat-value" placeholder="0.00" id="tot_debit_nak_pv5" name="tot_debit_nak_pv5" readonly>
-                        <input type="hidden" id="h_tot_debit_nak_pv5" name="h_tot_debit_nak_pv5" readonly>
+                        <input type="text" class="total-stat-value" placeholder="0.00" id="tot_debit_nak_ftr6" name="tot_debit_nak_ftr6" readonly>
+                        <input type="hidden" id="h_tot_debit_nak_ftr6" name="h_tot_debit_nak_ftr6" readonly>
                     </div>
                 </div>
 
                 <div class="total-stat is-credit">
                     <span class="total-stat-label">Total Credit</span>
                     <div class="total-stat-value-wrap">
-                        <input type="text" class="total-stat-value" placeholder="0.00" id="tot_credit_nak_pv5" name="tot_credit_nak_pv5" readonly>
-                        <input type="hidden" id="h_tot_credit_nak_pv5" name="h_tot_credit_nak_pv5" readonly>
+                        <input type="text" class="total-stat-value" placeholder="0.00" id="tot_credit_nak_ftr6" name="tot_credit_nak_ftr6" readonly>
+                        <input type="hidden" id="h_tot_credit_nak_ftr6" name="h_tot_credit_nak_ftr6" readonly>
                     </div>
                 </div>
 
@@ -457,16 +372,16 @@ function getRateByCurrDate($conn2, $curr, $tgl)
                 <div class="total-stat is-debit">
                     <span class="total-stat-label">Total Debit</span>
                     <div class="total-stat-value-wrap">
-                        <input type="text" class="total-stat-value" placeholder="0.00" id="tot_debit_pv5" name="tot_debit_pv5" readonly>
-                        <input type="hidden" id="h_tot_debit_pv5" name="h_tot_debit_pv5" readonly>
+                        <input type="text" class="total-stat-value" placeholder="0.00" id="tot_debit_ftr6" name="tot_debit_ftr6" readonly>
+                        <input type="hidden" id="h_tot_debit_ftr6" name="h_tot_debit_ftr6" readonly>
                     </div>
                 </div>
 
                 <div class="total-stat is-credit">
                     <span class="total-stat-label">Total Credit</span>
                     <div class="total-stat-value-wrap">
-                        <input type="text" class="total-stat-value" placeholder="0.00" id="tot_credit_pv5" name="tot_credit_pv5" readonly>
-                        <input type="hidden" id="h_tot_credit_pv5" name="h_tot_credit_pv5" readonly>
+                        <input type="text" class="total-stat-value" placeholder="0.00" id="tot_credit_ftr6" name="tot_credit_ftr6" readonly>
+                        <input type="hidden" id="h_tot_credit_ftr6" name="h_tot_credit_ftr6" readonly>
                     </div>
                 </div>
 
@@ -477,7 +392,7 @@ function getRateByCurrDate($conn2, $curr, $tgl)
 </div>
 <div class="form-row">
     <div class="col-md-3 mt-3 mb-2">
-        <button type="button" style="border-radius: 6px" class="btn-outline-primary btn-sm" name="simpan5" id="simpan5"><span class="fa fa-floppy-o"></span> Save</button>
+        <button type="button" style="border-radius: 6px" class="btn-outline-primary btn-sm" name="simpan6" id="simpan6"><span class="fa fa-floppy-o"></span> Save</button>
         <button type="button" style="border-radius: 6px" class="btn-outline-danger btn-sm" name="batal" id="batal" onclick="location.href='petty-cashout.php'"><span class="fa fa-angle-double-left"></span> Back</button>
     </div>
 </div>
@@ -581,20 +496,20 @@ function getRateByCurrDate($conn2, $curr, $tgl)
 
     // Hitung ulang total awal saat page load (baris PV & adjust sudah terisi dari server)
     $(document).ready(function(){
-        hitungTotalPV5();
+        hitungTotalFTR6();
     });
 </script>
 
 <script type="text/javascript">
 
-let isManualAmountPV5 = true; // amount header sudah terisi dari data lama, jangan langsung ditimpa
-let tablePV5;
+let isManualAmountFTR6 = true; // amount header sudah terisi dari data lama, jangan langsung ditimpa
+let tableFTR6;
 
-function initTablePV5(){
-  if ($.fn.DataTable.isDataTable('#table-pv5')) {
-    $('#table-pv5').DataTable().destroy();
+function initTableFTR6(){
+  if ($.fn.DataTable.isDataTable('#table-ftr6')) {
+    $('#table-ftr6').DataTable().destroy();
   }
-  tablePV5 = $('#table-pv5').DataTable({
+  tableFTR6 = $('#table-ftr6').DataTable({
     paging: true,
     searching: true,
     ordering: false,
@@ -612,23 +527,49 @@ function initTablePV5(){
   });
 }
 
-$('#account5').on('change', function() {
-  let kode5 = $(this).find(':selected').data('kode5');
-  let pc5 = $(this).find(':selected').data('pc5');
-  let namapc5 = $(this).find(':selected').data('namapc5');
+$('#account6').on('change', function() {
+  let kode5 = $(this).find(':selected').data('kode6');
+  let pc5 = $(this).find(':selected').data('pc6');
+  let namapc5 = $(this).find(':selected').data('namapc6');
 
-  $('#profit_center_kas_show5').val(namapc5);
-  $('#profit_center_kas5').val(pc5);
-  $('#currency5').val('IDR');
-  $('#kode_kas5').val(kode5);
-  hitungTotalPV5();
+  $('#profit_center_kas_show6').val(namapc5);
+  $('#profit_center_kas6').val(pc5);
+  $('#currency6').val('IDR');
+  $('#kode_kas6').val(kode5);
+  hitungTotalFTR6();
 });
 
-$('#btn_tarik_pv5').on('click', function(){
+/* Nominal di ISIAN ditulis polos tanpa pemisah ribuan - "100985", bukan
+   "100,985". Pemisah ribuan membuat kursor melompat tiap kali disunting. */
+function angkaPolosFTR6(n){
+  let v = Math.round((parseFloat(n) || 0) * 100) / 100;
+  return v.toString();
+}
 
-  let tgl_awal  = $('#tgl_filawal5').val();
-  let tgl_akhir = $('#tgl_filakhir5').val();
-  let supplier  = $('#nama_supp5').val();
+/* MUAT AWAL: baris yang sudah tertaut ke dokumen ini ditarik lewat endpoint
+   yang SAMA dgn tombol Search (linked_only=1), jadi bentuk barisnya dijamin
+   identik - tidak ada dua potongan kode yang harus dijaga agar seragam. */
+$(function(){
+  $.ajax({
+    url: 'petty-out/get_ftr_ajax.php',
+    type: 'POST',
+    data: { linked_only: 1, exclude_doc_num: $('#doc_num6').val() },
+    success: function(res){
+      if ($.fn.DataTable.isDataTable('#table-ftr6')) {
+        $('#table-ftr6').DataTable().clear().destroy();
+      }
+      $('#table-ftr6 tbody').html(res);
+      initTableFTR6();
+      hitungTotalFTR6();
+    }
+  });
+});
+
+$('#btn_tarik_ftr6').on('click', function(){
+
+  let tgl_awal  = $('#tgl_filawal6').val();
+  let tgl_akhir = $('#tgl_filakhir6').val();
+  let supplier  = $('#nama_supp6').val();
 
   if(tgl_awal == '' || tgl_akhir == ''){
     Swal.fire('Warning','Tanggal harus diisi','warning');
@@ -641,74 +582,78 @@ $('#btn_tarik_pv5').on('click', function(){
   }
 
   $.ajax({
-    url: 'bank-out/get_pv_ajax.php',
+    url: 'petty-out/get_ftr_ajax.php',
     type: 'POST',
     data: {
       tgl_awal: tgl_awal,
       tgl_akhir: tgl_akhir,
       supplier: supplier,
-      fund_type: 'CASH'
+      fund_type: 'CASH',
+      // Alokasi dokumen INI sendiri tidak dihitung sbg "sudah dibayar",
+      // supaya FTR yang sudah dibayar penuh olehnya tetap muncul dan
+      // nominalnya masih bisa diturunkan.
+      exclude_doc_num: $('#doc_num6').val()
     },
     beforeSend:function(){
       Swal.fire({ title:'Loading...', allowOutsideClick:false, didOpen:()=>{ Swal.showLoading(); } });
     },
     success:function(res){
 
-      // no_pv yang sudah ada di tabel (baik yang dari data lama maupun hasil
+      // no_ftr yang sudah ada di tabel (baik yang dari data lama maupun hasil
       // pencarian sebelumnya) tidak boleh ditampilkan dobel
       let existing = [];
-      $('#table-pv5 .no_pv').each(function(){
-        existing.push($(this).data('nopv'));
+      $('#table-ftr6 .no_ftr').each(function(){
+        existing.push($(this).data('noftr'));
       });
 
       let $tmp = $('<tbody>' + res + '</tbody>');
       $tmp.find('tr').each(function(){
-        let nopv = $(this).find('.no_pv').data('nopv');
+        let nopv = $(this).find('.no_ftr').data('noftr');
         if(existing.includes(nopv)){
           $(this).remove();
         }
       });
 
-      if ($.fn.DataTable.isDataTable('#table-pv5')) {
-        $('#table-pv5').DataTable().destroy();
+      if ($.fn.DataTable.isDataTable('#table-ftr6')) {
+        $('#table-ftr6').DataTable().destroy();
       }
-      $('#table-pv5 tbody').append($tmp.html());
+      $('#table-ftr6 tbody').append($tmp.html());
       Swal.close();
-      initTablePV5();
+      initTableFTR6();
     }
   });
 
 });
 
-$('#table-pv5').on('change', '.chk_pv', function(){
+$('#table-ftr6').on('change', '.chk_ftr', function(){
 
   let tr = $(this).closest('tr');
 
-  let total = parseFloat(tr.find('.total_pv').data('total')) || 0;
-  let rate = parseFloat(tr.find('.rate_pv').data('ratepv')) || 0;
-  let input = tr.find('.txt_amount_pv');
-  let input_idr = tr.find('.txt_amount_pv_idr');
+  let total = parseFloat(tr.find('.total_ftr').data('total')) || 0;
+  let rate = parseFloat(tr.find('.rate_ftr').data('rateftr')) || 0;
+  let input = tr.find('.txt_amount_ftr');
+  let input_idr = tr.find('.txt_amount_ftr_idr');
   let total_idr = total * rate;
 
   if($(this).is(':checked')){
 
     input.prop('disabled', false);
     if(!input.val()){
-      input.val(total.toLocaleString('en-US'));
+      input.val(angkaPolosFTR6(total));
     }
     input_idr.prop('disabled', false);
     if(!input_idr.val()){
-      input_idr.val(total_idr.toLocaleString('en-US'));
+      input_idr.val(angkaPolosFTR6(total_idr));
     }
 
-    if(!$('#account5').val()){
-      let pvAccount = tr.find('.no_pv').data('account');
-      if(pvAccount && $('#account5 option[value="' + pvAccount + '"]').length){
-        $('#account5').val(pvAccount).trigger('change');
+    if(!$('#account6').val()){
+      let pvAccount = tr.find('.no_ftr').data('account');
+      if(pvAccount && $('#account6 option[value="' + pvAccount + '"]').length){
+        $('#account6').val(pvAccount).trigger('change');
       }
     }
 
-    hitungTotalPV5();
+    hitungTotalFTR6();
 
   }else{
 
@@ -718,24 +663,24 @@ $('#table-pv5').on('change', '.chk_pv', function(){
     input_idr.prop('disabled', true);
     input_idr.val('');
 
-    if($('#table-pv5 .chk_pv:checked').length === 0){
-      $('#amount_kas5').val('');
-      isManualAmountPV5 = false;
-      resetTotalPV5();
+    if($('#table-ftr6 .chk_ftr:checked').length === 0){
+      $('#amount_kas6').val('');
+      isManualAmountFTR6 = false;
+      resetTotalFTR6();
     }else{
-      hitungTotalPV5();
+      hitungTotalFTR6();
     }
 
   }
 
 });
 
-$('#table-pv5').on('keyup', '.txt_amount_pv', function(){
+$('#table-ftr6').on('keyup', '.txt_amount_ftr', function(){
 
   let tr = $(this).closest('tr');
 
-  let max  = parseFloat(tr.find('.total_pv').data('total')) || 0;
-  let rate = parseFloat(tr.find('.rate_pv').data('ratepv')) || 0;
+  let max  = parseFloat(tr.find('.total_ftr').data('total')) || 0;
+  let rate = parseFloat(tr.find('.rate_ftr').data('rateftr')) || 0;
 
   let val = $(this).val().replace(/,/g,'');
   val = parseFloat(val) || 0;
@@ -745,22 +690,22 @@ $('#table-pv5').on('keyup', '.txt_amount_pv', function(){
     val = max;
   }
 
-  $(this).val(val.toLocaleString('en-US'));
+  $(this).val(angkaPolosFTR6(val));
 
   let val_idr = val * rate;
 
-  tr.find('.txt_amount_pv_idr').val(val_idr.toLocaleString('en-US'));
+  tr.find('.txt_amount_ftr_idr').val(angkaPolosFTR6(val_idr));
 
-  hitungTotalPV5();
+  hitungTotalFTR6();
 
 });
 
-$('#table-pv5').on('keyup', '.txt_amount_pv_idr', function(){
+$('#table-ftr6').on('keyup', '.txt_amount_ftr_idr', function(){
 
   let tr = $(this).closest('tr');
 
-  let max  = parseFloat(tr.find('.total_pv').data('total')) || 0;
-  let rate = parseFloat(tr.find('.rate_pv').data('ratepv')) || 0;
+  let max  = parseFloat(tr.find('.total_ftr').data('total')) || 0;
+  let rate = parseFloat(tr.find('.rate_ftr').data('rateftr')) || 0;
 
   let val_idr = $(this).val().replace(/,/g,'');
   val_idr = parseFloat(val_idr) || 0;
@@ -773,34 +718,34 @@ $('#table-pv5').on('keyup', '.txt_amount_pv_idr', function(){
     val_idr = val * rate;
   }
 
-  tr.find('.txt_amount_pv').val(val.toLocaleString('en-US'));
-  $(this).val(val_idr.toLocaleString('en-US'));
+  tr.find('.txt_amount_ftr').val(angkaPolosFTR6(val));
+  $(this).val(angkaPolosFTR6(val_idr));
 
-  hitungTotalPV5();
+  hitungTotalFTR6();
 
 });
 
-$('#amount_kas5').on('keyup change', function(){
-  isManualAmountPV5 = true;
-  hitungTotalPV5();
+$('#amount_kas6').on('keyup change', function(){
+  isManualAmountFTR6 = true;
+  hitungTotalFTR6();
 });
 
-$(document).on('change', '.prof_ctr5', function() {
+$(document).on('change', '.prof_ctr6', function() {
   const selectedProfCtr = $(this).val();
   const row = $(this).closest('tr');
-  const selectedCoa = row.find('select.no_coa5').val() || '-';
+  const selectedCoa = row.find('select.no_coa6').val() || '-';
   updateCostCenter5(selectedProfCtr, selectedCoa, row);
 });
 
-$(document).on('change', '.no_coa5', function() {
+$(document).on('change', '.no_coa6', function() {
   const selectedCoa = $(this).val();
   const row = $(this).closest('tr');
-  const selectedProfCtr = row.find('select.prof_ctr5').val() || '-';
+  const selectedProfCtr = row.find('select.prof_ctr6').val() || '-';
   updateCostCenter5(selectedProfCtr, selectedCoa, row);
 });
 
 function updateCostCenter5(profCtr, noCoa, row) {
-  const costCtrDropdown = $(row).find('.cost_ctr5');
+  const costCtrDropdown = $(row).find('.cost_ctr6');
 
   costCtrDropdown.selectpicker('destroy');
   costCtrDropdown.empty();
@@ -832,7 +777,7 @@ function updateCostCenter5(profCtr, noCoa, row) {
   }
 }
 
-function addRow5(tableID) {
+function addRow6(tableID) {
 
   var table = document.getElementById(tableID);
   var rowCount = table.rows.length;
@@ -843,7 +788,7 @@ function addRow5(tableID) {
 <td><input type="checkbox" id="select5" name="select5[]" value="" checked disabled></td>
 
 <td >
-<select class="form-control selectpicker no_coa5" name="nomor_coa5[]" data-live-search="true" data-width="100%" data-size="5">
+<select class="form-control selectpicker no_coa6" name="nomor_coa5[]" data-live-search="true" data-width="100%" data-size="5">
 <option value="-">-</option>
 <?php
 $sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa,' ',nama_coa) as coa from mastercoa_v2");
@@ -854,7 +799,7 @@ foreach ($sql as $coa) : ?>
 </td>
 
 <td>
-<select class="form-control selectpicker prof_ctr5" name="prof_ctr5[]" data-live-search="true" data-width="100%">
+<select class="form-control selectpicker prof_ctr6" name="prof_ctr6[]" data-live-search="true" data-width="100%">
 <option value="-"> - </option>
 <?php
 $sql3 = mysqli_query($conn1, "select kode_pc,id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
@@ -865,26 +810,26 @@ foreach ($sql3 as $fc) : ?>
 </td>
 
 <td>
-<select class="form-control selectpicker cost_ctr5" name="cost_ctr5[]" data-live-search="true" data-width="100%">
+<select class="form-control selectpicker cost_ctr6" name="cost_ctr6[]" data-live-search="true" data-width="100%">
 <option value="-"> - </option>
 </select>
 </td>
 
-<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="no_reff5[]" autocomplete="off"></td>
+<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="no_reff6[]" autocomplete="off"></td>
 
-<td><input style="font-size:12px;width:100%" type="text" class="form-control tanggal" name="reff_date5[]" autocomplete="off"></td>
+<td><input style="font-size:12px;width:100%" type="text" class="form-control tanggal" name="reff_date6[]" autocomplete="off"></td>
 
 <td>
-<select class="form-control selectpicker currenc5" name="currenc5[]">
+<select class="form-control selectpicker currenc6" name="currenc6[]">
 <option value="IDR">IDR</option>
 </select>
 </td>
 
-<td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_amount5[]" oninput="modal_input_amt5(this)" autocomplete="off"></td>
+<td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_amount6[]" oninput="modal_input_amt5(this)" autocomplete="off"></td>
 
-<td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_credit5[]" oninput="modal_input_cre5(this)" autocomplete="off"></td>
+<td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_credit6[]" oninput="modal_input_cre5(this)" autocomplete="off"></td>
 
-<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="keterangan5[]" autocomplete="off"></td>
+<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="keterangan6[]" autocomplete="off"></td>
 
 <td><input name="chk_a5[]" type="checkbox" class="checkall_a5"></td>
 
@@ -896,15 +841,15 @@ foreach ($sql3 as $fc) : ?>
   $('.selectpicker').selectpicker('refresh');
   $('.tanggal').datepicker({ format: "dd-mm-yyyy", autoclose: true });
 
-  var headerPC = $('#profit_center_kas5').val();
+  var headerPC = $('#profit_center_kas6').val();
   if (headerPC) {
-    $(row).find('.prof_ctr5').val(headerPC);
-    $(row).find('.prof_ctr5').selectpicker('refresh');
+    $(row).find('.prof_ctr6').val(headerPC);
+    $(row).find('.prof_ctr6').selectpicker('refresh');
   }
 
 }
 
-function deleteRow5(tableID) {
+function deleteRow6(tableID) {
 
   try {
 
@@ -930,7 +875,7 @@ function deleteRow5(tableID) {
     }
 
     $('.selectpicker').selectpicker('refresh');
-    hitungTotalPV5();
+    hitungTotalFTR6();
 
   } catch (e) {
     Swal.fire({ icon: 'error', title: 'Error', text: e.message });
@@ -938,7 +883,7 @@ function deleteRow5(tableID) {
 
 }
 
-function InsertRow5(tableID) {
+function InsertRow6(tableID) {
 
   try {
 
@@ -958,7 +903,7 @@ function InsertRow5(tableID) {
 <td><input type="checkbox" id="select5" name="select5[]" value="" checked disabled></td>
 
 <td >
-<select class="form-control selectpicker no_coa5" name="nomor_coa5[]" data-live-search="true" data-width="100%" data-size="5">
+<select class="form-control selectpicker no_coa6" name="nomor_coa5[]" data-live-search="true" data-width="100%" data-size="5">
 <option value="-">-</option>
 <?php
 $sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa,' ',nama_coa) as coa from mastercoa_v2");
@@ -969,7 +914,7 @@ foreach ($sql as $coa) : ?>
 </td>
 
 <td>
-<select class="form-control selectpicker prof_ctr5" name="prof_ctr5[]" data-live-search="true" data-width="100%">
+<select class="form-control selectpicker prof_ctr6" name="prof_ctr6[]" data-live-search="true" data-width="100%">
 <option value="-"> - </option>
 <?php
 $sql3 = mysqli_query($conn1, "select kode_pc,id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
@@ -980,26 +925,26 @@ foreach ($sql3 as $fc) : ?>
 </td>
 
 <td>
-<select class="form-control selectpicker cost_ctr5" name="cost_ctr5[]" data-live-search="true" data-width="100%">
+<select class="form-control selectpicker cost_ctr6" name="cost_ctr6[]" data-live-search="true" data-width="100%">
 <option value="-"> - </option>
 </select>
 </td>
 
-<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="no_reff5[]" autocomplete="off"></td>
+<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="no_reff6[]" autocomplete="off"></td>
 
-<td><input style="font-size:12px;width:100%" type="text" class="form-control tanggal" name="reff_date5[]" autocomplete="off"></td>
+<td><input style="font-size:12px;width:100%" type="text" class="form-control tanggal" name="reff_date6[]" autocomplete="off"></td>
 
 <td>
-<select class="form-control selectpicker currenc5" name="currenc5[]">
+<select class="form-control selectpicker currenc6" name="currenc6[]">
 <option value="IDR">IDR</option>
 </select>
 </td>
 
-<td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_amount5[]" oninput="modal_input_amt5(this)" autocomplete="off"></td>
+<td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_amount6[]" oninput="modal_input_amt5(this)" autocomplete="off"></td>
 
-<td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_credit5[]" oninput="modal_input_cre5(this)" autocomplete="off"></td>
+<td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_credit6[]" oninput="modal_input_cre5(this)" autocomplete="off"></td>
 
-<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="keterangan5[]" autocomplete="off"></td>
+<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="keterangan6[]" autocomplete="off"></td>
 
 <td><input name="chk_a5[]" type="checkbox" class="checkall_a5"></td>
 
@@ -1010,10 +955,10 @@ foreach ($sql3 as $fc) : ?>
         newRow.innerHTML = element2;
         inserted = true;
 
-        var headerPC = $('#profit_center_kas5').val();
+        var headerPC = $('#profit_center_kas6').val();
         if (headerPC) {
-          $(newRow).find('.prof_ctr5').val(headerPC);
-          $(newRow).find('.prof_ctr5').selectpicker('refresh');
+          $(newRow).find('.prof_ctr6').val(headerPC);
+          $(newRow).find('.prof_ctr6').selectpicker('refresh');
         }
 
       }
@@ -1037,7 +982,7 @@ function modal_input_amt5(el){
 
   let row = $(el).closest('tr');
   let debit  = parseFloat($(el).val()) || 0;
-  let creditInput = row.find('input[name="txt_credit5[]"]');
+  let creditInput = row.find('input[name="txt_credit6[]"]');
 
   if(debit > 0){
     creditInput.val(0);
@@ -1046,7 +991,7 @@ function modal_input_amt5(el){
     creditInput.prop('readonly',false);
   }
 
-  hitungTotalPV5();
+  hitungTotalFTR6();
 
 }
 
@@ -1054,7 +999,7 @@ function modal_input_cre5(el){
 
   let row = $(el).closest('tr');
   let credit = parseFloat($(el).val()) || 0;
-  let debitInput = row.find('input[name="txt_amount5[]"]');
+  let debitInput = row.find('input[name="txt_amount6[]"]');
 
   if(credit > 0){
     debitInput.val(0);
@@ -1063,37 +1008,40 @@ function modal_input_cre5(el){
     debitInput.prop('readonly',false);
   }
 
-  hitungTotalPV5();
+  hitungTotalFTR6();
 
 }
 
-function resetTotalPV5(){
-  $('#tot_debit_nag_pv5, #tot_debit_nak_pv5, #tot_debit_pv5').val('');
-  $('#tot_credit_nag_pv5, #tot_credit_nak_pv5, #tot_credit_pv5').val('');
+function resetTotalFTR6(){
+  $('#tot_debit_nag_ftr6, #tot_debit_nak_ftr6, #tot_debit_ftr6').val('');
+  $('#tot_credit_nag_ftr6, #tot_credit_nak_ftr6, #tot_credit_ftr6').val('');
 }
 
-function hitungTotalPV5(){
+function hitungTotalFTR6(){
 
-  let total_pv = 0;
+  let total_ftr = 0;
   let nag_debit = 0;
   let nak_debit = 0;
   let nag_credit = 0;
   let nak_credit = 0;
   let curr_h = 'IDR';
 
-  $('#table-pv5 .chk_pv:checked').each(function(){
+  $('#table-ftr6 .chk_ftr:checked').each(function(){
 
     let tr = $(this).closest('tr');
 
-    let val = getNumber(tr.find('.txt_amount_pv').val());
-    let val_idr = getNumber(tr.find('.txt_amount_pv_idr').val());
+    let val = getNumber(tr.find('.txt_amount_ftr').val());
+    let val_idr = getNumber(tr.find('.txt_amount_ftr_idr').val());
 
-    let pc = (tr.find('.pc_pv').data('pcpv') || '').toString().trim().toUpperCase();
+    // Profit center dokumennya sendiri. Dokumen lama belum punya (kolomnya
+    // baru 02 Okt 2026), jadi mundur ke profit center akun kas yang membayar.
+    let pc_baris = (tr.find('.pc_ftr').data('pcftr') || '').toString().trim().toUpperCase();
+    let pc = pc_baris !== '' ? pc_baris : ($('#profit_center_kas6').val() || '').trim().toUpperCase();
 
     if (curr_h == 'IDR') {
-      total_pv += val_idr;
+      total_ftr += val_idr;
     }else{
-      total_pv += val;
+      total_ftr += val;
     }
 
     if(pc === 'NAG'){
@@ -1104,15 +1052,15 @@ function hitungTotalPV5(){
 
   });
 
-  let header_amount = total_pv;
+  let header_amount = total_ftr;
 
-  if(!isManualAmountPV5){
-    $('#amount_kas5').val(header_amount.toLocaleString('en-US'));
+  if(!isManualAmountFTR6){
+    $('#amount_kas6').val(angkaPolosFTR6(header_amount));
   }
 
-  let header_amount_idr = isManualAmountPV5 ? getNumber($('#amount_kas5').val()) : total_pv;
+  let header_amount_idr = isManualAmountFTR6 ? getNumber($('#amount_kas6').val()) : total_ftr;
 
-  let header_pc = ($('#profit_center_kas5').val() || '').trim().toUpperCase();
+  let header_pc = ($('#profit_center_kas6').val() || '').trim().toUpperCase();
 
   if(header_pc === 'NAG'){
     nag_credit += header_amount_idr;
@@ -1120,14 +1068,14 @@ function hitungTotalPV5(){
     nak_credit += header_amount_idr;
   }
 
-  $('#tbody5 tr').each(function(){
+  $('#tbody6 tr').each(function(){
 
     let tr = $(this);
 
-    let pc = (tr.find('select.prof_ctr5').first().val() || '').trim().toUpperCase();
+    let pc = (tr.find('select.prof_ctr6').first().val() || '').trim().toUpperCase();
 
-    let debit  = getNumber(tr.find('input[name="txt_amount5[]"]').val());
-    let credit = getNumber(tr.find('input[name="txt_credit5[]"]').val());
+    let debit  = getNumber(tr.find('input[name="txt_amount6[]"]').val());
+    let credit = getNumber(tr.find('input[name="txt_credit6[]"]').val());
 
     if(pc === 'NAG'){
       nag_debit  += debit;
@@ -1142,30 +1090,30 @@ function hitungTotalPV5(){
   let grand_debit  = nag_debit + nak_debit;
   let grand_credit = nag_credit + nak_credit;
 
-  $('#tot_debit_nag_pv5').val(nag_debit.toLocaleString('en-US'));
-  $('#tot_debit_nak_pv5').val(nak_debit.toLocaleString('en-US'));
-  $('#tot_debit_pv5').val(grand_debit.toLocaleString('en-US'));
+  $('#tot_debit_nag_ftr6').val(nag_debit.toLocaleString('en-US'));
+  $('#tot_debit_nak_ftr6').val(nak_debit.toLocaleString('en-US'));
+  $('#tot_debit_ftr6').val(grand_debit.toLocaleString('en-US'));
 
-  $('#tot_credit_nag_pv5').val(nag_credit.toLocaleString('en-US'));
-  $('#tot_credit_nak_pv5').val(nak_credit.toLocaleString('en-US'));
-  $('#tot_credit_pv5').val(grand_credit.toLocaleString('en-US'));
+  $('#tot_credit_nag_ftr6').val(nag_credit.toLocaleString('en-US'));
+  $('#tot_credit_nak_ftr6').val(nak_credit.toLocaleString('en-US'));
+  $('#tot_credit_ftr6').val(grand_credit.toLocaleString('en-US'));
 
 }
 
-$('#simpan5').on('click', function(){
+$('#simpan6').on('click', function(){
 
   let header = {
-    doc_num    : $('#doc_num5').val(),
-    ref        : $('#ref_num5').val(),
-    tgl        : $('#tgl_active5').val(),
-    supp       : $('#nama_supp5').val(),
-    account    : $('#account5').val(),
-    currency   : $('#currency5').val(),
-    kode_kas   : $('#kode_kas5').val(),
-    pc_header  : $('#profit_center_kas5').val(),
-    amount     : getNumber($('#amount_kas5').val()),
-    desc       : $('#pesan5').val(),
-    cash_flow  : $('#cash_flow5').val()
+    doc_num    : $('#doc_num6').val(),
+    ref        : $('#ref_num6').val(),
+    tgl        : $('#tgl_active6').val(),
+    supp       : $('#nama_supp6').val(),
+    account    : $('#account6').val(),
+    currency   : $('#currency6').val(),
+    kode_kas   : $('#kode_kas6').val(),
+    pc_header  : $('#profit_center_kas6').val(),
+    amount     : getNumber($('#amount_kas6').val()),
+    desc       : $('#pesan6').val(),
+    cash_flow  : $('#cash_flow6').val()
   };
 
   if(!header.tgl){
@@ -1198,24 +1146,24 @@ $('#simpan5').on('click', function(){
     return;
   }
 
-  if($('#table-pv5 .chk_pv:checked').length === 0){
-    Swal.fire('Warning','Pilih minimal 1 Payment Voucher','warning');
+  if($('#table-ftr6 .chk_ftr:checked').length === 0){
+    Swal.fire('Warning','Pilih minimal 1 FTR','warning');
     return;
   }
 
-  let total_debit  = getNumber($('#tot_debit_pv5').val());
-  let total_credit = getNumber($('#tot_credit_pv5').val());
+  let total_debit  = getNumber($('#tot_debit_ftr6').val());
+  let total_credit = getNumber($('#tot_credit_ftr6').val());
 
   if(total_debit !== total_credit){
     Swal.fire('Error','Total Debit & Credit tidak balance','error');
     return;
   }
 
-  let nag_debit  = getNumber($('#tot_debit_nag_pv5').val());
-  let nag_credit = getNumber($('#tot_credit_nag_pv5').val());
+  let nag_debit  = getNumber($('#tot_debit_nag_ftr6').val());
+  let nag_credit = getNumber($('#tot_credit_nag_ftr6').val());
 
-  let nak_debit  = getNumber($('#tot_debit_nak_pv5').val());
-  let nak_credit = getNumber($('#tot_credit_nak_pv5').val());
+  let nak_debit  = getNumber($('#tot_debit_nak_ftr6').val());
+  let nak_credit = getNumber($('#tot_credit_nak_ftr6').val());
 
   if(nag_debit !== nag_credit){
     Swal.fire('Error','NAG tidak balance','error');
@@ -1227,42 +1175,42 @@ $('#simpan5').on('click', function(){
     return;
   }
 
-  let detail_pv = [];
+  let detail_ftr = [];
 
-  $('#table-pv5 .chk_pv:checked').each(function(){
+  $('#table-ftr6 .chk_ftr:checked').each(function(){
 
     let tr = $(this).closest('tr');
 
     let data = {
-      no_pv   : tr.find('.no_pv').data('nopv'),
-      type_pv : tr.find('.no_pv').data('typepv'),
-      amount  : getNumber(tr.find('.txt_amount_pv').val()),
-      pc      : tr.find('.pc_pv').data('pcpv')
+      no_ftr   : tr.find('.no_ftr').data('noftr'),
+      type_pv : tr.find('.no_ftr').data('typeftr'),
+      amount  : getNumber(tr.find('.txt_amount_ftr').val()),
+      pc      : tr.find('.pc_ftr').data('pcftr')
     };
 
-    detail_pv.push(data);
+    detail_ftr.push(data);
 
   });
 
   let detail_adjust = [];
   let valid_adjust = true;
 
-  $('#tbody5 tr').each(function(index){
+  $('#tbody6 tr').each(function(index){
 
     let tr = $(this);
 
-    let coa   = tr.find('select.no_coa5').first().val();
-    let pc    = tr.find('select.prof_ctr5').first().val();
-    let cc    = tr.find('select.cost_ctr5').first().val();
-    let debit = parseFloat(tr.find('input[name="txt_amount5[]"]').val()) || 0;
-    let credit= parseFloat(tr.find('input[name="txt_credit5[]"]').val()) || 0;
-    let desc  = tr.find('input[name="keterangan5[]"]').val();
+    let coa   = tr.find('select.no_coa6').first().val();
+    let pc    = tr.find('select.prof_ctr6').first().val();
+    let cc    = tr.find('select.cost_ctr6').first().val();
+    let debit = parseFloat(tr.find('input[name="txt_amount6[]"]').val()) || 0;
+    let credit= parseFloat(tr.find('input[name="txt_credit6[]"]').val()) || 0;
+    let desc  = tr.find('input[name="keterangan6[]"]').val();
     if(!desc){
-      desc = $('#pesan5').val();
+      desc = $('#pesan6').val();
     }
-    let curr  = tr.find('select.currenc5').first().val();
-    let reff_doc  = tr.find('input[name="no_reff5[]"]').val();
-    let reff_date  = tr.find('input[name="reff_date5[]"]').val();
+    let curr  = tr.find('select.currenc6').first().val();
+    let reff_doc  = tr.find('input[name="no_reff6[]"]').val();
+    let reff_date  = tr.find('input[name="reff_date6[]"]').val();
 
     let rowData = {
       row: index + 1, coa, pc, cc, debit, credit, desc, curr, reff_doc, reff_date
@@ -1270,14 +1218,14 @@ $('#simpan5').on('click', function(){
 
     if(!coa || coa === '-'){
       Swal.fire('Warning','COA wajib diisi','warning');
-      tr.find('.no_coa5').focus();
+      tr.find('.no_coa6').focus();
       valid_adjust = false;
       return false;
     }
 
     if(!pc || pc === '-'){
       Swal.fire('Warning','Profit Center wajib diisi','warning');
-      tr.find('.prof_ctr5').focus();
+      tr.find('.prof_ctr6').focus();
       valid_adjust = false;
       return false;
     }
@@ -1285,7 +1233,7 @@ $('#simpan5').on('click', function(){
     if(coaWajibCC.includes(coa)){
       if(!cc || cc === '-' || cc === ''){
         Swal.fire('Warning','COA wajib isi Cost Center','warning');
-        tr.find('.cost_ctr5').focus();
+        tr.find('.cost_ctr6').focus();
         valid_adjust = false;
         return false;
       }
@@ -1305,7 +1253,7 @@ $('#simpan5').on('click', function(){
 
   let finalData = {
     header,
-    detail_pv,
+    detail_ftr,
     detail_adjust,
     total: {
       global_debit  : total_debit,
@@ -1318,7 +1266,7 @@ $('#simpan5').on('click', function(){
 
     // Cegah double-submit: tombol dikunci begitu user konfirmasi & mulai
     // proses save, baru dibuka lagi kalau ada error (supaya bisa dicoba ulang).
-    $('#simpan5').prop('disabled', true);
+    $('#simpan6').prop('disabled', true);
 
     Swal.fire({
       title: 'Saving...',
@@ -1327,7 +1275,7 @@ $('#simpan5').on('click', function(){
     });
 
     $.ajax({
-      url: 'update_pv_cash.php',
+      url: 'update_ftr_cash.php',
       type: 'POST',
       dataType: 'json',
       data: { data: JSON.stringify(finalData) },
@@ -1349,7 +1297,7 @@ $('#simpan5').on('click', function(){
             if(retry.isConfirmed){
               doUpdatePv5();
             }else{
-              $('#simpan5').prop('disabled', false);
+              $('#simpan6').prop('disabled', false);
             }
           });
         }
@@ -1368,7 +1316,7 @@ $('#simpan5').on('click', function(){
           if(retry.isConfirmed){
             doUpdatePv5();
           }else{
-            $('#simpan5').prop('disabled', false);
+            $('#simpan6').prop('disabled', false);
           }
         });
       }

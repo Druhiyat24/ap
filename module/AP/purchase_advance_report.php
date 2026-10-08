@@ -293,6 +293,8 @@
                 ELSE
                 reff_doc
                 END no_ftr, IF(no_ftr_cbd is null,'-',tgl_ftr_cbd) tgl_ftr, no_pi, IF(reff_doc LIKE '%KKK%',reff_doc,no_po) no_po, tgl_po, profit_center, nama_supp supp, no_journal no_bankout, tgl_journal tgl_bankout, debit saldo_awal, debit_idr saldo_awal_idr,0 addition, 0 addition_idr, a.curr, rate, no_coa, coa, deskripsi from (select profit_center, nama_supp, no_coa, coa, no_journal, tgl_journal,reff_bk, reff_pv, CASE
+                    WHEN reff_bk like 'FTR/%' THEN
+                    reff_bk
                     WHEN reff_bk not like '%PV%' THEN
                     CONCAT(no_coa,no_journal)
                     ELSE
@@ -317,13 +319,26 @@
                     END debit_idr, deskripsi
                     from (select profit_center, a.nama_supp, no_coa, a.coa, no_journal, tgl_journal,a.reff_doc reff_bk, upper(b.reff_doc) reff_pv, curr, debit, rate, debit_idr, credit, credit_idr, deskripsi, amount from (select a.profit_center, no_journal, tgl_journal, no_coa, CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, SUM(credit) credit, SUM(credit_idr) credit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from b_bankout_h where stat_rpt is null and status != 'Cancel' GROUP BY no_bankout) b on b.no_bankout = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and a.status != 'Updated' and no_journal like '%BK%' and tgl_journal < '$start_date' and tgl_journal > '2025-08-31' GROUP BY no_journal, no_coa, reff_doc 
                         UNION
-                        select a.profit_center, no_journal, tgl_journal, no_coa, CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, SUM(credit) credit, SUM(credit_idr) credit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from c_petty_cashout_h where reff = 'Advance') b on b.no_pco = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and a.status != 'Updated' and no_journal like '%KKK%' and tgl_journal < '$start_date' and tgl_journal > '2025-08-31' GROUP BY no_journal, no_coa, reff_doc ORDER BY tgl_journal asc) a LEFT JOIN (select a.coa, b.nama_coa, a.no_pv, a.reff_doc, sum(a.amount) amount from tbl_pv a INNER JOIN mastercoa_v2 b on b.no_coa = a.coa where nama_coa like '%UANG MUKA PEMBELIAN%' GROUP BY no_pv, coa, reff_doc
+                        select a.profit_center, no_journal, tgl_journal, no_coa, CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, SUM(credit) credit, SUM(credit_idr) credit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from c_petty_cashout_h where reff IN ('Advance','FTR (CBD / DP)')) b on b.no_pco = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and a.status != 'Updated' and no_journal like '%KKK%' and tgl_journal < '$start_date' and tgl_journal > '2025-08-31' GROUP BY no_journal, no_coa, reff_doc ORDER BY tgl_journal asc) a LEFT JOIN (select a.coa, b.nama_coa, a.no_pv, a.reff_doc, sum(a.amount) amount from tbl_pv a INNER JOIN mastercoa_v2 b on b.no_coa = a.coa where nama_coa like '%UANG MUKA PEMBELIAN%' GROUP BY no_pv, coa, reff_doc
 UNION ALL
 select no_coa, nama_coa, no_kbon no_pv, no_kbon reff_doc, (total + COALESCE(pph,0)) from kontrabon_h_cbd where nama_coa like '%UANG MUKA PEMBELIAN%' GROUP BY no_kbon, no_coa
 UNION ALL
 select no_coa, nama_coa, no_kbon no_pv, no_kbon reff_doc, (total + COALESCE(pph,0)) from kontrabon_h_dp where nama_coa like '%UANG MUKA PEMBELIAN%' GROUP BY no_kbon, no_coa) b on b.no_pv = a.reff_doc and b.coa = a.no_coa) a) a left join (select a.no_ftr_cbd, a.tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, IFNULL(c.no_payment,b.no_kbon) no_payment, a.curr from (select no_ftr_cbd, tgl_ftr_cbd, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_cbd GROUP BY no_ftr_cbd) a INNER JOIN kontrabon_cbd b on b.no_cbd = a.no_ftr_cbd LEFT JOIN list_payment_cbd c on c.no_kbon = b.no_kbon GROUP BY no_ftr_cbd
                 UNION
-                select a.no_ftr_dp, a.tgl_ftr_dp, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, IFNULL(c.no_payment,b.no_kbon) no_payment, a.curr from (select no_ftr_dp, tgl_ftr_dp, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_dp GROUP BY no_ftr_dp) a INNER JOIN kontrabon_dp b on b.no_dp = a.no_ftr_dp LEFT JOIN list_payment_dp c on c.no_kbon = b.no_kbon GROUP BY no_ftr_dp order by no_payment asc) b on b.no_payment = a.reff_doc order by tgl_journal asc) a
+                select a.no_ftr_dp, a.tgl_ftr_dp, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, IFNULL(c.no_payment,b.no_kbon) no_payment, a.curr from (select no_ftr_dp, tgl_ftr_dp, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_dp GROUP BY no_ftr_dp) a INNER JOIN kontrabon_dp b on b.no_dp = a.no_ftr_dp LEFT JOIN list_payment_dp c on c.no_kbon = b.no_kbon GROUP BY no_ftr_dp
+                UNION
+                /* FTR yang dibayar LANGSUNG lewat Petty Cash Out: tidak punya Kontra Bon
+                   maupun List Payment, jadi dipetakan ke nomor FTR-nya sendiri - itulah
+                   yang tersimpan di reff_doc jurnalnya. Dibatasi pada FTR yang memang
+                   pernah dibayar dari kas kecil. */
+                select a.no_ftr_cbd, a.tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, NULL no_kbon, a.no_ftr_cbd no_payment, a.curr
+                from (select no_ftr_cbd, MIN(tgl_ftr_cbd) tgl_ftr_cbd, MIN(supp) supp, MIN(no_po) no_po, MIN(tgl_po) tgl_po, MIN(no_pi) no_pi, MIN(curr) curr, sum(total) total from ftr_cbd GROUP BY no_ftr_cbd) a
+                where a.no_ftr_cbd in (select no_reff from c_petty_cashout_det where type_pv = 'FTR-CBD')
+                UNION
+                select a.no_ftr_dp, a.tgl_ftr_dp, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, NULL no_kbon, a.no_ftr_dp no_payment, a.curr
+                from (select no_ftr_dp, MIN(tgl_ftr_dp) tgl_ftr_dp, MIN(supp) supp, MIN(no_po) no_po, MIN(tgl_po) tgl_po, MIN(no_pi) no_pi, MIN(curr) curr, sum(dp_value) total from ftr_dp GROUP BY no_ftr_dp) a
+                where a.no_ftr_dp in (select no_reff from c_petty_cashout_det where type_pv = 'FTR-DP')
+                order by no_payment asc) b on b.no_payment = a.reff_doc order by tgl_journal asc) a
             UNION
             select no_ftr, tgl_ftr, no_pi, no_po, tgl_po, profit_center, supp, no_bankout, tgl_bankout, saldo_awal, saldo_awal_idr, addition, addition_idr, curr, rate, no_coa, coa, deskripsi from pa_saldo_awal
 
@@ -338,6 +353,8 @@ select no_coa, nama_coa, no_kbon no_pv, no_kbon reff_doc, (total + COALESCE(pph,
                 ELSE
                 reff_doc
                 END no_ftr, IF(no_ftr_cbd is null,'-',tgl_ftr_cbd) tgl_ftr, no_pi, IF(reff_doc LIKE '%KKK%',reff_doc,no_po) no_po, tgl_po,profit_center, nama_supp supp, no_journal no_bankout, tgl_journal tgl_bankout, 0 saldo_awal, 0 saldo_awal_idr,debit addition, debit_idr addition_idr, a.curr, rate, no_coa, coa, deskripsi from (select profit_center, nama_supp, no_coa, coa, no_journal, tgl_journal,reff_bk, reff_pv, CASE
+                    WHEN reff_bk like 'FTR/%' THEN
+                    reff_bk
                     WHEN reff_bk not like '%PV%' THEN
                     CONCAT(no_coa,no_journal)
                     ELSE
@@ -362,13 +379,26 @@ select no_coa, nama_coa, no_kbon no_pv, no_kbon reff_doc, (total + COALESCE(pph,
                     END debit_idr, deskripsi
                     from (select profit_center, a.nama_supp, no_coa, a.coa, no_journal, tgl_journal,a.reff_doc reff_bk, upper(b.reff_doc) reff_pv, curr, debit, rate, debit_idr, credit, credit_idr, deskripsi, amount from (select a.profit_center, no_journal, tgl_journal, no_coa, CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, SUM(credit) credit, SUM(credit_idr) credit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from b_bankout_h where stat_rpt is null and status != 'Cancel' GROUP BY no_bankout) b on b.no_bankout = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and a.status != 'Updated' and no_journal like '%BK%' and tgl_journal BETWEEN '$start_date' and '$end_date'  and tgl_journal > '2025-08-31' GROUP BY no_journal, no_coa, reff_doc 
                         UNION
-                        select a.profit_center, no_journal, tgl_journal, no_coa, CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, SUM(credit) credit, SUM(credit_idr) credit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from c_petty_cashout_h where reff = 'Advance') b on b.no_pco = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and a.status != 'Updated' and no_journal like '%KKK%' and tgl_journal BETWEEN '$start_date' and '$end_date' and tgl_journal > '2025-08-31' GROUP BY no_journal, no_coa, reff_doc ORDER BY tgl_journal asc) a LEFT JOIN (select a.coa, b.nama_coa, a.no_pv, a.reff_doc, sum(a.amount) amount from tbl_pv a INNER JOIN mastercoa_v2 b on b.no_coa = a.coa where nama_coa like '%UANG MUKA PEMBELIAN%' GROUP BY no_pv, coa, reff_doc
+                        select a.profit_center, no_journal, tgl_journal, no_coa, CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, SUM(credit) credit, SUM(credit_idr) credit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from c_petty_cashout_h where reff IN ('Advance','FTR (CBD / DP)')) b on b.no_pco = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and a.status != 'Updated' and no_journal like '%KKK%' and tgl_journal BETWEEN '$start_date' and '$end_date' and tgl_journal > '2025-08-31' GROUP BY no_journal, no_coa, reff_doc ORDER BY tgl_journal asc) a LEFT JOIN (select a.coa, b.nama_coa, a.no_pv, a.reff_doc, sum(a.amount) amount from tbl_pv a INNER JOIN mastercoa_v2 b on b.no_coa = a.coa where nama_coa like '%UANG MUKA PEMBELIAN%' GROUP BY no_pv, coa, reff_doc
 UNION ALL
 select no_coa, nama_coa, no_kbon no_pv, no_kbon reff_doc, (total + COALESCE(pph,0)) from kontrabon_h_cbd where nama_coa like '%UANG MUKA PEMBELIAN%' GROUP BY no_kbon, no_coa
 UNION ALL
 select no_coa, nama_coa, no_kbon no_pv, no_kbon reff_doc, (total + COALESCE(pph,0)) from kontrabon_h_dp where nama_coa like '%UANG MUKA PEMBELIAN%' GROUP BY no_kbon, no_coa) b on b.no_pv = a.reff_doc and b.coa = a.no_coa) a) a left join (select a.no_ftr_cbd, a.tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, IFNULL(c.no_payment,b.no_kbon) no_payment, a.curr from (select no_ftr_cbd, tgl_ftr_cbd, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_cbd GROUP BY no_ftr_cbd) a INNER JOIN kontrabon_cbd b on b.no_cbd = a.no_ftr_cbd LEFT JOIN list_payment_cbd c on c.no_kbon = b.no_kbon GROUP BY no_ftr_cbd
                 UNION
-                select a.no_ftr_dp, a.tgl_ftr_dp, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, IFNULL(c.no_payment,b.no_kbon) no_payment, a.curr from (select no_ftr_dp, tgl_ftr_dp, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_dp GROUP BY no_ftr_dp) a INNER JOIN kontrabon_dp b on b.no_dp = a.no_ftr_dp LEFT JOIN list_payment_dp c on c.no_kbon = b.no_kbon GROUP BY no_ftr_dp order by no_payment asc) b on b.no_payment = a.reff_doc order by tgl_journal asc) a
+                select a.no_ftr_dp, a.tgl_ftr_dp, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, IFNULL(c.no_payment,b.no_kbon) no_payment, a.curr from (select no_ftr_dp, tgl_ftr_dp, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_dp GROUP BY no_ftr_dp) a INNER JOIN kontrabon_dp b on b.no_dp = a.no_ftr_dp LEFT JOIN list_payment_dp c on c.no_kbon = b.no_kbon GROUP BY no_ftr_dp
+                UNION
+                /* FTR yang dibayar LANGSUNG lewat Petty Cash Out: tidak punya Kontra Bon
+                   maupun List Payment, jadi dipetakan ke nomor FTR-nya sendiri - itulah
+                   yang tersimpan di reff_doc jurnalnya. Dibatasi pada FTR yang memang
+                   pernah dibayar dari kas kecil. */
+                select a.no_ftr_cbd, a.tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, NULL no_kbon, a.no_ftr_cbd no_payment, a.curr
+                from (select no_ftr_cbd, MIN(tgl_ftr_cbd) tgl_ftr_cbd, MIN(supp) supp, MIN(no_po) no_po, MIN(tgl_po) tgl_po, MIN(no_pi) no_pi, MIN(curr) curr, sum(total) total from ftr_cbd GROUP BY no_ftr_cbd) a
+                where a.no_ftr_cbd in (select no_reff from c_petty_cashout_det where type_pv = 'FTR-CBD')
+                UNION
+                select a.no_ftr_dp, a.tgl_ftr_dp, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, NULL no_kbon, a.no_ftr_dp no_payment, a.curr
+                from (select no_ftr_dp, MIN(tgl_ftr_dp) tgl_ftr_dp, MIN(supp) supp, MIN(no_po) no_po, MIN(tgl_po) tgl_po, MIN(no_pi) no_pi, MIN(curr) curr, sum(dp_value) total from ftr_dp GROUP BY no_ftr_dp) a
+                where a.no_ftr_dp in (select no_reff from c_petty_cashout_det where type_pv = 'FTR-DP')
+                order by no_payment asc) b on b.no_payment = a.reff_doc order by tgl_journal asc) a
             ) a 
 #total Deduction By PO Before
 LEFT JOIN (
@@ -405,7 +435,9 @@ LEFT JOIN (select * from (select reff_doc, curr, sum((credit - debit)) tot_gm_oc
             ELSE
             reff_doc
             END no_ftr, IF(no_ftr_cbd is null,'-',tgl_ftr_cbd) tgl_ftr, no_pi, IF(reff_doc LIKE '%KKK%',reff_doc,no_po) no_po, tgl_po, profit_center, nama_supp supp, no_journal no_bankout, tgl_journal tgl_bankout, debit saldo_awal, debit_idr saldo_awal_idr,0 addition, 0 addition_idr, a.curr, rate, no_coa, coa, deskripsi from (select profit_center, nama_supp, no_coa, coa, no_journal, tgl_journal,reff_bk, reff_pv, CASE
-                WHEN reff_bk not like '%PV%' THEN
+                WHEN reff_bk like 'FTR/%' THEN
+                    reff_bk
+                    WHEN reff_bk not like '%PV%' THEN
                 CONCAT(no_coa,no_journal)
                 ELSE
                 CASE
@@ -417,9 +449,22 @@ LEFT JOIN (select * from (select reff_doc, curr, sum((credit - debit)) tot_gm_oc
                 END reff_doc, curr, debit, rate, debit_idr, deskripsi
                 from (select a.profit_center, a.nama_supp, no_coa, a.coa, no_journal, tgl_journal,a.reff_doc reff_bk, upper(b.reff_doc) reff_pv, curr, debit, rate, debit_idr,deskripsi from (select a.profit_center, no_journal, tgl_journal, no_coa , CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from b_bankout_h where stat_rpt is null and status != 'Cancel' GROUP BY no_bankout) b on b.no_bankout = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and no_journal like '%BK%' and tgl_journal < '$start_date' GROUP BY no_journal, no_coa, reff_doc
                     UNION
-                    select a.profit_center, no_journal, tgl_journal, no_coa, CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from c_petty_cashout_h where reff = 'Advance') b on b.no_pco = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and no_journal like '%KKK%' and tgl_journal < '$start_date' GROUP BY no_journal, no_coa, reff_doc ORDER BY tgl_journal asc) a LEFT JOIN (select a.coa, b.nama_coa, a.no_pv, a.reff_doc, sum(a.amount) amount from tbl_pv a INNER JOIN mastercoa_v2 b on b.no_coa = a.coa where nama_coa like '%UANG MUKA PEMBELIAN%' GROUP BY no_pv, coa) b on b.no_pv = a.reff_doc and b.coa = a.no_coa) a) a left join (select a.no_ftr_cbd, a.tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, c.no_payment, a.curr from (select no_ftr_cbd, tgl_ftr_cbd, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_cbd GROUP BY no_ftr_cbd) a INNER JOIN kontrabon_cbd b on b.no_cbd = a.no_ftr_cbd INNER JOIN list_payment_cbd c on c.no_kbon = b.no_kbon GROUP BY no_ftr_cbd
+                    select a.profit_center, no_journal, tgl_journal, no_coa, CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from c_petty_cashout_h where reff IN ('Advance','FTR (CBD / DP)')) b on b.no_pco = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and no_journal like '%KKK%' and tgl_journal < '$start_date' GROUP BY no_journal, no_coa, reff_doc ORDER BY tgl_journal asc) a LEFT JOIN (select a.coa, b.nama_coa, a.no_pv, a.reff_doc, sum(a.amount) amount from tbl_pv a INNER JOIN mastercoa_v2 b on b.no_coa = a.coa where nama_coa like '%UANG MUKA PEMBELIAN%' GROUP BY no_pv, coa) b on b.no_pv = a.reff_doc and b.coa = a.no_coa) a) a left join (select a.no_ftr_cbd, a.tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, c.no_payment, a.curr from (select no_ftr_cbd, tgl_ftr_cbd, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_cbd GROUP BY no_ftr_cbd) a INNER JOIN kontrabon_cbd b on b.no_cbd = a.no_ftr_cbd INNER JOIN list_payment_cbd c on c.no_kbon = b.no_kbon GROUP BY no_ftr_cbd
             UNION
-            select a.no_ftr_dp, a.tgl_ftr_dp, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, c.no_payment, a.curr from (select no_ftr_dp, tgl_ftr_dp, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_dp GROUP BY no_ftr_dp) a INNER JOIN kontrabon_dp b on b.no_dp = a.no_ftr_dp INNER JOIN list_payment_dp c on c.no_kbon = b.no_kbon GROUP BY no_ftr_dp order by no_payment asc) b on b.no_payment = a.reff_doc order by tgl_journal asc) a
+            select a.no_ftr_dp, a.tgl_ftr_dp, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, c.no_payment, a.curr from (select no_ftr_dp, tgl_ftr_dp, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_dp GROUP BY no_ftr_dp) a INNER JOIN kontrabon_dp b on b.no_dp = a.no_ftr_dp INNER JOIN list_payment_dp c on c.no_kbon = b.no_kbon GROUP BY no_ftr_dp
+                UNION
+                /* FTR yang dibayar LANGSUNG lewat Petty Cash Out: tidak punya Kontra Bon
+                   maupun List Payment, jadi dipetakan ke nomor FTR-nya sendiri - itulah
+                   yang tersimpan di reff_doc jurnalnya. Dibatasi pada FTR yang memang
+                   pernah dibayar dari kas kecil. */
+                select a.no_ftr_cbd, a.tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, NULL no_kbon, a.no_ftr_cbd no_payment, a.curr
+                from (select no_ftr_cbd, MIN(tgl_ftr_cbd) tgl_ftr_cbd, MIN(supp) supp, MIN(no_po) no_po, MIN(tgl_po) tgl_po, MIN(no_pi) no_pi, MIN(curr) curr, sum(total) total from ftr_cbd GROUP BY no_ftr_cbd) a
+                where a.no_ftr_cbd in (select no_reff from c_petty_cashout_det where type_pv = 'FTR-CBD')
+                UNION
+                select a.no_ftr_dp, a.tgl_ftr_dp, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, NULL no_kbon, a.no_ftr_dp no_payment, a.curr
+                from (select no_ftr_dp, MIN(tgl_ftr_dp) tgl_ftr_dp, MIN(supp) supp, MIN(no_po) no_po, MIN(tgl_po) tgl_po, MIN(no_pi) no_pi, MIN(curr) curr, sum(dp_value) total from ftr_dp GROUP BY no_ftr_dp) a
+                where a.no_ftr_dp in (select no_reff from c_petty_cashout_det where type_pv = 'FTR-DP')
+                order by no_payment asc) b on b.no_payment = a.reff_doc order by tgl_journal asc) a
 
         UNION
 #Pemasukan
@@ -429,7 +474,9 @@ LEFT JOIN (select * from (select reff_doc, curr, sum((credit - debit)) tot_gm_oc
             ELSE
             reff_doc
             END no_ftr, IF(no_ftr_cbd is null,'-',tgl_ftr_cbd) tgl_ftr, no_pi, IF(reff_doc LIKE '%KKK%',reff_doc,no_po) no_po, tgl_po, profit_center, nama_supp supp, no_journal no_bankout, tgl_journal tgl_bankout, 0 saldo_awal, 0 saldo_awal_idr,debit addition, debit_idr addition_idr, a.curr, rate, no_coa, coa, deskripsi from (select profit_center, nama_supp, no_coa, coa, no_journal, tgl_journal,reff_bk, reff_pv, CASE
-                WHEN reff_bk not like '%PV%' THEN
+                WHEN reff_bk like 'FTR/%' THEN
+                    reff_bk
+                    WHEN reff_bk not like '%PV%' THEN
                 CONCAT(no_coa,no_journal)
                 ELSE
                 CASE
@@ -441,9 +488,22 @@ LEFT JOIN (select * from (select reff_doc, curr, sum((credit - debit)) tot_gm_oc
                 END reff_doc, curr, debit, rate, debit_idr, deskripsi
                 from (select a.profit_center, a.nama_supp, no_coa, a.coa, no_journal, tgl_journal,a.reff_doc reff_bk, upper(b.reff_doc) reff_pv, curr, debit, rate, debit_idr, deskripsi from (select a.profit_center, no_journal, tgl_journal, no_coa, CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from b_bankout_h where stat_rpt is null and status != 'Cancel' GROUP BY no_bankout) b on b.no_bankout = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and no_journal like '%BK%' and tgl_journal BETWEEN '$start_date' and '$end_date' GROUP BY no_journal, no_coa, reff_doc 
                     UNION
-                    select a.profit_center, no_journal, tgl_journal, no_coa, CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from c_petty_cashout_h where reff = 'Advance') b on b.no_pco = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and no_journal like '%KKK%' and tgl_journal BETWEEN '$start_date' and '$end_date' GROUP BY no_journal, no_coa, reff_doc ORDER BY tgl_journal asc) a LEFT JOIN (select a.coa, b.nama_coa, a.no_pv, a.reff_doc, sum(a.amount) amount from tbl_pv a INNER JOIN mastercoa_v2 b on b.no_coa = a.coa where nama_coa like '%UANG MUKA PEMBELIAN%' GROUP BY no_pv, coa) b on b.no_pv = a.reff_doc and b.coa = a.no_coa) a) a left join (select a.no_ftr_cbd, a.tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, c.no_payment, a.curr from (select no_ftr_cbd, tgl_ftr_cbd, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_cbd GROUP BY no_ftr_cbd) a INNER JOIN kontrabon_cbd b on b.no_cbd = a.no_ftr_cbd INNER JOIN list_payment_cbd c on c.no_kbon = b.no_kbon GROUP BY no_ftr_cbd
+                    select a.profit_center, no_journal, tgl_journal, no_coa, CONCAT(no_coa,' - ',nama_coa) as coa, a.reff_doc, a.curr, a.rate, SUM(debit) debit, SUM(debit_idr) debit_idr, b.nama_supp, b.deskripsi from tbl_list_journal a INNER JOIN (select * from c_petty_cashout_h where reff IN ('Advance','FTR (CBD / DP)')) b on b.no_pco = a.no_journal where nama_coa like '%UANG MUKA PEMBELIAN%' and no_journal like '%KKK%' and tgl_journal BETWEEN '$start_date' and '$end_date' GROUP BY no_journal, no_coa, reff_doc ORDER BY tgl_journal asc) a LEFT JOIN (select a.coa, b.nama_coa, a.no_pv, a.reff_doc, sum(a.amount) amount from tbl_pv a INNER JOIN mastercoa_v2 b on b.no_coa = a.coa where nama_coa like '%UANG MUKA PEMBELIAN%' GROUP BY no_pv, coa) b on b.no_pv = a.reff_doc and b.coa = a.no_coa) a) a left join (select a.no_ftr_cbd, a.tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, c.no_payment, a.curr from (select no_ftr_cbd, tgl_ftr_cbd, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_cbd GROUP BY no_ftr_cbd) a INNER JOIN kontrabon_cbd b on b.no_cbd = a.no_ftr_cbd INNER JOIN list_payment_cbd c on c.no_kbon = b.no_kbon GROUP BY no_ftr_cbd
             UNION
-            select a.no_ftr_dp, a.tgl_ftr_dp, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, c.no_payment, a.curr from (select no_ftr_dp, tgl_ftr_dp, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_dp GROUP BY no_ftr_dp) a INNER JOIN kontrabon_dp b on b.no_dp = a.no_ftr_dp INNER JOIN list_payment_dp c on c.no_kbon = b.no_kbon GROUP BY no_ftr_dp order by no_payment asc) b on b.no_payment = a.reff_doc order by tgl_journal asc) a
+            select a.no_ftr_dp, a.tgl_ftr_dp, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, b.no_kbon, c.no_payment, a.curr from (select no_ftr_dp, tgl_ftr_dp, supp, no_po, tgl_po, no_pi, curr, sum(total) total from ftr_dp GROUP BY no_ftr_dp) a INNER JOIN kontrabon_dp b on b.no_dp = a.no_ftr_dp INNER JOIN list_payment_dp c on c.no_kbon = b.no_kbon GROUP BY no_ftr_dp
+                UNION
+                /* FTR yang dibayar LANGSUNG lewat Petty Cash Out: tidak punya Kontra Bon
+                   maupun List Payment, jadi dipetakan ke nomor FTR-nya sendiri - itulah
+                   yang tersimpan di reff_doc jurnalnya. Dibatasi pada FTR yang memang
+                   pernah dibayar dari kas kecil. */
+                select a.no_ftr_cbd, a.tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, NULL no_kbon, a.no_ftr_cbd no_payment, a.curr
+                from (select no_ftr_cbd, MIN(tgl_ftr_cbd) tgl_ftr_cbd, MIN(supp) supp, MIN(no_po) no_po, MIN(tgl_po) tgl_po, MIN(no_pi) no_pi, MIN(curr) curr, sum(total) total from ftr_cbd GROUP BY no_ftr_cbd) a
+                where a.no_ftr_cbd in (select no_reff from c_petty_cashout_det where type_pv = 'FTR-CBD')
+                UNION
+                select a.no_ftr_dp, a.tgl_ftr_dp, a.supp, a.no_po, a.tgl_po, a.no_pi, a.total, NULL no_kbon, a.no_ftr_dp no_payment, a.curr
+                from (select no_ftr_dp, MIN(tgl_ftr_dp) tgl_ftr_dp, MIN(supp) supp, MIN(no_po) no_po, MIN(tgl_po) tgl_po, MIN(no_pi) no_pi, MIN(curr) curr, sum(dp_value) total from ftr_dp GROUP BY no_ftr_dp) a
+                where a.no_ftr_dp in (select no_reff from c_petty_cashout_det where type_pv = 'FTR-DP')
+                order by no_payment asc) b on b.no_payment = a.reff_doc order by tgl_journal asc) a
         ) a 
 #total Deduction By PO Before
 LEFT JOIN (select no_po, kbon_date, curr, ded_bfr, IF(curr != 'IDR',round(ded_bfr * COALESCE(rate,1),2),ded_bfr) ded_bfr_idr from (select no_po, curr, dp_value ded_bfr, DATE_FORMAT(create_date, '%Y-%m-%d') kbon_date from kontrabon_h where dp_value > 0 and status != 'Cancel' and DATE_FORMAT(create_date, '%Y-%m-%d') < '$start_date' GROUP BY no_po) a left join (select tanggal, rate from masterrate where v_codecurr = 'PAJAK' GROUP BY tanggal) b on b.tanggal = a.kbon_date

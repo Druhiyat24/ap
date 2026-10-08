@@ -5,7 +5,7 @@ header('Content-Type: application/json');
 $action = $_POST['action'] ?? '';
 $list = $_POST['no_pengajuan'] ?? [];
 $approve_user = $_POST['approve_user'] ?? '';
-$approve_user_esc = mysqli_real_escape_string($conn1, $approve_user);
+$approve_user_esc = mysqli_real_escape_string($conn2, $approve_user);
 
 if (!is_array($list) || empty($list)) {
     echo json_encode(['success' => false, 'message' => 'Select at least 1 request']);
@@ -24,9 +24,10 @@ $journalEntries = 0;
 $journalWarnings = [];
 
 foreach ($list as $no_pengajuan) {
-    $no_pengajuan_esc = mysqli_real_escape_string($conn1, $no_pengajuan);
+    $no_pengajuan_esc = mysqli_real_escape_string($conn2, $no_pengajuan);
+    $gagalFatal = false;   // true = seluruh pengajuan ini dibatalkan
 
-    $check = mysqli_query($conn1, "SELECT status FROM update_bpb_fabric_h WHERE no_pengajuan = '$no_pengajuan_esc' LIMIT 1");
+    $check = mysqli_query($conn2, "SELECT status FROM update_bpb_fabric_h WHERE no_pengajuan = '$no_pengajuan_esc' LIMIT 1");
     $row = mysqli_fetch_assoc($check);
 
     if (!$row || in_array($row['status'], ['Approved', 'Cancel'])) {
@@ -34,58 +35,64 @@ foreach ($list as $no_pengajuan) {
         continue;
     }
 
+    /* Satu pengajuan = satu transaksi. Harga, jurnal balik, jurnal baru, dan
+       status pengajuan harus jadi bersama-sama atau batal bersama-sama. */
+    mysqli_begin_transaction($conn2);
+
     if ($action === 'approve') {
         // For each BPB touched by this request, reverse the old journal lines
         // and book corrected lines if the BPB has already been journaled.
-        $bpbRes = mysqli_query($conn1, "SELECT no_bpb,
-                SUM(qty * price_old) dpp_old,
-                SUM(qty * price_new) dpp_new,
-                SUM(qty * price_old * ppn_old / 100) ppn_old_amt,
-                SUM(qty * price_new * ppn_new / 100) ppn_new_amt
+        /* Cukup daftar BPB-nya. Nilai jurnal TIDAK diambil dari sini -
+           dihitung ulang dari tabel bpb/bppb setelah harganya dikoreksi,
+           supaya yang terbukukan persis sama dgn isi dokumennya. */
+        $bpbRes = mysqli_query($conn2, "SELECT DISTINCT no_bpb
             FROM update_bpb_fabric
-            WHERE no_pengajuan = '$no_pengajuan_esc'
-            GROUP BY no_bpb");
+            WHERE no_pengajuan = '$no_pengajuan_esc'");
 
         while ($bpbRow = mysqli_fetch_assoc($bpbRes)) {
             $no_bpb = $bpbRow['no_bpb'];
-            $no_bpb_esc = mysqli_real_escape_string($conn1, $no_bpb);
+            $no_bpb_esc = mysqli_real_escape_string($conn2, $no_bpb);
 
             // Detect whether this no_bpb is a Penerimaan (GK/IN, whs_inmaterial_fabric)
             // or a Pengeluaran (GK/RO, whs_bppb_h) document - same draft table,
             // same approve flow, different source/master tables to update.
-            $headerCheck = mysqli_query($conn1, "SELECT 1 FROM whs_inmaterial_fabric WHERE no_dok = '$no_bpb_esc' LIMIT 1");
+            $headerCheck = mysqli_query($conn2, "SELECT 1 FROM whs_inmaterial_fabric WHERE no_dok = '$no_bpb_esc' LIMIT 1");
             $isPenerimaan = $headerCheck && mysqli_num_rows($headerCheck) > 0;
 
             // Apply the new price/PPN to the source records regardless of
             // journal status, so the BPB always reflects the corrected values.
             if ($isPenerimaan) {
-                mysqli_query($conn1, "UPDATE bpb a
+                $okbpb = mysqli_query($conn2, "UPDATE bpb a
                     INNER JOIN (SELECT no_bpb, id_jo, id_item, price_new, ppn_new FROM update_bpb_fabric WHERE no_pengajuan = '$no_pengajuan_esc' AND no_bpb = '$no_bpb_esc') b
                         ON b.no_bpb = a.bpbno_int AND b.id_jo = a.id_jo AND b.id_item = a.id_item
                     SET a.price = b.price_new, a.ppn = b.ppn_new");
+                if (!$okbpb) { $gagalFatal = true; $journalWarnings[] = "$no_bpb: gagal menulis harga ke bpb"; }
 
-                mysqli_query($conn1, "UPDATE whs_inmaterial_fabric_det a
+                $okwhs_inmaterial_fabric_det = mysqli_query($conn2, "UPDATE whs_inmaterial_fabric_det a
                     INNER JOIN (SELECT no_bpb, id_jo, id_item, price_new, ppn_new FROM update_bpb_fabric WHERE no_pengajuan = '$no_pengajuan_esc' AND no_bpb = '$no_bpb_esc') b
                         ON b.no_bpb = a.no_dok AND b.id_jo = a.id_jo AND b.id_item = a.id_item
                     SET a.price = b.price_new, a.ppn = b.ppn_new");
+                if (!$okwhs_inmaterial_fabric_det) { $gagalFatal = true; $journalWarnings[] = "$no_bpb: gagal menulis harga ke whs_inmaterial_fabric_det"; }
 
                 // Only already-journaled BPBs (status bpb = Approved) have
                 // tbl_list_journal rows that need a reversal/correction.
-                $statusCheck = mysqli_query($conn1, "SELECT status FROM whs_inmaterial_fabric WHERE no_dok = '$no_bpb_esc' LIMIT 1");
+                $statusCheck = mysqli_query($conn2, "SELECT status FROM whs_inmaterial_fabric WHERE no_dok = '$no_bpb_esc' LIMIT 1");
             } else {
-                mysqli_query($conn1, "UPDATE bppb a
+                $okbppb = mysqli_query($conn2, "UPDATE bppb a
                     INNER JOIN (SELECT no_bpb, id_jo, id_item, price_new, ppn_new FROM update_bpb_fabric WHERE no_pengajuan = '$no_pengajuan_esc' AND no_bpb = '$no_bpb_esc') b
                         ON b.no_bpb = a.bppbno_int AND b.id_jo = a.id_jo AND b.id_item = a.id_item
                     SET a.price = b.price_new, a.ppn = b.ppn_new");
+                if (!$okbppb) { $gagalFatal = true; $journalWarnings[] = "$no_bpb: gagal menulis harga ke bppb"; }
 
-                mysqli_query($conn1, "UPDATE whs_bppb_ro a
+                $okwhs_bppb_ro = mysqli_query($conn2, "UPDATE whs_bppb_ro a
                     INNER JOIN (SELECT no_bpb, id_jo, id_item, price_new, ppn_new FROM update_bpb_fabric WHERE no_pengajuan = '$no_pengajuan_esc' AND no_bpb = '$no_bpb_esc') b
                         ON b.no_bpb = a.no_bppb AND b.id_jo = a.id_jo AND b.id_item = a.id_item
                     SET a.price = b.price_new, a.ppn = b.ppn_new");
+                if (!$okwhs_bppb_ro) { $gagalFatal = true; $journalWarnings[] = "$no_bpb: gagal menulis harga ke whs_bppb_ro"; }
 
                 // Only already-journaled BPPBs (status bppb = Approved) have
                 // tbl_list_journal rows that need a reversal/correction.
-                $statusCheck = mysqli_query($conn1, "SELECT status FROM whs_bppb_h WHERE no_bppb = '$no_bpb_esc' LIMIT 1");
+                $statusCheck = mysqli_query($conn2, "SELECT status FROM whs_bppb_h WHERE no_bppb = '$no_bpb_esc' LIMIT 1");
             }
 
             $statusRow = mysqli_fetch_assoc($statusCheck);
@@ -104,6 +111,9 @@ foreach ($list as $no_pengajuan) {
 
             if (mysqli_query($conn2, $reverseSql)) {
                 $journalEntries += mysqli_affected_rows($conn2);
+            } else {
+                $gagalFatal = true;
+                $journalWarnings[] = "$no_bpb: jurnal balik GAGAL dibuat";
             }
 
             // The original (now-superseded) journal lines are no longer active -
@@ -155,6 +165,14 @@ foreach ($list as $no_pengajuan) {
                 $tgl_bpb_journal_col = 'bppbdate';
             }
 
+            if (!$journalData) {
+                /* Jurnal lamanya SUDAH dibalik di atas. Kalau sampai di sini
+                   datanya tidak terbaca, dokumen itu kehilangan jurnalnya -
+                   harus kelihatan, bukan lewat diam-diam. */
+                $gagalFatal = true;
+                $journalWarnings[] = "$no_bpb: data BPB tidak terbaca, jurnal baru TIDAK dibuat";
+            }
+
             if ($journalData) {
                 $supp             = $journalData['supplier'];
                 $id_supplier      = $journalData['id_supplier'];
@@ -164,9 +182,15 @@ foreach ($list as $no_pengajuan) {
                 $tax              = (float) $journalData['tax'];
                 $curr             = $journalData['curr'];
                 $username         = $journalData['username'];
-                $total            = (float) $journalData['total'];
-                $dpp              = (float) $journalData['dpp'];
-                $ppn              = (float) $journalData['ppn'];
+                $dpp              = round((float) $journalData['dpp'], 2);
+                $ppn              = round((float) $journalData['ppn'], 2);
+                /* TOTAL dihitung dari dpp + ppn yang SUDAH dibulatkan, bukan
+                   diambil dari SQL yang membulatkannya sendiri: ROUND(a+b) tidak
+                   selalu sama dgn ROUND(a)+ROUND(b), dan selisih satu sen itu
+                   membuat jurnalnya tidak balance (ketahuan di GK/IN/1225/00315,
+                   4 baris: kredit 8.209,61 vs debit 8.209,60). Dgn cara ini sisi
+                   kredit selalu sama persis dgn jumlah sisi debit. */
+                $total            = round($dpp + $ppn, 2);
                 $tgl_bpb_journal  = $journalData[$tgl_bpb_journal_col];
                 $dateinput_       = $journalData['dateinput'];
 
@@ -178,15 +202,24 @@ foreach ($list as $no_pengajuan) {
 
                 $rate = 1;
                 if ($curr !== 'IDR') {
+                    /* MATA UANGNYA WAJIB IKUT DISARING. Tanpa itu, begitu satu
+                       tanggal memuat lebih dari satu mata uang, kurs mana pun
+                       bisa terambil dan seluruh nilai IDR jurnal ikut salah. */
                     $tgl_bpb_journal_esc = mysqli_real_escape_string($conn2, $tgl_bpb_journal);
-                    $rateRes = mysqli_query($conn2, "SELECT ROUND(rate,2) rate FROM masterrate WHERE tanggal = '$tgl_bpb_journal_esc' AND v_codecurr = 'PAJAK'");
+                    $curr_esc = mysqli_real_escape_string($conn2, $curr);
+                    $rateRes = mysqli_query($conn2, "SELECT ROUND(rate,2) rate FROM masterrate WHERE tanggal = '$tgl_bpb_journal_esc' AND v_codecurr = 'PAJAK' AND curr = '$curr_esc' LIMIT 1");
                     $rateRow = $rateRes ? mysqli_fetch_assoc($rateRes) : null;
                     $rate = $rateRow ? (float) $rateRow['rate'] : 1;
+                    if (!$rateRow) {
+                        $journalWarnings[] = "$no_bpb: kurs $curr tanggal $tgl_bpb_journal tidak ketemu, dipakai 1";
+                    }
                 }
 
-                $idr_dpp = $dpp * $rate;
-                $idr_ppn = $ppn * $rate;
-                $idr_total = $total * $rate;
+                /* Nilai IDR diperlakukan sama: totalnya dijumlah dari dua sisi
+                   yang sudah dibulatkan, bukan dibulatkan sendiri. */
+                $idr_dpp = round($dpp * $rate, 2);
+                $idr_ppn = round($ppn * $rate, 2);
+                $idr_total = round($idr_dpp + $idr_ppn, 2);
 
                 $cust_ctg = in_array($id_supplier, ['342', '20', '19', '692', '17', '18']) ? 'Related' : 'Third';
 
@@ -267,6 +300,12 @@ foreach ($list as $no_pengajuan) {
                 $no_coa_deb = $coaDeb ? $coaDeb['no_coa'] : '-';
                 $nama_coa_deb = $coaDeb ? $coaDeb['nama_coa'] : '-';
 
+                /* COA '-' tetap dibukukan supaya sisi lawannya tidak hilang dan
+                   jurnalnya tetap balance, tapi harus dilaporkan - baris ber-COA
+                   '-' tidak akan terbaca laporan mana pun. */
+                if (!$coaCre) { $journalWarnings[] = "$no_bpb: COA kredit tidak ketemu di mastercoa_v2"; }
+                if (!$coaDeb) { $journalWarnings[] = "$no_bpb: COA debit tidak ketemu di mastercoa_v2"; }
+
                 $journalTimestamp     = date('Y-m-d H:i:s');
                 $tgl_bpb_journal_esc  = mysqli_real_escape_string($conn2, $tgl_bpb_journal);
                 $curr_esc             = mysqli_real_escape_string($conn2, $curr);
@@ -300,12 +339,18 @@ foreach ($list as $no_pengajuan) {
                     (no_journal, tgl_journal, type_journal, no_coa, nama_coa, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, created_at, updated_at, profit_center)
                     VALUES ('$no_bpb_esc', '$tgl_bpb_journal_esc', '$type_journal', '$no_coa_cre_esc', '$nama_coa_cre_esc', '$curr_esc', $rate, $cre_debit, $cre_credit, $cre_debit_idr, $cre_credit_idr, 'Approved', '$description_esc', '$username_esc', '$dateinput_esc', '$approve_user_esc', '$journalTimestamp', '$journalTimestamp', '$journalTimestamp', 'NAG')")) {
                     $journalEntries += mysqli_affected_rows($conn2);
+                } else {
+                    $gagalFatal = true;
+                    $journalWarnings[] = "$no_bpb: baris kredit GAGAL dibukukan";
                 }
 
                 if (mysqli_query($conn2, "INSERT INTO tbl_list_journal
                     (no_journal, tgl_journal, type_journal, no_coa, nama_coa, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, created_at, updated_at, profit_center)
                     VALUES ('$no_bpb_esc', '$tgl_bpb_journal_esc', '$type_journal', '$no_coa_deb_esc', '$nama_coa_deb_esc', '$curr_esc', $rate, $deb_debit, $deb_credit, $deb_debit_idr, $deb_credit_idr, 'Approved', '$description_esc', '$username_esc', '$dateinput_esc', '$approve_user_esc', '$journalTimestamp', '$journalTimestamp', '$journalTimestamp', 'NAG')")) {
                     $journalEntries += mysqli_affected_rows($conn2);
+                } else {
+                    $gagalFatal = true;
+                    $journalWarnings[] = "$no_bpb: baris debit GAGAL dibukukan";
                 }
 
                 if ($tax >= 1) {
@@ -318,13 +363,33 @@ foreach ($list as $no_pengajuan) {
                         (no_journal, tgl_journal, type_journal, no_coa, nama_coa, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, created_at, updated_at, profit_center)
                         VALUES ('$no_bpb_esc', '$tgl_bpb_journal_esc', '$type_journal', '$no_coa_ppn_esc', '$nama_coa_ppn_esc', '$curr_esc', $rate, $ppn_debit, $ppn_credit, $ppn_debit_idr, $ppn_credit_idr, 'Approved', '$description_esc', '$username_esc', '$dateinput_esc', '$approve_user_esc', '$journalTimestamp', '$journalTimestamp', '$journalTimestamp', 'NAG')")) {
                         $journalEntries += mysqli_affected_rows($conn2);
+                    } else {
+                        $gagalFatal = true;
+                    $journalWarnings[] = "$no_bpb: baris PPN GAGAL dibukukan";
                     }
                 }
             }
         }
     }
 
-    mysqli_query($conn1, "UPDATE update_bpb_fabric_h SET status = '$newStatus' WHERE no_pengajuan = '$no_pengajuan_esc'");
+    if ($gagalFatal) {
+        /* Dibatalkan SELURUHNYA - termasuk harga yang sudah sempat ditulis.
+           Dokumennya dibiarkan belum di-approve supaya bisa diulang setelah
+           sebabnya dibereskan. */
+        mysqli_rollback($conn2);
+        $skipped++;
+        $journalWarnings[] = "$no_pengajuan: DIBATALKAN seluruhnya, tidak ada yang tersimpan";
+        continue;
+    }
+
+    if (!mysqli_query($conn2, "UPDATE update_bpb_fabric_h SET status = '$newStatus' WHERE no_pengajuan = '$no_pengajuan_esc'")) {
+        mysqli_rollback($conn2);
+        $skipped++;
+        $journalWarnings[] = "$no_pengajuan: gagal mengubah status, DIBATALKAN seluruhnya";
+        continue;
+    }
+
+    mysqli_commit($conn2);
     $updated++;
 }
 

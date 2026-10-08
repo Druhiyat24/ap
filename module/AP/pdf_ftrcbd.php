@@ -1,11 +1,14 @@
-<!DOCTYPE html>
 <?php
 include '../../conn/conn.php';
 $images = '../../images/img-01.png';
 $noftrcbd=$_GET['noftrcbd'];
-?>
 
-<?php
+/* Cara bayar diambil SEKALI di sini - dipakai dua kali di bawah: di blok
+   keterangan dan untuk menentukan isi kotak tanda tangan. Kolomnya baru, jadi
+   dokumen lama mengembalikan kosong dan cetakannya tetap seperti semula. */
+$rs_bayar = mysqli_fetch_assoc(mysqli_query($conn2,
+    "select payment_method from ftr_cbd where no_ftr_cbd = '" . mysqli_real_escape_string($conn2, $noftrcbd) . "' limit 1"));
+$payment_method = isset($rs_bayar['payment_method']) ? trim((string) $rs_bayar['payment_method']) : '';
 $sql= "select no_ftr_cbd, tgl_ftr_cbd,tgl_bayar, no_po, no_pi, tgl_po, supp, SUM(subtotal) as subtotal, SUM(tax) as tax, SUM(total) as total,biaya_tambahan, curr, create_user, status from ftr_cbd where no_ftr_cbd = '$noftrcbd' and status !='Cancel' GROUP BY no_po";
 
 $rs=mysqli_fetch_array(mysqli_query($conn2,$sql));
@@ -132,6 +135,10 @@ table {
     border-top: none;
     border-bottom: none;
 }
+.td2{
+    border:1px solid black;
+    border-top: none;
+}
 
 .header_title{
 
@@ -197,14 +204,15 @@ table {
 <table style="font-size:12px;">
 	<thead>
     <tr>
-      <th style="text-align:left;width: 30%;padding-top: -5px;">DATE CREATED :</th>
-      <th style="text-align:left;width: 30%;padding-top: -5px;">FTR CBD DATE :</th>
-      <th style="text-align:left;width: 40%;padding-top: -5px;">PAYMENT DATE :</th>                               
+      <th style="text-align:left;padding:4px 0 1px;width:25%;">DATE CREATED :</th>
+      <th style="text-align:left;padding:4px 0 1px;width:25%;">FTR CBD DATE :</th>
+      <th style="text-align:left;padding:4px 0 1px;width:25%;">PAYMENT DATE :</th>
+      <th style="text-align:left;padding:4px 0 1px;width:25%;">PAYMENT METHOD :</th>
     </tr>
 
 	<tbody>
 	<tr>  	      
-	<td style="text-align:left;padding-left: 25px;padding-top: -15px;padding-bottom: -10px;">
+	<td style="text-align:left;padding:0 0 7px 25px;">
       <?php
       $sql2 = mysqli_query($conn2,"select create_date from ftr_cbd where no_ftr_cbd = '$noftrcbd'");
       $rows2 = mysqli_fetch_array($sql2);
@@ -212,7 +220,7 @@ table {
 		echo date("d M Y", strtotime($create_date));
 		?>		
 	</td>
-	<td style="text-align:left;padding-left: 25px;padding-top: -15px;padding-bottom: -10px;">
+	<td style="text-align:left;padding:0 0 7px 25px;">
       <?php
       $sql3 = mysqli_query($conn2,"select tgl_ftr_cbd from ftr_cbd where no_ftr_cbd = '$noftrcbd'");
       $rows3 = mysqli_fetch_array($sql3);
@@ -220,7 +228,7 @@ table {
 		echo date("d M Y", strtotime($tglftrcbd));
 		?>		
 	</td>	
-	<td style="text-align:left;padding-left: 15px;padding-top: -15px;padding-bottom: -10px;">
+	<td style="text-align:left;padding:0 0 7px 25px;">
       <?php
       $sql4 = mysqli_query($conn2,"select tgl_bayar from ftr_cbd where no_ftr_cbd = '$noftrcbd'");
       $rows4 = mysqli_fetch_array($sql4);
@@ -231,7 +239,10 @@ table {
 			echo date("d M Y", strtotime($tgl_bayar));
       	}
 		?>		
-	</td>										      
+	</td>
+	<td style="text-align:left;padding:0 0 7px 25px;">
+		<?php echo $payment_method === '' ? '-' : htmlspecialchars($payment_method, ENT_QUOTES); ?>
+	</td>
 	</tr>
 </tbody>
 </table>
@@ -382,61 +393,42 @@ while($data=mysqli_fetch_array($query)){
 
 
 
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
+<div style="height:2.1cm"></div>
 
 
+	<?php
+	/* Pembayaran TUNAI melewati kasir dan diserahkan langsung ke penerimanya,
+	   jadi butuh dua tanda tangan tambahan yang tidak ada pada transfer:
+	   Cashier (yang mengeluarkan uang) dan Received By (yang menerima).
+	   Dokumen lama - yang payment_method-nya memang masih kosong karena kolom
+	   itu baru ada - tetap tercetak dgn tiga kolom seperti sebelumnya. */
+	$kolom_ttd = ($payment_method === 'Cash')
+	    ? array('Made By', 'Checked By', 'Approved By', 'Cashier', 'Received By')
+	    : array('Made By', 'Checked By', 'Approved By');
+	$lebar_ttd = ($payment_method === 'Cash') ? '100%' : '500';
+	?>
 	<div style="margin-bottom: 2.54cm; page-break-inside: avoid;">
-	<table style="page-break-inside:avoid;" cellpadding="0" cellspacing="0" border="1" width='500';>
-
-		<tr>	
-			<th style="font-size:12px">Made By : </th>
-			<th style="font-size:12px">Checked By : </th>
-			<th style="font-size:12px">Approved By : </th>
-	
+	<table style="page-break-inside:avoid;" cellpadding="0" cellspacing="0" border="1" width="<?php echo $lebar_ttd; ?>">
+		<tr>
+			<?php foreach ($kolom_ttd as $judul) { ?>
+			<th style="font-size:12px"><?php echo $judul; ?> : </th>
+			<?php } ?>
 		</tr>
-		<tr>	
+		<?php /* Empat baris kosong = ruang tanda tangan. Sengaja ditumpuk sbg
+		         baris, bukan satu sel ber-height: tinggi sel di mPDF tidak
+		         selalu dihormati, tinggi baris selalu. */ ?>
+		<?php for ($b = 0; $b < 4; $b++) { ?>
+		<tr>
+			<?php foreach ($kolom_ttd as $judul) { ?>
 			<td class="td1">&nbsp;</td>
-			<td class="td1">&nbsp;</td>
-			<td class="td1">&nbsp;</td>						
-		</tr>   
-		<tr>	
-			<td class="td1">&nbsp;</td>
-			<td class="td1">&nbsp;</td>
-			<td class="td1">&nbsp; </td>			
-		</tr>   
-		<tr>	
-			<td class="td1">&nbsp;</td>
-			<td class="td1">&nbsp;</td>
-			<td class="td1">&nbsp; </td>
-		</tr>   
-		<tr>	
-			<td class="td1">&nbsp;</td>
-			<td class="td1">&nbsp;</td>
-			<td class="td1">&nbsp; </td>
-		</tr>   
-		<tr>	
-			<td class="td1">&nbsp;</td>
-			<td class="td1">&nbsp;</td>
-			<td class="td1">&nbsp; </td>
-	
+			<?php } ?>
 		</tr>
-		<tr>	
-			<td style="font-size:12px;text-align:center;">&nbsp;&nbsp;&nbsp; </td>
-			<td style="font-size:12px;text-align:center">&nbsp;&nbsp;&nbsp; </td>
-			<td style="font-size:12px;text-align:center">&nbsp;&nbsp;&nbsp; </td>
-	
-	
-		</tr>				
-	
+		<?php } ?>
+		<tr>
+			<?php foreach ($kolom_ttd as $judul) { ?>
+			<td class="td2" style="font-size:12px;text-align:center;">&nbsp;&nbsp;&nbsp; </td>
+			<?php } ?>
+		</tr>
 		</table>
 	</div>
 

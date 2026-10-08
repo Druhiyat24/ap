@@ -34,8 +34,8 @@ $sql = mysqli_query($conn2,"select no_po, tgl_po, no_pi, supp, SUM(total) as tot
                             <td style="width:50px;text-align: right;" value="'.$row['dp_value'].'">'.number_format($row['dp_value'],2).'</td>
                             <td style="width:50px;text-align: right;" value="'.$row['balance'].'">'.number_format($row['balance'],2).'</td>                            
                        </tr>';
-            $table .= '</tbody>';
         }
+            $table .= '</tbody>';
             $table .= '</table>';
 
 echo $table;

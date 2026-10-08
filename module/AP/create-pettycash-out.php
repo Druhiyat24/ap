@@ -1,217 +1,49 @@
 <?php include '../header.php' ?>
 
-<style type="text/css">
-  label {
-    font-size: 14px;
-    ;
-  }
+<!-- Berkas CSS ditaut dgn penanda versi dari filemtime, jadi perubahan di
+     dalamnya langsung sampai ke user dan tidak tertahan cache.
 
-  input {
-    font-size: 14px;
-    ;
-  }
-
-
-  .tabcontent {
-    display: none;
-    animation: fadeEffect 0.3s;
-  }
-
-  @keyframes fadeEffect {
-    from {
-      opacity: 0;
-    }
-
-    to {
-      opacity: 1;
-    }
-  }
-
-  .tab-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 8px;
-    background: #f4f6f9;
-    border-radius: 10px;
-    border: 1px solid #ddd;
-  }
-
-  .tablinks {
-    border: none;
-    background: #ffffff;
-    color: #555;
-    padding: 8px 14px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  }
-
-  .tablinks:hover {
-    background: #007bff;
-    color: #fff;
-    transform: translateY(-1px);
-  }
-
-  .tablinks.active {
-    background: linear-gradient(135deg, #007bff, #0056b3);
-    color: #fff;
-    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.35);
-  }
-
-  table.dataTable th,
-  table.dataTable td {
-    white-space: nowrap;
-    vertical-align: middle;
-  }
-
-  .dataTables_scrollHeadInner,
-  .dataTables_scrollBody table {
-    width: 100% !important;
-  }
-
-  .select2-container .select2-selection--single {
-    height: calc(2.25rem + 2px);
-  }
-
-  .select2-container--default .select2-selection--single .select2-selection__rendered {
-    line-height: 2.25rem;
-  }
-
-  .select2-container--default .select2-selection--single .select2-selection__arrow {
-    height: calc(2.25rem + 2px);
-  }
-
-  .table-gradient th {
-    background: #1E3A8A;
-    color: #fff;
-    text-align: center;
-    vertical-align: middle;
-    white-space: nowrap;
-  }
-  .table-gradient2 th {
-    background: #3B82F6;
-    color: #fff;
-    text-align: center;
-    vertical-align: middle;
-    white-space: nowrap;
-  }
-
-
-  div.dataTables_wrapper .dataTables_paginate {
-    float: right;
-    margin-top: 10px;
-  }
-
-  div.dataTables_wrapper .dataTables_info {
-    float: left;
-    margin-top: 10px;
-  }
-
-  #mytablenone .form-control {
-    width: 100% !important;
-  }
-
-  #mytablenone .bootstrap-select {
-    width: 100% !important;
-  }
-
-  .total-box{
-    border:0;
-    border-radius:10px;
-    background:#fff;
-    box-shadow:0 2px 10px rgba(0,0,0,0.08);
-    overflow:hidden;
-    height:100%;
-    padding:0;
-  }
-
-  .total-box .total-box-header{
-    padding:12px 16px;
-    color:#fff;
-    font-weight:700;
-    font-size:14px;
-  }
-
-  .total-box.tone-nag .total-box-header{
-    background:linear-gradient(90deg, #5b7ba8, #7fa0c9);
-  }
-
-  .total-box.tone-nak .total-box-header{
-    background:linear-gradient(90deg, #4f8a6b, #74ad8f);
-  }
-
-  .total-box.tone-all .total-box-header{
-    background:linear-gradient(90deg, #4a5578, #6b7699);
-  }
-
-  .total-box .total-box-body{
-    padding:16px;
-    display:flex;
-    flex-direction:column;
-    gap:14px;
-  }
-
-  .total-stat{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-end;
-    padding-bottom:12px;
-    border-bottom:1px dashed #e5e5e5;
-  }
-
-  .total-stat:last-child{
-    border-bottom:0;
-    padding-bottom:0;
-  }
-
-  .total-stat-label{
-    font-size:12px;
-    font-weight:600;
-    color:#8a8a8a;
-    text-transform:uppercase;
-    letter-spacing:.03em;
-  }
-
-  .total-stat input.total-stat-value{
-    border:0;
-    background:transparent;
-    padding:0;
-    font-size:19px;
-    font-weight:700;
-    text-align:right;
-    width:auto;
-    max-width:100%;
-    height:auto;
-    color:#212529;
-  }
-</style>
+     Kosakata .pco- dipakai BERSAMA oleh halaman create dan kelima halaman
+     edit Petty Cash Out. Sebelumnya aturannya disalin di blok style
+     masing-masing halaman - enam salinan yang sudah mulai melenceng satu
+     dari yang lain. Ditaut hanya oleh halaman-halaman itu, bukan dari
+     header.php, supaya menu lain tidak ikut berubah tanpa diminta. -->
+<link rel="stylesheet" href="../css/app-pco-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-pco-form.css'); ?>">
 
 <!-- MAIN -->
-<div class="container-fluid mt-4 p-4">
-  <!-- Card Filter -->
-  <div class="card shadow border-0">
-    <div class="card-header text-white py-2 px-3"
-      style="background: linear-gradient(90deg, #191970, #1e90ff);">
-      <h5 class="mb-0"><i class="fas fa-edit"></i> FORM PETTY CASH OUT</h5>
-    </div>
+<div class="container-fluid mt-3 p-3">
+  <div class="pco-card">
+    <!-- Kepala kartu: kotak ikon + judul + jejak menu, mengikuti List
+         Memorial Journal. Pita gradien selebar kartu diganti ini supaya
+         warnanya jadi aksen, bukan latar - judulnya yang paling
+         menonjol. -->
+    <div class="pco-head">
+      <span class="pco-head-icon"><i class="fas fa-edit"></i></span>
+      <div>
+        <h1>Form Petty Cash Out</h1>
+        <span class="pco-crumb">AP &rsaquo; Petty Cash Out &rsaquo; Create</span>
+      </div>
+    </div><!-- /.pco-head -->
 
-    <!-- Card Table -->
-    <div class="card shadow border-0 mt-1">
-      <div class="card-body p-4">
-
+    <!-- Kartu dalam dinolkan bingkainya oleh app-pco-form.css: yang
+         membentuk kotak hanya .pco-card paling luar, supaya tidak tampak
+         kartu di dalam kartu. -->
+    <!-- Bilah tab berdiri di strip terang sendiri, susunan yang sama dgn
+         create Memorial Journal (.mjc-tabbar / .mjc-body): tab aktif jadi
+         pil PUTIH di atas track abu, bukan pil biru yang beradu dgn
+         kepala kartu biru tepat di atasnya. -->
+    <div class="pco-tabbar">
         <div class="tab-container">
-          <button class="tablinks active" onclick="openTab(event, 'pettyout_none')">None</button>
-          <button class="tablinks" onclick="openTab(event, 'pettyout_advance')">Advance</button>
-          <button class="tablinks" onclick="openTab(event, 'pettyout_settle')">Settlement</button>
-         <!--  <button class="tablinks" onclick="openTab(event, 'pettyout_lp')">List Payment</button> -->
-          <button class="tablinks" onclick="openTab(event, 'pettyout_pv')">Payment Voucher</button>
+          <button class="tablinks active" onclick="openTab(event, 'pettyout_none')"><i class="fa fa-pencil" aria-hidden="true"></i> None</button>
+          <button class="tablinks" onclick="openTab(event, 'pettyout_advance')"><i class="fa fa-hand-o-right" aria-hidden="true"></i> Advance</button>
+          <button class="tablinks" onclick="openTab(event, 'pettyout_settle')"><i class="fa fa-check-square-o" aria-hidden="true"></i> Settlement</button>
+         <!--  <button class="tablinks" onclick="openTab(event, 'pettyout_lp')"><i class="fa fa-list" aria-hidden="true"></i> List Payment</button> -->
+          <button class="tablinks" onclick="openTab(event, 'pettyout_pv')"><i class="fa fa-file-text-o" aria-hidden="true"></i> Payment Voucher</button>
+          <button class="tablinks" onclick="openTab(event, 'pettyout_ftr')"><i class="fa fa-exchange" aria-hidden="true"></i> FTR (CBD / DP)</button>
         </div>
+    </div><!-- /.pco-tabbar -->
 
-
+    <div class="pco-body">
         <div id="pettyout_none" class="tabcontent">
           <?php include 'petty-out/pettyout_none.php'; ?>
         </div>
@@ -232,23 +64,15 @@
           <?php include 'petty-out/pettyout_pv.php'; ?>
         </div>
 
-      </div>
-    </div>
+        <div id="pettyout_ftr" class="tabcontent">
+          <?php include 'petty-out/pettyout_ftr.php'; ?>
+        </div>
+
+    </div><!-- /.pco-body -->
   </div>
 
 
-  <style type="text/css">
-    table.dataTable th,
-    table.dataTable td {
-      white-space: nowrap;
-      vertical-align: middle;
-    }
-
-    .dataTables_scrollHeadInner,
-    .dataTables_scrollBody table {
-      width: 100% !important;
-    }
-  </style>
+  
 
 
 
@@ -257,12 +81,57 @@
   <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
   <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
-  <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
+  <!-- bootstrap-select TIDAK dimuat lagi: dropdown baris kini memakai
+       select2, lewat shim $.fn.selectpicker di bawah. -->
   <script language="JavaScript" src="../css/4.1.1/xlsx.full.min.js"></script>
   <script language="JavaScript" src="../css/4.1.1/html2pdf.bundle.min.js"></script>
   <script language="JavaScript" src="../css/4.1.1/exceljs.min.js"></script>
   <script language="JavaScript" src="../css/4.1.1/FileSaver.min.js"></script>
   <script language="JavaScript" src="../css/4.1.1/select2.min.js"></script>
+<script>
+/* ----------------------------------------------------------------------------
+   $.fn.selectpicker DIDEFINISIKAN ULANG DI ATAS select2.
+
+   Halaman ini tidak lagi memuat bootstrap-select. Dropdown di dalam baris
+   (COA / Profit Center / Cost Center / Currency) dulu memakainya, sementara
+   isian kepala memakai select2 - dua bentuk berbeda di satu halaman.
+
+   Seluruh pemanggilan lama (.selectpicker(), 'refresh', 'destroy') dibiarkan
+   apa adanya dan dialihkan ke select2 di sini, supaya tidak ada satu pun titik
+   pemanggilan yang perlu disunting - titik-titik itu yang memberi makan proses
+   simpan.
+
+   'refresh' sengaja destroy + init ulang: di bootstrap-select 'refresh' membaca
+   ulang daftar opsi, dan di select2 satu-satunya cara setara adalah membangun
+   ulang. Itu dipakai cascade Cost Center setelah opsinya diganti.
+
+   Elemen <select> aslinya tidak diubah select2 (hanya disembunyikan), jadi
+   name="...[]", .val(), dan .serialize() tetap sama persis.
+---------------------------------------------------------------------------- */
+(function ($) {
+  function opsiSelect2($el) {
+    var o = { width: '100%' };
+    /* Daftar pendek (mis. Currency) tidak perlu kotak cari. */
+    if ($el.find('option').length < 8) { o.minimumResultsForSearch = Infinity; }
+    /* Panel select2 menempel di <body>, jadi TIDAK terpotong .table-responsive
+       - masalah yang dulu harus ditambal untuk bootstrap-select. */
+    return o;
+  }
+  $.fn.selectpicker = function (perintah) {
+    return this.each(function () {
+      var $s = $(this);
+      var hidup = $s.hasClass('select2-hidden-accessible');
+      if (perintah === 'destroy') { if (hidup) { $s.select2('destroy'); } return; }
+      if (perintah === 'refresh') {
+        if (hidup) { $s.select2('destroy'); }
+        $s.select2(opsiSelect2($s));
+        return;
+      }
+      if (!hidup) { $s.select2(opsiSelect2($s)); }
+    });
+  };
+})(jQuery);
+</script>
   <script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
   <script language="JavaScript" src="../css/4.1.1/dataTables.fixedColumns.min"></script>
 
@@ -328,6 +197,28 @@
       });
 
       $('.selectpicker').selectpicker();
+      /* Menu dropdown selectpicker terpotong oleh pembungkus scroll
+         (.table-responsive). Bootstrap 4 hanya menyetel overflow-x: auto,
+         tapi menurut spesifikasi CSS kalau satu sumbu bukan 'visible' maka
+         sumbu lainnya ikut diperlakukan 'auto' - itulah yang memotongnya
+         secara tegak.
+
+         SENGAJA TIDAK memakai opsi container:'body' milik bootstrap-select:
+         opsi itu memicu galat internal plugin "Cannot read properties of
+         undefined (reading 'length')" saat menu dibuka. Catatan yang sama
+         ada di create_memorial_journal.php, tempat cara ini dipakai lebih
+         dulu.
+
+         Gantinya: overflow pembungkus dilepas HANYA selagi menu terbuka.
+         Didelegasikan ke document supaya baris baru dari addRow() /
+         InsertRow() ikut tertangani tanpa diikat ulang. */
+      $(document).on('show.bs.dropdown', '.table-responsive', function () {
+          $(this).css('overflow', 'visible');
+      });
+      $(document).on('hide.bs.dropdown', '.table-responsive', function () {
+          $(this).css({ 'overflow-x': 'auto', 'overflow-y': '' });
+      });
+
     });
   </script>
 
@@ -368,7 +259,7 @@
         autoclose: true
       });
       $('.select2').select2({
-        theme: 'bootstrap4'
+        width: '100%'
       });
 
     });
@@ -515,7 +406,7 @@ $.getJSON('get_coa_wajib_cc.php', function(data){
           autoclose: true
         });
         $('.select2').select2({
-          theme: 'bootstrap4'
+          width: '100%'
         });
       });
     }
@@ -1444,7 +1335,7 @@ $('#simpan1').on('click', function () {
           autoclose: true
         });
         $('.select2').select2({
-          theme: 'bootstrap4'
+          width: '100%'
         });
       });
     }
@@ -2399,7 +2290,7 @@ function UbahCostArc2(val) {
           autoclose: true
         });
         $('.select2').select2({
-          theme: 'bootstrap4'
+          width: '100%'
         });
       });
     }
@@ -5072,6 +4963,866 @@ $('#simpan5').on('click', function(){
   }
 
   doSavePv5();
+
+});
+
+//FTR CBD / DP (PETTY CASH)............................................................................
+// Dibangun dari blok Payment Voucher di atas - seluruh penanda bersuffix 5
+// diganti 6 supaya kedua tab bisa hidup bersamaan di satu halaman...
+
+let isManualAmountFTR6 = false;
+
+let tableFTR6;
+
+function initTableFTR6(){
+
+  if ($.fn.DataTable.isDataTable('#table-ftr6')) {
+    $('#table-ftr6').DataTable().destroy();
+  }
+
+  tableFTR6 = $('#table-ftr6').DataTable({
+    paging: true,
+    searching: true,
+    ordering: false,
+    info: false,
+    autoWidth: false,
+    responsive: true,
+    pageLength: 10,
+    lengthMenu: [10, 25, 50],
+    language: {
+      search: "Cari:",
+      lengthMenu: "Tampilkan _MENU_ data",
+      info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+      paginate: {
+        previous: "Prev",
+        next: "Next"
+      }
+    }
+  });
+
+}
+
+
+/* Nominal di ISIAN ditulis polos tanpa pemisah ribuan - "100985", bukan
+   "100,985". Pemisah ribuan membuat kursor melompat tiap kali angka disunting.
+   Dibulatkan 2 angka di belakang koma supaya sisa pembagian pecahan tidak
+   muncul sbg deretan angka panjang. */
+function angkaPolosFTR6(n){
+  let v = Math.round((parseFloat(n) || 0) * 100) / 100;
+  return v.toString();
+}
+
+$('#account6').on('change', function() {
+
+  let kode5 = $(this).find(':selected').data('kode6');
+  let pc5 = $(this).find(':selected').data('pc6');
+  let namapc5 = $(this).find(':selected').data('namapc6');
+
+  $('#profit_center_kas_show6').val(namapc5);
+  $('#profit_center_kas6').val(pc5);
+  $('#currency6').val('IDR');
+  $('#kode_kas6').val(kode5);
+  hitungTotalFTR6();
+
+});
+
+
+$('#btn_tarik_ftr6').on('click', function(){
+
+  let tgl_awal  = $('#tgl_filawal6').val();
+  let tgl_akhir = $('#tgl_filakhir6').val();
+  let supplier  = $('#nama_supp6').val();
+
+  if(tgl_awal == '' || tgl_akhir == ''){
+    Swal.fire('Warning','Tanggal harus diisi','warning');
+    return;
+  }
+
+  if(supplier == ''){
+    Swal.fire('Warning','Supplier harus dipilih','warning');
+    return;
+  }
+
+  $.ajax({
+    url: 'petty-out/get_ftr_ajax.php',
+    type: 'POST',
+    data: {
+      tgl_awal: tgl_awal,
+      tgl_akhir: tgl_akhir,
+      supplier: supplier,
+      fund_type: 'CASH' // Petty Cash Out cuma boleh tarik PV yang akunnya Kas Kecil, bukan Bank
+    },
+    beforeSend:function(){
+      Swal.fire({
+        title:'Loading...',
+        allowOutsideClick:false,
+        didOpen:()=>{ Swal.showLoading(); }
+      });
+    },
+    success:function(res){
+      if ($.fn.DataTable.isDataTable('#table-ftr6')) {
+        $('#table-ftr6').DataTable().clear().destroy();
+      }
+      $('#table-ftr6 tbody').html(res);
+      Swal.close();
+      initTableFTR6();
+    }
+  });
+
+});
+
+$('#table-ftr6').on('change', '.chk_ftr', function(){
+
+  let tr = $(this).closest('tr');
+
+  let total = parseFloat(tr.find('.total_ftr').data('total')) || 0;
+  let rate = parseFloat(tr.find('.rate_ftr').data('rateftr')) || 0;
+  let input = tr.find('.txt_amount_ftr');
+  let input_idr = tr.find('.txt_amount_ftr_idr');
+  let total_idr = total * rate;
+
+  if($(this).is(':checked')){
+
+    input.prop('disabled', false);
+    input.val(angkaPolosFTR6(total));
+    input_idr.prop('disabled', false);
+    input_idr.val(angkaPolosFTR6(total_idr));
+
+    // Auto-baca Account & Currency dari PV yang dicentang (nilai yang
+    // tersimpan waktu PV itu dibuat) - cuma kalau Account belum diisi,
+    // supaya user tetap bisa ubah manual kalau mau tanpa ketimpa lagi
+    // tiap centang baris lain.
+    if(!$('#account6').val()){
+      let pvAccount = tr.find('.no_ftr').data('account');
+      if(pvAccount && $('#account6 option[value="' + pvAccount + '"]').length){
+        $('#account6').val(pvAccount).trigger('change');
+      }
+    }
+
+    hitungTotalFTR6();
+
+  }else{
+
+    input.prop('disabled', true);
+    input.val('');
+
+    input_idr.prop('disabled', true);
+    input_idr.val('');
+
+    if($('#table-ftr6 .chk_ftr:checked').length === 0){
+
+      // RESET HEADER
+      $('#amount_kas6').val('');
+      isManualAmountFTR6 = false;
+
+      resetTotalFTR6();
+
+    }else{
+      hitungTotalFTR6();
+    }
+
+  }
+
+});
+
+$('#table-ftr6').on('keyup', '.txt_amount_ftr', function(){
+
+  let tr = $(this).closest('tr');
+
+  let max  = parseFloat(tr.find('.total_ftr').data('total')) || 0;
+  let rate = parseFloat(tr.find('.rate_ftr').data('rateftr')) || 0;
+
+  let val = $(this).val().replace(/,/g,'');
+  val = parseFloat(val) || 0;
+
+  if(val > max){
+    Swal.fire('Warning','Amount tidak boleh lebih dari Total','warning');
+    val = max;
+  }
+
+  $(this).val(angkaPolosFTR6(val));
+
+  let val_idr = val * rate;
+
+  tr.find('.txt_amount_ftr_idr').val(angkaPolosFTR6(val_idr));
+
+  hitungTotalFTR6();
+
+});
+
+
+$('#table-ftr6').on('keyup', '.txt_amount_ftr_idr', function(){
+
+  let tr = $(this).closest('tr');
+
+  let max  = parseFloat(tr.find('.total_ftr').data('total')) || 0;
+  let rate = parseFloat(tr.find('.rate_ftr').data('rateftr')) || 0;
+
+  let val_idr = $(this).val().replace(/,/g,'');
+  val_idr = parseFloat(val_idr) || 0;
+
+  let val = rate > 0 ? val_idr / rate : 0;
+
+  if(val > max){
+    Swal.fire('Warning','Amount tidak boleh lebih dari Total','warning');
+    val = max;
+    val_idr = val * rate;
+  }
+
+  tr.find('.txt_amount_ftr').val(angkaPolosFTR6(val));
+  $(this).val(angkaPolosFTR6(val_idr));
+
+  hitungTotalFTR6();
+
+});
+
+
+$('#amount_kas6').on('keyup change', function(){
+  isManualAmountFTR6 = true;
+  hitungTotalFTR6();
+});
+
+
+$(document).on('change', '.prof_ctr6', function() {
+  const selectedProfCtr = $(this).val();
+  const row = $(this).closest('tr');
+  const selectedCoa = row.find('select.no_coa6').val() || '-';
+  updateCostCenter5(selectedProfCtr, selectedCoa, row);
+});
+
+$(document).on('change', '.no_coa6', function() {
+  const selectedCoa = $(this).val();
+  const row = $(this).closest('tr');
+  const selectedProfCtr = row.find('select.prof_ctr6').val() || '-';
+  updateCostCenter5(selectedProfCtr, selectedCoa, row);
+});
+
+function updateCostCenter5(profCtr, noCoa, row) {
+  const costCtrDropdown = $(row).find('.cost_ctr6');
+
+  costCtrDropdown.selectpicker('destroy');
+  costCtrDropdown.empty();
+  costCtrDropdown.append('<option value="-"> - </option>');
+  costCtrDropdown.selectpicker();
+
+  if (profCtr && profCtr !== '-') {
+    $.ajax({
+      url: 'getCostCenter.php',
+      type: 'POST',
+      data: {
+        prof_ctr: profCtr,
+        no_coa: noCoa
+      },
+      dataType: 'json',
+      success: function(response) {
+        if (response && response.length > 0) {
+          $.each(response, function(index, costCtr) {
+            costCtrDropdown.append(
+              `<option value="${costCtr.value}">${costCtr.text}</option>`
+            );
+          });
+          costCtrDropdown.selectpicker('refresh');
+        } else {
+          costCtrDropdown.selectpicker('refresh');
+        }
+      },
+      error: function(xhr, status, error) {
+        console.error('AJAX Error:', status, error);
+      }
+    });
+  } else {
+    costCtrDropdown.selectpicker('refresh');
+  }
+}
+
+
+function addRow6(tableID) {
+
+  var table = document.getElementById(tableID);
+  var rowCount = table.rows.length;
+  var row = table.insertRow(rowCount);
+
+  var element = `
+<tr>
+<td><input type="checkbox" id="select5" name="select5[]" value="" checked disabled></td>
+
+<td >
+<select class="form-control selectpicker no_coa6" name="nomor_coa5[]" data-live-search="true" data-width="100%" data-size="5">
+<option value="-">-</option>
+<?php
+$sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa,' ',nama_coa) as coa from mastercoa_v2");
+foreach ($sql as $coa) : ?>
+<option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?></option>
+<?php endforeach; ?>
+</select>
+</td>
+
+<td>
+<select class="form-control selectpicker prof_ctr6" name="prof_ctr6[]" data-live-search="true" data-width="100%">
+<option value="-"> - </option>
+<?php
+$sql3 = mysqli_query($conn1, "select kode_pc,id_pc,nama_pc,CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status='Active'");
+foreach ($sql3 as $fc) : ?>
+<option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option>
+<?php endforeach; ?>
+</select>
+</td>
+
+<td>
+<select class="form-control selectpicker cost_ctr6" name="cost_ctr6[]" data-live-search="true" data-width="100%">
+<option value="-"> - </option>
+</select>
+</td>
+
+<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="no_reff6[]" autocomplete="off"></td>
+
+<td><input style="font-size:12px;width:100%" type="text" class="form-control tanggal" name="reff_date6[]" autocomplete="off"></td>
+
+<td>
+<select class="form-control selectpicker currenc6" name="currenc6[]">
+<option value="IDR">IDR</option>
+</select>
+</td>
+
+<td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_amount6[]" oninput="modal_input_amt5(this)" autocomplete="off"></td>
+
+<td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_credit6[]" oninput="modal_input_cre5(this)" autocomplete="off"></td>
+
+<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="keterangan6[]" autocomplete="off"></td>
+
+<td><input name="chk_a5[]" type="checkbox" class="checkall_a5"></td>
+
+</tr>
+`;
+
+  row.innerHTML = element;
+
+  $('.selectpicker').selectpicker('refresh');
+  $('.tanggal').datepicker({ format: "dd-mm-yyyy", autoclose: true });
+
+  var headerPC = $('#profit_center_kas6').val();
+  if (headerPC) {
+    $(row).find('.prof_ctr6').val(headerPC);
+    $(row).find('.prof_ctr6').selectpicker('refresh');
+  }
+
+}
+
+
+function deleteRow6(tableID) {
+
+  try {
+
+    var table = document.getElementById(tableID);
+    var rowCount = table.rows.length;
+    var deleted = false;
+
+    for (var i = rowCount - 1; i >= 0; i--) {
+
+      var row = table.rows[i];
+      var chkbox = row.querySelector('input[name="chk_a5[]"]');
+
+      if (chkbox && chkbox.checked) {
+
+        table.deleteRow(i);
+        deleted = true;
+        rowCount--;
+
+      }
+
+    }
+
+    if (!deleted) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Warning',
+        text: 'Silahkan ceklis baris yang ingin dihapus'
+      });
+    }
+
+    $('.selectpicker').selectpicker('refresh');
+
+  } catch (e) {
+
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: e.message
+    });
+
+  }
+
+}
+
+
+function InsertRow6(tableID) {
+
+  try {
+
+    var table = document.getElementById(tableID);
+    var rowCount = table.rows.length;
+    var inserted = false;
+
+    for (var i = rowCount - 1; i >= 0; i--) {
+
+      var row = table.rows[i];
+      var chkbox = row.querySelector('input[name="chk_a5[]"]');
+
+      if (chkbox && chkbox.checked) {
+
+        var element2 = `
+<tr>
+<td><input type="checkbox" id="select5" name="select5[]" value="" checked disabled></td>
+
+<td >
+<select class="form-control selectpicker no_coa6" name="nomor_coa5[]" data-live-search="true" data-width="100%" data-size="5">
+<option value="-">-</option>
+<?php
+$sql = mysqli_query($conn1, "select no_coa as id_coa, concat(no_coa,' ',nama_coa) as coa from mastercoa_v2");
+foreach ($sql as $coa) : ?>
+<option value="<?= $coa["id_coa"]; ?>"><?= $coa["coa"]; ?></option>
+<?php endforeach; ?>
+</select>
+</td>
+
+<td>
+<select class="form-control selectpicker prof_ctr6" name="prof_ctr6[]" data-live-search="true" data-width="100%">
+<option value="-"> - </option>
+<?php
+$sql3 = mysqli_query($conn1, "select kode_pc,id_pc,nama_pc,CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status='Active'");
+foreach ($sql3 as $fc) : ?>
+<option value="<?= $fc['kode_pc']; ?>"><?= $fc['tampil']; ?></option>
+<?php endforeach; ?>
+</select>
+</td>
+
+<td>
+<select class="form-control selectpicker cost_ctr6" name="cost_ctr6[]" data-live-search="true" data-width="100%">
+<option value="-"> - </option>
+</select>
+</td>
+
+<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="no_reff6[]" autocomplete="off"></td>
+
+<td><input style="font-size:12px;width:100%" type="text" class="form-control tanggal" name="reff_date6[]" autocomplete="off"></td>
+
+<td>
+<select class="form-control selectpicker currenc6" name="currenc6[]">
+<option value="IDR">IDR</option>
+</select>
+</td>
+
+<td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_amount6[]" oninput="modal_input_amt5(this)" autocomplete="off"></td>
+
+<td><input style="text-align:right;width:100%" type="number" min="1" class="form-control" name="txt_credit6[]" oninput="modal_input_cre5(this)" autocomplete="off"></td>
+
+<td><input style="font-size:12px;width:100%" type="text" class="form-control" name="keterangan6[]" autocomplete="off"></td>
+
+<td><input name="chk_a5[]" type="checkbox" class="checkall_a5"></td>
+
+</tr>
+`;
+
+        var newRow = table.insertRow(i + 1);
+        newRow.innerHTML = element2;
+
+        inserted = true;
+
+        var headerPC = $('#profit_center_kas6').val();
+        if (headerPC) {
+          $(newRow).find('.prof_ctr6').val(headerPC);
+          $(newRow).find('.prof_ctr6').selectpicker('refresh');
+        }
+
+      }
+
+    }
+
+    if (!inserted) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Warning',
+        text: 'Silahkan ceklis baris yang ingin disisipkan'
+      });
+    }
+
+    $('.selectpicker').selectpicker('refresh');
+    $('.tanggal').datepicker({ format: "dd-mm-yyyy", autoclose: true });
+
+  } catch (e) {
+
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: e.message
+    });
+
+  }
+
+}
+
+
+function modal_input_amt5(el){
+
+  let row = $(el).closest('tr');
+
+  let debit  = parseFloat($(el).val()) || 0;
+  let creditInput = row.find('input[name="txt_credit6[]"]');
+
+  if(debit > 0){
+    creditInput.val(0);
+    creditInput.prop('readonly',true);
+  }else{
+    creditInput.prop('readonly',false);
+  }
+
+  hitungTotalFTR6();
+
+}
+
+
+function modal_input_cre5(el){
+
+  let row = $(el).closest('tr');
+
+  let credit = parseFloat($(el).val()) || 0;
+  let debitInput = row.find('input[name="txt_amount6[]"]');
+
+  if(credit > 0){
+    debitInput.val(0);
+    debitInput.prop('readonly',true);
+  }else{
+    debitInput.prop('readonly',false);
+  }
+
+  hitungTotalFTR6();
+
+}
+
+
+function resetTotalFTR6(){
+  $('#tot_debit_nag_ftr6, #tot_debit_nak_ftr6, #tot_debit_ftr6').val('');
+  $('#tot_credit_nag_ftr6, #tot_credit_nak_ftr6, #tot_credit_ftr6').val('');
+}
+
+
+function hitungTotalFTR6(){
+
+  let total_ftr = 0;
+
+  let nag_debit = 0;
+  let nak_debit = 0;
+
+  let nag_credit = 0;
+  let nak_credit = 0;
+
+  let curr_h = 'IDR';
+
+  // Dihitung di sini, SEBELUM perulangan: dipakai baris FTR maupun sisi kas.
+  let header_pc = ($('#profit_center_kas6').val() || '').trim().toUpperCase();
+
+  $('#table-ftr6 .chk_ftr:checked').each(function(){
+
+    let tr = $(this).closest('tr');
+
+    let val = getNumber(tr.find('.txt_amount_ftr').val());
+    let val_idr = getNumber(tr.find('.txt_amount_ftr_idr').val());
+
+    // Profit center dokumennya sendiri. Dokumen lama belum punya (kolomnya
+    // baru 02 Okt 2026), jadi mundur ke profit center akun kas yang membayar -
+    // aturan yang sama dipakai save_ftr_cash.php saat menulis jurnalnya.
+    let pc_baris = (tr.find('.pc_ftr').data('pcftr') || '').toString().trim().toUpperCase();
+    let pc = pc_baris !== '' ? pc_baris : header_pc;
+
+    if (curr_h == 'IDR') {
+      total_ftr += val_idr;
+    }else{
+      total_ftr += val;
+    }
+
+    if(pc === 'NAG'){
+      nag_debit += val_idr;
+    }else if(pc === 'NAK'){
+      nak_debit += val_idr;
+    }
+
+  });
+
+  let header_amount = total_ftr;
+
+  if(!isManualAmountFTR6){
+    $('#amount_kas6').val(angkaPolosFTR6(header_amount));
+  }
+
+  let header_amount_idr = isManualAmountFTR6 ? getNumber($('#amount_kas6').val()) : total_ftr;
+
+  if(header_pc === 'NAG'){
+    nag_credit += header_amount_idr;
+  }else if(header_pc === 'NAK'){
+    nak_credit += header_amount_idr;
+  }
+
+  $('#tbody6 tr').each(function(){
+
+    let tr = $(this);
+
+    let pc = (tr.find('select.prof_ctr6').first().val() || '').trim().toUpperCase();
+
+    let debit  = getNumber(tr.find('input[name="txt_amount6[]"]').val());
+    let credit = getNumber(tr.find('input[name="txt_credit6[]"]').val());
+
+    if(pc === 'NAG'){
+      nag_debit  += debit;
+      nag_credit += credit;
+    }else if(pc === 'NAK'){
+      nak_debit  += debit;
+      nak_credit += credit;
+    }
+
+  });
+
+  let grand_debit  = nag_debit + nak_debit;
+  let grand_credit = nag_credit + nak_credit;
+
+  $('#tot_debit_nag_ftr6').val(nag_debit.toLocaleString('en-US'));
+  $('#tot_debit_nak_ftr6').val(nak_debit.toLocaleString('en-US'));
+  $('#tot_debit_ftr6').val(grand_debit.toLocaleString('en-US'));
+
+  $('#tot_credit_nag_ftr6').val(nag_credit.toLocaleString('en-US'));
+  $('#tot_credit_nak_ftr6').val(nak_credit.toLocaleString('en-US'));
+  $('#tot_credit_ftr6').val(grand_credit.toLocaleString('en-US'));
+
+}
+
+
+$('#simpan6').on('click', function(){
+
+  let header = {
+    ref        : $('#ref_num6').val(),
+    tgl        : $('#tgl_active6').val(),
+    supp       : $('#nama_supp6').val(),
+    account    : $('#account6').val(),
+    currency   : $('#currency6').val(),
+    kode_kas   : $('#kode_kas6').val(),
+    pc_header  : $('#profit_center_kas6').val(),
+    amount     : getNumber($('#amount_kas6').val()),
+    desc       : $('#pesan6').val(),
+    cash_flow  : $('#cash_flow6').val()
+  };
+
+  if(!header.tgl){
+    Swal.fire('Warning','Tanggal wajib diisi','warning');
+    return;
+  }
+
+  if(!header.supp){
+    Swal.fire('Warning','Supplier wajib diisi','warning');
+    return;
+  }
+
+  if(!header.account){
+    Swal.fire('Warning','Account belum terisi','warning');
+    return;
+  }
+
+  if(!header.desc || !header.desc.trim()){
+    Swal.fire('Warning','Description tidak boleh kosong','warning');
+    return;
+  }
+
+  if(!header.cash_flow){
+    Swal.fire('Warning','Cash Flow Category tidak boleh kosong','warning');
+    return;
+  }
+
+  if(header.amount <= 0){
+    Swal.fire('Warning','Amount tidak boleh 0','warning');
+    return;
+  }
+
+  if($('#table-ftr6 .chk_ftr:checked').length === 0){
+    Swal.fire('Warning','Pilih minimal 1 Payment Voucher','warning');
+    return;
+  }
+
+  let total_debit  = getNumber($('#tot_debit_ftr6').val());
+  let total_credit = getNumber($('#tot_credit_ftr6').val());
+
+  if(total_debit !== total_credit){
+    Swal.fire('Error','Total Debit & Credit tidak balance','error');
+    return;
+  }
+
+  let nag_debit  = getNumber($('#tot_debit_nag_ftr6').val());
+  let nag_credit = getNumber($('#tot_credit_nag_ftr6').val());
+
+  let nak_debit  = getNumber($('#tot_debit_nak_ftr6').val());
+  let nak_credit = getNumber($('#tot_credit_nak_ftr6').val());
+
+  if(nag_debit !== nag_credit){
+    Swal.fire('Error','NAG tidak balance','error');
+    return;
+  }
+
+  if(nak_debit !== nak_credit){
+    Swal.fire('Error','NAK tidak balance','error');
+    return;
+  }
+
+  let detail_ftr = [];
+
+  $('#table-ftr6 .chk_ftr:checked').each(function(){
+
+    let tr = $(this).closest('tr');
+
+    let data = {
+      no_ftr  : tr.find('.no_ftr').data('noftr'),
+      type_pv : tr.find('.no_ftr').data('typeftr'),
+      amount  : getNumber(tr.find('.txt_amount_ftr').val()),
+      rate    : parseFloat(tr.find('.rate_ftr').data('rateftr')) || 1
+    };
+
+    detail_ftr.push(data);
+
+  });
+
+  let detail_adjust = [];
+  let valid_adjust = true;
+
+  $('#tbody6 tr').each(function(index){
+
+    let tr = $(this);
+
+    let coa   = tr.find('select.no_coa6').first().val();
+    let pc    = tr.find('select.prof_ctr6').first().val();
+    let cc    = tr.find('select.cost_ctr6').first().val();
+    let debit = parseFloat(tr.find('input[name="txt_amount6[]"]').val()) || 0;
+    let credit= parseFloat(tr.find('input[name="txt_credit6[]"]').val()) || 0;
+    let desc  = tr.find('input[name="keterangan6[]"]').val();
+    if(!desc){
+      desc = $('#pesan6').val();
+    }
+    let curr  = tr.find('select.currenc6').first().val();
+    let reff_doc  = tr.find('input[name="no_reff6[]"]').val();
+    let reff_date  = tr.find('input[name="reff_date6[]"]').val();
+
+    let rowData = {
+      row: index + 1, coa, pc, cc, debit, credit, desc, curr, reff_doc, reff_date
+    };
+
+    if(!coa || coa === '-'){
+      Swal.fire('Warning','COA wajib diisi','warning');
+      tr.find('.no_coa6').focus();
+      valid_adjust = false;
+      return false;
+    }
+
+    if(!pc || pc === '-'){
+      Swal.fire('Warning','Profit Center wajib diisi','warning');
+      tr.find('.prof_ctr6').focus();
+      valid_adjust = false;
+      return false;
+    }
+
+    if(coaWajibCC.includes(coa)){
+      if(!cc || cc === '-' || cc === ''){
+        Swal.fire('Warning','COA wajib isi Cost Center','warning');
+        tr.find('.cost_ctr6').focus();
+        valid_adjust = false;
+        return false;
+      }
+    }
+
+    if(debit === 0 && credit === 0){
+      Swal.fire('Warning','Debit/Credit harus diisi','warning');
+      valid_adjust = false;
+      return false;
+    }
+
+    detail_adjust.push(rowData);
+
+  });
+
+  if(!valid_adjust) return;
+
+  let finalData = {
+    header,
+    detail_ftr,
+    detail_adjust,
+    total: {
+      global_debit  : total_debit,
+      global_credit : total_credit,
+      nag_debit, nag_credit, nak_debit, nak_credit
+    }
+  };
+
+  function doSaveFtr6(){
+
+    // Cegah double-submit: tombol dikunci begitu validasi lolos & mulai
+    // proses save, baru dibuka lagi kalau ada error (supaya bisa dicoba ulang).
+    $('#simpan6').prop('disabled', true);
+
+    Swal.fire({
+      title: 'Saving...',
+      allowOutsideClick: false,
+      didOpen: () => { Swal.showLoading(); }
+    });
+
+    $.ajax({
+      url: 'save_ftr_cash.php',
+      type: 'POST',
+      dataType: 'json',
+      data: { data: JSON.stringify(finalData) },
+      success: function(res){
+
+        if(res.status === 'ok'){
+          Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: res.message
+          }).then(() => {
+            location.href='petty-cashout.php';
+          });
+        }else{
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: res.message,
+            showCancelButton: true,
+            confirmButtonText: 'Coba Lagi',
+            cancelButtonText: 'Tutup'
+          }).then((retry) => {
+            if(retry.isConfirmed){
+              doSaveFtr6();
+            }else{
+              $('#simpan6').prop('disabled', false);
+            }
+          });
+        }
+
+      },
+      error: function(xhr){
+        console.log("ERROR AJAX:", xhr.responseText);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Terjadi kesalahan server',
+          showCancelButton: true,
+          confirmButtonText: 'Coba Lagi',
+          cancelButtonText: 'Tutup'
+        }).then((retry) => {
+          if(retry.isConfirmed){
+            doSaveFtr6();
+          }else{
+            $('#simpan6').prop('disabled', false);
+          }
+        });
+      }
+    });
+
+  }
+
+  doSaveFtr6();
 
 });
 

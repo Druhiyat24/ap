@@ -1,6 +1,7 @@
 <form id="form-data1" method="post">
     <div class="card shadow-sm">
         <div class="card-body">
+          <div class="pco-sec"><i class="fa fa-file-text-o" aria-hidden="true"></i> Header</div>
             <div class="form-row">
 
                 <div class="col-md-3 mb-2">
@@ -85,10 +86,11 @@
                 </div>
 
             </div>
-            <div class="card-body p-2">
+            <div class="card-body p-0">
+              <div class="pco-sec"><i class="fa fa-book" aria-hidden="true"></i> Journal detail</div>
                 <div class="table-responsive">
                     <table id="mytablenone"
-                        class="table table-striped table-bordered table-hover table-sm nowrap">
+                        class="table table-striped table-bordered table-hover table-sm nowrap pco-jtbl">
 
                         <thead class="table-gradient">
                             <tr>
@@ -108,11 +110,16 @@
 
                         <tbody id="tbody1"></tbody>
 
-                        <tfoot>
-                            <tr>
-                                <td colspan="11" align="center">
-
-                                    <button type="button" class="btn btn-primary"
+                              <tfoot>
+        <tr>
+          <td colspan="11" align="center">
+          <!-- Hanya tampil saat tbody masih kosong - lihat .pco-empty di
+               css/app-pco-form.css. Diletakkan DI DALAM sel ber-colspan ini
+               supaya membentang penuh; di luar sel, isi yang bukan baris/sel
+               akan dibungkus sel semu dan terjepit di kolom pertama. -->
+          <div class="pco-empty">No journal rows yet. Press Add Row to start.</div>
+          <div class="pco-rowbtn">
+<button type="button" class="btn btn-primary"
                                         onclick="addRow1('tbody1')">
                                         Add Row
                                     </button>
@@ -126,27 +133,27 @@
                                         onclick="deleteRow1('tbody1')">
                                         Delete Row
                                     </button>
-
-                                </td>
-                            </tr>
-                        </tfoot>
-
-                    </table>
+          </div>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
 
                 </div>
             </div>
-            <div class="row mt-1 p-3">
+            <div class="row mt-1 p-0 mt-2">
+              <div class="col-12"><div class="pco-sec"><i class="fa fa-calculator" aria-hidden="true"></i> Totals</div></div>
 
                 <!-- NAG -->
                 <div class="col-md-4">
                     <div class="total-box tone-nag">
-                        <div class="total-box-header"><i class="fa fa-building"></i> Total PT. Nirwana Alabare Garment</div>
+                        <div class="total-box-header"><i class="fa fa-building"></i> PT. Nirwana Alabare Garment</div>
                         <div class="total-box-body">
 
                             <div class="total-stat is-debit">
                                 <span class="total-stat-label">Total Debit</span>
                                 <div class="total-stat-value-wrap">
-                                    <input type="text" class="total-stat-value" id="tot_debit_nag1" name="tot_debit_nag1" readonly>
+                                    <input type="text" class="total-stat-value" placeholder="0.00" id="tot_debit_nag1" name="tot_debit_nag1" readonly>
                                     <input type="hidden" id="h_tot_debit_nag1" name="h_tot_debit_nag1" readonly>
                                 </div>
                             </div>
@@ -154,7 +161,7 @@
                             <div class="total-stat is-credit">
                                 <span class="total-stat-label">Total Credit</span>
                                 <div class="total-stat-value-wrap">
-                                    <input type="text" class="total-stat-value" id="tot_credit_nag1" name="tot_credit_nag1" readonly>
+                                    <input type="text" class="total-stat-value" placeholder="0.00" id="tot_credit_nag1" name="tot_credit_nag1" readonly>
                                     <input type="hidden" id="h_tot_credit_nag1" name="h_tot_credit_nag1" readonly>
                                 </div>
                             </div>
@@ -167,13 +174,13 @@
                 <!-- NAK -->
                 <div class="col-md-4">
                     <div class="total-box tone-nak">
-                        <div class="total-box-header"><i class="fa fa-industry"></i> Total PT. Nirwana Alabare Knitting</div>
+                        <div class="total-box-header"><i class="fa fa-industry"></i> PT. Nirwana Alabare Knitting</div>
                         <div class="total-box-body">
 
                             <div class="total-stat is-debit">
                                 <span class="total-stat-label">Total Debit</span>
                                 <div class="total-stat-value-wrap">
-                                    <input type="text" class="total-stat-value" id="tot_debit_nak1" name="tot_debit_nak1" readonly>
+                                    <input type="text" class="total-stat-value" placeholder="0.00" id="tot_debit_nak1" name="tot_debit_nak1" readonly>
                                     <input type="hidden" id="h_tot_debit_nak1" name="h_tot_debit_nak1" readonly>
                                 </div>
                             </div>
@@ -181,7 +188,7 @@
                             <div class="total-stat is-credit">
                                 <span class="total-stat-label">Total Credit</span>
                                 <div class="total-stat-value-wrap">
-                                    <input type="text" class="total-stat-value" id="tot_credit_nak1" name="tot_credit_nak1" readonly>
+                                    <input type="text" class="total-stat-value" placeholder="0.00" id="tot_credit_nak1" name="tot_credit_nak1" readonly>
                                     <input type="hidden" id="h_tot_credit_nak1" name="h_tot_credit_nak1" readonly>
                                 </div>
                             </div>
@@ -199,7 +206,7 @@
                             <div class="total-stat is-debit">
                                 <span class="total-stat-label">Total Debit</span>
                                 <div class="total-stat-value-wrap">
-                                    <input type="text" class="total-stat-value" id="tot_debit1" name="tot_debit1" readonly>
+                                    <input type="text" class="total-stat-value" placeholder="0.00" id="tot_debit1" name="tot_debit1" readonly>
                                     <input type="hidden" id="h_tot_debit1" name="h_tot_debit1" readonly>
                                 </div>
                             </div>
@@ -207,7 +214,7 @@
                             <div class="total-stat is-credit">
                                 <span class="total-stat-label">Total Credit</span>
                                 <div class="total-stat-value-wrap">
-                                    <input type="text" class="total-stat-value" id="tot_credit1" name="tot_credit1" readonly>
+                                    <input type="text" class="total-stat-value" placeholder="0.00" id="tot_credit1" name="tot_credit1" readonly>
                                     <input type="hidden" id="h_tot_credit1" name="h_tot_credit1" readonly>
                                 </div>
                             </div>
