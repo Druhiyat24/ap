@@ -89,17 +89,26 @@ include '../header.php';
   <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header text-white" style="background: linear-gradient(90deg, #191970, #1e90ff);">
-        <h5 class="modal-title" id="txt_bpb"></h5>
+        <h5 class="modal-title" id="txt_ftr"></h5>
         <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
       </div>
-      <div class="modal-body">
+      <!-- Delapan keterangan ringkas, masing-masing SATU kotak selebar
+           seperempat. Dulu Payment Date / SubTotal / Tax / Total dijejalkan
+           ke satu kotak col-12 sehingga menumpuk ke bawah.
+           Kelas .modal-body + kelas kolom dipakai BERSAMA karena aturan
+           .ftl-modal .modal-body[class*="col-"] di app-ftr-list.css memang
+           menyasar kombinasi itu - tanpa keduanya, paddingnya tidak kena. -->
+      <div class="container">
         <div class="row">
-          <div id="txt_tglbpb" class="col-md-3 mb-2"></div>
-          <div id="txt_supp" class="col-md-3 mb-2"></div>
-          <div id="txt_status" class="col-md-3 mb-2"></div>
-          <div id="txt_created_by" class="col-md-3 mb-2"></div>
-          <div id="txt_deskripsi" class="col-12 mb-2"></div>
-          <div id="details" class="col-12 mt-2"></div>
+          <div id="txt_tgl_ftr"     class="modal-body col-6 col-md-3"></div>
+          <div id="txt_supp"        class="modal-body col-6 col-md-3"></div>
+          <div id="txt_status"      class="modal-body col-6 col-md-3"></div>
+          <div id="txt_create_user" class="modal-body col-6 col-md-3"></div>
+          <div id="txt_tgl_bayar"   class="modal-body col-6 col-md-3"></div>
+          <div id="txt_subtotal"    class="modal-body col-6 col-md-3"></div>
+          <div id="txt_tax"         class="modal-body col-6 col-md-3"></div>
+          <div id="txt_total"       class="modal-body col-6 col-md-3"></div>
+          <div id="details"         class="modal-body col-12"></div>
         </div>
       </div>
     </div>
@@ -303,8 +312,9 @@ $('#btnCancel').on('click', function () {
 $('#table-data').on('click', '.btn-view-ftr', function () {
     const noFtr = this.dataset.no;
 
-    $('#txt_bpb').text('FTR CBD - ' + noFtr);
-    $('#txt_tglbpb, #txt_supp, #txt_status, #txt_created_by, #txt_deskripsi').html('');
+    $('#txt_ftr').text('FTR CBD - ' + noFtr);
+    $('#txt_tgl_ftr, #txt_supp, #txt_status, #txt_create_user, #txt_tgl_bayar,'
+      + ' #txt_subtotal, #txt_tax, #txt_total').html('');
     $('#details').html('<div class="text-center p-3"><i class="fas fa-spinner fa-spin"></i></div>');
     $('#mymodal').modal('show');
 
@@ -316,15 +326,24 @@ $('#table-data').on('click', '.btn-view-ftr', function () {
         success: function (res) {
             const h = res.header;
             if (h) {
-                $('#txt_tglbpb').html('<b>FTR Date:</b> ' + escapeHtml(h.tgl_ftr));
-                $('#txt_supp').html('<b>Supplier:</b> ' + escapeHtml(h.supp || '-'));
-                $('#txt_status').html('<b>Status:</b> ' + escapeHtml(h.status));
-                const createdByText = h.create_user ? (h.create_user + ' (' + h.create_date + ')') : '-';
-                $('#txt_created_by').html('<b>Created By:</b> ' + escapeHtml(createdByText));
-                $('#txt_deskripsi').html('<b>Payment Date:</b> ' + escapeHtml(h.tgl_bayar)
-                    + ' &nbsp;&nbsp; <b>SubTotal:</b> ' + escapeHtml(h.subtotal)
-                    + ' &nbsp;&nbsp; <b>Tax:</b> ' + escapeHtml(h.tax)
-                    + ' &nbsp;&nbsp; <b>Total:</b> ' + escapeHtml(h.total) + ' ' + escapeHtml(h.curr || ''));
+                /* Label dan nilai ditulis sbg DUA elemen supaya bisa disejajarkan
+                   lewat CSS - sama seperti modal di halaman daftar. */
+                const isiInfo = function (sel, label, nilai, mentah) {
+                    $(sel).html('<span class="ftl-k">' + label + '</span>'
+                        + '<span class="ftl-v">'
+                        + (mentah ? nilai : escapeHtml(nilai == null || nilai === '' ? '-' : nilai))
+                        + '</span>');
+                };
+
+                isiInfo('#txt_tgl_ftr',     'FTR CBD Date', h.tgl_ftr);
+                isiInfo('#txt_supp',        'Supplier',      h.supp);
+                isiInfo('#txt_status',      'Status',        h.status);
+                isiInfo('#txt_create_user', 'Created By',
+                        h.create_user ? (h.create_user + ' (' + h.create_date + ')') : '-');
+                isiInfo('#txt_tgl_bayar',   'Payment Date',  h.tgl_bayar);
+                isiInfo('#txt_subtotal',    'SubTotal',      h.subtotal);
+                isiInfo('#txt_tax',         'Tax',           h.tax);
+                isiInfo('#txt_total',       'Total',         h.total + ' ' + (h.curr || ''));
             }
 
             if (!res.items.length) {
