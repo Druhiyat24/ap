@@ -126,7 +126,7 @@ $no_pengajuan = $prefix . str_pad($next_no, 5, '0', STR_PAD_LEFT);
           </div>
           <div class="col-md-3 mb-2">
             <label for="nama_supp"><b>Supplier</b></label>
-            <select class="form-control form-control-sm selectpicker" id="nama_supp" data-dropup-auto="false" data-live-search="true">
+            <select class="form-control form-control-sm selectpicker" id="nama_supp" data-dropup-auto="false" data-live-search="true" data-container="body">
               <option value="ALL" selected>ALL</option>
               <?php
               $sql = mysqli_query($conn1, "select distinct(Supplier) from mastersupplier where tipe_sup = 'S' order by Supplier ASC");

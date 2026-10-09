@@ -31,7 +31,7 @@
 
                     <div class="col-12 col-sm-6 col-xl-3 mb-2">
                         <label for="reference" class="form-label"><b>Reference</b></label>
-                        <select class="form-control selectpicker" name="reference" id="reference" data-dropup-auto="false" data-live-search="true">
+                        <select class="form-control selectpicker" name="reference" id="reference" data-dropup-auto="false" data-live-search="true" data-container="body">
                             <option value="ALL" selected="selected">ALL</option>
                             <?php
                             $reference = isset($_POST['reference']) ? $_POST['reference'] : null;

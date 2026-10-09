@@ -22,7 +22,7 @@
         <div class="form-row">
             <div class="col-12 col-sm-6 col-xl-4 mb-2">
             <label for="nama_supp"><b>Supplier</b></label>            
-              <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true" onchange="this.form.submit()">
+              <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true" onchange="this.form.submit()" data-container="body">
                 <option value="ALL" <?php
                 $nama_supp = '';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
