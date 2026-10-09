@@ -1,9 +1,23 @@
 <?php
 /* ============================================================================
-   Sumber data DataTables untuk halaman daftar FTR DP (ftrdp.php).
+   Sumber data DataTables untuk HALAMAN PERSETUJUAN FTR CBD
+   (approve_ftrcbd.php).
 
-   Kembaran ajx_ftrcbd.php - bedanya cuma tabel & kolom angkanya: FTR DP
-   menampilkan Total PO / DP Amount / Balance, bukan SubTotal / Tax / Total.
+   Bedanya dgn ajx_ftrcbd.php: di sini status DIPAKU ke 'draft'. Pilihan
+   Status di layar tidak bisa membukanya - dokumen yang sudah Approved atau
+   Cancel memang tidak ada urusannya dgn halaman persetujuan.
+   Tombolnya pun hanya Approve / Cancel / Pdf, tanpa Edit.
+   ============================================================================ */
+/* ============================================================================
+   Sumber data DataTables untuk halaman daftar FTR CBD (ftrcbd.php).
+
+   Sebelumnya baris-baris tabel dicetak langsung di dalam ftrcbd.php, sehingga
+   setiap kali filter diubah SELURUH halaman dimuat ulang lewat POST. Sekarang
+   hanya datanya yang ditarik, jadi filter terasa seketika dan bisa diberi
+   penanda "sedang memuat".
+
+   Pola & bentuk keluarannya mengikuti ajx_memorial-journal.php supaya kedua
+   menu ini berperilaku sama.
    ============================================================================ */
 include '../../conn/conn.php';
 header('Content-Type: application/json');
@@ -23,9 +37,10 @@ $end_date   = ($end_in   === '') ? '1970-01-01' : date('Y-m-d', strtotime($end_i
 
 $esc = function ($v) use ($conn2) { return mysqli_real_escape_string($conn2, $v); };
 
-/* Isian filter SELALU yang berlaku. Saat halaman dibuka, From & To sudah
-   berisi tanggal hari ini, jadi "hari ini saja" terbaca langsung dari
-   isiannya. */
+/* Isian filter SELALU yang berlaku - tidak ada lagi perlakuan khusus untuk
+   muat pertama. Saat halaman dibuka, From & To sudah berisi tanggal hari ini,
+   jadi "hari ini saja" terbaca langsung dari isiannya dan user bisa melihat
+   sendiri rentang mana yang sedang dipakai. */
 $syarat = array();
 if ($nama_supp !== '' && $nama_supp !== 'ALL') {
     $syarat[] = "supp = '" . $esc($nama_supp) . "'";
@@ -36,23 +51,28 @@ if ($status_f !== '' && $status_f !== 'ALL') {
 /* Kedua tanggal 1970 = kedua isian tanggal dikosongkan user -> tanpa batas
    tanggal. Ini menirukan delapan cabang if/elseif di halaman lama. */
 if (!($start_date === '1970-01-01' && $end_date === '1970-01-01')) {
-    $syarat[] = "tgl_ftr_dp between '" . $esc($start_date) . "' and '" . $esc($end_date) . "'";
+    $syarat[] = "tgl_ftr_cbd between '" . $esc($start_date) . "' and '" . $esc($end_date) . "'";
 }
-$where = empty($syarat) ? '' : ('where ' . implode(' and ', $syarat));
+/* Status DIPAKU: halaman persetujuan hanya mengurus dokumen draft.
+   Ditaruh sesudah $syarat disusun supaya pilihan Status di layar tidak
+   bisa menimpanya. */
+$syarat[] = "status = 'draft'";
+$where = 'where ' . implode(' and ', $syarat);
 
-/* no_po dikumpulkan dgn GROUP_CONCAT, bukan diambil apa adanya: barisnya
-   dikelompokkan per nomor FTR, jadi no_po polos hanya mengembalikan SALAH SATU
-   PO-nya tanpa penanda apa pun kalau dokumennya memuat beberapa PO. */
-$sql = mysqli_query($conn2, "select no_ftr_dp, tgl_ftr_dp, supp,
+/* biaya_tambahan IKUT dijumlahkan di semua kombinasi filter. Di halaman lama
+   satu cabang (Supplier tertentu + Status tertentu + tanpa rentang tanggal)
+   memakai SUM(subtotal) dan SUM(total) polos tanpa biaya_tambahan, sehingga
+   dokumen yang sama menampilkan Total berbeda hanya karena filternya berbeda. */
+$sql = mysqli_query($conn2, "select no_ftr_cbd, tgl_ftr_cbd, supp,
         GROUP_CONCAT(DISTINCT no_po ORDER BY no_po SEPARATOR ', ') as no_po,
-        SUM(total) as total,
-        SUM(dp_value) as dp,
-        SUM(total - dp_value) as balance,
+        SUM(subtotal + biaya_tambahan) as subtotal,
+        SUM(tax) as tax,
+        SUM(total + biaya_tambahan) as total,
         curr, create_user, status, keterangan
-    from ftr_dp
+    from ftr_cbd
     $where
-    group by no_ftr_dp
-    order by tgl_ftr_dp desc, no_ftr_dp desc");
+    group by no_ftr_cbd
+    order by tgl_ftr_cbd desc, no_ftr_cbd desc");
 
 if (!$sql) {
     http_response_code(500);
@@ -70,42 +90,28 @@ $pur   = isset($rs['purchasing']) ? $rs['purchasing'] : '';
 
 $data = array();
 while ($row = mysqli_fetch_assoc($sql)) {
-    $no     = $row['no_ftr_dp'];
+    $no     = $row['no_ftr_cbd'];
     $status = $row['status'];
 
     /* Tautan Pdf dirakit sekali - dipakai beberapa cabang di bawah. */
     $pdf = '<a class="ftl-mini is-pdf" target="_blank" title="Open the printable PDF"'
-         . ' href="pdf_ftrdp.php?noftrdp=' . htmlspecialchars($no, ENT_QUOTES) . '">'
+         . ' href="pdf_ftrcbd.php?noftrcbd=' . htmlspecialchars($no, ENT_QUOTES) . '">'
          . '<i class="fa fa-file-pdf-o" aria-hidden="true"></i> Pdf</a>';
 
     $aksi = '';
     if ($pur == '1') {
         $aksi .= '<div class="ftl-act">';
-        if ($status == 'draft') {
-            /* Approve & Edit TETAP khusus non-STAFF - itu kewenangan yang
-               memeriksa, bukan yang membuat. Cancel dipisah ke luar syarat
-               itu supaya pemakai STAFF bisa membereskan draft yang salah;
-               sebelumnya mereka hanya melihat tombol Pdf. */
-            /* Approve TIDAK ada lagi di sini - persetujuan pindah ke menunya
-               sendiri (approve_ftrcbd.php / approve_ftrdp.php), seperti menu
-               Approval lain. Halaman daftar menyisakan Cancel / Edit / Pdf. */
-            $aksi .= '<a class="ftl-mini is-cancel" href="javascript:void(0)" title="Cancel this FTR">'
-                   . '<i class="fa fa-trash" aria-hidden="true"></i> Cancel</a>';
-
-            if ($group != 'STAFF') {
-                $aksi .= '<a class="ftl-mini is-edit" title="Edit this draft"'
-                       . ' href="edit_ftrdp.php?no=' . base64_encode($no) . '">'
-                       . '<i class="fa fa-pencil" aria-hidden="true"></i> Edit</a>';
-            }
-
-            /* Pdf IKUT di sini: dokumen draft perlu bisa dicetak untuk
-               diperiksa dulu sebelum di-approve. */
-            $aksi .= $pdf;
-        } elseif ($status == 'Approved') {
-            $aksi .= $pdf;
-        } elseif ($status == 'Cancel') {
-            $aksi .= '<span class="ftl-badge"><i class="fa fa-ban" aria-hidden="true"></i> Canceled</span>';
+        /* Semua baris di halaman ini pasti draft (lihat penyaring di atas).
+           Approve tetap khusus non-STAFF; Cancel terbuka utk semua pemakai
+           purchasing, sama seperti di halaman daftarnya. Edit TIDAK ada di
+           sini - mengubah isi dokumen dikerjakan dari halaman daftar. */
+        if ($group != 'STAFF') {
+            $aksi .= '<a class="ftl-mini is-approve" href="javascript:void(0)" title="Approve this FTR">'
+                   . '<i class="fa fa-paper-plane" aria-hidden="true"></i> Approve</a>';
         }
+        $aksi .= '<a class="ftl-mini is-cancel" href="javascript:void(0)" title="Cancel this FTR">'
+               . '<i class="fa fa-trash" aria-hidden="true"></i> Cancel</a>'
+               . $pdf;
         $aksi .= '</div>';
     }
 
@@ -113,17 +119,17 @@ while ($row = mysqli_fetch_assoc($sql)) {
        satu untuk diurutkan. Tanpa ini "01-Oct-2026" diurutkan sbg teks dan
        Januari 2027 mendarat di atas Oktober 2026. */
     $data[] = array(
-        'no_ftr_dp'   => $no,
-        'tgl_urut'    => $row['tgl_ftr_dp'],
-        'tgl_tampil'  => !empty($row['tgl_ftr_dp']) ? date('d-M-Y', strtotime($row['tgl_ftr_dp'])) : '-',
+        'no_ftr_cbd'  => $no,
+        'tgl_urut'    => $row['tgl_ftr_cbd'],
+        'tgl_tampil'  => !empty($row['tgl_ftr_cbd']) ? date('d-M-Y', strtotime($row['tgl_ftr_cbd'])) : '-',
         'supp'        => $row['supp'],
         'no_po'       => $row['no_po'],
+        'subtotal'    => number_format((float) $row['subtotal'], 2),
+        'subtotal_n'  => (float) $row['subtotal'],
+        'tax'         => number_format((float) $row['tax'], 2),
+        'tax_n'       => (float) $row['tax'],
         'total'       => number_format((float) $row['total'], 2),
         'total_n'     => (float) $row['total'],
-        'dp'          => number_format((float) $row['dp'], 2),
-        'dp_n'        => (float) $row['dp'],
-        'balance'     => number_format((float) $row['balance'], 2),
-        'balance_n'   => (float) $row['balance'],
         'curr'        => $row['curr'],
         'create_user' => $row['create_user'],
         'status'      => $status,

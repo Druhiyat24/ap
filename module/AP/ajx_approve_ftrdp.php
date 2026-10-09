@@ -1,5 +1,14 @@
 <?php
 /* ============================================================================
+   Sumber data DataTables untuk HALAMAN PERSETUJUAN FTR DP
+   (approve_ftrdp.php).
+
+   Bedanya dgn ajx_ftrdp.php: di sini status DIPAKU ke 'draft'. Pilihan
+   Status di layar tidak bisa membukanya - dokumen yang sudah Approved atau
+   Cancel memang tidak ada urusannya dgn halaman persetujuan.
+   Tombolnya pun hanya Approve / Cancel / Pdf, tanpa Edit.
+   ============================================================================ */
+/* ============================================================================
    Sumber data DataTables untuk halaman daftar FTR DP (ftrdp.php).
 
    Kembaran ajx_ftrcbd.php - bedanya cuma tabel & kolom angkanya: FTR DP
@@ -38,7 +47,11 @@ if ($status_f !== '' && $status_f !== 'ALL') {
 if (!($start_date === '1970-01-01' && $end_date === '1970-01-01')) {
     $syarat[] = "tgl_ftr_dp between '" . $esc($start_date) . "' and '" . $esc($end_date) . "'";
 }
-$where = empty($syarat) ? '' : ('where ' . implode(' and ', $syarat));
+/* Status DIPAKU: halaman persetujuan hanya mengurus dokumen draft.
+   Ditaruh sesudah $syarat disusun supaya pilihan Status di layar tidak
+   bisa menimpanya. */
+$syarat[] = "status = 'draft'";
+$where = 'where ' . implode(' and ', $syarat);
 
 /* no_po dikumpulkan dgn GROUP_CONCAT, bukan diambil apa adanya: barisnya
    dikelompokkan per nomor FTR, jadi no_po polos hanya mengembalikan SALAH SATU
@@ -81,31 +94,17 @@ while ($row = mysqli_fetch_assoc($sql)) {
     $aksi = '';
     if ($pur == '1') {
         $aksi .= '<div class="ftl-act">';
-        if ($status == 'draft') {
-            /* Approve & Edit TETAP khusus non-STAFF - itu kewenangan yang
-               memeriksa, bukan yang membuat. Cancel dipisah ke luar syarat
-               itu supaya pemakai STAFF bisa membereskan draft yang salah;
-               sebelumnya mereka hanya melihat tombol Pdf. */
-            /* Approve TIDAK ada lagi di sini - persetujuan pindah ke menunya
-               sendiri (approve_ftrcbd.php / approve_ftrdp.php), seperti menu
-               Approval lain. Halaman daftar menyisakan Cancel / Edit / Pdf. */
-            $aksi .= '<a class="ftl-mini is-cancel" href="javascript:void(0)" title="Cancel this FTR">'
-                   . '<i class="fa fa-trash" aria-hidden="true"></i> Cancel</a>';
-
-            if ($group != 'STAFF') {
-                $aksi .= '<a class="ftl-mini is-edit" title="Edit this draft"'
-                       . ' href="edit_ftrdp.php?no=' . base64_encode($no) . '">'
-                       . '<i class="fa fa-pencil" aria-hidden="true"></i> Edit</a>';
-            }
-
-            /* Pdf IKUT di sini: dokumen draft perlu bisa dicetak untuk
-               diperiksa dulu sebelum di-approve. */
-            $aksi .= $pdf;
-        } elseif ($status == 'Approved') {
-            $aksi .= $pdf;
-        } elseif ($status == 'Cancel') {
-            $aksi .= '<span class="ftl-badge"><i class="fa fa-ban" aria-hidden="true"></i> Canceled</span>';
+        /* Semua baris di halaman ini pasti draft (lihat penyaring di atas).
+           Approve tetap khusus non-STAFF; Cancel terbuka utk semua pemakai
+           purchasing, sama seperti di halaman daftarnya. Edit TIDAK ada di
+           sini - mengubah isi dokumen dikerjakan dari halaman daftar. */
+        if ($group != 'STAFF') {
+            $aksi .= '<a class="ftl-mini is-approve" href="javascript:void(0)" title="Approve this FTR">'
+                   . '<i class="fa fa-paper-plane" aria-hidden="true"></i> Approve</a>';
         }
+        $aksi .= '<a class="ftl-mini is-cancel" href="javascript:void(0)" title="Cancel this FTR">'
+               . '<i class="fa fa-trash" aria-hidden="true"></i> Cancel</a>'
+               . $pdf;
         $aksi .= '</div>';
     }
 
