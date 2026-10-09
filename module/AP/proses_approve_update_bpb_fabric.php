@@ -1,5 +1,15 @@
 <?php
+/* ============================================================================
+   Update BPB - FABRIC.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
+
+   Dokumen kain punya tabel kepala sendiri: whs_inmaterial_fabric (+_det)
+   utk PENERIMAAN (GK/IN) dan whs_bppb_h/whs_bppb_ro utk RETUR (GK/RO).
+   Keduanya dibedakan, karena jurnal GK/RO arahnya TERBALIK dari GK/IN.
+   (Bandingkan Accessories & General: dokumennya langsung di `bpb` dan
+   RI-nya tetap dihitung sbg penerimaan.)
+   ============================================================================ */
 include '../../conn/conn.php';
+$jenis = 'fabric';
 header('Content-Type: application/json');
 
 $action = $_POST['action'] ?? '';
@@ -27,7 +37,7 @@ foreach ($list as $no_pengajuan) {
     $no_pengajuan_esc = mysqli_real_escape_string($conn2, $no_pengajuan);
     $gagalFatal = false;   // true = seluruh pengajuan ini dibatalkan
 
-    $check = mysqli_query($conn2, "SELECT status FROM update_bpb_fabric_h WHERE no_pengajuan = '$no_pengajuan_esc' LIMIT 1");
+    $check = mysqli_query($conn2, "SELECT status FROM Req_update_bpb_h WHERE no_pengajuan = '$no_pengajuan_esc' LIMIT 1");
     $row = mysqli_fetch_assoc($check);
 
     if (!$row || in_array($row['status'], ['Approved', 'Cancel'])) {
@@ -46,7 +56,7 @@ foreach ($list as $no_pengajuan) {
            dihitung ulang dari tabel bpb/bppb setelah harganya dikoreksi,
            supaya yang terbukukan persis sama dgn isi dokumennya. */
         $bpbRes = mysqli_query($conn2, "SELECT DISTINCT no_bpb
-            FROM update_bpb_fabric
+            FROM Req_update_bpb
             WHERE no_pengajuan = '$no_pengajuan_esc'");
 
         while ($bpbRow = mysqli_fetch_assoc($bpbRes)) {
@@ -63,13 +73,13 @@ foreach ($list as $no_pengajuan) {
             // journal status, so the BPB always reflects the corrected values.
             if ($isPenerimaan) {
                 $okbpb = mysqli_query($conn2, "UPDATE bpb a
-                    INNER JOIN (SELECT no_bpb, id_jo, id_item, price_new, ppn_new FROM update_bpb_fabric WHERE no_pengajuan = '$no_pengajuan_esc' AND no_bpb = '$no_bpb_esc') b
+                    INNER JOIN (SELECT no_bpb, id_jo, id_item, price_new, ppn_new FROM Req_update_bpb WHERE no_pengajuan = '$no_pengajuan_esc' AND no_bpb = '$no_bpb_esc') b
                         ON b.no_bpb = a.bpbno_int AND b.id_jo = a.id_jo AND b.id_item = a.id_item
                     SET a.price = b.price_new, a.ppn = b.ppn_new");
                 if (!$okbpb) { $gagalFatal = true; $journalWarnings[] = "$no_bpb: gagal menulis harga ke bpb"; }
 
                 $okwhs_inmaterial_fabric_det = mysqli_query($conn2, "UPDATE whs_inmaterial_fabric_det a
-                    INNER JOIN (SELECT no_bpb, id_jo, id_item, price_new, ppn_new FROM update_bpb_fabric WHERE no_pengajuan = '$no_pengajuan_esc' AND no_bpb = '$no_bpb_esc') b
+                    INNER JOIN (SELECT no_bpb, id_jo, id_item, price_new, ppn_new FROM Req_update_bpb WHERE no_pengajuan = '$no_pengajuan_esc' AND no_bpb = '$no_bpb_esc') b
                         ON b.no_bpb = a.no_dok AND b.id_jo = a.id_jo AND b.id_item = a.id_item
                     SET a.price = b.price_new, a.ppn = b.ppn_new");
                 if (!$okwhs_inmaterial_fabric_det) { $gagalFatal = true; $journalWarnings[] = "$no_bpb: gagal menulis harga ke whs_inmaterial_fabric_det"; }
@@ -79,13 +89,13 @@ foreach ($list as $no_pengajuan) {
                 $statusCheck = mysqli_query($conn2, "SELECT status FROM whs_inmaterial_fabric WHERE no_dok = '$no_bpb_esc' LIMIT 1");
             } else {
                 $okbppb = mysqli_query($conn2, "UPDATE bppb a
-                    INNER JOIN (SELECT no_bpb, id_jo, id_item, price_new, ppn_new FROM update_bpb_fabric WHERE no_pengajuan = '$no_pengajuan_esc' AND no_bpb = '$no_bpb_esc') b
+                    INNER JOIN (SELECT no_bpb, id_jo, id_item, price_new, ppn_new FROM Req_update_bpb WHERE no_pengajuan = '$no_pengajuan_esc' AND no_bpb = '$no_bpb_esc') b
                         ON b.no_bpb = a.bppbno_int AND b.id_jo = a.id_jo AND b.id_item = a.id_item
                     SET a.price = b.price_new, a.ppn = b.ppn_new");
                 if (!$okbppb) { $gagalFatal = true; $journalWarnings[] = "$no_bpb: gagal menulis harga ke bppb"; }
 
                 $okwhs_bppb_ro = mysqli_query($conn2, "UPDATE whs_bppb_ro a
-                    INNER JOIN (SELECT no_bpb, id_jo, id_item, price_new, ppn_new FROM update_bpb_fabric WHERE no_pengajuan = '$no_pengajuan_esc' AND no_bpb = '$no_bpb_esc') b
+                    INNER JOIN (SELECT no_bpb, id_jo, id_item, price_new, ppn_new FROM Req_update_bpb WHERE no_pengajuan = '$no_pengajuan_esc' AND no_bpb = '$no_bpb_esc') b
                         ON b.no_bpb = a.no_bppb AND b.id_jo = a.id_jo AND b.id_item = a.id_item
                     SET a.price = b.price_new, a.ppn = b.ppn_new");
                 if (!$okwhs_bppb_ro) { $gagalFatal = true; $journalWarnings[] = "$no_bpb: gagal menulis harga ke whs_bppb_ro"; }
@@ -382,7 +392,7 @@ foreach ($list as $no_pengajuan) {
         continue;
     }
 
-    if (!mysqli_query($conn2, "UPDATE update_bpb_fabric_h SET status = '$newStatus' WHERE no_pengajuan = '$no_pengajuan_esc'")) {
+    if (!mysqli_query($conn2, "UPDATE Req_update_bpb_h SET status = '$newStatus' WHERE no_pengajuan = '$no_pengajuan_esc'")) {
         mysqli_rollback($conn2);
         $skipped++;
         $journalWarnings[] = "$no_pengajuan: gagal mengubah status, DIBATALKAN seluruhnya";

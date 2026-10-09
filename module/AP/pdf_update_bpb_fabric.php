@@ -1,12 +1,23 @@
 <!DOCTYPE html>
 <?php
+/* ============================================================================
+   Update BPB - FABRIC.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
+
+   Dokumen kain punya tabel kepala sendiri: whs_inmaterial_fabric (+_det)
+   utk PENERIMAAN (GK/IN) dan whs_bppb_h/whs_bppb_ro utk RETUR (GK/RO).
+   Keduanya dibedakan, karena jurnal GK/RO arahnya TERBALIK dari GK/IN.
+   (Bandingkan Accessories & General: dokumennya langsung di `bpb` dan
+   RI-nya tetap dihitung sbg penerimaan.)
+   ============================================================================ */
 include '../../conn/conn.php';
+$jenis = 'fabric';
+$jenis_esc = mysqli_real_escape_string($conn1, $jenis);
 
 $no_pengajuan = isset($_GET['no_pengajuan']) ? $_GET['no_pengajuan'] : '';
 $no_pengajuan_esc = mysqli_real_escape_string($conn1, $no_pengajuan);
 
 $h = mysqli_query($conn1, "SELECT no_pengajuan, tgl_pengajuan, nama_supp, deskripsi, status, created_by, created_at
-    FROM update_bpb_fabric_h WHERE no_pengajuan = '$no_pengajuan_esc' LIMIT 1");
+    FROM Req_update_bpb_h WHERE no_pengajuan = '$no_pengajuan_esc' LIMIT 1");
 $header = mysqli_fetch_assoc($h);
 
 if (!$header) {
@@ -15,7 +26,7 @@ if (!$header) {
 
 $items = [];
 $sql = mysqli_query($conn1, "SELECT no_bpb, tgl_bpb, no_ws, id_item, desc_item, qty, unit, curr, price_old, price_new, ppn_old, ppn_new
-    FROM update_bpb_fabric
+    FROM Req_update_bpb
     WHERE no_pengajuan = '$no_pengajuan_esc'
     ORDER BY no_bpb, no_ws, id_item");
 while ($row = mysqli_fetch_assoc($sql)) {

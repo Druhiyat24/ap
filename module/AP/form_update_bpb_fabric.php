@@ -1,7 +1,18 @@
-<?php include '../header.php' ?>
+<?php
+/* ============================================================================
+   Update BPB - FABRIC.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
+
+   Dokumen kain punya tabel kepala sendiri: whs_inmaterial_fabric (+_det)
+   utk PENERIMAAN (GK/IN) dan whs_bppb_h/whs_bppb_ro utk RETUR (GK/RO).
+   Keduanya dibedakan, karena jurnal GK/RO arahnya TERBALIK dari GK/IN.
+   (Bandingkan Accessories & General: dokumennya langsung di `bpb` dan
+   RI-nya tetap dihitung sbg penerimaan.)
+   ============================================================================ */
+include '../header.php';
+?>
 
 <?php
-mysqli_query($conn1, "CREATE TABLE IF NOT EXISTS update_bpb_fabric_h (
+mysqli_query($conn1, "CREATE TABLE IF NOT EXISTS Req_update_bpb_h (
   id INT(11) NOT NULL AUTO_INCREMENT,
   no_pengajuan VARCHAR(30) NOT NULL,
   tgl_pengajuan DATE NOT NULL,
@@ -14,7 +25,7 @@ mysqli_query($conn1, "CREATE TABLE IF NOT EXISTS update_bpb_fabric_h (
   UNIQUE KEY uniq_no_pengajuan (no_pengajuan)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-mysqli_query($conn1, "CREATE TABLE IF NOT EXISTS update_bpb_fabric (
+mysqli_query($conn1, "CREATE TABLE IF NOT EXISTS Req_update_bpb (
   id INT(11) NOT NULL AUTO_INCREMENT,
   no_pengajuan VARCHAR(30) NOT NULL,
   no_bpb VARCHAR(50) NOT NULL,
@@ -39,11 +50,24 @@ mysqli_query($conn1, "CREATE TABLE IF NOT EXISTS update_bpb_fabric (
   KEY idx_no_pengajuan (no_pengajuan)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-mysqli_query($conn1, "ALTER TABLE update_bpb_fabric ADD COLUMN IF NOT EXISTS id_jo VARCHAR(50) DEFAULT NULL AFTER no_ws");
+mysqli_query($conn1, "ALTER TABLE Req_update_bpb ADD COLUMN IF NOT EXISTS id_jo VARCHAR(50) DEFAULT NULL AFTER no_ws");
+
+/* Kolom pembeda jenis barang (fabric / accessories / menyusul yang lain).
+   Dibuat di sini supaya basis data yang belum dimigrasi ikut tertata saat
+   halaman ini pertama dibuka - pola yang sama dgn id_jo di atas. */
+mysqli_query($conn1, "ALTER TABLE Req_update_bpb_h ADD COLUMN IF NOT EXISTS jenis VARCHAR(20) NOT NULL DEFAULT 'fabric' AFTER status");
+
+$jenis = 'fabric';
+$label = 'Fabric';
 
 // Generate next transaction number: UPD/GK/MMYY/00001
+/* Awalannya beda per jenis (UPD/GK/ vs UPD/GACC/) supaya penomorannya
+   tidak pernah bertabrakan antar menu. */
 $prefix = 'UPD/GK/' . date('my') . '/';
-$cek = mysqli_query($conn1, "SELECT MAX(CAST(SUBSTRING(no_pengajuan,13) AS UNSIGNED)) mx FROM update_bpb_fabric_h WHERE no_pengajuan LIKE '$prefix%'");
+/* Angka urutnya dipotong sepanjang awalan - DULU dipatok 13, yang hanya
+   benar untuk 'UPD/GK/1026/' (12 huruf). Awalan aksesoris lebih panjang. */
+$potong = strlen($prefix) + 1;
+$cek = mysqli_query($conn1, "SELECT MAX(CAST(SUBSTRING(no_pengajuan,$potong) AS UNSIGNED)) mx FROM Req_update_bpb_h WHERE no_pengajuan LIKE '$prefix%'");
 $row_cek = mysqli_fetch_assoc($cek);
 $next_no = (!empty($row_cek['mx'])) ? ((int) $row_cek['mx'] + 1) : 1;
 $no_pengajuan = $prefix . str_pad($next_no, 5, '0', STR_PAD_LEFT);
@@ -62,8 +86,8 @@ $no_pengajuan = $prefix . str_pad($next_no, 5, '0', STR_PAD_LEFT);
     <div class="ftl-head">
       <span class="ftl-head-icon"><i class="fas fa-edit" aria-hidden="true"></i></span>
       <div>
-        <h1>Update BPB Fabric</h1>
-        <span class="ftl-crumb">Cost Accounting &rsaquo; Update BPB Fabric &rsaquo; Create</span>
+        <h1>Update BPB <?php echo htmlspecialchars($label); ?></h1>
+        <span class="ftl-crumb">Cost Accounting &rsaquo; Update BPB &rsaquo; <?php echo htmlspecialchars($label); ?> &rsaquo; Create</span>
       </div>
     </div><!-- /.ftl-head -->
 
@@ -284,6 +308,7 @@ $no_pengajuan = $prefix . str_pad($next_no, 5, '0', STR_PAD_LEFT);
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+
   // Hide submenus
   $('#body-row .collapse').collapse('hide');
 
@@ -790,7 +815,7 @@ $no_pengajuan = $prefix . str_pad($next_no, 5, '0', STR_PAD_LEFT);
 
               $.ajax({
                   type: 'POST',
-                  url: 'insert_update_bpb_fabric.php',
+                  url: 'insert_Req_update_bpb.php',
                   data: {
                       no_pengajuan: noPengajuan,
                       tgl_pengajuan: $('#tgl_pengajuan').val(),
@@ -816,6 +841,8 @@ $no_pengajuan = $prefix . str_pad($next_no, 5, '0', STR_PAD_LEFT);
                               confirmButtonColor: '#1d4ed8',
                               confirmButtonText: 'OK'
                           }).then(() => {
+                              /* jenis WAJIB dibawa: tanpa ini daftar selalu
+                                 jatuh ke Fabric walau yang disimpan Accessories. */
                               window.location = 'update-bpb-fabric.php';
                           });
                       } else {

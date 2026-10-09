@@ -51,6 +51,18 @@ if (!$ok) { jawab(500, array('ok' => false, 'message' => 'Database error: ' . my
 $terdampak = mysqli_affected_rows($conn2);
 if ($terdampak < 1) { jawab(409, array('ok' => false, 'message' => 'Nothing was approved - the status may have been changed by someone else.')); }
 
+/* ---- jejak aktivitas, lihat tbl_log_ftr (bentuknya mengikuti tbl_log_cash) ----
+   doc_date dibaca ULANG dari tabelnya, bukan dari kiriman browser, supaya
+   tanggal yang tercatat pasti sama dgn isi dokumen. Gagal mencatat TIDAK
+   boleh menggagalkan transaksinya - karena itu hasilnya tidak diperiksa. */
+$log_pc   = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '-';
+$log_user = mysqli_real_escape_string($conn2, $confirm_user);
+$log_no   = mysqli_real_escape_string($conn2, $noftrcbd);
+$log_pc   = mysqli_real_escape_string($conn2, $log_pc);
+mysqli_query($conn2, "insert into tbl_log_ftr (nama_user, activitas, from_pc, log_date, doc_num, doc_date, keterangan)
+    select '$log_user', 'Approve FTR CBD', '$log_pc', NOW(), '$log_no', MIN(tgl_ftr_cbd), 'draft -> Approved'
+    from ftr_cbd where no_ftr_cbd = '$log_no'");
+
 echo json_encode(array(
     'ok'      => true,
     'rows'    => $terdampak,

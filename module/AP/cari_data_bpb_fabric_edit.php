@@ -1,5 +1,15 @@
 <?php
+/* ============================================================================
+   Update BPB - FABRIC.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
+
+   Dokumen kain punya tabel kepala sendiri: whs_inmaterial_fabric (+_det)
+   utk PENERIMAAN (GK/IN) dan whs_bppb_h/whs_bppb_ro utk RETUR (GK/RO).
+   Keduanya dibedakan, karena jurnal GK/RO arahnya TERBALIK dari GK/IN.
+   (Bandingkan Accessories & General: dokumennya langsung di `bpb` dan
+   RI-nya tetap dihitung sbg penerimaan.)
+   ============================================================================ */
 include '../../conn/conn.php';
+$jenis = 'fabric';
 header('Content-Type: application/json');
 
 $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp'] : 'ALL';
@@ -8,11 +18,16 @@ $end_date = isset($_POST['end_date']) ? $_POST['end_date'] : '';
 
 $whereIn = "a.status != 'Cancel' AND a.no_po IS NOT NULL AND a.no_po != ''";
 $whereOut = "h.status != 'Cancel' AND r.price IS NOT NULL AND r.price > 0";
+/* Accessories: dokumennya langsung di `bpb`. GACC/IN maupun GACC/RI
+   sama-sama ikut - keduanya dijurnal sbg penerimaan. */
+$whereAcc = "a.bpbno_int LIKE 'GACC/%' AND IFNULL(a.cancel,'N') <> 'Y'"
+          . " AND a.pono IS NOT NULL AND a.pono != '' AND a.price > 0";
 
 if ($nama_supp !== 'ALL' && $nama_supp !== '') {
     $nama_supp_esc = mysqli_real_escape_string($conn1, $nama_supp);
     $whereIn .= " AND a.supplier = '$nama_supp_esc'";
     $whereOut .= " AND h.tujuan = '$nama_supp_esc'";
+    $whereAcc .= " AND ms.Supplier = '$nama_supp_esc'";
 }
 
 if (!empty($start_date) && !empty($end_date)) {
@@ -20,6 +35,7 @@ if (!empty($start_date) && !empty($end_date)) {
     $end_date_esc = mysqli_real_escape_string($conn1, $end_date);
     $whereIn .= " AND a.tgl_dok BETWEEN '$start_date_esc' AND '$end_date_esc'";
     $whereOut .= " AND h.tgl_bppb BETWEEN '$start_date_esc' AND '$end_date_esc'";
+    $whereAcc .= " AND a.bpbdate BETWEEN '$start_date_esc' AND '$end_date_esc'";
 }
 
 $sql = mysqli_query($conn1, "SELECT t.no_dok, t.tgl_dok, t.supplier, t.no_po, MAX(t.curr) curr,
@@ -62,7 +78,6 @@ $sql = mysqli_query($conn1, "SELECT t.no_dok, t.tgl_dok, t.supplier, t.no_po, MA
     ) t
     GROUP BY t.no_dok, t.tgl_dok, t.supplier, t.no_po
     ORDER BY t.tgl_dok DESC, t.no_dok DESC");
-
 $data = [];
 while ($row = mysqli_fetch_assoc($sql)) {
     $row['tgl_dok_fmt'] = !empty($row['tgl_dok']) ? date('d-M-Y', strtotime($row['tgl_dok'])) : '-';

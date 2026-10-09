@@ -19,9 +19,20 @@
     </style>
 
     <?php
+/* ============================================================================
+   Update BPB - FABRIC.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
+
+   Dokumen kain punya tabel kepala sendiri: whs_inmaterial_fabric (+_det)
+   utk PENERIMAAN (GK/IN) dan whs_bppb_h/whs_bppb_ro utk RETUR (GK/RO).
+   Keduanya dibedakan, karena jurnal GK/RO arahnya TERBALIK dari GK/IN.
+   (Bandingkan Accessories & General: dokumennya langsung di `bpb` dan
+   RI-nya tetap dihitung sbg penerimaan.)
+   ============================================================================ */
     header("Content-type: application/vnd-ms-excel");
     header("Content-Disposition: attachment; filename=Update BPB Fabric.xls");
     include '../../conn/conn.php';
+$jenis = 'fabric';
+$jenis_esc = mysqli_real_escape_string($conn1, $jenis);
 
     $start_date_disp = date("d F Y", strtotime($_GET['start_date']));
     $end_date_disp   = date("d F Y", strtotime($_GET['end_date']));
@@ -61,8 +72,8 @@
         <?php
         $sql = mysqli_query($conn1, "SELECT h.no_pengajuan, h.tgl_pengajuan, h.status, h.deskripsi, h.created_by, h.created_at,
                 d.no_bpb, d.tgl_bpb, d.no_ws, d.id_item, d.desc_item, d.qty, d.unit, d.curr, d.price_old, d.price_new, d.ppn_old, d.ppn_new
-            FROM update_bpb_fabric_h h
-            LEFT JOIN update_bpb_fabric d ON d.no_pengajuan = h.no_pengajuan
+            FROM Req_update_bpb_h h
+            LEFT JOIN Req_update_bpb d ON d.no_pengajuan = h.no_pengajuan
             WHERE h.tgl_pengajuan BETWEEN '$start_date' AND '$end_date'
             ORDER BY h.id DESC, d.no_bpb, d.no_ws, d.id_item");
 

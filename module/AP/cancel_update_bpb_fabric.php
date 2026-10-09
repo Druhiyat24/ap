@@ -1,5 +1,16 @@
 <?php
+/* ============================================================================
+   Update BPB - FABRIC.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
+
+   Dokumen kain punya tabel kepala sendiri: whs_inmaterial_fabric (+_det)
+   utk PENERIMAAN (GK/IN) dan whs_bppb_h/whs_bppb_ro utk RETUR (GK/RO).
+   Keduanya dibedakan, karena jurnal GK/RO arahnya TERBALIK dari GK/IN.
+   (Bandingkan Accessories & General: dokumennya langsung di `bpb` dan
+   RI-nya tetap dihitung sbg penerimaan.)
+   ============================================================================ */
 include '../../conn/conn.php';
+$jenis = 'fabric';
+$jenis_esc = mysqli_real_escape_string($conn1, $jenis);
 header('Content-Type: application/json');
 
 $no_pengajuan = $_POST['no_pengajuan'] ?? '';
@@ -10,7 +21,7 @@ if (empty($no_pengajuan)) {
     exit;
 }
 
-$check = mysqli_query($conn1, "SELECT status FROM update_bpb_fabric_h WHERE no_pengajuan = '$no_pengajuan_esc' LIMIT 1");
+$check = mysqli_query($conn1, "SELECT status FROM Req_update_bpb_h WHERE no_pengajuan = '$no_pengajuan_esc' LIMIT 1");
 $row = mysqli_fetch_assoc($check);
 
 if (!$row) {
@@ -28,7 +39,7 @@ if ($row['status'] == 'Approved') {
     exit;
 }
 
-$update = mysqli_query($conn1, "UPDATE update_bpb_fabric_h SET status = 'Cancel' WHERE no_pengajuan = '$no_pengajuan_esc'");
+$update = mysqli_query($conn1, "UPDATE Req_update_bpb_h SET status = 'Cancel' WHERE no_pengajuan = '$no_pengajuan_esc'");
 
 if ($update) {
     echo json_encode(['success' => true]);

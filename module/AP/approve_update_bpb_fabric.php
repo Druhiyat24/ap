@@ -1,4 +1,21 @@
-<?php include '../header.php' ?>
+<?php
+/* ============================================================================
+   Update BPB - FABRIC.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
+
+   Dokumen kain punya tabel kepala sendiri: whs_inmaterial_fabric (+_det)
+   utk PENERIMAAN (GK/IN) dan whs_bppb_h/whs_bppb_ro utk RETUR (GK/RO).
+   Keduanya dibedakan, karena jurnal GK/RO arahnya TERBALIK dari GK/IN.
+   (Bandingkan Accessories & General: dokumennya langsung di `bpb` dan
+   RI-nya tetap dihitung sbg penerimaan.)
+   ============================================================================ */
+include '../header.php';
+?>
+<?php /* Nilai tetap berkas ini. Tidak ada parameter di tautan - satu menu
+   satu berkas. */
+$jenis = 'fabric';
+$label = 'Fabric';
+?>
+
 
 <!-- Kosakata .ftl- dipakai bersama halaman daftar Update BPB Fabric, FTR
      CBD/DP, dan Petty Cash Out - bentuknya sama dgn List Memorial Journal.
@@ -14,8 +31,8 @@
     <div class="ftl-head">
       <span class="ftl-head-icon"><i class="fa fa-check-circle" aria-hidden="true"></i></span>
       <div>
-        <h1>Approve Update BPB Fabric</h1>
-        <span class="ftl-crumb">Cost Accounting &rsaquo; Approve Update BPB Fabric</span>
+        <h1>Approve Update BPB <?php echo htmlspecialchars($label); ?></h1>
+        <span class="ftl-crumb">Cost Accounting &rsaquo; Update BPB &rsaquo; <?php echo htmlspecialchars($label); ?> &rsaquo; Approval</span>
       </div>
     </div><!-- /.ftl-head -->
 
@@ -155,7 +172,7 @@ let datatable = $("#table-data").DataTable({
     autoWidth: false,
 
     ajax: {
-        url: 'ajx_approve_update_bpb_fabric.php',
+        url: 'ajx_approve_Req_update_bpb.php',
         type: 'POST'
     },
 
@@ -237,7 +254,7 @@ function prosesApproveCancel(action) {
         if (!result.isConfirmed) return;
 
         $.ajax({
-            url: 'proses_approve_update_bpb_fabric.php',
+            url: 'proses_approve_Req_update_bpb.php',
             type: 'POST',
             data: { action: action, no_pengajuan: selected, approve_user: '<?php echo htmlspecialchars($user, ENT_QUOTES); ?>' },
             dataType: 'json',
@@ -288,7 +305,7 @@ $('#table-data').on('click', '.btn-view-pengajuan', function () {
     $('#mymodal').modal('show');
 
     $.ajax({
-        url: 'get_detail_update_bpb_fabric.php',
+        url: 'get_detail_Req_update_bpb.php',
         type: 'GET',
         data: { no_pengajuan: noPengajuan },
         dataType: 'json',

@@ -1,10 +1,21 @@
 <?php
+/* ============================================================================
+   Update BPB - FABRIC.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
+
+   Dokumen kain punya tabel kepala sendiri: whs_inmaterial_fabric (+_det)
+   utk PENERIMAAN (GK/IN) dan whs_bppb_h/whs_bppb_ro utk RETUR (GK/RO).
+   Keduanya dibedakan, karena jurnal GK/RO arahnya TERBALIK dari GK/IN.
+   (Bandingkan Accessories & General: dokumennya langsung di `bpb` dan
+   RI-nya tetap dihitung sbg penerimaan.)
+   ============================================================================ */
 include '../../conn/conn.php';
+$jenis = 'fabric';
+$jenis_esc = mysqli_real_escape_string($conn1, $jenis);
 header('Content-Type: application/json');
 
 $sql = mysqli_query($conn1, "SELECT no_pengajuan, tgl_pengajuan, status, deskripsi, created_by, created_at
-    FROM update_bpb_fabric_h
-    WHERE status NOT IN ('Approved','Cancel')
+    FROM Req_update_bpb_h
+    WHERE status NOT IN ('Approved','Cancel') AND jenis = '$jenis_esc'
     ORDER BY id DESC");
 
 $data = [];

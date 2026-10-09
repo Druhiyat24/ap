@@ -1,5 +1,16 @@
 <?php
+/* ============================================================================
+   Update BPB - FABRIC.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
+
+   Dokumen kain punya tabel kepala sendiri: whs_inmaterial_fabric (+_det)
+   utk PENERIMAAN (GK/IN) dan whs_bppb_h/whs_bppb_ro utk RETUR (GK/RO).
+   Keduanya dibedakan, karena jurnal GK/RO arahnya TERBALIK dari GK/IN.
+   (Bandingkan Accessories & General: dokumennya langsung di `bpb` dan
+   RI-nya tetap dihitung sbg penerimaan.)
+   ============================================================================ */
 include '../../conn/conn.php';
+$jenis = 'fabric';
+$jenis_esc = mysqli_real_escape_string($conn1, $jenis);
 header('Content-Type: application/json');
 ini_set('date.timezone', 'Asia/Jakarta');
 
@@ -22,8 +33,10 @@ $nama_supp_esc     = mysqli_real_escape_string($conn1, $nama_supp);
 $created_by_esc    = mysqli_real_escape_string($conn1, $created_by);
 $created_at        = date('Y-m-d H:i:s');
 
-$insertHeader = mysqli_query($conn1, "INSERT INTO update_bpb_fabric_h (no_pengajuan, tgl_pengajuan, nama_supp, deskripsi, status, created_by, created_at)
-    VALUES ('$no_pengajuan_esc', '$tgl_pengajuan_esc', '$nama_supp_esc', '$deskripsi_esc', 'Draft', '$created_by_esc', '$created_at')");
+/* Jenisnya ikut disimpan - inilah yang memisahkan daftar Fabric dgn
+   Accessories walau tabelnya sama. */
+$insertHeader = mysqli_query($conn1, "INSERT INTO Req_update_bpb_h (no_pengajuan, tgl_pengajuan, nama_supp, deskripsi, status, jenis, created_by, created_at)
+    VALUES ('$no_pengajuan_esc', '$tgl_pengajuan_esc', '$nama_supp_esc', '$deskripsi_esc', 'Draft', '$jenis_esc', '$created_by_esc', '$created_at')");
 
 if (!$insertHeader) {
     echo json_encode(['success' => false, 'message' => 'Failed to save header']);
@@ -50,7 +63,7 @@ foreach ($items as $item) {
 
     $tgl_bpb_val = $tgl_bpb ? "'$tgl_bpb'" : 'NULL';
 
-    mysqli_query($conn1, "INSERT INTO update_bpb_fabric (no_pengajuan, no_bpb, tgl_bpb, nama_supp, no_po, id_det, no_ws, id_jo, id_item, desc_item, qty, unit, curr, price_old, price_new, ppn_old, ppn_new, created_by, created_at)
+    mysqli_query($conn1, "INSERT INTO Req_update_bpb (no_pengajuan, no_bpb, tgl_bpb, nama_supp, no_po, id_det, no_ws, id_jo, id_item, desc_item, qty, unit, curr, price_old, price_new, ppn_old, ppn_new, created_by, created_at)
         VALUES ('$no_pengajuan_esc', '$no_bpb', $tgl_bpb_val, '$item_supp', '$no_po', '$id_det', '$no_ws', '$id_jo', '$id_item', '$desc_item', $qty, '$unit', '$curr', $price_old, $price_new, $ppn_old, $ppn_new, '$created_by_esc', '$created_at')");
 }
 

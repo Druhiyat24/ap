@@ -1,5 +1,15 @@
 <?php
+/* ============================================================================
+   Update BPB - FABRIC.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
+
+   Dokumen kain punya tabel kepala sendiri: whs_inmaterial_fabric (+_det)
+   utk PENERIMAAN (GK/IN) dan whs_bppb_h/whs_bppb_ro utk RETUR (GK/RO).
+   Keduanya dibedakan, karena jurnal GK/RO arahnya TERBALIK dari GK/IN.
+   (Bandingkan Accessories & General: dokumennya langsung di `bpb` dan
+   RI-nya tetap dihitung sbg penerimaan.)
+   ============================================================================ */
 include '../../conn/conn.php';
+$jenis = 'fabric';
 header('Content-Type: application/json');
 
 $no_bpb = isset($_GET['no_bpb']) ? $_GET['no_bpb'] : '';
@@ -7,6 +17,10 @@ $no_bpb_esc = mysqli_real_escape_string($conn1, $no_bpb);
 
 $result = ['ppn' => 0, 'items' => []];
 
+/* Accessories tidak punya tabel kepala - dokumennya langsung di `bpb`, dan
+   GACC/IN maupun GACC/RI sama-sama diperlakukan sbg PENERIMAAN (jurnalnya
+   searah). Bentuk kolom keluarannya dibuat
+   SAMA PERSIS dgn cabang Fabric supaya pengolahan di bawah tidak berubah. */
 $headerCheck = mysqli_query($conn1, "SELECT 1 FROM whs_inmaterial_fabric WHERE no_dok = '$no_bpb_esc' LIMIT 1");
 $isPenerimaan = $headerCheck && mysqli_num_rows($headerCheck) > 0;
 
@@ -47,6 +61,7 @@ if ($isPenerimaan) {
         WHERE h.no_bppb = '$no_bpb_esc'
         GROUP BY r.id_jo, r.id_item");
 }
+
 
 $first = true;
 while ($row = mysqli_fetch_assoc($sql)) {

@@ -1,6 +1,11 @@
 <?php include '../header.php' ?>
 <!-- DH-SKIN-START -->
 <style>
+  /* Penanda IR yang sudah dipakai PV - lihat blok PHP di bawah. */
+  .ir-terpakai{ display:inline-block; margin-top:3px; font-size:11px; font-weight:600;
+                color:#b3312c; background:#fdecec; border-radius:6px; padding:1px 7px; }
+  .ir-terpakai .fa{ font-size:10px; margin-right:3px; }
+  input.pilih-ir:disabled{ cursor:not-allowed; opacity:.45; }
   /* ===== Skin "Document Handover" (inline) — meniru document_handover.php ===== */
   .col.p-4{ background:transparent !important; box-shadow:none !important; }
   /* Netralkan wrapper .box supaya header NEMPEL ke form jadi 1 card */
@@ -306,6 +311,19 @@
 
             
 
+            /* ---- IR yang sudah dipakai Kontrabon/PV ----
+               Diambil SEKALI di luar perulangan, bukan per baris: kolom
+               kontrabon_h.ir_number tidak punya index, jadi satu query per
+               baris berarti puluhan kali pemindaian 11.948 baris. */
+            $irDipakaiPv = array();
+            $resPv = mysqli_query($conn2, "select ir_number, GROUP_CONCAT(DISTINCT no_kbon ORDER BY no_kbon SEPARATOR ', ') pv
+                from kontrabon_h
+                where ir_number is not null and ir_number <> '' and ir_number <> '0' and status <> 'Cancel'
+                group by ir_number");
+            if ($resPv) {
+                while ($rowPv = mysqli_fetch_assoc($resPv)) { $irDipakaiPv[$rowPv['ir_number']] = $rowPv['pv']; }
+            }
+
             while($row = mysqli_fetch_array($sql)){   
                 if ($row['tanggal'] == null || $row['tanggal'] == '') { $tanggal = '-'; }else{ $tanggal = date("d-M-Y",strtotime($row['tanggal']));}  
 
@@ -318,11 +336,28 @@
                 }else{
                     $fil_trans = '-';
                 }
+                    /* Sudah dipakai PV? Barisnya TETAP ditampilkan - supaya
+                       kelihatan kenapa tidak bisa di-reverse - tapi ceklisnya
+                       dimatikan dan nomor PV-nya ditulis di sebelah nomor IR.
+                       Membalik IR yang PV-nya sudah jadi akan membuat PV itu
+                       menunjuk dokumen yang sudah mundur, dan insert_reverse_ir.php
+                       sama sekali tidak memeriksanya. */
+                    $pvPemakai = isset($irDipakaiPv[$row['no_kbon']]) ? $irDipakaiPv[$row['no_kbon']] : '';
+                    if ($pvPemakai !== '') {
+                        $selCell = '<input type="checkbox" class="pilih-ir" disabled'
+                                 . ' title="Tidak bisa di-reverse: sudah dipakai PV ' . htmlspecialchars($pvPemakai, ENT_QUOTES) . '">';
+                        $tandaPv = '<br><span class="ir-terpakai" title="' . htmlspecialchars($pvPemakai, ENT_QUOTES) . '">'
+                                 . '<i class="fa fa-lock"></i> dipakai ' . htmlspecialchars($pvPemakai, ENT_QUOTES) . '</span>';
+                    } else {
+                        $selCell = '<input type="checkbox" class="pilih-ir" name="select[]" value="">';
+                        $tandaPv = '';
+                    }
+
                     echo '<tr>
-                            <td style="width:10px;"><input type="checkbox" id="select" name="select[]" value="" <?php if(in_array("1",$_POST[select])) echo "checked=checked";?></td>                        
+                            <td style="width:10px;">' . $selCell . '</td>
                             <td style="width:50px;" value="'.$row['dok'].'">'.$row['dok'].'</td>
                             <td style="width:100px;" value="'.$row['tanggal'].'">'.$tanggal.'</td>
-                            <td style="width:50px;" value="'.$row['no_kbon'].'">'.$row['no_kbon'].'</td>
+                            <td style="width:50px;" value="'.$row['no_kbon'].'">'.$row['no_kbon'].$tandaPv.'</td>
                             <td style="width:100px;" value="'.$row['tgl_kbon'].'">'.date("d-M-Y",strtotime($row['tgl_kbon'])).'</td>
                             <td style="" value="'.$row['supp'].'">'.$row['supp'].'</td>
                             <td style ="text-align: right;" class="dt_total" style="width:100px;" value="'.$row['total'].'">'.number_format($row['total'],2).'</td>
@@ -572,7 +607,9 @@ function addListener(elm,index){
             },
             success: function(response){
                 console.log(response);
-                 $("input[type=checkbox]:checked").each(function () {
+                 /* Penjaga kedua: yang terkunci tidak ikut terkirim, apa pun
+                    yang terjadi di layar. */
+                 $("input[type=checkbox]:checked:not(:disabled)").each(function () {
                     var no_doc = document.getElementById('no_doc').value;        
                     var tgl_doc = document.getElementById('tgl_doc').value;
                     var keterangan = document.getElementById('pesan').value;                               
@@ -628,9 +665,12 @@ function addListener(elm,index){
 </script>
 
 <script type="text/javascript">
+/* Yang terkunci (sudah dipakai PV) sengaja dilewati - kalau tidak,
+   "pilih semua" akan ikut mencentangnya dan .prop() tetap jalan
+   walau input-nya disabled. */
 $("#select_all").click(function() {
   var c = this.checked;
-  $(':checkbox').prop('checked', c);
+  $(':checkbox:not(:disabled)').prop('checked', c);
 });  
 </script>
 

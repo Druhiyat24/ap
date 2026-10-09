@@ -1,4 +1,21 @@
-<?php include '../header.php' ?>
+<?php
+/* ============================================================================
+   Update BPB - FABRIC.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
+
+   Dokumen kain punya tabel kepala sendiri: whs_inmaterial_fabric (+_det)
+   utk PENERIMAAN (GK/IN) dan whs_bppb_h/whs_bppb_ro utk RETUR (GK/RO).
+   Keduanya dibedakan, karena jurnal GK/RO arahnya TERBALIK dari GK/IN.
+   (Bandingkan Accessories & General: dokumennya langsung di `bpb` dan
+   RI-nya tetap dihitung sbg penerimaan.)
+   ============================================================================ */
+include '../header.php';
+?>
+<?php /* Nilai tetap berkas ini. Tidak ada parameter di tautan - satu menu
+   satu berkas. */
+$jenis = 'fabric';
+$label = 'Fabric';
+?>
+
 
 <!-- Tiap berkas CSS ditaut sendiri dgn penanda versi dari filemtime.
      Kosakata .ftl- dipakai bersama daftar FTR CBD/DP, Petty Cash Out, dan
@@ -15,14 +32,13 @@
     <div class="ftl-head">
       <span class="ftl-head-icon"><i class="fa fa-cubes" aria-hidden="true"></i></span>
       <div>
-        <h1>Update BPB Fabric</h1>
-        <span class="ftl-crumb">Cost Accounting &rsaquo; Update BPB Fabric</span>
+        <h1>Update BPB <?php echo htmlspecialchars($label); ?></h1>
+        <span class="ftl-crumb">Cost Accounting &rsaquo; Update BPB &rsaquo; <?php echo htmlspecialchars($label); ?> &rsaquo; Request</span>
       </div>
     </div><!-- /.ftl-head -->
 
 <div class="ftl-panel">
-  <form id="form-data" action="update-bpb-fabric.php
-" method="post">
+  <form id="form-data" action="update-bpb-fabric.php" method="post">
     <div class="form-row">
 
     <!-- Start Date -->
@@ -65,7 +81,7 @@
   <button type="button" class="app-btn app-btn-primary app-btn-sm" onclick="dataTableReload()">
         <i class="fa fa-search"></i> Search
       </button>
-    <button type="button" id="btnCreateNew" class="app-btn app-btn-success app-btn-sm" onclick="location.href='form_update_bpb_fabric.php'">
+    <button type="button" id="btnCreateNew" class="app-btn app-btn-success app-btn-sm" onclick="location.href='form_Req_update_bpb.php'">
         <i class="fa fa-plus-circle" aria-hidden="true"></i> Create New
     </button>
     <a id="btnExportExcel" target="_blank">
@@ -332,7 +348,7 @@ $('#table-data').on('click', '.btn-view-pengajuan', function () {
     $('#mymodal').modal('show');
 
     $.ajax({
-        url: 'get_detail_update_bpb_fabric.php',
+        url: 'get_detail_Req_update_bpb.php',
         type: 'GET',
         data: { no_pengajuan: noPengajuan },
         dataType: 'json',
@@ -434,7 +450,7 @@ $('#table-data').on('click', '.btn-cancel-pengajuan', function () {
         if (!result.isConfirmed) return;
 
         $.ajax({
-            url: 'cancel_update_bpb_fabric.php',
+            url: 'cancel_Req_update_bpb.php',
             type: 'POST',
             data: { no_pengajuan: noPengajuan },
             dataType: 'json',
@@ -550,17 +566,10 @@ document.getElementById('btnExportExcel').addEventListener('click', function(e) 
 
 </script>
 
-<script type="text/javascript">
-    document.getElementById('btncreate').onclick = function () {
-        location.href = "update-bpb-fabric.php";
-    };
-</script>
-
-<script type="text/javascript">
-    document.getElementById('reset').onclick = function () {
-        location.href = "update-bpb-fabric.php";
-    };
-</script>
+<!-- Dua blok skrip 'btncreate' & 'reset' dibuang: elemennya tidak ada di
+     halaman ini (tombolnya bernama btnCreateNew), jadi
+     getElementById(...).onclick melempar TypeError setiap halaman dibuka.
+     Redirect-nya juga tidak membawa jenis. -->
 <script type="text/javascript">
   $("#select_all").click(function() {
     var c = this.checked;
