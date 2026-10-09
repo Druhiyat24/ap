@@ -23,7 +23,7 @@
                 <div class="form-row">
                     <div class="col-12 col-sm-6 col-xl-3 mb-2">
                         <label for="nama_supp"><b>Supplier</b></label>            
-                        <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true">
+                        <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true" data-container="body">
                             <option value="ALL" selected="true">ALL</option>                                                
                             <?php
                             $nama_supp ='';
@@ -45,7 +45,7 @@
                     </div>
                     <div class="col-12 col-sm-6 col-xl-2 mb-2">
                         <label for="status"><b>Status</b></label>            
-                        <select class="form-control selectpicker" name="status" id="status" data-dropup-auto="false" data-live-search="true">
+                        <select class="form-control selectpicker" name="status" id="status" data-dropup-auto="false" data-live-search="true" data-container="body">
                             <option value="ALL" <?php
                             $status = '';
                             if ($_SERVER['REQUEST_METHOD'] == 'POST') {

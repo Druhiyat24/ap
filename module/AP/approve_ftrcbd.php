@@ -1,28 +1,32 @@
 <?php
 /* ============================================================================
    Approve FTR CBD - halaman persetujuan, TERPISAH dari daftarnya.
+   Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
 
-   Dulu tombol Approve menempel di halaman daftar (ftrcbd.php) sehingga
-   menyetujui dan mengelola dokumen bercampur di satu layar. Sekarang
-   persetujuan punya menunya sendiri - seperti menu Approval lain di
-   aplikasi ini - dan daftarnya hanya menyisakan Cancel / Edit / Pdf.
+   Bentuknya SENGAJA dibuat sama dgn Approval Update BPB: ceklis per baris,
+   tombol Approve/Cancel massal di kaki kartu, dan modal rincian. Versi
+   pertama dibuat dgn menyalin halaman DAFTAR - ada kartu filter dan tombol
+   Approve per baris - dan itu memang bukan yang diminta.
 
-   Isinya HANYA dokumen berstatus draft; penyaringnya dipaku di
-   ajx_approve_ftrcbd.php, bukan di tampilan.
+   Isinya HANYA dokumen berstatus draft; penyaringnya di ajx_approve_ftrcbd.php.
    ============================================================================ */
 include '../header.php';
 ?>
 
+
+<!-- Kosakata .ftl- dipakai bersama halaman daftar Update BPB Fabric, FTR
+     CBD/DP, dan Petty Cash Out - bentuknya sama dgn List Memorial Journal.
+     Perabot khas halaman approve ini (.aub-) ada di app-ubf-form.css. -->
 <link rel="stylesheet" href="../css/app-skin-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-skin-form.css'); ?>">
 <link rel="stylesheet" href="../css/app-loading.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-loading.css'); ?>">
-
 <link rel="stylesheet" href="../css/app-ftr-list.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-ftr-list.css'); ?>">
+<link rel="stylesheet" href="../css/app-ubf-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-ubf-form.css'); ?>">
 
 <!-- MAIN -->
 <div class="container-fluid mt-3 p-3">
   <div class="ftl-card">
     <div class="ftl-head">
-      <span class="ftl-head-icon"><i class="fa fa-exchange" aria-hidden="true"></i></span>
+      <span class="ftl-head-icon"><i class="fa fa-paper-plane" aria-hidden="true"></i></span>
       <div>
         <h1>Approve FTR CBD</h1>
         <span class="ftl-crumb">AP &rsaquo; FTR &rsaquo; Approval &rsaquo; FTR CBD</span>
@@ -30,222 +34,92 @@ include '../header.php';
     </div><!-- /.ftl-head -->
 
     <div class="ftl-panel">
+      <div class="aub-bar">
+        <span class="aub-note">
+          <i class="fa fa-info-circle" aria-hidden="true"></i>
+          FTR CBD pending approval: <b id="pendingCount">0</b>
+        </span>
+      </div>
+    </div><!-- /.ftl-panel -->
 
+    <div class="ftl-body">
+      <div class="ftl-tblwrap">
+        <table id="table-data" class="table ftl-tbl aub-tbl" style="width:100%">
+          <thead>
+            <tr class="thead-dark">
+              <th style="width:36px;"><input type="checkbox" id="select_all"></th>
+              <th style="width:188px;">No FTR CBD</th>
+              <th style="width:110px;">FTR Date</th>
+              <th class="text-left">Supplier</th>
+              <th class="text-left">No PO</th>
+              <th style="width:130px;">Total</th>
+              <th style="width:64px;">Curr</th>
+              <th style="width:92px;">Status</th>
+              <th style="width:196px;">Created By</th>
+              <th style="width:150px;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /.ftl-body -->
 
-            <form id="form-data" action="ftrcbd.php" method="post">        
-                <div class="form-row">
-                    <div class="col-12 col-sm-6 col-xl-3 mb-2">
-                        <label for="nama_supp"><b>Supplier</b></label>            
-                        <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true">
-                            <option value="ALL" selected="true">ALL</option>                                                
-                            <?php
-                            $nama_supp ='';
-                            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                                $nama_supp = isset($_POST['nama_supp']) ? $_POST['nama_supp']: null;
-                            }                 
-                            $sql = mysqli_query($conn1,"select distinct(Supplier) from mastersupplier where tipe_sup = 'S' order by Supplier ASC");
-                            while ($row = mysqli_fetch_array($sql)) {
-                                $data = $row['Supplier'];
-                                if($row['Supplier'] == $_POST['nama_supp']){
-                                    $isSelected = ' selected="selected"';
-                                }else{
-                                    $isSelected = '';
-                                }
-                                echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
-                            }?>
-                        </select>
-
-                    </div>
-                    <div class="col-12 col-sm-6 col-xl-2 mb-2">
-                        <label for="status"><b>Status</b></label>            
-                        <select class="form-control selectpicker" name="status" id="status" data-dropup-auto="false" data-live-search="true">
-                            <option value="ALL" <?php
-                            $status = '';
-                            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                                $status = isset($_POST['status']) ? $_POST['status']: null;
-                            }                 
-                            if($status == 'ALL'){
-                                $isSelected = ' selected="selected"';
-                            }else{
-                                $isSelected = '';
-                            }
-                            echo $isSelected;
-                            ?>                
-                            >ALL</option>
-                            <option value="draft" <?php
-                            $status = '';
-                            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                                $status = isset($_POST['status']) ? $_POST['status']: null;
-                            }                 
-                            if($status == 'draft'){
-                                $isSelected = ' selected="selected"';
-                            }else{
-                                $isSelected = '';
-                            }
-                            echo $isSelected;
-                            ?>
-                            >Draft</option>
-                            <option value="Approved" <?php
-                            $status = '';
-                            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                                $status = isset($_POST['status']) ? $_POST['status']: null;
-                            }                 
-                            if($status == 'Approved'){
-                                $isSelected = ' selected="selected"';
-                            }else{
-                                $isSelected = '';
-                            }
-                            echo $isSelected;
-                            ?>
-                            >Approved</option>
-                            <option value="Cancel" <?php
-                            $status = '';
-                            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                                $status = isset($_POST['status']) ? $_POST['status']: null;
-                            }                 
-                            if($status == 'Cancel'){
-                                $isSelected = ' selected="selected"';
-                            }else{
-                                $isSelected = '';
-                            }
-                            echo $isSelected;
-                            ?>
-                            >Cancel</option>                                                                                                             
-                        </select>
-                    </div>
-
-                    <div class="col-12 col-sm-6 col-xl-2 mb-2">
-                      <label for="start_date"><b>From</b></label>
-                      <input type="text" class="form-control tanggal" id="start_date" name="start_date" 
-                      value="<?php
-                      $start_date ='';
-                      if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                       $start_date = date("Y-m-d",strtotime($_POST['start_date']));
-                   }
-                   if(!empty($_POST['start_date'])) {
-                       echo $_POST['start_date'];
-                   }
-                   else{
-                       echo date("d-m-Y");
-                   } ?>" 
-                   autocomplete="off">
-               </div>
-
-                    <div class="col-12 col-sm-6 col-xl-2 mb-2">
-                 <label for="end_date"><b>To</b></label>        
-                 <input type="text" class="form-control tanggal" id="end_date" name="end_date" 
-                 value="<?php
-                 $end_date ='';
-                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                   $end_date = date("Y-m-d",strtotime($_POST['end_date']));
-               }
-               if(!empty($_POST['end_date'])) {
-                   echo $_POST['end_date'];
-               }
-               else{
-                   echo date("d-m-Y");
-               } ?>" 
-               autocomplete="off">
-           </div>
-
-           <div class="col-12 col-sm-6 col-xl-3 mb-2 ftl-actions">
-            <button type="submit" id="submit" class="app-btn app-btn-primary app-btn-sm"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
-<?php /* Tombol Create sengaja TIDAK ada di halaman persetujuan. */ ?>
-        </div>                                                            
+    <!-- Tombolnya di kaki kartu, sejajar dgn form Update BPB Fabric.
+         Penghitung di kirinya memberi tahu berapa baris yang tercentang -
+         sebelumnya baru ketahuan sesudah tombolnya ditekan. -->
+    <div class="ub-foot">
+      <span class="ub-foot-count"><b id="selectedCount">0</b> FTR CBD selected</span>
+      <span class="ub-foot-sisi">
+        <button type="button" id="btnCancel" class="app-btn app-btn-danger app-btn-sm">
+          <i class="fa fa-times" aria-hidden="true"></i> Cancel
+        </button>
+        <button type="button" id="btnApprove" class="app-btn app-btn-success app-btn-sm">
+          <i class="fa fa-check" aria-hidden="true"></i> Approve
+        </button>
+      </span>
     </div>
-</div>
-</form>
-</div><!-- /.ftl-card: kartu filter -->
-<div class="ftl-card mt-3">
-<div class="ftl-body">
-    <div class="row">       
-        <div class="col-md-12">
 
-          <!-- .app-loading-wrap: area yang ditutup overlay saat data ditarik.
-               Markup & kelasnya milik css/app-loading.css (dipakai bersama
-               halaman lain), jadi tampilannya seragam antar menu. -->
-          <div class="app-loading-wrap" id="ftrLoad">
-            <div class="app-loading">
-              <div class="app-loading-box">
-                <div class="app-spinner"></div>
-                <div class="app-loading-text">Loading data...</div>
-              </div>
-            </div>
-
-          <div class="ftl-tblwrap">
-            <table id="datatable" class="table ftl-tbl" role="grid" cellspacing="0" width="100%">
-                <thead>
-                    <tr class="thead-dark">
-                        <th style="text-align: center;vertical-align: middle;"></th>
-                        <th style="text-align: center;vertical-align: middle;">No FTR CBD</th>
-                        <th style="text-align: center;vertical-align: middle;width: 100px">FTR CBD Date</th>
-                        <th style="text-align: center;vertical-align: middle;">Supplier</th>            
-                        <th style="text-align: center;vertical-align: middle;">No PO</th>
-                        <th style="text-align: center;vertical-align: middle;">SubTotal</th>
-                        <th style="text-align: center;vertical-align: middle;">Tax</th>           
-                        <th style="text-align: center;vertical-align: middle;">Total</th>
-                        <th style="text-align: center;vertical-align: middle;">Currency</th>
-                        <th style="text-align: center;vertical-align: middle;">Create By</th>
-                        <th style="text-align: center;vertical-align: middle;">Status</th>
-                        <th style="text-align: center;vertical-align: middle;width: 200px">Action</th>
-
-                    </tr>
-                </thead>
-
-                <tbody></tbody>
-            </table>
-        </div>
-          </div><!-- /.app-loading-wrap -->
-
-    </div>
-</div>
-</div><!-- /.ftl-body -->
-</div><!-- /.ftl-card: kartu tabel -->
+  </div><!-- /.ftl-card -->
 </div><!-- /.container-fluid -->
-</div>
+
+<!-- Modal Detail. Bentuknya mengikuti modal rincian di halaman daftar
+     (ftl-modal is-titlefirst is-wide) supaya satu keluarga. -->
+<div class="modal fade ftl-modal is-titlefirst is-wide" id="mymodal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header text-white" style="background: linear-gradient(90deg, #191970, #1e90ff);">
+        <h5 class="modal-title" id="txt_bpb"></h5>
+        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div id="txt_tglbpb" class="col-md-3 mb-2"></div>
+          <div id="txt_supp" class="col-md-3 mb-2"></div>
+          <div id="txt_status" class="col-md-3 mb-2"></div>
+          <div id="txt_created_by" class="col-md-3 mb-2"></div>
+          <div id="txt_deskripsi" class="col-12 mb-2"></div>
+          <div id="details" class="col-12 mt-2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="modal fade ftl-modal" id="mymodalftrcbd" data-target="#mymodalftrcbd" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                <h4 class="modal-title" id="txt_cbd"></h4>
-            </div>
-            <div class="container">
-                <div class="row">
-                  <div id="txt_tgl_cbd" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                  <div id="txt_nama_supp" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>       
-                  <div id="txt_curr" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                  <div id="txt_create_user" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                  <div id="txt_status" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                  <div id="txt_keterangan" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>                                                               
-                  <div id="details" class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;"></div>          
-              </div>
-          </div>
-      </div> 
-      <!-- /.modal-content --> 
-      <!--  </div> -->
-      <!-- /.modal-dialog --> 
-      <!--    </div> -->        
 
-  </div><!-- body-row END -->
-</div>
-</div>
 
 <!-- Bootstrap core JavaScript -->
 <script src="../vendor/jquery/jquery.min.js"></script>
 <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
-<script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
-<script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>  
 <script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
+
 <script>
   // Hide submenus
-  $('#body-row .collapse').collapse('hide'); 
+  $('#body-row .collapse').collapse('hide');
 
 // Collapse/Expand icon
-$('#collapse-icon').addClass('fa-angle-double-left'); 
+$('#collapse-icon').addClass('fa-angle-double-left');
 
 // Collapse click
 $('[data-toggle=sidebar-colapse]').click(function() {
@@ -257,7 +131,7 @@ function SidebarCollapse () {
     $('.sidebar-submenu').toggleClass('d-none');
     $('.submenu-icon').toggleClass('d-none');
     $('#sidebar-container').toggleClass('sidebar-expanded sidebar-collapsed');
-    
+
     // Treating d-flex/d-none on separators with title
     var SeparatorTitle = $('.sidebar-separator-title');
     if ( SeparatorTitle.hasClass('d-flex') ) {
@@ -265,318 +139,245 @@ function SidebarCollapse () {
     } else {
         SeparatorTitle.addClass('d-flex');
     }
-    
+
     // Collapse/Expand icon
     $('#collapse-icon').toggleClass('fa-angle-double-left fa-angle-double-right');
 }
 </script>
-<script>
-    var PENGGUNA = '<?php echo $user; ?>';
-
-    /* Dibiarkan di lingkup global supaya blok skrip di bawah (Approve, Cancel,
-       modal rincian) bisa membaca data barisnya lewat ftrTable.row(...). */
-    var ftrTable = null;
-
-
-    function muatUlang() {
-        if (ftrTable) { ftrTable.ajax.reload(null, false); }
-    }
-
-    $(document).ready(function () {
-        ftrTable = $('#datatable').DataTable({
-            autoWidth: false,
-            processing: true,
-            serverSide: false,
-            order: [[1, 'asc']],   // kolom 0 kini tombol "+"
-
-            /* RESPONSIVE: kolom yang tidak muat DIKOLAPS jadi baris rincian
-               yang dibuka lewat tanda "+", bukan dipaksa digulir ke samping.
-               Modulnya sudah terbundel di datatables.min.js dan CSS-nya sudah
-               dimuat header.php (responsive.bootstrap4.min.css). */
-            responsive: {
-                details: { type: 'column', target: 0 }
-            },
-
-            ajax: {
-                url: 'ajx_approve_ftrcbd.php',
-                type: 'POST',
-                data: function (d) {
-                    d.nama_supp  = $('#nama_supp').val();
-                    d.status     = $('#status').val();
-                    d.start_date = $('#start_date').val();
-                    d.end_date   = $('#end_date').val();
-                    d.user       = PENGGUNA;
-                },
-                dataSrc: 'data',
-                error: function (xhr) {
-                    $('#ftrLoad').removeClass('is-loading');
-                    Swal.fire({
-                        icon: 'error', title: 'Failed to load the list',
-                        text: 'HTTP ' + xhr.status + ' - ' + (xhr.responseText || 'no response')
-                    });
-                }
-            },
-
-            /* Kolom tanggal & nilai uang dikirim DUA RUPA oleh ajx_ftrcbd.php:
-               satu untuk ditampilkan, satu untuk diurutkan. Tanpa itu
-               "01-Oct-2026" diurutkan sbg teks dan "1,234.56" sbg kalimat. */
-            /* responsivePriority: makin KECIL angkanya, makin lama kolom itu
-               dipertahankan saat layar menyempit. Urutannya diambil dari cara
-               orang membaca daftar ini: nomor dokumen & tombol aksi harus
-               selalu ada, lalu status, lalu nilai Total, baru sisanya. */
-            columns: [
-                { data: null, defaultContent: '', orderable: false, className: 'dtr-control', responsivePriority: 1 },
-                { data: 'no_ftr_cbd', responsivePriority: 1 },
-                { data: { _: 'tgl_urut',   display: 'tgl_tampil' }, responsivePriority: 6 },
-                { data: 'supp',  responsivePriority: 5 },
-                { data: 'no_po', responsivePriority: 7 },
-                { data: { _: 'subtotal_n', display: 'subtotal' }, responsivePriority: 8 },
-                { data: { _: 'tax_n',      display: 'tax' },      responsivePriority: 9 },
-                { data: { _: 'total_n',    display: 'total' },    responsivePriority: 4 },
-                { data: 'curr', responsivePriority: 10 },
-                { data: 'create_user', responsivePriority: 11 },
-                { data: { _: 'status',     display: 'status_html' }, responsivePriority: 3 },
-                { data: 'action', orderable: false, searchable: false, responsivePriority: 2 }
-            ],
-
-            /* Kelas "all" milik Responsive = kolom ini TIDAK PERNAH dikolaps,
-               seberapa pun sempit layarnya. responsivePriority saja tidak cukup:
-               itu hanya menentukan URUTAN dibuang. Tiga yang dikunci: nomor
-               dokumen, Status, dan Action - sisanya boleh masuk baris rincian.
-               Nomor kolom bergeser +1 karena kolom "+" disisipkan di depan. */
-            columnDefs: [
-                { targets: [1],        className: 'text-left ftl-doc all' },
-                { targets: [10],       className: 'text-center all' },
-                { targets: [11],       className: 'text-center ftl-act-cell all' },
-                { targets: [3, 4],     className: 'text-left' },            // Supplier, No PO
-                { targets: [5, 6, 7],  className: 'text-right ftl-amt' },  // SubTotal, Tax, Total
-                { targets: [2, 8, 9],  className: 'text-center' }          // tanggal, Currency, Create By
-            ],
-
-            language: {
-                emptyTable: 'No FTR CBD found for this filter.',
-                zeroRecords: 'No FTR CBD matches your search.'
-            }
-        });
-
-        /* Overlay mengikuti status processing DataTables - kotak "Processing"
-           bawaannya otomatis disembunyikan app-loading.css, jadi tidak muncul
-           dua-duanya. */
-        ftrTable.on('processing.dt', function (e, settings, processing) {
-            $('#ftrLoad').toggleClass('is-loading', processing);
-        });
-
-
-        /* Tombol Search ada DI DALAM form, jadi cukup satu pengait submit:
-           menangani klik tombol DAN tombol Enter di isian filter sekaligus.
-           Halaman tidak lagi dimuat ulang - hanya datanya yang ditarik. */
-        $('#form-data').on('submit', function (e) {
-            e.preventDefault();
-            ftrTable.ajax.reload();
-        });
-
-        $("[data-toggle=tooltip]").tooltip();
-    });
-</script>
 
 <script type="text/javascript">
-    $(document).ready(function () {
-        $('.tanggal').datepicker({
-            format: "dd-mm-yyyy",
-            autoclose:true
-        });
+
+function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, function (ch) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
     });
-</script>
+}
 
-<script>
-    $(function() {
-        $('.selectpicker').selectpicker();
+function formatMoney(amount, decimalCount = 2) {
+    const val = parseFloat(amount);
+    if (isNaN(val)) return '0.00';
+    return val.toLocaleString('en-US', {
+        minimumFractionDigits: decimalCount,
+        maximumFractionDigits: decimalCount
     });
-</script>
+}
 
-<script type="text/javascript">
-    /* Semua pengait di bawah dipasang pada #datatable tbody (delegasi), BUKAN
-       pada baris-barisnya langsung: barisnya kini dibuat ulang setiap kali data
-       ditarik, jadi pengait yang menempel ke baris akan ikut hilang. */
+let datatable = $("#table-data").DataTable({
+    ordering: false,
+    processing: true,
+    serverSide: false,
+    pageLength: 10,
+    searching: true,
+    info: true,
+    autoWidth: false,
 
-    /* Satu baris = satu objek data dari ajx_ftrcbd.php. Jauh lebih aman
-       daripada membaca ulang isi sel: urutan kolom boleh berubah tanpa
-       membuat tombol Approve mengirim nomor dokumen yang salah. */
-    function dataBaris(el) {
-        return ftrTable.row($(el).closest('tr')).data();
-    }
+    ajax: {
+        url: 'ajx_approve_ftrcbd.php',
+        type: 'POST'
+    },
 
-    /* Approve & Cancel sama-sama lewat sini. approveftrcbd.php dan
-       cancelftrcbd.php kini menjawab JSON {ok, message}, jadi pesan "berhasil"
-       hanya muncul kalau datanya MEMANG berubah - dulu pesan itu selalu
-       muncul asal permintaannya terkirim, termasuk saat dokumennya ternyata
-       sudah di-approve orang lain. */
-    function kirimAksi(opsi) {
-        Swal.fire({
-            title: 'Working...',
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            didOpen: function () { Swal.showLoading(); }
-        });
+    columns: [
+        { data: 'checkbox', orderable: false },
+        { data: 'no_ftr' },
+        { data: 'tgl_ftr' },
+        { data: 'supp' },
+        { data: 'no_po' },
+        { data: 'total', render: $.fn.dataTable.render.text() },
+        { data: 'curr' },
+        { data: 'status' },
+        { data: 'create_user' },
+        { data: 'action', orderable: false },
+    ],
 
-        $.ajax({
-            type: 'POST',
-            url: opsi.url,
-            data: opsi.kirim,
-            dataType: 'json'
-        }).done(function (jwb) {
-            if (!jwb || jwb.ok !== true) {
-                Swal.fire({ icon: 'error', title: opsi.judulGagal,
-                    text: (jwb && jwb.message) ? jwb.message : 'The server did not confirm the change.' });
-                return;
-            }
-            Swal.fire({
-                icon: 'success',
-                title: opsi.judulBerhasil,
-                html: jwb.message + '<div style="font-size:11.5px;color:#94a3b8;margin-top:6px">'
-                    + jwb.rows + (jwb.rows === 1 ? ' PO row updated.' : ' PO rows updated.') + '</div>',
-                confirmButtonText: 'OK'
-            }).then(muatUlang);
-        }).fail(function (xhr) {
-            /* Pesan dari server dipakai kalau ada - jauh lebih berguna
-               daripada sekadar nomor galat HTTP. */
-            var pesan = '';
-            try { pesan = (JSON.parse(xhr.responseText) || {}).message || ''; } catch (err) { pesan = ''; }
-            Swal.fire({
-                icon: 'error',
-                title: opsi.judulGagal,
-                text: pesan || ('HTTP ' + xhr.status + ' - ' + (xhr.responseText || 'no response'))
-            });
-        });
-    }
+    columnDefs: [
+        /* Nomor dokumen ditebalkan spt di halaman daftar; kolom teks
+           panjang dibiarkan rata kiri supaya tidak melayang di tengah. */
+        { targets: [0, 2, 6, 9], className: 'text-center' },
+        { targets: [1], className: 'text-center ftl-doc' },
+        { targets: [5], className: 'text-right ftl-amt' },
+        { targets: [7], className: 'text-center nw' },
+        { targets: [3, 4, 8], className: 'text-left' }
+    ],
 
-    $('#datatable tbody').on('click', '.ftl-mini.is-approve', function () {
-        var d = dataBaris(this);
-        if (!d) { return; }
+    drawCallback: function () {
+        $('#select_all').prop('checked', false);
+        $('#pendingCount').text(this.api().data().count());
+        /* Centang ikut hilang tiap tabel digambar ulang, jadi penghitungnya
+           harus ikut dinolkan - kalau tidak, angkanya tertinggal. */
+        $('#selectedCount').text($('#table-data tbody .chk-ftr:checked').length);
+    },
+});
 
-        Swal.fire({
-            icon: 'question',
-            title: 'Approve this FTR CBD?',
-            html: '<b>' + d.no_ftr_cbd + '</b>',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, Approve',
-            cancelButtonText: 'Cancel'
-        }).then(function (jawab) {
-            if (!jawab.isConfirmed) { return; }
-            kirimAksi({
-                url: 'approveftrcbd.php',
-                kirim: { noftrcbd: d.no_ftr_cbd, confirm_user: PENGGUNA },
-                judulGagal: 'Approve failed',
-                judulBerhasil: 'Approved'
-            });
-        });
+function dataTableReload() {
+    datatable.ajax.reload();
+}
+
+function perbaruiTercentang() {
+    $('#selectedCount').text($('#table-data tbody .chk-ftr:checked').length);
+}
+
+// Select all checkbox
+$('#select_all').on('click', function () {
+    const checked = this.checked;
+    $('#table-data tbody .chk-ftr').prop('checked', checked);
+    perbaruiTercentang();
+});
+$('#table-data').on('change', '.chk-ftr', perbaruiTercentang);
+
+function getSelectedFtr() {
+    const selected = [];
+    $('#table-data tbody .chk-ftr:checked').each(function () {
+        selected.push(this.value);
     });
+    return selected;
+}
 
-    $('#datatable tbody').on('click', '.ftl-mini.is-cancel', function () {
-        var d = dataBaris(this);
-        if (!d) { return; }
+function prosesApproveCancel(action) {
+    const selected = getSelectedFtr();
 
-        /* Cancel tidak bisa dibatalkan dari menu ini, jadi ditanya dulu. */
+    if (selected.length === 0) {
         Swal.fire({
             icon: 'warning',
-            title: 'Cancel this FTR CBD?',
-            html: '<b>' + d.no_ftr_cbd + '</b><br>This cannot be undone from this menu.',
-            showCancelButton: true,
-            confirmButtonText: 'Yes, Cancel It',
-            cancelButtonText: 'Back'
-        }).then(function (jawab) {
-            if (!jawab.isConfirmed) { return; }
-            kirimAksi({
-                url: 'cancelftrcbd.php',
-                kirim: { noftrcbd: d.no_ftr_cbd, cancel_user: PENGGUNA },
-                judulGagal: 'Cancel failed',
-                judulBerhasil: 'Canceled'
-            });
+            title: 'Oops...',
+            text: 'Select at least 1 FTR CBD!'
         });
-    });
+        return;
+    }
 
-    /* SELURUH BARIS membuka rinciannya kalau diklik - sama dgn menu List
-       Memorial Journal, dan .ftl-tbl tbody tr sudah diberi cursor:pointer
-       sbg petunjuknya. */
-    /* Menyorot teks untuk disalin diakhiri peristiwa "click" juga, jadi tanpa
-       penjaga di bawah ini setiap kali user mem-blok nomor atau nilai di dalam
-       tabel, modalnya ikut terbuka. Dua tanda yang membedakannya:
-         1. kursor bergeser lebih dari 4px antara ditekan dan dilepas
-         2. masih ada teks tersorot saat tombol dilepas
-       Pada klik biasa, peramban membersihkan sorotan di peristiwa mousedown,
-       jadi saat click dijalankan sorotannya memang sudah kosong. */
-    var tekanX = 0, tekanY = 0;
-    $('#datatable tbody').on('mousedown', 'tr', function (e) {
-        tekanX = e.clientX;
-        tekanY = e.clientY;
-    });
+    const isApprove = action === 'approve';
 
-    $('#datatable tbody').on('click', 'tr', function (e) {
-        if (Math.abs(e.clientX - tekanX) > 4 || Math.abs(e.clientY - tekanY) > 4) { return; }
-        var tersorot = window.getSelection ? String(window.getSelection()) : '';
-        if (tersorot.length > 0) { return; }
-
-        /* Tiga hal di dalam tbody yang TIDAK boleh membuka modal: tombol "+"
-           milik Responsive, baris rincian hasil bukaannya, dan kolom Action
-           yang isinya tombol sendiri. */
-        if ($(e.target).closest('td.dtr-control').length) { return; }
-        if ($(e.target).closest('.ftl-act-cell').length) { return; }
-        if ($(this).hasClass('child')) { return; }
-        var d = dataBaris(this);
-        if (!d) { return; }
-
-        $('#txt_cbd').html(d.no_ftr_cbd);
-        /* Label dan nilai ditulis sbg dua elemen terpisah supaya bisa
-           disejajarkan lewat CSS - tidak lagi satu kalimat utuh. */
-        function isiInfo(sel, label, nilai, mentah) {
-            $(sel).html('<span class="ftl-k">' + label + '</span>'
-                      + '<span class="ftl-v">' + (mentah ? nilai : $('<i>').text(nilai == null || nilai === '' ? '-' : nilai).html()) + '</span>');
-        }
-
-        isiInfo('#txt_tgl_cbd',     'FTR CBD Date', d.tgl_tampil);
-        isiInfo('#txt_nama_supp',   'Supplier',     d.supp);
-        isiInfo('#txt_curr',        'Currency',     d.curr);
-        isiInfo('#txt_create_user', 'Created By',   d.create_user);
-        isiInfo('#txt_status',      'Status',       d.status_html, true);
-        isiInfo('#txt_keterangan',  'Remark',       d.keterangan);
-        $('#details').html('');
-        $('#mymodalftrcbd').modal('show');
+    Swal.fire({
+        title: isApprove ? 'Approve the selected FTR CBD?' : 'Cancel the selected FTR CBD?',
+        text: selected.length + ' FTR CBD will have their status changed to ' + (isApprove ? 'Approved' : 'Cancel') + '.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: isApprove ? '#28a745' : '#d33',
+        cancelButtonColor: '#aaa',
+        confirmButtonText: isApprove ? 'Yes, Approve' : 'Yes, Cancel',
+        cancelButtonText: 'Close'
+    }).then((result) => {
+        if (!result.isConfirmed) return;
 
         $.ajax({
-            type: 'post',
-            url: 'ajaxcbd.php',
-            data: { noftrcbd: d.no_ftr_cbd },
-            success: function (data) { $('#details').html(data); },
-            error: function () { $('#details').html('<div style="color:#b3312c">Failed to load the PO detail.</div>'); }
+            url: 'proses_approve_ftrcbd.php',
+            type: 'POST',
+            data: { action: action, no_ftr: selected, approve_user: '<?php echo htmlspecialchars($user, ENT_QUOTES); ?>' },
+            dataType: 'json',
+            success: function (res) {
+                if (res.success) {
+                    /* FTR tidak memposting jurnal di titik ini - jurnalnya terbentuk
+                       nanti lewat Kontra Bon - jadi tidak ada hitungan jurnal di sini. */
+                    let text = res.updated + ' FTR CBD processed successfully' + (res.skipped > 0 ? ', ' + res.skipped + ' skipped' : '');
+                    if (res.warnings && res.warnings.length > 0) {
+                        text += '\n\nNote:\n' + res.warnings.join('\n');
+                    }
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: text,
+                        timer: res.warnings && res.warnings.length > 0 ? undefined : 2000,
+                        showConfirmButton: res.warnings && res.warnings.length > 0
+                    });
+                    datatable.ajax.reload();
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Failed!', text: res.message || 'An error occurred' });
+                }
+            },
+            error: function () {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to process the requests' });
+            }
         });
     });
-</script>
-
-<script type="text/javascript">
-    /* Tombol Create hanya dicetak utk user ber-hak (id menu = 5). Tanpa
-       penjaga ini, di user lain barisnya melempar galat dan blok skrip mati. */
-    var tombolCreate = document.getElementById('btncreate');
-    if (tombolCreate) {
-        tombolCreate.onclick = function () { location.href = "formftrcbd.php"; };
-    }
-</script>
-
-
-<!--
-<script>
-function alert_cancel() {
-  alert("Data Berhasil di Cancel");
-  location.reload();
 }
-function alert_approve() {
-  alert("Data Berhasil di Approve");
-  location.reload();
-}
-</script>
--->
 
-<!--<script src="//netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>-->
+$('#btnApprove').on('click', function () {
+    prosesApproveCancel('approve');
+});
+
+$('#btnCancel').on('click', function () {
+    prosesApproveCancel('cancel');
+});
+
+// View detail of an edit request
+$('#table-data').on('click', '.btn-view-ftr', function () {
+    const noFtr = this.dataset.no;
+
+    $('#txt_bpb').text('FTR CBD - ' + noFtr);
+    $('#txt_tglbpb, #txt_supp, #txt_status, #txt_created_by, #txt_deskripsi').html('');
+    $('#details').html('<div class="text-center p-3"><i class="fas fa-spinner fa-spin"></i></div>');
+    $('#mymodal').modal('show');
+
+    $.ajax({
+        url: 'get_detail_ftrcbd.php',
+        type: 'GET',
+        data: { no_ftr: noFtr },
+        dataType: 'json',
+        success: function (res) {
+            const h = res.header;
+            if (h) {
+                $('#txt_tglbpb').html('<b>FTR Date:</b> ' + escapeHtml(h.tgl_ftr));
+                $('#txt_supp').html('<b>Supplier:</b> ' + escapeHtml(h.supp || '-'));
+                $('#txt_status').html('<b>Status:</b> ' + escapeHtml(h.status));
+                const createdByText = h.create_user ? (h.create_user + ' (' + h.create_date + ')') : '-';
+                $('#txt_created_by').html('<b>Created By:</b> ' + escapeHtml(createdByText));
+                $('#txt_deskripsi').html('<b>Payment Date:</b> ' + escapeHtml(h.tgl_bayar)
+                    + ' &nbsp;&nbsp; <b>SubTotal:</b> ' + escapeHtml(h.subtotal)
+                    + ' &nbsp;&nbsp; <b>Tax:</b> ' + escapeHtml(h.tax)
+                    + ' &nbsp;&nbsp; <b>Total:</b> ' + escapeHtml(h.total) + ' ' + escapeHtml(h.curr || ''));
+            }
+
+            if (!res.items.length) {
+                $('#details').html('<div class="text-center p-3 text-muted">No items found</div>');
+                return;
+            }
+
+            /* Tabel rincian dijadikan DataTable spt modal di halaman daftar:
+               punya pencarian, jumlah baris, dan penomoran halaman - sebuah
+               satu FTR bisa memuat banyak baris PO. Tiap sel diberi kelas
+               perataannya sendiri; kalau tidak, angka rata kiri dan kolom
+               pendek saling menempel. */
+            let html = '<table id="table-detail-approve" class="table ftl-tbl" style="width:100%">';
+            html += '<thead><tr class="thead-dark">'
+                + '<th class="nw">No PO</th><th class="nw">PO Date</th><th class="text-left">No PI</th>'
+                + '<th class="nw">Curr</th><th class="text-right">SubTotal</th>'
+                + '<th class="text-right">Tax</th><th class="text-right">Total</th>'
+                + '</tr></thead><tbody>';
+
+            res.items.forEach(function (it) {
+                html += '<tr>'
+                    + '<td class="ftl-doc">' + escapeHtml(it.no_po || '-') + '</td>'
+                    + '<td class="nw">' + escapeHtml(it.tgl_po) + '</td>'
+                    + '<td class="text-left">' + escapeHtml(it.no_pi || '-') + '</td>'
+                    + '<td class="nw">' + escapeHtml(it.curr || '-') + '</td>'
+                    + '<td class="text-right ftl-amt">' + escapeHtml(it.subtotal) + '</td>'
+                    + '<td class="text-right ftl-amt">' + escapeHtml(it.tax) + '</td>'
+                    + '<td class="text-right ftl-amt">' + escapeHtml(it.total) + '</td>'
+                    + '</tr>';
+            });
+
+            html += '</tbody></table>';
+            /* Instance lama dibuang dulu: modal ini dibuka berulang kali untuk
+               dokumen berbeda, dan DataTables menolak diinisialisasi dua kali
+               pada id yang sama. */
+            if ($.fn.DataTable.isDataTable('#table-detail-approve')) {
+                $('#table-detail-approve').DataTable().destroy();
+            }
+            $('#details').html(html);
+            $('#table-detail-approve').DataTable({
+                ordering: false,
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']],
+                language: { emptyTable: 'No PO line in this FTR.' }
+            });
+        },
+        error: function () {
+            $('#details').html('<div class="text-center p-3 text-danger">Failed to load detail</div>');
+        }
+    });
+});
+
+</script>
 
 </body>
 
