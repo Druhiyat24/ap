@@ -1,19 +1,26 @@
 <?php
 /* ============================================================================
-   Update BPB - FABRIC.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
+   Update BPB - GENERAL.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
 
-   Dokumen kain punya tabel kepala sendiri: whs_inmaterial_fabric (+_det)
-   utk PENERIMAAN (GK/IN) dan whs_bppb_h/whs_bppb_ro utk RETUR (GK/RO).
-   Keduanya dibedakan, karena jurnal GK/RO arahnya TERBALIK dari GK/IN.
-   (Bandingkan Accessories & General: dokumennya langsung di `bpb` dan
-   RI-nya tetap dihitung sbg penerimaan.)
+   Dokumennya dibaca dari tabel `bpb` dgn bpbno_int LIKE 'GEN/%'. GEN/IN
+   maupun GEN/RI ikut semua: diperiksa ke data 8 Okt 2026, jurnal GEN/RI
+   SEARAH dgn penerimaan (persediaan didebit, GR/IR dikredit, type
+   'AP - BPB'), jadi bukan retur akuntansi seperti GK/RO di Fabric.
+
+   AWAS - kunci sambungan ke PO BEDA dari Fabric/Accessories:
+   masteritem.id_gen KOSONG (NULL) untuk semua item GEN, sedangkan
+   po_item.id_gen justru berisi id_item-nya langsung. Jadi di sini
+   dipakai  pi.id_gen = bpb.id_item , bukan  pi.id_gen = masteritem.id_gen .
+   Dgn kunci yang salah, 0 dari 4.816 baris dapat harga PO - tombol
+   "isi dari PO" dan ceklis "sembunyikan yang sudah cocok" mati tanpa
+   pesan apa pun. Dgn kunci ini: 4.812 dari 4.816 dapat harga.
    ============================================================================ */
 include '../header.php';
 ?>
 <?php /* Nilai tetap berkas ini. Tidak ada parameter di tautan - satu menu
    satu berkas. */
-$jenis = 'fabric';
-$label = 'Fabric';
+$jenis = 'general';
+$label = 'General';
 ?>
 
 
@@ -38,7 +45,7 @@ $label = 'Fabric';
     </div><!-- /.ftl-head -->
 
 <div class="ftl-panel">
-  <form id="form-data" action="update-bpb-fabric.php" method="post">
+  <form id="form-data" action="update-bpb-general.php" method="post">
     <div class="form-row">
 
     <!-- Start Date -->
@@ -81,7 +88,7 @@ $label = 'Fabric';
   <button type="button" class="app-btn app-btn-primary app-btn-sm" onclick="dataTableReload()">
         <i class="fa fa-search"></i> Search
       </button>
-    <button type="button" id="btnCreateNew" class="app-btn app-btn-success app-btn-sm" onclick="location.href='form_Req_update_bpb.php'">
+    <button type="button" id="btnCreateNew" class="app-btn app-btn-success app-btn-sm" onclick="location.href='form_update_bpb_general.php'">
         <i class="fa fa-plus-circle" aria-hidden="true"></i> Create New
     </button>
     <a id="btnExportExcel" target="_blank">
@@ -272,7 +279,7 @@ function SidebarCollapse () {
     },
 
       ajax: {
-        url: 'ajx_update-bpb-fabric.php',
+        url: 'ajx_update-bpb-general.php',
         type: 'POST',
         data: function (d) {
           d.start_date      = $('#start_date').val();
@@ -348,7 +355,7 @@ $('#table-data').on('click', '.btn-view-pengajuan', function () {
     $('#mymodal').modal('show');
 
     $.ajax({
-        url: 'get_detail_Req_update_bpb.php',
+        url: 'get_detail_update_bpb_general.php',
         type: 'GET',
         data: { no_pengajuan: noPengajuan },
         dataType: 'json',
@@ -450,7 +457,7 @@ $('#table-data').on('click', '.btn-cancel-pengajuan', function () {
         if (!result.isConfirmed) return;
 
         $.ajax({
-            url: 'cancel_Req_update_bpb.php',
+            url: 'cancel_update_bpb_general.php',
             type: 'POST',
             data: { no_pengajuan: noPengajuan },
             dataType: 'json',
@@ -561,7 +568,7 @@ document.getElementById('btnExportExcel').addEventListener('click', function(e) 
   let start_date = toYmd(document.getElementById('start_date').value);
   let end_date = toYmd(document.getElementById('end_date').value);
 
-  this.href = `ekspor_update-bpb-fabric.php?start_date=${start_date}&end_date=${end_date}`;
+  this.href = `ekspor_update-bpb-general.php?start_date=${start_date}&end_date=${end_date}`;
 });
 
 </script>

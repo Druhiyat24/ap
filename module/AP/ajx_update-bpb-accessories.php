@@ -1,15 +1,15 @@
 <?php
 /* ============================================================================
-   Update BPB - FABRIC.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
+   Update BPB - ACCESSORIES.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
 
-   Dokumen kain punya tabel kepala sendiri: whs_inmaterial_fabric (+_det)
-   utk PENERIMAAN (GK/IN) dan whs_bppb_h/whs_bppb_ro utk RETUR (GK/RO).
-   Keduanya dibedakan, karena jurnal GK/RO arahnya TERBALIK dari GK/IN.
-   (Bandingkan Accessories & General: dokumennya langsung di `bpb` dan
-   RI-nya tetap dihitung sbg penerimaan.)
+   Dokumennya dibaca dari tabel `bpb` dgn bpbno_int LIKE 'GACC/%'. GACC/IN
+   maupun GACC/RI ikut semua: diperiksa ke produksi 8 Okt 2026, jurnal
+   GACC/RI SEARAH dgn penerimaan (Persediaan Aksesoris didebit, GR/IR
+   Aksesoris dikredit, type 'AP - BPB'), jadi bukan retur akuntansi
+   seperti GK/RO di Fabric.
    ============================================================================ */
 include '../../conn/conn.php';
-$jenis = 'fabric';
+$jenis = 'accessories';
 $jenis_esc = mysqli_real_escape_string($conn1, $jenis);
 header('Content-Type: application/json');
 
@@ -62,7 +62,7 @@ while ($row = mysqli_fetch_assoc($sql)) {
                    . htmlspecialchars($statusRaw, ENT_QUOTES) . '</span>';
     $row['action'] = '<div class="ftl-act">'
         . '<button type="button" class="ftl-mini is-info btn-view-pengajuan" title="Show the request detail" data-no="' . htmlspecialchars($row['no_pengajuan'], ENT_QUOTES) . '"><i class="fa fa-eye" aria-hidden="true"></i> View</button>'
-        . '<a href="pdf_Req_update_bpb.php?no_pengajuan=' . urlencode($row['no_pengajuan']) . '" target="_blank" class="ftl-mini is-pdf" title="Open the printable PDF"><i class="fa fa-file-pdf-o" aria-hidden="true"></i> Pdf</a>';
+        . '<a href="pdf_update_bpb_accessories.php?no_pengajuan=' . urlencode($row['no_pengajuan']) . '" target="_blank" class="ftl-mini is-pdf" title="Open the printable PDF"><i class="fa fa-file-pdf-o" aria-hidden="true"></i> Pdf</a>';
 
     if ($statusRaw != 'Approved' && $statusRaw != 'Cancel') {
         $row['action'] .= '<button type="button" class="ftl-mini is-cancel btn-cancel-pengajuan" title="Cancel this request" data-no="' . htmlspecialchars($row['no_pengajuan'], ENT_QUOTES) . '"><i class="fa fa-trash" aria-hidden="true"></i> Cancel</button>';

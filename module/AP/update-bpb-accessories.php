@@ -1,19 +1,19 @@
 <?php
 /* ============================================================================
-   Update BPB - FABRIC.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
+   Update BPB - ACCESSORIES.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
 
-   Dokumen kain punya tabel kepala sendiri: whs_inmaterial_fabric (+_det)
-   utk PENERIMAAN (GK/IN) dan whs_bppb_h/whs_bppb_ro utk RETUR (GK/RO).
-   Keduanya dibedakan, karena jurnal GK/RO arahnya TERBALIK dari GK/IN.
-   (Bandingkan Accessories & General: dokumennya langsung di `bpb` dan
-   RI-nya tetap dihitung sbg penerimaan.)
+   Dokumennya dibaca dari tabel `bpb` dgn bpbno_int LIKE 'GACC/%'. GACC/IN
+   maupun GACC/RI ikut semua: diperiksa ke produksi 8 Okt 2026, jurnal
+   GACC/RI SEARAH dgn penerimaan (Persediaan Aksesoris didebit, GR/IR
+   Aksesoris dikredit, type 'AP - BPB'), jadi bukan retur akuntansi
+   seperti GK/RO di Fabric.
    ============================================================================ */
 include '../header.php';
 ?>
 <?php /* Nilai tetap berkas ini. Tidak ada parameter di tautan - satu menu
    satu berkas. */
-$jenis = 'fabric';
-$label = 'Fabric';
+$jenis = 'accessories';
+$label = 'Accessories';
 ?>
 
 
@@ -38,7 +38,7 @@ $label = 'Fabric';
     </div><!-- /.ftl-head -->
 
 <div class="ftl-panel">
-  <form id="form-data" action="update-bpb-fabric.php" method="post">
+  <form id="form-data" action="update-bpb-accessories.php" method="post">
     <div class="form-row">
 
     <!-- Start Date -->
@@ -81,7 +81,7 @@ $label = 'Fabric';
   <button type="button" class="app-btn app-btn-primary app-btn-sm" onclick="dataTableReload()">
         <i class="fa fa-search"></i> Search
       </button>
-    <button type="button" id="btnCreateNew" class="app-btn app-btn-success app-btn-sm" onclick="location.href='form_Req_update_bpb.php'">
+    <button type="button" id="btnCreateNew" class="app-btn app-btn-success app-btn-sm" onclick="location.href='form_update_bpb_accessories.php'">
         <i class="fa fa-plus-circle" aria-hidden="true"></i> Create New
     </button>
     <a id="btnExportExcel" target="_blank">
@@ -272,7 +272,7 @@ function SidebarCollapse () {
     },
 
       ajax: {
-        url: 'ajx_update-bpb-fabric.php',
+        url: 'ajx_update-bpb-accessories.php',
         type: 'POST',
         data: function (d) {
           d.start_date      = $('#start_date').val();
@@ -348,7 +348,7 @@ $('#table-data').on('click', '.btn-view-pengajuan', function () {
     $('#mymodal').modal('show');
 
     $.ajax({
-        url: 'get_detail_Req_update_bpb.php',
+        url: 'get_detail_update_bpb_accessories.php',
         type: 'GET',
         data: { no_pengajuan: noPengajuan },
         dataType: 'json',
@@ -450,7 +450,7 @@ $('#table-data').on('click', '.btn-cancel-pengajuan', function () {
         if (!result.isConfirmed) return;
 
         $.ajax({
-            url: 'cancel_Req_update_bpb.php',
+            url: 'cancel_update_bpb_accessories.php',
             type: 'POST',
             data: { no_pengajuan: noPengajuan },
             dataType: 'json',
@@ -561,7 +561,7 @@ document.getElementById('btnExportExcel').addEventListener('click', function(e) 
   let start_date = toYmd(document.getElementById('start_date').value);
   let end_date = toYmd(document.getElementById('end_date').value);
 
-  this.href = `ekspor_update-bpb-fabric.php?start_date=${start_date}&end_date=${end_date}`;
+  this.href = `ekspor_update-bpb-accessories.php?start_date=${start_date}&end_date=${end_date}`;
 });
 
 </script>

@@ -1,12 +1,19 @@
 <?php
 /* ============================================================================
-   Update BPB - FABRIC.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
+   Update BPB - GENERAL.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
 
-   Dokumen kain punya tabel kepala sendiri: whs_inmaterial_fabric (+_det)
-   utk PENERIMAAN (GK/IN) dan whs_bppb_h/whs_bppb_ro utk RETUR (GK/RO).
-   Keduanya dibedakan, karena jurnal GK/RO arahnya TERBALIK dari GK/IN.
-   (Bandingkan Accessories & General: dokumennya langsung di `bpb` dan
-   RI-nya tetap dihitung sbg penerimaan.)
+   Dokumennya dibaca dari tabel `bpb` dgn bpbno_int LIKE 'GEN/%'. GEN/IN
+   maupun GEN/RI ikut semua: diperiksa ke data 8 Okt 2026, jurnal GEN/RI
+   SEARAH dgn penerimaan (persediaan didebit, GR/IR dikredit, type
+   'AP - BPB'), jadi bukan retur akuntansi seperti GK/RO di Fabric.
+
+   AWAS - kunci sambungan ke PO BEDA dari Fabric/Accessories:
+   masteritem.id_gen KOSONG (NULL) untuk semua item GEN, sedangkan
+   po_item.id_gen justru berisi id_item-nya langsung. Jadi di sini
+   dipakai  pi.id_gen = bpb.id_item , bukan  pi.id_gen = masteritem.id_gen .
+   Dgn kunci yang salah, 0 dari 4.816 baris dapat harga PO - tombol
+   "isi dari PO" dan ceklis "sembunyikan yang sudah cocok" mati tanpa
+   pesan apa pun. Dgn kunci ini: 4.812 dari 4.816 dapat harga.
    ============================================================================ */
 include '../header.php';
 ?>
@@ -57,13 +64,13 @@ mysqli_query($conn1, "ALTER TABLE Req_update_bpb ADD COLUMN IF NOT EXISTS id_jo 
    halaman ini pertama dibuka - pola yang sama dgn id_jo di atas. */
 mysqli_query($conn1, "ALTER TABLE Req_update_bpb_h ADD COLUMN IF NOT EXISTS jenis VARCHAR(20) NOT NULL DEFAULT 'fabric' AFTER status");
 
-$jenis = 'fabric';
-$label = 'Fabric';
+$jenis = 'general';
+$label = 'General';
 
 // Generate next transaction number: UPD/GK/MMYY/00001
 /* Awalannya beda per jenis (UPD/GK/ vs UPD/GACC/) supaya penomorannya
    tidak pernah bertabrakan antar menu. */
-$prefix = 'UPD/GK/' . date('my') . '/';
+$prefix = 'UPD/GEN/' . date('my') . '/';
 /* Angka urutnya dipotong sepanjang awalan - DULU dipatok 13, yang hanya
    benar untuk 'UPD/GK/1026/' (12 huruf). Awalan aksesoris lebih panjang. */
 $potong = strlen($prefix) + 1;
@@ -210,7 +217,7 @@ $no_pengajuan = $prefix . str_pad($next_no, 5, '0', STR_PAD_LEFT);
     <div class="ub-foot">
       <span class="ub-foot-sisi">
         <span class="ub-foot-count"><b id="ub-count">0</b> row(s) ready to save</span>
-        <button type="button" class="app-btn app-btn-danger app-btn-sm" onclick="location.href='update-bpb-fabric.php'">
+        <button type="button" class="app-btn app-btn-danger app-btn-sm" onclick="location.href='update-bpb-general.php'">
           <i class="fa fa-angle-double-left" aria-hidden="true"></i> Back
         </button>
         <button type="button" id="btnSave" class="app-btn ub-btn-brand app-btn-sm">
@@ -226,7 +233,7 @@ $no_pengajuan = $prefix . str_pad($next_no, 5, '0', STR_PAD_LEFT);
      MODAL - penyuntingan harga & PPN per item, seperti semula.
 
      Dua kolom baru: Price (PO) dan tombol isi-dari-PO per baris. Angkanya
-     memang SUDAH dikirim get_detail_bpb_fabric_edit.php (po_price / po_ppn)
+     memang SUDAH dikirim get_detail_bpb_general_edit.php (po_price / po_ppn)
      sejak dulu, hanya tidak pernah dipakai - jadi user mengetik ulang angka
      yang sebetulnya sudah diketahui sistem.
 
@@ -428,7 +435,7 @@ $no_pengajuan = $prefix . str_pad($next_no, 5, '0', STR_PAD_LEFT);
 
           $.ajax({
               type: 'POST',
-              url: 'cari_data_bpb_fabric_edit.php',
+              url: 'cari_data_bpb_general_edit.php',
               data: { nama_supp: nama_supp, start_date: start_date, end_date: end_date },
               dataType: 'json',
               success: function (res) {
@@ -490,7 +497,7 @@ $no_pengajuan = $prefix . str_pad($next_no, 5, '0', STR_PAD_LEFT);
 
           $.ajax({
               type: 'GET',
-              url: 'get_detail_bpb_fabric_edit.php',
+              url: 'get_detail_bpb_general_edit.php',
               data: { no_bpb: noBpb },
               dataType: 'json',
               success: function (res) {
@@ -596,7 +603,7 @@ $no_pengajuan = $prefix . str_pad($next_no, 5, '0', STR_PAD_LEFT);
       $('#table-modal-detail tbody').on('change', '.chk-modal-row', hitungCentang);
 
       /* ---- Isi dari PO ----
-         Harga & PPN menurut PO sudah dikirim get_detail_bpb_fabric_edit.php
+         Harga & PPN menurut PO sudah dikirim get_detail_bpb_general_edit.php
          (po_price / po_ppn) sejak dulu, hanya tidak pernah dipakai - jadi
          angkanya diketik ulang padahal sistem sudah tahu. */
       function isiDariPo(tr) {
@@ -815,7 +822,7 @@ $no_pengajuan = $prefix . str_pad($next_no, 5, '0', STR_PAD_LEFT);
 
               $.ajax({
                   type: 'POST',
-                  url: 'insert_Req_update_bpb.php',
+                  url: 'insert_update_bpb_general.php',
                   data: {
                       no_pengajuan: noPengajuan,
                       tgl_pengajuan: $('#tgl_pengajuan').val(),
@@ -843,7 +850,7 @@ $no_pengajuan = $prefix . str_pad($next_no, 5, '0', STR_PAD_LEFT);
                           }).then(() => {
                               /* jenis WAJIB dibawa: tanpa ini daftar selalu
                                  jatuh ke Fabric walau yang disimpan Accessories. */
-                              window.location = 'update-bpb-fabric.php';
+                              window.location = 'update-bpb-general.php';
                           });
                       } else {
                           tombol.prop('disabled', false).html('<i class="fas fa-save"></i> Save Request');

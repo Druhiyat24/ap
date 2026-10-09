@@ -20,18 +20,18 @@
 
     <?php
 /* ============================================================================
-   Update BPB - FABRIC.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
+   Update BPB - ACCESSORIES.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
 
-   Dokumen kain punya tabel kepala sendiri: whs_inmaterial_fabric (+_det)
-   utk PENERIMAAN (GK/IN) dan whs_bppb_h/whs_bppb_ro utk RETUR (GK/RO).
-   Keduanya dibedakan, karena jurnal GK/RO arahnya TERBALIK dari GK/IN.
-   (Bandingkan Accessories & General: dokumennya langsung di `bpb` dan
-   RI-nya tetap dihitung sbg penerimaan.)
+   Dokumennya dibaca dari tabel `bpb` dgn bpbno_int LIKE 'GACC/%'. GACC/IN
+   maupun GACC/RI ikut semua: diperiksa ke produksi 8 Okt 2026, jurnal
+   GACC/RI SEARAH dgn penerimaan (Persediaan Aksesoris didebit, GR/IR
+   Aksesoris dikredit, type 'AP - BPB'), jadi bukan retur akuntansi
+   seperti GK/RO di Fabric.
    ============================================================================ */
     header("Content-type: application/vnd-ms-excel");
     header("Content-Disposition: attachment; filename=Update BPB Fabric.xls");
     include '../../conn/conn.php';
-$jenis = 'fabric';
+$jenis = 'accessories';
 $jenis_esc = mysqli_real_escape_string($conn1, $jenis);
 
     $start_date_disp = date("d F Y", strtotime($_GET['start_date']));

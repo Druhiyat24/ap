@@ -1,15 +1,22 @@
 <?php
 /* ============================================================================
-   Update BPB - FABRIC.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
+   Update BPB - GENERAL.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
 
-   Dokumen kain punya tabel kepala sendiri: whs_inmaterial_fabric (+_det)
-   utk PENERIMAAN (GK/IN) dan whs_bppb_h/whs_bppb_ro utk RETUR (GK/RO).
-   Keduanya dibedakan, karena jurnal GK/RO arahnya TERBALIK dari GK/IN.
-   (Bandingkan Accessories & General: dokumennya langsung di `bpb` dan
-   RI-nya tetap dihitung sbg penerimaan.)
+   Dokumennya dibaca dari tabel `bpb` dgn bpbno_int LIKE 'GEN/%'. GEN/IN
+   maupun GEN/RI ikut semua: diperiksa ke data 8 Okt 2026, jurnal GEN/RI
+   SEARAH dgn penerimaan (persediaan didebit, GR/IR dikredit, type
+   'AP - BPB'), jadi bukan retur akuntansi seperti GK/RO di Fabric.
+
+   AWAS - kunci sambungan ke PO BEDA dari Fabric/Accessories:
+   masteritem.id_gen KOSONG (NULL) untuk semua item GEN, sedangkan
+   po_item.id_gen justru berisi id_item-nya langsung. Jadi di sini
+   dipakai  pi.id_gen = bpb.id_item , bukan  pi.id_gen = masteritem.id_gen .
+   Dgn kunci yang salah, 0 dari 4.816 baris dapat harga PO - tombol
+   "isi dari PO" dan ceklis "sembunyikan yang sudah cocok" mati tanpa
+   pesan apa pun. Dgn kunci ini: 4.812 dari 4.816 dapat harga.
    ============================================================================ */
 include '../../conn/conn.php';
-$jenis = 'fabric';
+$jenis = 'general';
 $jenis_esc = mysqli_real_escape_string($conn1, $jenis);
 header('Content-Type: application/json');
 
@@ -62,7 +69,7 @@ while ($row = mysqli_fetch_assoc($sql)) {
                    . htmlspecialchars($statusRaw, ENT_QUOTES) . '</span>';
     $row['action'] = '<div class="ftl-act">'
         . '<button type="button" class="ftl-mini is-info btn-view-pengajuan" title="Show the request detail" data-no="' . htmlspecialchars($row['no_pengajuan'], ENT_QUOTES) . '"><i class="fa fa-eye" aria-hidden="true"></i> View</button>'
-        . '<a href="pdf_Req_update_bpb.php?no_pengajuan=' . urlencode($row['no_pengajuan']) . '" target="_blank" class="ftl-mini is-pdf" title="Open the printable PDF"><i class="fa fa-file-pdf-o" aria-hidden="true"></i> Pdf</a>';
+        . '<a href="pdf_update_bpb_general.php?no_pengajuan=' . urlencode($row['no_pengajuan']) . '" target="_blank" class="ftl-mini is-pdf" title="Open the printable PDF"><i class="fa fa-file-pdf-o" aria-hidden="true"></i> Pdf</a>';
 
     if ($statusRaw != 'Approved' && $statusRaw != 'Cancel') {
         $row['action'] .= '<button type="button" class="ftl-mini is-cancel btn-cancel-pengajuan" title="Cancel this request" data-no="' . htmlspecialchars($row['no_pengajuan'], ENT_QUOTES) . '"><i class="fa fa-trash" aria-hidden="true"></i> Cancel</button>';

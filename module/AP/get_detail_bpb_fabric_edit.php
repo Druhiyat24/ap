@@ -1,7 +1,15 @@
 <?php
+/* ============================================================================
+   Update BPB - FABRIC.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
+
+   Dokumen kain punya tabel kepala sendiri: whs_inmaterial_fabric (+_det)
+   utk PENERIMAAN (GK/IN) dan whs_bppb_h/whs_bppb_ro utk RETUR (GK/RO).
+   Keduanya dibedakan, karena jurnal GK/RO arahnya TERBALIK dari GK/IN.
+   (Bandingkan Accessories & General: dokumennya langsung di `bpb` dan
+   RI-nya tetap dihitung sbg penerimaan.)
+   ============================================================================ */
 include '../../conn/conn.php';
-require_once __DIR__ . '/ubf_jenis.php';
-$jenis = ubf_jenis();
+$jenis = 'fabric';
 header('Content-Type: application/json');
 
 $no_bpb = isset($_GET['no_bpb']) ? $_GET['no_bpb'] : '';
@@ -11,27 +19,8 @@ $result = ['ppn' => 0, 'items' => []];
 
 /* Accessories tidak punya tabel kepala - dokumennya langsung di `bpb`, dan
    GACC/IN maupun GACC/RI sama-sama diperlakukan sbg PENERIMAAN (jurnalnya
-   searah; lihat catatan di ubf_jenis.php). Bentuk kolom keluarannya dibuat
+   searah). Bentuk kolom keluarannya dibuat
    SAMA PERSIS dgn cabang Fabric supaya pengolahan di bawah tidak berubah. */
-if ($jenis === 'accessories') {
-    $sql = mysqli_query($conn1, "SELECT a.id_jo, tmpjo.kpno no_ws, c.id_item, c.itemdesc desc_item,
-            SUM(a.qty - IFNULL(a.qty_reject,0)) qty, a.unit, a.price, a.curr, IFNULL(a.ppn,d.tax) ppn,
-            d.tax po_ppn, po_match.po_price, po_match.po_curr
-        FROM bpb a
-        INNER JOIN masteritem c ON c.id_item = a.id_item
-        LEFT JOIN po_header d ON IFNULL(d.pono,'') = IFNULL(a.pono,'')
-        LEFT JOIN (
-            SELECT po.pono, pi.id_jo, pm.id_item, pi.curr po_curr, pi.price po_price
-            FROM po_header po
-            INNER JOIN po_item pi ON pi.id_po = po.id
-            INNER JOIN masteritem pm ON pm.id_gen = pi.id_gen
-            WHERE pi.cancel = 'N'
-        ) po_match ON IFNULL(po_match.pono,'') = IFNULL(a.pono,'') AND IFNULL(po_match.id_jo,0) = IFNULL(a.id_jo,0) AND IFNULL(po_match.id_item,0) = IFNULL(c.id_item,0)
-        LEFT JOIN (SELECT id_jo, kpno, styleno FROM act_costing ac INNER JOIN so ON ac.id = so.id_cost INNER JOIN jo_det jod ON so.id = jod.id_so GROUP BY id_jo) tmpjo ON tmpjo.id_jo = a.id_jo
-        WHERE a.bpbno_int = '$no_bpb_esc' AND IFNULL(a.cancel,'N') <> 'Y'
-        GROUP BY a.id_jo, a.id_item");
-} else {
-
 $headerCheck = mysqli_query($conn1, "SELECT 1 FROM whs_inmaterial_fabric WHERE no_dok = '$no_bpb_esc' LIMIT 1");
 $isPenerimaan = $headerCheck && mysqli_num_rows($headerCheck) > 0;
 
@@ -73,7 +62,6 @@ if ($isPenerimaan) {
         GROUP BY r.id_jo, r.id_item");
 }
 
-}   /* tutup cabang jenis */
 
 $first = true;
 while ($row = mysqli_fetch_assoc($sql)) {

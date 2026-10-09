@@ -1,15 +1,21 @@
 <?php
 /* ============================================================================
-   Update BPB - FABRIC.  Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
+   Update BPB - ACCESSORIES : proses APPROVE / CANCEL pengajuan koreksi harga.
+   Berkas ini BERDIRI SENDIRI (1 menu = 1 berkas).
 
-   Dokumen kain punya tabel kepala sendiri: whs_inmaterial_fabric (+_det)
-   utk PENERIMAAN (GK/IN) dan whs_bppb_h/whs_bppb_ro utk RETUR (GK/RO).
-   Keduanya dibedakan, karena jurnal GK/RO arahnya TERBALIK dari GK/IN.
-   (Bandingkan Accessories & General: dokumennya langsung di `bpb` dan
-   RI-nya tetap dihitung sbg penerimaan.)
+   Dokumen aksesoris ada LANGSUNG di tabel `bpb`, dan GACC/IN maupun GACC/RI
+   sama-sama PENERIMAAN secara jurnal - diperiksa ke produksi 8 Okt 2026.
+   Karena itu cabang retur (GK/RO) milik Fabric sudah dibuang dari berkas ini.
+
+   Cara penjurnalannya SENGAJA dibiarkan seperti versi Fabric (dihitung di
+   PHP, COA dicari di `mastercoa_v2`), supaya perilaku Accessories yang sudah
+   berjalan tidak berubah. Dokumen aksesoris tidak pernah berkategori campur
+   (0% dari 35.820 dokumen, diperiksa 8 Okt 2026), jadi cara ini memadai.
+   Bandingkan dgn versi General yang HARUS memakai SQL per grup karena 2%
+   dokumennya berkategori campur.
    ============================================================================ */
 include '../../conn/conn.php';
-$jenis = 'fabric';
+/* Berkas ini khusus Accessories - tidak ada parameter di tautan. */
 header('Content-Type: application/json');
 
 $action = $_POST['action'] ?? '';
@@ -53,7 +59,7 @@ foreach ($list as $no_pengajuan) {
         // For each BPB touched by this request, reverse the old journal lines
         // and book corrected lines if the BPB has already been journaled.
         /* Cukup daftar BPB-nya. Nilai jurnal TIDAK diambil dari sini -
-           dihitung ulang dari tabel bpb/bppb setelah harganya dikoreksi,
+           dihitung ulang dari tabel bpb setelah harganya dikoreksi,
            supaya yang terbukukan persis sama dgn isi dokumennya. */
         $bpbRes = mysqli_query($conn2, "SELECT DISTINCT no_bpb
             FROM Req_update_bpb
@@ -63,47 +69,27 @@ foreach ($list as $no_pengajuan) {
             $no_bpb = $bpbRow['no_bpb'];
             $no_bpb_esc = mysqli_real_escape_string($conn2, $no_bpb);
 
-            // Detect whether this no_bpb is a Penerimaan (GK/IN, whs_inmaterial_fabric)
-            // or a Pengeluaran (GK/RO, whs_bppb_h) document - same draft table,
-            // same approve flow, different source/master tables to update.
-            $headerCheck = mysqli_query($conn2, "SELECT 1 FROM whs_inmaterial_fabric WHERE no_dok = '$no_bpb_esc' LIMIT 1");
-            $isPenerimaan = $headerCheck && mysqli_num_rows($headerCheck) > 0;
+            /* Dokumen aksesoris ada LANGSUNG di `bpb` - tidak punya tabel
+               kepala gudang seperti Fabric - dan GACC/IN maupun GACC/RI
+               sama-sama PENERIMAAN secara jurnal (diperiksa ke produksi
+               8 Okt 2026: Persediaan Aksesoris didebit, GR/IR Aksesoris
+               dikredit, type 'AP - BPB'). Jadi TIDAK ADA cabang arah
+               terbalik seperti GK/RO di Fabric. */
 
-            // Apply the new price/PPN to the source records regardless of
-            // journal status, so the BPB always reflects the corrected values.
-            if ($isPenerimaan) {
-                $okbpb = mysqli_query($conn2, "UPDATE bpb a
-                    INNER JOIN (SELECT no_bpb, id_jo, id_item, price_new, ppn_new FROM Req_update_bpb WHERE no_pengajuan = '$no_pengajuan_esc' AND no_bpb = '$no_bpb_esc') b
-                        ON b.no_bpb = a.bpbno_int AND b.id_jo = a.id_jo AND b.id_item = a.id_item
-                    SET a.price = b.price_new, a.ppn = b.ppn_new");
-                if (!$okbpb) { $gagalFatal = true; $journalWarnings[] = "$no_bpb: gagal menulis harga ke bpb"; }
+            /* Harga & PPN baru ditulis apa pun status jurnalnya, supaya isi
+               dokumennya selalu mencerminkan nilai yang dikoreksi. */
+            $okbpb = mysqli_query($conn2, "UPDATE bpb a
+                INNER JOIN (SELECT no_bpb, id_jo, id_item, price_new, ppn_new FROM Req_update_bpb WHERE no_pengajuan = '$no_pengajuan_esc' AND no_bpb = '$no_bpb_esc') b
+                    ON b.no_bpb = a.bpbno_int AND b.id_jo = a.id_jo AND b.id_item = a.id_item
+                SET a.price = b.price_new, a.ppn = b.ppn_new");
+            if (!$okbpb) { $gagalFatal = true; $journalWarnings[] = "$no_bpb: gagal menulis harga ke bpb"; }
 
-                $okwhs_inmaterial_fabric_det = mysqli_query($conn2, "UPDATE whs_inmaterial_fabric_det a
-                    INNER JOIN (SELECT no_bpb, id_jo, id_item, price_new, ppn_new FROM Req_update_bpb WHERE no_pengajuan = '$no_pengajuan_esc' AND no_bpb = '$no_bpb_esc') b
-                        ON b.no_bpb = a.no_dok AND b.id_jo = a.id_jo AND b.id_item = a.id_item
-                    SET a.price = b.price_new, a.ppn = b.ppn_new");
-                if (!$okwhs_inmaterial_fabric_det) { $gagalFatal = true; $journalWarnings[] = "$no_bpb: gagal menulis harga ke whs_inmaterial_fabric_det"; }
-
-                // Only already-journaled BPBs (status bpb = Approved) have
-                // tbl_list_journal rows that need a reversal/correction.
-                $statusCheck = mysqli_query($conn2, "SELECT status FROM whs_inmaterial_fabric WHERE no_dok = '$no_bpb_esc' LIMIT 1");
-            } else {
-                $okbppb = mysqli_query($conn2, "UPDATE bppb a
-                    INNER JOIN (SELECT no_bpb, id_jo, id_item, price_new, ppn_new FROM Req_update_bpb WHERE no_pengajuan = '$no_pengajuan_esc' AND no_bpb = '$no_bpb_esc') b
-                        ON b.no_bpb = a.bppbno_int AND b.id_jo = a.id_jo AND b.id_item = a.id_item
-                    SET a.price = b.price_new, a.ppn = b.ppn_new");
-                if (!$okbppb) { $gagalFatal = true; $journalWarnings[] = "$no_bpb: gagal menulis harga ke bppb"; }
-
-                $okwhs_bppb_ro = mysqli_query($conn2, "UPDATE whs_bppb_ro a
-                    INNER JOIN (SELECT no_bpb, id_jo, id_item, price_new, ppn_new FROM Req_update_bpb WHERE no_pengajuan = '$no_pengajuan_esc' AND no_bpb = '$no_bpb_esc') b
-                        ON b.no_bpb = a.no_bppb AND b.id_jo = a.id_jo AND b.id_item = a.id_item
-                    SET a.price = b.price_new, a.ppn = b.ppn_new");
-                if (!$okwhs_bppb_ro) { $gagalFatal = true; $journalWarnings[] = "$no_bpb: gagal menulis harga ke whs_bppb_ro"; }
-
-                // Only already-journaled BPPBs (status bppb = Approved) have
-                // tbl_list_journal rows that need a reversal/correction.
-                $statusCheck = mysqli_query($conn2, "SELECT status FROM whs_bppb_h WHERE no_bppb = '$no_bpb_esc' LIMIT 1");
-            }
+            /* Aksesoris tidak punya kolom status tabel kepala, jadi yang
+               diperiksa langsung ADA-TIDAKNYA jurnalnya. Dokumen yang belum
+               pernah dijurnal cukup dikoreksi harganya. */
+            $statusCheck = mysqli_query($conn2, "SELECT IF(COUNT(*) > 0, 'Approved', '-') status
+                FROM tbl_list_journal
+                WHERE no_journal = '$no_bpb_esc' AND status IN ('Approved','POST')");
 
             $statusRow = mysqli_fetch_assoc($statusCheck);
 
@@ -131,49 +117,32 @@ foreach ($list as $no_pengajuan) {
             // the new corrected lines (status 'Approved') booked below.
             mysqli_query($conn2, "UPDATE tbl_list_journal SET status = 'Updated' WHERE no_journal = '$no_bpb_esc' AND status IN ('Approved', 'POST')");
 
-            if ($isPenerimaan) {
-                // Re-derive the BPB totals from the now-corrected price/PPN
-                // (set above) and book a fresh journal, mirroring proses_repost_bpb.php.
-                $cekDataRes = mysqli_query($conn2, "
-                    SELECT
-                        phd.tipe_com, mi.itemdesc, bpb.bpbno, bpb.bpbno_int, bpb.bpbdate,
-                        bpb.id_supplier, ms.Supplier supplier, mi.mattype, mi.n_code_category,
-                        IF(mi.matclass LIKE '%ACCESORIES%', 'ACCESORIES', mi.matclass) matclass,
-                        bpb.curr, COALESCE(bpb.ppn,0) tax, bpb.username, bpb.dateinput,
-                        ROUND(SUM(((bpb.qty - COALESCE(bpb.qty_reject,0)) * bpb.price) + (((bpb.qty - COALESCE(bpb.qty_reject,0)) * bpb.price) * (COALESCE(bpb.ppn,0) / 100))), 2) total,
-                        ROUND(SUM((bpb.qty - COALESCE(bpb.qty_reject,0)) * bpb.price), 2) dpp,
-                        ROUND(SUM(((bpb.qty - COALESCE(bpb.qty_reject,0)) * bpb.price) * (COALESCE(bpb.ppn,0) / 100)), 2) ppn
-                    FROM bpb
-                    INNER JOIN masteritem mi ON bpb.id_item = mi.id_item
-                    INNER JOIN mastersupplier ms ON bpb.id_supplier = ms.Id_Supplier
-                    LEFT JOIN po_header ph ON bpb.pono = ph.pono
-                    LEFT JOIN po_header_draft phd ON phd.id = ph.id_draft
-                    WHERE bpb.bpbno_int = '$no_bpb_esc'
-                    GROUP BY bpb.bpbno, mi.mattype, mi.n_code_category
-                    ORDER BY ms.Supplier
-                ");
-                $journalData = $cekDataRes ? mysqli_fetch_assoc($cekDataRes) : null;
-                $tgl_bpb_journal_col = 'bpbdate';
-            } else {
-                // Re-derive the BPPB (Pengeluaran/Retur) totals from the now-corrected
-                // price/PPN (set above) and book a fresh "AP - BPB RETURN" journal.
-                $cekDataRes = mysqli_query($conn2, "
-                    SELECT a.*, (a.dpp + (a.dpp * (COALESCE(a.tax,0)/100))) total,
-                           (a.dpp * (COALESCE(a.tax,0)/100)) ppn
-                    FROM (
-                        SELECT bppbno, bppbno_int, bppb.bppbdate, bppb.id_supplier, supplier, mattype, n_code_category,
-                               IF(matclass LIKE '%ACCESORIES%', 'ACCESORIES', mi.matclass) matclass,
-                               bppb.curr, bppb.username, bppb.dateinput, SUM(qty * price) dpp, bpbno_ro, IFNULL(bppb.ppn,0) tax
-                        FROM bppb
-                        INNER JOIN masteritem mi ON bppb.id_item = mi.id_item
-                        INNER JOIN mastersupplier ms ON bppb.id_supplier = ms.Id_Supplier
-                        WHERE bppbno_int = '$no_bpb_esc'
-                        GROUP BY bppbno_int
-                    ) a
-                ");
-                $journalData = $cekDataRes ? mysqli_fetch_assoc($cekDataRes) : null;
-                $tgl_bpb_journal_col = 'bppbdate';
-            }
+            /* Nilai jurnal dihitung ULANG dari `bpb` sesudah harganya dikoreksi,
+               supaya yang terbukukan persis sama dgn isi dokumennya. */
+            // Re-derive the BPB totals from the now-corrected price/PPN
+            // (set above) and book a fresh journal, mirroring proses_repost_bpb.php.
+            $cekDataRes = mysqli_query($conn2, "
+                SELECT
+                    phd.tipe_com, mi.itemdesc, bpb.bpbno, bpb.bpbno_int, bpb.bpbdate,
+                    bpb.id_supplier, ms.Supplier supplier, mi.mattype, mi.n_code_category,
+                    IF(mi.matclass LIKE '%ACCESORIES%', 'ACCESORIES', mi.matclass) matclass,
+                    bpb.curr, COALESCE(bpb.ppn,0) tax, bpb.username, bpb.dateinput,
+                    ROUND(SUM(((bpb.qty - COALESCE(bpb.qty_reject,0)) * bpb.price) + (((bpb.qty - COALESCE(bpb.qty_reject,0)) * bpb.price) * (COALESCE(bpb.ppn,0) / 100))), 2) total,
+                    ROUND(SUM((bpb.qty - COALESCE(bpb.qty_reject,0)) * bpb.price), 2) dpp,
+                    ROUND(SUM(((bpb.qty - COALESCE(bpb.qty_reject,0)) * bpb.price) * (COALESCE(bpb.ppn,0) / 100)), 2) ppn
+                FROM bpb
+                INNER JOIN masteritem mi ON bpb.id_item = mi.id_item
+                INNER JOIN mastersupplier ms ON bpb.id_supplier = ms.Id_Supplier
+                LEFT JOIN po_header ph ON bpb.pono = ph.pono
+                LEFT JOIN po_header_draft phd ON phd.id = ph.id_draft
+                WHERE bpb.bpbno_int = '$no_bpb_esc'
+                GROUP BY bpb.bpbno, mi.mattype, mi.n_code_category
+                ORDER BY ms.Supplier
+            ");
+            $journalData = $cekDataRes ? mysqli_fetch_assoc($cekDataRes) : null;
+            $tgl_bpb_journal_col = 'bpbdate';
+            $tgl_bpb_journal_col = 'bpbdate';
+
 
             if (!$journalData) {
                 /* Jurnal lamanya SUDAH dibalik di atas. Kalau sampai di sini
@@ -233,50 +202,27 @@ foreach ($list as $no_pengajuan) {
 
                 $cust_ctg = in_array($id_supplier, ['342', '20', '19', '692', '17', '18']) ? 'Related' : 'Third';
 
+                /* Aksesoris selalu penerimaan, jadi tidak ada kata 'RETURN'. */
                 $kata1 = '';
-                if ($isPenerimaan) {
-                    if ($mattype !== 'N') {
-                        switch ($matclass) {
-                            case 'FABRIC':      $kata1 = 'PEMBELIAN KAIN'; break;
-                            case 'ACCESORIES':  $kata1 = 'PEMBELIAN AKSESORIS'; break;
-                            case 'CMT':         $kata1 = 'BIAYA MAKLOON PAKAIAN JADI'; break;
-                            case 'PRINTING':    $kata1 = 'BIAYA MAKLOON PRINTING'; break;
-                            case 'EMBRODEIRY':  $kata1 = 'BIAYA MAKLOON EMBRODEIRY'; break;
-                            case 'WASHING':     $kata1 = 'BIAYA MAKLOON WASHING'; break;
-                            case 'PAINTING':    $kata1 = 'BIAYA MAKLOON PAINTING'; break;
-                            case 'HEATSEAL':    $kata1 = 'BIAYA MAKLOON HEATSEAL'; break;
-                            default:            $kata1 = 'BIAYA MAKLOON LAINNYA';
-                        }
-                    } else {
-                        switch ($n_code_category) {
-                            case '1': $kata1 = 'PEMBELIAN PERSEDIAAN ATK'; break;
-                            case '2': $kata1 = 'PEMBELIAN PERSEDIAAN UMUM'; break;
-                            case '3': $kata1 = 'BIAYA PERSEDIAAN SPAREPARTS'; break;
-                            case '4': $kata1 = 'BIAYA MESIN'; break;
-                            default:  $kata1 = '';
-                        }
+                if ($mattype !== 'N') {
+                    switch ($matclass) {
+                        case 'FABRIC':      $kata1 = 'PEMBELIAN KAIN'; break;
+                        case 'ACCESORIES':  $kata1 = 'PEMBELIAN AKSESORIS'; break;
+                        case 'CMT':         $kata1 = 'BIAYA MAKLOON PAKAIAN JADI'; break;
+                        case 'PRINTING':    $kata1 = 'BIAYA MAKLOON PRINTING'; break;
+                        case 'EMBRODEIRY':  $kata1 = 'BIAYA MAKLOON EMBRODEIRY'; break;
+                        case 'WASHING':     $kata1 = 'BIAYA MAKLOON WASHING'; break;
+                        case 'PAINTING':    $kata1 = 'BIAYA MAKLOON PAINTING'; break;
+                        case 'HEATSEAL':    $kata1 = 'BIAYA MAKLOON HEATSEAL'; break;
+                        default:            $kata1 = 'BIAYA MAKLOON LAINNYA';
                     }
                 } else {
-                    if ($mattype !== 'N') {
-                        switch ($matclass) {
-                            case 'FABRIC':      $kata1 = 'RETURN PEMBELIAN KAIN'; break;
-                            case 'ACCESORIES':  $kata1 = 'RETURN PEMBELIAN AKSESORIS'; break;
-                            case 'CMT':         $kata1 = 'RETURN BIAYA MAKLOON PAKAIAN JADI'; break;
-                            case 'PRINTING':    $kata1 = 'RETURN BIAYA MAKLOON PRINTING'; break;
-                            case 'EMBRODEIRY':  $kata1 = 'RETURN BIAYA MAKLOON EMBRODEIRY'; break;
-                            case 'WASHING':     $kata1 = 'RETURN BIAYA MAKLOON WASHING'; break;
-                            case 'PAINTING':    $kata1 = 'RETURN BIAYA MAKLOON PAINTING'; break;
-                            case 'HEATSEAL':    $kata1 = 'RETURN BIAYA MAKLOON HEATSEAL'; break;
-                            default:            $kata1 = 'RETURN BIAYA MAKLOON LAINNYA';
-                        }
-                    } else {
-                        switch ($n_code_category) {
-                            case '1': $kata1 = 'RETURN PEMBELIAN PERSEDIAAN ATK'; break;
-                            case '2': $kata1 = 'RETURN PEMBELIAN PERSEDIAAN UMUM'; break;
-                            case '3': $kata1 = 'RETURN BIAYA PERSEDIAAN SPAREPARTS'; break;
-                            case '4': $kata1 = 'RETURN BIAYA MESIN'; break;
-                            default:  $kata1 = '';
-                        }
+                    switch ($n_code_category) {
+                        case '1': $kata1 = 'PEMBELIAN PERSEDIAAN ATK'; break;
+                        case '2': $kata1 = 'PEMBELIAN PERSEDIAAN UMUM'; break;
+                        case '3': $kata1 = 'BIAYA PERSEDIAAN SPAREPARTS'; break;
+                        case '4': $kata1 = 'BIAYA MESIN'; break;
+                        default:  $kata1 = '';
                     }
                 }
                 // Figure out which revision this correction is, so repeated
@@ -326,24 +272,24 @@ foreach ($list as $no_pengajuan) {
                 $nama_coa_cre_esc     = mysqli_real_escape_string($conn2, $nama_coa_cre);
                 $no_coa_deb_esc       = mysqli_real_escape_string($conn2, $no_coa_deb);
                 $nama_coa_deb_esc     = mysqli_real_escape_string($conn2, $nama_coa_deb);
-                $type_journal         = $isPenerimaan ? 'AP - BPB' : 'AP - BPB RETURN';
+                $type_journal         = 'AP - BPB';
 
                 // Penerimaan: bpb_credit-COA dikredit dengan total, bpb_debit-COA didebit dengan dpp.
                 // Pengeluaran (Retur): arahnya dibalik - bpb_credit-COA didebit, bpb_debit-COA dikredit.
-                $cre_debit  = $isPenerimaan ? 0 : $total;
-                $cre_credit = $isPenerimaan ? $total : 0;
-                $cre_debit_idr  = $isPenerimaan ? 0 : $idr_total;
-                $cre_credit_idr = $isPenerimaan ? $idr_total : 0;
+                $cre_debit  = 0;
+                $cre_credit = $total;
+                $cre_debit_idr  = 0;
+                $cre_credit_idr = $idr_total;
 
-                $deb_debit  = $isPenerimaan ? $dpp : 0;
-                $deb_credit = $isPenerimaan ? 0 : $dpp;
-                $deb_debit_idr  = $isPenerimaan ? $idr_dpp : 0;
-                $deb_credit_idr = $isPenerimaan ? 0 : $idr_dpp;
+                $deb_debit  = $dpp;
+                $deb_credit = 0;
+                $deb_debit_idr  = $idr_dpp;
+                $deb_credit_idr = 0;
 
-                $ppn_debit  = $isPenerimaan ? $ppn : 0;
-                $ppn_credit = $isPenerimaan ? 0 : $ppn;
-                $ppn_debit_idr  = $isPenerimaan ? $idr_ppn : 0;
-                $ppn_credit_idr = $isPenerimaan ? 0 : $idr_ppn;
+                $ppn_debit  = $ppn;
+                $ppn_credit = 0;
+                $ppn_debit_idr  = $idr_ppn;
+                $ppn_credit_idr = 0;
 
                 if (mysqli_query($conn2, "INSERT INTO tbl_list_journal
                     (no_journal, tgl_journal, type_journal, no_coa, nama_coa, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, created_at, updated_at, profit_center)
