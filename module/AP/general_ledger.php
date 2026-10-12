@@ -189,6 +189,30 @@ a.gl-doc-link:hover{ text-decoration:underline; }
 </script>
 
 <script type="text/javascript">
+/* ---- Pembulatan angka General Ledger ----
+   Dua angka di belakang koma seperti biasa, TAPI kalau nilainya memang
+   berdesimal lebih halus, ditampilkan EMPAT. Dulu semuanya dipaksa dua,
+   sehingga angka yang aslinya 4 desimal terpotong di layar.
+
+   Kenapa perlu: di tbl_list_journal, kolom `debit`, `credit`, dan `rate`
+   bertipe double(16,4) - diperiksa 12 Okt 2026, 9.752 dari 195.312 baris
+   tahun 2026 desimalnya memang lebih dari dua (mis. 10.538.089,0290).
+   Kolom `debit_idr`/`credit_idr` bertipe (16,2), jadi di tabel utama
+   hasilnya tetap dua - pembantu ini tidak mengubah tampilannya di sana.
+
+   Pembandingnya lewat TEKS (toFixed), bukan v*100, supaya tidak kena
+   galat pembulatan biner pada angka besar: 1.23*100 di JavaScript
+   menghasilkan 122.99999999999999, dan itu akan salah dibaca sbg
+   "punya desimal lebih halus". */
+function glAngka(v) {
+  v = parseFloat(v);
+  if (isNaN(v)) { return v; }
+  var d = v.toFixed(4).slice(-2) === '00' ? 2 : 4;
+  return v.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+}
+</script>
+
+<script type="text/javascript">
   let datatable = $("#table-data").DataTable({
     ordering: false,
     processing: true,
@@ -242,12 +266,12 @@ a.gl-doc-link:hover{ text-decoration:underline; }
                 let val = parseFloat(data);
                 if (isNaN(val)) return data;
 
-                // Dua angka di belakang koma, seragam dgn ekspor Excel-nya
-                // (ekspor_general_ledger.php sudah memakai number_format(...,2)).
-                return val.toLocaleString('en-US', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2
-                });
+                /* Kolom ini isinya debit_idr/credit_idr/saldo_akhir yang
+                   bertipe (16,2), jadi hasilnya tetap dua angka - sama dgn
+                   ekspor Excel-nya (number_format(...,2)). Lewat glAngka()
+                   supaya kalau kelak kolomnya diganti ke nilai 4 desimal,
+                   angkanya tidak ikut terpotong. */
+                return glAngka(val);
               }
             },
             {
@@ -296,9 +320,11 @@ var glEsc = function (s) {
   return String(s === null || s === undefined ? '' : s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 };
+/* Modal rincian jurnal menampilkan rate, debit, dan credit - ketiganya
+   double(16,4), jadi DI SINILAH empat desimal itu muncul. */
 var glNf = function (v) {
   v = parseFloat(v); if (isNaN(v)) { v = 0; }
-  return v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return glAngka(v);
 };
 var glDmy = function (s) {
   if (!s || s === '0000-00-00') { return '-'; }
