@@ -30,6 +30,18 @@
     header("Content-type: application/vnd-ms-excel");
     header("Content-Disposition: attachment; filename=general-ledger.xls");
     include '../../conn/conn.php';
+
+/* ---- Pembulatan angka, kembaran glAngka() di general_ledger.php ----
+   Dua angka di belakang koma seperti biasa, EMPAT kalau nilainya memang
+   berdesimal lebih halus. Harus sejalan dgn tampilan di layar, kalau tidak
+   Excel dan halaman akan menunjukkan angka berbeda untuk baris yang sama.
+   Diperiksa lewat TEKS, bukan $v*100, supaya tidak kena galat pembulatan
+   biner pada angka besar. */
+function gl_angka($v) {
+    $v = (float) $v;
+    $d = substr(number_format($v, 4, '.', ''), -2) === '00' ? 2 : 4;
+    return number_format($v, $d);
+}
     $coa_number =strtolower($_GET['coa_number']);
     $start_date = date("d F Y",strtotime($_GET['start_date']));
     $end_date = date("d F Y",strtotime($_GET['end_date']));
@@ -63,7 +75,7 @@
   
         $sql = mysqli_query($conn2,"SELECT '',q1.no_journal,q1.tgl_journal,q1.keterangan,q1.credit_idr,q1.debit_idr, (@runtot :=@runtot + q1.debit_idr - q1.credit_idr) AS saldo_akhir
 FROM
-   (select no_journal,tgl_journal,keterangan,ROUND(credit * rate,2) credit_idr,ROUND(debit * rate,2) debit_idr from tbl_list_journal where no_coa = '$coa_number' and tgl_journal BETWEEN '$start_date' and '$end_date' and status != 'Cancel' and debit != 0 OR no_coa = '$coa_number' and tgl_journal BETWEEN '$start_date' and '$end_date' and status != 'Cancel' and credit != 0 order by tgl_journal,id ASC) AS q1 JOIN
+   (select no_journal,tgl_journal,keterangan,ROUND(credit * rate,4) credit_idr,ROUND(debit * rate,4) debit_idr from tbl_list_journal where no_coa = '$coa_number' and tgl_journal BETWEEN '$start_date' and '$end_date' and status != 'Cancel' and debit != 0 OR no_coa = '$coa_number' and tgl_journal BETWEEN '$start_date' and '$end_date' and status != 'Cancel' and credit != 0 order by tgl_journal,id ASC) AS q1 JOIN
      (SELECT @runtot:= $saldoawal) runtot ORDER BY tgl_journal ASC");
 
 
@@ -84,7 +96,7 @@ FROM
             <td style="text-align : left;" value = "">SALDO AWAL</td>
             <td style="text-align : left;" value = "">-</td>
             <td style="text-align : left;" value = "">-</td>
-            <td style="text-align : right;" value = "">'.number_format($saldoawal,2).'</td>
+            <td style="text-align : right;" value = "">'.gl_angka($saldoawal).'</td>
             </tr>
             ';
 $limit = 0;
@@ -99,9 +111,9 @@ $limit = 0;
             <td style="text-align : left;" value = "'.$row2['no_journal'].'">'.$row2['no_journal'].'</td>
             <td style="text-align : center;" value = "'.$row2['tgl_journal'].'">'.$row2['tgl_journal'].'</td>
             <td style="text-align : left;" value = "'.$row2['keterangan'].'">'.$row2['keterangan'].'</td>
-            <td style="text-align : right;" value = "'.$row2['debit_idr'].'">'.number_format($row2['debit_idr'],2).'</td>
-            <td style="text-align : right;" value = "'.$row2['credit_idr'].'">'.number_format($row2['credit_idr'],2).'</td>
-            <td style="text-align : right;" value = "'.$row2['saldo_akhir'].'">'.number_format($row2['saldo_akhir'],2).'</td>
+            <td style="text-align : right;" value = "'.round($row2['debit_idr'],4).'">'.gl_angka($row2['debit_idr']).'</td>
+            <td style="text-align : right;" value = "'.round($row2['credit_idr'],4).'">'.gl_angka($row2['credit_idr']).'</td>
+            <td style="text-align : right;" value = "'.round($row2['saldo_akhir'],4).'">'.gl_angka($row2['saldo_akhir']).'</td>
             </tr>
             ';
          
