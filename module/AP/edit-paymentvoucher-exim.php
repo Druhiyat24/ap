@@ -289,11 +289,20 @@ if ($no_pv === '' || !$pvHeader) {
                     inner join tbl_pv_memo_temp mtemp on mtemp.no_memo = a.nm_memo
                     where mdet.cancel = 'N' and mdet.nm_sub_ctg != 'VAT' and a.ditagihkan = 'Y' and mtemp.user = '$user' GROUP BY nm_memo order by a.id_h desc limit 1");
             $row = mysqli_fetch_array($sql);
-            $buyer = isset($row['buyer']) ? $row['buyer'] : null;           
-            if(!empty($buyer)) {
-                echo $buyer;
-            }
-            else{
+            $buyer = isset($row['buyer']) ? $row['buyer'] : null;
+            /* Di halaman EDIT, nilai yang benar adalah yang TERSIMPAN di dokumen.
+               Query di atas menebak buyer dari tbl_pv_memo_temp milik user yang
+               sedang login - itu alur CREATE (pilih memo dulu). Saat halaman edit
+               dibuka, tabel sementara itu biasanya kosong, sehingga field readonly
+               ini tampil "-" dan tersimpan balik sebagai "-" (terbukti pada
+               PV/NAG/0926/00018, buyer TEEJAY hilang jadi "-" 2 Sep 2026).
+               Kalau pemakai memilih memo lagi, JS di bawah tetap menimpa nilai ini. */
+            $ctbTersimpan = isset($pvHeader['ctb']) ? trim($pvHeader['ctb']) : '';
+            if ($ctbTersimpan !== '' && $ctbTersimpan !== '-') {
+                echo htmlspecialchars($ctbTersimpan);
+            } elseif (!empty($buyer)) {
+                echo htmlspecialchars($buyer);
+            } else {
                 echo '-';
             }?>">           
             </div>
@@ -485,13 +494,12 @@ if ($no_pv === '' || !$pvHeader) {
 
         <div class="col-md-6 mb-3">            
             <label for="pajak" class="col-form-label" style="width: 150px;"><b>Description</b></label>
-                <textarea style="font-size: 15px; text-align: left;" cols="30" rows="2" type="text" class="form-control " name="pesan" id="pesan" value="<?php             
-            if(!empty($_POST['pesan'])) {
-                echo $_POST['pesan'];
-            }
-            else{
-                echo '';
-            } ?>" placeholder="Description..." ></textarea>
+                <!-- Isi <textarea> harus di ANTARA tag pembuka & penutup. Dulu dipasang di
+                         atribut value=, yang tidak pernah ditampilkan browser, sehingga
+                         Description yang sudah tersimpan selalu tampil kosong saat dokumen
+                         diedit - lalu ikut tersimpan kosong kalau pemakai tidak mengisi ulang.
+                         Bentuknya disamakan dgn edit-paymentvoucher.php yang sudah benar. -->
+                    <textarea style="font-size: 15px; text-align: left;" cols="30" rows="2" class="form-control " name="pesan" id="pesan" placeholder="Description..."><?= htmlspecialchars($_POST['pesan'] ?? ''); ?></textarea>
         </div>
                                 
  </div>

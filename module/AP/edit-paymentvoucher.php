@@ -29,7 +29,11 @@ if ($no_pv !== '' && $_SERVER['REQUEST_METHOD'] !== 'POST') {
 
         $_POST['nama_supp']  = $pvHeader['nama_supp'];
         $_POST['sup_doc']    = $pvHeader['supp_doc'];
-        $_POST['ctb']        = $pvHeader['ctb'];
+        /* Kuncinya HARUS 'ct_buyer' - itu nama yang dibaca select Charge To
+           Buyer di bawah. Dulu ditulis sbg 'ctb' (nama KOLOM di tbl_pv_h),
+           jadi select-nya tidak pernah terisi ulang: tampil placeholder, dan
+           validasi Save memaksa pemakai memilih buyer-nya lagi satu per satu. */
+        $_POST['ct_buyer']   = $pvHeader['ctb'];
         $_POST['carabayar']  = $pvHeader['pay_meth'];
         $_POST['curre']      = $pvHeader['curr'];
         $_POST['forpay']     = $pvHeader['for_pay'];
