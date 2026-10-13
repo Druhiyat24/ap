@@ -33,16 +33,16 @@ $unikCode  = substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstu
      Memorial Journal, supaya kedua menu terlihat satu keluarga. Sengaja hanya
      app-skin-form.css, bukan app-skin.css utuh: yang penuh juga mengubah
      kartu/tabel/tombol yang di halaman ini sudah punya gaya birunya sendiri. -->
-<link rel="stylesheet" href="../css/app-skin-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-skin-form.css'); ?>">
-<!-- Skin PENUH (kartu & tombol) - berkas yang sama dipakai halaman daftar
-     kontrabon_new.php, jadi Create/Edit/List terlihat satu keluarga.
-     Aturannya OPT-IN lewat class (.app-card, .app-card-header, .btn-round),
-     bukan menimpa .card/.btn secara global, jadi bagian lain tidak ikut
-     berubah tanpa diminta. -->
-<link rel="stylesheet" href="../css/app-skin.css">
+<!-- Gaya kartu & form mengikuti Form Petty Cash Out. Seluruh aturannya
+     ber-scope .pco-card, jadi menu lain tidak ikut berubah. Berkas ini
+     sudah mencakup kontrol form, select2, tabel, kaki, dan tombol, jadi
+     app-skin.css / app-skin-form.css tidak lagi dimuat di sini supaya
+     tidak ada dua sumber gaya yang saling menimpa. -->
+<link rel="stylesheet" href="../css/app-pco-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-pco-form.css'); ?>">
 
 <style>
-.kb-card .card-header{ background: linear-gradient(90deg, #191970, #1e90ff); }
+/* Kepala kartu sekarang .pco-head (kotak ikon + judul), jadi pita gradien
+.kb-card .card-header sudah tidak dipakai lagi. */
 .table-gradient th{ background:#1E3A8A; color:#fff; text-align:center; vertical-align:middle; white-space:nowrap; }
 /* Dropdown header (select2) tampil DI ATAS tabel & Descriptions. Dulu aturan
    ini menyasar .bootstrap-select; sejak semua select dipindah ke select2,
@@ -50,10 +50,8 @@ $unikCode  = substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstu
    Tanpa ini panelnya tertutup tabel invoice di bawahnya. */
 .select2-container{ z-index:1060; }
 .select2-container--open .select2-dropdown{ z-index:1061; }
-/* Tinggi kotaknya disamakan dgn .form-control lain di baris yang sama. */
-.select2-container--default .select2-selection--single{ height:calc(1.5em + .75rem + 2px); }
-.select2-container--default .select2-selection--single .select2-selection__rendered{ line-height:calc(1.5em + .75rem); }
-.select2-container--default .select2-selection--single .select2-selection__arrow{ height:calc(1.5em + .75rem); }
+/* Tinggi & rupa kotak select2 diurus app-pco-form.css (ber-scope .pco-card),
+   jadi tidak diatur lagi di sini supaya tidak ada dua aturan yang beradu. */
 #tblInv > tbody > tr > td{ vertical-align:middle; }
 #tblInv input{ font-size:13px; }
 .kb-total{ font-size:15px; font-weight:700; text-align:right; }
@@ -113,14 +111,22 @@ $unikCode  = substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstu
 .bpb-totals .row-t.total .amt{ color:#1E3A8A; font-size:18px; font-weight:800; }
 </style>
 
-<div class="container-fluid mt-4 p-4">
-  <div class="card shadow border-0 kb-card app-card">
-    <div class="card-header text-white py-2 px-3 app-card-header">
-      <h5 class="mb-0"><i class="fa fa-file-text-o"></i> CREATE INVOICE RECEIVED</h5>
-    </div>
-    <div class="card-body p-4">
+<div class="container-fluid mt-3 p-3">
+  <div class="pco-card">
+    <!-- Kepala kartu: kotak ikon + judul + jejak menu, susunan yang sama
+         dgn Form Petty Cash Out - pita gradien selebar kartu diganti kotak
+         ikon supaya warnanya jadi aksen, bukan latar. -->
+    <div class="pco-head">
+      <span class="pco-head-icon"><i class="fa fa-file-text-o" aria-hidden="true"></i></span>
+      <div>
+        <h1>Form Invoice Received</h1>
+        <span class="pco-crumb">AP &rsaquo; Invoice Received &rsaquo; Create</span>
+      </div>
+    </div><!-- /.pco-head -->
+    <div class="pco-body">
 
       <!-- ===== Header ===== -->
+      <div class="pco-sec"><i class="fa fa-file-text-o" aria-hidden="true"></i> Header</div>
       <div class="row g-3">
         <div class="col-md-3 mb-2">
           <label class="form-label"><b>Document Number</b></label>
@@ -191,6 +197,7 @@ $unikCode  = substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstu
       <hr>
 
       <!-- ===== Add Invoice (single input; a row forms on Add) ===== -->
+      <div class="pco-sec"><i class="fa fa-list" aria-hidden="true"></i> Invoices</div>
       <div class="inv-input">
         <div class="row g-2 align-items-end">
           <div class="col-md-3 mb-2">
@@ -278,10 +285,12 @@ $(function () {
   /* placeholder diambil dari atribut title masing-masing select, jadi teksnya
      tetap seperti waktu halaman ini masih memakai bootstrap-select
      ("Select reference number" / "Select Supplier") - bukan langsung
-     terpilih pilihan pertama. allowClear supaya bisa dikosongkan lagi. */
+     terpilih pilihan pertama. Tombol silang (allowClear) sengaja TIDAK
+     dipakai - pemakai menilainya mengganggu, dan field ini memang cukup
+     diganti dgn memilih yang lain. */
   $('.select2').each(function () {
     var $el = $(this);
-    $el.select2({ width: '100%', placeholder: $el.attr('title') || '', allowClear: true });
+    $el.select2({ width: '100%', placeholder: $el.attr('title') || '' });
   });
   /* Profit Center TIDAK pakai placeholder: nilainya wajib dan ikut menentukan
      nomor dokumen, jadi selalu ada yang terpilih. Pilihannya cuma dua, maka

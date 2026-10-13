@@ -28,6 +28,12 @@ while ($sq && ($sx = mysqli_fetch_assoc($sq))) { if (!empty($sx['st'])) $stOpts[
 
 <!-- Skin UI bersama (kartu, tabel, badge, tombol, chrome DataTables) -->
 <link rel="stylesheet" href="../css/app-skin.css">
+<!-- Rupa kartu mengikuti Form Petty Cash Out. app-skin.css TETAP dimuat
+     karena tabel/spinner/label halaman ini memakai kosakata .app-dt,
+     .app-dt-overlay, .app-spinner, dan .app-flabel dari berkas itu.
+     Keduanya aman berdampingan: scope-nya beda dan tidak ada elemen yang
+     memakai dua-duanya. -->
+<link rel="stylesheet" href="../css/app-pco-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-pco-form.css'); ?>">
 <style>
 /* Halaman-spesifik: hanya gaya modal detail. Sisanya di app-skin.css. */
 /* ---- KB detail modal ---- */
@@ -62,14 +68,22 @@ while ($sq && ($sx = mysqli_fetch_assoc($sq))) { if (!empty($sx['st'])) $stOpts[
 </style>
 
 <!-- MAIN -->
-<div class="container-fluid mt-4 p-4">
+<div class="container-fluid mt-3 p-3">
 
   <!-- ===== Filter card ===== -->
-  <div class="card app-card border-0">
-    <div class="card-header app-card-header">
-      <h5><i class="fa fa-list-alt" aria-hidden="true"></i> LIST INVOICE RECEIVED</h5>
-    </div>
-    <div class="card-body p-3">
+  <div class="pco-card">
+    <!-- Kepala kartu: kotak ikon + judul + jejak menu, susunan yang sama dgn
+         Form Petty Cash Out - pita gradien selebar kartu diganti kotak ikon
+         supaya warnanya jadi aksen, bukan latar. -->
+    <div class="pco-head">
+      <span class="pco-head-icon"><i class="fa fa-list-alt" aria-hidden="true"></i></span>
+      <div>
+        <h1>List Invoice Received</h1>
+        <span class="pco-crumb">AP &rsaquo; Invoice Received</span>
+      </div>
+    </div><!-- /.pco-head -->
+    <div class="pco-body">
+      <div class="pco-sec"><i class="fa fa-filter" aria-hidden="true"></i> Filter</div>
       <form id="form-filter" method="post" action="kontrabon_new.php">
         <div class="row g-3">
           <div class="col-md-3">
@@ -113,8 +127,11 @@ while ($sq && ($sx = mysqli_fetch_assoc($sq))) { if (!empty($sx['st'])) $stOpts[
   </div>
 
   <!-- ===== Table card ===== -->
-  <div class="card app-card border-0 mt-4">
-    <div class="card-body p-4">
+  <!-- Kartunya .pco-card supaya sebentuk dgn kartu filter di atas; ISI
+       tabelnya tetap memakai .app-dt dari app-skin.css. -->
+  <div class="pco-card mt-3">
+    <div class="pco-body">
+      <div class="pco-sec"><i class="fa fa-table" aria-hidden="true"></i> Invoice Received</div>
       <div class="app-dt-wrap">
         <!-- Loading overlay: spinner dalam kartu, menutup HANYA area tabel (ukuran di-set via JS) -->
         <div id="kbSpin" class="app-dt-overlay" style="display:none">
