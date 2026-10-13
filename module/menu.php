@@ -1393,11 +1393,12 @@ if(strpos($id, '108') !== false){
       </li>';
   }
 
-      /* ---- Update BPB: tiga jenis barang, tiap jenis BERKASNYA SENDIRI ----
+      /* ---- Update BPB: empat jenis barang, tiap jenis BERKASNYA SENDIRI ----
          Hak aksesnya dipisah per jenis di tabel menurole:
            112 = Update BPB Fabric
            139 = Update BPB Accessories
            140 = Update BPB General
+           143 = Update BPB WIP          (barang dalam proses / makloon)
          Dulu ketiganya memakai satu set berkas yang dibedakan parameter
          ?jenis= . Sekarang tiap menu menunjuk berkasnya masing-masing,
          supaya satu menu = satu berkas dan tautannya bersih. */
@@ -1405,14 +1406,17 @@ if(strpos($id, '108') !== false){
           array('menu' => 'Update BPB Fabric',      'label' => 'Fabric',      'ikon' => 'fas fa-warehouse',    'berkas' => 'fabric'),
           array('menu' => 'Update BPB Accessories', 'label' => 'Accessories', 'ikon' => 'fas fa-puzzle-piece', 'berkas' => 'accessories'),
           array('menu' => 'Update BPB General',     'label' => 'General',     'ikon' => 'fas fa-tools',        'berkas' => 'general'),
+          /* WIP = barang dalam proses (makloon). Satu menu menampung DUA awalan
+             nomor BPB: WIP dan SPCK - lihat cari_data_bpb_wip_edit.php. */
+          array('menu' => 'Update BPB WIP',         'label' => 'WIP',         'ikon' => 'fas fa-industry',     'berkas' => 'wip'),
       );
 
-      /* Satu query utk ketiganya - jenis mana saja yang boleh dibuka. */
+      /* Satu query utk keempatnya - jenis mana saja yang boleh dibuka. */
       $ubfBoleh = array();
       $ubfRes = mysqli_query($conn2, "select useraccess.menu menu
           from useraccess inner join menurole on menurole.menu = useraccess.menu
           where useraccess.username = '$user' and menurole.status = 'Menu'
-            and useraccess.menu in ('Update BPB Fabric','Update BPB Accessories','Update BPB General')");
+            and useraccess.menu in ('Update BPB Fabric','Update BPB Accessories','Update BPB General','Update BPB WIP')");
       while ($ubfRow = mysqli_fetch_assoc($ubfRes)) { $ubfBoleh[$ubfRow['menu']] = 1; }
 
       $ubfMenu = array();
