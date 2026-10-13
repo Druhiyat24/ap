@@ -4,6 +4,7 @@ require '../../../vendor/autoload.php';
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 include '../../../conn/conn.php';
+require_once __DIR__ . '/../xlsx_baca.php';
 
 session_start();
 
@@ -29,7 +30,13 @@ try {
     // daftar cost center akan terbaca sebagai baris jurnal.
     $sheet = $spreadsheet->getSheetByName('UPLOAD');
     if ($sheet === null) { $sheet = $spreadsheet->getActiveSheet(); }
-    $rows = $sheet->toArray();
+    /* BUKAN $sheet->toArray(). toArray() memformat SEMUA sel, dan satu sel
+       ber-format tanggal yang isinya bukan tanggal (mis. nomor faktur pajak
+       16-17 digit) membuat PhpSpreadsheet menyusun interval
+       "+5.0026002959202E+15 days" lalu melempar PHP Error - fatal mentah,
+       bukan pesan yang bisa dibaca pemakai. Lihat xlsx_baca.php. */
+    $selAneh = array();
+    $rows = xlsx_baca_sheet($sheet, $selAneh);
 
     // hapus temp dulu (optional)
 
@@ -164,11 +171,26 @@ try {
 
     }
 
-    echo json_encode([
-        'status' => 'success'
-    ]);
+    $balasan = ['status' => 'success'];
+    /* Sel yang formatnya tanggal tapi isinya bukan tanggal tetap diproses
+       (nilainya dipakai apa adanya), tapi tetap dilaporkan supaya pemakai tahu
+       ada kolom yang formatnya keliru di berkasnya. */
+    if (!empty($selAneh)) {
+        $contoh = array_slice($selAneh, 0, 5);
+        $daftar = array();
+        foreach ($contoh as $sa) { $daftar[] = $sa['sel'] . ' (' . $sa['nilai'] . ')'; }
+        $balasan['warning'] = 'Ada ' . count($selAneh) . ' sel yang format kolomnya TANGGAL '
+            . 'tapi isinya bukan tanggal: ' . implode(', ', $daftar)
+            . (count($selAneh) > 5 ? ', dan lainnya' : '')
+            . '. Isinya tetap dipakai apa adanya - periksa format kolom di berkas Excel-nya.';
+    }
+    echo json_encode($balasan);
 
-} catch (Exception $e) {
+/* Throwable, BUKAN Exception. Kesalahan dari PhpSpreadsheet sering berupa
+   PHP Error (mis. "Call to a member function setTime() on bool") yang TIDAK
+   turunan Exception - dulu lolos dari sini dan tercetak sbg HTML fatal di
+   tengah balasan JSON, sehingga di layar hanya terlihat "ERROR PARSE". */
+} catch (Throwable $e) {
 
     echo json_encode([
         'status' => 'error',

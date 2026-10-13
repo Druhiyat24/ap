@@ -3,6 +3,8 @@ require '../../vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
+require_once __DIR__ . '/xlsx_baca.php';
+
 include '../../conn/conn.php';
 header('Content-Type: application/json');
 ini_set('date.timezone', 'Asia/Jakarta');
@@ -48,8 +50,13 @@ mysqli_query($conn1, "CREATE TABLE IF NOT EXISTS update_np_revisi_d (
 try {
     $spreadsheet = IOFactory::load($_FILES['file']['tmp_name']);
     $sheet = $spreadsheet->getActiveSheet();
-    $rows = $sheet->toArray();
-} catch (Exception $e) {
+    /* BUKAN $sheet->toArray(): satu sel ber-format tanggal yang isinya bukan
+       tanggal (mis. nomor faktur 16 digit) membuat PhpSpreadsheet melempar PHP
+       Error - fatal mentah yang TIDAK tertangkap catch(Exception). Lihat
+       xlsx_baca.php; kejadian nyatanya di upload jurnal GM, 13 Okt 2026. */
+    $selAneh = array();
+    $rows = xlsx_baca_sheet($sheet, $selAneh);
+} catch (Throwable $e) {
     echo json_encode(['success' => false, 'message' => 'Gagal membaca file: ' . $e->getMessage()]);
     exit;
 }
