@@ -13,6 +13,18 @@
 $doc = $_GET['doc'] ?? '';
 $de  = mysqli_real_escape_string($conn2, $doc);
 $h   = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT * FROM ir_kontrabon_h WHERE doc_number = '$de' LIMIT 1"));
+
+// PROFIT CENTER dokumen ini DIBACA DARI NOMORNYA (segmen ke-2 dari
+// IR/<PC>/YYYY/MM/NNNNN), bukan dari kolom tersendiri - memang tidak ada
+// kolomnya, dan nomor dokumen itulah catatan yang otoritatif.
+// Di halaman edit nilainya TERKUNCI: nomor dokumen sudah terbit, mengganti
+// profit center berarti menomori ulang dokumen. Yang dibatasi di sini adalah
+// BPB yang discan - diperiksa ulang server-side di kontrabon_new_update.php.
+$pcDoc = '';
+if (!empty($h['doc_number'])) {
+    $bagianDoc = explode('/', $h['doc_number']);
+    if (isset($bagianDoc[1])) { $pcDoc = strtoupper(trim($bagianDoc[1])); }
+}
 if (!$h) { echo '<div class="alert alert-danger m-4">Invoice Received not found. <a href="kontrabon_new.php">Back to list</a></div>'; return; }
 if (($h['status'] ?? '') === 'Cancel') { echo '<div class="alert alert-warning m-4">Cancelled invoice received cannot be edited. <a href="kontrabon_new.php">Back to list</a></div>'; return; }
 $unik = $h['unik_code'];
@@ -62,7 +74,24 @@ while ($iv = mysqli_fetch_assoc($invs)) {
 }
 ?>
 
+<!-- Skin kontrol form (dropdown & tanggal) - berkas yang SAMA dipakai halaman
+     Memorial Journal, supaya kedua menu terlihat satu keluarga. -->
+<link rel="stylesheet" href="../css/app-skin-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-skin-form.css'); ?>">
+<!-- Skin PENUH (kartu & tombol) - berkas yang sama dipakai halaman daftar
+     kontrabon_new.php dan halaman Create, jadi ketiganya satu keluarga.
+     Aturannya OPT-IN lewat class, bukan menimpa .card/.btn global. -->
+<link rel="stylesheet" href="../css/app-skin.css">
+
 <style>
+/* Dropdown header (select2) tampil DI ATAS tabel invoice di bawahnya, dan
+   tinggi kotaknya disamakan dgn .form-control lain di baris yang sama. */
+.select2-container{ z-index:1060; }
+.select2-container--open .select2-dropdown{ z-index:1061; }
+.select2-container--default .select2-selection--single{ height:calc(1.5em + .75rem + 2px); }
+.select2-container--default .select2-selection--single .select2-selection__rendered{ line-height:calc(1.5em + .75rem); }
+.select2-container--default .select2-selection--single .select2-selection__arrow{ height:calc(1.5em + .75rem); }
+/* Profit center terkunci: tampil seperti isian readonly lain di baris ini. */
+#profit_center + .select2-container .select2-selection--single{ background:#eef2f7; }
 .kb-card .card-header{ background: linear-gradient(90deg, #191970, #1e90ff); }
 .table-gradient th{ background:#1E3A8A; color:#fff; text-align:center; vertical-align:middle; white-space:nowrap; }
 #tblInv > tbody > tr > td{ vertical-align:middle; }
@@ -102,8 +131,8 @@ while ($iv = mysqli_fetch_assoc($invs)) {
 </style>
 
 <div class="container-fluid mt-4 p-4">
-  <div class="card shadow border-0 kb-card">
-    <div class="card-header text-white py-2 px-3">
+  <div class="card shadow border-0 kb-card app-card">
+    <div class="card-header text-white py-2 px-3 app-card-header">
       <h5 class="mb-0"><i class="fa fa-pencil-square-o"></i> EDIT INVOICE RECEIVED</h5>
     </div>
     <div class="card-body p-4">
@@ -126,11 +155,40 @@ while ($iv = mysqli_fetch_assoc($invs)) {
           <label class="form-label"><b>No Reff</b> <span class="text-muted" style="font-size:11px;">(locked)</span></label>
           <input type="text" readonly class="form-control" value="<?= htmlspecialchars($h['no_reff'] ?? '') ?>" style="background:#eef2f7;">
         </div>
-        <div class="col-md-3 mb-2">
+        <!-- Profit Center: mengisi slot yang memang sudah kosong. TERKUNCI -
+             nilainya mengikuti nomor dokumen yang sudah terbit. -->
+        <div class="col-md-2 mb-2">
+          <label class="form-label"><b>Profit Center</b> <span class="text-muted" style="font-size:11px;">(locked)</span></label>
+          <select class="form-control select2" id="profit_center" disabled title="Profit center follows the document number">
+            <?php
+            /* Daftarnya dari master_pc - sumber yang SAMA dgn Memorial Journal,
+               termasuk cara menampilkannya (id_pc - nama_pc). */
+            $qpc = mysqli_query($conn1, "SELECT kode_pc, CONCAT(id_pc,' - ',nama_pc) tampil
+                FROM master_pc WHERE status = 'Active' ORDER BY id_pc");
+            $adaPc = false;
+            while ($qpc && $xpc = mysqli_fetch_assoc($qpc)) {
+                $selpc = ($xpc['kode_pc'] === $pcDoc) ? ' selected' : '';
+                if ($selpc !== '') { $adaPc = true; }
+                echo '<option value="' . htmlspecialchars($xpc['kode_pc']) . '"' . $selpc . '>'
+                    . htmlspecialchars($xpc['tampil']) . '</option>';
+            }
+            /* Dokumen lama bisa memakai kode yang sudah tidak Active lagi -
+               tetap ditampilkan apa adanya supaya nilainya tidak hilang. */
+            if (!$adaPc && $pcDoc !== '') {
+                echo '<option value="' . htmlspecialchars($pcDoc) . '" selected>' . htmlspecialchars($pcDoc) . '</option>';
+            }
+            ?>
+          </select>
+        </div>
+        <div class="col-md-1 mb-2">
         </div>
         <div class="col-md-3 mb-2">
           <label class="form-label"><b>Supplier</b> <span class="text-muted" style="font-size:11px;">(editable)</span></label>
-          <select class="form-control selectpicker" id="nama_supp" data-live-search="true" title="Select Supplier">
+          <!-- <option> kosong: syarat select2 mau menampilkan placeholder.
+               Di halaman edit biasanya sudah ada supplier yang terpilih, jadi
+               placeholder-nya hanya terlihat kalau dokumennya memang kosong. -->
+          <select class="form-control select2" id="nama_supp" title="Select Supplier">
+            <option></option>
             <?php
             // Supplier BOLEH diganti: satu perusahaan kadang punya 2 record master
             // dgn susunan nama berbeda (mis. "CV. MITRA EKA PERKASA" vs
@@ -177,7 +235,7 @@ while ($iv = mysqli_fetch_assoc($invs)) {
             <input type="text" class="form-control form-control-sm text-right" id="new_inv_amt" placeholder="0" autocomplete="off">
           </div>
           <div class="col-md-1 mb-2">
-            <button type="button" class="btn btn-primary btn-sm" id="btnAddRow"><i class="fa fa-plus"></i> Add Invoice</button>
+            <button type="button" class="btn btn-primary btn-sm btn-round" id="btnAddRow"><i class="fa fa-plus"></i> Add Invoice</button>
           </div>
         </div>
       </div>
@@ -211,8 +269,8 @@ while ($iv = mysqli_fetch_assoc($invs)) {
       </div>
 
       <hr>
-      <button type="button" class="btn btn-success" id="btnSave"><i class="fa fa-floppy-o"></i> Update</button>
-      <button type="button" class="btn btn-danger" onclick="location.href='kontrabon_new.php'"><i class="fa fa-angle-double-left"></i> Back</button>
+      <button type="button" class="btn btn-success btn-round" id="btnSave"><i class="fa fa-floppy-o"></i> Update</button>
+      <button type="button" class="btn btn-danger btn-round" onclick="location.href='kontrabon_new.php'"><i class="fa fa-angle-double-left"></i> Back</button>
 
     </div>
   </div>
@@ -223,6 +281,9 @@ while ($iv = mysqli_fetch_assoc($invs)) {
 <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
+<!-- select2: dipakai SEMUA dropdown di halaman ini (sama dgn Memorial Journal).
+     CSS-nya sudah dimuat header.php, jadi di sini cukup JS-nya. -->
+<script language="JavaScript" src="../css/4.1.1/select2.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
 <script>
 var DOC = <?= json_encode($h['doc_number']) ?>;
@@ -234,7 +295,18 @@ $(function () {
   // terdaftar di salah satunya saja -- makanya header perlu bisa diganti.
   // Kalau BPB sudah terisi lalu supplier diganti ke nama yang BEDA, tolak &
   // kembalikan ke pilihan sebelumnya. Server mengecek ulang saat Update.
-  $('#nama_supp').selectpicker();
+  /* select2 untuk SEMUA dropdown - sama dgn Memorial Journal. Profit Center
+     cuma dua pilihan dan terkunci, jadi pencariannya dimatikan. */
+  /* placeholder diambil dari atribut title, jadi teksnya tetap seperti waktu
+     halaman ini masih memakai bootstrap-select. */
+  $('.select2').each(function () {
+    var $el = $(this);
+    if ($el.attr('id') === 'profit_center') { return; }
+    $el.select2({ width: '100%', placeholder: $el.attr('title') || '', allowClear: true });
+  });
+  /* Profit Center TERKUNCI dan selalu punya nilai (ikut nomor dokumen), jadi
+     tanpa placeholder dan tanpa kotak pencarian. */
+  $('#profit_center').select2({ width: '100%', minimumResultsForSearch: Infinity });
   var suppPrev = $('#nama_supp').val() || '';
   var suppReverting = false;
 
@@ -260,7 +332,7 @@ $(function () {
       }).join('');
       var more = bad.length > 6 ? '<div class="text-muted" style="font-size:12px;margin-top:4px;">+' + (bad.length - 6) + ' BPB lain</div>' : '';
       suppReverting = true;
-      $('#nama_supp').selectpicker('val', suppPrev);
+      $('#nama_supp').val(suppPrev).trigger('change.select2');
       suppReverting = false;
       Swal.fire({
         icon: 'error',
@@ -516,7 +588,7 @@ $(function () {
     var gdup = false; $('#invBody .bpb-row').each(function(){ if (($(this).data('no')||'') == v) gdup = true; });
     if (gdup) { Swal.fire({icon:'info', title:'Already used', text:'BPB ' + v + ' is already in this invoice received.'}); $inp.val(''); return; }
     $inp.prop('disabled', true);
-    $.post('kontrabon_new_check_bpb.php', { no_bpb: v, supplier: supp, exclude_doc: DOC, no_reserve: 1 }, function (res) {
+    $.post('kontrabon_new_check_bpb.php', { no_bpb: v, supplier: supp, profit_center: $('#profit_center').val(), exclude_doc: DOC, no_reserve: 1 }, function (res) {
       $inp.prop('disabled', false);
       if (res.ok) { $item.find('.bpb-list').append($(bpbRowHtml(res))); refreshFaktur($item); $inp.val('').focus(); }
       else { Swal.fire({icon:'error', title:'BPB rejected', text: res.msg}); $inp.val('').focus(); }

@@ -21,6 +21,7 @@ $doc   = trim($_POST['doc_number'] ?? '');
 $unik  = trim($_POST['unik_code'] ?? '');
 $reff  = trim($_POST['no_reff'] ?? '');
 $supp  = trim($_POST['nama_supp'] ?? '');
+$pc    = strtoupper(trim($_POST['profit_center'] ?? ''));   // NAG / NAK
 $desc  = trim($_POST['pesan'] ?? '');
 $total = (float) str_replace(',', '', $_POST['total_amount'] ?? '0');
 // Document Date (diisi user) + Invoice Received Date (kontrabon_date = SELALU Rabu dari Document Date).
@@ -32,6 +33,7 @@ $invoices = json_decode($_POST['invoices'] ?? '[]', true);
 
 if ($supp === '') { echo json_encode(['ok' => false, 'msg' => 'Supplier is required.']); exit; }
 if ($reff === '') { echo json_encode(['ok' => false, 'msg' => 'Reference number is required.']); exit; }
+if (!in_array($pc, array('NAG', 'NAK'), true)) { echo json_encode(['ok' => false, 'msg' => 'Profit center is required (NAG / NAK).']); exit; }
 if (!is_array($invoices) || count($invoices) === 0) { echo json_encode(['ok' => false, 'msg' => 'No invoice to save.']); exit; }
 
 $nInv = 0; $nFak = 0; $nBpb = 0; $fail = null;
@@ -45,13 +47,15 @@ if (!$updReff) { $fail = 'reff: ' . mysqli_error($conn2); }
 elseif (mysqli_affected_rows($conn2) === 0) { $fail = "Reference '$reff' is not available (maybe already used/cancelled)."; }
 
 // 1b) Nomor dokumen MELANJUT dari urutan Invoice Received (ir_invoice_supp_h),
-//     format IR/NAG/YYYY/MM/NNNNN. Karena mirror juga menulis ke tabel itu,
+//     format IR/<PC>/YYYY/MM/NNNNN. Karena mirror juga menulis ke tabel itu,
 //     max-nya mencakup dokumen IR-input maupun Kontrabon -> nomor selalu nyambung.
+//     URUTANNYA GLOBAL untuk semua profit center - hanya kodenya yang beda
+//     (keputusan pemakai 13 Okt 2026), jadi MAX sengaja TIDAK disaring per PC.
 if (!$fail) {
     $rm = mysqli_query($conn2, "SELECT MAX(CAST(SUBSTRING_INDEX(doc_number, '/', -1) AS UNSIGNED)) AS mx FROM ir_invoice_supp_h");
     $next = 1;
     if ($rm && ($rw = mysqli_fetch_assoc($rm))) $next = ((int) $rw['mx']) + 1;
-    $doc = 'IR/NAG/' . date('Y') . '/' . date('m') . '/' . str_pad($next, 5, '0', STR_PAD_LEFT);
+    $doc = 'IR/' . $pc . '/' . date('Y') . '/' . date('m') . '/' . str_pad($next, 5, '0', STR_PAD_LEFT);
 }
 
 // 1c) Guard terakhir: pastikan BPB belum dipakai di kontrabon tersimpan.
@@ -71,6 +75,27 @@ if (!$fail) {
         }
     }
 }
+// 1c-2) Guard PROFIT CENTER. Semua BPB harus milik profit center dokumen ini.
+//      WAJIB diperiksa DI SINI, bukan cuma mengandalkan dropdown di halaman:
+//      endpoint ini menerima POST biasa, jadi saringan tampilan bisa dilewati.
+//      Nomor RETUR tidak ada di bpb_new (adanya di bppb_new yang TIDAK punya
+//      kolom profit_center), jadi retur otomatis tidak ikut terjaring di sini -
+//      itu memang batas yang bisa dijangkau datanya, bukan kelalaian.
+if (!$fail && $allBpb) {
+    $inList2 = implode(',', array_map(function ($x) use ($conn1) {
+        return "'" . mysqli_real_escape_string($conn1, $x) . "'";
+    }, array_keys($allBpb)));
+    $rpc = mysqli_query($conn1, "SELECT no_bpb, MAX(profit_center) pc FROM bpb_new
+        WHERE no_bpb IN ($inList2) GROUP BY no_bpb
+        HAVING MAX(profit_center) <> '" . mysqli_real_escape_string($conn1, $pc) . "' LIMIT 1");
+    if ($rpc && mysqli_num_rows($rpc) > 0) {
+        $bad = mysqli_fetch_assoc($rpc);
+        $pcBad = ($bad['pc'] === '' || $bad['pc'] === null) ? '(empty)' : $bad['pc'];
+        $fail = "BPB '" . $bad['no_bpb'] . "' belongs to profit center " . $pcBad
+            . ", not " . $pc . ".";
+    }
+}
+
 // 1d) Guard: No Invoice belum dipakai untuk SUPPLIER yang sama (kecuali Cancel).
 // No Invoice strip ("-") = penanda "tanpa nomor invoice", boleh dipakai berkali-kali
 // (baik dalam 1 dokumen maupun lintas dokumen) - tidak pernah dianggap dobel.

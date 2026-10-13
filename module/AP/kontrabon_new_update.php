@@ -83,6 +83,32 @@ if (!$fail) {
         $allBpb[$nb] = true;
     }
 }
+// Guard PROFIT CENTER. Profit center dokumen dibaca dari NOMORNYA sendiri
+// (segmen ke-2 dari IR/<PC>/YYYY/MM/NNNNN) - tidak mengambil apa pun dari
+// kiriman browser, jadi tidak bisa diakali lewat POST langsung. Semua BPB
+// yang masuk harus milik profit center itu.
+// Nomor RETUR tidak ada di bpb_new (adanya di bppb_new yang TIDAK punya kolom
+// profit_center), jadi retur otomatis tidak ikut terjaring di sini - itu batas
+// yang bisa dijangkau datanya, bukan kelalaian.
+if (!$fail && $allBpb) {
+    $bagianDoc = explode('/', $doc);
+    $pcDoc = isset($bagianDoc[1]) ? strtoupper(trim($bagianDoc[1])) : '';
+    if ($pcDoc !== '') {
+        $inListPc = implode(',', array_map(function ($x) use ($conn1) {
+            return "'" . mysqli_real_escape_string($conn1, $x) . "'";
+        }, array_keys($allBpb)));
+        $rpc = mysqli_query($conn1, "SELECT no_bpb, MAX(profit_center) pc FROM bpb_new
+            WHERE no_bpb IN ($inListPc) GROUP BY no_bpb
+            HAVING MAX(profit_center) <> '" . mysqli_real_escape_string($conn1, $pcDoc) . "' LIMIT 1");
+        if ($rpc && mysqli_num_rows($rpc) > 0) {
+            $bad = mysqli_fetch_assoc($rpc);
+            $pcBad = ($bad['pc'] === '' || $bad['pc'] === null) ? '(empty)' : $bad['pc'];
+            $fail = "BPB '" . $bad['no_bpb'] . "' belongs to profit center " . $pcBad
+                . ", not " . $pcDoc . ".";
+        }
+    }
+}
+
 if (!$fail && $allBpb) {
     $inList = implode(',', array_map(function ($x) use ($e) { return "'" . $e($x) . "'"; }, array_keys($allBpb)));
     $rc = mysqli_query($conn2, "SELECT b.no_bpb, h.doc_number FROM ir_kontrabon_bpb b

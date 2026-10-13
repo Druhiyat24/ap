@@ -12,6 +12,7 @@ header('Content-Type: application/json; charset=utf-8');
 $user       = $_SESSION['username'] ?? '';
 $no_bpb     = trim($_POST['no_bpb'] ?? '');
 $supplier   = trim($_POST['supplier'] ?? '');
+$profitCtr  = strtoupper(trim($_POST['profit_center'] ?? ''));   // NAG / NAK
 $unik       = trim($_POST['unik_code'] ?? '');
 $excludeDoc = trim($_POST['exclude_doc'] ?? '');   // mode edit: abaikan BPB milik kontrabon ini sendiri
 $noReserve  = !empty($_POST['no_reserve']);         // mode edit: jangan reserve
@@ -19,6 +20,9 @@ $now        = date('Y-m-d H:i:s');
 
 if ($no_bpb === '')   { echo json_encode(['ok' => false, 'msg' => 'BPB is empty.']); exit; }
 if ($supplier === '') { echo json_encode(['ok' => false, 'msg' => 'Please select the Supplier first.']); exit; }
+if ($profitCtr !== '' && !in_array($profitCtr, array('NAG', 'NAK'), true)) {
+    echo json_encode(['ok' => false, 'msg' => 'Unknown profit center.']); exit;
+}
 
 // Lepas reservasi basi (draft yang ditinggal >24 jam) supaya BPB tidak terkunci selamanya.
 mysqli_query($conn2, "DELETE FROM ir_kontrabon_bpb_reserve WHERE create_date < DATE_SUB(NOW(), INTERVAL 24 HOUR)");
@@ -27,6 +31,17 @@ $bpb_esc  = mysqli_real_escape_string($conn1, $no_bpb);
 $supp_esc = mysqli_real_escape_string($conn1, $supplier);
 $bpb_esc2 = mysqli_real_escape_string($conn2, $no_bpb);
 
+// Saringan PROFIT CENTER. Dokumen dibuat per profit center, jadi BPB milik
+// profit center LAIN tidak boleh ikut. Diukur ke produksi 13 Okt 2026: dari
+// seluruh BPB yang masih bisa ditagih (status<>'Cancel', is_invoiced='Waiting')
+// 2.122 ber-NAG dan 331 ber-NAK, dan TIDAK ADA satu pun yang profit center-nya
+// kosong - jadi saringan ketat ini tidak menghalangi pekerjaan yang sah.
+// Catatan: dokumen RETUR (bppb_new) TIDAK punya kolom profit_center sama sekali,
+// jadi retur tidak bisa disaring di sini - lihat blok fallback di bawah.
+$pcCond = ($profitCtr !== '')
+    ? " AND profit_center = '" . mysqli_real_escape_string($conn1, $profitCtr) . "'"
+    : '';
+
 // 1) Valid untuk supplier terpilih? DPP = SUM(qty*price), PPN = SUM(qty*price*tax/100),
 //    Total = DPP + PPN (tax = persen). No PO = pono.
 $r = mysqli_query($conn1, "SELECT no_bpb, MAX(supplier) supplier, GROUP_CONCAT(DISTINCT pono SEPARATOR ', ') no_po,
@@ -34,7 +49,7 @@ $r = mysqli_query($conn1, "SELECT no_bpb, MAX(supplier) supplier, GROUP_CONCAT(D
     ROUND(SUM(qty * price), 2) dpp,
     ROUND(SUM((qty * price) * (tax / 100)), 2) ppn,
     ROUND(SUM((qty * price) + ((qty * price) * (tax / 100))), 2) total
-    FROM bpb_new WHERE no_bpb = '$bpb_esc' AND supplier = '$supp_esc' GROUP BY no_bpb LIMIT 1");
+    FROM bpb_new WHERE no_bpb = '$bpb_esc' AND supplier = '$supp_esc'$pcCond GROUP BY no_bpb LIMIT 1");
 
 $is_retur = false;
 if ($r && mysqli_num_rows($r) > 0) {
@@ -53,6 +68,19 @@ if ($r && mysqli_num_rows($r) > 0) {
         $row = $tmp;
         $is_retur = true;
     } else {
+        // Bedanya cuma PROFIT CENTER? Diperiksa lebih dulu supaya pesannya tepat -
+        // kalau tidak, BPB milik NAK akan dilaporkan sbg "supplier lain" dan
+        // pemakai mencari-cari kesalahan di tempat yang salah.
+        if ($profitCtr !== '') {
+            $rp = mysqli_query($conn1, "SELECT MAX(profit_center) pc FROM bpb_new
+                WHERE no_bpb = '$bpb_esc' AND supplier = '$supp_esc'");
+            if ($rp && ($rw = mysqli_fetch_assoc($rp)) && $rw['pc'] !== null) {
+                $pcLain = ($rw['pc'] === '' || $rw['pc'] === null) ? '(empty)' : $rw['pc'];
+                echo json_encode(['ok' => false, 'msg' => "'$no_bpb' belongs to profit center " . $pcLain
+                    . ", not " . $profitCtr . "."]);
+                exit;
+            }
+        }
         // Ada untuk supplier lain? (bpb_new / bppb_new) -> pesan lebih jelas.
         $r2 = mysqli_query($conn1, "SELECT supplier FROM bpb_new WHERE no_bpb = '$bpb_esc'
             UNION SELECT supplier FROM bppb_new WHERE no_ro = '$bpb_esc' OR no_bppb = '$bpb_esc' LIMIT 1");

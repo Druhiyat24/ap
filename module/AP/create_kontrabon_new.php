@@ -10,21 +10,50 @@
 // + bulk insert BPB. Styling BIRU khas app. Bootstrap 4.5 -> ml-/mr-.
 // ============================================================================
 
-// Preview nomor: MELANJUT dari urutan Invoice Received (IR/NAG/YYYY/MM/NNNNN).
+// PROFIT CENTER. Dokumen dibuat PER profit center (NAG / NAK) - pilihannya di
+// header dan kodenya ikut masuk ke nomor dokumen (segmen ke-2).
+// Nilai awalnya diambil dari master_pc supaya tidak ada kode yang dipatok di
+// sini; NAG didahulukan karena seluruh 6.094 dokumen lama bernomor IR/NAG/.
+$pcDefault = 'NAG';
+$qpcDef = mysqli_query($conn1, "SELECT kode_pc FROM master_pc WHERE status = 'Active' ORDER BY (kode_pc <> 'NAG'), id_pc LIMIT 1");
+if ($qpcDef && $xpcDef = mysqli_fetch_assoc($qpcDef)) { $pcDefault = $xpcDef['kode_pc']; }
+
+// Preview nomor: MELANJUT dari urutan Invoice Received (IR/<PC>/YYYY/MM/NNNNN).
+// URUTANNYA GLOBAL - satu hitungan untuk semua profit center, hanya kodenya
+// yang beda (keputusan pemakai 13 Okt 2026). Jadi MAX di bawah sengaja TIDAK
+// disaring per profit center.
 // (Nomor final di-generate ulang saat Save agar otoritatif.)
 $rowMx = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT MAX(CAST(SUBSTRING_INDEX(doc_number, '/', -1) AS UNSIGNED)) mx FROM ir_invoice_supp_h"));
 $urut  = ((int) ($rowMx['mx'] ?? 0)) + 1;
-$docNumber = "IR/NAG/" . date('Y') . "/" . date('m') . "/" . str_pad($urut, 5, '0', STR_PAD_LEFT);
+$docNumber = "IR/" . $pcDefault . "/" . date('Y') . "/" . date('m') . "/" . str_pad($urut, 5, '0', STR_PAD_LEFT);
 $unikCode  = substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789'), 0, 25);
 ?>
+
+<!-- Skin kontrol form (dropdown & tanggal) - berkas yang SAMA dipakai halaman
+     Memorial Journal, supaya kedua menu terlihat satu keluarga. Sengaja hanya
+     app-skin-form.css, bukan app-skin.css utuh: yang penuh juga mengubah
+     kartu/tabel/tombol yang di halaman ini sudah punya gaya birunya sendiri. -->
+<link rel="stylesheet" href="../css/app-skin-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-skin-form.css'); ?>">
+<!-- Skin PENUH (kartu & tombol) - berkas yang sama dipakai halaman daftar
+     kontrabon_new.php, jadi Create/Edit/List terlihat satu keluarga.
+     Aturannya OPT-IN lewat class (.app-card, .app-card-header, .btn-round),
+     bukan menimpa .card/.btn secara global, jadi bagian lain tidak ikut
+     berubah tanpa diminta. -->
+<link rel="stylesheet" href="../css/app-skin.css">
 
 <style>
 .kb-card .card-header{ background: linear-gradient(90deg, #191970, #1e90ff); }
 .table-gradient th{ background:#1E3A8A; color:#fff; text-align:center; vertical-align:middle; white-space:nowrap; }
-/* Dropdown Supplier/No Reff (bootstrap-select) tampil DI ATAS tabel & Descriptions. */
-.bootstrap-select .dropdown-menu{ z-index:1060 !important; }
-.bootstrap-select.show{ z-index:1060; }
-.bootstrap-select .dropdown-menu.inner{ z-index:auto !important; }
+/* Dropdown header (select2) tampil DI ATAS tabel & Descriptions. Dulu aturan
+   ini menyasar .bootstrap-select; sejak semua select dipindah ke select2,
+   yang perlu diangkat adalah .select2-container dan panel .select2-dropdown.
+   Tanpa ini panelnya tertutup tabel invoice di bawahnya. */
+.select2-container{ z-index:1060; }
+.select2-container--open .select2-dropdown{ z-index:1061; }
+/* Tinggi kotaknya disamakan dgn .form-control lain di baris yang sama. */
+.select2-container--default .select2-selection--single{ height:calc(1.5em + .75rem + 2px); }
+.select2-container--default .select2-selection--single .select2-selection__rendered{ line-height:calc(1.5em + .75rem); }
+.select2-container--default .select2-selection--single .select2-selection__arrow{ height:calc(1.5em + .75rem); }
 #tblInv > tbody > tr > td{ vertical-align:middle; }
 #tblInv input{ font-size:13px; }
 .kb-total{ font-size:15px; font-weight:700; text-align:right; }
@@ -85,8 +114,8 @@ $unikCode  = substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstu
 </style>
 
 <div class="container-fluid mt-4 p-4">
-  <div class="card shadow border-0 kb-card">
-    <div class="card-header text-white py-2 px-3">
+  <div class="card shadow border-0 kb-card app-card">
+    <div class="card-header text-white py-2 px-3 app-card-header">
       <h5 class="mb-0"><i class="fa fa-file-text-o"></i> CREATE INVOICE RECEIVED</h5>
     </div>
     <div class="card-body p-4">
@@ -108,14 +137,40 @@ $unikCode  = substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstu
         </div>
         <div class="col-md-2 mb-2">
           <label class="form-label"><b>No Reff</b> <span class="text-muted" style="font-size:11px;">(reference)</span></label>
-          <select class="form-control selectpicker" id="no_reff" data-live-search="true" title="Select reference number">
+          <!-- <option> kosong di awal WAJIB ada: itulah syarat select2 mau
+               menampilkan placeholder. Tanpa itu select2 langsung memilih
+               pilihan pertama, dan pemakai bisa menyimpan nomor reference
+               yang sebenarnya tidak pernah ia pilih. -->
+          <select class="form-control select2" id="no_reff" title="Select reference number">
+            <option></option>
             <?php
             $rf = mysqli_query($conn2, "SELECT ref_number FROM ir_kontrabon_ref WHERE status = 'Available' ORDER BY ref_number ASC");
             while ($x = mysqli_fetch_assoc($rf)) echo '<option value="' . htmlspecialchars($x['ref_number']) . '">' . htmlspecialchars($x['ref_number']) . '</option>';
             ?>
           </select>
         </div>
-        <div class="col-md-3 mb-2">
+        <!-- Profit Center: mengisi slot yang memang sudah kosong di baris ini.
+             Mengubahnya langsung mengubah segmen ke-2 Document Number. -->
+        <div class="col-md-2 mb-2">
+          <label class="form-label"><b>Profit Center</b></label>
+          <select class="form-control select2" id="profit_center" title="Select profit center">
+            <?php
+            /* Daftar profit center diambil dari master_pc - sumber yang SAMA dgn
+               Memorial Journal, termasuk cara menampilkannya (id_pc - nama_pc),
+               supaya kedua menu tidak pernah beda sebutan. Yang DISIMPAN tetap
+               kode_pc (NAG/NAK) karena itu yang dipakai bpb_new.profit_center
+               dan segmen ke-2 nomor dokumen. */
+            $qpc = mysqli_query($conn1, "SELECT kode_pc, CONCAT(id_pc,' - ',nama_pc) tampil
+                FROM master_pc WHERE status = 'Active' ORDER BY id_pc");
+            while ($qpc && $xpc = mysqli_fetch_assoc($qpc)) {
+                $selpc = ($xpc['kode_pc'] === $pcDefault) ? ' selected' : '';
+                echo '<option value="' . htmlspecialchars($xpc['kode_pc']) . '"' . $selpc . '>'
+                    . htmlspecialchars($xpc['tampil']) . '</option>';
+            }
+            ?>
+          </select>
+        </div>
+        <div class="col-md-1 mb-2">
         </div>
         <div class="col-md-5 mb-2">
           <label class="form-label"><b>Descriptions</b></label>
@@ -123,7 +178,8 @@ $unikCode  = substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstu
         </div>
           <div class="col-md-4 mb-2">
           <label class="form-label"><b>Supplier</b></label>
-          <select class="form-control selectpicker" id="nama_supp" data-live-search="true" title="Select Supplier">
+          <select class="form-control select2" id="nama_supp" title="Select Supplier">
+            <option></option>
             <?php
             $sp = mysqli_query($conn1, "SELECT DISTINCT Supplier sup FROM mastersupplier WHERE tipe_sup = 'S' ORDER BY Supplier ASC");
             while ($x = mysqli_fetch_assoc($sp)) echo '<option value="' . htmlspecialchars($x['sup']) . '">' . htmlspecialchars($x['sup']) . '</option>';
@@ -150,7 +206,7 @@ $unikCode  = substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstu
             <input type="text" class="form-control form-control-sm text-right" id="new_inv_amt" placeholder="0" autocomplete="off" disabled>
           </div>
           <div class="col-md-1 mb-2">
-            <button type="button" class="btn btn-primary btn-sm" id="btnAddRow" disabled><i class="fa fa-plus"></i> Add Invoice</button>
+            <button type="button" class="btn btn-primary btn-sm btn-round" id="btnAddRow" disabled><i class="fa fa-plus"></i> Add Invoice</button>
           </div>
         </div>
         <div id="inv-gate-note" class="text-danger" style="font-size:12px;"><i class="fa fa-info-circle"></i> Please select a Supplier first before adding invoices.</div>
@@ -185,8 +241,8 @@ $unikCode  = substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstu
       </div>
 
       <hr>
-      <button type="button" class="btn btn-success" id="btnSave"><i class="fa fa-floppy-o"></i> Save</button>
-      <button type="button" class="btn btn-danger" onclick="location.href='kontrabon_new.php'"><i class="fa fa-angle-double-left"></i> Back</button>
+      <button type="button" class="btn btn-success btn-round" id="btnSave"><i class="fa fa-floppy-o"></i> Save</button>
+      <button type="button" class="btn btn-danger btn-round" onclick="location.href='kontrabon_new.php'"><i class="fa fa-angle-double-left"></i> Back</button>
 
     </div>
   </div>
@@ -210,10 +266,27 @@ $unikCode  = substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstu
 <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
+<!-- select2: dipakai SEMUA dropdown di halaman ini (sama dgn Memorial Journal).
+     CSS-nya sudah dimuat header.php, jadi di sini cukup JS-nya. -->
+<script language="JavaScript" src="../css/4.1.1/select2.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
 <script>
 $(function () {
-  $('.selectpicker').selectpicker({ size: 5 });
+  /* select2 untuk SEMUA dropdown - sama dgn Memorial Journal. Profit Center
+     hanya punya dua pilihan, jadi kotak pencariannya dimatikan supaya tidak
+     mubazir (pola yang sama dipakai Payroll Source di Memorial Journal). */
+  /* placeholder diambil dari atribut title masing-masing select, jadi teksnya
+     tetap seperti waktu halaman ini masih memakai bootstrap-select
+     ("Select reference number" / "Select Supplier") - bukan langsung
+     terpilih pilihan pertama. allowClear supaya bisa dikosongkan lagi. */
+  $('.select2').each(function () {
+    var $el = $(this);
+    $el.select2({ width: '100%', placeholder: $el.attr('title') || '', allowClear: true });
+  });
+  /* Profit Center TIDAK pakai placeholder: nilainya wajib dan ikut menentukan
+     nomor dokumen, jadi selalu ada yang terpilih. Pilihannya cuma dua, maka
+     kotak pencariannya dimatikan (pola yang sama dipakai Memorial Journal). */
+  $('#profit_center').select2({ width: '100%', minimumResultsForSearch: Infinity });
   function bindDate($s){ ($s || $(document)).find('.tanggal').datepicker({ format:'dd-mm-yyyy', autoclose:true }); }
   bindDate();
 
@@ -337,6 +410,30 @@ $(function () {
   }
   function addRow(d){ var $pair = $(rowPairHtml(d)); $('#invBody').append($pair); updateInvEmpty(); return $pair; }
   function updateInvEmpty(){ $('#invEmpty').toggle($('#invBody .inv-row').length === 0); }
+  /* ---------- Profit Center ---------- */
+  // Mengubahnya mengubah segmen ke-2 nomor dokumen (IR/<PC>/...). Kalau sudah
+  // ada BPB yang discan, perubahan DITOLAK dan dikembalikan: BPB yang sudah
+  // masuk milik profit center lama, membiarkannya berpindah diam-diam akan
+  // membuat dokumen bercampur. Server memeriksa ulang saat Save.
+  var pcSebelumnya = $('#profit_center').val();
+  function setDocPc(pc){
+    var bagian = String($('#no_doc').val() || '').split('/');
+    if (bagian.length >= 2) { bagian[1] = pc; $('#no_doc').val(bagian.join('/')); }
+  }
+  $('#profit_center').on('change', function(){
+    var pc = $(this).val();
+    if (pc === pcSebelumnya) { return; }
+    if ($('#invBody .bpb-row').length > 0) {
+      $(this).val(pcSebelumnya).trigger('change.select2');
+      Swal.fire({icon:'warning', title:'BPB already scanned',
+        text:'Remove the scanned BPB first before changing the profit center.'});
+      return;
+    }
+    pcSebelumnya = pc;
+    setDocPc(pc);
+    saveLocal(); scheduleDraftSave();
+  });
+
   function refreshInvInputState(){
     var has = !!$('#nama_supp').val();
     $('#new_inv_no, #new_inv_date, #new_inv_amt, #btnAddRow').prop('disabled', !has);
@@ -386,7 +483,7 @@ $(function () {
     return invoices;
   }
   function serializeDraft(){
-    return { document_date: $('#tgl_doc').val(), kontrabon_date: $('#tgl_received').val(), no_reff: $('#no_reff').val(), nama_supp: $('#nama_supp').val(), pesan: $('#pesan').val(), invoices: collectInvoices() };
+    return { document_date: $('#tgl_doc').val(), kontrabon_date: $('#tgl_received').val(), no_reff: $('#no_reff').val(), nama_supp: $('#nama_supp').val(), profit_center: $('#profit_center').val(), pesan: $('#pesan').val(), invoices: collectInvoices() };
   }
   function draftHasContent(d){
     if (d.nama_supp || d.no_reff) return true;
@@ -428,8 +525,14 @@ $(function () {
     else if (d.kontrabon_date) $('#tgl_doc').val(d.kontrabon_date);
     updateReceivedDate();
     if (d.pesan) $('#pesan').val(d.pesan);
-    if (d.no_reff)  $('#no_reff').selectpicker('val', d.no_reff);
-    if (d.nama_supp) $('#nama_supp').selectpicker('val', d.nama_supp);
+    if (d.no_reff)  $('#no_reff').val(d.no_reff).trigger('change');
+    if (d.nama_supp) $('#nama_supp').val(d.nama_supp).trigger('change');
+    // Profit center dipulihkan SEBELUM baris BPB dipasang di bawah, supaya
+    // penjaga "BPB sudah discan" tidak menolak pemulihan draft itu sendiri.
+    if (d.profit_center) {
+      $('#profit_center').val(d.profit_center).trigger('change.select2');
+      pcSebelumnya = d.profit_center; setDocPc(d.profit_center);
+    }
     (d.invoices||[]).forEach(function (iv) {
       var $pair = addRow({ no_inv: iv.no_inv, tgl_inv: iv.tgl_inv, amount: iv.amount });
       var $row = $pair.filter('.inv-row');
@@ -481,7 +584,7 @@ $(function () {
     if (dup) { Swal.fire({icon:'info', title:'Already scanned', text:'BPB ' + v + ' is already used in this invoice received (cannot be scanned twice, even in another invoice).'}); $inp.val(''); return; }
 
     $inp.prop('disabled', true);
-    $.post('kontrabon_new_check_bpb.php', { no_bpb: v, supplier: supp, unik_code: $('#unik_code').val() }, function (res) {
+    $.post('kontrabon_new_check_bpb.php', { no_bpb: v, supplier: supp, profit_center: $('#profit_center').val(), unik_code: $('#unik_code').val() }, function (res) {
       $inp.prop('disabled', false);
       if (res.ok) {
         $item.find('.bpb-list').append($(bpbRowHtml(res)));
@@ -650,6 +753,7 @@ $(function () {
     $.post('kontrabon_new_save.php', {
       doc_number: $('#no_doc').val(), unik_code: $('#unik_code').val(),
       document_date: $('#tgl_doc').val(), kontrabon_date: $('#tgl_received').val(), no_reff: reff, nama_supp: supp,
+      profit_center: $('#profit_center').val(),
       pesan: $('#pesan').val(), total_amount: $('#total_value_h').val(),
       invoices: JSON.stringify(invoices)
     }, function (res) {
