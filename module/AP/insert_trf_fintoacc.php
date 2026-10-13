@@ -26,12 +26,22 @@ $unik_code = $_POST['unik_code'];
 // IR lama tanpa ir_kontrabon_h juga tidak digating supaya alur lama tidak terganggu.
 if ($kode_trans === 'TFTA' || $kode_trans === 'TATP') {
     $de = mysqli_real_escape_string($conn2, $no_kbon);
+    // Kelengkapan dihitung PER INVOICE. Dulu cukup ADA satu BPB di dokumen,
+    // sehingga IR berisi 3 invoice yang baru 1 ber-BPB lolos transfer.
     $g = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT
         (SELECT COUNT(*) FROM ir_kontrabon_h kh WHERE kh.doc_number='$de') has_kh,
-        (SELECT COUNT(*) FROM ir_kontrabon_bpb b JOIN ir_kontrabon_h kh ON kh.unik_code=b.unik_code WHERE kh.doc_number='$de') bpb"));
-    if ((int) ($g['has_kh'] ?? 0) > 0 && (int) ($g['bpb'] ?? 0) === 0) {
+                        (SELECT COUNT(*) FROM ir_kontrabon_inv i
+                            JOIN ir_kontrabon_h kh2 ON kh2.unik_code = i.unik_code
+                           WHERE kh2.doc_number='$de'
+                             AND NOT EXISTS (SELECT 1 FROM ir_kontrabon_bpb b WHERE b.inv_id = i.id)) inv_tanpa_bpb,
+                        (SELECT COUNT(*) FROM ir_kontrabon_inv i2
+                            JOIN ir_kontrabon_h kh3 ON kh3.unik_code = i2.unik_code
+                           WHERE kh3.doc_number='$de') inv_total"));
+    if ((int) ($g['has_kh'] ?? 0) > 0
+        && ((int) ($g['inv_total'] ?? 0) === 0 || (int) ($g['inv_tanpa_bpb'] ?? 0) > 0)) {
+        $kurang = (int) ($g['inv_tanpa_bpb'] ?? 0);
         http_response_code(422);
-        echo "IR $no_kbon belum ada BPB - tidak bisa ditransfer.";
+        echo "IR $no_kbon belum lengkap BPB-nya (" . $kurang . " invoice belum ada BPB) - tidak bisa ditransfer.";
         exit;
     }
 }

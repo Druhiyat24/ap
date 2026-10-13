@@ -32,7 +32,16 @@ $transExpr = ($tt && mysqli_num_rows($tt) > 0)
 $res = mysqli_query($conn2, "SELECT kh.doc_number, kh.kontrabon_date, kh.document_date, kh.no_reff, kh.nama_supp, kh.total_amount, kh.amount_add_pv,
         kh.status AS kb_status, kh.create_user, kh.create_date, ih.status AS ir_status,
         $transExpr AS trans_cnt,
-        (SELECT COUNT(*) FROM ir_kontrabon_bpb b WHERE b.unik_code = kh.unik_code) AS bpb_cnt
+        (SELECT COUNT(*) FROM ir_kontrabon_bpb b WHERE b.unik_code = kh.unik_code) AS bpb_cnt,
+        /* Kelengkapan dihitung PER INVOICE: berapa invoice yang belum punya
+           BPB sama sekali. Dulu cukup bpb_cnt > 0 untuk SELURUH dokumen,
+           sehingga IR berisi 3 invoice yang baru 1 ber-BPB sudah dianggap
+           lengkap. inv_total ikut diambil supaya dokumen tanpa invoice pun
+           tetap ditandai belum lengkap. */
+        (SELECT COUNT(*) FROM ir_kontrabon_inv i
+          WHERE i.unik_code = kh.unik_code
+            AND NOT EXISTS (SELECT 1 FROM ir_kontrabon_bpb b2 WHERE b2.inv_id = i.id)) AS inv_tanpa_bpb,
+        (SELECT COUNT(*) FROM ir_kontrabon_inv i2 WHERE i2.unik_code = kh.unik_code) AS inv_total
     FROM ir_kontrabon_h kh
     LEFT JOIN ir_invoice_supp_h ih ON ih.doc_number = kh.doc_number
     $where ORDER BY kh.id DESC");
@@ -50,9 +59,15 @@ while ($res && ($r = mysqli_fetch_assoc($res))) {
     // Kelengkapan IR: yang menghalangi transfer HANYA BPB. Nomor faktur boleh berupa
     // strip "-" (artinya tanpa nomor faktur), jadi faktur tidak dijadikan syarat.
     // (IR Cancel tidak diberi notif.)
-    $bpbCnt = (int) ($r['bpb_cnt'] ?? 0);
+    $bpbCnt   = (int) ($r['bpb_cnt'] ?? 0);
+    $invKosong = (int) ($r['inv_tanpa_bpb'] ?? 0);
+    $invTotal  = (int) ($r['inv_total'] ?? 0);
+    /* Belum lengkap kalau ADA invoice yang belum ber-BPB - bukan cuma kalau
+       dokumennya sama sekali tanpa BPB. Dokumen tanpa invoice juga dihitung
+       belum lengkap. */
+    $belumLengkap = ($invTotal === 0 || $invKosong > 0);
     $incompleteNote = '';
-    if ($eStat !== 'Cancel' && $bpbCnt === 0) {
+    if ($eStat !== 'Cancel' && $belumLengkap) {
         $incompleteNote = '<small class="kb-incomplete" style="display:block;color:#dc2626;font-weight:600;font-size:10px;margin-top:3px;">'
             . '<i class="fa fa-exclamation-triangle"></i> IR belum ada BPB</small>';
     }

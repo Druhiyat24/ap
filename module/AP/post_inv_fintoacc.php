@@ -259,8 +259,17 @@
                     $docE = mysqli_real_escape_string($conn2, $row['doc_number']);
                     $chk = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT
                         (SELECT COUNT(*) FROM ir_kontrabon_h kh WHERE kh.doc_number='$docE') has_kh,
-                        (SELECT COUNT(*) FROM ir_kontrabon_bpb b JOIN ir_kontrabon_h kh ON kh.unik_code=b.unik_code WHERE kh.doc_number='$docE') bpb"));
-                    $isIncomplete = ((int)($chk['has_kh'] ?? 0) > 0 && (int)($chk['bpb'] ?? 0) === 0);
+                        (SELECT COUNT(*) FROM ir_kontrabon_inv i
+                            JOIN ir_kontrabon_h kh2 ON kh2.unik_code = i.unik_code
+                           WHERE kh2.doc_number='$docE'
+                             AND NOT EXISTS (SELECT 1 FROM ir_kontrabon_bpb b WHERE b.inv_id = i.id)) inv_tanpa_bpb,
+                        (SELECT COUNT(*) FROM ir_kontrabon_inv i2
+                            JOIN ir_kontrabon_h kh3 ON kh3.unik_code = i2.unik_code
+                           WHERE kh3.doc_number='$docE') inv_total"));
+                    // Belum lengkap kalau ADA invoice yang belum ber-BPB - bukan cuma kalau
+                    // dokumennya sama sekali tanpa BPB.
+                    $isIncomplete = ((int)($chk['has_kh'] ?? 0) > 0
+                        && ((int)($chk['inv_total'] ?? 0) === 0 || (int)($chk['inv_tanpa_bpb'] ?? 0) > 0));
                     $cbDisabled = $isIncomplete ? ' disabled title="IR belum ada BPB - tidak bisa ditransfer"' : '';
                     $note = $isIncomplete ? '<br><small style="color:#dc2626;font-weight:600;font-size:10px;"><i class="fa fa-exclamation-triangle"></i> belum ada BPB &mdash; tidak bisa ditransfer</small>' : '';
                     echo '<tr'.($isIncomplete ? ' style="background:#fef2f2;"' : '').'>
