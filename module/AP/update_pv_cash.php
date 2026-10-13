@@ -1,5 +1,6 @@
 <?php
 include '../../conn/conn.php';
+require_once __DIR__ . '/cc_pc_guard.php';
 include 'pv_data_functions.php';
 session_start();
 
@@ -268,6 +269,13 @@ try {
         $sqlcc = dbExec($conn2, "select cc_name from b_master_cc where no_cc = '" . mysqli_real_escape_string($conn2, $cc) . "'");
         $rowcc = mysqli_fetch_array($sqlcc);
         $nama_cc = isset($rowcc['cc_name']) ? $rowcc['cc_name'] : null;
+
+        /* Cost center harus milik profit center baris penyesuaian ini.
+           Lihat cc_pc_guard.php. */
+        /* $conn2 - sama dgn query b_master_cc tepat di atas, supaya kalau
+           kelak sambungannya dipisah, keduanya tetap membaca master yang sama. */
+        $salahCc = ccpc_cek($conn2, $cc, $pc);
+        if ($salahCc !== '') { throw new Exception($salahCc); }
 
         $adjRows[] = "('$doc_num_esc', '$doc_date', '$coa', '$reff', '$reff_date', '$desc2', '$debit', '$credit', '$cc', '$pc')";
 

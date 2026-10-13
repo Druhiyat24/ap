@@ -1,5 +1,6 @@
 <?php
 include '../../conn/conn.php';
+require_once __DIR__ . '/cc_pc_guard.php';
 include 'pv_data_functions.php';
 ini_set('date.timezone', 'Asia/Jakarta');
 
@@ -232,6 +233,12 @@ try {
 			$nama_cc = $rowcc['cc_name'] ?? null;
 		}
 		$nama_cc = mysqli_real_escape_string($conn2, $nama_cc ?: '-');
+
+		/* Cost center harus milik profit center baris penyesuaian ini. Lihat
+		   cc_pc_guard.php - dropdown saja tidak cukup, endpoint ini menerima
+		   POST biasa. */
+		$salahCc = ccpc_cek($conn1, $ccEsc, $pcEsc);
+		if ($salahCc !== '') { throw new Exception('Adjust baris ke-'.($i + 1).': '.$salahCc); }
 
 		$adjValues[] = "('$doc_num', '$coaEsc', '$ccEsc', '$reffEsc', '$tgl_refferensi', '$ketEsc', '$debit', '$credit', '$rowCurrEsc', '$pcEsc')";
 

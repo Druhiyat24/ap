@@ -77,6 +77,10 @@
 // =========================================================================
 
 define('FXSK_COA_SELISIH', '8.52.01');
+/* CADANGAN saja. Cost center yang sebenarnya dicari per PROFIT CENTER lewat
+   fxSkCcSelisih() di bawah. Nilai ini cuma dipakai kalau master cost center
+   tidak punya Finance/Accounting yang aktif untuk profit center itu - dan
+   kalau itu sampai terjadi, yang perlu dibereskan MASTERNYA, bukan di sini. */
 define('FXSK_CC_SELISIH', 'DEP06SUB001');
 define('FXSK_ID_CASH_FLOW', 55);
 define('FXSK_ID_CMJ', 'CMJ021');
@@ -271,6 +275,37 @@ function fxSkEnsureCategory($conn) {
     }
 }
 
+// Cost center untuk COA selisih kurs (8.52.01), DIPILIH MENURUT PROFIT CENTER
+// banknya. COA 8.52.01 wajib bercost-center, dan cost center itu harus milik
+// profit center yang sama dgn dokumennya.
+//
+// Dulu nilainya dipatok satu (DEP06SUB001 = FINANCE, ACCOUNTING & TAX milik
+// NAG) untuk SEMUA bank, sehingga jurnal bank NAK pun bercost-center NAG -
+// 45 dokumen di produksi per 13 Okt 2026 (FX/BCA5757/NAK/...).
+//
+// Dicari dari master, bukan dipetakan di kode, supaya ikut sendiri kalau
+// profit center baru ditambahkan. Diperiksa ke produksi 13 Okt 2026:
+// saringan ini menghasilkan TEPAT SATU baris untuk NAG (DEP06SUB001) maupun
+// NAK (DEPNK09SUB001), jadi tidak ada kemungkinan salah pilih.
+function fxSkCcSelisih($conn, $profitCenter) {
+    static $ingat = array();   // satu profit center cukup dicari sekali
+    $pc = trim((string) $profitCenter);
+    if (isset($ingat[$pc])) { return $ingat[$pc]; }
+
+    $hasil = array('no_cc' => FXSK_CC_SELISIH, 'cc_name' => 'FINANCE, ACCOUNTING & TAX');
+    if ($pc !== '') {
+        $pcEsc = mysqli_real_escape_string($conn, $pc);
+        $r = mysqli_query($conn, "select no_cc, cc_name from b_master_cc
+            where id_pc = '$pcEsc' and status = 'Active'
+              and group2 = 'SUPPORTING GENERAL & ADMINISTRATION'
+              and cc_name like '%FINANCE%'
+            order by no_cc limit 1");
+        if ($r && ($row = mysqli_fetch_assoc($r))) { $hasil = $row; }
+    }
+    $ingat[$pc] = $hasil;
+    return $hasil;
+}
+
 // Nomor dokumen baru "FX/{b_code}/{profit_center}/{mmyy}/{00001}" - series
 // sendiri (prefix "FX/"), sequence per prefix (per bank x per bulan) diambil
 // dari MAX(no_doc) di b_reportbank yang match prefix itu, +1. $date =
@@ -315,12 +350,13 @@ function fxSkPostOrUpdateJournal($connRead, $connWrite, $account, $bankInfo, $da
     $rowCoaSk = mysqli_fetch_assoc($sqlCoaSk);
     $namaCoaSk = $rowCoaSk ? $rowCoaSk['nama_coa'] : 'LABA / (RUGI) SELISIH KURS SUDAH TEREALISASI';
 
-    // COA selisih kurs (8.52.01) wajib punya cost center - DEP06SUB001
-    // (Finance, Accounting & Tax). COA bank tetap tanpa cost center ('-'),
-    // sama seperti pola entry lain (mis. Beban Administrasi Bank).
-    $sqlCcSk = mysqli_query($connRead, "select cc_name from b_master_cc where no_cc = '" . FXSK_CC_SELISIH . "'");
-    $rowCcSk = mysqli_fetch_assoc($sqlCcSk);
-    $namaCcSk = $rowCcSk ? $rowCcSk['cc_name'] : 'FINANCE, ACCOUNTING & TAX';
+    // COA selisih kurs (8.52.01) wajib punya cost center (Finance, Accounting
+    // & Tax) - dan cost center itu harus MILIK PROFIT CENTER BANKNYA, bukan
+    // nilai tetap. COA bank tetap tanpa cost center ('-'), sama seperti pola
+    // entry lain (mis. Beban Administrasi Bank).
+    $ccSk     = fxSkCcSelisih($connRead, isset($bankInfo['profit_center_bank']) ? $bankInfo['profit_center_bank'] : '');
+    $noCcSk   = $ccSk['no_cc'];
+    $namaCcSk = $ccSk['cc_name'];
 
     $debitBank = $isGain ? $amount : 0;
     $creditBank = $isGain ? 0 : $amount;
@@ -338,12 +374,12 @@ function fxSkPostOrUpdateJournal($connRead, $connWrite, $account, $bankInfo, $da
         $namaCcSkEsc = mysqli_real_escape_string($connWrite, $namaCcSk);
         mysqli_query($connWrite, "update tbl_list_journal set type_journal='" . FXSK_ID_CMJ_NAME . "', debit='$debitBank', credit='$creditBank', debit_idr='$debitBank', credit_idr='$creditBank', keterangan='$ketEsc'
             where no_journal='$docEsc' and no_coa='$bankCoaEsc'");
-        mysqli_query($connWrite, "update tbl_list_journal set type_journal='" . FXSK_ID_CMJ_NAME . "', no_costcenter='" . FXSK_CC_SELISIH . "', nama_costcenter='$namaCcSkEsc', debit='$debitSk', credit='$creditSk', debit_idr='$debitSk', credit_idr='$creditSk', keterangan='$ketEsc'
+        mysqli_query($connWrite, "update tbl_list_journal set type_journal='" . FXSK_ID_CMJ_NAME . "', no_costcenter='" . mysqli_real_escape_string($connWrite, $noCcSk) . "', nama_costcenter='$namaCcSkEsc', debit='$debitSk', credit='$creditSk', debit_idr='$debitSk', credit_idr='$creditSk', keterangan='$ketEsc'
             where no_journal='$docEsc' and no_coa='" . FXSK_COA_SELISIH . "'");
 
         mysqli_query($connWrite, "update tbl_memorial_journal set debit='$debitBank', credit='$creditBank', debit_idr='$debitBank', credit_idr='$creditBank', keterangan='$ketEsc'
             where no_mj='$docEsc' and no_coa='$bankCoaEsc'");
-        mysqli_query($connWrite, "update tbl_memorial_journal set no_costcenter='" . FXSK_CC_SELISIH . "', debit='$debitSk', credit='$creditSk', debit_idr='$debitSk', credit_idr='$creditSk', keterangan='$ketEsc'
+        mysqli_query($connWrite, "update tbl_memorial_journal set no_costcenter='" . mysqli_real_escape_string($connWrite, $noCcSk) . "', debit='$debitSk', credit='$creditSk', debit_idr='$debitSk', credit_idr='$creditSk', keterangan='$ketEsc'
             where no_mj='$docEsc' and no_coa='" . FXSK_COA_SELISIH . "'");
 
         return ['doc' => $doc, 'action' => 'update'];
@@ -358,7 +394,7 @@ function fxSkPostOrUpdateJournal($connRead, $connWrite, $account, $bankInfo, $da
 
     $legs = [
         [$bankInfo['id_coa'], $namaCoaBank, $debitBank, $creditBank, '-', '-'],
-        [FXSK_COA_SELISIH, $namaCoaSk, $debitSk, $creditSk, FXSK_CC_SELISIH, $namaCcSk],
+        [FXSK_COA_SELISIH, $namaCoaSk, $debitSk, $creditSk, $noCcSk, $namaCcSk],
     ];
     foreach ($legs as $leg) {
         [$coa, $namaCoa, $debit, $credit, $cc, $namaCc] = $leg;

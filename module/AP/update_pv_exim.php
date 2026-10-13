@@ -8,6 +8,7 @@ session_start();
 error_reporting(E_ALL & ~E_NOTICE);
 ini_set('display_errors', 0);
 include '../../conn/conn.php';
+require_once __DIR__ . '/cc_pc_guard.php';
 ini_set('date.timezone', 'Asia/Jakarta');
 
 header('Content-Type: application/json');
@@ -167,6 +168,13 @@ try {
             if (mysqli_num_rows($sqlWajibCc) > 0 && ($no_cc === '-' || $no_cc === '')) {
                 throw new Exception("COA $no_coa pada baris ke-$rowNum wajib isi Cost Center.");
             }
+
+            /* Cost center HARUS milik profit center baris ini. Saringan di dropdown
+               saja tidak cukup: endpoint ini menerima POST biasa, dan form edit
+               bisa membawa cost center lama saat profit center diganti.
+               Lihat cc_pc_guard.php. */
+            $salahCc = ccpc_cek($conn1, $no_cc, $prof_ctr);
+            if ($salahCc !== '') { throw new Exception("Baris ke-$rowNum: $salahCc"); }
 
             $q = "INSERT INTO tbl_pv (no_pv,coa,no_cc,reff_doc,reff_date,deskripsi,amount,due_date,ded_add,pph,id_pph,ppn,id_ppn,profit_center)
             VALUES

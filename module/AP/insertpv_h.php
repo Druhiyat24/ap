@@ -1,5 +1,6 @@
 <?php
 include '../../conn/conn.php';
+require_once __DIR__ . '/cc_pc_guard.php';
 ini_set('date.timezone', 'Asia/Jakarta');
 
 function q($conn, $sql) {
@@ -108,6 +109,14 @@ try {
         if (mysqli_num_rows($sqlWajibCc) > 0 && ($no_cc === '-' || $no_cc === '')) {
             throw new Exception('COA ' . $no_coa . ' wajib isi Cost Center.');
         }
+
+        /* Cost center HARUS milik profit center baris ini. Saringan di dropdown
+           saja tidak cukup: endpoint ini menerima POST biasa, dan form edit
+           bisa membawa cost center lama saat profit center diganti.
+           Lihat cc_pc_guard.php - yang ditolak hanya yang bisa DIBUKTIKAN
+           salah (cost center dikenal di master tapi id_pc-nya beda). */
+        $salahCc = ccpc_cek($conn1, $no_cc, $prof_ctr_check);
+        if ($salahCc !== '') { throw new Exception($salahCc); }
 
         $no_ref = mysqli_real_escape_string($conn2, $d['no_ref'] ?? '');
         $ref_date = date("Y-m-d", strtotime($d['ref_date'] ?? ''));
