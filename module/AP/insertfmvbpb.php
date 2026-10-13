@@ -17,14 +17,27 @@ $tgl_po = $_POST['tgl_po'];
 $pterms = $_POST['pterms'];
 
 // ==========================================================================
-// GUARD ANTI DOUBLE-SAVE. Satu BPB hanya boleh diverifikasi SEKALI. Karena 1
-// BPB menghasilkan BANYAK baris bpb_new (satu per item), keberadaan baris apa
-// pun untuk no_bpb ini berarti sudah pernah tersimpan -> jangan insert lagi.
+// GUARD ANTI DOUBLE-SAVE. Satu BPB hanya boleh punya SATU verifikasi yang
+// berlaku. Karena 1 BPB menghasilkan BANYAK baris bpb_new (satu per item),
+// adanya baris yang MASIH BERLAKU berarti sudah tersimpan -> jangan insert lagi.
 // (Kasus nyata: klik Save 2x -> tiap item dobel di bpb_new & bpb_ri.)
+//
+// Baris ber-status 'Cancel' TIDAK dihitung. Reverse Invoice Received menyetel
+// bpb_new.status = 'Cancel' justru supaya BPB-nya boleh diverifikasi ULANG, dan
+// daftar di formverifikasibpb.php memang memunculkannya lagi dgn syarat yang
+// sama persis: status != 'Cancel'. Dulu penjaga ini menghitung SEMUA baris,
+// jadi sesudah di-reverse daftarnya menampilkan BPB itu tapi Save menolak
+// DIAM-DIAM - pemakai mengira sudah tersimpan padahal tidak, dan dokumennya
+// muncul terus. Dilaporkan pada GEN/IN/0926/02836 & GEN/IN/0926/02880 yang
+// di-reverse alex 6 Okt 2026.
+//
+// Syarat di sini HARUS sama dgn syarat daftarnya. Kalau salah satu diubah,
+// yang lain ikut diubah - lihat juga formverifikasibpb_knitting.php,
+// status-confirm-bpb.php, dan bank-in2.php yang memakai syarat yang sama.
 // ==========================================================================
-$cekDup = mysqli_query($conn2, "SELECT 1 FROM bpb_new WHERE no_bpb = '" . mysqli_real_escape_string($conn2, $no_bpb) . "' LIMIT 1");
+$cekDup = mysqli_query($conn2, "SELECT 1 FROM bpb_new WHERE no_bpb = '" . mysqli_real_escape_string($conn2, $no_bpb) . "' AND status <> 'Cancel' LIMIT 1");
 if ($cekDup && mysqli_num_rows($cekDup) > 0) {
-    echo "SKIP: BPB " . $no_bpb . " sudah pernah diverifikasi, tidak disimpan ulang.";
+    echo "SKIP: BPB " . $no_bpb . " sudah diverifikasi dan masih berlaku, tidak disimpan ulang.";
     exit;
 }
 
