@@ -27,13 +27,24 @@ while ($sq && ($sx = mysqli_fetch_assoc($sq))) { if (!empty($sx['st'])) $stOpts[
 ?>
 
 <!-- Skin UI bersama (kartu, tabel, badge, tombol, chrome DataTables) -->
+<!-- Tiga berkas ini PERSIS yang dipakai halaman daftar Petty Cash Out,
+     supaya kedua daftar benar-benar sebentuk:
+       app-ftr-list.css  : kartu .ftl-*, tabel .ftl-tbl, tombol .ftl-mini
+       app-loading.css   : overlay 'Loading data...' di atas area tabel
+       app-skin-form.css : kontrol form (select2 & kotak tanggal)
+     app-pco-form.css TIDAK dipakai di sini - aturannya untuk FORM dan
+     ber-scope .pco-card; itu yang bikin dropdown filter beda tinggi dgn
+     kotak tanggal di sebelahnya. -->
+<link rel="stylesheet" href="../css/app-ftr-list.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-ftr-list.css'); ?>">
+<link rel="stylesheet" href="../css/app-loading.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-loading.css'); ?>">
+<link rel="stylesheet" href="../css/app-skin-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-skin-form.css'); ?>">
+<!-- app-skin.css MASIH dipakai, tapi hanya untuk tiga sisa kelas yang
+     belum punya padanan di kosakata .ftl-*: .kb-doc (nomor dokumen di
+     kolom pertama), .kb-locked (lencana "Locked"), dan .app-empty
+     (keadaan kosong). Tanpa ini ketiganya tampil polos. Aman berdampingan:
+     kartu, tabel, dan tombol sudah memakai .ftl-* sehingga aturan .app-card
+     / .app-dt di berkas ini tidak kena apa pun. -->
 <link rel="stylesheet" href="../css/app-skin.css">
-<!-- Rupa kartu mengikuti Form Petty Cash Out. app-skin.css TETAP dimuat
-     karena tabel/spinner/label halaman ini memakai kosakata .app-dt,
-     .app-dt-overlay, .app-spinner, dan .app-flabel dari berkas itu.
-     Keduanya aman berdampingan: scope-nya beda dan tidak ada elemen yang
-     memakai dua-duanya. -->
-<link rel="stylesheet" href="../css/app-pco-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-pco-form.css'); ?>">
 <style>
 /* Halaman-spesifik: hanya gaya modal detail. Sisanya di app-skin.css. */
 /* ---- KB detail modal ---- */
@@ -71,24 +82,23 @@ while ($sq && ($sx = mysqli_fetch_assoc($sq))) { if (!empty($sx['st'])) $stOpts[
 <div class="container-fluid mt-3 p-3">
 
   <!-- ===== Filter card ===== -->
-  <div class="pco-card">
+  <div class="ftl-card">
     <!-- Kepala kartu: kotak ikon + judul + jejak menu, susunan yang sama dgn
          Form Petty Cash Out - pita gradien selebar kartu diganti kotak ikon
          supaya warnanya jadi aksen, bukan latar. -->
-    <div class="pco-head">
-      <span class="pco-head-icon"><i class="fa fa-list-alt" aria-hidden="true"></i></span>
+    <div class="ftl-head">
+      <span class="ftl-head-icon"><i class="fa fa-list-alt" aria-hidden="true"></i></span>
       <div>
         <h1>List Invoice Received</h1>
-        <span class="pco-crumb">AP &rsaquo; Invoice Received</span>
+        <span class="ftl-crumb">AP &rsaquo; Invoice Received</span>
       </div>
-    </div><!-- /.pco-head -->
-    <div class="pco-body">
-      <div class="pco-sec"><i class="fa fa-filter" aria-hidden="true"></i> Filter</div>
+    </div><!-- /.ftl-head -->
+    <div class="ftl-panel">
       <form id="form-filter" method="post" action="kontrabon_new.php">
         <div class="row g-3">
           <div class="col-md-3">
-            <label class="app-flabel">Supplier</label>
-            <select class="form-control selectpicker" name="nama_supp" data-live-search="true" data-size="5">
+            <label class="form-label">Supplier</label>
+            <select class="form-control select2" name="nama_supp" title="Select Supplier">
               <option value="ALL"<?= $fSupp === 'ALL' ? ' selected' : '' ?>>ALL</option>
               <?php
               $sp = mysqli_query($conn1, "SELECT DISTINCT Supplier sup FROM mastersupplier WHERE tipe_sup = 'S' ORDER BY Supplier ASC");
@@ -100,8 +110,8 @@ while ($sq && ($sx = mysqli_fetch_assoc($sq))) { if (!empty($sx['st'])) $stOpts[
             </select>
           </div>
           <div class="col-md-2">
-            <label class="app-flabel">Status</label>
-            <select class="form-control selectpicker" name="status" data-size="8" data-live-search="true">
+            <label class="form-label">Status</label>
+            <select class="form-control select2" name="status" title="Select Status">
               <?php foreach ($stOpts as $st) {
                   $sel = ($st === $fStatus) ? ' selected' : '';
                   echo '<option value="' . htmlspecialchars($st) . '"' . $sel . '>' . htmlspecialchars($st) . '</option>';
@@ -109,17 +119,19 @@ while ($sq && ($sx = mysqli_fetch_assoc($sq))) { if (!empty($sx['st'])) $stOpts[
             </select>
           </div>
           <div class="col-md-2">
-            <label class="app-flabel">From</label>
+            <label class="form-label">From</label>
             <input type="text" class="form-control form-control-sm tanggal" name="start_date" value="<?= date('d M Y', strtotime($fStart)) ?>" autocomplete="off">
           </div>
           <div class="col-md-2">
-            <label class="app-flabel">To</label>
+            <label class="form-label">To</label>
             <input type="text" class="form-control form-control-sm tanggal" name="end_date" value="<?= date('d M Y', strtotime($fEnd)) ?>" autocomplete="off">
           </div>
-          <div class="col-md-3 d-flex align-items-end mt-2">
-            <button type="submit" class="btn btn-info btn-sm btn-round"><i class="fa fa-search"></i> Search</button>
-            <a href="create_kontrabon_new.php" class="btn btn-primary btn-sm btn-round ml-2"><i class="fa fa-plus-circle"></i> Create</a>
-            <button type="button" id="btnExport" class="btn btn-success btn-sm btn-round ml-2"><i class="fa fa-file-excel-o"></i> Export</button>
+          <!-- .ftl-actions menyejajarkan tombol dgn dasar isian di kirinya,
+               kosakata tombolnya .app-btn - sama dgn daftar Petty Cash Out. -->
+          <div class="col-md-3 ftl-actions">
+            <button type="submit" class="app-btn app-btn-primary app-btn-sm"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
+            <a href="create_kontrabon_new.php" class="app-btn app-btn-success app-btn-sm"><i class="fa fa-plus-circle" aria-hidden="true"></i> Create New</a>
+            <button type="button" id="btnExport" class="app-btn app-btn-excel app-btn-sm"><i class="fa fa-file-excel-o" aria-hidden="true"></i> Excel</button>
           </div>
         </div>
       </form>
@@ -127,20 +139,21 @@ while ($sq && ($sx = mysqli_fetch_assoc($sq))) { if (!empty($sx['st'])) $stOpts[
   </div>
 
   <!-- ===== Table card ===== -->
-  <!-- Kartunya .pco-card supaya sebentuk dgn kartu filter di atas; ISI
-       tabelnya tetap memakai .app-dt dari app-skin.css. -->
-  <div class="pco-card mt-3">
-    <div class="pco-body">
-      <div class="pco-sec"><i class="fa fa-table" aria-hidden="true"></i> Invoice Received</div>
-      <div class="app-dt-wrap">
-        <!-- Loading overlay: spinner dalam kartu, menutup HANYA area tabel (ukuran di-set via JS) -->
-        <div id="kbSpin" class="app-dt-overlay" style="display:none">
-          <div class="app-spin-box" role="status" aria-label="Loading">
-            <span class="app-spinner"></span>
-            <span class="app-spin-txt">Loading&hellip;</span>
+  <div class="ftl-card mt-3">
+    <div class="ftl-body">
+      <!-- .app-loading-wrap: area yang ditutup overlay saat data ditarik.
+           Markup & kelasnya milik css/app-loading.css yang dipakai bersama
+           menu lain - cukup ditambah/dibuang kelas .is-loading, tidak perlu
+           lagi mengukur posisi tabel lewat JS seperti dulu. -->
+      <div class="app-loading-wrap" id="kbLoad">
+        <div class="app-loading">
+          <div class="app-loading-box">
+            <div class="app-spinner"></div>
+            <div class="app-loading-text">Loading data...</div>
           </div>
         </div>
-        <table id="tblKb" class="table table-hover app-dt" style="width:100%">
+        <div class="ftl-tblwrap">
+        <table id="tblKb" class="table ftl-tbl" style="width:100%">
           <thead class="table-gradient">
             <tr>
               <th style="width:50px; text-align:center;">No</th>
@@ -160,6 +173,7 @@ while ($sq && ($sx = mysqli_fetch_assoc($sq))) { if (!empty($sx['st'])) $stOpts[
           </thead>
           <tbody><!-- diisi via AJAX (DataTables) --></tbody>
         </table>
+        </div><!-- /.ftl-tblwrap -->
       </div>
     </div>
   </div>
@@ -185,11 +199,16 @@ while ($sq && ($sx = mysqli_fetch_assoc($sq))) { if (!empty($sx['st'])) $stOpts[
 <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
+<!-- select2: dipakai dropdown filter (sama dgn Create/Edit). CSS-nya sudah
+     dimuat header.php, jadi di sini cukup JS-nya. -->
+<script language="JavaScript" src="../css/4.1.1/select2.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
 <script>
 var kbTable;
 $(function () {
-  $('.selectpicker').selectpicker();
+  /* Dropdown filter memakai select2, seragam dgn halaman Create & Edit.
+     Pilihannya sedikit, jadi kotak pencariannya dimatikan. */
+  $('.select2').select2({ width: '100%', minimumResultsForSearch: Infinity });
   $('.tanggal').datepicker({ format:'dd M yyyy', autoclose:true, language:'en' })
     // Samakan lebar kalender popup dengan lebar input pemicunya.
     .on('show', function () {
@@ -250,22 +269,13 @@ $(function () {
     ]
   });
 
-  // Loading overlay (spinner) — ukur ke posisi & ukuran tabel supaya HANYA area
-  // tabel yang tertutup (bukan filter/pagination), tampil saat request, sembunyi
-  // saat data selesai digambar.
-  function kbShowSpin() {
-    var $t = $('#tblKb'); if (!$t.length) return;
-    var pos = $t.position() || { top: 0, left: 0 };
-    $('#kbSpin').css({
-      top:    pos.top,
-      left:   pos.left,
-      width:  $t.outerWidth() || '100%',
-      height: Math.max($t.outerHeight() || 0, 180)
-    }).css('display', 'flex');
-  }
-  kbTable.on('preXhr.dt', function () { kbShowSpin(); });
-  kbTable.on('draw.dt',   function () { $('#kbSpin').hide(); });
-  kbShowSpin(); // tampilkan saat load pertama (draw pertama akan menyembunyikan)
+  // Loading overlay: tinggal menyalakan/mematikan kelas .is-loading pada
+  // pembungkusnya - app-loading.css yang mengurus posisi & ukurannya. Cara
+  // ini sama dgn daftar Petty Cash Out, dan menggantikan pengukuran manual
+  // posisi tabel yang dulu dipakai di sini.
+  kbTable.on('preXhr.dt', function () { $('#kbLoad').addClass('is-loading'); });
+  kbTable.on('draw.dt',   function () { $('#kbLoad').removeClass('is-loading'); });
+  $('#kbLoad').addClass('is-loading'); // tarikan pertama
 
   // Search -> reload tabel (bukan reload halaman)
   $('#form-filter').on('submit', function (e) { e.preventDefault(); kbTable.ajax.reload(); });

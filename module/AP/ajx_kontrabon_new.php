@@ -61,16 +61,21 @@ while ($res && ($r = mysqli_fetch_assoc($res))) {
     $statusHtml = '<span class="kb-badge ' . $bcls . '">' . $esc($eStat) . '</span>';
 
     // Action
-    $act = '<button type="button" class="btn btn-info btn-act show-kb" data-doc="' . $esc($doc) . '"><i class="fa fa-eye"></i> Show</button>';
+    // Tombol aksi memakai kosakata .ftl-act / .ftl-mini - SAMA dgn daftar Petty
+    // Cash Out, jadi tombolnya berjajar sebagai pil kecil, bukan menumpuk ke
+    // bawah seperti waktu masih memakai .btn .btn-act.
+    $act = '<div class="ftl-act">'
+         . '<button type="button" class="ftl-mini is-show show-kb" data-doc="' . $esc($doc) . '" title="Show the document detail"><i class="fa fa-eye" aria-hidden="true"></i> Show</button>';
     if ($eStat !== 'Cancel') {
         if ($canModify) {
-            $act .= '<a href="edit_kontrabon_new.php?doc=' . rawurlencode($doc) . '" class="btn btn-warning btn-act"><i class="fa fa-pencil"></i> Edit</a>';
-            $act .= '<button type="button" class="btn btn-danger btn-act cancel-kb" data-doc="' . $esc($doc) . '"><i class="fa fa-ban"></i> Cancel</button>';
+            $act .= '<a href="edit_kontrabon_new.php?doc=' . rawurlencode($doc) . '" class="ftl-mini is-edit" title="Edit this document"><i class="fa fa-pencil" aria-hidden="true"></i> Edit</a>';
+            $act .= '<button type="button" class="ftl-mini is-cancel cancel-kb" data-doc="' . $esc($doc) . '" title="Cancel this document"><i class="fa fa-ban" aria-hidden="true"></i> Cancel</button>';
         } else {
             $act .= '<span class="kb-locked" title="Already used in the Invoice Received flow (' . $esc($eStat) . ') — can no longer be edited or cancelled.">'
                  . '<span class="lk"><i class="fa fa-lock"></i> Locked</span><small>in IR process</small></span>';
         }
     }
+    $act .= '</div>';
 
     $sum   += (float) $r['total_amount'];
     $addpv  = (float) ($r['amount_add_pv'] ?? 0);
