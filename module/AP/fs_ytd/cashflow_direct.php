@@ -1451,6 +1451,36 @@ select sub_kategori, sub_kategori_eng, sum(total_nag) total_nag, sum(total_nak) 
         <tr class="total-line">
           <th class="total-left"><?= strtoupper('Arus kas yang diperoleh dari aktivitas pendanaan'); ?></th>
           <?php 
+          // SUBTOTAL PENDANAAN = PINJAMAN + ANTAR DIVISI.
+          //
+          // Sebelumnya baris ini mencetak $total_akap_* yang isinya HANYA
+          // bagian Pinjaman, padahal baris "... Antar Divisi" tercetak tepat
+          // di atasnya dan ikut masuk ke Kenaikan Bersih Kas di bawah
+          // ($kas_setara_kas_* menjumlah keduanya). Jadi subtotalnya tidak
+          // sama dgn jumlah baris yang terlihat, dan tidak nyambung pula dgn
+          // Kenaikan Bersih - dilaporkan pemakai 15 Okt 2026.
+          //
+          // Contoh yang dilaporkan (produksi, Jan-Mei 2026, kolom NAG):
+          //   Pinjaman     242.857.165.205,01 - 237.526.656.634,10
+          //                = 5.330.508.570,91   <- ini yang dulu tercetak
+          //   Antar divisi 3.811.965.121,16 - 5.012.303.448,00
+          //                - 4.960.941.546,70 + 1.814.455.243,10
+          //                = -4.346.824.630,44
+          //   Seharusnya   983.683.940,47
+          // Angka terakhir itulah yang membuat Operasi + Investasi + Pendanaan
+          // = Kenaikan Bersih Kas (-153.286.457,71) cocok.
+          //
+          // Kolom Total kebetulan TIDAK kelihatan salah karena pinjaman antar
+          // divisi NAG dan NAK saling meniadakan; yang salah kolom NAG & NAK.
+          //
+          // Versi Monthly (fs_monthly/cashflow_direct_monthly.php) sudah lebih
+          // dulu menjumlah keduanya - sekarang keduanya sejalan.
+          $total_pendanaan_cetak_nag = $total_aktivitas_pendanaan_nag + $total_aktivitas_pendanaan_antar_divisi_nag;
+          $total_pendanaan_cetak_nak = $total_aktivitas_pendanaan_nak + $total_aktivitas_pendanaan_antar_divisi_nak;
+          $total_pendanaan_cetak_all = $total_aktivitas_pendanaan_all + $total_aktivitas_pendanaan_antar_divisi_all;
+          $total_akap_nag = $total_pendanaan_cetak_nag > 0 ? number_format($total_pendanaan_cetak_nag,2) : '(' . number_format(abs($total_pendanaan_cetak_nag),2) . ')';
+          $total_akap_nak = $total_pendanaan_cetak_nak > 0 ? number_format($total_pendanaan_cetak_nak,2) : '(' . number_format(abs($total_pendanaan_cetak_nak),2) . ')';
+          $total_akap_all = $total_pendanaan_cetak_all > 0 ? number_format($total_pendanaan_cetak_all,2) : '(' . number_format(abs($total_pendanaan_cetak_all),2) . ')';
           if ($profit_center == 'ALL') {
             echo "<td class='total-right'>{$total_akap_nag}</td>";
             echo "<td class='total-right'>{$total_akap_nak}</td>";
