@@ -841,7 +841,7 @@ agg AS (
   GROUP BY c.profit_center, c.periode
 ),
 
-revaluasi as (select '2' id, periode, if(profit_center = 'NAG',sum(debit_revaluasi - credit_revaluasi),0) revaluasi_nag, if(profit_center = 'NAK',sum(debit_revaluasi - credit_revaluasi),0) revaluasi_nak, sum(debit_revaluasi - credit_revaluasi) revaluasi_all from agg GROUP BY periode),
+revaluasi as (select '2' id, periode, /* if() WAJIB di DALAM sum(): grup ini berisi baris NAG dan NAK sekaligus, kalau if() di luar maka profit_center-nya baris sembarang dan sum()-nya menjumlah kedua PC - revaluasi NAK jadi masuk ke NAG (dilaporkan pemakai 15 Okt 2026) */ sum(if(profit_center = 'NAG', debit_revaluasi - credit_revaluasi, 0)) revaluasi_nag, sum(if(profit_center = 'NAK', debit_revaluasi - credit_revaluasi, 0)) revaluasi_nak, sum(debit_revaluasi - credit_revaluasi) revaluasi_all from agg GROUP BY periode),
 
 pembayaran as (select id, periode, sub_kategori, total_nag, total_nak, (total_nag + total_nak) total_all, sub_kategori_eng from (select a.id, p.periode AS periode, a.nama_pilihan sub_kategori, a.nama_pilihan_eng sub_kategori_eng, sum(COALESCE(b.credit,0) - COALESCE(c.debit,0)) total_nag, sum(COALESCE(d.credit,0) - COALESCE(e.debit,0)) total_nak from (SELECT * FROM tb_master_pilihan where status = 'Y' and type_pilihan = 'Arus Kas dari Aktivitas Operasi') a 
 CROSS JOIN
