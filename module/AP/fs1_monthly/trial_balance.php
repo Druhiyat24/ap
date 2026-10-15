@@ -432,6 +432,22 @@ order by no_coa asc");
         $saldo_nov_ = isset($row['saldo_nov']) ? $row['saldo_nov'] : $saldo_oct;
         $saldo_dec_ = isset($row['saldo_dec']) ? $row['saldo_dec'] : $saldo_nov;
 
+        // --------------------------------------------------------------------
+        // COA 3.40.01 (LABA TAHUN BERJALAN): kolom YTD TIDAK BOLEH MINUS.
+        // Permintaan pemakai 15 Okt 2026, dan HANYA untuk COA ini - kalau
+        // hasilnya negatif, yang DITAMPILKAN 0.
+        // Yang disetel 0 cuma peubah ber-akhiran "_": peubah itu memang CUMA
+        // dipakai sel YTD (cabang COA < 4). Angka per bulan ($saldo_jan,
+        // $saldo_feb, ...) dan baris COA lain tidak tersentuh, begitu juga isi
+        // basis data - ini murni tampilan.
+        // --------------------------------------------------------------------
+        if (trim($row['no_coa']) === '3.40.01') {
+            foreach (array('jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec') as $blnYtd) {
+                $peubahYtd = 'saldo_' . $blnYtd . '_';
+                if ((float) $$peubahYtd < 0) { $$peubahYtd = 0; }
+            }
+        }
+
         // $saldoakhir = ($beg_balance + $debit_idr) - $credit_idr;
         // $balance_idr = isset($row['saldo_nov']) ? $row['saldo_dec'] : null;
 
@@ -603,7 +619,7 @@ order by no_coa asc");
             if ($jmlper == '1') {
                 echo '
                 <td style=" text-align : right;" value="'.$saldo_jan.'">'.fsMonthlyFormatNumber($saldo_jan).'</td>
-                <td style=" text-align : right;" value="'.$saldo_jan.'">'.fsMonthlyFormatNumber($saldo_jan).'</td>
+                <td style=" text-align : right;" value="'.$saldo_jan_.'">'.fsMonthlyFormatNumber($saldo_jan_).'</td>
                 ';
             }elseif ($jmlper == '2') {
                 echo '
