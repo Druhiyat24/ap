@@ -1071,10 +1071,6 @@ echo'</ul>
       <a href="../AP/petty-cashout.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-credit-card fa-fw"></span>
       <span class="menu-collapsed">Petty Cash Out</span>
-      </a>
-      <a href="../AP/cashreport.php" class="dropdown-item bg-dark text-white">
-      <span class="fa fa-file-excel-o fa-fw"></span>
-      <span class="menu-collapsed">Report Cash</span>
       </a>';
   }else{
       echo '';
@@ -1082,23 +1078,54 @@ echo'</ul>
   ?>
 
   <?php
-  /* "Petty Cash Flow Realisation" - salinan Report Cash Flow Realisation
-     (Bank > Report) yang daftar akunnya hanya akun KAS. Diminta pemakai
-     15 Okt 2026 berikut HAK AKSES TERSENDIRI (menurole 144), BUKAN ikut
-     hak akses 'Cash' (38) - supaya bisa diberikan hanya ke orang tertentu
-     tanpa membuka Cash In/Out dan Petty Cash In/Out sekalian.
-     Pola pemeriksaannya sama persis dgn 'E - Statement' (62) di menu Bank:
-     query hak akses sendiri, lalu dicocokkan ke id menurole-nya. */
+  /* SUBMENU "Report" di menu Cash - bentuknya disamakan dgn Bank > Report
+     (permintaan pemakai 15 Okt 2026), isinya "Report Cash" + "Petty Cash
+     Flow Realisation".
+
+     Dua butirnya BEDA HAK AKSES:
+       - Report Cash                 : ikut hak akses 'Cash' (menurole 38),
+                                       sama seperti sebelum dipindah ke sini.
+       - Petty Cash Flow Realisation : hak aksesnya SENDIRI (menurole 144),
+                                       BUKAN ikut 'Cash' - supaya bisa
+                                       diberikan ke orang tertentu saja tanpa
+                                       membuka Cash In/Out dan Petty Cash
+                                       In/Out sekalian. Pola pemeriksaannya
+                                       sama dgn 'E - Statement' (62) di menu
+                                       Bank: query hak akses sendiri lalu
+                                       dicocokkan ke id menurole-nya.
+
+     Pembungkus submenunya HANYA dicetak kalau ada minimal satu butir yang
+     boleh dilihat - kalau tidak, pemakai yang tidak punya keduanya akan
+     melihat submenu "Report" yang isinya kosong. */
   $querysPcfr = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Petty Cash Flow Realisation'");
   $rsPcfr = mysqli_fetch_array($querysPcfr);
   $idPcfr = isset($rsPcfr['id']) ? $rsPcfr['id'] : 0;
 
+  $butirReportCash = '';
+  if($id == '38'){
+      $butirReportCash .= '
+      <a href="../AP/cashreport.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-file-excel-o fa-fw"></span>
+      <span class="menu-collapsed">Report Cash</span>
+      </a>';
+  }
   if($idPcfr == '144'){
-      echo '
+      $butirReportCash .= '
       <a href="../AP/petty-cashflow-realisation.php" class="dropdown-item bg-dark text-white">
       <span class="fa fa-line-chart fa-fw"></span>
       <span class="menu-collapsed">Petty Cash Flow Realisation</span>
       </a>';
+  }
+  if($butirReportCash !== ''){
+      echo '
+      <li class="dropdown-submenu ">
+      <a class="dropdown-item bg-dark text-white" href="#">
+      <span class="fa fa-file-excel-o fa-fw"></span>
+      <span class="menu-collapsed">Report</span>
+      </a>
+      <ul class="dropdown-menu bg-dark text-white" role="menu">' . $butirReportCash . '
+      </ul>
+      </li>';
   }
   ?>
 
