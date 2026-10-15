@@ -166,8 +166,8 @@ while ($iv = mysqli_fetch_assoc($invs)) {
         <!-- Profit Center: mengisi slot yang memang sudah kosong. TERKUNCI -
              nilainya mengikuti nomor dokumen yang sudah terbit. -->
         <div class="col-md-2 mb-2">
-          <label class="form-label"><b>Profit Center</b> <span class="text-muted" style="font-size:11px;">(locked)</span></label>
-          <select class="form-control select2" id="profit_center" disabled title="Profit center follows the document number">
+          <label class="form-label"><b>Profit Center</b> </label>
+          <select class="form-control select2" id="profit_center" title="Profit center follows the document number">
             <?php
             /* Daftarnya dari master_pc - sumber yang SAMA dgn Memorial Journal,
                termasuk cara menampilkannya (id_pc - nama_pc). */
