@@ -1,12 +1,31 @@
 <?php include '../header.php' ?>
 
+<!-- Skin daftar/laporan yang dipakai aplikasi sekarang - sama dgn halaman
+     List Invoice Received:
+       app-ftr-list.css  : kartu .ftl-card/.ftl-head/.ftl-panel/.ftl-body, tabel .ftl-tbl
+       app-skin-form.css : kontrol form (kotak tanggal) & tombol .app-btn
+     header.php TIDAK memuat CSS ini, jadi tiap halaman memuatnya sendiri. -->
+<link rel="stylesheet" href="../css/app-ftr-list.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-ftr-list.css'); ?>">
+<link rel="stylesheet" href="../css/app-skin-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-skin-form.css'); ?>">
+
 <style type="text/css">
-    .table-gradient th {
-        background: #1E3A8A;
-        color: #fff;
+    /* Warna kepala tabel sekarang datang dari .ftl-tbl (app-ftr-list.css) -
+       biru lembut, bukan biru pekat. Yang tersisa di sini cuma perataannya,
+       karena itu urusan isi laporan, bukan skin. */
+    #cfr-table thead th {
         text-align: center;
         vertical-align: middle;
         white-space: nowrap;
+    }
+    /* .ftl-tbl MENOLKAN lebar & padding kolom PERTAMA - di halaman daftar itu
+       kolom tombol "+" milik DataTables Responsive. Tabel ini tidak memakai
+       DataTables sama sekali; kolom pertamanya DESCRIPTIONS, jadi aturan itu
+       dibatalkan di sini (id + kelas, jadi menang atas aturan skin). */
+    #cfr-table.ftl-tbl thead th:first-child {
+        width: 220px !important;
+        min-width: 220px !important;
+        padding-left: 8px !important;
+        padding-right: 8px !important;
     }
     #cfr-table {
         font-size: 11px;
@@ -273,11 +292,18 @@ if (empty($cfrSelectedAccounts)) {
 
 <!-- MAIN -->
 <div class="container-fluid mt-4 p-4">
-    <div class="card shadow border-0">
-        <div class="card-header text-white py-2 px-3" style="background: linear-gradient(90deg, #191970, #1e90ff);">
-            <h5 class="mb-0"><i class="fa fa-line-chart" aria-hidden="true"></i> PETTY CASH FLOW REALISATION</h5>
-        </div>
-        <div class="card-body p-3">
+    <div class="ftl-card">
+        <!-- Kepala kartu: kotak ikon + judul + jejak menu - susunan yang sama
+             dgn List Invoice Received. Pita gradien selebar kartu diganti
+             kotak ikon supaya warnanya jadi aksen, bukan latar. -->
+        <div class="ftl-head">
+            <span class="ftl-head-icon"><i class="fa fa-line-chart" aria-hidden="true"></i></span>
+            <div>
+                <h1>Petty Cash Flow Realisation</h1>
+                <span class="ftl-crumb">Cash &rsaquo; Report &rsaquo; Petty Cash Flow Realisation</span>
+            </div>
+        </div><!-- /.ftl-head -->
+        <div class="ftl-panel">
             <form id="form-data" method="post">
                 <div class="row g-3">
                     <div class="col-md-2">
@@ -323,11 +349,15 @@ if (empty($cfrSelectedAccounts)) {
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3 d-flex align-items-end">
-                        <button type="submit" id="submit" class="btn btn-info btn-sm me-2">
+                    <!-- .ftl-actions menyejajarkan tombol dgn dasar isian di
+                         kirinya; kosakata tombolnya .app-btn - sama dgn
+                         halaman daftar lain. id tombol TIDAK diubah karena
+                         dipakai JS di bawah (#submit & #btnExportExcel). -->
+                    <div class="col-md-5 ftl-actions">
+                        <button type="submit" id="submit" class="app-btn app-btn-primary app-btn-sm">
                             <i class="fa fa-search" aria-hidden="true"></i> Search
                         </button>
-                        <button type="button" id="btnExportExcel" class="btn btn-success btn-sm ml-2">
+                        <button type="button" id="btnExportExcel" class="app-btn app-btn-excel app-btn-sm">
                             <i class="fa fa-file-excel-o" aria-hidden="true"></i> Excel
                         </button>
                     </div>
@@ -336,8 +366,8 @@ if (empty($cfrSelectedAccounts)) {
         </div>
     </div>
 
-    <div class="card shadow border-0 mt-4">
-        <div class="card-body p-4">
+    <div class="ftl-card mt-3">
+        <div class="ftl-body">
             <?php if (!$doSearch) { ?>
                 <p class="text-muted mb-0">Pilih periode lalu klik Search untuk menampilkan laporan.</p>
             <?php } else {
@@ -360,8 +390,8 @@ if (empty($cfrSelectedAccounts)) {
             </div>
 
             <div class="table-responsive" id="cfr-table-wrapper">
-                <table id="cfr-table" class="table table-bordered table-sm">
-                    <thead class="table-gradient">
+                <table id="cfr-table" class="table ftl-tbl">
+                    <thead>
                         <tr>
                             <th rowspan="2" style="text-align:left;">DESCRIPTIONS</th>
                             <th rowspan="2">PROJECTION</th>
