@@ -29,6 +29,40 @@ function fsMonthlyGetPeriods($bulan_awal, $tahun_awal, $bulan_akhir, $tahun_akhi
     return $periods;
 }
 
+// Kunci kolom YTD di array nilai ([period_label][pcCol]). Sengaja memakai
+// nama yang tidak mungkin bentrok dgn label bulan ("Jan 2026" dsb).
+if (!defined('FSM_KOL_YTD')) { define('FSM_KOL_YTD', '__YTD__'); }
+
+// Daftar periode + 1 entri semu untuk kolom YTD, LENGKAP dgn rentang masing-
+// masing (dari_bulan/dari_tahun .. bulan/tahun):
+//   - kolom bulan : rentangnya BULAN ITU SENDIRI -> nilainya mutasi bulan itu,
+//                   bukan akumulasi dari bulan awal (permintaan pemakai
+//                   15 Okt 2026; laporan FS1 memang sudah begitu).
+//   - kolom YTD   : rentangnya bulan awal s/d bulan terakhir -> tetap
+//                   kumulatif seperti sebelumnya, jadi angka di kolom paling
+//                   kanan TIDAK berubah oleh perubahan ini.
+// Dipakai laporan ARUS (SPL, CF Direct, CF Indirect). SFP TIDAK memakai ini:
+// neraca memang saldo, bukan mutasi, jadi kolom bulannya memang kumulatif.
+function fsMonthlyPeriodsWithYtd($periods, $bulan_awal, $tahun_awal) {
+    $hasil = [];
+    foreach ($periods as $p) {
+        $p['dari_bulan'] = $p['bulan'];
+        $p['dari_tahun'] = $p['tahun'];
+        $hasil[] = $p;
+    }
+    $akhir = end($periods);
+    if ($akhir) {
+        $hasil[] = [
+            'bulan'       => $akhir['bulan'],
+            'tahun'       => $akhir['tahun'],
+            'label'       => FSM_KOL_YTD,
+            'kata_filter' => $akhir['kata_filter'],
+            'dari_bulan'  => $bulan_awal,
+            'dari_tahun'  => $tahun_awal,
+        ];
+    }
+    return $hasil;
+}
 // 1 bulan persis sebelum (bulan_awal,tahun_awal) - dipakai untuk kolom saldo
 // awal ("Des <tahun-1>" kalau From = Januari, tapi dinamis ikut "From" yang
 // dipilih user - misal From = Feb 2026 maka ini jadi Jan 2026, bukan
@@ -51,19 +85,24 @@ function fsMonthlyGetPrevPeriod($bulan_awal, $tahun_awal) {
 // bukan typo, memang begitu formula yang sudah berjalan di fs_ytd), sedangkan
 // $creditNormal=true pakai (saldo + credit - debit) seperti dipakai SPL untuk
 // akun pendapatan/beban.
-function fsGetCategoryTotals($conn2, $kategoriList, $bulan_awal, $tahun_awal, $bulan_akhir, $tahun_akhir, $kata_filter, $creditNormal = false) {
+function fsGetCategoryTotals($conn2, $kategoriList, $bulan_awal, $tahun_awal, $bulan_akhir, $tahun_akhir, $kata_filter, $creditNormal = false, $tanpaSaldoAwal = false) {
+    // $tanpaSaldoAwal: dipakai laporan ARUS (SPL) yang kolom bulannya berisi
+    // mutasi bulan itu saja - saldo awal tidak boleh ikut, kalau tidak nilainya
+    // akan tertambah berulang di tiap kolom. Neraca (SFP) tetap memakai saldo
+    // awal, jadi defaultnya false dan pemanggil lama tidak berubah perilakunya.
     $kategoriIn = implode(',', array_map(function ($k) use ($conn2) {
         return "'" . mysqli_real_escape_string($conn2, $k) . "'";
     }, $kategoriList));
 
     $sign = $creditNormal ? '(saldo + credit_idr - debit_idr)' : '(saldo + debit_idr - credit_idr)';
 
-    $pcSaldo = function ($pc) use ($conn2, $sign, $kata_filter, $bulan_awal, $tahun_awal, $bulan_akhir, $tahun_akhir) {
+    $kolomSaldo = $tanpaSaldoAwal ? '0' : $kata_filter;
+    $pcSaldo = function ($pc) use ($conn2, $sign, $kolomSaldo, $bulan_awal, $tahun_awal, $bulan_akhir, $tahun_akhir) {
         $pcEsc = mysqli_real_escape_string($conn2, $pc);
         return "
             (select no_coa, saldo saldo_awal, debit_idr, credit_idr, $sign saldo_akhir from (
                 select a.no_coa, saldo, COALESCE(credit_idr,0) credit_idr, COALESCE(debit_idr,0) debit_idr
-                from (select no_coa, $kata_filter as saldo from fs_saldo_awal_tb where profit_center = '$pcEsc' order by no_coa asc) a
+                from (select no_coa, $kolomSaldo as saldo from fs_saldo_awal_tb where profit_center = '$pcEsc' order by no_coa asc) a
                 LEFT JOIN (
                     select no_coa, sum(ROUND(credit * rate,2)) credit_idr, sum(ROUND(debit * rate,2)) debit_idr
                     from tbl_list_journal
@@ -273,7 +312,12 @@ function fsMonthlyNetIncomeByPeriod($conn2, $periods, $pcCols, $bulan_awal, $tah
             $result[$p['label']][$pcCol] = 0.0;
         }
         foreach ($kategoriList as $kategori) {
-            $rows = fsGetCategoryTotals($conn2, [$kategori], $bulan_awal, $tahun_awal, $p['bulan'], $p['tahun'], $kata_filter, true);
+            // Rentang per kolom: kolom bulan = bulan itu saja, kolom YTD =
+            // bulan awal s/d bulan terakhir (lihat fsMonthlyPeriodsWithYtd()).
+            // Pemanggil lama yang belum membawa dari_bulan tetap jalan seperti dulu.
+            $dariBulan = isset($p['dari_bulan']) ? $p['dari_bulan'] : $bulan_awal;
+            $dariTahun = isset($p['dari_tahun']) ? $p['dari_tahun'] : $tahun_awal;
+            $rows = fsGetCategoryTotals($conn2, [$kategori], $dariBulan, $dariTahun, $p['bulan'], $p['tahun'], $kata_filter, true, true);
             foreach ($rows as $row) {
                 foreach ($pcCols as $pcCol) {
                     $result[$p['label']][$pcCol] += (float) ($row['total_' . strtolower($pcCol)] ?? 0);
@@ -416,10 +460,15 @@ function sfpmRenderRowValues($valuesByPeriod, $periods, $pcCols, $tag, $cellClas
             $idx++;
         }
     }
+    // Kolom YTD: kalau pemanggil sudah menyiapkan entri FSM_KOL_YTD (laporan
+    // ARUS yang kolom bulannya per bulan), pakai itu. Kalau tidak ada, jatuh
+    // ke perilaku lama yaitu mengulang nilai bulan TERAKHIR - benar untuk
+    // laporan yang kolom bulannya memang kumulatif (SFP).
     $lastPeriod = end($periods);
-    if ($lastPeriod) {
+    $labelYtd = isset($valuesByPeriod[FSM_KOL_YTD]) ? FSM_KOL_YTD : ($lastPeriod ? $lastPeriod['label'] : null);
+    if ($labelYtd !== null) {
         foreach ($pcCols as $pcCol) {
-            $v = $valuesByPeriod[$lastPeriod['label']][$pcCol] ?? 0;
+            $v = $valuesByPeriod[$labelYtd][$pcCol] ?? 0;
             $html .= '<' . $tag . ' class="' . $cellClass . sfpmColClass($idx, count($pcCols)) . '">' . fsMonthlyFormatNumber($v) . '</' . $tag . '>';
             $idx++;
         }
@@ -496,9 +545,11 @@ function sfpmRenderRowValuesWithPercent($valuesByPeriod, $percentByPeriod, $peri
     foreach ($periods as $p) {
         $renderPair($p['label']);
     }
+    // Kolom YTD - lihat catatan yang sama di sfpmRenderRowValues().
     $lastPeriod = end($periods);
-    if ($lastPeriod) {
-        $renderPair($lastPeriod['label']);
+    $labelYtd = isset($valuesByPeriod[FSM_KOL_YTD]) ? FSM_KOL_YTD : ($lastPeriod ? $lastPeriod['label'] : null);
+    if ($labelYtd !== null) {
+        $renderPair($labelYtd);
     }
     return $html;
 }

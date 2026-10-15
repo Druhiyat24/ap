@@ -303,6 +303,9 @@ $kata_filter = date('M', strtotime($start_date)) . '_' . $tahun_awal;
 
 $periods = fsMonthlyGetPeriods($bulan_awal, $tahun_awal, $bulan_akhir, $tahun_akhir);
 $lastPeriod = end($periods);
+// Kolom bulan = mutasi bulan itu saja, kolom YTD = kumulatif (lihat
+// fsMonthlyPeriodsWithYtd()).
+$periodsYtd = fsMonthlyPeriodsWithYtd($periods, $bulan_awal, $tahun_awal);
 
 $pcCols = ($profit_center === 'ALL') ? ['NAG', 'NAK', 'ALL'] : [$profit_center];
 $pcColLabels = ['ALL' => 'Total'];
@@ -318,34 +321,34 @@ $GLOBALS['sfpmYtdStartIdx'] = count($periods) * $pcColCount;
 
 // --- Arus Kas dari Aktivitas Operasi ---
 $operasiMonthData = [];
-foreach ($periods as $p) {
-    $operasiMonthData[$p['label']] = fsGetCashflowDirectOperasi($conn2, $bulan_awal, $tahun_awal, $p['bulan'], $p['tahun']);
+foreach ($periodsYtd as $p) {
+    $operasiMonthData[$p['label']] = fsGetCashflowDirectOperasi($conn2, $p['dari_bulan'], $p['dari_tahun'], $p['bulan'], $p['tahun']);
 }
-$operasi = fsMonthlyAggregateSubKategori($operasiMonthData, $periods, $pcCols);
+$operasi = fsMonthlyAggregateSubKategori($operasiMonthData, $periodsYtd, $pcCols);
 
 // --- Arus Kas dari Aktivitas Investasi ---
 $investasiMonthData = [];
-foreach ($periods as $p) {
-    $investasiMonthData[$p['label']] = fsGetCashflowDirectFlat($conn2, 'Arus Kas dari Aktivitas Investasi', '', $bulan_awal, $tahun_awal, $p['bulan'], $p['tahun']);
+foreach ($periodsYtd as $p) {
+    $investasiMonthData[$p['label']] = fsGetCashflowDirectFlat($conn2, 'Arus Kas dari Aktivitas Investasi', '', $p['dari_bulan'], $p['dari_tahun'], $p['bulan'], $p['tahun']);
 }
-$investasi = fsMonthlyAggregateSubKategori($investasiMonthData, $periods, $pcCols);
+$investasi = fsMonthlyAggregateSubKategori($investasiMonthData, $periodsYtd, $pcCols);
 
 // --- Arus Kas dari Aktivitas Pendanaan (Pinjaman + antar divisi) ---
 $pendanaanLoanMonthData = [];
 $pendanaanAntarDivisiMonthData = [];
-foreach ($periods as $p) {
-    $pendanaanLoanMonthData[$p['label']] = fsGetCashflowDirectLoans($conn2, $bulan_awal, $tahun_awal, $p['bulan'], $p['tahun']);
-    $pendanaanAntarDivisiMonthData[$p['label']] = fsGetCashflowDirectFlat($conn2, 'Arus Kas dari Aktivitas Pendanaan', ' and id not in (14,15)', $bulan_awal, $tahun_awal, $p['bulan'], $p['tahun']);
+foreach ($periodsYtd as $p) {
+    $pendanaanLoanMonthData[$p['label']] = fsGetCashflowDirectLoans($conn2, $p['dari_bulan'], $p['dari_tahun'], $p['bulan'], $p['tahun']);
+    $pendanaanAntarDivisiMonthData[$p['label']] = fsGetCashflowDirectFlat($conn2, 'Arus Kas dari Aktivitas Pendanaan', ' and id not in (14,15)', $p['dari_bulan'], $p['dari_tahun'], $p['bulan'], $p['tahun']);
 }
-$pendanaanLoan = fsMonthlyAggregateSubKategori($pendanaanLoanMonthData, $periods, $pcCols);
-$pendanaanAntarDivisi = fsMonthlyAggregateSubKategori($pendanaanAntarDivisiMonthData, $periods, $pcCols);
+$pendanaanLoan = fsMonthlyAggregateSubKategori($pendanaanLoanMonthData, $periodsYtd, $pcCols);
+$pendanaanAntarDivisi = fsMonthlyAggregateSubKategori($pendanaanAntarDivisiMonthData, $periodsYtd, $pcCols);
 
 // Subtotal Pendanaan yang DITAMPILKAN = jumlah SEMUA baris di atas (Pinjaman
 // + antar divisi) - perbaikan #3 (di versi YTD subtotal yang dicetak cuma
 // baris Pinjaman, tidak termasuk antar divisi walau ditampilkan di atasnya
 // dan tetap dijumlah ke grand total).
 $pendanaanTotal = [];
-foreach ($periods as $p) {
+foreach ($periodsYtd as $p) {
     foreach ($pcCols as $pcCol) {
         $pendanaanTotal[$p['label']][$pcCol] =
             ($pendanaanLoan['sectionTotal'][$p['label']][$pcCol] ?? 0)
@@ -355,7 +358,7 @@ foreach ($periods as $p) {
 
 // --- Kenaikan / (Penurunan) Bersih Kas dan Setara Kas - murni PHP ---
 $netChangeValues = [];
-foreach ($periods as $p) {
+foreach ($periodsYtd as $p) {
     foreach ($pcCols as $pcCol) {
         $netChangeValues[$p['label']][$pcCol] =
             ($operasi['sectionTotal'][$p['label']][$pcCol] ?? 0)
@@ -364,21 +367,31 @@ foreach ($periods as $p) {
     }
 }
 
-// --- Kas dan Setara Kas pada Awal Periode - konstan di semua kolom bulan
-// (mekanisme SAMA PERSIS dengan fsGetCashflowBeginningCash() yang dipakai
-// CF Indirect Monthly - lihat $sql5 di fs_ytd/cashflow_direct.php, query-nya
-// identik dgn $sql5 di fs_ytd/cashflow_indirect.php).
+// --- Kas dan Setara Kas pada Awal Periode ---
+// Sejak kolom bulan berisi mutasi BULAN ITU SENDIRI, kas awal tidak lagi sama
+// di semua kolom: kas awal bulan ke-2 dst = kas AKHIR bulan sebelumnya, jadi
+// Kas Awal + Kenaikan Bersih = Kas Akhir tetap benar di tiap kolom. Bulan
+// pertama (dan kolom YTD) memakai kas awal rentang filter, lewat
+// fsGetCashflowBeginningCash() - query yang sama dgn versi YTD.
 $beginningCash = fsGetCashflowBeginningCash($conn2, $kata_filter);
 $beginningCashValues = [];
+$kasBerjalan = [];
+foreach ($pcCols as $pcCol) {
+    $kasBerjalan[$pcCol] = (float) ($beginningCash['total_' . strtolower($pcCol)] ?? 0);
+}
 foreach ($periods as $p) {
     foreach ($pcCols as $pcCol) {
-        $beginningCashValues[$p['label']][$pcCol] = $beginningCash['total_' . strtolower($pcCol)] ?? 0;
+        $beginningCashValues[$p['label']][$pcCol] = $kasBerjalan[$pcCol];
+        $kasBerjalan[$pcCol] += (float) ($netChangeValues[$p['label']][$pcCol] ?? 0);
     }
+}
+foreach ($pcCols as $pcCol) {
+    $beginningCashValues[FSM_KOL_YTD][$pcCol] = (float) ($beginningCash['total_' . strtolower($pcCol)] ?? 0);
 }
 
 // --- Kas dan Setara Kas pada Akhir Periode - murni PHP ---
 $endingCashValues = [];
-foreach ($periods as $p) {
+foreach ($periodsYtd as $p) {
     foreach ($pcCols as $pcCol) {
         $endingCashValues[$p['label']][$pcCol] = ($netChangeValues[$p['label']][$pcCol] ?? 0) + ($beginningCashValues[$p['label']][$pcCol] ?? 0);
     }

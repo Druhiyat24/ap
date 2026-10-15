@@ -303,6 +303,9 @@ $kata_filter = date('M', strtotime($start_date)) . '_' . $tahun_awal;
 
 $periods = fsMonthlyGetPeriods($bulan_awal, $tahun_awal, $bulan_akhir, $tahun_akhir);
 $lastPeriod = end($periods);
+// Kolom bulan = mutasi bulan itu saja, kolom YTD = kumulatif (lihat
+// fsMonthlyPeriodsWithYtd()).
+$periodsYtd = fsMonthlyPeriodsWithYtd($periods, $bulan_awal, $tahun_awal);
 
 $pcCols = ($profit_center === 'ALL') ? ['NAG', 'NAK', 'ALL'] : [$profit_center];
 $pcColLabels = ['ALL' => 'Total'];
@@ -315,13 +318,13 @@ $GLOBALS['sfpmYtdStartIdx'] = count($periods) * $pcColCount;
 
 // "Laba (Rugi) Bersih" dihitung MANDIRI di sini (bukan nebeng SPL seperti
 // versi YTD - lihat catatan di fsMonthlyNetIncomeByPeriod()).
-$netIncomeByPeriod = fsMonthlyNetIncomeByPeriod($conn2, $periods, $pcCols, $bulan_awal, $tahun_awal, $kata_filter);
+$netIncomeByPeriod = fsMonthlyNetIncomeByPeriod($conn2, $periodsYtd, $pcCols, $bulan_awal, $tahun_awal, $kata_filter);
 
 // "Penyesuaian Akumulasi Penyusutan Aset Tetap" (id_indirect=19, hardcode
 // by ID persis versi YTD).
 $depreciationValues = [];
-foreach ($periods as $p) {
-    $row = fsGetCashflowIndirectSingle($conn2, 19, $bulan_awal, $tahun_awal, $p['bulan'], $p['tahun']);
+foreach ($periodsYtd as $p) {
+    $row = fsGetCashflowIndirectSingle($conn2, 19, $p['dari_bulan'], $p['dari_tahun'], $p['bulan'], $p['tahun']);
     foreach ($pcCols as $pcCol) {
         $depreciationValues[$p['label']][$pcCol] = $row['total_' . strtolower($pcCol)] ?? 0;
     }
@@ -330,7 +333,7 @@ foreach ($periods as $p) {
 // "Penyesuaian Laba Ditahan Tahun Lalu" - hardcode 0 persis versi YTD
 // (tidak ada logic untuk baris ini sama sekali di sumbernya).
 $retainedEarningsValues = [];
-foreach ($periods as $p) {
+foreach ($periodsYtd as $p) {
     foreach ($pcCols as $pcCol) {
         $retainedEarningsValues[$p['label']][$pcCol] = 0.0;
     }
@@ -361,16 +364,16 @@ $sections = [
 
 foreach ($sections as $key => &$sec) {
     $monthData = [];
-    foreach ($periods as $p) {
+    foreach ($periodsYtd as $p) {
         $monthData[$p['label']] = fsGetCashflowIndirectCategoryTotals(
-            $conn2, [$sec['kategori']], $bulan_awal, $tahun_awal, $p['bulan'], $p['tahun'], $sec['filter']
+            $conn2, [$sec['kategori']], $p['dari_bulan'], $p['dari_tahun'], $p['bulan'], $p['tahun'], $sec['filter']
         );
     }
 
     // Kumpulkan sub_kategori yang muncul di bulan manapun dalam rentang,
     // biar barisnya konsisten walau nilainya 0 di sebagian bulan.
     $subList = [];
-    foreach ($periods as $p) {
+    foreach ($periodsYtd as $p) {
         foreach ($monthData[$p['label']] as $row) {
             if (!isset($subList[$row['sub_kategori']])) {
                 $subList[$row['sub_kategori']] = $row['sub_kategori_eng'] ?? '';
@@ -381,7 +384,7 @@ foreach ($sections as $key => &$sec) {
     $itemValuesBySub = []; // sub_kategori => [period_label][pcCol] => float
     $sectionTotal = []; // [period_label][pcCol] => float
     foreach ($subList as $subKategori => $subKategoriEn) {
-        foreach ($periods as $p) {
+        foreach ($periodsYtd as $p) {
             $row = null;
             foreach ($monthData[$p['label']] as $r) {
                 if ($r['sub_kategori'] === $subKategori) {
@@ -404,20 +407,11 @@ foreach ($sections as $key => &$sec) {
 }
 unset($sec);
 
-// "Kas dan Setara Kas pada Awal Periode" - konstan di semua kolom bulan
-// (lihat catatan di fsGetCashflowBeginningCash()), dihitung sekali saja.
-$beginningCash = fsGetCashflowBeginningCash($conn2, $kata_filter);
-$beginningCashValues = [];
-foreach ($periods as $p) {
-    foreach ($pcCols as $pcCol) {
-        $beginningCashValues[$p['label']][$pcCol] = $beginningCash['total_' . strtolower($pcCol)] ?? 0;
-    }
-}
 
 // "Kenaikan / (Penurunan) Bersih Kas dan Setara Kas" - murni PHP, jumlah
 // semua komponen di atas (persis rumus di fs_ytd/cashflow_indirect.php).
 $netChangeValues = [];
-foreach ($periods as $p) {
+foreach ($periodsYtd as $p) {
     foreach ($pcCols as $pcCol) {
         $netChangeValues[$p['label']][$pcCol] =
             ($netIncomeByPeriod[$p['label']][$pcCol] ?? 0)
@@ -429,9 +423,31 @@ foreach ($periods as $p) {
     }
 }
 
+// "Kas dan Setara Kas pada Awal Periode" ---
+// Dipindah ke SINI (sesudah Kenaikan Bersih) karena sejak kolom bulan berisi
+// mutasi BULAN ITU SENDIRI, kas awal tidak lagi sama di semua kolom: kas awal
+// bulan ke-2 dst = kas AKHIR bulan sebelumnya, jadi Kas Awal + Kenaikan
+// Bersih = Kas Akhir tetap benar di tiap kolom. Bulan pertama (dan kolom YTD)
+// memakai kas awal rentang filter lewat fsGetCashflowBeginningCash().
+$beginningCash = fsGetCashflowBeginningCash($conn2, $kata_filter);
+$beginningCashValues = [];
+$kasBerjalan = [];
+foreach ($pcCols as $pcCol) {
+    $kasBerjalan[$pcCol] = (float) ($beginningCash['total_' . strtolower($pcCol)] ?? 0);
+}
+foreach ($periods as $p) {
+    foreach ($pcCols as $pcCol) {
+        $beginningCashValues[$p['label']][$pcCol] = $kasBerjalan[$pcCol];
+        $kasBerjalan[$pcCol] += (float) ($netChangeValues[$p['label']][$pcCol] ?? 0);
+    }
+}
+foreach ($pcCols as $pcCol) {
+    $beginningCashValues[FSM_KOL_YTD][$pcCol] = (float) ($beginningCash['total_' . strtolower($pcCol)] ?? 0);
+}
+
 // "Kas dan Setara Kas pada Akhir Periode" - murni PHP.
 $endingCashValues = [];
-foreach ($periods as $p) {
+foreach ($periodsYtd as $p) {
     foreach ($pcCols as $pcCol) {
         $endingCashValues[$p['label']][$pcCol] = ($netChangeValues[$p['label']][$pcCol] ?? 0) + ($beginningCashValues[$p['label']][$pcCol] ?? 0);
     }

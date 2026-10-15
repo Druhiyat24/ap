@@ -299,6 +299,10 @@ $kata_filter = date('M', strtotime($start_date)) . '_' . $tahun_awal;
 
 $periods = fsMonthlyGetPeriods($bulan_awal, $tahun_awal, $bulan_akhir, $tahun_akhir);
 $lastPeriod = end($periods);
+// Kolom bulan = mutasi bulan itu saja, kolom YTD = kumulatif (lihat
+// fsMonthlyPeriodsWithYtd()). Loop PENGAMBILAN & PERHITUNGAN data memakai
+// $periodsYtd; loop header tabel tetap $periods.
+$periodsYtd = fsMonthlyPeriodsWithYtd($periods, $bulan_awal, $tahun_awal);
 
 $pcCols = ($profit_center === 'ALL') ? ['NAG', 'NAK', 'ALL'] : [$profit_center];
 $pcColLabels = ['ALL' => 'Total'];
@@ -339,7 +343,7 @@ $blocks = [
 
 // Ambil data tiap kategori x tiap bulan sekali di awal.
 $monthCategoryData = []; // [kategori][period_label] = rows
-foreach ($periods as $p) {
+foreach ($periodsYtd as $p) {
     foreach ($blocks as $block) {
         foreach ($block['kategori'] as $catInfo) {
             $kategori = $catInfo[0];
@@ -347,7 +351,7 @@ foreach ($periods as $p) {
                 $monthCategoryData[$kategori] = [];
             }
             $monthCategoryData[$kategori][$p['label']] = fsGetCategoryTotals(
-                $conn2, [$kategori], $bulan_awal, $tahun_awal, $p['bulan'], $p['tahun'], $kata_filter, true
+                $conn2, [$kategori], $p['dari_bulan'], $p['dari_tahun'], $p['bulan'], $p['tahun'], $kata_filter, true, true
             );
         }
     }
@@ -361,7 +365,7 @@ foreach ($periods as $p) {
 // render di bawah) karena baris item block pertama sendiri (Penjualan
 // Kotor dkk) JUGA butuh %-nya terhadap Net Sales.
 $netSalesByPeriod = [];
-foreach ($periods as $p) {
+foreach ($periodsYtd as $p) {
     foreach ($pcCols as $pcCol) {
         $netSalesByPeriod[$p['label']][$pcCol] = 0.0;
     }
@@ -455,7 +459,7 @@ $GLOBALS['sfpmYtdStartIdx'] = count($periods) * $pcColCount2;
                    . '</tr>';
 
                 $subKategoriList = []; // sub_kategori => sub_kategori_eng
-                foreach ($periods as $p) {
+                foreach ($periodsYtd as $p) {
                     foreach ($monthCategoryData[$kategori][$p['label']] as $row) {
                         if (!isset($subKategoriList[$row['sub_kategori']])) {
                             $subKategoriList[$row['sub_kategori']] = $row['sub_kategori_eng'] ?? '';
@@ -465,7 +469,7 @@ $GLOBALS['sfpmYtdStartIdx'] = count($periods) * $pcColCount2;
 
                 foreach ($subKategoriList as $subKategori => $subKategoriEn) {
                     $itemValues = []; // [period_label][pcCol] = float
-                    foreach ($periods as $p) {
+                    foreach ($periodsYtd as $p) {
                         $row = null;
                         foreach ($monthCategoryData[$kategori][$p['label']] as $r) {
                             if ($r['sub_kategori'] === $subKategori) {
@@ -481,7 +485,7 @@ $GLOBALS['sfpmYtdStartIdx'] = count($periods) * $pcColCount2;
                         }
                     }
                     $itemPercent = [];
-                    foreach ($periods as $p) {
+                    foreach ($periodsYtd as $p) {
                         foreach ($pcCols as $pcCol) {
                             $base = $netSalesByPeriod[$p['label']][$pcCol] ?? 0.0;
                             $itemPercent[$p['label']][$pcCol] = $base != 0.0 ? ($itemValues[$p['label']][$pcCol] / $base * 100) : 0.0;
@@ -499,7 +503,7 @@ $GLOBALS['sfpmYtdStartIdx'] = count($periods) * $pcColCount2;
             // langsung, persis pola fs_ytd/statement_profit_loss.php).
             $runningRow = [];
             $runningPercent = [];
-            foreach ($periods as $p) {
+            foreach ($periodsYtd as $p) {
                 foreach ($pcCols as $pcCol) {
                     $prev = $runningTotalPerMonth[$p['label']][$pcCol] ?? 0;
                     $add = $blockTotalPerMonth[$p['label']][$pcCol] ?? 0;
