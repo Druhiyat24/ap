@@ -508,6 +508,55 @@
             $profit_center = isset($_POST['h_profit_center']) ? $_POST['h_profit_center']: null;
           }
 
+          // ================================================================
+          // LABA (RUGI) BERSIH - DIHITUNG MANDIRI DI SINI.
+          //
+          // Dulu baris ini memakai $total_lrsp_nag/nak/all yang CUMA dibuat di
+          // fs_ytd/statement_profit_loss.php (tab SPL). Waktu semua tab masih
+          // dirender dalam SATU permintaan, SPL kebetulan jalan lebih dulu dan
+          // peubahnya "nebeng" ke sini. Sejak tab dipisah (financial_statement.php
+          // cuma meng-include tab yang aktif, sisanya lewat fs_tab_fetch.php),
+          // peubah itu TIDAK PERNAH ada di sini - jadi ketiga selnya tampil
+          // KOSONG, dan $total_laba_rugi_bersih_* di perhitungan "Kas dan Setara
+          // Kas" di bawah ikut dianggap 0 (totalnya meleset sebesar laba bersih).
+          // Versi Monthly sudah lebih dulu dibetulkan dengan cara yang sama -
+          // lihat fsMonthlyNetIncomeByPeriod() di fs_monthly/fs_monthly_functions.php.
+          //
+          // Angkanya HARUS sama dgn baris LABA (RUGI) BERSIH di tab SPL, jadi
+          // SQL-nya disalin apa adanya dari sana; yang beda cuma daftar
+          // kategorinya: SPL menjumlah per kategori lalu menambahkannya
+          // bertahap (penjualan bersih -> laba kotor -> sebelum bunga ->
+          // sebelum pajak -> bersih), di sini ketujuh kategori pembentuknya
+          // dijumlah sekaligus - hasilnya identik karena semuanya penjumlahan
+          // saldo akhir per kategori.
+          // ================================================================
+          // $kata_filter = nama KOLOM bulan di fs_saldo_awal_tb (jan_2026, ...).
+          // Disusun di sini juga karena baris ini dirender JAUH sebelum blok
+          // "Kas dan Setara Kas pada Awal Periode" yang menyusunnya.
+          $bln_kf_lb = (int) ($bulan_awal ?? date('m'));
+          $thn_kf_lb = (int) ($tahun_awal ?? date('Y'));
+          if ($bln_kf_lb < 1 || $bln_kf_lb > 12) { $bln_kf_lb = (int) date('m'); }
+          $kata_filter = strtolower(date('M', mktime(0, 0, 0, $bln_kf_lb, 1, $thn_kf_lb))) . '_' . $thn_kf_lb;
+
+          $sqlLabaBersih = mysqli_query($conn2,"select id, sub_kategori, sum(saldo_akhir_nag) total_nag, sum(saldo_akhir_nak) total_nak, sum(saldo_akhir_all) total_all, sub_kategori_eng from (select id,ref,sub_kategori,sub_kategori_eng from fs_kategori_laporan where status = 'Y' and kategori in ('PENJUALAN KOTOR','RETURN PENJUALAN','POTONGAN PENJUALAN','BEBAN POKOK PENJUALAN','BEBAN LAINNYA','BEBAN BUNGA','BEBAN PAJAK')) a left JOIN
+            (select a.*,sum(b.saldo_akhir) saldo_akhir_nag, sum(c.saldo_akhir) saldo_akhir_nak, sum(b.saldo_akhir + c.saldo_akhir) saldo_akhir_all from 
+            (select no_coa, nama_coa, id_ctg2, id_ctg4, ind_categori4 from mastercoa_v2 a left join (select a.id_ctg5 as id_ctg5A,a.ind_name as indname5,a.eng_name as engname5, b.ind_name as indname4,b.eng_name as engname4, c.ind_name as indname3,c.eng_name as engname3, d.ind_name as indname2,d.eng_name as engname2, e.ind_name as indname1,e.eng_name as engname1 from master_coa_ctg5 a INNER JOIN master_coa_ctg4 b on b.id_ctg4 = a.id_ctg4 INNER JOIN master_coa_ctg3 c on c.id_ctg3 = a.id_ctg3 INNER JOIN master_coa_ctg2 d on d.id_ctg2 = a.id_ctg2 INNER JOIN master_coa_ctg1 e on e.id_ctg1 = a.id_ctg1 GROUP BY a.id_ctg5) b on b.id_ctg5A =a.id_ctg5 GROUP BY no_coa) a 
+            left join 
+            (select no_coa, saldo saldo_awal, debit_idr, credit_idr, (saldo + credit_idr - debit_idr) saldo_akhir from (select a.no_coa, saldo, COALESCE(credit_idr,0) credit_idr, COALESCE(debit_idr,0) debit_idr from (select no_coa ,$kata_filter as saldo from fs_saldo_awal_tb where profit_center = 'NAG' order by no_coa asc) a LEFT JOIN (select profit_center, no_coa, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') and profit_center = 'NAG' group by no_coa) e on e.no_coa = a.no_coa) a order by no_coa asc) b on b.no_coa = a.no_coa
+            left join 
+            (select no_coa, saldo saldo_awal, debit_idr, credit_idr, (saldo + credit_idr - debit_idr) saldo_akhir from (select a.no_coa, saldo, COALESCE(credit_idr,0) credit_idr, COALESCE(debit_idr,0) debit_idr from (select no_coa ,$kata_filter as saldo from fs_saldo_awal_tb where profit_center = 'NAK' order by no_coa asc) a LEFT JOIN (select profit_center, no_coa, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') and profit_center = 'NAK' group by no_coa) e on e.no_coa = a.no_coa) a order by no_coa asc) c on c.no_coa = a.no_coa GROUP BY id_ctg4) b on b.ind_categori4 = a.sub_kategori order by id asc");
+
+          $rowLabaBersih = mysqli_fetch_array($sqlLabaBersih);
+          $total_laba_rugi_bersih_nag = (float) ($rowLabaBersih['total_nag'] ?? 0);
+          $total_laba_rugi_bersih_nak = (float) ($rowLabaBersih['total_nak'] ?? 0);
+          $total_laba_rugi_bersih_all = (float) ($rowLabaBersih['total_all'] ?? 0);
+
+          // Format persis seperti tab SPL supaya kedua tab menulis angka yang
+          // sama bunyinya (negatif dalam kurung).
+          $total_lrsp_nag = $total_laba_rugi_bersih_nag > 0 ? number_format($total_laba_rugi_bersih_nag,2) : '(' . number_format(abs($total_laba_rugi_bersih_nag),2) . ')';
+          $total_lrsp_nak = $total_laba_rugi_bersih_nak > 0 ? number_format($total_laba_rugi_bersih_nak,2) : '(' . number_format(abs($total_laba_rugi_bersih_nak),2) . ')';
+          $total_lrsp_all = $total_laba_rugi_bersih_all > 0 ? number_format($total_laba_rugi_bersih_all,2) : '(' . number_format(abs($total_laba_rugi_bersih_all),2) . ')';
+
           if ($profit_center == 'ALL') {
             echo "<td class='item-right'>{$total_lrsp_nag}</td>";
             echo "<td class='item-right'>{$total_lrsp_nak}</td>";

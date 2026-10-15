@@ -443,6 +443,53 @@ $sections = [
     ],
 ];
 
+// ============================================================================
+// LABA TAHUN BERJALAN - baris EKUITAS yang sebelumnya TIDAK ADA di sini.
+//
+// Barisnya bukan sub_kategori di fs_kategori_laporan, jadi tidak pernah ikut
+// terbawa fsGetCategoryTotals('EKUITAS') - itu sebabnya di laporan Monthly
+// barisnya hilang sama sekali dan Jumlah Ekuitas (beserta JUMLAH LIABILITAS
+// DAN EKUITAS) kurang sebesar laba tahun berjalan. Di versi YTD
+// (fs_ytd/statement_financial_position.php) baris ini dibuat dari query
+// tersendiri; query itu DISALIN APA ADANYA ke sini supaya angkanya pasti
+// sama persis dgn tab SFP YTD untuk rentang yang sama.
+//
+// Isinya: seluruh COA >= 3.40.01 (3.40.01 sendiri + semua pendapatan &
+// beban), dgn formula debit-normal (saldo + debit - credit) seperti baris
+// EKUITAS lainnya di laporan ini - makanya LABA tampil sebagai angka NEGATIF,
+// sama seperti di versi YTD.
+//
+// CATATAN: kolom saldo awal di query ini dipatok 'jan_2025' - ikut aslinya,
+// JANGAN diubah sepihak di sini saja karena akan bikin Monthly beda dgn YTD.
+// Diperiksa 15 Okt 2026: untuk COA >= 3.40.01 isi kolom jan_2025 MAUPUN
+// jan_2026 sama-sama 0,00 di NAG & NAK (500 COA), jadi saat ini tidak
+// berpengaruh ke angkanya.
+//
+// Nama peubah di dalam fungsi SENGAJA $bulan_awal/$bulan_akhir/$tahun_awal/
+// $tahun_akhir supaya potongan SQL salinan itu bisa dipakai tanpa diubah.
+if (!function_exists('fsMonthlySfpLabaTahunBerjalan')) {
+function fsMonthlySfpLabaTahunBerjalan($conn2, $blnAwal, $thnAwal, $blnAkhir, $thnAkhir)
+{
+    $bulan_awal  = $blnAwal;
+    $tahun_awal  = $thnAwal;
+    $bulan_akhir = $blnAkhir;
+    $tahun_akhir = $thnAkhir;
+
+    $q = mysqli_query($conn2,"select 'Laba Tahun Berjalan' sub_kategori, 'Profit of the year' sub_kategori_eng, sum(COALESCE(saldo_akhir_nag,0)) as total_nag, sum(COALESCE(saldo_akhir_nak,0)) as total_nak, sum(COALESCE(saldo_akhir_all,0)) as total_all from (select a.*,sum(b.saldo_akhir) saldo_akhir_nag, sum(c.saldo_akhir) saldo_akhir_nak, sum(b.saldo_akhir + c.saldo_akhir) saldo_akhir_all from 
+      (select no_coa, nama_coa, id_ctg2, id_ctg4, ind_categori4 from mastercoa_v2 a left join (select a.id_ctg5 as id_ctg5A,a.ind_name as indname5,a.eng_name as engname5, b.ind_name as indname4,b.eng_name as engname4, c.ind_name as indname3,c.eng_name as engname3, d.ind_name as indname2,d.eng_name as engname2, e.ind_name as indname1,e.eng_name as engname1 from master_coa_ctg5 a INNER JOIN master_coa_ctg4 b on b.id_ctg4 = a.id_ctg4 INNER JOIN master_coa_ctg3 c on c.id_ctg3 = a.id_ctg3 INNER JOIN master_coa_ctg2 d on d.id_ctg2 = a.id_ctg2 INNER JOIN master_coa_ctg1 e on e.id_ctg1 = a.id_ctg1 GROUP BY a.id_ctg5) b on b.id_ctg5A =a.id_ctg5 GROUP BY no_coa) a 
+      left join 
+      (select no_coa, saldo saldo_awal, debit_idr, credit_idr, (saldo + debit_idr - credit_idr) saldo_akhir from (select a.no_coa, saldo, COALESCE(credit_idr,0) credit_idr, COALESCE(debit_idr,0) debit_idr from (select no_coa ,jan_2025 as saldo from fs_saldo_awal_tb where profit_center = 'NAG' order by no_coa asc) a LEFT JOIN (select profit_center, no_coa, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') and profit_center = 'NAG' group by no_coa) e on e.no_coa = a.no_coa) a where no_coa >= '3.40.01' order by no_coa asc) b on b.no_coa = a.no_coa
+      left join 
+      (select no_coa, saldo saldo_awal, debit_idr, credit_idr, (saldo + debit_idr - credit_idr) saldo_akhir from (select a.no_coa, saldo, COALESCE(credit_idr,0) credit_idr, COALESCE(debit_idr,0) debit_idr from (select no_coa ,jan_2025 as saldo from fs_saldo_awal_tb where profit_center = 'NAK' order by no_coa asc) a LEFT JOIN (select profit_center, no_coa, sum(credit) credit,sum(debit) debit,IF(sum(debit) = sum(credit),'B','NB') balance,sum(ROUND(credit * rate,2)) credit_idr,sum(ROUND(debit * rate,2)) debit_idr,IF(sum(ROUND(debit * rate,2)) = sum(ROUND(credit * rate,2)),'B','NB') balance_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') and profit_center = 'NAK' group by no_coa) e on e.no_coa = a.no_coa) a where no_coa >= '3.40.01' order by no_coa asc) c on c.no_coa = a.no_coa GROUP BY id_ctg4) a");
+
+    $r = $q ? mysqli_fetch_array($q) : null;
+    return array(
+        'NAG' => (float) ($r['total_nag'] ?? 0),
+        'NAK' => (float) ($r['total_nak'] ?? 0),
+        'ALL' => (float) ($r['total_all'] ?? 0),
+    );
+}
+}
 // Ambil data tiap bulan sekali per kategori (bukan per baris) - hemat query.
 $monthCategoryData = []; // [kategori][period_label] = array of rows
 foreach ($periods as $p) {
@@ -456,6 +503,16 @@ foreach ($periods as $p) {
                 $conn2, [$kategori], $bulan_awal, $tahun_awal, $p['bulan'], $p['tahun'], $kata_filter, false
             );
         }
+    }
+}
+
+// Laba Tahun Berjalan per periode. Sama seperti baris lain di laporan ini,
+// tiap kolom bulan dihitung KUMULATIF dari $bulan_awal sampai bulan kolom itu.
+$labaTahunBerjalan = []; // [period_label][pcCol] = float
+foreach ($periods as $p) {
+    $ltb = fsMonthlySfpLabaTahunBerjalan($conn2, $bulan_awal, $tahun_awal, $p['bulan'], $p['tahun']);
+    foreach ($pcCols as $pcCol) {
+        $labaTahunBerjalan[$p['label']][$pcCol] = $ltb[$pcCol] ?? 0;
     }
 }
 
@@ -569,6 +626,25 @@ $GLOBALS['sfpmYtdStartIdx'] = count($periods) * $pcColCount;
                     }
                     echo '<tr data-en="' . htmlspecialchars($subKategoriEn) . '"><td class="item-left sfpm-freeze-left">' . htmlspecialchars($subKategori) . '</td>'
                        . sfpmRenderRowValues($itemValues, $periods, $pcCols, 'td', 'item-right')
+                       . '</tr>';
+                }
+
+                // "Laba Tahun Berjalan" ditempel di EKUITAS, sesudah sub
+                // kategori dari master dan SEBELUM baris "Jumlah Ekuitas" -
+                // urutan yang sama dgn versi YTD. Nilainya juga ikut
+                // dijumlahkan ke total EKUITAS, kalau tidak Jumlah Ekuitas &
+                // JUMLAH LIABILITAS DAN EKUITAS akan tetap kurang.
+                if ($kategori === 'EKUITAS') {
+                    $ltbValues = [];
+                    foreach ($periods as $p) {
+                        foreach ($pcCols as $pcCol) {
+                            $v = (float) ($labaTahunBerjalan[$p['label']][$pcCol] ?? 0);
+                            $ltbValues[$p['label']][$pcCol] = $v;
+                            $catTotalPerMonth[$p['label']][$pcCol] = ($catTotalPerMonth[$p['label']][$pcCol] ?? 0) + $v;
+                        }
+                    }
+                    echo '<tr data-en="Profit of the year"><td class="item-left sfpm-freeze-left">Laba Tahun Berjalan</td>'
+                       . sfpmRenderRowValues($ltbValues, $periods, $pcCols, 'td', 'item-right')
                        . '</tr>';
                 }
 
