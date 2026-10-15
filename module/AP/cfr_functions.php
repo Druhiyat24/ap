@@ -387,6 +387,19 @@ function cfrGetAllAccounts($conn) {
     return $accounts;
 }
 
+// Daftar akun KAS saja (tanpa akun bank) - dipakai menu "Petty Cash Flow
+// Realisation" (petty-cashflow-realisation.php) di menu Cash. Query kas-nya
+// SAMA PERSIS dgn bagian kas di cfrGetAllAccounts() - sengaja tidak memakai
+// cfrGetAllAccounts() lalu disaring, karena membedakan mana baris bank dan
+// mana baris kas dari hasil gabungannya cuma bisa ditebak-tebak.
+function cfrGetKasAccounts($conn) {
+    $accounts = [];
+    $sqlKas = mysqli_query($conn, "select no_coa as account, nama_coa as label from mastercoa_v2 where ind_categori5 = 'KAS' and nama_coa != 'POS SILANG' order by nama_coa");
+    while ($r = mysqli_fetch_assoc($sqlKas)) {
+        $accounts[] = ['account' => $r['account'], 'label' => $r['label'], 'curr' => 'IDR'];
+    }
+    return $accounts;
+}
 // Hitung semua data yang dibutuhkan report Cash Flow Realisation (akun, saldo awal/akhir,
 // kategori master, realisasi per kategori x akun, dan 2 kategori pinjaman bank dedicated) -
 // satu fungsi ini dipakai bareng oleh halaman report (report-cashflow-realisation.php) dan

@@ -1082,6 +1082,27 @@ echo'</ul>
   ?>
 
   <?php
+  /* "Petty Cash Flow Realisation" - salinan Report Cash Flow Realisation
+     (Bank > Report) yang daftar akunnya hanya akun KAS. Diminta pemakai
+     15 Okt 2026 berikut HAK AKSES TERSENDIRI (menurole 144), BUKAN ikut
+     hak akses 'Cash' (38) - supaya bisa diberikan hanya ke orang tertentu
+     tanpa membuka Cash In/Out dan Petty Cash In/Out sekalian.
+     Pola pemeriksaannya sama persis dgn 'E - Statement' (62) di menu Bank:
+     query hak akses sendiri, lalu dicocokkan ke id menurole-nya. */
+  $querysPcfr = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Petty Cash Flow Realisation'");
+  $rsPcfr = mysqli_fetch_array($querysPcfr);
+  $idPcfr = isset($rsPcfr['id']) ? $rsPcfr['id'] : 0;
+
+  if($idPcfr == '144'){
+      echo '
+      <a href="../AP/petty-cashflow-realisation.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-line-chart fa-fw"></span>
+      <span class="menu-collapsed">Petty Cash Flow Realisation</span>
+      </a>';
+  }
+  ?>
+
+  <?php
   $querys = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and  useraccess.menu like '%Cash%' and useraccess.menu like '%Approval%' and useraccess.menu not like '%reverse%' group by username");
   $rs = mysqli_fetch_array($querys);
   $menu = isset($rs['menu']) ? $rs['menu'] :0;

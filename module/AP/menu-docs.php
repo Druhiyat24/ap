@@ -236,6 +236,36 @@ $menuGroups = [
                     ],
                 ],
             ],
+            'petty-cash-flow-realisation' => [
+                'title' => 'Petty Cash Flow Realisation', 'icon' => 'fa-line-chart', 'path' => 'module/AP/petty-cashflow-realisation.php',
+                'doc' => [
+                    'summary' => 'Laporan arus kas terstruktur per kategori KHUSUS AKUN KAS (Kas Besar &amp; Kas Kecil) — salinan menu Bank &rsaquo; Report &rsaquo; Report Cash Flow Realisation dgn daftar akun dipersempit, diminta pemakai 15 Okt 2026.',
+                    'purpose' => 'Dipakai bagian kas untuk melihat realisasi arus kas hanya pada akun kas, tanpa harus mematikan satu per satu akun bank di filter Account seperti di laporan aslinya. Perhitungannya memakai berkas yang SAMA (cfr_functions.php), jadi untuk akun yang sama angkanya pasti sama dgn Report Cash Flow Realisation.',
+                    'variants' => [
+                        ['name' => 'Filter Account', 'icon' => 'fa-toggle-on', 'desc' => 'Daftar akunnya HANYA akun kas — <code>mastercoa_v2</code> dgn <code>ind_categori5 = &#39;KAS&#39;</code> selain POS SILANG (15 Okt 2026: 5 akun — Kas Besar, Kas Kecil Garment, Kas Kecil Kantor 1, Kas Kecil Kantor 2, Kas Kecil Knitting). Akun bank tidak ikut ditampilkan sama sekali.'],
+                        ['name' => 'Export Excel', 'icon' => 'fa-file-excel-o', 'desc' => 'Lewat <code>ekspor_petty_cashflow_realisation.php</code> — salinan endpoint aslinya, judul sheet &amp; nama berkas memakai nama menu ini.'],
+                    ],
+                    'flow' => [
+                        ['title' => 'Pilih periode &amp; akun', 'desc' => 'From/To default hari ini, laporan langsung tampil saat halaman dibuka. Semua akun kas aktif secara default.'],
+                        ['title' => 'Search', 'desc' => 'Form di-submit, perhitungan dijalankan <code>cfrComputeReportData()</code> dgn daftar akun kas sebagai scope — saldo awal/akhir &amp; realisasi dihitung seolah-olah akun bank tidak ada.'],
+                    ],
+                    'status_flow' => [],
+                    'tables_write' => [],
+                    'tables_read' => [
+                        ['name' => 'mastercoa_v2', 'desc' => 'Sumber daftar akun kas (<code>ind_categori5 = &#39;KAS&#39;</code>) sekaligus master COA.'],
+                        ['name' => 'tbl_list_journal', 'desc' => 'Sumber mutasi untuk realisasi per kategori.'],
+                        ['name' => 'tbl_master_cashflow', 'desc' => 'Master kategori arus kas.'],
+                        ['name' => 'b_masterbank', 'desc' => 'Dibaca oleh cfr_functions.php untuk bagian bank — tidak dipakai di menu ini karena akunnya disaring ke kas saja.'],
+                    ],
+                    'notes' => [
+                        'SALINAN PENUH, BUKAN PARAMETER. <code>petty-cashflow-realisation.php</code> adalah salinan utuh <code>report-cashflow-realisation.php</code> (menu Bank), dan <code>ekspor_petty_cashflow_realisation.php</code> salinan utuh endpoint ekspornya. Yang BEDA hanya: daftar akun (<code>cfrGetKasAccounts()</code> menggantikan <code>cfrGetAllAccounts()</code>), judul kartu/sheet/nama berkas, dan endpoint ekspor yang dituju. Perhitungannya TIDAK disalin — keduanya tetap memakai <code>cfr_functions.php</code> yang sama, sesuai permintaan pemakai &quot;query nya sama&quot;. Pola 1 menu = 1 berkas ini sama dgn Update BPB: kalau salah satunya mau diubah, yang lain tidak ikut berubah.',
+                        'DEFAULT PILIHAN AKUN BEDA DARI HALAMAN ASLI. Di halaman asli, <code>accounts</code> kosong (pertama buka, belum submit) berarti SEMUA akun. Di sini kosong harus diterjemahkan jadi SELURUH AKUN KAS — kalau dibiarkan kosong, <code>cfrComputeReportData()</code> ikut menghitung akun bank dan SALDO AWAL/AKHIR-nya jadi bukan punya kas saja. Pengisian default itu ada di halaman dan di endpoint ekspornya.',
+                        'HAK AKSES TERSENDIRI (menurole 144 &quot;Petty Cash Flow Realisation&quot;), BUKAN ikut hak akses &quot;Cash&quot; (38) — diminta pemakai. Jadi butir menunya bisa diberikan ke orang tertentu saja tanpa sekalian membuka Cash In/Out dan Petty Cash In/Out. Pemeriksaannya di <code>module/menu.php</code> memakai pola yang sama dgn &quot;E - Statement&quot; (62) di menu Bank: query hak akses sendiri lalu dicocokkan ke id menurole-nya.',
+                        'MIGRASI PRODUKSI: <code>module/AP/db_migrate_LIVE_20261015_petty_cfr.sql</code> — WAJIB dijalankan SEBELUM pull kode, kalau tidak menunya tidak muncul untuk siapa pun. Isinya menambah menurole 144 dan memberikan hak aksesnya ke PEMEGANG &quot;Bank&quot;, dgn alasan mereka memang SUDAH bisa membuka Report Cash Flow Realisation yang asli (yang sudah memuat seluruh akun kas yang sama plus akun bank) — jadi pemberian itu tidak membuka data baru bagi siapa pun. Berkasnya juga menyediakan alternatif daftar penerima yang diisi sendiri. Nomor id 144 TIDAK bisa diperiksa langsung ke produksi dari sesi pembuatnya, jadi berkas migrasinya dimulai dgn blok pemeriksaan: kalau 144 ternyata sudah terpakai, angkanya harus diganti di berkas SQL DAN di <code>module/menu.php</code>.',
+                        'DIUJI 15 Okt 2026 di database lokal. Daftar akunnya tepat 5 akun kas (bank 8 akun tidak ikut). Migrasinya dijalankan DI DALAM TRANSAKSI lalu DI-ROLLBACK, jadi data lokal tidak berubah: hasilnya 20 pemegang &quot;Bank&quot; mendapat TEPAT 1 butir baru, 23 pengguna lain menunya tidak berubah sama sekali, 0 butir hilang, 0 tambahan tak terduga, dan urutan butir lama tidak berubah untuk siapa pun. Putaran kedua menambah 0 baris (aman diulang). Sebelum migrasi dijalankan, menu 43 pengguna dibandingkan sebelum vs sesudah perubahan kode: IDENTIK — butir baru memang belum muncul untuk siapa pun sampai hak aksesnya diberikan.',
+                    ],
+                ],
+            ],
         ],
     ],
     'bank' => [
