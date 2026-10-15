@@ -90,7 +90,7 @@ while ($iv = mysqli_fetch_assoc($invs)) {
 .select2-container--open .select2-dropdown{ z-index:1061; }
 /* Tinggi & rupa kotak select2 diurus app-pco-form.css (ber-scope .pco-card). */
 /* Profit center terkunci: tampil seperti isian readonly lain di baris ini. */
-#profit_center + .select2-container .select2-selection--single{ background:#eef2f7; }
+/*#profit_center + .select2-container .select2-selection--single{ background:#eef2f7; }*/
 /* Kepala kartu sekarang .pco-head (kotak ikon + judul), jadi pita gradien
    .kb-card .card-header sudah tidak dipakai lagi. */
 .table-gradient th{ background:#1E3A8A; color:#fff; text-align:center; vertical-align:middle; white-space:nowrap; }
