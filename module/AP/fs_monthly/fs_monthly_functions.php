@@ -192,9 +192,25 @@ function fsGetCashflowIndirectCategoryTotals($conn2, $kategoriList, $bulan_awal,
         ";
     };
 
+    // Penjumlahan per sub_kategori (GROUP BY a.id) - BUKAN sekadar left join.
+    // Sebabnya: penyambungnya NAMA (b.ind_name = a.sub_kategori), sedangkan
+    // tbl_master_cashflow bisa punya BEBERAPA baris dgn nama sama. Contoh
+    // nyata (diperiksa 15 Okt 2026): "PEMBELIAN ASET TETAP" ada 3 baris -
+    // id 11 (Active, TIDAK dipakai COA mana pun), id 27 (Active, dipakai 10
+    // COA, inilah yang berisi nilai), dan id 36 (Deactive, tidak dipakai).
+    // Tanpa penjumlahan, 1 sub_kategori menghasilkan 3 baris hasil dan
+    // penampil mengambil yang PERTAMA - kebetulan id 11 yang nilainya 0,
+    // sehingga baris "Pembelian aset tetap" di laporan selalu kosong
+    // (dilaporkan pemakai 15 Okt 2026). Versi YTD tidak kena karena di sana
+    // sisi NAG-nya INNER JOIN, yang otomatis membuang baris master tanpa COA.
+    // Dijumlah lebih aman daripada meniru INNER JOIN: kalau suatu saat ada
+    // DUA baris master senama yang SAMA-SAMA dipakai COA, nilainya tergabung,
+    // bukan salah satunya diam-diam hilang.
     $sql = "
-        select id, sub_kategori, sub_kategori_eng,
-               COALESCE(total_nag,0) total_nag, COALESCE(total_nak,0) total_nak, COALESCE(total_all,0) total_all
+        select a.id, a.sub_kategori, a.sub_kategori_eng,
+               COALESCE(SUM(b.total_nag),0) total_nag,
+               COALESCE(SUM(b.total_nak),0) total_nak,
+               COALESCE(SUM(b.total_all),0) total_all
         from (select id, ref, sub_kategori, sub_kategori_eng from fs_kategori_laporan where status = 'Y' and kategori in ($kategoriIn)) a
         left join (
             select a.id id_indirect, a.ind_name,
@@ -204,7 +220,8 @@ function fsGetCashflowIndirectCategoryTotals($conn2, $kategoriList, $bulan_awal,
             left join " . $pcTotal('NAG') . " b on b.id_indirect = a.id
             left join " . $pcTotal('NAK') . " c on c.id_indirect = a.id
         ) b on b.ind_name = a.sub_kategori
-        order by id asc
+        group by a.id, a.sub_kategori, a.sub_kategori_eng
+        order by a.id asc
     ";
 
     $result = mysqli_query($conn2, $sql);
