@@ -17,9 +17,11 @@ $h   = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT * FROM ir_kontrabon_h WHE
 // PROFIT CENTER dokumen ini DIBACA DARI NOMORNYA (segmen ke-2 dari
 // IR/<PC>/YYYY/MM/NNNNN), bukan dari kolom tersendiri - memang tidak ada
 // kolomnya, dan nomor dokumen itulah catatan yang otoritatif.
-// Di halaman edit nilainya TERKUNCI: nomor dokumen sudah terbit, mengganti
-// profit center berarti menomori ulang dokumen. Yang dibatasi di sini adalah
-// BPB yang discan - diperiksa ulang server-side di kontrabon_new_update.php.
+// BOLEH DIGANTI, dan kalau diganti NOMOR DOKUMENnya ikut berubah (segmen ke-2
+// ditukar, nomor urut tetap). Pemakai diberi peringatan dua kali: saat memilih
+// dan saat menekan Update; penomoran ulangnya dikerjakan dalam satu transaksi
+// di kontrabon_new_update.php. BPB yang sudah masuk harus dihapus dulu karena
+// BPB itu milik profit center yang lama.
 $pcDoc = '';
 if (!empty($h['doc_number'])) {
     $bagianDoc = explode('/', $h['doc_number']);
@@ -150,6 +152,9 @@ while ($iv = mysqli_fetch_assoc($invs)) {
         <div class="col-md-3 mb-2">
           <label class="form-label"><b>Document Number</b></label>
           <input type="text" readonly class="form-control" id="no_doc" value="<?= htmlspecialchars($h['doc_number']) ?>" style="background:#eef2f7;">
+          <!-- Peringatan nomor berubah: muncul begitu Profit Center diganti,
+               supaya pemakai TAHU nomornya akan berganti sebelum menekan Update. -->
+          <div id="pc_warn" style="display:none;margin-top:4px;font-size:11.5px;line-height:1.35;color:#8a6d3b;background:#fcf8e3;border:1px solid #f0ad4e;border-radius:4px;padding:5px 7px;"></div>
         </div>
         <div class="col-md-2 mb-2">
           <label class="form-label"><b>Actual Document Receiving Date</b></label>
@@ -163,20 +168,23 @@ while ($iv = mysqli_fetch_assoc($invs)) {
           <label class="form-label"><b>No Reff</b> <span class="text-muted" style="font-size:11px;">(locked)</span></label>
           <input type="text" readonly class="form-control" value="<?= htmlspecialchars($h['no_reff'] ?? '') ?>" style="background:#eef2f7;">
         </div>
-        <!-- Profit Center: mengisi slot yang memang sudah kosong. TERKUNCI -
-             nilainya mengikuti nomor dokumen yang sudah terbit. -->
+        <!-- Profit Center: mengisi slot yang memang sudah kosong. BOLEH diganti,
+             TAPI nomor dokumen ikut berubah - pemakai diberi peringatan dulu
+             (lihat #pc_warn & penangan 'change' di JS bawah). -->
         <div class="col-md-2 mb-2">
-          <label class="form-label"><b>Profit Center</b> </label>
-          <select class="form-control select2" id="profit_center" title="Profit center follows the document number">
+          <label class="form-label"><b>Profit Center</b> <span class="text-muted" style="font-size:11px;">(changes the number)</span></label>
+          <select class="form-control select2" id="profit_center" title="Changing this renumbers the document">
             <?php
             /* Daftarnya dari master_pc - sumber yang SAMA dgn Memorial Journal,
                termasuk cara menampilkannya (id_pc - nama_pc). */
             $qpc = mysqli_query($conn1, "SELECT kode_pc, CONCAT(id_pc,' - ',nama_pc) tampil
                 FROM master_pc WHERE status = 'Active' ORDER BY id_pc");
             $adaPc = false;
+            $pcNama = array();   // kode -> "NAG - NIRWANA ALABARE GARMENT", dipakai JS
             while ($qpc && $xpc = mysqli_fetch_assoc($qpc)) {
                 $selpc = ($xpc['kode_pc'] === $pcDoc) ? ' selected' : '';
                 if ($selpc !== '') { $adaPc = true; }
+                $pcNama[$xpc['kode_pc']] = $xpc['tampil'];
                 echo '<option value="' . htmlspecialchars($xpc['kode_pc']) . '"' . $selpc . '>'
                     . htmlspecialchars($xpc['tampil']) . '</option>';
             }
@@ -296,6 +304,10 @@ while ($iv = mysqli_fetch_assoc($invs)) {
 <script>
 var DOC = <?= json_encode($h['doc_number']) ?>;
 var PAYLOAD = <?= json_encode($payload) ?>;
+/* Profit center ASAL dokumen (segmen ke-2 nomornya) + nama lengkap tiap kode,
+   untuk menyusun peringatan "nomor akan berubah". */
+var PC_DOC  = <?= json_encode($pcDoc) ?>;
+var PC_NAMA = <?= json_encode($pcNama) ?>;
 $(function () {
   // ===== Supplier: boleh diganti, TAPI wajib cocok dgn BPB yang sudah masuk =====
   // Satu perusahaan kadang punya 2 record master dgn susunan nama berbeda
@@ -312,9 +324,98 @@ $(function () {
     if ($el.attr('id') === 'profit_center') { return; }
     $el.select2({ width: '100%', placeholder: $el.attr('title') || '' });
   });
-  /* Profit Center TERKUNCI dan selalu punya nilai (ikut nomor dokumen), jadi
-     tanpa placeholder dan tanpa kotak pencarian. */
+  /* Profit Center selalu punya nilai (terbaca dari nomor dokumen) dan cuma dua
+     pilihan, jadi tanpa placeholder dan tanpa kotak pencarian. */
   $('#profit_center').select2({ width: '100%', minimumResultsForSearch: Infinity });
+
+  // ===== Profit Center: boleh diganti, TAPI NOMOR DOKUMEN IKUT BERUBAH =====
+  // Profit center dokumen ini memang tersimpan di nomornya sendiri
+  // (IR/<PC>/YYYY/MM/NNNNN) - tidak ada kolom tersendiri. Jadi menggantinya
+  // berarti mengganti nomor. Pemakai WAJIB diberi tahu dulu, dan kalau
+  // dibatalkan pilihannya dikembalikan.
+  var pcPrev = $('#profit_center').val() || '';
+  var pcReverting = false;
+
+  function nomorUntukPc(pc){
+    var p = String(DOC).split('/');
+    if (p.length < 2) { return DOC; }
+    p[1] = pc;
+    return p.join('/');
+  }
+  function namaPc(kode){ return PC_NAMA[kode] || kode || '-'; }
+  function balikkanPc(){
+    pcReverting = true;
+    $('#profit_center').val(pcPrev).trigger('change.select2');
+    pcReverting = false;
+  }
+  // Peringatan yang MENETAP di bawah Document Number selama pilihannya masih
+  // beda dgn nomor dokumen - jadi pemakai tidak lupa sampai menekan Update.
+  function tandaiNomorBerubah(){
+    var pc = $('#profit_center').val() || '';
+    if (pc === '' || pc === PC_DOC) { $('#pc_warn').hide().empty(); return; }
+    $('#pc_warn').html('<i class="fa fa-exclamation-triangle" aria-hidden="true"></i> ' +
+      'The number becomes <b>' + esc(nomorUntukPc(pc)) + '</b> when you press Update.').show();
+  }
+
+  $('#profit_center').on('change', function () {
+    if (pcReverting) { return; }                 // 'change' dari revert kita sendiri
+    var neu = $(this).val() || '';
+    if (neu === pcPrev) { return; }
+
+    // BPB yang sudah masuk SUDAH dipastikan milik profit center lama (diperiksa
+    // saat scan), jadi pergantian ini pasti ditolak server. Tolak di sini saja
+    // supaya pemakai tahu persis apa yang harus dilakukan dulu.
+    var daftarBpb = [];
+    $('#invBody .bpb-row').each(function () {
+      var n = String($(this).attr('data-no') || '').trim();
+      if (n !== '') { daftarBpb.push(n); }
+    });
+    if (daftarBpb.length) {
+      balikkanPc();
+      var baris = daftarBpb.slice(0, 8).map(function (n) {
+        return '<div style="text-align:left;padding:1px 0;">&bull; ' + esc(n) + '</div>';
+      }).join('');
+      var lagi = daftarBpb.length > 8
+        ? '<div class="text-muted" style="font-size:12px;margin-top:4px;">+' + (daftarBpb.length - 8) + ' more</div>' : '';
+      Swal.fire({
+        icon: 'error',
+        title: 'Remove the BPB first',
+        html: '<div style="text-align:left;font-size:13px;">The profit center cannot be changed while ' +
+              (daftarBpb.length === 1 ? 'there is 1 BPB' : 'there are ' + daftarBpb.length + ' BPBs') +
+              ' in this document - ' + (daftarBpb.length === 1 ? 'it belongs' : 'they belong') +
+              ' to <b>' + esc(namaPc(pcPrev)) + '</b>:</div>' +
+              '<div style="margin:8px 0;font-size:12px;">' + baris + '</div>' + lagi +
+              '<div class="text-muted" style="font-size:12px;margin-top:8px;text-align:left;">' +
+              'Remove those BPBs, change the profit center, then scan the BPBs of the other profit center.</div>'
+      });
+      return;
+    }
+
+    // Kembali ke profit center aslinya -> nomornya tidak berubah, tidak perlu konfirmasi.
+    if (neu === PC_DOC) { pcPrev = neu; tandaiNomorBerubah(); return; }
+
+    Swal.fire({
+      icon: 'warning',
+      title: 'The document number will change',
+      html: '<div style="text-align:left;font-size:13px;">Changing the profit center also renumbers this document:</div>' +
+            '<table style="margin:10px auto;font-size:13px;border-collapse:collapse;">' +
+            '<tr><td style="text-align:right;padding:3px 8px;color:#777;">Profit Center</td>' +
+            '<td style="text-align:left;padding:3px 8px;">' + esc(namaPc(pcPrev)) + ' &rarr; <b>' + esc(namaPc(neu)) + '</b></td></tr>' +
+            '<tr><td style="text-align:right;padding:3px 8px;color:#777;">Number</td>' +
+            '<td style="text-align:left;padding:3px 8px;">' + esc(DOC) + ' &rarr; <b>' + esc(nomorUntukPc(neu)) + '</b></td></tr>' +
+            '</table>' +
+            '<div class="text-muted" style="font-size:12px;text-align:left;">The running number stays the same - only the profit center part changes. ' +
+            'Nothing is changed until you press <b>Update</b>.</div>',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, change the number',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#d9534f',
+      reverseButtons: true
+    }).then(function (r) {
+      if (r.isConfirmed) { pcPrev = neu; tandaiNomorBerubah(); }
+      else { balikkanPc(); }
+    });
+  });
   var suppPrev = $('#nama_supp').val() || '';
   var suppReverting = false;
 
@@ -689,9 +790,22 @@ $(function () {
     if (invoices.length === 0) { Swal.fire({icon:'warning', title:'Oops...', text:'Add at least one invoice.'}); return; }
     var nFak = 0, nBpb = 0;
     invoices.forEach(function(iv){ (iv.fakturs||[]).forEach(function(fk){ nFak++; nBpb += (fk.bpbs||[]).length; }); });
+    // Peringatan TERAKHIR sebelum dikirim, kalau nomornya akan berganti.
+    var pcPilih = $('#profit_center').val() || '';
+    var gantiNomor = (pcPilih !== '' && pcPilih !== PC_DOC);
+    var isiKonfirmasi = '<b>' + esc(DOC) + '</b><br><small class="text-muted">' + invoices.length + ' invoice(s) &middot; ' + nFak + ' faktur &middot; ' + nBpb + ' BPB</small>';
+    if (gantiNomor) {
+      isiKonfirmasi += '<div style="margin-top:10px;padding:8px 10px;border:1px solid #f0ad4e;background:#fcf8e3;' +
+        'border-radius:4px;font-size:12.5px;text-align:left;color:#8a6d3b;">' +
+        '<b>This also renumbers the document.</b><br>' +
+        'Profit Center: ' + esc(namaPc(PC_DOC)) + ' &rarr; <b>' + esc(namaPc(pcPilih)) + '</b><br>' +
+        'Number: ' + esc(DOC) + ' &rarr; <b>' + esc(nomorUntukPc(pcPilih)) + '</b></div>';
+    }
     Swal.fire({
-      title: 'Update this Invoice Received?', html: '<b>' + DOC + '</b><br><small class="text-muted">' + invoices.length + ' invoice(s) · ' + nFak + ' faktur · ' + nBpb + ' BPB</small>',
-      icon: 'question', showCancelButton: true, confirmButtonText: 'Yes, Update', cancelButtonText: 'Cancel'
+      title: 'Update this Invoice Received?', html: isiKonfirmasi,
+      icon: 'question', showCancelButton: true,
+      confirmButtonText: gantiNomor ? 'Yes, Update & renumber' : 'Yes, Update',
+      cancelButtonText: 'Cancel'
     }).then(function (result) { if (result.isConfirmed) sendUpdate(invoices); });
   });
 
@@ -700,9 +814,23 @@ $(function () {
     $.post('kontrabon_new_update.php', {
       doc_number: DOC, document_date: $('#tgl_doc').val(), kontrabon_date: $('#tgl_received').val(), pesan: $('#pesan').val(),
       nama_supp: $('#nama_supp').val(),   // supplier boleh berubah; server memvalidasi ulang vs BPB
+      // Profit center boleh berubah. Server memeriksanya ke master_pc, lalu
+      // MENGGANTI NOMOR dokumen kalau memang beda dgn nomor yang sekarang.
+      profit_center: $('#profit_center').val(),
       total_amount: $('#total_value_h').val(), invoices: JSON.stringify(invoices)
     }, function (res) {
-      if (res.ok) { Swal.fire({icon:'success', title:'Updated', text: res.msg}).then(function(){ window.location = 'kontrabon_new.php'; }); }
+      if (res.ok) {
+        // Nomor berganti -> tampilkan nomor BARUnya terang-terangan, jangan cuma
+        // teks biasa, karena pemakai perlu mencatat/mencarinya dgn nomor itu.
+        var isiOk = '<div style="font-size:13px;">' + esc(res.msg || '') + '</div>';
+        if (res.renamed) {
+          isiOk += '<div style="margin-top:10px;padding:8px 10px;border:1px solid #c3e6cb;background:#f4fbf6;' +
+            'border-radius:4px;font-size:13px;">' + esc(res.doc_lama || DOC) +
+            '<br><b style="font-size:15px;">&darr;</b><br><b style="font-size:15px;">' + esc(res.doc_number || '') + '</b></div>';
+        }
+        Swal.fire({ icon:'success', title: res.renamed ? 'Updated &amp; renumbered' : 'Updated', html: isiOk })
+          .then(function(){ window.location = 'kontrabon_new.php'; });
+      }
       else {
         Swal.fire({ icon:'error', title:'Update failed', html: (res.msg || 'Unknown error') + '<br><small class="text-muted">Nothing was changed (rolled back). You can try again.</small>',
           showCancelButton:true, confirmButtonText:'Try again', cancelButtonText:'Close', allowOutsideClick:false })

@@ -2,9 +2,11 @@
 // UPDATE (edit) Kontrabon: ganti seluruh detail (invoice/faktur/BPB) kontrabon
 // yang sudah ada. Dalam 1 TRANSAKSI: hapus detail lama -> guard keunikan (BPB &
 // invoice, mengecualikan kontrabon ini sendiri karena sudah dihapus) -> insert
-// ulang -> update header. All-or-nothing. Header (doc_number, no_reff,
-// unik_code) TIDAK berubah; reff tetap Used. SUPPLIER BOLEH berubah, tapi
-// wajib ada di master DAN cocok dgn semua BPB pada payload (guard 1b & 1c).
+// ulang -> update header. All-or-nothing. no_reff & unik_code TIDAK berubah;
+// reff tetap Used. SUPPLIER BOLEH berubah, tapi wajib ada di master DAN cocok
+// dgn semua BPB pada payload (guard 1b & 1c). PROFIT CENTER juga boleh
+// berubah - dan kalau berubah, NOMOR DOKUMENnya ikut berubah (lihat bagian
+// "PROFIT CENTER" di bawah).
 session_start();
 include '../../conn/conn.php';
 require_once __DIR__ . '/bpb_docinfo_guard.php';
@@ -63,12 +65,86 @@ if ($suppNew !== '' && $suppNew !== $supp) {
     $supp = $suppNew;
 }
 
+// ============================================================================
+// PROFIT CENTER - BOLEH DIGANTI, DAN NOMOR DOKUMEN IKUT BERUBAH
+//
+// Profit center dokumen tersimpan DI NOMORNYA sendiri (IR/<PC>/YYYY/MM/NNNNN) -
+// tidak ada kolomnya di ir_kontrabon_h. Jadi begitu profit center diganti,
+// nomornya HARUS ikut berubah; kalau tidak, nomor dan isi dokumen saling
+// bertentangan dan penjaga BPB di bawah akan selalu menolak.
+//
+// Yang ditukar HANYA segmen ke-2. NOMOR URUTnya TETAP - deret IR memang satu
+// untuk semua profit center (lihat create_kontrabon_new.php), jadi pergantian
+// ini tidak bisa menyerobot nomor milik dokumen lain. Tetap diperiksa juga
+// supaya tidak pernah ada dua dokumen bernomor sama (kolomnya tidak ber-indeks
+// unik, jadi basis data tidak akan menahannya sendiri).
+//
+// Kode yang dikirim browser TIDAK dipercaya: wajib ada di master_pc & Active.
+// Edit hanya dibolehkan selama IR masih 'Received' dan belum dipakai transfer
+// (dua penjaga di atas), jadi tidak ada dokumen hilir yang ikut berubah arti.
+// ============================================================================
+$bagianDoc = explode('/', $doc);
+$pcLama  = isset($bagianDoc[1]) ? strtoupper(trim($bagianDoc[1])) : '';
+$pcKirim = strtoupper(trim($_POST['profit_center'] ?? ''));
+$pcAktif = $pcLama;   // profit center yang dipakai menjaga BPB
+$docBaru = $doc;      // tetap sama dgn $doc kalau profit center tidak berubah
+
+if ($pcKirim !== '' && $pcLama !== '' && $pcKirim !== $pcLama) {
+    $qpc = mysqli_query($conn1, "SELECT kode_pc FROM master_pc
+        WHERE kode_pc = '" . mysqli_real_escape_string($conn1, $pcKirim) . "'
+          AND status = 'Active' LIMIT 1");
+    if (!$qpc || mysqli_num_rows($qpc) === 0) {
+        echo json_encode(['ok' => false, 'msg' => "Profit center '$pcKirim' is not registered (or no longer active) in the profit center master."]); exit;
+    }
+    $bagianBaru = $bagianDoc;
+    $bagianBaru[1] = $pcKirim;
+    $docBaru = implode('/', $bagianBaru);
+
+    foreach (['ir_kontrabon_h', 'ir_invoice_supp_h'] as $tCek) {
+        $qada = mysqli_query($conn2, "SELECT doc_number FROM $tCek WHERE doc_number = '" . $e($docBaru) . "' LIMIT 1");
+        if ($qada && mysqli_num_rows($qada) > 0) {
+            echo json_encode(['ok' => false, 'msg' => "Cannot change the profit center: document number $docBaru already exists. Nothing was changed."]); exit;
+        }
+    }
+    $pcAktif = $pcKirim;
+}
+
 $nInv = 0; $nFak = 0; $nBpb = 0; $fail = null;
+$nGanti = 0;    // berapa baris yang nomornya ikut diganti
 $bnUpd = []; // (no_bpb, no_inv, tgl_inv, no_faktur, tgl_faktur) -> update bpb_new setelah commit
 mysqli_begin_transaction($conn2);
 
+// 0a) PROFIT CENTER BERUBAH -> ganti nomor dokumen di SEMUA tabel yang
+//     menyimpannya, dikerjakan paling awal supaya sisa berkas ini bekerja dgn
+//     nomor baru tanpa perlu tahu-menahu. Semua tabel ini InnoDB, jadi ikut
+//     dibatalkan bersama kalau ada yang gagal di bawah.
+//     Daftar tabelnya dari information_schema - tidak ada kolom lain di basis
+//     data ini yang menyimpan nomor IR.
+$docLama = $doc;
+if ($docBaru !== $doc) {
+    $kolomNomor = [
+        ['ir_kontrabon_h',        'doc_number'],
+        ['ir_kontrabon_inv',      'doc_number'],
+        ['ir_invoice_supp_h',     'doc_number'],
+        ['ir_invoice_supp',       'doc_number'],
+        ['ir_kontrabon_temp',     'doc_number'],   // draf
+        ['ir_trans_invoice_supp', 'doc_number'],   // transfer lama / batal
+        ['ir_reverse',            'doc_number'],   // riwayat reverse
+        ['bpb_new',               'upt_dok_inv'],  // penunjuk balik dari BPB
+        ['bppb_new',              'upt_dok_inv'],  // idem, untuk retur
+    ];
+    foreach ($kolomNomor as $kn) {
+        if (!mysqli_query($conn2, "UPDATE `" . $kn[0] . "` SET `" . $kn[1] . "` = '" . $e($docBaru) . "'
+            WHERE `" . $kn[1] . "` = '" . $e($docLama) . "'")) {
+            $fail = 'renumber ' . $kn[0] . ': ' . mysqli_error($conn2); break;
+        }
+        $nGanti += (int) mysqli_affected_rows($conn2);
+    }
+    if (!$fail) { $doc = $docBaru; }
+}
+
 // 0) Hapus detail lama kontrabon ini (+ invoice mirror IR utk doc ini)
-foreach (['ir_kontrabon_inv', 'ir_kontrabon_faktur', 'ir_kontrabon_bpb'] as $t) {
+if (!$fail) foreach (['ir_kontrabon_inv', 'ir_kontrabon_faktur', 'ir_kontrabon_bpb'] as $t) {
     if (!mysqli_query($conn2, "DELETE FROM $t WHERE unik_code = '" . $e($unik) . "'")) { $fail = "clear $t: " . mysqli_error($conn2); break; }
 }
 if (!$fail && !mysqli_query($conn2, "DELETE FROM ir_invoice_supp WHERE doc_number = '" . $e($doc) . "'")) $fail = 'clear IR invoice: ' . mysqli_error($conn2);
@@ -83,16 +159,15 @@ if (!$fail) {
         $allBpb[$nb] = true;
     }
 }
-// Guard PROFIT CENTER. Profit center dokumen dibaca dari NOMORNYA sendiri
-// (segmen ke-2 dari IR/<PC>/YYYY/MM/NNNNN) - tidak mengambil apa pun dari
-// kiriman browser, jadi tidak bisa diakali lewat POST langsung. Semua BPB
-// yang masuk harus milik profit center itu.
+// Guard PROFIT CENTER. Semua BPB yang masuk harus milik profit center dokumen
+// ini. Yang dipakai $pcAktif - profit center SESUDAH perubahan (kalau diganti) -
+// dan nilainya sudah dicocokkan ke master_pc di atas, jadi POST langsung tetap
+// tidak bisa menyelundupkan kode sembarangan.
 // Nomor RETUR tidak ada di bpb_new (adanya di bppb_new yang TIDAK punya kolom
 // profit_center), jadi retur otomatis tidak ikut terjaring di sini - itu batas
 // yang bisa dijangkau datanya, bukan kelalaian.
 if (!$fail && $allBpb) {
-    $bagianDoc = explode('/', $doc);
-    $pcDoc = isset($bagianDoc[1]) ? strtoupper(trim($bagianDoc[1])) : '';
+    $pcDoc = $pcAktif;
     if ($pcDoc !== '') {
         $inListPc = implode(',', array_map(function ($x) use ($conn1) {
             return "'" . mysqli_real_escape_string($conn1, $x) . "'";
@@ -245,5 +320,18 @@ foreach ($bnUpd as $u) {
     bpbnew_apply_docinfo($conn2, $u[0], $doc, $u[1], $d($u[2]), $u[3], $d($u[4]));
 }
 
-echo json_encode(['ok' => true, 'msg' => "Invoice Received $doc updated: $nInv invoice(s), $nFak faktur, $nBpb BPB.", 'doc_number' => $doc]);
+$pesanOk = "Invoice Received $doc updated: $nInv invoice(s), $nFak faktur, $nBpb BPB.";
+if ($docBaru !== $docLama) {
+    // Dipakai halaman edit untuk MEMBERITAHU pemakai bahwa nomornya berubah.
+    $pesanOk = "Profit center changed to $pcAktif, so this document was renumbered."
+        . " $nInv invoice(s), $nFak faktur, $nBpb BPB saved, $nGanti row(s) renumbered.";
+}
+echo json_encode([
+    'ok'         => true,
+    'msg'        => $pesanOk,
+    'doc_number' => $doc,
+    'doc_lama'   => $docLama,
+    'renamed'    => ($docBaru !== $docLama),
+    'pc'         => $pcAktif,
+]);
 mysqli_close($conn2);
