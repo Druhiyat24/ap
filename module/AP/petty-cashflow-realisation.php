@@ -51,6 +51,30 @@
         border-radius: 9px;
         text-align: left;
         font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    /* Label memakan sisa ruang supaya lencana & tanda panah selalu menempel
+       di kanan, berapa pun panjang teksnya. */
+    #cfrAccLabel {
+        flex: 1 1 auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    /* Lencana jumlah akun terpilih - supaya kelihatan sekilas tanpa membaca
+       teksnya, dan tetap terbaca waktu nama akunnya panjang. */
+    #cfrAccBadge {
+        flex: 0 0 auto;
+        background: #eef3fb;
+        color: #1e3a8a;
+        border-radius: 999px;
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: .04em;
+        padding: 2px 8px;
+        line-height: 1.5;
     }
     #cfrAccountDropdownBtn:hover,
     #cfrAccountDropdownBtn:focus,
@@ -207,36 +231,70 @@
     /* Filter "Account" (dropdown REALISATION BY BANK) - gaya toggle switch
        yang sama seperti panel "Manage Role" di userrole.php, biar konsisten
        di seluruh aplikasi. */
+    /* Menu DIKUNCI selebar tombolnya - dulu min-width 320px membuatnya meluber
+       ke kolom sebelah kanan. Pola yang sama dipakai dropdown filter lain
+       (lihat .bootstrap-select > .dropdown-menu di app-skin-form.css). */
     #cfrAccountDropdownMenu {
-        min-width: 320px;
-        max-height: 320px;
+        width: 100%;
+        min-width: 100%;
+        max-width: 100%;
+        max-height: 280px;
         overflow-y: auto;
+        border: 1px solid #e6ebf3;
+        border-radius: 12px;
+        box-shadow: 0 14px 36px rgba(15, 23, 42, .15);
+        margin-top: 5px;
     }
+    /* SATU KOLOM. Dulu grid 2 kolom: dgn 5 akun selalu ada 1 baris yatim, dan
+       nama panjang seperti "KAS KECIL KANTOR 1" kepotong. */
     .cfr-acc-panel {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
+        display: block;
     }
-    .cfr-acc-all-row {
-        border-bottom: 1px solid #e2e8f0;
-        margin-bottom: 8px;
-        padding-bottom: 8px;
+    /* Kepala menu: judul kecil + pintasan "Select all" di kanannya. Toggle
+       "ALL ACCOUNTS"-nya sendiri DISEMBUNYIKAN (lihat .cfr-acc-allsw) tapi
+       tetap ada di DOM karena seluruh logika centang di JS bersandar padanya. */
+    .cfr-acc-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 4px 8px 8px;
+        border-bottom: 1px solid #eef2f7;
+        margin-bottom: 4px;
     }
+    .cfr-acc-head b {
+        font-size: 10.5px;
+        letter-spacing: .07em;
+        text-transform: uppercase;
+        color: #64748b;
+    }
+    .cfr-acc-link {
+        font-size: 11.5px;
+        font-weight: 700;
+        color: #2563eb;
+        cursor: pointer;
+        user-select: none;
+    }
+    .cfr-acc-link:hover { text-decoration: underline; }
+    .cfr-acc-allsw { display: none !important; }
+    /* Baris akun tidak lagi berbingkai sendiri - menunya sudah punya bingkai,
+       jadi kotak di dalam kotak terasa ramai. Penanda arah kursor cukup dgn
+       latar lembut saat disorot. */
     .cfr-acc-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 8px;
-        padding: 8px 10px;
+        gap: 12px;
+        padding: 7px 8px;
         font-size: 12.5px;
-        background: #fff;
-        border: 1px solid #e2e8f0;
+        background: transparent;
+        border: 0;
         border-radius: 8px;
-        transition: box-shadow .15s ease, border-color .15s ease;
+        cursor: pointer;
+        transition: background-color .15s ease;
     }
     .cfr-acc-row:hover {
-        border-color: #93c5fd;
-        box-shadow: 0 2px 6px rgba(37, 99, 235, .15);
+        background-color: #f6f9ff;
     }
     .cfr-acc-label {
         overflow: hidden;
@@ -247,11 +305,12 @@
         font-weight: 700;
     }
 
+    /* Toggle dikecilkan: dulu 38x21 terasa besar dibanding teksnya. */
     .toggle-switch {
         position: relative;
         display: inline-block;
-        width: 38px;
-        height: 21px;
+        width: 34px;
+        height: 19px;
         flex-shrink: 0;
     }
     .toggle-switch input {
@@ -265,22 +324,22 @@
         top: 0; left: 0; right: 0; bottom: 0;
         background-color: #cbd5e1;
         transition: background-color .2s ease;
-        border-radius: 21px;
+        border-radius: 19px;
     }
     .toggle-slider:before {
         position: absolute;
         content: "";
         height: 15px;
         width: 15px;
-        left: 3px;
-        bottom: 3px;
+        left: 2px;
+        bottom: 2px;
         background-color: #fff;
         transition: transform .2s ease;
         border-radius: 50%;
         box-shadow: 0 1px 3px rgba(0, 0, 0, .35);
     }
     .toggle-switch input:checked + .toggle-slider { background-color: #1E3A8A; }
-    .toggle-switch input:checked + .toggle-slider:before { transform: translateX(17px); }
+    .toggle-switch input:checked + .toggle-slider:before { transform: translateX(15px); }
     .toggle-switch input:focus + .toggle-slider { box-shadow: 0 0 0 3px rgba(30, 58, 138, .25); }
 </style>
 
@@ -357,12 +416,20 @@ if (empty($cfrSelectedAccounts)) {
                              lewat JS di bawah (lihat #cfrAccountDropdownMenu). -->
                         <div class="dropdown">
                             <button type="button" class="btn btn-outline-secondary btn-sm form-control text-start dropdown-toggle" id="cfrAccountDropdownBtn" data-toggle="dropdown" aria-expanded="false">
-                                All Accounts
+                                <span id="cfrAccLabel">All Accounts</span>
+                                <span id="cfrAccBadge">0</span>
                             </button>
                             <div class="dropdown-menu p-2" id="cfrAccountDropdownMenu">
-                                <div class="cfr-acc-row cfr-acc-all-row">
-                                    <span class="cfr-acc-label">ALL ACCOUNTS</span>
-                                    <label class="toggle-switch">
+                                <!-- Kepala menu. Toggle "ALL ACCOUNTS" lama tetap ada di DOM
+                                     (disembunyikan lewat .cfr-acc-allsw) karena seluruh logika
+                                     centang di JS bersandar padanya; yang terlihat pemakai
+                                     sekarang pintasan teks "Select all".
+                                     TIDAK ada "Clear all": aturan laporan ini minimal 1 akun
+                                     harus tetap menyala, jadi pintasan itu akan menyesatkan. -->
+                                <div class="cfr-acc-head">
+                                    <b>Select accounts</b>
+                                    <span class="cfr-acc-link" id="cfrAccSelectAll">Select all</span>
+                                    <label class="toggle-switch cfr-acc-allsw">
                                         <input type="checkbox" id="cfr-acc-all" checked>
                                         <span class="toggle-slider"></span>
                                     </label>
@@ -747,15 +814,34 @@ if (empty($cfrSelectedAccounts)) {
         var dropdownMenu = document.getElementById('cfrAccountDropdownMenu');
         if (!allCheckbox || !itemCheckboxes.length || !dropdownBtn || !dropdownMenu) return;
 
+        // Label & lencana ditulis ke ELEMEN MASING-MASING, bukan ke
+        // dropdownBtn.textContent seperti dulu - menulis textContent ke
+        // tombolnya akan menghapus kedua <span> itu sekaligus.
+        var labelEl = document.getElementById('cfrAccLabel');
+        var badgeEl = document.getElementById('cfrAccBadge');
+
         function updateSummary() {
             var checked = itemCheckboxes.filter(function (cb) { return cb.checked; });
+            var teks;
             if (checked.length === itemCheckboxes.length) {
-                dropdownBtn.textContent = 'All Accounts';
+                teks = 'All Accounts';
             } else if (checked.length === 1) {
-                dropdownBtn.textContent = checked[0].closest('.cfr-acc-row').querySelector('.cfr-acc-label').textContent;
+                teks = checked[0].closest('.cfr-acc-row').querySelector('.cfr-acc-label').textContent;
             } else {
-                dropdownBtn.textContent = checked.length + ' Accounts Selected';
+                teks = checked.length + ' of ' + itemCheckboxes.length + ' accounts';
             }
+            if (labelEl) { labelEl.textContent = teks; }
+            if (badgeEl) { badgeEl.textContent = checked.length; }
+        }
+
+        // Pintasan "Select all" - menyalakan semua akun sekaligus.
+        var linkSelectAll = document.getElementById('cfrAccSelectAll');
+        if (linkSelectAll) {
+            linkSelectAll.addEventListener('click', function () {
+                itemCheckboxes.forEach(function (cb) { cb.checked = true; });
+                updateAllCheckboxState();
+                updateSummary();
+            });
         }
 
         function updateAllCheckboxState() {
