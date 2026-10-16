@@ -27,6 +27,39 @@
         padding-left: 8px !important;
         padding-right: 8px !important;
     }
+    /* .ftl-card memakai overflow:hidden supaya sudut membulatnya rapi. Untuk
+       kartu TABEL itu memang yang diinginkan, tapi untuk kartu FILTER tidak:
+       menu dropdown "Account" terbuka DI BAWAH tombolnya, yaitu di LUAR
+       kartu, sehingga ikut terpotong habis - tombolnya jadi terlihat mati
+       padahal menunya terbuka tapi tidak kelihatan (dilaporkan pemakai
+       16 Okt 2026). Jadi kartu filter saja yang dibolehkan meluap, dan
+       diangkat di atas kartu tabel supaya menunya tidak tertimpa.
+       Halaman daftar lain tidak kena masalah ini karena dropdown-nya select2,
+       yang menempelkan menunya ke <body>, bukan di dalam kartu. */
+    #cfr-filter-card {
+        overflow: visible;
+        position: relative;
+        z-index: 20;
+    }
+    /* Tombol dropdown Account disamakan dgn kontrol lain di baris filter
+       (putih + garis tipis), bukan abu-abu penuh bawaan btn-outline-secondary
+       yang jadi gelap begitu di-hover/aktif. */
+    #cfrAccountDropdownBtn {
+        background-color: #fff;
+        color: #334155;
+        border: 1px solid #dbe4f3;
+        border-radius: 9px;
+        text-align: left;
+        font-size: 13px;
+    }
+    #cfrAccountDropdownBtn:hover,
+    #cfrAccountDropdownBtn:focus,
+    #cfrAccountDropdownBtn[aria-expanded="true"] {
+        background-color: #fff;
+        color: #334155;
+        border-color: #93b4f5;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, .18);
+    }
     #cfr-table {
         font-size: 11px;
         white-space: nowrap;
@@ -292,7 +325,9 @@ if (empty($cfrSelectedAccounts)) {
 
 <!-- MAIN -->
 <div class="container-fluid mt-4 p-4">
-    <div class="ftl-card">
+    <!-- id dipakai CSS di atas: kartu INI harus boleh meluap, lihat
+         catatan #cfr-filter-card. -->
+    <div class="ftl-card" id="cfr-filter-card">
         <!-- Kepala kartu: kotak ikon + judul + jejak menu - susunan yang sama
              dgn List Invoice Received. Pita gradien selebar kartu diganti
              kotak ikon supaya warnanya jadi aksen, bukan latar. -->
