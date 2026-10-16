@@ -62,7 +62,7 @@ while ($row = mysqli_fetch_assoc($sql)) {
                    . htmlspecialchars($statusRaw, ENT_QUOTES) . '</span>';
     $row['action'] = '<div class="ftl-act">'
         . '<button type="button" class="ftl-mini is-info btn-view-pengajuan" title="Show the request detail" data-no="' . htmlspecialchars($row['no_pengajuan'], ENT_QUOTES) . '"><i class="fa fa-eye" aria-hidden="true"></i> View</button>'
-        . '<a href="pdf_Req_update_bpb.php?no_pengajuan=' . urlencode($row['no_pengajuan']) . '" target="_blank" class="ftl-mini is-pdf" title="Open the printable PDF"><i class="fa fa-file-pdf-o" aria-hidden="true"></i> Pdf</a>';
+        . '<a href="pdf_update_bpb_fabric.php?no_pengajuan=' . urlencode($row['no_pengajuan']) . '" target="_blank" class="ftl-mini is-pdf" title="Open the printable PDF"><i class="fa fa-file-pdf-o" aria-hidden="true"></i> Pdf</a>';
 
     if ($statusRaw != 'Approved' && $statusRaw != 'Cancel') {
         $row['action'] .= '<button type="button" class="ftl-mini is-cancel btn-cancel-pengajuan" title="Cancel this request" data-no="' . htmlspecialchars($row['no_pengajuan'], ENT_QUOTES) . '"><i class="fa fa-trash" aria-hidden="true"></i> Cancel</button>';

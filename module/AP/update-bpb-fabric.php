@@ -81,7 +81,7 @@ $label = 'Fabric';
   <button type="button" class="app-btn app-btn-primary app-btn-sm" onclick="dataTableReload()">
         <i class="fa fa-search"></i> Search
       </button>
-    <button type="button" id="btnCreateNew" class="app-btn app-btn-success app-btn-sm" onclick="location.href='form_Req_update_bpb.php'">
+    <button type="button" id="btnCreateNew" class="app-btn app-btn-success app-btn-sm" onclick="location.href='form_update_bpb_fabric.php'">
         <i class="fa fa-plus-circle" aria-hidden="true"></i> Create New
     </button>
     <a id="btnExportExcel" target="_blank">
@@ -348,7 +348,7 @@ $('#table-data').on('click', '.btn-view-pengajuan', function () {
     $('#mymodal').modal('show');
 
     $.ajax({
-        url: 'get_detail_Req_update_bpb.php',
+        url: 'get_detail_update_bpb_fabric.php',
         type: 'GET',
         data: { no_pengajuan: noPengajuan },
         dataType: 'json',
@@ -450,7 +450,7 @@ $('#table-data').on('click', '.btn-cancel-pengajuan', function () {
         if (!result.isConfirmed) return;
 
         $.ajax({
-            url: 'cancel_Req_update_bpb.php',
+            url: 'cancel_update_bpb_fabric.php',
             type: 'POST',
             data: { no_pengajuan: noPengajuan },
             dataType: 'json',

@@ -815,7 +815,7 @@ $no_pengajuan = $prefix . str_pad($next_no, 5, '0', STR_PAD_LEFT);
 
               $.ajax({
                   type: 'POST',
-                  url: 'insert_Req_update_bpb.php',
+                  url: 'insert_update_bpb_fabric.php',
                   data: {
                       no_pengajuan: noPengajuan,
                       tgl_pengajuan: $('#tgl_pengajuan').val(),

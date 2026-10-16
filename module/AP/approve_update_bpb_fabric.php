@@ -172,7 +172,7 @@ let datatable = $("#table-data").DataTable({
     autoWidth: false,
 
     ajax: {
-        url: 'ajx_approve_Req_update_bpb.php',
+        url: 'ajx_approve_update_bpb_fabric.php',
         type: 'POST'
     },
 
@@ -254,7 +254,7 @@ function prosesApproveCancel(action) {
         if (!result.isConfirmed) return;
 
         $.ajax({
-            url: 'proses_approve_Req_update_bpb.php',
+            url: 'proses_approve_update_bpb_fabric.php',
             type: 'POST',
             data: { action: action, no_pengajuan: selected, approve_user: '<?php echo htmlspecialchars($user, ENT_QUOTES); ?>' },
             dataType: 'json',
@@ -305,7 +305,7 @@ $('#table-data').on('click', '.btn-view-pengajuan', function () {
     $('#mymodal').modal('show');
 
     $.ajax({
-        url: 'get_detail_Req_update_bpb.php',
+        url: 'get_detail_update_bpb_fabric.php',
         type: 'GET',
         data: { no_pengajuan: noPengajuan },
         dataType: 'json',
