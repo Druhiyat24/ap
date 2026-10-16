@@ -576,8 +576,23 @@
             $profit_center = isset($_POST['h_profit_center']) ? $_POST['h_profit_center']: null;
           }
 
+          // PENTING - GROUP BY no_coa, BUKAN GROUP BY id.
+          // Dua LEFT JOIN di bawah (NAG & NAK) sama-sama disambung ke
+          // b.no_coa. Kalau tiap sisi di-GROUP BY `id` (kunci baris
+          // tbl_list_journal), sisi itu mengembalikan SATU BARIS PER BARIS
+          // JURNAL - bukan per COA - sehingga satu COA dgn n baris NAG dan m
+          // baris NAK menghasilkan n x m baris dan tiap nilai terhitung
+          // berulang. Itulah yang dulu membuat "Penyesuaian Akumulasi
+          // Penyusutan Aset Tetap" menggelembung (dilaporkan pemakai
+          // 16 Okt 2026: 9.874.474.595,70 padahal seharusnya
+          // 2.019.361.052,20 - hampir 5 kali lipat). Diukur di basis data
+          // lokal utk Jan-Mei 2026: 9 COA -> 42 baris sesudah join NAG ->
+          // 122 baris sesudah join NAK.
+          // Dgn GROUP BY no_coa tiap sisi paling banyak 1 baris per COA, jadi
+          // tidak ada penggandaan - bentuk yang sama dipakai versi Monthly
+          // (fsGetCashflowIndirectSingle) dan hasilnya cocok dgn FS1.
           $sql = mysqli_query($conn2,"select id_indirect, total_nag, total_nak, (total_nag + total_nak) total_all from(select id_indirect,ind_name, ((sum(COALESCE(a.debit_idr,0))-sum(COALESCE(a.credit_idr,0))) * -1) total_nag, ((sum(COALESCE(d.debit_idr,0))-sum(COALESCE(d.credit_idr,0))) * -1) total_nak from (select no_coa,id_indirect from mastercoa_v2) b inner join 
-                    (select id,ind_name from tbl_master_cashflow) c on c.id = b.id_indirect LEFT JOIN (select no_coa coa_no, sum(ROUND(debit * rate,2)) debit_idr,sum(ROUND(credit * rate,2)) credit_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') and profit_center = 'NAG' group by id) a on b.no_coa = a.coa_no LEFT JOIN (select no_coa coa_no, sum(ROUND(debit * rate,2)) debit_idr,sum(ROUND(credit * rate,2)) credit_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') and profit_center = 'NAK' group by id) d on b.no_coa = d.coa_no GROUP BY b.id_indirect) a where a.id_indirect = '19'");
+                    (select id,ind_name from tbl_master_cashflow) c on c.id = b.id_indirect LEFT JOIN (select no_coa coa_no, sum(ROUND(debit * rate,2)) debit_idr,sum(ROUND(credit * rate,2)) credit_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') and profit_center = 'NAG' group by no_coa) a on b.no_coa = a.coa_no LEFT JOIN (select no_coa coa_no, sum(ROUND(debit * rate,2)) debit_idr,sum(ROUND(credit * rate,2)) credit_idr from tbl_list_journal where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') and profit_center = 'NAK' group by no_coa) d on b.no_coa = d.coa_no GROUP BY b.id_indirect) a where a.id_indirect = '19'");
           $row = mysqli_fetch_array($sql);
           $penyusutan_aset_tetap_nag = $row['total_nag'] ?? 0;
           $penyusutan_aset_tetap_nak = $row['total_nak'] ?? 0;
