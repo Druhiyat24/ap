@@ -236,8 +236,15 @@
        (lihat .bootstrap-select > .dropdown-menu di app-skin-form.css). */
     #cfrAccountDropdownMenu {
         width: 100%;
-        min-width: 100%;
-        max-width: 100%;
+        /* LANTAI lebar, bukan 100% mentah. Kolomnya sekarang col-md-2, dan di
+           layar ~1366px itu cuma sekitar 200px - nama seperti "KAS KECIL
+           KANTOR 1" akan kena ellipsis padahal laporan ini justru perlu nama
+           akunnya terbaca utuh. Dgn lantai 230px, di layar lebar menunya tetap
+           mengikuti lebar tombol (karena tombolnya lebih lebar dari itu), dan
+           di layar sempit menunya sedikit melebihi tombol - jauh lebih baik
+           daripada nama terpotong. Tetap jauh dari min-width 320px yang dulu
+           bikin menunya meluber ke kolom sebelah. */
+        min-width: 230px;
         max-height: 280px;
         overflow-y: auto;
         border: 1px solid #e6ebf3;
@@ -408,7 +415,7 @@ if (empty($cfrSelectedAccounts)) {
                         <label for="end_date" class="form-label"><b>To</b></label>
                         <input type="text" class="form-control form-control-sm tanggal" id="end_date" name="end_date" value="<?= date('d-m-Y', strtotime($end_date)); ?>" placeholder="End Date" autocomplete="off">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label"><b>Account</b></label>
                         <!-- Filter kolom "REALISATION BY BANK" - dropdown berisi kartu toggle
                              switch (gaya sama seperti "Manage Role" di userrole.php), bukan
@@ -455,7 +462,7 @@ if (empty($cfrSelectedAccounts)) {
                          kirinya; kosakata tombolnya .app-btn - sama dgn
                          halaman daftar lain. id tombol TIDAK diubah karena
                          dipakai JS di bawah (#submit & #btnExportExcel). -->
-                    <div class="col-md-5 ftl-actions">
+                    <div class="col-md-6 ftl-actions">
                         <button type="submit" id="submit" class="app-btn app-btn-primary app-btn-sm">
                             <i class="fa fa-search" aria-hidden="true"></i> Search
                         </button>
