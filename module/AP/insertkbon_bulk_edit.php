@@ -168,6 +168,21 @@ if (!$okOld) {
 // ---- 4) INSERT REVISI: potongan + header journals + kontrabon_h -------------
 $ttl_kbon = (($sub_h + $lr_kurs1 + $s_qty1 + $s_harga1 + $materai1 + $ekspedisi1 + $moq1) - $pot_beli1) + $tax_h - $jml_return;
 
+/* ---------------------------------------------------------------------------
+   jml_potong DIHITUNG ULANG DI SINI, tidak memakai kiriman form.
+   Form mengisinya lewat penangan keyup; kalau angkanya masuk tanpa keyup
+   (di-paste, lewat panah spinner <input type=number>, atau tombol tidak
+   dilepas sebelum submit) kiriman itu tetap 0 padahal komponennya terisi -
+   dan PDF Payment Voucher lalu menulis "Adjustment ( - 0.00 )" sehingga
+   potongannya tidak kelihatan sama sekali di voucher.
+   Contoh nyata: PV-AP/REG/NAG/2026/10/02566 (moq 155,00, jml_potong 0,00).
+   Rumusnya SAMA PERSIS dgn yang dipakai form, dan sama dgn susunan $ttl_kbon.
+   Ini TIDAK mengubah uang: utang yang dibukukan ($ttl_kbon) dan seluruh jurnal
+   memang dihitung dari KOMPONENNYA, bukan dari jml_potong.
+   --------------------------------------------------------------------------- */
+$jml_potong1 = round(
+    (float) $lr_kurs1 + (float) $s_qty1 + (float) $s_harga1 + (float) $materai1
+    - (float) $pot_beli1 + (float) $ekspedisi1 + (float) $moq1, 2);
 $queryss = "INSERT INTO potongan (no_kbon, tgl_kbon, nama_supp, jml_return, lr_kurs, s_qty, s_harga, materai, pot_beli, ekspedisi, moq, jml_potong, potongan_ppn, potongan_pph, status)
     VALUES
     ('" . $ke . "','" . $e($tgl_kbon_h) . "', '" . $e($nama_supp_h) . "', '$jml_return', '$lr_kurs1', '$s_qty1', '$s_harga1', '$materai1', '$pot_beli1', '$ekspedisi1', '$moq1', '$jml_potong1', '$potongan_ppn', '$potongan_pph', '$status')";
