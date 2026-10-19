@@ -10,7 +10,7 @@ $no_pv = $_GET['no_pv'] ?? '';
 
 $rs = mysqli_fetch_array(mysqli_query($conn2, "select * from tbl_pv_h where no_pv = '$no_pv'")) ?: [];
 
-$sqlys = " select a.no_pv,concat(b.no_coa,' - ',b.nama_coa) as nama_coa,if(d.cc_name is null,'-',concat(d.no_cc, ' - ',d.cc_name)) cc_name, if(a.reff_doc = '','-',a.reff_doc) as reff_doc,a.reff_date,if(a.deskripsi = '','-',a.deskripsi) as deskripsi,a.amount,a.ded_add,a.due_date, (a.amount * (a.pph/100)) as pph, coalesce(pc.nama_pc,'-') profit_center from tbl_pv a left join mastercoa_v2 b on b.no_coa = a.coa left join b_master_cc d on d.no_cc = a.no_cc left join master_pc pc on pc.kode_pc = a.profit_center where no_pv = '$no_pv' and amount != '0' OR no_pv = '$no_pv' and ded_add != '0' order by a.reff_doc asc";
+$sqlys = " select a.no_pv,concat(b.no_coa,' - ',b.nama_coa) as nama_coa,if(d.cc_name is null,'-',concat(d.no_cc, ' - ',d.cc_name)) cc_name, if(a.reff_doc = '','-',a.reff_doc) as reff_doc,a.reff_date,if(a.deskripsi = '','-',a.deskripsi) as deskripsi,if(coalesce(a.faktur_pajak,'') = '','-',a.faktur_pajak) as faktur_pajak,a.amount,a.ded_add,a.due_date, (a.amount * (a.pph/100)) as pph, coalesce(pc.nama_pc,'-') profit_center from tbl_pv a left join mastercoa_v2 b on b.no_coa = a.coa left join b_master_cc d on d.no_cc = a.no_cc left join master_pc pc on pc.kode_pc = a.profit_center where no_pv = '$no_pv' and amount != '0' OR no_pv = '$no_pv' and ded_add != '0' order by a.reff_doc asc";
 
 $sqlas = "select curr from tbl_pv_h where no_pv = '$no_pv'";
 ?>
@@ -26,17 +26,29 @@ $sqlas = "select curr from tbl_pv_h where no_pv = '$no_pv'";
 
 
 
-    @page * {
+    /* CATATAN: dulu ditulis "@page *" - mPDF TIDAK mengenal selektor itu, jadi
+       seluruh aturan ini DIABAIKAN dan yang berlaku margin bawaan mPDF 1,5cm.
+       Sekarang ditulis "@page" supaya benar-benar dipakai, dan margin kiri/kanan
+       dikecilkan jadi 0,7cm (permintaan pemakai) supaya tabel DETAIL yang kini
+       berisi 11 kolom punya ruang: lebar pakai 18,0cm -> 19,6cm. Jangan
+       dikecilkan lagi: kebanyakan printer laser punya tepi tak-tercetak 4-6mm,
+       jadi di bawah 0,7cm isinya berisiko terpotong saat dicetak. */
+    @page {
       margin-top: 1.54cm;
       margin-bottom: 1.54cm;
-      margin-left: 3.175cm;
-      margin-right: 3.175cm;
+      margin-left: 0.7cm;
+      margin-right: 0.7cm;
     }
 
     table   { margin: auto; border-collapse: collapse; width: 100%; }
     td, th  { padding: 3px 2px; text-align: left; }
     h1      { text-align: center; }
     th      { text-align: center; padding: 10px; }
+    /* Tabel DETAIL punya 11 kolom; padding th 10px di atas memakan ~5mm per
+       kolom (total ~5,8cm) sehingga judul kolom terpaksa membelit. Dikecilkan
+       KHUSUS tabel ini saja supaya tabel lain tidak ikut berubah. */
+    .tbl-detail th { padding: 4px 2px; }
+    .tbl-detail td { padding: 3px 2px; }
 
     .footer        { width: 100%; height: 30px; margin-top: 50px; text-align: right; }
     .header        { width: 100%; height: 20px; padding-top: 0; margin-bottom: 10px; }
@@ -626,19 +638,20 @@ $data1=mysqli_fetch_array($query1);
 $curr1 = $data1['curr'];
 ?>
 
-<table  border="1" cellspacing="0" style="width:100%;font-size:10px;border-spacing:2px;">
+<table class="tbl-detail" border="1" cellspacing="0" style="width:100%;font-size:9px;border-spacing:2px;">
   <tr>
 
-      <th style="width: 15%;border: 1px solid black;text-align:center;">COA</th>
-      <th style="width: 10%;border: 1px solid black;text-align:center;">Profit Center</th>
-      <th style="width: 11%;border: 1px solid black;text-align:center;">Cost Center</th>
-      <th style="width: 12%;border: 1px solid black;text-align:center;">Reff Doc</th>
-      <th style="width: 8%;border: 1px solid black;text-align:center;">Reff Date</th>
-      <th style="width: 19%;border: 1px solid black;text-align:center;">Description</th>
-      <th style="width: 8%;border: 1px solid black;text-align:center;">Due Date</th>
+      <th style="width: 8.1%;border: 1px solid black;text-align:center;">COA</th>
+      <th style="width: 6.6%;border: 1px solid black;text-align:center;">Profit Center</th>
+      <th style="width: 8.9%;border: 1px solid black;text-align:center;">Cost Center</th>
+      <th style="width: 14.1%;border: 1px solid black;text-align:center;">Reff Doc</th>
+      <th style="width: 7.9%;border: 1px solid black;text-align:center;">Reff Date</th>
+      <th style="width: 12.7%;border: 1px solid black;text-align:center;">Faktur Pajak</th>
+      <th style="width: 8.4%;border: 1px solid black;text-align:center;">Description</th>
+      <th style="width: 7.7%;border: 1px solid black;text-align:center;">Due Date</th>
       <th style="width: 9%;border: 1px solid black;text-align:center;">Amount (<?php echo $curr1 ?>)</th>
-      <th style="width: 9%;border: 1px solid black;text-align:center;">Deduction (<?php echo $curr1 ?>)</th>
-      <th style="width: 9%;border: 1px solid black;text-align:center;">PPH (<?php echo $curr1 ?>)</th>
+      <th style="width: 8.3%;border: 1px solid black;text-align:center;">Deduction (<?php echo $curr1 ?>)</th>
+      <th style="width: 8.3%;border: 1px solid black;text-align:center;">PPH (<?php echo $curr1 ?>)</th>
   </tr>
   <tbody >
     <?php
@@ -664,13 +677,14 @@ $curr1 = $data1['curr'];
     $reff_date = date("d-M-Y",strtotime($data['reff_date'])); 
 } 
 echo '<tr>
-<td style="text-align: center" value="'.$data['nama_coa'].'">'.$data['nama_coa'].'</td>
-<td style="text-align: center" value="'.$data['profit_center'].'">'.$data['profit_center'].'</td>
-<td style="text-align: center" value="'.$data['cc_name'].'">'.$data['cc_name'].'</td>
-<td style="text-align: center" value="'.$data['reff_doc'].'">'.$data['reff_doc'].'</td> 
-<td style="text-align: center" value="'.$reff_date.'">'.$reff_date.'</td>                                                                      
-<td style="text-align: center" value="'.$data['deskripsi'].'">'.$data['deskripsi'].'</td>                            
-<td style="text-align: center" value="'.$due_date.'">'.$due_date.'</td>
+<td style="text-align: left" value="'.$data['nama_coa'].'">'.$data['nama_coa'].'</td>
+<td style="text-align: left" value="'.$data['profit_center'].'">'.$data['profit_center'].'</td>
+<td style="text-align: left" value="'.$data['cc_name'].'">'.$data['cc_name'].'</td>
+<td style="text-align: left" value="'.$data['reff_doc'].'">'.$data['reff_doc'].'</td> 
+<td style="text-align: left" value="'.$reff_date.'">'.$reff_date.'</td>
+<td style="text-align: left" value="'.$data['faktur_pajak'].'">'.$data['faktur_pajak'].'</td>
+<td style="text-align: left" value="'.$data['deskripsi'].'">'.$data['deskripsi'].'</td>                            
+<td style="text-align: left" value="'.$due_date.'">'.$due_date.'</td>
 <td style="text-align: right" value="'.$data['amount'].'">'.number_format($data['amount'],2).'</td>
 <td style="text-align: right" value="'.$data['ded_add'].'">- '.number_format($data['ded_add'],2).'</td>                            
 <td style="text-align: right" value="'.$data['pph'].'">- '.number_format($data['pph'],2).'</td>
@@ -678,7 +692,7 @@ echo '<tr>
 };	
 ?>
 <tr>
-  <td colspan="7" style="width:70%;border: 1px solid black;text-align:center;font-size:10px"><b>Total</b></td>
+  <td colspan="8" style="width:74.5%;border: 1px solid black;text-align:center;font-size:9px"><b>Total</b></td>
   <td style="width:10%;text-align:right;"><?php echo number_format($sum_amount,2) ?></td> 
   <td style="width:10%;text-align:right;"><?php echo '- '.number_format($sum_ded,2) ?></td>
   <td style="width:10%;text-align:right;"><?php echo '- '.number_format($sum_pph, 2) ?></td>
