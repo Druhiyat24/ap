@@ -196,7 +196,28 @@ try {
             ('$doc_num', '$pv_number', '$pv_date', '$pv_duedate', '$pv_sub', '$pv_ppn', '$pv_pph', '$pv_total', '$pv_curr', '$amountPv', '$rate', '$amountPv', '$pv_pc', 'Biaya')
             ");
 
-        q($conn2,"insert into tbl_list_journal (id, no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center, supplier) select '' id, '$doc_num' no_journal, '$doc_date' tgl_journal, type_journal, coa, nama_coa, no_cc, COALESCE(cc_name,'-') cc_name, no_pv no_reff, pv_date reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, a.curr, IF(rate is null,1,rate) rate, debit, credit, round(debit * IF(rate is null,1,rate),4) debit_idr, round(credit * IF(rate is null,1,rate),4) credit_idr, 'Draft' status, deskripsi, '$user' create_by, CURRENT_TIMESTAMP() create_date, '' approve_by, '' approve_date, '' cancel_by, '' cancel_date, CURRENT_TIMESTAMP() created_at, CURRENT_TIMESTAMP() updated_at, profit_center, '$supp' supplier from
+        /* ------------------------------------------------------------------
+           NOMOR FAKTUR UNTUK SUPPLIER "TO ACCOUNT MANUAL".
+           Supplier ber-flag mastersupplier.to_account_manual = 1 (mis. KANTOR
+           PAJAK, KPPBC, Bea Cukai) MEMANG tidak punya nomor faktur pajak di PV -
+           penanda dokumennya ada di kolom "To Account" (tbl_pv_h.to_akun),
+           mis. kode billing pajak. Untuk supplier itu to_akun dipakai sebagai
+           faktur di jurnal BK (permintaan pemakai 19 Okt 2026), supaya barisnya
+           bisa ditelusuri - termasuk di laporan PPN Masukan yang berkunci faktur.
+           Daftar suppliernya TIDAK di-hardcode: dibaca dari flag lewat
+           isToccManualSupplier(), jadi menambah supplier cukup UPDATE master.
+           Hanya mengisi yang MASIH KOSONG - faktur asli tidak pernah ditimpa.
+           ------------------------------------------------------------------ */
+        require_once __DIR__ . '/../tocc_manual_suppliers.php';
+        $fakturManual = '';
+        if (isToccManualSupplier(array($conn1, $conn2), $row_pv['nama_supp'] ?? '')) {
+            $qTo = mysqli_query($conn2, "select to_akun from tbl_pv_h where no_pv = '$pv_number' limit 1");
+            if ($qTo && ($rTo = mysqli_fetch_assoc($qTo))) {
+                $fakturManual = mysqli_real_escape_string($conn2, trim((string) $rTo['to_akun']));
+            }
+        }
+
+        q($conn2,"insert into tbl_list_journal (id, no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, faktur_pajak, tgl_faktur_pajak, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center, supplier) select '' id, '$doc_num' no_journal, '$doc_date' tgl_journal, type_journal, coa, nama_coa, no_cc, COALESCE(cc_name,'-') cc_name, no_pv no_reff, pv_date reff_date, IF('$fakturManual' <> '' AND COALESCE(faktur_pajak,'') = '', '$fakturManual', faktur_pajak) faktur_pajak, tgl_faktur_pajak, buyer, no_ws, a.curr, IF(rate is null,1,rate) rate, debit, credit, round(debit * IF(rate is null,1,rate),4) debit_idr, round(credit * IF(rate is null,1,rate),4) credit_idr, 'Draft' status, deskripsi, '$user' create_by, CURRENT_TIMESTAMP() create_date, '' approve_by, '' approve_date, '' cancel_by, '' cancel_date, CURRENT_TIMESTAMP() created_at, CURRENT_TIMESTAMP() updated_at, profit_center, '$supp' supplier from
             (select a.id, 'Payment Voucher' type_journal, d.no_coa coa, d.nama_coa, a.no_cc, b.cc_name,h.no_pv, h.pv_date, a.faktur_pajak, a.tgl_faktur_pajak, '-' buyer, '-' no_ws, h.curr, amount debit, ded_add credit, a.deskripsi, a.profit_center from tbl_pv a INNER JOIN tbl_pv_h h on h.no_pv = a.no_pv left join b_master_cc b on b.no_cc = a.no_cc INNER JOIN mastercoa_v2 d on d.no_coa = a.coa where a.no_pv = '$pv_number' and a.profit_center = '$pv_pc'
             UNION
             select a.id, 'Payment Voucher' type_journal, d.no_coa, d.nama_coa, a.no_cc, b.cc_name,h.no_pv, h.pv_date, a.faktur_pajak, a.tgl_faktur_pajak, '-' buyer, '-' no_ws, h.curr, (ded_add * a.pph/100) debit, (amount * a.pph/100) credit, a.deskripsi, a.profit_center from tbl_pv a INNER JOIN tbl_pv_h h on h.no_pv = a.no_pv left join b_master_cc b on b.no_cc = a.no_cc INNER JOIN mtax d on d.idtax = a.id_pph where a.no_pv = '$pv_number' and a.profit_center = '$pv_pc'

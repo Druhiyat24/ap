@@ -14,8 +14,12 @@
 //      (insertkbon_core.php) + edit-all -> header journals + per-BPB + per-RO +
 //      kontrabon/return_kb/potongan rows + faktur ke bpb_new/bppb_new.
 //
-// Karena formula jurnal identik create, jurnal revisi (no_journal = <rev>) PASTI
-// balance: Sum(debit_idr) = Sum(credit_idr) untuk type LIKE 'AP - Kontrabon%'.
+// CATATAN: klaim lama "karena formula identik create, jurnal revisi PASTI
+// balance" TERNYATA TIDAK BENAR - blok FTR (CBD/DP) sempat disarangkan di
+// dalam blok BPB, padahal form mengirim baris FTR sebagai item sendiri tanpa
+// no_bpb, jadi credit uang muka-nya hilang (lihat blok FTR di bawah).
+// Sekarang keseimbangan TIDAK diandaikan lagi tapi DIPERIKSA sebelum commit
+// (langkah 5c): kalau debit != credit, simpan dibatalkan seluruhnya.
 //
 // Payload (POST):
 //   edit_no_kbon = string  (nomor PV lama)
@@ -399,28 +403,53 @@ foreach ($items as $idx => $it) {
         }
     }
 
+    // ---------------- FTR (CBD/DP) ----------------
+    // SENGAJA di tingkat atas, DI LUAR blok BPB - sama seperti jalur create
+    // (insertkbon_core.php). Form edit mengirim SETIAP checkbox tercentang
+    // sebagai item TERSENDIRI, dan baris FTR (tabel #mytable2) TIDAK punya
+    // no_bpb. Dulu blok ini bersarang di dalam "if ($no_bpb !== '' ...)" sehingga
+    // item FTR dilewati SELURUHNYA: kontrabon_ftr tidak tersimpan DAN baris
+    // jurnal credit uang muka tidak pernah dibuat - padahal header sudah
+    // membawa dp_h, jadi debit DP ke COA Utang Usaha menggantung tanpa
+    // pasangan. Akibatnya Utang Usaha tampak DOBEL (sekali credit kotor,
+    // sekali debit DP) dan jurnalnya tidak balance sebesar DP itu.
+    // Dilaporkan lewat PV-AP/REG/NAG/2026/10/02590-REV_01: dp_value
+    // 1.485.000 di kontrabon_h tapi NOL baris kontrabon_ftr.
+    if ($no_ftr !== '') {
+        $qftr = "INSERT INTO kontrabon_ftr (no_kbon, tgl_kbon, nama_supp, no_ftr, no_po, tgl_po,no_pi, curr, total_ftr, no_pv, no_bankout, tgl_bankout, no_coa, status, created_by, created_date)
+            VALUES
+            ('" . $ke . "', '" . $e($tgl_kbon) . "', '" . $e($nama_supp) . "', '" . $e($no_ftr) . "', '" . $e($no_po_ftr) . "', '" . $e($tgl_po_ftr) . "', '" . $e($no_pi_ftr) . "', '" . $e($curr_ftr) . "', '$ttl_ftr', '" . $e($pv_ftr) . "', '" . $e($bankout_ftr) . "', '" . $e($bankoutdate_ftr) . "', '" . $e($coa_ftr) . "', '$status', '" . $e($create_user) . "', '" . $e($create_date) . "')";
+        // Dulu @mysqli_query: gagalnya tidak terlihat sama sekali.
+        if (mysqli_query($conn2, $qftr) === false) {
+            mysqli_rollback($conn2);
+            pv_edit_out(['ok' => false, 'msg' => 'Gagal menyimpan potongan uang muka (CBD/DP) '
+                . $no_ftr . '. Tidak ada yang tersimpan.']);
+            exit;
+        }
+        $sqlcoa_ftr = mysqli_query($conn1, "SELECT no_coa, nama_coa from mastercoa_v2 where no_coa = '" . mysqli_real_escape_string($conn1, $coa_ftr) . "' Limit 1");
+        $rowcoa_ftr = $sqlcoa_ftr ? mysqli_fetch_array($sqlcoa_ftr) : null;
+        // COA uang muka tidak ketemu -> baris credit-nya TIDAK akan dibuat,
+        // sementara debit DP ke COA Utang Usaha tetap ditulis. Lebih baik
+        // simpan GAGAL dan user tahu, daripada jurnal tersimpan pincang.
+        if (!$rowcoa_ftr) {
+            mysqli_rollback($conn2);
+            pv_edit_out(['ok' => false, 'msg' => 'COA uang muka (CBD/DP) ' . $coa_ftr
+                . ' untuk FTR ' . $no_ftr . ' tidak ditemukan di master COA. Tidak ada'
+                . ' yang tersimpan - hubungi IT untuk melengkapi master COA-nya.']);
+            exit;
+        }
+        $rate_ftr = 1;
+        if ($curr_ftr != 'IDR') {
+            $sqlftr = mysqli_query($conn1, "select ROUND(rate,2) as rate , tanggal FROM masterrate where tanggal = '" . $e($bankoutdate_ftr) . "' and v_codecurr = 'PAJAK' and curr = '" . mysqli_real_escape_string($conn1, $curr_ftr) . "'");
+            $rowftr = $sqlftr ? mysqli_fetch_array($sqlftr) : null;
+            $rate_ftr = isset($rowftr['rate']) ? $rowftr['rate'] : 1;
+        }
+        $ttl_ftr_idr = $ttl_ftr * $rate_ftr;
+        pvj($conn2, $kode, $create_date, $rowcoa_ftr['no_coa'], $rowcoa_ftr['nama_coa'], '-', '-', $no_ftr, '', $curr_ftr, $rate_ftr, '0', $ttl_ftr, '0', $ttl_ftr_idr, $keter_it, $create_user, $profit_center);
+    }
+
     // ---------------- BPB block ----------------
     if ($no_bpb !== '' && $no_ro === '') {
-
-        // kontrabon_ftr (CBD/DP) bila baris membawa FTR.
-        if ($no_ftr !== '') {
-            $qftr = "INSERT INTO kontrabon_ftr (no_kbon, tgl_kbon, nama_supp, no_ftr, no_po, tgl_po,no_pi, curr, total_ftr, no_pv, no_bankout, tgl_bankout, no_coa, status, created_by, created_date)
-                VALUES
-                ('" . $ke . "', '" . $e($tgl_kbon) . "', '" . $e($nama_supp) . "', '" . $e($no_ftr) . "', '" . $e($no_po_ftr) . "', '" . $e($tgl_po_ftr) . "', '" . $e($no_pi_ftr) . "', '" . $e($curr_ftr) . "', '$ttl_ftr', '" . $e($pv_ftr) . "', '" . $e($bankout_ftr) . "', '" . $e($bankoutdate_ftr) . "', '" . $e($coa_ftr) . "', '$status', '" . $e($create_user) . "', '" . $e($create_date) . "')";
-            @mysqli_query($conn2, $qftr);
-            $sqlcoa_ftr = mysqli_query($conn1, "SELECT no_coa, nama_coa from mastercoa_v2 where no_coa = '" . mysqli_real_escape_string($conn1, $coa_ftr) . "' Limit 1");
-            $rowcoa_ftr = $sqlcoa_ftr ? mysqli_fetch_array($sqlcoa_ftr) : null;
-            if ($rowcoa_ftr) {
-                $rate_ftr = 1;
-                if ($curr_ftr != 'IDR') {
-                    $sqlftr = mysqli_query($conn1, "select ROUND(rate,2) as rate , tanggal FROM masterrate where tanggal = '" . $e($bankoutdate_ftr) . "' and v_codecurr = 'PAJAK' and curr = '" . mysqli_real_escape_string($conn1, $curr_ftr) . "'");
-                    $rowftr = $sqlftr ? mysqli_fetch_array($sqlftr) : null;
-                    $rate_ftr = isset($rowftr['rate']) ? $rowftr['rate'] : 1;
-                }
-                $ttl_ftr_idr = $ttl_ftr * $rate_ftr;
-                pvj($conn2, $kode, $create_date, $rowcoa_ftr['no_coa'], $rowcoa_ftr['nama_coa'], '-', '-', $no_ftr, '', $curr_ftr, $rate_ftr, '0', $ttl_ftr, '0', $ttl_ftr_idr, $keter_it, $create_user, $profit_center);
-            }
-        }
 
         // kontrabon row
         $qk = "INSERT INTO kontrabon (no_kbon, tgl_kbon, id_jurnal, nama_supp, no_faktur, no_bpb, no_po, tgl_bpb,tgl_po, supp_inv, tgl_inv, tgl_tempo, subtotal, tax, idtax, pph_code, pph_value, total, dp_value, curr, ceklist, post_date, update_date, status, status_int, create_user, create_date, start_date, end_date)
@@ -529,6 +558,32 @@ if (!empty($failed)) {
 if (!pv_group_ppn_billed_by_faktur($conn2, $kode)) {
     mysqli_rollback($conn2);
     pv_edit_out(['ok' => false, 'msg' => 'Gagal mengelompokkan PPN Masukan per faktur. Tidak ada yang tersimpan.']);
+    exit;
+}
+
+// ---- 5c) PENJAGA SALDO: debit HARUS sama dengan credit ---------------------
+// Jurnal pincang pernah lolos tersimpan: debit DP ke COA Utang Usaha tanpa
+// pasangan credit uang muka, sehingga Utang Usaha tampak dobel
+// (PV-AP/REG/NAG/2026/10/02590-REV_01). Penyebab itu sudah dibetulkan di atas,
+// tapi penjaga ini menutup SEMUA penyebab lain sekaligus: lebih baik simpan
+// GAGAL dan user tahu, daripada jurnal tersimpan tidak balance lalu merusak
+// Trial Balance / AP Report tanpa ada yang menyadarinya.
+// Ambang 1.00 rupiah diukur dari produksi (19 Okt 2026): dari 2.795 jurnal PV
+// tahun 2026, residu pembulatan terbesar yang wajar hanya 0.09 rupiah.
+$qbal = mysqli_query($conn2, "SELECT ROUND(SUM(debit_idr) - SUM(credit_idr), 2) selisih
+    FROM tbl_list_journal WHERE no_journal = '" . $ke . "' AND type_journal = 'AP - Kontrabon'");
+if ($qbal === false) {
+    mysqli_rollback($conn2);
+    pv_edit_out(['ok' => false, 'msg' => 'Gagal memeriksa keseimbangan jurnal revisi.'
+        . ' Tidak ada yang tersimpan.']);
+    exit;
+}
+$rbal = mysqli_fetch_assoc($qbal);
+$selisih_jurnal = (float) ($rbal['selisih'] ?? 0);
+if (abs($selisih_jurnal) > 1.00) {
+    mysqli_rollback($conn2);
+    pv_edit_out(['ok' => false, 'msg' => 'Jurnal revisi TIDAK balance: debit - credit = '
+        . number_format($selisih_jurnal, 2) . '. Tidak ada yang tersimpan - hubungi IT.']);
     exit;
 }
 
