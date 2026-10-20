@@ -30,15 +30,19 @@ ob_start();
 
 
 
-@page *{
+/* CATATAN: dulu "@page *" - mPDF TIDAK mengenal selektor berbintang itu,
+   jadi seluruh aturan margin ini DIABAIKAN dan yang berlaku margin bawaan
+   mPDF 1,5cm. Sekarang "@page" supaya dipakai, margin kiri/kanan 0,7cm
+   biar tabel detail punya ruang (lebar pakai 18,0cm -> 19,6cm). */
+@page{
 
     margin-top: 1.54cm;
 
     margin-bottom: 1.54cm;
 
-    margin-left: 3.175cm;
+    margin-left: 0.7cm;
 
-    margin-right: 3.175cm;
+    margin-right: 0.7cm;
 
 }
 
@@ -253,13 +257,13 @@ table {
 
 <table  border="1" cellspacing="0" style="width:100%;font-size:12px;border-spacing:2px;">
   <tr>
-      <th style="width:30%;border: 1px solid black;text-align:center;">No.PO</th>
-      <th style="width:20%;border: 1px solid black;text-align:center;">No.PI</th>
-      <th style="width:20%;border: 1px solid black;text-align:center;">Tanggal PO</th>
-      <th style="width:30%;border: 1px solid black;text-align:center;">Total PO</th>      
-	  <th style="width:10%;border: 1px solid black;text-align:center;">DP (%)</th>
-      <th style="width:30%;border: 1px solid black;text-align:center;">DP Amount</th>
-      <th style="width:30%;border: 1px solid black;text-align:center;">Balance</th>
+      <th style="width:16%;border: 1px solid black;text-align:center;">No.PO</th>
+      <th style="width:18%;border: 1px solid black;text-align:center;">No.PI</th>
+      <th style="width:11%;border: 1px solid black;text-align:center;">Tanggal PO</th>
+      <th style="width:16%;border: 1px solid black;text-align:center;">Total PO</th>      
+	  <th style="width:7%;border: 1px solid black;text-align:center;">DP (%)</th>
+      <th style="width:16%;border: 1px solid black;text-align:center;">DP Amount</th>
+      <th style="width:16%;border: 1px solid black;text-align:center;">Balance</th>
 
 <!--      <th style="width:15%;border: 1px solid black;text-align:center;display: none;">Jatuh Tempo</th>
       <th style="width:15%;border: 1px solid black;text-align:center;display: none;">No Invoice</th>	  
@@ -278,13 +282,13 @@ while($data=mysqli_fetch_array($query)){
 	$balance = $data['balance'];
 	$total = $data['total'];
    echo '<tr>
-      <td style="width:30%;text-align:center;">'.$no_po.'</td>
-      <td style="width:20%;text-align:center;">'.$no_pi.'</td>
-	  <td style="width:20%;text-align:center;">'.date("d M Y",strtotime($tgl_po)).'</td>
-	  <td style="width:30%;text-align:center;border-left:none">'.$curr.' '.number_format($total, 2).'</td>
-	  <td style="width:10%;text-align:center;border-left:none">'.number_format($dp_code, 2).'</td>
-	  <td style="width:30%;text-align:center;border-left:none">'.$curr.' '.number_format($dp_value, 2).'</td>
-	  <td style="width:30%;text-align:center;border-left:none">'.$curr.' '.number_format($balance, 2).'</td>		  		  	  
+      <td style="width:16%;text-align:center;">'.$no_po.'</td>
+      <td style="width:18%;text-align:center;">'.$no_pi.'</td>
+	  <td style="width:11%;text-align:center;">'.date("d M Y",strtotime($tgl_po)).'</td>
+	  <td style="width:16%;text-align:center;border-left:none">'.$curr.' '.number_format($total, 2).'</td>
+	  <td style="width:7%;text-align:center;border-left:none">'.number_format($dp_code, 2).'</td>
+	  <td style="width:16%;text-align:center;border-left:none">'.$curr.' '.number_format($dp_value, 2).'</td>
+	  <td style="width:16%;text-align:center;border-left:none">'.$curr.' '.number_format($balance, 2).'</td>		  		  	  
     </tr>';	
 };	
 ?>
