@@ -641,15 +641,15 @@ $curr1 = $data1['curr'];
 <table class="tbl-detail" border="1" cellspacing="0" style="width:100%;font-size:9px;border-spacing:2px;">
   <tr>
 
-      <th style="width: 9.5%;border: 1px solid black;text-align:center;">COA</th>
-      <th style="width: 6.6%;border: 1px solid black;text-align:center;">Profit Center</th>
-      <th style="width: 9.7%;border: 1px solid black;text-align:center;">Cost Center</th>
-      <th style="width: 15.5%;border: 1px solid black;text-align:center;">Reff Doc</th>
-      <th style="width: 12.7%;border: 1px solid black;text-align:center;">Faktur Pajak</th>
-      <th style="width: 20.4%;border: 1px solid black;text-align:center;">Description</th>
-      <th style="width: 9%;border: 1px solid black;text-align:center;">Amount (<?php echo $curr1 ?>)</th>
-      <th style="width: 8.3%;border: 1px solid black;text-align:center;">Deduction (<?php echo $curr1 ?>)</th>
-      <th style="width: 8.3%;border: 1px solid black;text-align:center;">PPH (<?php echo $curr1 ?>)</th>
+      <th style="width: 11.7%;border: 1px solid black;text-align:center;">COA</th>
+      <th style="width: 8.2%;border: 1px solid black;text-align:center;">Profit Center</th>
+      <th style="width: 11.0%;border: 1px solid black;text-align:center;">Cost Center</th>
+      <th style="width: 15.0%;border: 1px solid black;text-align:center;">Reff Doc</th>
+      <th style="width: 13.3%;border: 1px solid black;text-align:center;">Faktur Pajak</th>
+      <th style="width: 14.4%;border: 1px solid black;text-align:center;">Description</th>
+      <th style="width: 9.4%;border: 1px solid black;text-align:center;">Amount (<?php echo $curr1 ?>)</th>
+      <th style="width: 8.5%;border: 1px solid black;text-align:center;">Deduction (<?php echo $curr1 ?>)</th>
+      <th style="width: 8.5%;border: 1px solid black;text-align:center;">PPH (<?php echo $curr1 ?>)</th>
   </tr>
   <tbody >
     <?php
@@ -679,7 +679,7 @@ echo '<tr>
 };	
 ?>
 <tr>
-  <td colspan="6" style="width:74.4%;border: 1px solid black;text-align:center;font-size:9px"><b>Total</b></td>
+  <td colspan="6" style="width:73.6%;border: 1px solid black;text-align:center;font-size:9px"><b>Total</b></td>
   <td style="width:10%;text-align:right;"><?php echo number_format($sum_amount,2) ?></td> 
   <td style="width:10%;text-align:right;"><?php echo '- '.number_format($sum_ded,2) ?></td>
   <td style="width:10%;text-align:right;"><?php echo '- '.number_format($sum_pph, 2) ?></td>
