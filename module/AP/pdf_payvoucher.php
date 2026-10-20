@@ -636,29 +636,74 @@ echo str_repeat("<br/>\n", 46);
 $query1 = mysqli_query($conn2,$sqlas)or die(mysqli_error($conn2));
 $data1=mysqli_fetch_array($query1);
 $curr1 = $data1['curr'];
+
+/* ---------------------------------------------------------------------
+   LEBAR KOLOM MENYESUAIKAN ISI. Kolom Cost Center / Reff Doc / Faktur Pajak
+   sering KOSONG SEMUA di satu PV (tercetak "-" semua) - mis. PV biaya
+   seperti uang makan lembur. Kalau lebarnya tetap, ruangnya terbuang dan
+   Profit Center (yang PASTI selalu terisi) jadi sempit sampai katanya
+   terpenggal. Jadi: kolom yang seluruh barisnya cuma "-" dikecilkan
+   seadanya, jatahnya diberikan ke Profit Center dulu - secukupnya supaya
+   namanya muat SATU baris - lalu sisanya ke Description.
+   Barisnya diambil SEKALI ke array di sini (bukan di dalam tabel seperti
+   dulu), karena lebar kolom harus sudah diketahui SEBELUM <th> dicetak.
+   --------------------------------------------------------------------- */
+$barisDetail = array();
+$qDetail = mysqli_query($conn2, $sqlys) or die(mysqli_error($conn2));
+while ($d = mysqli_fetch_array($qDetail)) { $barisDetail[] = $d; }
+
+$kolomAdaIsi = function ($kolom) use ($barisDetail) {
+    foreach ($barisDetail as $d) {
+        $v = trim((string) $d[$kolom]);
+        if ($v !== '' && $v !== '-') { return true; }
+    }
+    return false;
+};
+
+/* Lebar dasar: dipakai kalau semua kolom ada isinya. Angkanya hasil setel
+   dari lebar yang BENAR-BENAR dirender (lihat catatan di menu-docs). */
+$lk = array('COA' => 11.7, 'PC' => 8.2, 'CC' => 11.0, 'REFF' => 15.0, 'FP' => 13.3,
+            'DESC' => 14.4, 'AMT' => 9.4, 'DED' => 8.5, 'PPH' => 8.5);
+$LEBAR_KOSONG = 5.0;        // cukup utk judul kolomnya saja
+$PC_MAKS      = 18.5;       // cukup utk "NIRWANA ALABARE GARMENT" satu baris
+$bebas = 0;
+foreach (array('CC' => 'cc_name', 'REFF' => 'reff_doc', 'FP' => 'faktur_pajak') as $k => $kolom) {
+    if (!$kolomAdaIsi($kolom) && $lk[$k] > $LEBAR_KOSONG) {
+        $bebas += $lk[$k] - $LEBAR_KOSONG;
+        $lk[$k] = $LEBAR_KOSONG;
+    }
+}
+if ($bebas > 0) {
+    $kePc = min($bebas, max(0, $PC_MAKS - $lk['PC']));
+    $lk['PC']   += $kePc;
+    $lk['DESC'] += $bebas - $kePc;
+}
+$lebarTotal6 = round($lk['COA'] + $lk['PC'] + $lk['CC'] + $lk['REFF'] + $lk['FP'] + $lk['DESC'], 1);
+
 ?>
 
 <table class="tbl-detail" border="1" cellspacing="0" style="width:100%;font-size:9px;border-spacing:2px;">
   <tr>
 
-      <th style="width: 11.7%;border: 1px solid black;text-align:center;">COA</th>
-      <th style="width: 8.2%;border: 1px solid black;text-align:center;">Profit Center</th>
-      <th style="width: 11.0%;border: 1px solid black;text-align:center;">Cost Center</th>
-      <th style="width: 15.0%;border: 1px solid black;text-align:center;">Reff Doc</th>
-      <th style="width: 13.3%;border: 1px solid black;text-align:center;">Faktur Pajak</th>
-      <th style="width: 14.4%;border: 1px solid black;text-align:center;">Description</th>
-      <th style="width: 9.4%;border: 1px solid black;text-align:center;">Amount (<?php echo $curr1 ?>)</th>
-      <th style="width: 8.5%;border: 1px solid black;text-align:center;">Deduction (<?php echo $curr1 ?>)</th>
-      <th style="width: 8.5%;border: 1px solid black;text-align:center;">PPH (<?php echo $curr1 ?>)</th>
+      <th style="width: <?php echo $lk['COA'] ?>%;border: 1px solid black;text-align:center;">COA</th>
+      <th style="width: <?php echo $lk['PC'] ?>%;border: 1px solid black;text-align:center;">Profit Center</th>
+      <th style="width: <?php echo $lk['CC'] ?>%;border: 1px solid black;text-align:center;">Cost Center</th>
+      <th style="width: <?php echo $lk['REFF'] ?>%;border: 1px solid black;text-align:center;">Reff Doc</th>
+      <th style="width: <?php echo $lk['FP'] ?>%;border: 1px solid black;text-align:center;">Faktur Pajak</th>
+      <th style="width: <?php echo $lk['DESC'] ?>%;border: 1px solid black;text-align:center;">Description</th>
+      <th style="width: <?php echo $lk['AMT'] ?>%;border: 1px solid black;text-align:center;">Amount (<?php echo $curr1 ?>)</th>
+      <th style="width: <?php echo $lk['DED'] ?>%;border: 1px solid black;text-align:center;">Deduction (<?php echo $curr1 ?>)</th>
+      <th style="width: <?php echo $lk['PPH'] ?>%;border: 1px solid black;text-align:center;">PPH (<?php echo $curr1 ?>)</th>
   </tr>
   <tbody >
     <?php
-    $query = mysqli_query($conn2,$sqlys)or die(mysqli_error($conn2));
+    // Barisnya sudah diambil di atas ($barisDetail) supaya lebar kolom bisa
+    // dihitung sebelum <th> dicetak - jadi TIDAK di-query ulang di sini.
     $sum_amount = 0;
     $sum_ded = 0;
     $sum_pph = 0;
 
-    while($data=mysqli_fetch_array($query)){
+    foreach ($barisDetail as $data) {
        $sum_amount += $data['amount']; 
        $sum_ded += $data['ded_add'];
        $sum_pph += $data['pph'];
@@ -679,7 +724,7 @@ echo '<tr>
 };	
 ?>
 <tr>
-  <td colspan="6" style="width:73.6%;border: 1px solid black;text-align:center;font-size:9px"><b>Total</b></td>
+  <td colspan="6" style="width:<?php echo $lebarTotal6 ?>%;border: 1px solid black;text-align:center;font-size:9px"><b>Total</b></td>
   <td style="width:10%;text-align:right;"><?php echo number_format($sum_amount,2) ?></td> 
   <td style="width:10%;text-align:right;"><?php echo '- '.number_format($sum_ded,2) ?></td>
   <td style="width:10%;text-align:right;"><?php echo '- '.number_format($sum_pph, 2) ?></td>
