@@ -641,14 +641,12 @@ $curr1 = $data1['curr'];
 <table class="tbl-detail" border="1" cellspacing="0" style="width:100%;font-size:9px;border-spacing:2px;">
   <tr>
 
-      <th style="width: 8.1%;border: 1px solid black;text-align:center;">COA</th>
+      <th style="width: 9.5%;border: 1px solid black;text-align:center;">COA</th>
       <th style="width: 6.6%;border: 1px solid black;text-align:center;">Profit Center</th>
-      <th style="width: 8.9%;border: 1px solid black;text-align:center;">Cost Center</th>
-      <th style="width: 14.1%;border: 1px solid black;text-align:center;">Reff Doc</th>
-      <th style="width: 7.9%;border: 1px solid black;text-align:center;">Reff Date</th>
+      <th style="width: 9.7%;border: 1px solid black;text-align:center;">Cost Center</th>
+      <th style="width: 15.5%;border: 1px solid black;text-align:center;">Reff Doc</th>
       <th style="width: 12.7%;border: 1px solid black;text-align:center;">Faktur Pajak</th>
-      <th style="width: 8.4%;border: 1px solid black;text-align:center;">Description</th>
-      <th style="width: 7.7%;border: 1px solid black;text-align:center;">Due Date</th>
+      <th style="width: 20.4%;border: 1px solid black;text-align:center;">Description</th>
       <th style="width: 9%;border: 1px solid black;text-align:center;">Amount (<?php echo $curr1 ?>)</th>
       <th style="width: 8.3%;border: 1px solid black;text-align:center;">Deduction (<?php echo $curr1 ?>)</th>
       <th style="width: 8.3%;border: 1px solid black;text-align:center;">PPH (<?php echo $curr1 ?>)</th>
@@ -664,27 +662,16 @@ $curr1 = $data1['curr'];
        $sum_amount += $data['amount']; 
        $sum_ded += $data['ded_add'];
        $sum_pph += $data['pph'];
-       $duedate = $data['due_date'];
-       $reffdate = $data['reff_date'];
-       if ($duedate == '' || $duedate == '1970-01-01') { 
-           $due_date = '-';
-       }else{
-        $due_date = date("d-M-Y",strtotime($data['due_date'])); 
-    } 
-    if ($reffdate == '' || $reffdate == '1970-01-01') { 
-       $reff_date = '-';
-   }else{
-    $reff_date = date("d-M-Y",strtotime($data['reff_date'])); 
-} 
+       // Kolom Reff Date & Due Date dihapus dari tabel DETAIL (permintaan
+       // pemakai, 20 Okt 2026) - jatah lebarnya dialihkan ke Description.
+       // Perhitungan tanggalnya ikut dibuang karena tidak ada lagi yang memakai.
 echo '<tr>
 <td style="text-align: left" value="'.$data['nama_coa'].'">'.$data['nama_coa'].'</td>
 <td style="text-align: left" value="'.$data['profit_center'].'">'.$data['profit_center'].'</td>
 <td style="text-align: left" value="'.$data['cc_name'].'">'.$data['cc_name'].'</td>
 <td style="text-align: left" value="'.$data['reff_doc'].'">'.$data['reff_doc'].'</td> 
-<td style="text-align: left" value="'.$reff_date.'">'.$reff_date.'</td>
 <td style="text-align: left" value="'.$data['faktur_pajak'].'">'.$data['faktur_pajak'].'</td>
 <td style="text-align: left" value="'.$data['deskripsi'].'">'.$data['deskripsi'].'</td>                            
-<td style="text-align: left" value="'.$due_date.'">'.$due_date.'</td>
 <td style="text-align: right" value="'.$data['amount'].'">'.number_format($data['amount'],2).'</td>
 <td style="text-align: right" value="'.$data['ded_add'].'">- '.number_format($data['ded_add'],2).'</td>                            
 <td style="text-align: right" value="'.$data['pph'].'">- '.number_format($data['pph'],2).'</td>
@@ -692,7 +679,7 @@ echo '<tr>
 };	
 ?>
 <tr>
-  <td colspan="8" style="width:74.5%;border: 1px solid black;text-align:center;font-size:9px"><b>Total</b></td>
+  <td colspan="6" style="width:74.4%;border: 1px solid black;text-align:center;font-size:9px"><b>Total</b></td>
   <td style="width:10%;text-align:right;"><?php echo number_format($sum_amount,2) ?></td> 
   <td style="width:10%;text-align:right;"><?php echo '- '.number_format($sum_ded,2) ?></td>
   <td style="width:10%;text-align:right;"><?php echo '- '.number_format($sum_pph, 2) ?></td>
