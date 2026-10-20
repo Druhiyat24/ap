@@ -664,13 +664,18 @@ $kolomAdaIsi = function ($kolom) use ($barisDetail) {
    dari lebar yang BENAR-BENAR dirender (lihat catatan di menu-docs). */
 $lk = array('COA' => 11.7, 'PC' => 8.2, 'CC' => 11.0, 'REFF' => 15.0, 'FP' => 13.3,
             'DESC' => 14.4, 'AMT' => 9.4, 'DED' => 8.5, 'PPH' => 8.5);
-$LEBAR_KOSONG = 5.0;        // cukup utk judul kolomnya saja
+/* Kolom kosong TETAP harus muat JUDULNYA satu baris. Kalau dikecilkan
+   terlalu jauh, judulnya pecah dua baris (Cost/Center, Reff/Doc,
+   Faktur/Pajak) dan tabelnya malah terlihat sesak - itu yang terjadi saat
+   batasnya masih 5% rata untuk semua. Angka di bawah = lebar judul masing-
+   masing (huruf tebal 9px) + padding, diukur lewat metrik huruf mPDF. */
+$LEBAR_KOSONG = array('CC' => 8.6, 'REFF' => 6.6, 'FP' => 9.2);
 $PC_MAKS      = 18.5;       // cukup utk "NIRWANA ALABARE GARMENT" satu baris
 $bebas = 0;
 foreach (array('CC' => 'cc_name', 'REFF' => 'reff_doc', 'FP' => 'faktur_pajak') as $k => $kolom) {
-    if (!$kolomAdaIsi($kolom) && $lk[$k] > $LEBAR_KOSONG) {
-        $bebas += $lk[$k] - $LEBAR_KOSONG;
-        $lk[$k] = $LEBAR_KOSONG;
+    if (!$kolomAdaIsi($kolom) && $lk[$k] > $LEBAR_KOSONG[$k]) {
+        $bebas += $lk[$k] - $LEBAR_KOSONG[$k];
+        $lk[$k] = $LEBAR_KOSONG[$k];
     }
 }
 if ($bebas > 0) {
