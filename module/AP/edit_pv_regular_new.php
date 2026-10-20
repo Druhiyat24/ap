@@ -898,6 +898,19 @@ foreach ($__banks as $b) {
                             <tbody>
                                 <?php
 
+                                /* FTR yang SUDAH dipakai PV yang sedang diedit. Dipakai untuk dua hal:
+                                   barisnya diceklis ulang, dan isian jumlahnya diisi sebesar yang
+                                   dipakai PV ini - bukan sisa FTR penuh. Tanpa ini panel tampak
+                                   kosong / tidak tercentang dan potongan uang muka hilang saat
+                                   disimpan. Kuncinya SAMA dgn kunci join panel di bawah. */
+                                $ftrDipakai = array();
+                                $qFtrEdit = mysqli_query($conn2, "select no_ftr, no_po, no_bankout, SUM(total_ftr) total_ftr from kontrabon_ftr where no_kbon = '$esc_edit' GROUP BY no_ftr, no_po, no_bankout");
+                                if ($qFtrEdit) {
+                                    while ($rFtrEdit = mysqli_fetch_assoc($qFtrEdit)) {
+                                        $ftrDipakai[$rFtrEdit['no_ftr'] . '|' . $rFtrEdit['no_po'] . '|' . $rFtrEdit['no_bankout']] = (float) $rFtrEdit['total_ftr'];
+                                    }
+                                }
+
                                 $query_ftr = mysqli_query($conn2,"select a.no_ftr_cbd, a.tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.curr, (a.total - COALESCE(b.total_ftr,0)) total, a.no_kbon, a.tgl_kbon, a.no_payment, a.tgl_payment, a.no_pv, a.no_bankout, a.bankout_date, a.coa from (select no_ftr_cbd, tgl_ftr_cbd, supp, no_po, tgl_po, no_pi, curr, a.total, no_kbon, tgl_kbon, no_payment, tgl_payment, no_pv, no_bankout, bankout_date, coa from (select no_ftr_cbd, tgl_ftr_cbd, a.supp, a.no_po, a.tgl_po, a.no_pi, a.curr,  a.subtotal, a.tax, a.total, b.no_kbon, b.tgl_kbon, c.no_payment , c.tgl_payment from ftr_cbd a INNER JOIN kontrabon_cbd b on b.no_cbd = a.no_ftr_cbd inner join list_payment_cbd c on c.no_kbon = b.no_kbon where tgl_ftr_cbd >= '2025-06-01' and a.status = 'Approved' and c.status != 'Cancel' and a.supp = '$nama_supp'
                                     UNION
                                     select no_ftr_dp, tgl_ftr_dp, a.supp, a.no_po, a.tgl_po, a.no_pi, a.curr,  a.dp_value, 0 tax, a.dp_value total, b.no_kbon, b.tgl_kbon, c.no_payment , c.tgl_payment from ftr_dp a INNER JOIN kontrabon_dp b on b.no_dp = a.no_ftr_dp inner join list_payment_dp c on c.no_kbon = b.no_kbon where tgl_ftr_dp >= '2025-06-01' and a.status = 'Approved' and c.status != 'Cancel' and a.supp = '$nama_supp') a
@@ -909,19 +922,26 @@ foreach ($__banks as $b) {
                                     select no_cbd no_ftr_cbd, NULL tgl_ftr_cbd, h.nama_supp supp, d.no_po, d.tgl_po, NULL no_pi, h.curr, MAX(bd.total) total, h.no_kbon, h.tgl_kbon, NULL no_payment, NULL tgl_payment, h.no_kbon no_pv, bd.no_bankout, bd.bankout_date, h.no_coa coa from kontrabon_h_cbd h INNER JOIN kontrabon_cbd d on d.no_kbon = h.no_kbon INNER JOIN (select a.no_reff, MAX(b.no_bankout) no_bankout, MAX(b.bankout_date) bankout_date, SUM(a.total + COALESCE(a.pph,0)) total from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where a.type_pv = 'CBD' and b.status != 'Cancel' GROUP BY a.no_reff) bd on bd.no_reff = h.no_kbon where h.nama_supp = '$nama_supp' GROUP BY d.no_kbon, d.no_cbd
                                     UNION ALL
                                     select no_dp no_ftr_cbd, NULL tgl_ftr_cbd, h.nama_supp supp, d.no_po, d.tgl_po, NULL no_pi, h.curr, MAX(bd.total) total, h.no_kbon, h.tgl_kbon, NULL no_payment, NULL tgl_payment, h.no_kbon no_pv, bd.no_bankout, bd.bankout_date, h.no_coa coa from kontrabon_h_dp h INNER JOIN kontrabon_dp d on d.no_kbon = h.no_kbon INNER JOIN (select a.no_reff, MAX(b.no_bankout) no_bankout, MAX(b.bankout_date) bankout_date, SUM(a.total + COALESCE(a.pph,0)) total from b_bankout_det a INNER JOIN b_bankout_h b on b.no_bankout = a.no_bankout where a.type_pv = 'DP' and b.status != 'Cancel' GROUP BY a.no_reff) bd on bd.no_reff = h.no_kbon where h.nama_supp = '$nama_supp' GROUP BY d.no_kbon, d.no_dp
-                                    order by tgl_ftr_cbd asc) a LEFT JOIN (select no_ftr, a.no_po, no_bankout, SUM(total_ftr) total_ftr from kontrabon_ftr a INNER JOIN kontrabon_h b on b.no_kbon = a.no_kbon WHERE a.nama_supp = '$nama_supp' and b.status not in ('Cancel','Updated') GROUP BY no_ftr, a.no_po, no_bankout) b on b.no_ftr = a.no_ftr_cbd and b.no_po = a.no_po and b.no_bankout = a.no_bankout where (a.total - COALESCE(b.total_ftr,0)) > 0");
+                                    order by tgl_ftr_cbd asc) a LEFT JOIN (select no_ftr, a.no_po, no_bankout, SUM(total_ftr) total_ftr from kontrabon_ftr a INNER JOIN kontrabon_h b on b.no_kbon = a.no_kbon WHERE a.nama_supp = '$nama_supp' and b.status not in ('Cancel','Updated') and a.no_kbon <> '$esc_edit' GROUP BY no_ftr, a.no_po, no_bankout) b on b.no_ftr = a.no_ftr_cbd and b.no_po = a.no_po and b.no_bankout = a.no_bankout where (a.total - COALESCE(b.total_ftr,0)) > 0");
 
 
                                 while($row_ftr = mysqli_fetch_array($query_ftr)){
+                                    /* Baris yang memang sudah dipakai PV ini: dicentang, isiannya
+                                       dibuka dan diisi sebesar pemakaiannya. Baris lain: seperti biasa. */
+                                    $kunciFtr   = $row_ftr['no_ftr_cbd'] . '|' . $row_ftr['no_po'] . '|' . $row_ftr['no_bankout'];
+                                    $ftrTerpakaiPv = isset($ftrDipakai[$kunciFtr]);
+                                    $nilaiFtr   = $ftrTerpakaiPv ? round($ftrDipakai[$kunciFtr], 2) : round($row_ftr['total'], 2);
+                                    $atrCentang = $ftrTerpakaiPv ? ' checked="checked"' : '';
+                                    $atrMati    = $ftrTerpakaiPv ? '' : ' disabled';
                                     echo '<tr>
-                                    <td style="width:10px;"><input type="checkbox" class="chkC" id="select" name="select[]" value="" <?php if(in_array("1",$_POST[select])) echo "checked=checked";?></td>                        
+                                    <td style="width:10px;"><input type="checkbox" class="chkC" id="select" name="select[]" value=""' . $atrCentang . '></td>                        
                                     <td style="width:50px;" no-ftr="'.$row_ftr['no_ftr_cbd'].'">'.$row_ftr['no_ftr_cbd'].'</td>
                                     <td style="width:50px;" po-ftr="'.$row_ftr['no_po'].'">'.$row_ftr['no_po'].'</td>
                                     <td style="width:100px;" tglpo-ftr="'.$row_ftr['tgl_po'].'">'.date("d-M-Y",strtotime($row_ftr['tgl_po'])).'</td>                            
                                     <td style="width:50px;" pi-ftr="'.$row_ftr['no_pi'].'">'.$row_ftr['no_pi'].'</td>                            
                                     <td style="width:100px;text-align:right;" total-ftr="'.round($row_ftr['total'],2).'">'.number_format($row_ftr['total'],2).'</td>
                                     <td style="width:100px;">
-                                    <input style="text-align: right;" type="number" min="0" style="font-size: 13px;;" class="form-control form-control-sm" id="amount_ftr" name="amount_ftr" value="'.round($row_ftr['total'],2).'" disabled>
+                                    <input style="text-align: right;" type="number" min="0" style="font-size: 13px;;" class="form-control form-control-sm" id="amount_ftr" name="amount_ftr" value="'.$nilaiFtr.'"' . $atrMati . '>
                                     </td>
                                     <td style="display: none;" curr-ftr="'.$row_ftr['curr'].'">'.$row_ftr['curr'].'</td>
                                     <td style="display: none;" kbon-ftr="'.$row_ftr['no_kbon'].'">'.$row_ftr['no_kbon'].'</td>
