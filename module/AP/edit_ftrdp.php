@@ -796,12 +796,12 @@ $("input[type=checkbox]").change(function(){
             }else{
                 sum_total_po += ost_po;  
                 sum_total_po_show += ost_po;      
-                dp_code = (dp_value / total_po) * 50;
+                dp_code = (dp_value / total_po) * 100;   // dulu * 50: persentasenya jadi separuh
                 sum_total_dp_value += dp_value;
                 total = sum_total_po - sum_total_dp_value;
             }
             parseFloat($(this).closest('tr').find('td:eq(6) input').val(formatMoney(dp_code)),10);
-            parseFloat($(this).closest('tr').find('td:eq(67) input').attr('data-value', sum_total_dp_value));        
+            parseFloat($(this).closest('tr').find('td:eq(7) input').attr('data-value', sum_total_dp_value));        
         });        
         $("#subtotal").val(formatMoney(sum_total_po_show));
         $("#pajak").val(formatMoney(sum_total_dp_value));

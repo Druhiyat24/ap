@@ -69,6 +69,23 @@ if (trim((string) $no_po) === '') {
     die('PO number is missing.');
 }
 
+/* DP Amount NOL padahal DP %-nya terisi DITOLAK. Nilai ini dipakai apa adanya
+   dari form - server TIDAK bisa menghitungnya sendiri karena persentasenya
+   dihitung dari PO BRUTO sedangkan yang dikirim ke sini PO SISA, jadi kedua
+   angka itu bisa berbeda untuk PO yang sudah pernah di-DP. Kalau browser
+   gagal mengisinya, dokumennya tersimpan dgn dp_value 0: FTR tampak ber-DP
+   nol dan PV DP turunannya ber-Total 0 (FTR/D/NAG/1026/00032 ->
+   PV-AP/DP/NAG/2026/10/00011, 22 Okt 2026). Lebih baik simpan GAGAL dan
+   user tahu, daripada dokumen tersimpan dgn nilai yang pasti salah. */
+if ((float) $dp_code > 0 && (float) $dp_value <= 0) {
+    http_response_code(400);
+    die('DP Amount is 0 while DP % is ' . (float) $dp_code
+        . '. Nothing was saved - please re-enter the DP Amount (or the DP %) and try again.');
+}
+
+/* balance dihitung ULANG di server, kiriman form tidak dipercaya. */
+$balance = round((float) $total - (float) $dp_value, 2);
+
 $query = "INSERT INTO ftr_dp (no_ftr_dp, tgl_ftr_dp, tgl_bayar, supp, no_po, tgl_po, no_pi, total, dp, dp_value, balance, curr, payment_method, item_type, profit_center, keterangan, status, is_invoiced, create_user, create_date)
 VALUES
 	('$noftrdp', '$tglftrdp', '$tgl_bayar', '$nama_supp', '$no_po', '$tgl_po', '$no_pi', '$total', '$dp_code', '$dp_value', '$balance', '$curr', '$payment_method', $item_type_sql, '$profit_center', '$keterangan', '$status', '$invoiced', '$create_user', '$create_date')";

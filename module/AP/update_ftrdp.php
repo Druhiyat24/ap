@@ -114,6 +114,20 @@ $esc = function ($v) use ($conn2) { return mysqli_real_escape_string($conn2, (st
 $nilai = array();
 foreach ($baris as $b) {
     $tgl_po = !empty($b['tgl_po']) ? date('Y-m-d', strtotime($b['tgl_po'])) : '';
+
+    /* Penjaga yang sama dgn insertftrdp.php: DP Amount 0 padahal DP %-nya
+       terisi berarti form gagal mengisinya - simpan DITOLAK, dan balance
+       dihitung ulang di sini supaya tidak bergantung kiriman browser. */
+    $b_dp  = (float) (isset($b['dp_code'])  ? $b['dp_code']  : 0);
+    $b_dpv = (float) (isset($b['dp_value']) ? $b['dp_value'] : 0);
+    $b_tot = (float) (isset($b['total'])    ? $b['total']    : 0);
+    if ($b_dp > 0 && $b_dpv <= 0) {
+        mysqli_rollback($conn2);
+        jawab(400, array('ok' => false, 'message' => 'DP Amount is 0 while DP % is ' . $b_dp
+            . ' on PO ' . (isset($b['no_po']) ? $b['no_po'] : '-')
+            . '. Nothing was saved - please re-enter the DP Amount (or the DP %) and try again.'));
+    }
+    $b['balance'] = round($b_tot - $b_dpv, 2);
     $nilai[] = "('" . $esc($no) . "', '" . $esc($tgl_ftr) . "', '" . $esc($tgl_bayar) . "', '" . $esc($nama_supp) . "', '"
         . $esc($b['no_po']) . "', " . ($tgl_po === '' ? 'NULL' : "'" . $esc($tgl_po) . "'") . ", '" . $esc($b['no_pi']) . "', "
         . (float) (isset($b['total'])    ? $b['total']    : 0) . ", "
