@@ -17,7 +17,12 @@ $ket  = trim($_POST['keterangan'] ?? 'ALL');
 $sd   = !empty($_POST['start_date']) ? date('Y-m-d', strtotime($_POST['start_date'])) : date('Y-m-d');
 $ed   = !empty($_POST['end_date'])   ? date('Y-m-d', strtotime($_POST['end_date']))   : date('Y-m-d');
 
-$dateCol = ($type === 'bpb') ? 'tgl_transfer' : 'tgl_penerimaan';
+// Saringan memakai TANGGAL INPUT, bukan tanggal dokumen. Lihat keterangan
+// panjang di atas berkas: tgl_penerimaan / tgl_transfer bisa MAJU dari hari
+// barisnya dibuat, sehingga dokumen yang baru diinput tidak ikut tersaring
+// oleh rentang bawaan "hari ini s/d hari ini" dan terlihat seperti hilang.
+// Kolom tgl_input disiapkan di tiap cabang query di bawah.
+$dateCol = 'tgl_input';
 $conds = ["$dateCol BETWEEN '" . $e($sd) . "' AND '" . $e($ed) . "'"];
 if ($supp !== 'ALL' && $supp !== '') $conds[] = "nama_supp = '" . $e($supp) . "'";
 if ($stat !== 'ALL' && $stat !== '') $conds[] = "status = '" . $e($stat) . "'";
@@ -29,7 +34,7 @@ if ($type === 'bpb') {
         WHEN status like '%Approved%' THEN 'Accept From Warehouse To Accounting'
         WHEN status = 'Transfer' THEN 'Transfer From Warehouse To Accounting'
         WHEN status = 'Cancel' THEN 'Cancel From Warehouse To Accounting'
-        END as keterangan from (select no_transfer,tgl_transfer,no_bpb,tgl_bpb,nama_supp,no_po,curr,SUM(total) total,created_by,created_at,CONCAT(created_by,' (',created_at,')') create_user from ir_trans_bpb GROUP BY no_transfer) a inner join (select no_transfer no_trans,CASE
+        END as keterangan from (select no_transfer,tgl_transfer,no_bpb,tgl_bpb,nama_supp,no_po,curr,SUM(total) total,created_by,created_at,DATE(MIN(created_at)) tgl_input,CONCAT(created_by,' (',created_at,')') create_user from ir_trans_bpb GROUP BY no_transfer) a inner join (select no_transfer no_trans,CASE
         WHEN s_post > 0 THEN 'Transfer'
         WHEN s_cancel > 0 and s_approved = 0 THEN 'Cancel'
         WHEN s_cancel = 0 and s_approved > 0 THEN 'Approved'
@@ -39,7 +44,7 @@ if ($type === 'bpb') {
         (select no_transfer,COUNT(status) s_cancel from ir_trans_bpb where status = 'Cancel' GROUP BY no_transfer) c on c.no_transfer = a.no_transfer LEFT JOIN
         (select no_transfer,COUNT(status) s_approved from ir_trans_bpb where status = 'Approved' GROUP BY no_transfer) d on d.no_transfer = a.no_transfer) a) b on b.no_trans = a.no_transfer) a $where";
 } else {
-    $sql = "select * from (select 'IR' id,doc_number,tgl_penerimaan,nama_supp,total_amount, IF(status != 'Cancel','Received','Cancel')status, CONCAT(created_by,' (',created_date,')') create_user, 'Received Invoice' keterangan, COALESCE(no_reff,'-') no_reff from ir_invoice_supp_h
+    $sql = "select * from (select 'IR' id,doc_number,tgl_penerimaan,nama_supp,total_amount, IF(status != 'Cancel','Received','Cancel')status, CONCAT(created_by,' (',created_date,')') create_user, 'Received Invoice' keterangan, COALESCE(no_reff,'-') no_reff, DATE(created_date) tgl_input from ir_invoice_supp_h
         UNION
         select id,a.no_trans,tgl_trans,nama_supp,amount,status,create_user,CASE
         WHEN nama_trans = 'TFTA' and status like '%Approved%' THEN 'Accept From Finance To Accounting'
@@ -51,7 +56,7 @@ if ($type === 'bpb') {
         WHEN nama_trans = 'TPTF' and status like '%Approved%' THEN 'Accept From Purchasing To Finance'
         WHEN nama_trans = 'TPTF' and status = 'Post' THEN 'Transfer From Purchasing To Finance'
         WHEN nama_trans = 'TPTF' and status = 'Cancel' THEN 'Cancel From Purchasing To Finance'
-        END as keterangan, '-' from (select 'TF' id,nama_trans,no_trans,tgl_trans,nama_supp,SUM(amount) amount,CONCAT(created_by,' (',created_date,')') create_user from ir_trans_invoice_supp GROUP BY no_trans) a inner join (select no_trans,CASE
+        END as keterangan, '-', a.tgl_input from (select 'TF' id,nama_trans,no_trans,tgl_trans,nama_supp,SUM(amount) amount,DATE(MIN(created_date)) tgl_input,CONCAT(created_by,' (',created_date,')') create_user from ir_trans_invoice_supp GROUP BY no_trans) a inner join (select no_trans,CASE
         WHEN s_post > 0 THEN 'Post'
         WHEN s_cancel > 0 and s_approved = 0 THEN 'Cancel'
         WHEN s_cancel = 0 and s_approved > 0 THEN 'Approved'
