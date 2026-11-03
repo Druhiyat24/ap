@@ -228,7 +228,11 @@
                             <th style="width:20%;">No Kontrabon</th>
                             <th style="width:20%;">Kontrabon Date</th>                            
                             <th style="width:30%;">Supplier</th>
-                            <th style="width:20%;">Total Kontrabon</th>                            
+                            <th style="width:20%;">Total Kontrabon</th>
+                            <!-- Tersembunyi: tanggal IR aktual, dibaca JS sbg batas minimum
+                                 Transfer Date. Sengaja di kolom terakhir supaya indeks td
+                                 yang sudah dipakai di bawah tidak bergeser. -->
+                            <th style="display: none;">IR Date</th>                            
                         </tr>
                     </thead>
 
@@ -245,9 +249,9 @@
             }
 
             if ($nama_supp == 'ALL') {
-                $sql = mysqli_query($conn2,"select doc_number,tgl_penerimaan,nama_supp,total_amount, status, CONCAT(created_by,' (',created_date,')') create_user from ir_invoice_supp_h where status = 'received' and tgl_penerimaan between '$start_date' and '$end_date' order by tgl_penerimaan asc");
+                $sql = mysqli_query($conn2,"select doc_number,tgl_penerimaan,DATE(created_date) ir_date,nama_supp,total_amount, status, CONCAT(created_by,' (',created_date,')') create_user from ir_invoice_supp_h where status = 'received' and DATE(created_date) between '$start_date' and '$end_date' order by tgl_penerimaan asc");
             }else{
-                $sql = mysqli_query($conn2,"select doc_number,tgl_penerimaan,nama_supp,total_amount, status, CONCAT(created_by,' (',created_date,')') create_user from ir_invoice_supp_h where status = 'received' and nama_supp = '$nama_supp' and tgl_penerimaan between '$start_date' and '$end_date' order by tgl_penerimaan asc");
+                $sql = mysqli_query($conn2,"select doc_number,tgl_penerimaan,DATE(created_date) ir_date,nama_supp,total_amount, status, CONCAT(created_by,' (',created_date,')') create_user from ir_invoice_supp_h where status = 'received' and nama_supp = '$nama_supp' and DATE(created_date) between '$start_date' and '$end_date' order by tgl_penerimaan asc");
             }
 
 
@@ -278,7 +282,7 @@
                             <td style="width:100px;" value="'.$row['tgl_penerimaan'].'">'.date("d-M-Y",strtotime($row['tgl_penerimaan'])).'</td>
                             <td style="" value="'.$row['nama_supp'].'">'.$row['nama_supp'].'</td>
                             <td style ="text-align: right;" class="dt_total" style="width:100px;" value="'.$row['total_amount'].'">'.number_format($row['total_amount'],2).'</td>
-
+                            <td style="display:none" value="'.$row['ir_date'].'">'.$row['ir_date'].'</td>
                         </tr>';
                       }
                     ?>
@@ -459,7 +463,11 @@ $("input[type=checkbox]").change(function(){
     var inv_tgl = document.getElementById('tgl_fil_inv').value;   
     $("input[type=checkbox]:checked").each(function () { 
     var amount = parseFloat($(this).closest('tr').find('td:eq(4)').attr('value')) || 0; 
-    var tgl_inv = $(this).closest('tr').find('td:eq(2)').attr('value'); 
+    // Batas minimum Transfer Date dibaca dari kolom TERSEMBUNYI berisi tanggal IR
+    // aktual (indeks 5), bukan dari kolom Kontrabon Date yang tampil (indeks 2).
+    // tgl_penerimaan bisa MAJU dari hari pengetikan, sehingga transfer hari ini
+    // ditolak validasi "tgl_doc >= tgl_fil_inv" padahal IR-nya sudah ada.
+    var tgl_inv = $(this).closest('tr').find('td:eq(5)').attr('value'); 
 
     sum_amount += amount;
     if (inv_tgl > tgl_inv) {
