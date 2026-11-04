@@ -1414,6 +1414,50 @@ $menuGroups = [
                     ],
                 ],
             ],
+            'payment-plan' => [
+                'title' => 'Payment Plan', 'icon' => 'fa-calendar-check-o', 'path' => 'module/AP/list-payment-plan.php',
+                'doc' => [
+                    'summary' => 'Menetapkan TANGGAL RENCANA BAYAR untuk payment voucher (kontrabon) yang sudah disetujui. Bentuknya DOKUMEN bernomor AP-PP/&lt;bulan&gt;&lt;tahun&gt;/&lt;urut&gt;: satu dokumen memuat banyak voucher dgn SATU tanggal rencana, dan dokumen yang salah DIBATALKAN, bukan ditimpa.',
+                    'purpose' => 'Tanggal rencana di menu inilah sisi RENCANA yang akan menggerakkan dua laporan berikutnya: AP Payment Projection Report (barisnya diambil dari voucher yang tanggal rencananya jatuh di dalam periode laporan, BUKAN dari tanggal voucher atau tanggal jatuh tempo) dan AP Payment Realization &amp; Variance Report. Tanpa menu ini kedua laporan itu tidak punya pembanding. Dicocokkan ke lembar kerja tim AP Okt 2026: 229 baris, tanggal rencana 3-26 Okt, sedangkan tanggal vouchernya tersebar dari Agu 2025 sampai Sep 2026.',
+                    'variants' => [
+                        ['name' => 'Update Payment Plan', 'icon' => 'fa-calendar', 'desc' => 'Daftar dokumen rencana bayar (<code>list-payment-plan.php</code>). Saringannya Document Number, Status dan rentang TANGGAL RENCANA BAYAR - bukan tanggal dokumen dibuat.'],
+                        ['name' => 'Create', 'icon' => 'fa-calendar-plus-o', 'desc' => 'Formulirnya (<code>create-payment-plan.php</code>), dibuka lewat tombol Create New di daftar - tidak punya butir menu sendiri, sama spt Create Petty Cash Out. Alurnya: isi tanggal rencana, cari voucher, centang, Save.'],
+                        ['name' => 'Export Excel', 'icon' => 'fa-file-excel-o', 'desc' => 'Lewat <code>ekspor_payment_plan.php</code>, memakai saringan yang sedang tampil. SATU BARIS = SATU VOUCHER (bukan satu dokumen) berikut Relationship, Item Type, Flexibility, Tax Base, VAT dan Total Invoice, ditutup tabel total per mata uang.'],
+                    ],
+                    'flow' => [
+                        ['title' => 'Cari voucher', 'desc' => 'Hanya voucher ber-status Approved / FIRST APPROVED / SECOND APPROVED yang ikut - yang belum disetujui belum tentu jadi kewajiban bayar. Date Basis bisa Due Date atau Voucher Date, dan centang Not scheduled yet menyembunyikan voucher yang rencananya sudah ada.'],
+                        ['title' => 'Centang &amp; Save', 'desc' => 'Nomor dokumen DIBUAT SAAT DISIMPAN (bukan saat formulir dibuka) di dalam GET_LOCK, jadi dua orang yang membuka formulir bersamaan tidak mendapat nomor yang sama. Kepala + isi ditulis dalam SATU transaksi; kalau satu baris gagal semuanya di-ROLLBACK.'],
+                        ['title' => 'Batalkan', 'desc' => 'Dokumen TIDAK dihapus: kepalanya jadi CANCEL dan isinya status N, persis cara cancel_duedate_update() di AR. Vouchernya otomatis terhitung belum dijadwalkan lagi, jadi penjadwalan ulang cukup dgn membuat dokumen baru.'],
+                    ],
+                    'status_flow' => [
+                        ['name' => 'POST', 'desc' => 'Dokumen berlaku - isinya status Y dan inilah yang dibaca sbg rencana yang sah.'],
+                        ['name' => 'CANCEL', 'desc' => 'Dibatalkan - isinya status N. Riwayatnya tetap terbaca di daftar, dan vouchernya bebas dijadwalkan ulang.'],
+                    ],
+                    'tables_write' => [
+                        ['name' => 'ap_payment_plan_h', 'desc' => 'Kepala dokumen: doc_number, plan_date, keterangan, status, created_by/date, cancel_by/date.'],
+                        ['name' => 'ap_payment_plan_det', 'desc' => 'Isinya: no_kbon, plan_date, curr, amount, status (Y/N). Nilai &amp; mata uangnya dibaca dari kontrabon_h saat simpan, BUKAN dari kiriman halaman.'],
+                    ],
+                    'tables_read' => [
+                        ['name' => 'kontrabon_h', 'desc' => 'Sumber payment voucher: no_kbon, tanggal, jatuh tempo, supplier, curr, total, tax, no_coa.'],
+                        ['name' => 'mastercoa_v2', 'desc' => 'Relationship (relasi) &amp; Item Type (item_type1) lewat kontrabon_h.no_coa - sumber yang SAMA dgn laporan AP Payment Voucher.'],
+                        ['name' => 'mastersupplier', 'desc' => 'Flexibility Category dari payment_rating, disambung lewat NAMA supplier karena kontrabon_h tidak menyimpan id supplier.'],
+                        ['name' => 'menurole / useraccess', 'desc' => 'Hak akses menu id 145 Update Payment Plan - SATU hak akses untuk dua layar.'],
+                    ],
+                    'notes' => [
+                        'TABEL SENDIRI, BUKAN KOLOM BARU DI kontrabon_h. Tabel itu dipakai belasan layar yang sudah jalan di produksi, dan satu voucher bisa dijadwalkan ulang berkali-kali - jadi riwayatnya butuh baris, bukan satu kolom yang ditimpa.',
+                        'RELATIONSHIP, ITEM TYPE &amp; FLEXIBILITY TIDAK DISALIN ke tabel rencana - ketiganya dibaca langsung dari sumbernya setiap kali layar atau ekspor dibuka. Kalau disalin akan ada dua sumber yang bisa berbeda. Dicocokkan ke lembar kerja Okt 2026: dari 95 voucher yang ada di salinan lokal, 93 cocok untuk Relationship DAN Item Type; 2 sisanya COA-nya memang beda di salinan itu. Seluruh 2.225 voucher 2026 punya COA yang relasi &amp; item_type1-nya terisi. Kolom payment_rating masih kosong untuk semua supplier, jadi wajar kalau Flexibility tampil tanda hubung sampai tim AP mengisinya.',
+                        'TAX BASE = total - tax, BUKAN kolom subtotal. Pada voucher pencocokan SI/APR/NAG/2026/06/01376, subtotal berisi 109.337.000 sedangkan total 54.668.500 dan tax 6.013.535 - yang cocok dgn lembar kerja (48.654.965) adalah total - tax. Payment Term = tgl_tempo - tgl_kbon (voucher itu 11 Mei ke 10 Jun = 30 hari, sama dgn kolom Payment Term di lembar kerja).',
+                        'TAMPILAN (4 Nov 2026, diminta pemakai) - MENIRU PETTY CASH OUT. Semula kedua layar memakai kartu <code>.ftl-</code> plus tombol Bootstrap biasa, jadi tampil lain dari menu AP yang sudah jalan. Sekarang: halaman DAFTAR mengikuti <code>petty-cashout.php</code> - DUA kartu (saringan di atas, tabel di bawah), tombol <code>.app-btn</code> di <code>.ftl-actions</code>, tabel <code>.ftl-tbl</code> di dalam <code>.ftl-tblwrap</code> berkepala <code>.thead-dark</code>, overlay <code>.app-loading-wrap</code> yang digerakkan event <code>processing.dt</code>, dan modal <code>.ftl-modal.is-wide</code>; halaman FORMULIR mengikuti <code>create-pettycash-out.php</code> - kosakata <code>.pco-</code> dgn bagian bertanda <code>.pco-sec</code> dan tombol simpan di <code>.pco-foot</code>. Klik di mana saja pada baris ikut membuka modal, dgn penjaga yang sama spt Petty Cash Out supaya memblok teks untuk disalin tidak ikut membukanya.',
+                        'PEMBAGIAN BERKAS CSS ITU SENGAJA. <code>app-pco-form.css</code> hanya ditaut halaman FORMULIR, TIDAK oleh halaman daftar - aturannya ber-scope <code>.pco-card</code> dan untuk form; pelajaran yang sama sudah dicatat di Invoice Received (13 Okt 2026), di mana menautkannya di halaman daftar membuat tinggi dropdown filter beda dgn kotak tanggal di sebelahnya. Sebaliknya <code>app-ftr-list.css</code> ikut ditaut halaman formulir HANYA untuk pil <code>.ftl-st</code> di kolom Current Plan. Kelas <code>.ftl-doc</code>/<code>.ftl-amt</code> sengaja TIDAK dipakai di tabel formulir: aturannya ber-scope <code>.ftl-tbl td.ftl-...</code>, jadi di tabel form kelas itu tidak berpengaruh apa pun dan hanya akan menyesatkan.',
+                        'TOTAL AMOUNT DIPECAH PER MATA UANG, bukan satu jumlah gabungan. Satu dokumen boleh memuat voucher IDR dan USD sekaligus; menjumlahkannya jadi satu angka menghasilkan bilangan yang tidak berarti apa pun. Ditampilkan mis. IDR 6.407.900,00 di satu baris dan USD 79.797,08 di baris berikutnya, dan ekspor Excel-nya ditutup tabel total per mata uang. Berlaku juga untuk dokumen yang sudah CANCEL - angka yang dulu dijadwalkan tetap perlu terbaca.',
+                        'Jumlah voucher &amp; totalnya diambil lewat SATU query pengelompokan untuk seluruh dokumen yang tampil, bukan subquery berkorelasi per baris.',
+                        'MIGRASI WAJIB DULUAN: <code>db_migrate_LIVE_20261104_payment_plan.sql</code> - dua tabel baru, menurole id 145, dan hak aksesnya diberikan ke pemegang Payment Voucher AP. Kalau kode di-pull sebelum migrasi dijalankan, menunya tidak muncul untuk siapa pun dan layarnya gagal membaca tabel. Bagian 0 di berkas itu MEMERIKSA DULU apakah id 145 sudah terpakai - id terbesar yang diketahui 144 (Petty Cash Flow Realisation) dan isi produksi tidak bisa diperiksa dari sesi pembuatnya.',
+                        'Hak aksesnya SENDIRI (menurole 145), bukan menumpang Payment Voucher AP: yang mengatur jadwal bayar belum tentu orang yang membuat vouchernya, jadi bisa dicabut atau dipindah tanpa mengubah hak akses voucher itu sendiri. Dibuktikan 4 Nov 2026 dgn membandingkan daftar butir menu SEBELUM vs SESUDAH untuk 44 user di salinan lokal: tidak satu pun butir hilang untuk siapa pun, dan tepat 5 user pemegang Payment Voucher AP mendapat 2 butir baru.',
+                        'Seperti <code>petty-cashout.php</code>, kedua layar ini TIDAK memasang penjaga hak akses di dalam halamannya - yang mengatur siapa boleh masuk hanya tampil-tidaknya butir menu. Itu kebiasaan yang sudah berlaku di menu-menu AP lain, dicatat di sini supaya kalau nanti mau diperketat, diperketat SEKALIAN untuk satu kelompok menu, bukan satu halaman saja.',
+                        'Yang MASIH BELUM ada: AP Payment Projection Report dan AP Payment Realization &amp; Variance Report. Keduanya project tersendiri yang masih berstatus Planned di Project Tracker (Proyeksi AP, Realisasi AP), jadi tidak termasuk cakupan menu ini.',
+                    ],
+                ],
+            ],
             'payment-voucher-list' => [
                 'title' => 'Payment Voucher List', 'icon' => 'fa-list-alt', 'path' => 'module/AP/payment-voucher-list.php',
                 'doc' => [
