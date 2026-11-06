@@ -95,10 +95,14 @@ if ($r && mysqli_num_rows($r) > 0) {
 }
 
 // 2) Sudah dipakai di kontrabon TERSIMPAN? (doc_number ada di header, JOIN via unik_code)
+//    Cancel = Cancel di ir_kontrabon_h ATAU ir_invoice_supp_h (IR yang dibalik lewat
+//    menu Reverse dulu hanya tercatat Cancel di tabel kedua) - sama dgn daftar IR.
 $excCond = ($excludeDoc !== '') ? " AND (h.doc_number IS NULL OR h.doc_number <> '" . mysqli_real_escape_string($conn2, $excludeDoc) . "')" : '';
 $rf = mysqli_query($conn2, "SELECT h.doc_number FROM ir_kontrabon_bpb b
     LEFT JOIN ir_kontrabon_h h ON h.unik_code = b.unik_code
-    WHERE b.no_bpb = '$bpb_esc2' AND (h.status IS NULL OR h.status <> 'Cancel')$excCond LIMIT 1");
+    LEFT JOIN ir_invoice_supp_h ih ON ih.doc_number = h.doc_number
+    WHERE b.no_bpb = '$bpb_esc2' AND (h.status IS NULL OR h.status <> 'Cancel')
+      AND (ih.status IS NULL OR ih.status <> 'Cancel')$excCond LIMIT 1");
 if ($rf && mysqli_num_rows($rf) > 0) {
     $dn = mysqli_fetch_assoc($rf)['doc_number'] ?? '';
     echo json_encode(['ok' => false, 'msg' => "BPB '$no_bpb' is already used in a saved invoice received" . ($dn ? " ($dn)" : '') . "."]);
