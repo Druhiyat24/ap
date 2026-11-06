@@ -93,9 +93,12 @@ $KOLOM_ANGKA = array('invoice_amount', 'rate', 'tax_base', 'vat',
 ?>
 <style>
     table { border-collapse: collapse; }
-    /* Garis tabel HITAM biasa (diminta pemakai 6 Nov 2026) - bukan abu-abu
-       #999 seperti semula, supaya sama dgn garis bawaan Excel. */
-    th, td { border: 1px solid #000000; padding: 3px 6px; font-size: 10px;
+    /* Garis tabel HITAM TIPIS (diminta pemakai 6 Nov 2026).
+       SATUANNYA .5pt, BUKAN 1px: Excel memetakan lebar garis ke tebalnya
+       sendiri, dan 1px jatuh ke "medium" - itulah yang tampak kelewat tebal
+       pada percobaan pertama. .5pt adalah garis "thin" bawaan Excel, sama
+       dgn yang dipakai kalau orang memasang border lewat menu Excel. */
+    th, td { border: .5pt solid #000000; padding: 3px 6px; font-size: 10px;
              font-family: Calibri, Arial, sans-serif; white-space: nowrap; }
     th { background: #1e3a5f; color: #ffffff; font-weight: bold;
          text-align: center; vertical-align: middle; }
