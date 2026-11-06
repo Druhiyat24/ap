@@ -123,8 +123,9 @@ while ($row = mysqli_fetch_assoc($sql)) { $baris[] = $row; }
    itu hanya milik GEN/OUT & GEN/RO, dan NOL dari keduanya masuk daftar ini
    (diperiksa 6 Nov 2026), tapi kalau suatu saat masuk, lebih baik ikut
    terhitung daripada diam-diam terlewat. */
-$jurPpn = [];   /* no_dok => nilai PPN di jurnal */
-$adaJur = [];   /* no_dok => dokumen ini sudah punya jurnal BPB */
+$jurPpn = [];     /* no_dok => nilai PPN bersih di jurnal (bertanda) */
+$adaJur = [];     /* no_dok => dokumen ini sudah punya jurnal BPB */
+$jurRetur = [];   /* no_dok => jurnalnya jenis RETURN */
 if ($baris) {
     $nomor = [];
     foreach ($baris as $b) {
@@ -133,14 +134,16 @@ if ($baris) {
     $in = implode(',', $nomor);
     $qj = mysqli_query($conn1, "SELECT no_journal,
                 SUM(CASE WHEN no_coa = '1.52.07' THEN debit - credit ELSE 0 END) ppn,
-                COUNT(*) n
+                COUNT(*) n,
+                MAX(type_journal LIKE '%RETURN%') retur
             FROM tbl_list_journal
             WHERE no_journal IN ($in) AND type_journal LIKE '%BPB%'
             GROUP BY no_journal");
     if ($qj) {
         while ($j = mysqli_fetch_assoc($qj)) {
-            $jurPpn[$j['no_journal']] = round((float) $j['ppn'], 2);
-            $adaJur[$j['no_journal']] = ((int) $j['n']) > 0;
+            $jurPpn[$j['no_journal']]   = round((float) $j['ppn'], 2);
+            $adaJur[$j['no_journal']]   = ((int) $j['n']) > 0;
+            $jurRetur[$j['no_journal']] = ((int) $j['retur']) === 1;
         }
     }
 }
@@ -154,10 +157,19 @@ foreach ($baris as $row) {
     $sudah   = isset($adaJur[$row['no_dok']]);
 
     if ($sudah) {
-        /* Sudah diapprove: yang ditampilkan PPN yang benar-benar dibukukan. */
-        $row['ppn']      = isset($jurPpn[$row['no_dok']]) ? $jurPpn[$row['no_dok']] : 0.0;
+        /* Sudah diapprove: yang ditampilkan PPN yang benar-benar dibukukan,
+           besarannya - sebaris dgn DPP & Qty yang juga ditampilkan positif.
+           ARAH TANDA tetap diperiksa: dokumen RETUR dibukukan sbg KREDIT,
+           penerimaan sbg DEBET; penerimaan yang malah berkredit bukan
+           "cocok". Untuk GEN dokumen RETURN tidak pernah masuk daftar ini
+           (0 dari seluruhnya), tapi ditulis sama dgn tiga salinan lain -
+           di Fabric cabang GK/RO memang berkredit semua. */
+        $ppnJur  = isset($jurPpn[$row['no_dok']]) ? $jurPpn[$row['no_dok']] : 0.0;
+        $retur   = !empty($jurRetur[$row['no_dok']]);
+        $arahOk  = (abs($ppnJur) <= 0.005) || (($ppnJur < 0) === $retur);
+        $row['ppn']      = abs($ppnJur);
         $row['ppn_dari'] = 'jurnal';
-        $ppn_cocok       = abs($row['ppn'] - $ppn_po) <= 0.05;
+        $ppn_cocok       = $arahOk && abs(abs($ppnJur) - $ppn_po) <= 0.05;
     } else {
         /* Belum diapprove - belum ada jurnal, jadi belum ada apa pun yang
            bisa berselisih dgn PO. Yang ditampilkan nilai menurut PO, yaitu

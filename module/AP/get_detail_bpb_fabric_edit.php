@@ -26,7 +26,7 @@ $isPenerimaan = $headerCheck && mysqli_num_rows($headerCheck) > 0;
 
 if ($isPenerimaan) {
     $sql = mysqli_query($conn1, "SELECT b.id_jo, tmpjo.kpno no_ws, c.id_item, c.itemdesc desc_item,
-            SUM(b.qty_good) qty, b.unit, IFNULL(b.price_update, b.price) price, b.curr, IFNULL(b.ppn,d.tax) ppn,
+            SUM(b.qty_good) qty, b.unit, IFNULL(b.price_update, b.price) price, b.curr, 
             d.tax po_ppn, po_match.po_price, po_match.po_curr
         FROM whs_inmaterial_fabric a
         INNER JOIN whs_inmaterial_fabric_det b ON b.no_dok = a.no_dok
@@ -44,7 +44,7 @@ if ($isPenerimaan) {
         GROUP BY b.id_jo, b.id_item");
 } else {
     $sql = mysqli_query($conn1, "SELECT r.id_jo, tmpjo.kpno no_ws, c.id_item, c.itemdesc desc_item,
-            SUM(r.qty_out) qty, r.satuan unit, r.price, r.curr, IFNULL(r.ppn,d.tax) ppn,
+            SUM(r.qty_out) qty, r.satuan unit, r.price, r.curr, 
             d.tax po_ppn, po_match.po_price, po_match.po_curr
         FROM whs_bppb_h h
         INNER JOIN whs_bppb_ro r ON r.no_bppb = h.no_bppb
@@ -63,18 +63,77 @@ if ($isPenerimaan) {
 }
 
 
-$first = true;
-while ($row = mysqli_fetch_assoc($sql)) {
-    if ($first) {
-        $result['ppn'] = $row['ppn'] !== null ? (float) $row['ppn'] : 0;
-        $first = false;
+/* ---------------------------------------------------------------------------
+   PPN SEKARANG = yang BENAR-BENAR terbukukan di jurnal, bukan pajak PO.
+
+   Dulu kolom ini diisi IFNULL(<tabel>.ppn, d.tax) lalu dibandingkan ke
+   d.tax - selalu sama untuk baris yang kolom ppn-nya kosong, dan kosongnya
+   mayoritas. Akibatnya setiap baris dianggap sudah cocok PO pada sisi PPN
+   dan ikut TERKUNCI (is_locked), sehingga PPN yang sebenarnya meleset justru
+   tidak bisa dibetulkan dari sini. Keterangan lengkapnya di berkas
+   cari_data_bpb_*_edit.php pasangannya.
+
+   Jurnal menyimpan nilai PPN per DOKUMEN (COA 1.52.07), jadi tarifnya
+   diturunkan sekali dari nilai itu dibagi DPP dokumennya, lalu dipakai untuk
+   semua itemnya - memang satu tarif untuk satu dokumen.
+
+   Kecocokannya dinilai dari NILAI (rupiah), bukan dari tarif. Membandingkan
+   tarif menyesatkan: pada GEN/IN/0325/00569 tarif jurnalnya membulat jadi
+   11,00 - sama dgn pajak PO - padahal nilainya meleset 1,19. Kalau modal
+   memakai tarif sementara daftarnya memakai nilai, baris yang ditandai
+   "tidak match" di daftar malah terkunci di sini. */
+$ppnTerbukukan = null;   /* null = dokumen belum punya jurnal */
+$ppnCocokDok   = true;
+$ppnJur = 0.0; $dppDua = 0.0; $returDok = false;
+$qd = mysqli_query($conn1, "SELECT
+        IFNULL(
+          (SELECT ROUND(SUM(b.qty_good * IFNULL(b.price_update, b.price)),4)
+             FROM whs_inmaterial_fabric_det b WHERE b.no_dok = '$no_bpb_esc'),
+          (SELECT ROUND(SUM(r.qty_out * r.price),4)
+             FROM whs_bppb_ro r WHERE r.no_bppb = '$no_bpb_esc')) dpp,
+        (SELECT COUNT(*) FROM tbl_list_journal
+          WHERE no_journal = '$no_bpb_esc' AND type_journal LIKE '%BPB%') n_jurnal,
+        (SELECT IFNULL(MAX(type_journal LIKE '%RETURN%'),0) FROM tbl_list_journal
+          WHERE no_journal = '$no_bpb_esc' AND type_journal LIKE '%BPB%') retur,
+        (SELECT IFNULL(ROUND(SUM(debit - credit),4),0) FROM tbl_list_journal
+          WHERE no_journal = '$no_bpb_esc' AND type_journal LIKE '%BPB%'
+            AND no_coa = '1.52.07') ppn_jurnal");
+if ($qd && ($d = mysqli_fetch_assoc($qd))) {
+    if ((int) $d['n_jurnal'] > 0) {
+        $dppDok        = (float) $d['dpp'];
+        $ppnJur        = round((float) $d['ppn_jurnal'], 2);
+        $dppDua        = round($dppDok, 2);
+        $returDok      = ((int) $d['retur']) === 1;
+        /* Retur membukukan PPN sbg KREDIT, jadi tarifnya diambil dari
+           besarannya - tarif negatif tidak ada artinya di dropdown. */
+        $ppnTerbukukan = ($dppDok > 0) ? round(abs($ppnJur) / $dppDok * 100, 2) : 0.0;
     }
+}
+
+while ($row = mysqli_fetch_assoc($sql)) {
+    /* Belum diapprove (belum ada jurnal): yang berlaku tarif PO, yaitu yang
+       AKAN dibukukan - jadi tidak ada yang berselisih, dan barisnya memang
+       boleh terkunci kalau harganya juga sudah sama. */
+    $row['ppn'] = ($ppnTerbukukan !== null)
+        ? $ppnTerbukukan
+        : ($row['po_ppn'] !== null ? (float) $row['po_ppn'] : 0.0);
+
+    $result['ppn'] = $row['ppn'];
     $row['id'] = $row['id_jo'] . '-' . $row['id_item'];
     $row['qty'] = round((float) $row['qty'], 2);
 
+    if ($ppnTerbukukan === null) {
+        $ppnCocokDok = true;
+    } elseif ($row['po_ppn'] !== null) {
+        $arahOk = (abs($ppnJur) <= 0.005) || (($ppnJur < 0) === $returDok);
+        $ppnCocokDok = $arahOk
+            && abs(abs($ppnJur) - round($dppDua * ((float) $row['po_ppn']) / 100, 2)) <= 0.05;
+    } else {
+        $ppnCocokDok = false;   /* ada jurnal tapi pajak PO tidak terbaca */
+    }
+
     $priceMatches = $row['po_price'] !== null && abs((float) $row['price'] - (float) $row['po_price']) < 0.0001;
-    $ppnMatches = $row['po_ppn'] !== null && abs((float) $row['ppn'] - (float) $row['po_ppn']) < 0.0001;
-    $row['is_locked'] = $priceMatches && $ppnMatches;
+    $row['is_locked'] = $priceMatches && $ppnCocokDok;
 
     $result['items'][] = $row;
 }

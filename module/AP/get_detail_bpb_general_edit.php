@@ -48,23 +48,27 @@ $sql = mysqli_query($conn1, "SELECT a.id_jo, tmpjo.kpno no_ws, c.id_item, c.item
    diturunkan sekali dari nilai itu dibagi DPP dokumennya, lalu dipakai untuk
    semua itemnya - memang satu tarif untuk satu dokumen. */
 $ppnTerbukukan = null;   /* null = dokumen belum punya jurnal */
-$ppnCocokDok   = true;   /* nilai PPN jurnal sejalan dgn pajak PO? */
+$ppnCocokDok   = true;
+$ppnJur = 0.0; $dppDua = 0.0; $returDok = false;
 $qd = mysqli_query($conn1, "SELECT
         (SELECT ROUND(SUM((qty - IFNULL(qty_reject,0)) * price),4) FROM bpb
           WHERE bpbno_int = '$no_bpb_esc' AND IFNULL(cancel,'N') <> 'Y') dpp,
         (SELECT COUNT(*) FROM tbl_list_journal
           WHERE no_journal = '$no_bpb_esc' AND type_journal LIKE '%BPB%') n_jurnal,
+        (SELECT IFNULL(MAX(type_journal LIKE '%RETURN%'),0) FROM tbl_list_journal
+          WHERE no_journal = '$no_bpb_esc' AND type_journal LIKE '%BPB%') retur,
         (SELECT IFNULL(ROUND(SUM(debit - credit),4),0) FROM tbl_list_journal
           WHERE no_journal = '$no_bpb_esc' AND type_journal LIKE '%BPB%'
             AND no_coa = '1.52.07') ppn_jurnal");
 if ($qd && ($d = mysqli_fetch_assoc($qd))) {
     if ((int) $d['n_jurnal'] > 0) {
-        $dppDok = (float) $d['dpp'];
-        $ppnTerbukukan = ($dppDok > 0)
-            ? round(((float) $d['ppn_jurnal']) / $dppDok * 100, 2)
-            : 0.0;
-        $ppnJur = round((float) $d['ppn_jurnal'], 2);
-        $dppDua = round($dppDok, 2);
+        $dppDok        = (float) $d['dpp'];
+        $ppnJur        = round((float) $d['ppn_jurnal'], 2);
+        $dppDua        = round($dppDok, 2);
+        $returDok      = ((int) $d['retur']) === 1;
+        /* Retur membukukan PPN sbg KREDIT, jadi tarifnya diambil dari
+           besarannya - tarif negatif tidak ada artinya di dropdown. */
+        $ppnTerbukukan = ($dppDok > 0) ? round(abs($ppnJur) / $dppDok * 100, 2) : 0.0;
     }
 }
 
@@ -88,13 +92,15 @@ while ($row = mysqli_fetch_assoc($sql)) {
     $row['id'] = $row['id_jo'] . '-' . $row['id_item'];
     $row['qty'] = round((float) $row['qty'], 2);
 
-    if ($ppnTerbukukan !== null && $row['po_ppn'] !== null) {
-        $ppnCocokDok = abs($ppnJur - round($dppDua * ((float) $row['po_ppn']) / 100, 2)) <= 0.05;
-    } elseif ($ppnTerbukukan === null) {
+    if ($ppnTerbukukan === null) {
         /* Belum diapprove: belum ada yang bisa berselisih. */
         $ppnCocokDok = true;
+    } elseif ($row['po_ppn'] !== null) {
+        $arahOk = (abs($ppnJur) <= 0.005) || (($ppnJur < 0) === $returDok);
+        $ppnCocokDok = $arahOk
+            && abs(abs($ppnJur) - round($dppDua * ((float) $row['po_ppn']) / 100, 2)) <= 0.05;
     } else {
-        $ppnCocokDok = false;   /* ada jurnal tapi PO tanpa pajak terbaca */
+        $ppnCocokDok = false;   /* ada jurnal tapi pajak PO tidak terbaca */
     }
 
     $priceMatches = $row['po_price'] !== null && abs((float) $row['price'] - (float) $row['po_price']) < 0.0001;
