@@ -5,7 +5,7 @@
    tombol Create New (create-payment-plan.php), sama seperti List/Create
    Petty Cash Out.
 
-   Bentuk dokumennya: satu nomor AP-PP/<bulan><tahun>/<urut> berisi banyak
+   Bentuk dokumennya: satu nomor PPU/<bulan><tahun>/<urut> berisi banyak
    payment voucher dgn SATU tanggal rencana bayar. Dokumen yang salah
    DIBATALKAN, bukan ditimpa - jadi riwayat penjadwalan terbaca dari daftar
    ini sendiri.
@@ -16,9 +16,16 @@
    SUSUNAN TAMPILANNYA MENGIKUTI petty-cashout.php (diminta pemakai,
    4 Nov 2026): DUA kartu - kartu saringan di atas, kartu tabel di bawah -
    tombol ber-kosakata .app-btn, tabel .ftl-tblwrap/.ftl-tbl berkepala
-   .thead-dark, overlay .app-loading-wrap, dan modal .ftl-modal. Sebelumnya
-   halaman ini memakai satu kartu dgn dua panel dan tombol Bootstrap biasa,
-   jadi tampil lain dari menu-menu AP yang sudah jalan.
+   .thead-dark, dan overlay .app-loading-wrap. Sebelumnya halaman ini memakai
+   satu kartu dgn dua panel dan tombol Bootstrap biasa, jadi tampil lain dari
+   menu-menu AP yang sudah jalan.
+
+   MODAL RINCIANNYA TIDAK ikut kosakata .ftl- (diubah 5 Nov 2026): lihat
+   keterangan panjang tepat di atas markup modalnya. Ringkasnya, aturan
+   .ftl-modal mengharapkan susunan DOM yang berbeda dari yang dipakai di
+   sini, jadi hampir semuanya tidak pernah kena dan kolom tabelnya tampak
+   berdempetan. Sekarang memakai .app-modal / .app-mod-info / .app-mod-tbl,
+   sama dgn modal rincian voucher di create-payment-plan.php.
    ============================================================================ */
 include '../header.php';
 ?>
@@ -34,6 +41,21 @@ include '../header.php';
      HANYA oleh halaman daftar, bukan dari header.php, supaya menu lain tidak
      ikut berubah. -->
 <link rel="stylesheet" href="../css/app-ftr-list.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-ftr-list.css'); ?>">
+
+<style>
+/* Hanya dua hal yang belum ada di app-skin-form.css. Sisanya diurus kosakata
+   .app-modal / .app-mod-info / .app-mod-tbl. Namanya disamakan dgn
+   .pv-rinc-judul / #pv-tunggu di create-payment-plan.php supaya kedua layar
+   Payment Plan terbaca sebagai satu keluarga. */
+.pp-rinc-judul { font-size: 11px; font-weight: 700; text-transform: uppercase;
+                 letter-spacing: .5px; color: #64748b; margin: 4px 0 8px; }
+.pp-rinc-judul i { color: #94a3b8; margin-right: 4px; }
+.pp-tunggu { padding: 18px; text-align: center; color: #94a3b8; font-size: 12px; }
+
+/* Nomor voucher di modal: ditegaskan sedikit supaya kolom paling kiri tetap
+   jadi jangkar baca, tanpa dibuat setebal judul. */
+#details .app-mod-tbl tbody td:first-child { font-weight: 600; color: #1e293b; }
+</style>
 
 <!-- MAIN -->
 <div class="container-fluid mt-3 p-3">
@@ -53,15 +75,17 @@ include '../header.php';
             <form id="form-data" action="list-payment-plan.php" method="post">
                 <div class="form-row">
 
-                    <div class="col-12 col-sm-6 col-xl-2 mb-2">
-                        <label for="doc_num" class="form-label"><b>Document Number</b></label>
-                        <input type="text" class="form-control form-control-sm" name="doc_num" id="doc_num" autocomplete="off"
-                               value="<?php echo isset($_POST['doc_num']) ? htmlspecialchars($_POST['doc_num'], ENT_QUOTES) : ''; ?>">
-                    </div>
-
+                    <!-- Saringan "Document Number" DIHAPUS (diminta pemakai,
+                         5 Nov 2026): kotak Search bawaan DataTables di atas
+                         tabel sudah mencari nomor dokumen, jadi isian ini
+                         hanya mengerjakan hal yang sama dua kali.
+                         ajx_list-payment-plan.php & ekspor_payment_plan.php
+                         TETAP menerima parameter doc_num - tidak ada yang
+                         dibongkar di sisi server, cuma tidak dikirim lagi
+                         dari sini. -->
                     <div class="col-12 col-sm-6 col-xl-2 mb-2">
                         <label for="status" class="form-label"><b>Status</b></label>
-                        <select class="form-control form-control-sm" name="status" id="status">
+                        <select class="form-control app-select2" name="status" id="status">
                             <option value="ALL" selected="selected">ALL</option>
                             <option value="POST">POST</option>
                             <option value="CANCEL">CANCEL</option>
@@ -74,16 +98,16 @@ include '../header.php';
                     <div class="col-12 col-sm-6 col-xl-2 mb-2">
                         <label for="start_date" class="form-label"><b>Plan Date From</b></label>
                         <input type="text" class="form-control form-control-sm tanggal" id="start_date" name="start_date" autocomplete="off"
-                               value="<?php echo !empty($_POST['start_date']) ? htmlspecialchars($_POST['start_date'], ENT_QUOTES) : date('01-m-Y'); ?>" placeholder="Start Date">
+                               value="<?php echo !empty($_POST['start_date']) ? htmlspecialchars($_POST['start_date'], ENT_QUOTES) : date('01 M Y'); ?>" placeholder="Start Date">
                     </div>
 
                     <div class="col-12 col-sm-6 col-xl-2 mb-2">
                         <label for="end_date" class="form-label"><b>To</b></label>
                         <input type="text" class="form-control form-control-sm tanggal" id="end_date" name="end_date" autocomplete="off"
-                               value="<?php echo !empty($_POST['end_date']) ? htmlspecialchars($_POST['end_date'], ENT_QUOTES) : date('t-m-Y'); ?>" placeholder="End Date">
+                               value="<?php echo !empty($_POST['end_date']) ? htmlspecialchars($_POST['end_date'], ENT_QUOTES) : date('t M Y'); ?>" placeholder="End Date">
                     </div>
 
-                    <div class="col-12 col-xl-4 mb-2 ftl-actions">
+                    <div class="col-12 col-xl-6 mb-2 ftl-actions">
                         <button type="submit" class="app-btn app-btn-primary app-btn-sm">
                             <i class="fa fa-search" aria-hidden="true"></i> Search
                         </button>
@@ -128,9 +152,12 @@ include '../header.php';
                             <th style="text-align: center;vertical-align: middle;"></th>
                             <th style="text-align: center;vertical-align: middle;">Document Number</th>
                             <th style="text-align: center;vertical-align: middle;">Payment Plan Date</th>
-                            <th style="text-align: center;vertical-align: middle;">Vouchers</th>
+                            <!-- Kolom "Vouchers" DIHAPUS (diminta pemakai,
+                                 5 Nov 2026). Jumlah vouchernya tetap ada di
+                                 modal rincian, berikut daftar vouchernya -
+                                 jadi tidak ada keterangan yang hilang. -->
                             <th style="text-align: center;vertical-align: middle;">Total Amount</th>
-                            <th style="text-align: center;vertical-align: middle;">Note</th>
+                            <th style="text-align: center;vertical-align: middle;">Description</th>
                             <th style="text-align: center;vertical-align: middle;">Status</th>
                             <th style="text-align: center;vertical-align: middle;">User Created</th>
                             <th style="text-align: center;vertical-align: middle;width: 150px;">Action</th>
@@ -149,22 +176,43 @@ include '../header.php';
      jarak kolom, mematikan penebalan .ftl-doc/.ftl-amt di dalam #details
      (modal ini cuma untuk dibaca), menyembunyikan kartu info yang kosong,
      dan menata ulang kartu-kartunya di layar sempit. -->
-<div class="modal fade ftl-modal is-wide" id="mymodal" data-target="#mymodal" tabindex="-1" role="dialog" aria-labelledby="detail" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
+<!-- ============================================================================
+     Modal rincian dokumen. DISUSUN ULANG 5 Nov 2026 (diminta pemakai).
+
+     Bentuk lamanya <div class="container"><div class="row"><div class="modal-body col-6">
+     - dan hampir SELURUH aturan perapian di app-ftr-list.css berpola
+     `.ftl-modal.is-wide .modal-body > .row > [class*="col-"]`, yaitu
+     .modal-body sebagai INDUK dari .row. Di sini .modal-body justru jadi
+     ANAK, jadi aturan itu tidak pernah kena satu pun: tiap kotak info malah
+     kebagian padding & latar milik .modal-body sendiri, dan tabel rinciannya
+     tidak dapat perapian jarak selnya. Itu sebabnya kolom tampak berdempetan
+     sampai terbaca menyatu ("16.513.500,00TES").
+
+     Sekarang memakai kosakata .app-modal / .app-mod-info / .app-mod-tbl dari
+     app-skin-form.css - berkas yang sudah ditaut halaman ini - yaitu kosakata
+     yang SAMA dengan modal rincian voucher di create-payment-plan.php. Jadi
+     dua layar Payment Plan berbicara satu bahasa, dan jarak selnya diatur
+     aturan yang memang dibuat untuk tabel di dalam modal.
+     ============================================================================ -->
+<div class="modal fade" id="mymodal" data-target="#mymodal" tabindex="-1" role="dialog" aria-labelledby="detail" aria-hidden="true">
+    <div class="modal-dialog app-modal modal-dialog-centered" role="document">
         <div class="modal-content">
-            <div class="modal-header text-white" style="background-color: #2563EB;">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-                <h4 class="modal-title" id="txt_doc"></h4>
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fa fa-calendar-check-o" aria-hidden="true"></i> <span id="txt_doc"></span></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span class="fa fa-times"></span></button>
             </div>
-            <div class="container">
-                <div class="row">
-                    <div id="txt_plan"   class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                    <div id="txt_status" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                    <div id="txt_jml"    class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                    <div id="txt_user"   class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-                    <div id="txt_note"   class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;"></div>
-                    <div id="details"    class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;"></div>
-                </div>
+            <div class="modal-body">
+                <!-- Kepala dokumen: terisi dari baris yang sudah ada di tabel,
+                     jadi tampil seketika. -->
+                <div class="app-mod-info" id="pp-info"></div>
+
+                <div class="pp-rinc-judul"><i class="fa fa-list" aria-hidden="true"></i> Payment vouchers</div>
+                <div id="details"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="app-btn app-btn-dark app-btn-sm" data-dismiss="modal">
+                    <i class="fa fa-times" aria-hidden="true"></i> Close
+                </button>
             </div>
         </div>
     </div>
@@ -175,7 +223,24 @@ include '../header.php';
 <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
+<!-- select2 untuk dropdown saringan. CSS-nya sudah dimuat header.php;
+     skin tingginya dari app-skin-form.css, jadi sebaris dgn kotak tanggal. -->
+<script language="JavaScript" src="../css/4.1.1/select2.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
+
+<script>
+  /* Sama persis dgn create-payment-plan.php: panel pilihan ditempel ke <body>
+     supaya tidak terpotong kartu, dan daftar pendek (Status, 3 pilihan) tidak
+     diberi kotak cari - ambang 8 opsi. */
+  $(function () {
+    $('.app-select2').each(function () {
+      var $s = $(this);
+      var o = { width: '100%', dropdownParent: $('body') };
+      if ($s.find('option').length < 8) { o.minimumResultsForSearch = Infinity; }
+      $s.select2(o);
+    });
+  });
+</script>
 
 <script>
     // Hide submenus
@@ -208,8 +273,13 @@ include '../header.php';
 
 <script>
     $(document).ready(function() {
+        /* "10 Oct 2026" - bentuk yang sama dgn formulir Create
+           (diganti pemakai 5 Nov 2026). Bentuk ini juga yang dikirim ke
+           ajx_list-payment-plan.php & ekspor_payment_plan.php; keduanya
+           membacanya lewat strtotime(), yang tidak bisa salah menebak bulan
+           kalau nama bulannya ditulis. */
         $('.tanggal').datepicker({
-            format: "dd-mm-yyyy",
+            format: "dd M yyyy",
             autoclose: true
         });
     });
@@ -243,7 +313,8 @@ include '../header.php';
             url: 'ajx_list-payment-plan.php',
             type: 'POST',
             data: function(d) {
-                d.doc_num    = $('#doc_num').val();
+                /* doc_num tidak dikirim lagi - isiannya dihapus dari
+                   saringan. Endpoint-nya tetap menerima parameter itu. */
                 d.status     = $('#status').val();
                 d.start_date = $('#start_date').val();
                 d.end_date   = $('#end_date').val();
@@ -276,7 +347,6 @@ include '../header.php';
             { data: null, defaultContent: '', orderable: false, className: 'dtr-control', responsivePriority: 1 },
             { data: 'doc_number',  responsivePriority: 1 },
             { data: 'plan_date',   responsivePriority: 2 },
-            { data: 'jml',         responsivePriority: 5 },
             { data: 'total',       responsivePriority: 4 },
             { data: 'keterangan',  responsivePriority: 7 },
             { data: 'status',      responsivePriority: 3 },
@@ -288,14 +358,19 @@ include '../header.php';
            seberapa pun sempit layarnya. responsivePriority saja tidak cukup:
            itu hanya menentukan urutan dibuang. Tiga yang dikunci: nomor
            dokumen, Status, dan Action.
-           Nomor target bergeser +1 karena kolom "+" disisipkan di depan. */
+
+           SUSUNAN KOLOM sekarang 0..7 (kolom Vouchers dihapus, jadi nomor
+           sesudahnya bergeser turun 1):
+             0 "+"            1 Document Number   2 Payment Plan Date
+             3 Total Amount   4 Description       5 Status
+             6 User Created   7 Action */
         columnDefs: [
             { targets: [1],    className: 'text-left ftl-doc all' },
-            { targets: [6],    className: 'text-center all' },
-            { targets: [8],    className: 'text-center ftl-act-cell all' },
-            { targets: [4],    className: 'text-right ftl-amt' },
-            { targets: [5],    className: 'text-left' },
-            { targets: [2, 3, 7], className: 'text-center' }
+            { targets: [5],    className: 'text-center all' },
+            { targets: [7],    className: 'text-center ftl-act-cell all' },
+            { targets: [3],    className: 'text-right ftl-amt' },
+            { targets: [4],    className: 'text-left' },
+            { targets: [2, 6], className: 'text-center' }
         ],
 
         language: {
@@ -334,8 +409,9 @@ include '../header.php';
             }
         });
 
-        window.location.href = 'ekspor_payment_plan.php?doc_num=' + encodeURIComponent($('#doc_num').val())
-            + '&status=' + encodeURIComponent($('#status').val())
+        /* doc_num tidak ikut dikirim - isiannya sudah tidak ada di saringan.
+           Ekspornya mengikuti saringan yang terlihat di layar. */
+        window.location.href = 'ekspor_payment_plan.php?status=' + encodeURIComponent($('#status').val())
             + '&start_date=' + encodeURIComponent($('#start_date').val())
             + '&end_date=' + encodeURIComponent($('#end_date').val());
 
@@ -353,18 +429,12 @@ include '../header.php';
         return $('<div>').text(v === null || v === undefined ? '-' : v).html();
     }
 
-    /* Satu keterangan ringkas = label kecil di atas, nilainya di bawah. */
-    function isiRingkas(id, label, nilai) {
-        $(id).html('<span class="ftl-k">' + label + '</span>'
-                 + '<span class="ftl-v">' + lolos(nilai) + '</span>');
-    }
-
-    /* Status & pemakai sudah berbentuk pil/HTML dari server, jadi tidak
-       dilolosi lagi - kalau dilolosi yang tampil justru tag-nya. */
-    function isiRingkasHtml(id, label, html) {
-        $(id).html('<span class="ftl-k">' + label + '</span>'
-                 + '<span class="ftl-v">' + (html || '-') + '</span>');
-    }
+    /* isiRingkas() / isiRingkasHtml() DIHAPUS: keduanya mengisi satu kotak
+       .ftl-k/.ftl-v per panggilan, pola modal yang lama. Kepala modal
+       sekarang dibangun sekaligus sbg kisi .app-mod-info di dalam
+       bukaRincianPp(). Catatan yang perlu dibawa: data.status dan
+       data.user_create SUDAH berupa HTML dari server - kalau dilolosi, yang
+       tampil justru tag-nya. */
 
     /* Satu pintu untuk modal rincian - dipakai tombol View DAN klik baris,
        jadi tidak ada dua potongan kode yang harus dijaga agar seragam. */
@@ -372,14 +442,30 @@ include '../header.php';
         if (!data) return;
 
         $('#mymodal').modal('show');
-        $('#details').html('<div class="text-center text-muted">Loading...</div>');
+        $('#details').html('<div class="pp-tunggu"><i class="fa fa-spinner fa-spin"></i> Loading payment vouchers...</div>');
 
         $('#txt_doc').html(lolos(data.doc_number));
-        isiRingkas('#txt_plan', 'Payment Plan Date', data.plan_date);
-        isiRingkasHtml('#txt_status', 'Status', data.status);
-        isiRingkas('#txt_jml', 'Vouchers', data.jml);
-        isiRingkasHtml('#txt_user', 'User Created', data.user_create);
-        isiRingkas('#txt_note', 'Note', $('<div>').html(data.keterangan).text());
+
+        /* Panel kepala dibangun sekali jadi, bukan diisi per kotak: susunannya
+           kisi .app-mod-info, sama dgn modal rincian voucher di halaman
+           Create. data.status & data.user_create sudah berupa HTML dari
+           server (pil status + baris tanggal), jadi dipasang apa adanya;
+           sisanya dilolos-kan. */
+        var info = [
+            ['Payment Plan Date', lolos(data.plan_date)],
+            ['Status',            data.status || '-'],
+            ['Vouchers',          lolos(data.jml)],
+            ['Total Amount',      data.total || '-'],
+            ['User Created',      data.user_create || '-'],
+            ['Description',       lolos($('<div>').html(data.keterangan).text())]
+        ];
+        var hi = '';
+        for (var n = 0; n < info.length; n++) {
+            var nilai = info[n][1];
+            if (nilai === '' || nilai === null || nilai === undefined) { nilai = '-'; }
+            hi += '<div><b>' + info[n][0] + '</b><span>' + nilai + '</span></div>';
+        }
+        $('#pp-info').html(hi);
 
         $.ajax({
             url: 'ajx_detail-payment-plan.php',
@@ -389,39 +475,45 @@ include '../header.php';
         }).done(function(res) {
             var baris = res.data || [];
             if (!baris.length) {
-                $('#details').html('<div class="text-center text-muted">No rows.</div>');
+                $('#details').html('<div class="pp-tunggu">No payment voucher in this document.</div>');
                 return;
             }
-            var h = '<div class="ftl-tblwrap"><table class="table ftl-tbl" style="width:100%">'
-                  + '<thead><tr class="thead-dark">'
-                  + '<th style="text-align:center;">Payment Voucher No</th>'
-                  + '<th style="text-align:center;">Supplier</th>'
-                  + '<th style="text-align:center;">Voucher Date</th>'
-                  + '<th style="text-align:center;">Due Date</th>'
-                  + '<th style="text-align:center;">Payment Plan Date</th>'
-                  + '<th style="text-align:center;">Curr</th>'
-                  + '<th style="text-align:center;">Amount</th>'
-                  + '<th style="text-align:center;">Note</th>'
-                  + '<th style="text-align:center;">Status</th>'
+            /* .app-mod-tbl = tabel di dalam .app-modal (app-skin-form.css):
+               jarak sel, kepala biru muda, dan .num untuk angka rata kanan
+               ber-tabular-nums. .nowrap dipasang di kolom yang TIDAK BOLEH
+               dipatahkan - nomor voucher dan tanggal; hanya Supplier dan
+               Description yang boleh membungkus, supaya nama panjang tidak
+               memaksa tabelnya melebar. */
+            var h = '<table class="app-mod-tbl">'
+                  + '<thead><tr>'
+                  + '<th>Payment Voucher No</th>'
+                  + '<th>Supplier</th>'
+                  + '<th>PV Date</th>'
+                  + '<th>Due Date</th>'
+                  + '<th>Payment Plan Date</th>'
+                  + '<th>Curr</th>'
+                  + '<th class="num">Amount</th>'
+                  + '<th>Description</th>'
+                  + '<th>Status</th>'
                   + '</tr></thead><tbody>';
             for (var i = 0; i < baris.length; i++) {
                 var b = baris[i];
                 h += '<tr>'
-                   + '<td class="ftl-doc">' + b.no_kbon + '</td>'
+                   + '<td class="nowrap">' + b.no_kbon + '</td>'
                    + '<td>' + b.nama_supp + '</td>'
-                   + '<td class="text-center">' + b.tgl_kbon + '</td>'
-                   + '<td class="text-center">' + b.tgl_tempo + '</td>'
-                   + '<td class="text-center">' + b.plan_date + '</td>'
+                   + '<td class="nowrap text-center">' + b.tgl_kbon + '</td>'
+                   + '<td class="nowrap text-center">' + b.tgl_tempo + '</td>'
+                   + '<td class="nowrap text-center">' + b.plan_date + '</td>'
                    + '<td class="text-center">' + b.curr + '</td>'
-                   + '<td class="text-right ftl-amt">' + b.amount + '</td>'
+                   + '<td class="num">' + b.amount + '</td>'
                    + '<td>' + b.keterangan + '</td>'
-                   + '<td class="text-center">' + b.status + '</td>'
+                   + '<td class="text-center nowrap">' + b.status + '</td>'
                    + '</tr>';
             }
-            h += '</tbody></table></div>';
+            h += '</tbody></table>';
             $('#details').html(h);
         }).fail(function() {
-            $('#details').html('<div class="text-center text-danger">Could not load the rows.</div>');
+            $('#details').html('<div class="pp-tunggu" style="color:#b91c1c;">Could not load the payment vouchers.</div>');
         });
     }
 

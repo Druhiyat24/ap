@@ -37,7 +37,7 @@ function appYmd($v)
 }
 function appTgl($v)
 {
-    return (!empty($v) && $v !== '0000-00-00') ? date('d-M-Y', strtotime($v)) : '-';
+    return (!empty($v) && $v !== '0000-00-00') ? date('d M Y', strtotime($v)) : '-';
 }
 /* Kosakata master COA ke kosakata lembar kerja tim AP - sama spt
    ajx_cari-pv-payment-plan.php. */
@@ -66,17 +66,30 @@ if ($status !== '' && strtoupper($status) !== 'ALL') {
     $where[] = "h.status = '" . mysqli_real_escape_string($conn1, strtoupper($status)) . "'";
 }
 
+/* d.plan_date = tanggal rencana PER VOUCHER, h.plan_date = tanggal
+   DOKUMEN. Sejak 5 Nov 2026 satu dokumen boleh memuat tanggal yang
+   berbeda-beda, jadi dua-duanya dikeluarkan - yang dipakai laporan proyeksi
+   adalah yang per voucher.
+
+   mastersupplier disambung lewat SUBQUERY BERKELOMPOK, bukan langsung:
+   nama supplier di tabel itu TIDAK unik (mis. 'PT. OBOR MAJU JAYA' punya
+   dua baris), jadi join langsung akan MENGGANDAKAN baris ekspornya dan ikut
+   menggelembungkan total di kaki laporan. Kesalahan yang sama sudah pernah
+   kena di layar Create dan di laporan proyeksi. */
 $sql = "SELECT h.doc_number, h.plan_date, h.status AS doc_status, h.keterangan AS doc_note,
                h.created_by, h.created_date, h.cancel_by, h.cancel_date,
-               d.no_kbon, d.curr, d.amount, d.keterangan AS row_note, d.status AS row_status,
-               k.nama_supp, k.tgl_kbon, k.tgl_tempo, k.total, k.tax, k.no_coa,
+               d.no_kbon, d.plan_date AS row_plan_date,
+               d.curr, d.amount, d.keterangan AS row_note, d.status AS row_status,
+               k.nama_supp, k.tgl_kbon, k.tgl_tempo, k.total, k.tax,
+               IFNULL(k.pph_idr, 0) AS pph, k.no_coa,
                DATEDIFF(k.tgl_tempo, k.tgl_kbon) AS term,
                c.relasi, c.item_type1, s.payment_rating
         FROM ap_payment_plan_h h
         INNER JOIN ap_payment_plan_det d ON d.doc_number = h.doc_number
         LEFT JOIN kontrabon_h k    ON k.no_kbon = d.no_kbon
         LEFT JOIN mastercoa_v2 c   ON c.no_coa = k.no_coa
-        LEFT JOIN mastersupplier s ON s.Supplier = k.nama_supp
+        LEFT JOIN (SELECT Supplier, MAX(payment_rating) AS payment_rating
+                   FROM mastersupplier GROUP BY Supplier) s ON s.Supplier = k.nama_supp
         WHERE " . implode(' AND ', $where) . "
         ORDER BY h.id DESC, k.tgl_tempo ASC, d.no_kbon ASC";
 
@@ -108,12 +121,20 @@ $judulPeriode = ($start_date !== '' && $end_date !== '')
         <tr>
             <th style="text-align: center; vertical-align: middle;">No</th>
             <th style="text-align: center; vertical-align: middle;">Document Number</th>
+            <!-- DUA tanggal, sejak satu dokumen boleh memuat tanggal yang
+                 berbeda-beda (5 Nov 2026):
+                   Document Plan Date = tanggal di kepala dokumen, dan itu
+                       juga yang dipakai saringan periode di judul laporan.
+                   Payment Plan Date  = tanggal voucher INI, dari
+                       ap_payment_plan_det. Inilah yang dibaca laporan
+                       proyeksi, jadi inilah tanggal yang berlaku. -->
+            <th style="text-align: center; vertical-align: middle;">Document Plan Date</th>
             <th style="text-align: center; vertical-align: middle;">Payment Plan Date</th>
             <th style="text-align: center; vertical-align: middle;">Document Status</th>
-            <th style="text-align: center; vertical-align: middle;">Document Note</th>
+            <th style="text-align: center; vertical-align: middle;">Document Description</th>
             <th style="text-align: center; vertical-align: middle;">Payment Voucher No</th>
             <th style="text-align: center; vertical-align: middle;">Supplier</th>
-            <th style="text-align: center; vertical-align: middle;">Voucher Date</th>
+            <th style="text-align: center; vertical-align: middle;">PV Date</th>
             <th style="text-align: center; vertical-align: middle;">Due Date</th>
             <th style="text-align: center; vertical-align: middle;">Payment Term</th>
             <th style="text-align: center; vertical-align: middle;">Relationship</th>
@@ -124,6 +145,13 @@ $judulPeriode = ($start_date !== '' && $end_date !== '')
             <th style="text-align: center; vertical-align: middle;">VAT</th>
             <th style="text-align: center; vertical-align: middle;">Total Invoice</th>
             <th style="text-align: center; vertical-align: middle;">Planned Amount</th>
+            <!-- Row Description = ap_payment_plan_det.keterangan, keterangan
+                 PER VOUCHER. Kolomnya sudah ikut diambil query sejak awal
+                 (row_note) tapi tidak pernah dicetak - tidak ketahuan selama
+                 formulirnya belum punya isian per baris. Sejak formulir
+                 Create punya kolom Description (5 Nov 2026), isi itu harus
+                 ikut keluar di laporan. -->
+            <th style="text-align: center; vertical-align: middle;">Row Description</th>
             <th style="text-align: center; vertical-align: middle;">Row Status</th>
             <th style="text-align: center; vertical-align: middle;">Created By</th>
             <th style="text-align: center; vertical-align: middle;">Created Date</th>
@@ -138,9 +166,21 @@ $judulPeriode = ($start_date !== '' && $end_date !== '')
 
         if ($res !== false) {
             while ($row = mysqli_fetch_assoc($res)) {
-                $total = (float) $row['total'];
+                /* RUMUS DIPERBAIKI 5 Nov 2026. kontrabon_h.total sudah NET
+                   dipotong PPh 23, jadi "Total Invoice" harus ditambah PPh-nya
+                   kembali dan Tax Base dihitung dari situ. Rumus lama
+                   (total - tax) meleset untuk SETIAP voucher ber-PPh - 372
+                   voucher di 2026 saja, mis. SI/APR/NAG/2026/01/00017 selisih
+                   12.176.200. Dicocokkan ke lembar "Projection" di
+                   "AP Payment Realization & Variance Report Ver 1.1.xlsx" dan
+                   diuji ke 2.000 voucher: Base+VAT selalu = Total Invoice,
+                   tidak ada Base negatif. Kolom subtotal TETAP tidak dipakai -
+                   isinya tidak konsisten antar jenis dokumen. */
+                $pph   = (float) $row['pph'];
+                $bayar = (float) $row['total'];          /* sudah net PPh */
                 $tax   = (float) $row['tax'];
-                $base  = $total - $tax;
+                $total = $bayar + $pph;                  /* Total Invoice */
+                $base  = $total - $tax;                  /* Tax Base      */
                 $curr  = (string) $row['curr'];
                 $nilai = (float) $row['amount'];
 
@@ -155,6 +195,7 @@ $judulPeriode = ($start_date !== '' && $end_date !== '')
                    . '<td>' . $no++ . '</td>'
                    . '<td value="' . htmlspecialchars($row['doc_number'], ENT_QUOTES) . '">' . htmlspecialchars($row['doc_number']) . '</td>'
                    . '<td value="' . htmlspecialchars((string) $row['plan_date'], ENT_QUOTES) . '">' . appTgl($row['plan_date']) . '</td>'
+                   . '<td value="' . htmlspecialchars((string) $row['row_plan_date'], ENT_QUOTES) . '">' . appTgl($row['row_plan_date']) . '</td>'
                    . '<td>' . htmlspecialchars((string) $row['doc_status']) . '</td>'
                    . '<td>' . htmlspecialchars((string) $row['doc_note'] !== '' ? $row['doc_note'] : '-') . '</td>'
                    . '<td value="' . htmlspecialchars($row['no_kbon'], ENT_QUOTES) . '">' . htmlspecialchars($row['no_kbon']) . '</td>'
@@ -170,19 +211,20 @@ $judulPeriode = ($start_date !== '' && $end_date !== '')
                    . '<td style="text-align:right;" value="' . $tax . '">' . number_format($tax, 2) . '</td>'
                    . '<td style="text-align:right;" value="' . $total . '">' . number_format($total, 2) . '</td>'
                    . '<td style="text-align:right;" value="' . $nilai . '">' . number_format($nilai, 2) . '</td>'
+                   . '<td>' . htmlspecialchars((string) $row['row_note'] !== '' ? $row['row_note'] : '-') . '</td>'
                    . '<td>' . (strtoupper((string) $row['row_status']) === 'Y' ? 'POST' : 'CANCEL') . '</td>'
                    . '<td>' . htmlspecialchars((string) $row['created_by']) . '</td>'
                    . '<td value="' . htmlspecialchars((string) $row['created_date'], ENT_QUOTES) . '">'
-                   . (!empty($row['created_date']) ? date('d-M-Y H:i:s', strtotime($row['created_date'])) : '-') . '</td>'
+                   . (!empty($row['created_date']) ? date('d M Y H:i:s', strtotime($row['created_date'])) : '-') . '</td>'
                    . '<td>' . htmlspecialchars((string) $row['cancel_by'] !== '' ? $row['cancel_by'] : '-') . '</td>'
                    . '<td value="' . htmlspecialchars((string) $row['cancel_date'], ENT_QUOTES) . '">'
-                   . (!empty($row['cancel_date']) ? date('d-M-Y H:i:s', strtotime($row['cancel_date'])) : '-') . '</td>'
+                   . (!empty($row['cancel_date']) ? date('d M Y H:i:s', strtotime($row['cancel_date'])) : '-') . '</td>'
                    . '</tr>';
             }
         }
 
         if ($no === 1) {
-            echo '<tr><td colspan="23" style="text-align:center;">No payment plan found for this filter.</td></tr>';
+            echo '<tr><td colspan="25" style="text-align:center;">No payment plan found for this filter.</td></tr>';
         }
         ?>
     </table>

@@ -8,9 +8,19 @@
    satu akan menimpa yang lain. Polanya mengikuti simpan_data_duedate() di
    AR - kunci penasihat (GET_LOCK) selama nomornya dihitung, lalu dilepas.
 
-   Voucher yang nomornya tidak ada di kontrabon_h, atau vouchernya belum
-   disetujui, DITOLAK - supaya dokumen rencana tidak memuat nomor karangan
-   yang nanti tidak bisa dipasangkan ke laporan proyeksi.
+   SATU DOKUMEN BOLEH MEMUAT TANGGAL YANG BERBEDA-BEDA (5 Nov 2026).
+   Tiap baris kiriman boleh membawa plan_date sendiri; yang di kepala
+   ('plan_date' di luar baris) jadi tanggal DOKUMEN sekaligus cadangan untuk
+   baris yang tidak membawa tanggalnya. Laporan proyeksi membaca
+   ap_payment_plan_det.plan_date - yaitu tanggal PER BARIS - jadi yang
+   menentukan di situ memang tanggal barisnya, bukan tanggal kepalanya.
+
+   Voucher yang nomornya tidak ada di kontrabon_h, vouchernya belum
+   disetujui, ATAU sudah punya rencana aktif, DITOLAK - supaya dokumen
+   rencana tidak memuat nomor karangan yang nanti tidak bisa dipasangkan ke
+   laporan proyeksi, dan supaya satu voucher tidak terhitung dua kali di
+   laporan itu. Yang ditolak dikembalikan lewat 'ditolak', bukan membatalkan
+   seluruh dokumen.
    ============================================================================ */
 session_start();
 include '../../conn/conn.php';
@@ -43,20 +53,31 @@ if (!is_array($baris) || !$baris) {
     exit;
 }
 
-/* Nomor dokumen: AP-PP/<bulan><tahun>/<urut 5 digit>, urutnya per bulan -
-   bentuk yang sama dgn DDU/<bulan><tahun>/<urut> di AR. */
+/* Awalan nomor dokumen. Diganti dari 'AP-PP' ke 'PPU' atas permintaan
+   pemakai (5 Nov 2026). Ditaruh di SATU tempat supaya pembuatan nomor dan
+   penyaring urutannya tidak bisa melenceng satu sama lain. */
+define('PP_AWALAN', 'PPU');
+
+/* Nomor dokumen: PPU/<bulan><tahun>/<urut 5 digit>, urutnya per bulan -
+   bentuk yang sama dgn DDU/<bulan><tahun>/<urut> di AR.
+
+   Urutannya dihitung HANYA dari dokumen ber-awalan sama. Tanpa itu, dokumen
+   lama ber-awalan AP-PP di bulan yang sama ikut terhitung dan nomor PPU
+   pertama akan melompat. */
 function appNomor($conn1)
 {
+    $awalEsc = mysqli_real_escape_string($conn1, PP_AWALAN);
     $r = mysqli_query($conn1, "SELECT MAX(RIGHT(doc_number, 5)) AS kd_max
             FROM ap_payment_plan_h
-            WHERE YEAR(created_date) = YEAR(CURRENT_DATE())
+            WHERE doc_number LIKE '$awalEsc/%'
+              AND YEAR(created_date) = YEAR(CURRENT_DATE())
               AND MONTH(created_date) = MONTH(CURRENT_DATE())");
     $kd = '00001';
     if ($r && ($b = mysqli_fetch_assoc($r)) && $b['kd_max'] !== null) {
         $kd = sprintf('%05s', ((int) $b['kd_max']) + 1);
     }
     date_default_timezone_set('Asia/Jakarta');
-    return 'AP-PP/' . date('my') . '/' . $kd;
+    return PP_AWALAN . '/' . date('my') . '/' . $kd;
 }
 
 mysqli_query($conn1, "DO GET_LOCK('ap_payment_plan_gen', 10)");
@@ -100,6 +121,39 @@ foreach ($baris as $b) {
     }
     $v = mysqli_fetch_assoc($cek);
 
+    /* Satu voucher hanya boleh punya SATU rencana aktif. Dulu penjaganya
+       cuma di tampilan: formulirnya menyaring voucher yang sudah punya
+       rencana dan kolom "Current Plan" memperlihatkan nomor dokumennya.
+       Kedua hal itu dihapus 5 Nov 2026 atas permintaan pemakai, jadi
+       penjaganya dipindah ke sini - sekaligus menutup celah yang sejak awal
+       terbuka: dua orang yang membuka formulir bersamaan sama-sama melihat
+       voucher itu "belum dijadwalkan" dan menyimpannya di dua dokumen.
+
+       Pemeriksaannya berjalan DI DALAM transaksi dan selama GET_LOCK masih
+       dipegang, jadi penyimpan kedua baru memeriksa setelah yang pertama
+       commit. Syaratnya sama persis dgn $rencana di
+       ajx_cari-pv-payment-plan.php: baris 'Y' milik dokumen yang belum
+       dibatalkan. Dokumen yang dibatalkan membebaskan vouchernya kembali. */
+    $aktif = mysqli_query($conn1, "SELECT h.doc_number FROM ap_payment_plan_det d
+            INNER JOIN ap_payment_plan_h h ON h.doc_number = d.doc_number
+            WHERE d.no_kbon = '$no_esc' AND d.status = 'Y' AND h.status <> 'CANCEL'
+            ORDER BY h.id DESC LIMIT 1");
+    if ($aktif && mysqli_num_rows($aktif)) {
+        $a = mysqli_fetch_assoc($aktif);
+        $ditolak[] = $no_kbon . ' (already scheduled in ' . $a['doc_number'] . ')';
+        continue;
+    }
+
+    /* Tanggal rencana PER BARIS. Layar Create mengirimkannya untuk setiap
+       voucher yang dicentang; kalau kosong atau tidak dikirim sama sekali -
+       mis. dari permintaan yang dirakit sendiri - dipakai tanggal dokumen,
+       persis perilaku sebelum 5 Nov 2026. Dilewatkan appYmd() yang sama
+       dgn tanggal kepala, jadi tanggal yang tidak terbaca ikut jatuh ke
+       tanggal dokumen, bukan tersimpan jadi '0000-00-00'. */
+    $plan_baris = appYmd(isset($b['plan_date']) ? $b['plan_date'] : '');
+    if ($plan_baris === '') { $plan_baris = $plan_date; }
+    $planb_esc = mysqli_real_escape_string($conn1, $plan_baris);
+
     $curr_esc = mysqli_real_escape_string($conn1, (string) $v['curr']);
     $amount   = (float) $v['total'];
     $ketb     = trim(isset($b['keterangan']) ? (string) $b['keterangan'] : '');
@@ -107,7 +161,7 @@ foreach ($baris as $b) {
 
     $ok = mysqli_query($conn1, "INSERT INTO ap_payment_plan_det
             (doc_number, no_kbon, plan_date, curr, amount, keterangan, status)
-            VALUES ('$doc_esc', '$no_esc', '$plan_esc', '$curr_esc', $amount, $ketb_sql, 'Y')");
+            VALUES ('$doc_esc', '$no_esc', '$planb_esc', '$curr_esc', $amount, $ketb_sql, 'Y')");
     if (!$ok) {
         mysqli_query($conn1, 'ROLLBACK');
         mysqli_query($conn1, "DO RELEASE_LOCK('ap_payment_plan_gen')");

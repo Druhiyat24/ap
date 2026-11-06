@@ -22,7 +22,10 @@ function appTanggal($v)
 {
     $v = trim((string) $v);
     if ($v === '') { return ''; }
-    $t = strtotime(str_replace('/', '-', $v));   /* dd-mm-yyyy dibaca sbg d-m-Y */
+    /* Kiriman layar sekarang berbentuk "10 Oct 2026" (diganti 5 Nov 2026).
+       str_replace tetap dipertahankan untuk kiriman lama yang memakai garis
+       miring; strtotime() membaca dua-duanya. */
+    $t = strtotime(str_replace('/', '-', $v));
     return $t ? date('Y-m-d', $t) : '';
 }
 
@@ -98,16 +101,23 @@ foreach ($baris as $row) {
     $pil = '<span class="ftl-st ' . $kelas . '">'
          . htmlspecialchars((string) $row['status'], ENT_QUOTES) . '</span>';
 
-    $pembuat = htmlspecialchars((string) $row['created_by'], ENT_QUOTES);
+    /* SATU BARIS (diminta pemakai, 5 Nov 2026). Dulu nama, tanggal, dan
+       keterangan pembatalan masing-masing dipisah <br> sehingga satu baris
+       tabel bisa setinggi tiga baris - dan karena hanya SEBAGIAN dokumen
+       yang dibatalkan, tinggi barisnya jadi tidak rata. Sekarang dirangkai
+       mendatar dengan pemisah titik tengah. */
+    $bagian = array(htmlspecialchars((string) $row['created_by'], ENT_QUOTES));
     if (!empty($row['created_date'])) {
-        $pembuat .= '<br><small class="text-muted">' . date('d-M-Y H:i', strtotime($row['created_date'])) . '</small>';
+        $bagian[] = date('d M Y H:i', strtotime($row['created_date']));
     }
     if ($batal && !empty($row['cancel_by'])) {
-        $pembuat .= '<br><small class="text-muted">cancelled by '
-                  . htmlspecialchars((string) $row['cancel_by'], ENT_QUOTES)
+        $bagian[] = 'cancelled by ' . htmlspecialchars((string) $row['cancel_by'], ENT_QUOTES)
                   . (!empty($row['cancel_date'])
-                     ? ' (' . date('d-M-Y H:i', strtotime($row['cancel_date'])) . ')' : '')
-                  . '</small>';
+                     ? ' (' . date('d M Y H:i', strtotime($row['cancel_date'])) . ')' : '');
+    }
+    $pembuat = array_shift($bagian);
+    if ($bagian) {
+        $pembuat .= ' <small class="text-muted">&middot; ' . implode(' &middot; ', $bagian) . '</small>';
     }
 
     $aksi = '<div class="ftl-act">'
@@ -125,7 +135,7 @@ foreach ($baris as $row) {
         'id'          => $row['id'],
         'doc_number'  => $doc,
         'plan_date'   => (!empty($row['plan_date']) && $row['plan_date'] !== '0000-00-00')
-                         ? date('d-m-Y', strtotime($row['plan_date'])) : '-',
+                         ? date('d M Y', strtotime($row['plan_date'])) : '-',
         'jml'         => (string) $r['n'],
         'total'       => $r['mata'] ? implode('<br>', $r['mata']) : '-',
         'keterangan'  => htmlspecialchars(((string) $row['keterangan'] !== '') ? $row['keterangan'] : '-', ENT_QUOTES),

@@ -34,7 +34,7 @@ if ($res === false) {
 
 function appTgl($v)
 {
-    return (!empty($v) && $v !== '0000-00-00') ? date('d-m-Y', strtotime($v)) : '-';
+    return (!empty($v) && $v !== '0000-00-00') ? date('d M Y', strtotime($v)) : '-';
 }
 
 $data = array();

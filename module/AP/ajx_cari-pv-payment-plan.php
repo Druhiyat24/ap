@@ -46,7 +46,10 @@ function appTanggal($v)
 {
     $v = trim((string) $v);
     if ($v === '') { return ''; }
-    $t = strtotime(str_replace('/', '-', $v));   /* dd-mm-yyyy dibaca sbg d-m-Y */
+    /* Kiriman layar sekarang berbentuk "10 Oct 2026" (diganti 5 Nov 2026).
+       str_replace tetap dipertahankan untuk kiriman lama yang memakai garis
+       miring; strtotime() membaca dua-duanya. */
+    $t = strtotime(str_replace('/', '-', $v));
     return $t ? date('Y-m-d', $t) : '';
 }
 
@@ -54,7 +57,14 @@ $start_date = appTanggal(isset($_POST['start_date']) ? $_POST['start_date'] : ''
 $end_date   = appTanggal(isset($_POST['end_date']) ? $_POST['end_date'] : '');
 $supplier   = trim(isset($_POST['supplier']) ? $_POST['supplier'] : '');
 $dasar      = (isset($_POST['dasar']) && $_POST['dasar'] === 'kbon') ? 'kbon' : 'tempo';
-$hanya_blm  = (isset($_POST['hanya_belum']) && $_POST['hanya_belum'] === '1');
+
+/* Bawaannya MENYARING - hanya voucher yang belum punya rencana aktif.
+   Hanya '0' yang tegas yang mematikannya. Dibalik begini (dulu bawaannya
+   tidak menyaring) karena formulirnya sudah tidak punya kotak centang lagi
+   DAN kolom "Current Plan" sudah dihapus: kalau parameternya hilang, layar
+   itu akan memperlihatkan voucher yang sudah dijadwalkan tanpa satu pun
+   tanda bahwa voucher itu sudah punya rencana. */
+$hanya_blm  = !(isset($_POST['hanya_belum']) && $_POST['hanya_belum'] === '0');
 
 /* Voucher yang sudah disetujui saja. Ejaan statusnya beragam di produksi
    ('Approved', 'FIRST APPROVED', 'SECOND APPROVED'), jadi didaftar tegas -
@@ -87,17 +97,79 @@ $rencana = "(SELECT d.no_kbon, d.plan_date, d.doc_number
                      ON t.no_kbon = d.no_kbon AND t.id_terbaru = h.id
              WHERE d.status = 'Y' AND h.status <> 'CANCEL')";
 
+/* status / create_user / no_faktur / supp_inv / tgl_inv TIDAK dipakai kolom
+   tabel mana pun - keduanya khusus untuk modal rincian voucher, yang isinya
+   disamakan dgn modal di payment-voucher-ap.php (diminta pemakai 5 Nov
+   2026). Diambil sekali di sini bersama baris lainnya, jadi modalnya tidak
+   perlu menembak server untuk bagian kepala. */
+/* ---------------------------------------------------------------------------
+   HANYA YANG MASIH OUTSTANDING (diminta pemakai, 5 Nov 2026), dan
+   patokannya SAMA DENGAN AP REPORT - yaitu saldo_akhir dari
+   ap_report2/query_pv2.php, berkas yang di-include, bukan ditiru.
+
+   JANGAN diganti kontrabon_h.balance atau ada-tidaknya Bank Out: diperiksa
+   pada 2.225 voucher 2026, keduanya TIDAK sejalan - 1.379 voucher
+   ber-balance 0 padahal belum pernah masuk Bank Out, dan 369 voucher
+   ber-balance > 0 padahal Bank Out-nya sudah ada.
+
+   HARGANYA: query itu berat (sekitar 6 detik untuk rentang panjang), jadi
+   layar ini memang lebih lambat memuat daripada sebelumnya. Itu ditukar
+   dengan daftar yang tidak lagi memuat voucher yang sebenarnya sudah lunas.
+
+   query_pv2.php MENIMPA $sql DAN $where - dua nama yang juga dipakai berkas
+   ini. Karena itu keduanya disimpan dan dikembalikan di sekitar include-nya.
+   --------------------------------------------------------------------------- */
+$whereSaya  = $where;
+$simpanPost = $_POST;
+$hariIni    = date('Y-m-d');
+
+$_REQUEST['start_date'] = $hariIni;
+$_REQUEST['end_date']   = $hariIni;
+$_REQUEST['nama_supp']  = 'ALL';
+unset($_POST['search']);          /* 'search' di sini milik layar ini, bukan DataTables AP Report */
+
+$dirAsal = getcwd();
+chdir(__DIR__ . '/ap_report2');
+include 'query_pv2.php';
+$sqlOutstanding = $sql;
+chdir($dirAsal);
+
+$_POST = $simpanPost;
+$where = $whereSaya;
+
 $sql = "SELECT k.no_kbon, k.tgl_kbon, k.tgl_tempo, k.nama_supp,
-               k.curr, k.rate, k.total, k.tax, k.no_coa,
+               k.curr, k.rate, k.total, k.tax, IFNULL(k.pph_idr, 0) AS pph, k.no_coa,
+               k.status, k.create_user, k.no_faktur, k.supp_inv, k.tgl_inv,
                DATEDIFF(k.tgl_tempo, k.tgl_kbon) AS term,
                UPPER(IFNULL(c.relasi, ''))     AS relasi,
                UPPER(IFNULL(c.item_type1, '')) AS item_type,
                IFNULL(s.payment_rating, '')    AS flexibility,
-               p.plan_date, p.doc_number
+               p.plan_date, p.doc_number,
+               /* RENCANA AWAL - Kamis di minggu Minggu-Sabtu milik jatuh
+                  tempo. Dibaca dari ap_payment_plan_awal, tapi dihitung
+                  langsung kalau barisnya belum ada, supaya kolomnya tidak
+                  pernah kosong walau migrasinya belum dijalankan.
+                  DAYOFWEEK: 1=Minggu, Kamis=5, jadi selisihnya 5-DAYOFWEEK
+                  (negatif untuk Jumat & Sabtu - memang begitu maunya). */
+               COALESCE(pa.plan_awal,
+                        DATE_ADD(k.tgl_tempo, INTERVAL (5 - DAYOFWEEK(k.tgl_tempo)) DAY)) AS plan_awal
         FROM kontrabon_h k
         LEFT JOIN mastercoa_v2 c   ON c.no_coa = k.no_coa
-        LEFT JOIN mastersupplier s ON s.Supplier = k.nama_supp
+        /* mastersupplier DIKELOMPOKKAN DULU: tabelnya bisa memuat lebih dari
+           satu baris untuk satu nama supplier (mis. 'PT. OBOR MAJU JAYA'
+           punya dua), dan LEFT JOIN mentah MENGGANDAKAN baris voucher. */
+        LEFT JOIN (SELECT Supplier, MAX(payment_rating) AS payment_rating
+                   FROM mastersupplier GROUP BY Supplier) s
+               ON s.Supplier = k.nama_supp
         LEFT JOIN $rencana p       ON p.no_kbon = k.no_kbon
+        LEFT JOIN ap_payment_plan_awal pa ON pa.no_kbon = k.no_kbon
+        /* Penyaring outstanding. GROUP BY-nya penjaga: kalau suatu saat
+           query AP Report menghasilkan lebih dari satu baris per voucher,
+           daftar di sini tetap tidak menggandakan barisnya. */
+        INNER JOIN (SELECT no_kbon FROM ($sqlOutstanding) o
+                    WHERE ROUND(o.saldo_akhir_idr, 2) <> 0
+                    GROUP BY no_kbon) os
+               ON os.no_kbon = k.no_kbon
         WHERE " . implode(' AND ', $where) . "
         ORDER BY k.tgl_tempo ASC, k.no_kbon ASC";
 
@@ -109,7 +181,12 @@ if ($res === false) {
 
 function appTgl($v)
 {
-    return (!empty($v) && $v !== '0000-00-00') ? date('d-m-Y', strtotime($v)) : '';
+    /* 'd M Y' -> "10 Oct 2026", sepasang dgn FORMAT_TGL = 'dd M yyyy' di
+       create-payment-plan.php. Kolom Payment Plan berubah jadi kotak
+       tanggal waktu barisnya dicentang, dan kotak itu membaca isinya
+       sendiri - kalau kedua format berbeda, kotaknya gagal membaca lalu
+       jatuh ke hari ini. Jadi dua baris ini harus diubah bersamaan. */
+    return (!empty($v) && $v !== '0000-00-00') ? date('d M Y', strtotime($v)) : '';
 }
 function appAngka($v)
 {
@@ -128,14 +205,24 @@ function appRelasi($v)
 
 $data = array();
 while ($row = mysqli_fetch_assoc($res)) {
-    $total = (float) $row['total'];
+    /* RUMUS DIPERBAIKI 5 Nov 2026. kontrabon_h.total sudah NET dipotong
+       PPh 23; "Total Invoice" = total + PPh, dan Tax Base dihitung dari
+       situ. Rumus lama (total - tax) meleset untuk SETIAP voucher ber-PPh:
+       372 voucher di 2026 saja. Dicocokkan ke lembar "Projection" di
+       spesifikasi AP Payment Realization & Variance Report Ver 1.1, lalu
+       diuji ke 2.000 voucher - Base+VAT selalu = Total Invoice dan tidak
+       ada Base negatif. Kolom subtotal TETAP tidak dipakai: isinya tidak
+       konsisten antar jenis dokumen (pada SI/APR/NAG/2026/06/01376 berisi
+       109.337.000 padahal totalnya 54.668.500). */
+    $pph   = (float) $row['pph'];
+    $bayar = (float) $row['total'];      /* Payment Amount - sudah net PPh */
     $tax   = (float) $row['tax'];
+    $total = $bayar + $pph;              /* Total Invoice */
 
-    $sudah = !empty($row['plan_date']) && $row['plan_date'] !== '0000-00-00';
-    $pil = $sudah
-        ? '<span class="ftl-st is-approved">' . htmlspecialchars((string) $row['doc_number'], ENT_QUOTES) . '</span>'
-        : '<span class="ftl-st is-draft">Not Scheduled</span>';
-
+    /* Pil "Current Plan" DIHAPUS beserta kolomnya di formulir: dgn saringan
+       di atas yang selalu menyala, isinya pasti "Not Scheduled". Kolom
+       p.plan_date / p.doc_number tetap diambil karena LEFT JOIN itulah yang
+       dipakai saringannya (p.no_kbon IS NULL). */
     $relasi = appRelasi($row['relasi']);
     $item   = (string) $row['item_type'];
     $flex   = trim((string) $row['flexibility']);
@@ -145,17 +232,33 @@ while ($row = mysqli_fetch_assoc($res)) {
         'nama_supp'    => htmlspecialchars($row['nama_supp'], ENT_QUOTES),
         'tgl_kbon'     => appTgl($row['tgl_kbon']),
         'tgl_tempo'    => appTgl($row['tgl_tempo']),
+        'plan_awal'    => appTgl($row['plan_awal']),
         'term'         => ($row['term'] === null ? '' : (string) $row['term']),
         'relasi'       => htmlspecialchars($relasi !== '' ? $relasi : '-', ENT_QUOTES),
         'item_type'    => htmlspecialchars($item !== '' ? $item : '-', ENT_QUOTES),
         'flexibility'  => htmlspecialchars($flex !== '' ? $flex : '-', ENT_QUOTES),
         'curr'         => htmlspecialchars($row['curr'], ENT_QUOTES),
-        'tax_base'     => appAngka($total - $tax),
-        'tax'          => appAngka($tax),
-        'total'        => appAngka($total),
-        'total_mentah' => number_format($total, 2, '.', ''),
-        'plan_date'    => appTgl($row['plan_date']),
-        'status_plan'  => $pil,
+        /* Tax Base & VAT tidak lagi jadi KOLOM di formulir (tabelnya dibuat
+           ramping, 5 Nov 2026) tapi tetap dikirim: keduanya tampil di modal
+           rincian yang terbuka waktu nomor voucher diklik. */
+        'tax_base'      => appAngka($total - $tax),
+        'tax'           => appAngka($tax),
+        'pph'           => appAngka($pph),
+        'total_invoice' => appAngka($total),
+        /* 'total' TETAP berarti NILAI YANG DIBAYAR (kontrabon_h.total, sudah
+           net PPh) - itu yang ditampilkan kolom Total di tabel DAN yang
+           disimpan simpan_payment_plan.php ke ap_payment_plan_det.amount.
+           Kalau diganti jadi Total Invoice, yang terlihat di layar tidak
+           lagi sama dgn yang tersimpan. Nilai brutonya dikirim terpisah
+           sbg 'total_invoice' untuk modal rincian. */
+        'total'         => appAngka($bayar),
+        'total_mentah'  => number_format($bayar, 2, '.', ''),
+        /* --- hanya untuk modal rincian, bukan kolom tabel --- */
+        'status'       => htmlspecialchars((string) $row['status'], ENT_QUOTES),
+        'create_user'  => htmlspecialchars((string) $row['create_user'], ENT_QUOTES),
+        'no_faktur'    => htmlspecialchars((string) $row['no_faktur'], ENT_QUOTES),
+        'supp_inv'     => htmlspecialchars((string) $row['supp_inv'], ENT_QUOTES),
+        'tgl_inv'      => appTgl($row['tgl_inv']),
     );
 }
 
