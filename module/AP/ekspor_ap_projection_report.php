@@ -93,7 +93,9 @@ $KOLOM_ANGKA = array('invoice_amount', 'rate', 'tax_base', 'vat',
 ?>
 <style>
     table { border-collapse: collapse; }
-    th, td { border: 1px solid #999; padding: 3px 6px; font-size: 10px;
+    /* Garis tabel HITAM biasa (diminta pemakai 6 Nov 2026) - bukan abu-abu
+       #999 seperti semula, supaya sama dgn garis bawaan Excel. */
+    th, td { border: 1px solid #000000; padding: 3px 6px; font-size: 10px;
              font-family: Calibri, Arial, sans-serif; white-space: nowrap; }
     th { background: #1e3a5f; color: #ffffff; font-weight: bold;
          text-align: center; vertical-align: middle; }
@@ -109,8 +111,14 @@ $KOLOM_ANGKA = array('invoice_amount', 'rate', 'tax_base', 'vat',
 <table>
     <tr><td class="judul" colspan="6">AP PAYMENT PROJECTION REPORT</td></tr>
     <tr><td class="ket" colspan="6">Period : <?php echo aprTeks(isset($info['periode']) ? $info['periode'] : '-'); ?></td></tr>
-    <tr><td class="ket" colspan="6">Type : <?php echo aprTeks(strtoupper(isset($info['type']) ? $info['type'] : '-')); ?>
-        &nbsp;&nbsp; Outstanding as of : <?php echo aprTeks(isset($info['per_tanggal']) ? $info['per_tanggal'] : '-'); ?></td></tr>
+    <?php
+    /* "Outstanding as of" DIBUANG dari kepala berkas (diminta pemakai 6 Nov
+       2026). Ditulis sbg komentar PHP, BUKAN komentar HTML: komentar HTML
+       ikut terkirim ke dalam berkas .xls-nya. Tanggalnya tetap dikirim
+       endpoint dan masih tampil di layar History Projection, jadi
+       keterangannya tidak hilang dari sistem - hanya tidak dicetak. */
+    ?>
+    <tr><td class="ket" colspan="6">Type : <?php echo aprTeks(strtoupper(isset($info['type']) ? $info['type'] : '-')); ?></td></tr>
     <?php if ($pesanSalah !== '') { ?>
     <tr><td class="ket" colspan="6" style="color:#a3281c;">GAGAL: <?php echo aprTeks($pesanSalah); ?></td></tr>
     <?php } ?>
