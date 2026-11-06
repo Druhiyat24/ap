@@ -466,6 +466,42 @@ echo'</ul>
                     </ul>
                     </li>';
                 }
+
+                /* ---- AP > Payment Plan ----
+                   Submenu SENDIRI, sejajar dgn Payment Voucher - bukan di
+                   dalamnya. Isinya daftar dokumen rencana bayar; formulirnya
+                   dibuka lewat tombol Create di layar itu, jadi tidak perlu
+                   butir menu terpisah (sama seperti List/Create Due Date
+                   Update di AR).
+
+                   Hak aksesnya SENDIRI (menurole 145), bukan menumpang
+                   'Payment Voucher AP': yang mengatur jadwal bayar belum
+                   tentu orang yang membuat vouchernya. Pola pemeriksaannya
+                   sama dgn 'Petty Cash Flow Realisation' (144) di menu Cash.
+
+                   Tanggal yang diisi di menu ini yang menggerakkan AP Payment
+                   Projection Report dan laporan realisasinya. */
+                $querysUpp = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Update Payment Plan'");
+                $rsUpp = mysqli_fetch_array($querysUpp);
+                $idUpp = isset($rsUpp['id']) ? $rsUpp['id'] :0;
+
+                if($idUpp == '145'){
+                    echo '
+                    <li class="dropdown-submenu ">
+                    <a class="dropdown-item bg-dark text-white" href="#">
+                    <span class="fa fa-calendar-check-o fa-fw "></span>
+                    <span class="menu-collapsed">Payment Plan</span>
+                    </a>
+                    <ul class="dropdown-menu bg-dark text-white" role="menu">
+
+                    <a href="../AP/list-payment-plan.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-calendar fa-fw "></span>
+                    <span class="menu-collapsed">Update Payment Plan</span>
+                    </a>
+
+                    </ul>
+                    </li>';
+                }
                 ?>
 
 

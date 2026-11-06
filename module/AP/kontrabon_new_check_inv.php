@@ -19,9 +19,13 @@ $ni = mysqli_real_escape_string($conn2, $no_inv);
 $sp = mysqli_real_escape_string($conn2, $supplier);
 $excCond = ($excludeDoc !== '') ? " AND h.doc_number <> '" . mysqli_real_escape_string($conn2, $excludeDoc) . "'" : '';
 
+// Cancel = Cancel di ir_kontrabon_h ATAU ir_invoice_supp_h (IR yang dibalik lewat menu
+// Reverse dulu hanya tercatat Cancel di tabel kedua) - sama dgn daftar IR.
 $r = mysqli_query($conn2, "SELECT h.doc_number FROM ir_kontrabon_inv i
     JOIN ir_kontrabon_h h ON h.unik_code = i.unik_code
-    WHERE i.no_inv = '$ni' AND h.nama_supp = '$sp' AND (h.status IS NULL OR h.status <> 'Cancel')$excCond
+    LEFT JOIN ir_invoice_supp_h ih ON ih.doc_number = h.doc_number
+    WHERE i.no_inv = '$ni' AND h.nama_supp = '$sp' AND (h.status IS NULL OR h.status <> 'Cancel')
+      AND (ih.status IS NULL OR ih.status <> 'Cancel')$excCond
     LIMIT 1");
 
 if ($r && mysqli_num_rows($r) > 0) {

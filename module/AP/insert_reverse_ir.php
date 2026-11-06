@@ -32,9 +32,47 @@ $execute = mysqli_query($conn2,$query);
 
 if($fil_kode == 'IR'){
 
+		// IR dari menu Invoice Received juga punya baris di ir_kontrabon_h. Penjaga
+		// "already used" (invoice & BPB) membaca tabel itu, jadi harus ikut Cancel -
+		// kalau tidak, daftar menampilkan Cancel tapi invoice & BPB-nya tetap terkunci.
+		// Langkahnya sama dgn kontrabon_new_cancel.php.
+		$doc_esc = mysqli_real_escape_string($conn2, $no_kbon);
+		$user_esc = mysqli_real_escape_string($conn2, $create_user);
+		$qkb = mysqli_query($conn2,"select unik_code, no_reff from ir_kontrabon_h where doc_number = '$doc_esc' and (status is null or status <> 'Cancel') limit 1");
+		$kb = $qkb ? mysqli_fetch_assoc($qkb) : null;
+
+		mysqli_begin_transaction($conn2);
+
 		$sql2 = "update ir_invoice_supp_h set status = 'Cancel', updated_at = '$create_date', cancel_ir_by = '$create_user', cancel_ir_date = '$create_date' where doc_number = '$no_kbon'";
 		$execute2 = mysqli_query($conn2,$sql2);
-		
+
+		if ($execute2 && $kb) {
+			$execute2 = mysqli_query($conn2,"update ir_kontrabon_h set status = 'Cancel', cancel_user = '$user_esc', cancel_date = '$create_date' where doc_number = '$doc_esc'")
+				&& mysqli_query($conn2,"update ir_invoice_supp set status = 'Cancel' where doc_number = '$doc_esc'");
+			if ($execute2 && !empty($kb['no_reff'])) {
+				$execute2 = mysqli_query($conn2,"update ir_kontrabon_ref set status = 'Available' where ref_number = '" . mysqli_real_escape_string($conn2, $kb['no_reff']) . "' and status = 'Used'");
+			}
+		}
+
+		if (!$execute2) {
+			$err = mysqli_error($conn2);
+			mysqli_rollback($conn2);
+			die('Error: ' . $err);
+		}
+		mysqli_commit($conn2);
+
+		// Bersihkan info Invoice/Faktur BPB milik IR ini supaya tidak muncul lagi di laporan_pembelian.
+		if ($kb && !empty($kb['unik_code'])) {
+			$bpbList = array();
+			$bq = mysqli_query($conn2,"select distinct no_bpb from ir_kontrabon_bpb where unik_code = '" . mysqli_real_escape_string($conn2, $kb['unik_code']) . "' and no_bpb <> ''");
+			while ($bq && ($br = mysqli_fetch_assoc($bq))) { $bpbList[] = "'" . mysqli_real_escape_string($conn2, $br['no_bpb']) . "'"; }
+			if ($bpbList) {
+				$inList = implode(',', $bpbList);
+				mysqli_query($conn2,"update bpb_new set upt_dok_inv = null, upt_no_inv = null, upt_tgl_inv = null, upt_no_faktur = null, upt_tgl_faktur = null where no_bpb in ($inList) and upt_dok_inv = '$doc_esc'");
+				mysqli_query($conn2,"update bpb_knitting set no_invoice = null, tgl_invoice = null, no_faktur = null, tgl_faktur = null where no_bpb in ($inList)");
+			}
+		}
+
 	}elseif ($fil_kode == 'TFTA') {
 		$sql2 = "update ir_invoice_supp_h set status = 'Received', updated_at = '$create_date', cancel_acc_by = '$create_user', cancel_acc_date = '$create_date',tfta_by = null, tfta_date = null, receive_acc_by = null, receive_acc_date = null where doc_number = '$no_kbon'";
 		$execute2 = mysqli_query($conn2,$sql2);

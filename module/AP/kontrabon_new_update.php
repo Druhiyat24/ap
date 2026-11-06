@@ -186,9 +186,12 @@ if (!$fail && $allBpb) {
 
 if (!$fail && $allBpb) {
     $inList = implode(',', array_map(function ($x) use ($e) { return "'" . $e($x) . "'"; }, array_keys($allBpb)));
+    // Cancel = Cancel di ir_kontrabon_h ATAU ir_invoice_supp_h (lihat kontrabon_new_check_bpb.php).
     $rc = mysqli_query($conn2, "SELECT b.no_bpb, h.doc_number FROM ir_kontrabon_bpb b
         LEFT JOIN ir_kontrabon_h h ON h.unik_code = b.unik_code
-        WHERE b.no_bpb IN ($inList) AND (h.status IS NULL OR h.status <> 'Cancel') LIMIT 1");
+        LEFT JOIN ir_invoice_supp_h ih ON ih.doc_number = h.doc_number
+        WHERE b.no_bpb IN ($inList) AND (h.status IS NULL OR h.status <> 'Cancel')
+          AND (ih.status IS NULL OR ih.status <> 'Cancel') LIMIT 1");
     if ($rc && mysqli_num_rows($rc) > 0) { $dup = mysqli_fetch_assoc($rc); $fail = "BPB '" . $dup['no_bpb'] . "' is already used in saved invoice received " . ($dup['doc_number'] ?? '') . "."; }
 }
 
@@ -241,7 +244,9 @@ if (!$fail && $allInv) {
     $inList = implode(',', array_map(function ($x) use ($e) { return "'" . $e($x) . "'"; }, array_keys($allInv)));
     $rc = mysqli_query($conn2, "SELECT i.no_inv, h.doc_number FROM ir_kontrabon_inv i
         JOIN ir_kontrabon_h h ON h.unik_code = i.unik_code
-        WHERE i.no_inv IN ($inList) AND h.nama_supp = '" . $e($supp) . "' AND (h.status IS NULL OR h.status <> 'Cancel') LIMIT 1");
+        LEFT JOIN ir_invoice_supp_h ih ON ih.doc_number = h.doc_number
+        WHERE i.no_inv IN ($inList) AND h.nama_supp = '" . $e($supp) . "' AND (h.status IS NULL OR h.status <> 'Cancel')
+          AND (ih.status IS NULL OR ih.status <> 'Cancel') LIMIT 1");
     if ($rc && mysqli_num_rows($rc) > 0) { $dup = mysqli_fetch_assoc($rc); $fail = "Invoice '" . $dup['no_inv'] . "' is already used for supplier '$supp' in invoice received " . ($dup['doc_number'] ?? '') . "."; }
 }
 
