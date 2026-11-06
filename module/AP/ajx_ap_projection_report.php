@@ -377,15 +377,50 @@ $sqlLuar = "
            COALESCE(k.tax, sa.tax, ins.ppn, 0)                    AS tax,
            COALESCE(k.pph_idr, sa.pph, ins.pph, 0)                AS pph,
            COALESCE(k.total, sa.total, ins.total, 0)              AS total,
-           COALESCE(DATEDIFF(k.tgl_tempo,  k.tgl_kbon),
-                    DATEDIFF(sa.tgl_tempo, sa.tgl_kbon),
-                    ins.top)                                      AS term,
+           /* PAYMENT TERM = TOP menurut PO, SAMA untuk semua cicilan satu
+              dokumen - bukan jarak hari ke jatuh tempo cicilan itu.
+
+              Dulu urutannya k -> sa -> ins. Untuk baris CICILAN, `k` tidak
+              pernah cocok (nomornya bersufiks ' - 10'), jadi yang terpakai
+              `sa`, dan DATEDIFF di sana mengukur jarak ke jatuh tempo
+              cicilan KE-10 - hasilnya 300 hari, cicilan ke-9 270, ke-4 120.
+              Terus menumpuk tiap cicilan, dilaporkan pemakai 6 Nov 2026.
+
+              Sekarang dokumen INDUKNYA yang ditanya (join `ind` di bawah):
+              DATEDIFF(induk.tgl_tempo, induk.tgl_kbon). Diperiksa ke empat
+              contoh pemakai - 02515-10, 02773-9, 01430-4 dan 01376 -
+              keempatnya 30, dan itu memang TOP PO-nya. Cara yang sama
+              dipakai layar Payment Plan (ajx_cari-pv-payment-plan.php
+              baris 143), jadi dua layar itu kini sejalan.
+
+              `sa` TETAP jadi cadangan TERAKHIR, bukan dibuang: dokumen
+              saldo awal yang induknya tidak ada di kontrabon_h hanya punya
+              angka itu - lebih baik angka yang menumpuk daripada kosong. */
+           COALESCE(DATEDIFF(k.tgl_tempo,   k.tgl_kbon),
+                    DATEDIFF(ind.tgl_tempo, ind.tgl_kbon),
+                    ins.top,
+                    DATEDIFF(sa.tgl_tempo,  sa.tgl_kbon))         AS term,
            IFNULL(s.payment_rating, '') AS flexibility,
            p.plan_date, p.doc_number AS plan_doc,
            $awal AS plan_awal,
            $eProyeksi AS tgl_proyeksi
     FROM ($sql) x
     LEFT JOIN kontrabon_h k ON k.no_kbon = x.no_kbon
+
+    /* DOKUMEN INDUK dari sebuah baris cicilan, dipakai kolom Payment Term.
+       DUA bentuk sufiks yang hidup berdampingan:
+         'SI/APR/NAG/2025/12/02515 - 10'  (spasi-strip-spasi, dokumen lama
+                                           & baris saldo awal)
+         'PV-AP/INS/NAG/2026/08/00001-001' (strip + tiga angka, cicilan baru)
+       Nomor yang bukan cicilan menunjuk dirinya sendiri, jadi join ini tidak
+       pernah mengubah apa pun untuk baris biasa. Sufiks revisi '-REV_01'
+       sengaja TIDAK dipotong - itu dokumen tersendiri, bukan cicilan. */
+    LEFT JOIN kontrabon_h ind ON ind.no_kbon =
+        CASE WHEN x.no_kbon LIKE '% - %'
+                  THEN SUBSTRING_INDEX(x.no_kbon, ' - ', 1)
+             WHEN x.no_kbon REGEXP '-[0-9]{3}\$'
+                  THEN LEFT(x.no_kbon, CHAR_LENGTH(x.no_kbon) - 4)
+             ELSE x.no_kbon END
 
     /* TIGA SUMBER NILAI DOKUMEN, dipakai berurutan lewat COALESCE. Tidak
        semua baris laporan ini berasal dari kontrabon_h:

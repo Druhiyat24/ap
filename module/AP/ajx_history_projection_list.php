@@ -3,10 +3,9 @@
    AP HISTORY PROJECTION - daftar dokumen potret.
    Pasangannya ap_history_projection.php.
 
-   HANYA MEMBACA. Menu ini tidak mengubah apa pun (diminta pemakai 6 Nov
-   2026) - tidak ada simpan, tidak ada batal. Tabelnya sudah menyediakan
-   kolom status/cancel_by/cancel_date kalau suatu saat Cancel diperlukan
-   (AR punya), tapi sengaja belum dipakai.
+   BERKAS INI HANYA MEMBACA. Pembatalan dokumen ada di berkas terpisah
+   (batal_history_projection.php) - diminta pemakai 6 Nov 2026 menyusul,
+   mengikuti History Projection di ar_dev.
 
    Saringannya tanggal DIBUAT-nya dokumen, bukan periode laporannya - sama
    dgn History Projection di ar_dev. Dokumen periode Oktober bisa saja dibuat
@@ -26,6 +25,12 @@ function hpjTgl($v)
 
 $mulai = hpjTgl(isset($_POST['start_date']) ? $_POST['start_date'] : '');
 $akhir = hpjTgl(isset($_POST['end_date'])   ? $_POST['end_date']   : '');
+
+/* Saringan Type (diminta pemakai 6 Nov 2026). 'ALL' = tidak menyaring.
+   Nilainya dipilih dari daftar tetap, bukan diteruskan apa adanya ke SQL -
+   isian yang tidak dikenal diperlakukan sbg ALL, bukan ditempelkan. */
+$type = isset($_POST['type']) ? strtolower(trim((string) $_POST['type'])) : 'all';
+if (!in_array($type, array('all', 'daily', 'weekly', 'monthly'), true)) { $type = 'all'; }
 
 if ($mulai === '' || $akhir === '') {
     echo json_encode(array('error' => 'Please fill in both the From and To dates.'));
@@ -48,6 +53,9 @@ if (!$ada || mysqli_num_rows($ada) === 0) {
 
 $fMulai = mysqli_real_escape_string($conn2, $mulai);
 $fAkhir = mysqli_real_escape_string($conn2, $akhir);
+$fType  = ($type === 'all')
+        ? ''
+        : "AND h.type = '" . mysqli_real_escape_string($conn2, $type) . "'";
 
 $sql = mysqli_query($conn2, "
     SELECT h.doc_number, h.periode_dari, h.periode_sampai, h.nama_supp, h.type,
@@ -57,6 +65,7 @@ $sql = mysqli_query($conn2, "
              WHERE d.doc_number = h.doc_number) baris_nyata
     FROM ap_projection_history_h h
     WHERE DATE(h.created_at) BETWEEN '$fMulai' AND '$fAkhir'
+      $fType
     ORDER BY h.created_at DESC, h.id DESC");
 
 if ($sql === false) {
@@ -77,11 +86,20 @@ $totalSemua = 0.0;
 while ($row = mysqli_fetch_assoc($sql)) {
     $no++;
     $totalSemua += (float) $row['total_idr'];
+    /* Susunan kolomnya mengikuti History Projection di ar_dev: periode
+       dipecah jadi FROM dan TO (dulu satu kolom gabungan), Type jadi lencana
+       berwarna, dan jumlah barisnya disebut "Total Voucher" - padanan
+       "Total Invoice" di AR.
+
+       Kolom Supplier DIPERTAHANKAN walau AR tidak punya padanannya: potret
+       AP bisa disaring per supplier, jadi tanpa kolom itu dua dokumen
+       periode sama yang beda supplier tampak persis sama di daftar. */
     $data[] = array(
         'no'         => $no,
         'doc_number' => hpjAman($row['doc_number']),
-        'periode'    => hpjTampil($row['periode_dari']) . ' s/d ' . hpjTampil($row['periode_sampai']),
-        'type'       => hpjAman(ucfirst((string) $row['type'])),
+        'periode_dari'   => hpjTampil($row['periode_dari']),
+        'periode_sampai' => hpjTampil($row['periode_sampai']),
+        'type'       => hpjAman(strtolower((string) $row['type'])),
         'supplier'   => hpjAman($row['nama_supp'] === '' ? 'ALL' : $row['nama_supp']),
         'per_tanggal'=> hpjTampil($row['per_tanggal']),
         /* Jumlah baris DIHITUNG ULANG dari tabel rinciannya, bukan dibaca
@@ -103,5 +121,6 @@ echo json_encode(array(
     'info' => array(
         'dokumen' => count($data),
         'total'   => hpjAngka($totalSemua),
+        'type'    => $type,
     ),
 ), JSON_INVALID_UTF8_SUBSTITUTE);

@@ -2,12 +2,11 @@
 /* ============================================================================
    AP HISTORY PROJECTION - layarnya.
 
-   HANYA MENAMPILKAN (diminta pemakai 6 Nov 2026: "ini kan hanya menampilkan,
-   tidak merubah apa pun"). Tidak ada simpan, tidak ada batal, tidak ada
-   hapus. AR punya tombol Cancel yang mengarsipkan ke tabel *_cancel lalu
-   menghapus; tabel AP sudah menyediakan kolom status/cancel_by/cancel_date
-   untuk itu, tapi SENGAJA belum dipakai - menambah tombol yang mengubah data
-   di layar yang diminta read-only itu melampaui yang diminta.
+   SATU-SATUNYA yang mengubah data di sini TOMBOL CANCEL. Awalnya layar ini
+   dibuat baca-saja ("ini kan hanya menampilkan"), lalu pemakai meminta
+   Cancel menyusul di hari yang sama - mengikuti History Projection di
+   ar_dev. Pembatalannya MENGARSIPKAN DULU ke ap_projection_history_*_cancel
+   baru menghapus; lihat batal_history_projection.php.
 
    DUA KARTU: daftar dokumen di atas, dan rincian satu dokumen di bawah yang
    baru muncul sesudah sebuah dokumen dibuka.
@@ -86,6 +85,16 @@ include '../header.php';
 #hpj-det-tbl tbody tr:hover > td { background: var(--flx-hov); }
 #hpj-det-tbl tbody tr > td:first-child { box-shadow: inset 4px 0 0 var(--flx-bar); }
 
+/* Lencana Type, kosakata warna sama dgn History Projection di AR:
+   weekly kuning, monthly hijau, daily biru. */
+.hpj-badge { display: inline-block; padding: 2px 10px; border-radius: 20px;
+             font-size: 11px; font-weight: 700; text-transform: lowercase; }
+.hpj-badge.daily   { background: #dbeafe; color: #1e40af; }
+.hpj-badge.weekly  { background: #fef3c7; color: #92400e; }
+.hpj-badge.monthly { background: #d1fae5; color: #065f46; }
+.hpj-badge.lain    { background: #e2e8f0; color: #334155; }
+.hpj-aksi { display: inline-flex; gap: 6px; }
+
 .hpj-warn { background: #fdecea; border: 1px solid #f5c2bd; color: #a3281c;
             border-radius: 8px; padding: 9px 12px; margin-bottom: 10px; font-size: 12.5px; }
 .hpj-info { display: flex; flex-wrap: wrap; gap: 6px 26px; margin-bottom: 12px; }
@@ -108,6 +117,20 @@ include '../header.php';
         <div class="ftl-body">
             <form id="hpj-form" onsubmit="return false;">
                 <div class="row">
+                    <!-- Type DI KIRI Created From (diminta pemakai 6 Nov
+                         2026). Isinya sama dgn Type di layar Projection
+                         Report, ditambah ALL supaya daftar bisa dilihat utuh
+                         tanpa menyaring. -->
+                    <div class="col-12 col-sm-6 col-xl-2 mb-2">
+                        <label for="hpj-type" class="form-label"><b>Type</b></label>
+                        <select class="form-control form-control-sm" id="hpj-type">
+                            <option value="all" selected="selected">All</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+
                     <!-- Saringannya tanggal DIBUATNYA dokumen, bukan periode
                          laporannya - sama dgn History Projection di AR. Yang
                          dicari orang biasanya "yang saya simpan kemarin". -->
@@ -212,18 +235,29 @@ $(document).ready(function () {
   /* ================================================== DAFTAR DOKUMEN ===== */
   var tblDaftar = null;
 
+  /* Susunannya mengikuti History Projection di ar_dev: periode dipecah jadi
+     FROM dan TO, Type jadi lencana berwarna, jumlah baris disebut Total
+     Voucher (padanan "Total Invoice" di AR), dan nilainya Total Payment
+     Amount (padanan "Total Collection Amount").
+
+     DUA BEDA yang disengaja:
+     - Kolom SUPPLIER tetap ada walau AR tidak punya padanannya: potret AP
+       bisa disaring per supplier, jadi tanpa kolom itu dua dokumen periode
+       sama yang beda supplier tampak persis sama.
+     - Tombol REALIZATION milik AR TIDAK dibuat: laporan Realization &
+       Variance versi AP belum ada, jadi tombolnya tidak punya tujuan. */
   var KOLOM_DAFTAR = [
-    { data: 'no',          title: 'No',          kelas: 'text-center' },
-    { data: 'doc_number',  title: 'Document No', kelas: 'text-left' },
-    { data: 'periode',     title: 'Period',      kelas: 'text-center' },
-    { data: 'type',        title: 'Type',        kelas: 'text-center' },
-    { data: 'supplier',    title: 'Supplier',    kelas: 'text-left' },
-    { data: 'per_tanggal', title: 'Outstanding As Of', kelas: 'text-center' },
-    { data: 'baris',       title: 'Rows',        kelas: 'text-right' },
-    { data: 'total',       title: 'Total (IDR)', kelas: 'text-right' },
-    { data: 'created_by',  title: 'Created By',  kelas: 'text-left' },
-    { data: 'created_at',  title: 'Created At',  kelas: 'text-center' },
-    { data: null,          title: 'Action',      kelas: 'text-center' }
+    { data: 'no',             title: 'No',              kelas: 'text-center' },
+    { data: 'doc_number',     title: 'Doc Number',      kelas: 'text-left' },
+    { data: 'periode_dari',   title: 'Periode From',    kelas: 'text-center' },
+    { data: 'periode_sampai', title: 'Periode To',      kelas: 'text-center' },
+    { data: 'type',           title: 'Type',            kelas: 'text-center' },
+    { data: 'supplier',       title: 'Supplier',        kelas: 'text-left' },
+    { data: 'baris',          title: 'Total Voucher',   kelas: 'text-right' },
+    { data: 'total',          title: 'Total Payment Amount', kelas: 'text-right' },
+    { data: 'created_by',     title: 'Saved By',        kelas: 'text-left' },
+    { data: 'created_at',     title: 'Saved At',        kelas: 'text-center' },
+    { data: null,             title: 'Action',          kelas: 'text-center' }
   ];
 
   function gambarDaftar(res) {
@@ -244,9 +278,21 @@ $(document).ready(function () {
         kd.data = null;
         kd.orderable = false;
         kd.render = function (d, t, row) {
-          return '<button type="button" class="app-btn app-btn-primary app-btn-sm hpj-buka"'
+          return '<span class="hpj-aksi">'
+               + '<button type="button" class="app-btn app-btn-primary app-btn-sm hpj-buka"'
                + ' data-doc="' + lolos(row.doc_number) + '">'
-               + '<i class="fa fa-eye" aria-hidden="true"></i> View</button>';
+               + '<i class="fa fa-eye" aria-hidden="true"></i> View</button>'
+               + '<button type="button" class="app-btn app-btn-danger app-btn-sm hpj-batal"'
+               + ' data-doc="' + lolos(row.doc_number) + '">'
+               + '<i class="fa fa-ban" aria-hidden="true"></i> Cancel</button>'
+               + '</span>';
+        };
+      } else if (KOLOM_DAFTAR[a].data === 'type') {
+        kd.render = function (d, t) {
+          if (t !== 'display') { return d; }
+          var k = (d || '').toString().toLowerCase();
+          var sah = (k === 'daily' || k === 'weekly' || k === 'monthly') ? k : 'lain';
+          return '<span class="hpj-badge ' + sah + '">' + lolos(d) + '</span>';
         };
       } else if (KOLOM_DAFTAR[a].data === 'baris') {
         /* Jumlah baris dihitung ulang dari rinciannya. Kalau tidak sama dgn
@@ -282,7 +328,8 @@ $(document).ready(function () {
   function cariDaftar() {
     $('#hpjLoad').addClass('is-loading');
     $.ajax({ url: 'ajx_history_projection_list.php', type: 'POST', dataType: 'json',
-             data: { start_date: $('#hpj-dari').val(), end_date: $('#hpj-sampai').val() } })
+             data: { start_date: $('#hpj-dari').val(), end_date: $('#hpj-sampai').val(),
+                     type: $('#hpj-type').val() } })
       .done(function (res) {
         $('#hpjLoad').removeClass('is-loading');
         if (res && res.error) {
@@ -501,6 +548,60 @@ $(document).ready(function () {
      sekarang, yang akan mati begitu pindah halaman. */
   $('#hpj-tbl').on('click', '.hpj-buka', function () {
     bukaDokumen($(this).data('doc'));
+  });
+
+  /* ---- Cancel: satu-satunya yang mengubah data di layar ini ----
+     Dimintai konfirmasi dgn menyebut nomor dokumennya, dan dikatakan apa
+     akibatnya - dokumennya diarsipkan, bukan dilenyapkan. Pemakai yang
+     mengira "cancel" berarti hilang selamanya akan ragu menekannya. */
+  $('#hpj-tbl').on('click', '.hpj-batal', function () {
+    var doc = $(this).data('doc');
+    Swal.fire({
+      icon: 'warning',
+      title: 'Cancel this document?',
+      html: '<b>' + lolos(doc) + '</b> will be moved to the cancel archive '
+          + 'and will no longer appear in this list.<br>'
+          + '<small>The snapshot itself is kept, not erased.</small>',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, cancel it',
+      cancelButtonText: 'Keep it',
+      confirmButtonColor: '#b3312c'
+    }).then(function (ya) {
+      if (!ya.isConfirmed) { return; }
+      $('#hpjLoad').addClass('is-loading');
+      $.ajax({ url: 'batal_history_projection.php', type: 'POST', dataType: 'json',
+               data: { doc_number: doc } })
+        .done(function (res) {
+          $('#hpjLoad').removeClass('is-loading');
+          if (!res || res.status !== 'success') {
+            Swal.fire({ icon: 'warning', title: 'Could not cancel',
+                        text: (res && res.message) ? res.message : 'Unknown response.' });
+            return;
+          }
+          /* Kalau dokumen yang dibatalkan itu yang sedang terbuka di kartu
+             bawah, rinciannya ikut dikosongkan - membiarkannya terpampang
+             membuat orang mengira dokumennya masih ada. */
+          if ($('#hpj-det-judul').text() === doc) {
+            if (tblDet) { tblDet.destroy(); tblDet = null; }
+            $('#hpj-det-tbl').hide().find('thead,tbody').empty();
+            $('#hpj-det-tbl tfoot').remove();
+            $('#hpj-det-judul').text('Document detail');
+            $('#hpj-det-sub').text('Open a document from the list above.');
+            $('#hpj-det-info').empty();
+            $('#hpj-peringatan').empty();
+            $('#hpj-belum').show().text('No document opened yet.');
+          }
+          Swal.fire({ icon: 'success', title: 'Cancelled',
+                      html: '<b>' + lolos(res.doc_number) + '</b> moved to the archive ('
+                          + lolos(res.baris) + ' row(s)).' });
+          cariDaftar();
+        })
+        .fail(function (xhr) {
+          $('#hpjLoad').removeClass('is-loading');
+          Swal.fire({ icon: 'error', title: 'Failed to cancel',
+                      text: 'HTTP ' + xhr.status + ' - ' + (xhr.responseText || 'no response') });
+        });
+    });
   });
 
   $('#hpj-cari').on('click', cariDaftar);

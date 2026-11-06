@@ -198,6 +198,10 @@ WHERE i.tgl_tempo IS NOT NULL AND i.tgl_tempo <> '0000-00-00';
 -- Sengaja TIDAK menumpang tbl_history_projection_h/_det: dua tabel itu MILIK
 -- AR dan sudah terpakai. AR & AP berbagi satu basis data, jadi menulis baris
 -- AP ke sana akan memunculkannya di menu History Projection milik AR.
+--
+-- Dua tabel *_cancel adalah ARSIP: tombol Cancel memindahkan dokumen ke
+-- sana dulu, baru menghapusnya dari tabel hidup - jadi dokumen yang
+-- dibatalkan tetap bisa ditelusuri. Strukturnya salinan persis.
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS `ap_projection_history_h` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -221,6 +225,55 @@ CREATE TABLE IF NOT EXISTS `ap_projection_history_h` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE IF NOT EXISTS `ap_projection_history_det` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `doc_number` varchar(25) NOT NULL,
+  `no_urut` int(11) NOT NULL DEFAULT 0,
+  `supplier` varchar(255) DEFAULT NULL,
+  `no_kbon` varchar(255) DEFAULT NULL,
+  `tgl_kbon` date DEFAULT NULL,
+  `term` varchar(20) DEFAULT NULL,
+  `duedate` date DEFAULT NULL,
+  `plan_date` date DEFAULT NULL,
+  `basis` varchar(20) DEFAULT NULL,
+  `relasi` varchar(50) DEFAULT NULL,
+  `item_type` varchar(100) DEFAULT NULL,
+  `flexibility` varchar(50) DEFAULT NULL,
+  `curr` varchar(10) DEFAULT NULL,
+  `invoice_amount` decimal(20,2) NOT NULL DEFAULT 0.00,
+  `rate` decimal(20,4) NOT NULL DEFAULT 1.0000,
+  `tax_base` decimal(20,2) NOT NULL DEFAULT 0.00,
+  `vat` decimal(20,2) NOT NULL DEFAULT 0.00,
+  `total_invoice` decimal(20,2) NOT NULL DEFAULT 0.00,
+  `pph` decimal(20,2) NOT NULL DEFAULT 0.00,
+  `payment_amount` decimal(20,2) NOT NULL DEFAULT 0.00,
+  `outstanding` decimal(20,2) NOT NULL DEFAULT 0.00,
+  PRIMARY KEY (`id`),
+  KEY `doc_number` (`doc_number`),
+  KEY `plan_date` (`plan_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE IF NOT EXISTS `ap_projection_history_h_cancel` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `doc_number` varchar(25) NOT NULL,
+  `periode_dari` date NOT NULL,
+  `periode_sampai` date NOT NULL,
+  `nama_supp` varchar(255) NOT NULL DEFAULT 'ALL',
+  `type` varchar(10) NOT NULL DEFAULT 'daily',
+  `per_tanggal` date DEFAULT NULL,
+  `kurs` text DEFAULT NULL,
+  `jml_baris` int(11) NOT NULL DEFAULT 0,
+  `total_idr` decimal(20,2) NOT NULL DEFAULT 0.00,
+  `status` varchar(20) NOT NULL DEFAULT 'ACTIVE',
+  `created_by` varchar(100) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `cancel_by` varchar(100) DEFAULT NULL,
+  `cancel_date` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `doc_number` (`doc_number`),
+  KEY `periode` (`periode_dari`,`periode_sampai`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE IF NOT EXISTS `ap_projection_history_det_cancel` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `doc_number` varchar(25) NOT NULL,
   `no_urut` int(11) NOT NULL DEFAULT 0,
