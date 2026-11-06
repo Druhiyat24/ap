@@ -39,20 +39,50 @@ if (!empty($start_date) && !empty($end_date)) {
     $where .= " AND a.bpbdate BETWEEN '$start_date_esc' AND '$end_date_esc'";
 }
 
+/* ---------------------------------------------------------------------------
+   PPN: DIBACA DARI JURNAL, BUKAN DARI PO.
+
+   Dulu di sini:
+       IFNULL(a.ppn, d.tax) ppn_rate
+       ... ABS(IFNULL(a.ppn,d.tax) - d.tax) < 0.0001 ...
+   Itu TAUTOLOGI: `bpb.ppn` NULL untuk SELURUH 32.860 baris GEN (diperiksa
+   6 Nov 2026 ke basis data uji), jadi ruas kiri selalu menjadi d.tax dan
+   syaratnya selalu benar. Dua akibatnya:
+     - badge "matches PO" tidak pernah memperhitungkan PPN sama sekali,
+     - kolom PPN di layar sebenarnya memuat PAJAK PO, bukan PPN yang
+       benar-benar terbukukan.
+   Pemakai menemukannya 6 Nov 2026 pada GEN/IN/1026/03340: layar menulis PPN
+   473.000 dan "matches PO", padahal jurnalnya tidak punya baris PPN.
+
+   Yang dipakai sekarang: baris 1.52.07 di jurnal BPB dokumen itu - itulah
+   PPN yang benar-benar dibukukan. Dibandingkan ke dpp x pajak PO.
+   AMBANGNYA 0,05, dan angka itu DIUKUR bukan ditebak. Seluruh dokumen GEN
+   yang sudah diapprove dan punya jurnal (11.266 dokumen):
+       selisih 0            : 11.201
+       selisih <= 0,01      :      5   <- pembulatan dua langkah
+       selisih 1,19         :      1   <- memang meleset (GEN/IN/0325/00569)
+       selisih > 1.000      :     59   <- memang meleset
+   Jadi noise pembulatan berhenti di 0,01 dan selisih nyata mulai di 1,19.
+
+   JANGAN diturunkan ke 0,01: selisih pembulatan yang PERSIS 0,01 terbaca
+   sebagai 0,010000000009 dalam bilangan pecahan biner, sehingga `<= 0.01`
+   menolaknya. Dua dokumen (GEN/IN/0926/02629, GEN/IN/0926/02661) pernah
+   salah ditandai karena itu.
+   --------------------------------------------------------------------------- */
 $sql = mysqli_query($conn1, "SELECT t.no_dok, t.tgl_dok, t.supplier, t.no_po, MAX(t.curr) curr,
         ROUND(SUM(t.qty_good),2) qty,
         ROUND(SUM(t.qty_good * t.price),2) dpp,
-        MAX(t.ppn_rate) ppn_rate,
-        MIN(t.item_match) is_match
+        MAX(t.tax_po) tax_po,
+        MIN(t.price_match) price_match
     FROM (
         SELECT a.bpbno_int no_dok, a.bpbdate tgl_dok, ms.Supplier supplier, IFNULL(a.pono,'-') no_po,
             (a.qty - IFNULL(a.qty_reject,0)) qty_good, a.price, a.curr,
-            IFNULL(a.ppn, d.tax) ppn_rate,
+            d.tax tax_po,
             CASE
                 WHEN pi.price IS NULL OR d.tax IS NULL THEN 0
-                WHEN ABS(a.price - pi.price) < 0.0001 AND ABS(IFNULL(a.ppn,d.tax) - d.tax) < 0.0001 THEN 1
+                WHEN ABS(a.price - pi.price) < 0.0001 THEN 1
                 ELSE 0
-            END item_match
+            END price_match
         FROM bpb a
         INNER JOIN mastersupplier ms ON ms.Id_Supplier = a.id_supplier
         LEFT JOIN po_header d ON d.pono = a.pono
@@ -62,14 +92,84 @@ $sql = mysqli_query($conn1, "SELECT t.no_dok, t.tgl_dok, t.supplier, t.no_po, MA
     GROUP BY t.no_dok, t.tgl_dok, t.supplier, t.no_po
     ORDER BY t.tgl_dok DESC, t.no_dok DESC");
 
+$baris = [];
+while ($row = mysqli_fetch_assoc($sql)) { $baris[] = $row; }
+
+/* PPN yang BENAR-BENAR terbukukan, satu query untuk seluruh daftar.
+   Tidak dijadikan JOIN di query utama: tbl_list_journal 600 ribu baris lebih,
+   dan daftar ini paling banyak beberapa ratus dokumen - menyaring lewat IN
+   pada indeks `no_journal` jauh lebih murah daripada menggabung semuanya.
+
+   REVERSE SUDAH IKUT TERHITUNG, dan ini yang membuat `SUM(debit - credit)`
+   dipilih daripada "ambil posting terakhir". Dokumen yang dibetulkan
+   polanya begini (contoh nyata GEN/IN/0926/02671):
+
+       AP - BPB          Dr 102.000     <- posting asli
+       Reverse AP - BPB  Cr 102.000     <- dibalik
+       AP - BPB          Dr 119.500     <- posting baru
+
+   Baris reverse bertanda BERLAWANAN, jadi jumlah bersihnya = posting
+   terakhir (119.500). Diuji ke SELURUH 203 dokumen GEN/GACC/GK yang pernah
+   di-reverse: jumlah bersih SAMA PERSIS dgn batch sesudah reverse terakhir,
+   selisih terbesar 0,00. Dokumen yang di-reverse dan TIDAK diposting ulang
+   bersihnya 0 - juga benar, memang tidak ada yang terbukukan.
+
+   Menjumlahkan lebih tahan banting daripada "ambil yang id-nya paling
+   besar": tidak bergantung pada urutan id, dan tetap benar untuk
+   Reverse Reverse (6 baris di GEN). Penjaganya ada di uji_ppn_bpb.php
+   bagian 5 - kalau pola postingnya berubah, di situ ketahuannya.
+
+   `LIKE '%BPB%'` sengaja ikut menangkap 'AP - BPB RETURN': untuk GEN tipe
+   itu hanya milik GEN/OUT & GEN/RO, dan NOL dari keduanya masuk daftar ini
+   (diperiksa 6 Nov 2026), tapi kalau suatu saat masuk, lebih baik ikut
+   terhitung daripada diam-diam terlewat. */
+$jurPpn = [];   /* no_dok => nilai PPN di jurnal */
+$adaJur = [];   /* no_dok => dokumen ini sudah punya jurnal BPB */
+if ($baris) {
+    $nomor = [];
+    foreach ($baris as $b) {
+        $nomor[] = "'" . mysqli_real_escape_string($conn1, $b['no_dok']) . "'";
+    }
+    $in = implode(',', $nomor);
+    $qj = mysqli_query($conn1, "SELECT no_journal,
+                SUM(CASE WHEN no_coa = '1.52.07' THEN debit - credit ELSE 0 END) ppn,
+                COUNT(*) n
+            FROM tbl_list_journal
+            WHERE no_journal IN ($in) AND type_journal LIKE '%BPB%'
+            GROUP BY no_journal");
+    if ($qj) {
+        while ($j = mysqli_fetch_assoc($qj)) {
+            $jurPpn[$j['no_journal']] = round((float) $j['ppn'], 2);
+            $adaJur[$j['no_journal']] = ((int) $j['n']) > 0;
+        }
+    }
+}
+
 $data = [];
-while ($row = mysqli_fetch_assoc($sql)) {
+foreach ($baris as $row) {
     $row['tgl_dok_fmt'] = !empty($row['tgl_dok']) ? date('d-M-Y', strtotime($row['tgl_dok'])) : '-';
-    $dpp = (float) $row['dpp'];
-    $ppn_rate = (float) $row['ppn_rate'];
-    $row['ppn'] = round($dpp * $ppn_rate / 100, 2);
-    $row['total'] = round($dpp + $row['ppn'], 2);
-    $row['is_match'] = ((int) $row['is_match']) === 1;
+    $dpp     = (float) $row['dpp'];
+    $tax_po  = (float) $row['tax_po'];
+    $ppn_po  = round($dpp * $tax_po / 100, 2);          /* yang SEHARUSNYA menurut PO */
+    $sudah   = isset($adaJur[$row['no_dok']]);
+
+    if ($sudah) {
+        /* Sudah diapprove: yang ditampilkan PPN yang benar-benar dibukukan. */
+        $row['ppn']      = isset($jurPpn[$row['no_dok']]) ? $jurPpn[$row['no_dok']] : 0.0;
+        $row['ppn_dari'] = 'jurnal';
+        $ppn_cocok       = abs($row['ppn'] - $ppn_po) <= 0.05;
+    } else {
+        /* Belum diapprove - belum ada jurnal, jadi belum ada apa pun yang
+           bisa berselisih dgn PO. Yang ditampilkan nilai menurut PO, yaitu
+           yang AKAN dibukukan, dan PPN tidak ikut menentukan badge-nya. */
+        $row['ppn']      = $ppn_po;
+        $row['ppn_dari'] = 'po';
+        $ppn_cocok       = true;
+    }
+
+    $row['ppn_po']   = $ppn_po;
+    $row['total']    = round($dpp + $row['ppn'], 2);
+    $row['is_match'] = (((int) $row['price_match']) === 1) && $ppn_cocok;
     $data[] = $row;
 }
 
