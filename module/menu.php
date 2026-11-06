@@ -688,6 +688,18 @@ echo'</ul>
                 $menu3 = isset($rs3['menu']) ? $rs3['menu'] :0;
                 $id3 = isset($rs3['id']) ? $rs3['id'] :0;
 
+                /* AP > Report > Projection - dua butir turunan, masing-masing
+                   punya hak aksesnya sendiri (menurole 146 & 147), persis
+                   susunan "Projection" di sidebar ar_dev: Projection Report
+                   dan History Projection. Dipakai satu query untuk dua menu
+                   supaya tidak menambah bolak-balik ke basis data. */
+                $idPrj = 0; $idHis = 0;
+                $q_prj = mysqli_query($conn2,"select menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu in ('AP Projection Report','AP History Projection')");
+                while ($r_prj = mysqli_fetch_assoc($q_prj)) {
+                    if ($r_prj['id'] == '146') { $idPrj = '146'; }
+                    if ($r_prj['id'] == '147') { $idHis = '147'; }
+                }
+
                 $sql_pr = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Purchase Report'  group by username");
                 $menu_pr = '';
                 while($rpr = mysqli_fetch_array($sql_pr)){
@@ -767,10 +779,43 @@ echo'</ul>
                     </a>';
                 }else{
                 }
-                if ($menu_pr == 'Y' || $id == '18' && $id3 == '57' || $id == '0' && $id3 == '57' || $id2 == '35' || 
+                if ($menu_pr == 'Y' || $id == '18' && $id3 == '57' || $id == '0' && $id3 == '57' || $id2 == '35' ||
                     $id == '18' && $id3 == '0') {
                     echo '';
             }
+
+                /* Projection - submenu BERSARANG di dalam Report, bukan butir
+                   datar seperti laporan di atasnya. Bentuknya mengikuti
+                   "Approval" di bawah FTR pada berkas ini (dropdown-submenu
+                   di dalam dropdown-menu), dan isinya mengikuti sidebar
+                   ar_dev: Projection Report + History Projection.
+
+                   Induknya baru tampil kalau user punya SALAH SATU turunannya
+                   - kalau tidak, yang muncul cuma panah kosong yang tidak
+                   bisa dibuka. */
+                if ($idPrj == '146' || $idHis == '147') {
+                    echo '<li class="dropdown-submenu">
+                    <a class="dropdown-item bg-dark text-white" href="#">
+                    <span class="fa fa-line-chart fa-fw"></span>
+                    <span class="menu-collapsed">Projection</span>
+                    </a>
+                    <ul class="dropdown-menu bg-dark text-white" role="menu">';
+                    if ($idPrj == '146') {
+                        echo '<a href="../AP/ap_projection_report.php" class="dropdown-item bg-dark text-white">
+                        <span class="fa fa-bar-chart fa-fw"></span>
+                        <span class="menu-collapsed">Projection Report</span>
+                        </a>';
+                    }
+                    if ($idHis == '147') {
+                        echo '<a href="../AP/ap_history_projection.php" class="dropdown-item bg-dark text-white">
+                        <span class="fa fa-history fa-fw"></span>
+                        <span class="menu-collapsed">History Projection</span>
+                        </a>';
+                    }
+                    echo '</ul>
+                    </li>';
+                }
+
             echo '</ul>
             </li>';
             ?>
