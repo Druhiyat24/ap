@@ -370,7 +370,7 @@ $(document).ready(function () {
     { data: 'payment_amount', title: 'Payment Amount',       kelas: 'text-right', grup: 'payable' }
   ];
   var GRUP_PAYABLE  = 'Payable Amount';
-  var GRUP_PROYEKSI = 'Projected Cash Outflow from Accounts Payable Payment';
+  var GRUP_PROYEKSI = 'Projected Cash Outflow for Accounts Payable Payment';
 
   function kodeFlex(v) {
     var k = (v || '').toString().trim().toUpperCase();

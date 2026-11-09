@@ -150,7 +150,7 @@ $KOLOM_ANGKA = array('invoice_amount', 'rate', 'tax_base', 'vat',
             }
             if ($kolomTgl) {
                 echo '<th class="grp-prj" colspan="' . count($kolomTgl) . '">'
-                   . 'Projected Cash Outflow from Accounts Payable Payment</th>';
+                   . 'Projected Cash Outflow for Accounts Payable Payment</th>';
             }
             ?>
         </tr>

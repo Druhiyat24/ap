@@ -15,12 +15,17 @@
    ap_payment_plan_det.plan_date - yaitu tanggal PER BARIS - jadi yang
    menentukan di situ memang tanggal barisnya, bukan tanggal kepalanya.
 
-   Voucher yang nomornya tidak ada di kontrabon_h, vouchernya belum
-   disetujui, ATAU sudah punya rencana aktif, DITOLAK - supaya dokumen
-   rencana tidak memuat nomor karangan yang nanti tidak bisa dipasangkan ke
-   laporan proyeksi, dan supaya satu voucher tidak terhitung dua kali di
-   laporan itu. Yang ditolak dikembalikan lewat 'ditolak', bukan membatalkan
-   seluruh dokumen.
+   Voucher yang nomornya tidak ada di kontrabon_h atau vouchernya belum
+   disetujui DITOLAK - supaya dokumen rencana tidak memuat nomor karangan
+   yang nanti tidak bisa dipasangkan ke laporan proyeksi. Yang ditolak
+   dikembalikan lewat 'ditolak', bukan membatalkan seluruh dokumen.
+
+   Voucher yang SUDAH punya rencana aktif dulu ikut ditolak. Sejak
+   9 Nov 2026 tidak lagi: rencananya boleh diubah selama vouchernya masih
+   outstanding (permintaan pemakai), jadi rencana lamanya DIPADAMKAN -
+   status barisnya jadi 'N' - dan dokumen ini menggantikannya. Satu voucher
+   tetap hanya punya SATU rencana aktif. Yang digantikan dikembalikan lewat
+   'digantikan' supaya kelihatan di layar.
    ============================================================================ */
 session_start();
 include '../../conn/conn.php';
@@ -100,8 +105,12 @@ if (!$ok) {
     exit;
 }
 
-$tersimpan = 0;
-$ditolak   = array();
+$tersimpan  = 0;
+$ditolak    = array();
+/* Voucher yang rencana lamanya digantikan dokumen ini. Dilaporkan balik ke
+   layar supaya penjadwalan ulang KELIHATAN - kalau diam saja, orang tidak
+   tahu bahwa dokumen lain baru saja kehilangan satu barisnya. */
+$digantikan = array();
 
 foreach ($baris as $b) {
     $no_kbon = isset($b['no_kbon']) ? trim((string) $b['no_kbon']) : '';
@@ -139,9 +148,40 @@ foreach ($baris as $b) {
             WHERE d.no_kbon = '$no_esc' AND d.status = 'Y' AND h.status <> 'CANCEL'
             ORDER BY h.id DESC LIMIT 1");
     if ($aktif && mysqli_num_rows($aktif)) {
+        /* DIJADWALKAN ULANG, bukan ditolak (permintaan pemakai 9 Nov 2026):
+           rencana satu voucher harus bisa diubah selama vouchernya masih
+           outstanding. Rencana lamanya DIPADAMKAN di sini - status barisnya
+           jadi 'N', persis seperti yang dilakukan pembatalan dokumen - lalu
+           baris baru di bawah menggantikannya.
+
+           Dipadamkan, BUKAN dibiarkan hidup berdua: syarat "rencana yang
+           berlaku" di layar Payment Plan, laporan proyeksi dan laporan
+           realisasi ditulis sbg baris 'Y' milik dokumen terbaru. Dua baris
+           'Y' sekaligus memang masih terbaca benar oleh ketiganya (semuanya
+           memakai MAX(h.id)), tapi menghitung "berapa voucher terjadwal"
+           jadi menggandakan - dan tidak ada satu pun tempat yang menjamin
+           dua baris itu sedate.
+
+           Yang TIDAK hilang: tanggal rencana lama tetap tersimpan di baris
+           itu, jadi dokumen lamanya tetap bisa dibaca sbg riwayat; yang
+           berubah cuma penandanya, dari berlaku jadi tidak.
+
+           Aman dari dua penyimpan bersamaan: ini berjalan di dalam
+           transaksi yang sama dan selama GET_LOCK masih dipegang, jadi
+           penyimpan kedua baru melihat keadaan setelah yang pertama
+           commit - penjaga yang dipasang 5 Nov 2026 tetap utuh. */
         $a = mysqli_fetch_assoc($aktif);
-        $ditolak[] = $no_kbon . ' (already scheduled in ' . $a['doc_number'] . ')';
-        continue;
+        $padam = mysqli_query($conn1, "UPDATE ap_payment_plan_det d
+                INNER JOIN ap_payment_plan_h h ON h.doc_number = d.doc_number
+                SET d.status = 'N'
+                WHERE d.no_kbon = '$no_esc' AND d.status = 'Y' AND h.status <> 'CANCEL'");
+        if (!$padam) {
+            mysqli_query($conn1, 'ROLLBACK');
+            mysqli_query($conn1, "DO RELEASE_LOCK('ap_payment_plan_gen')");
+            echo json_encode(array('status' => 'error', 'message' => mysqli_error($conn1)));
+            exit;
+        }
+        $digantikan[] = $no_kbon . ' (was in ' . $a['doc_number'] . ')';
     }
 
     /* Tanggal rencana PER BARIS. Layar Create mengirimkannya untuk setiap
@@ -186,12 +226,20 @@ if ($tersimpan === 0) {
 mysqli_query($conn1, 'COMMIT');
 mysqli_query($conn1, "DO RELEASE_LOCK('ap_payment_plan_gen')");
 
+$pesan = 'Payment plan ' . $doc_number . ' saved with ' . $tersimpan
+       . ' voucher' . ($tersimpan == 1 ? '' : 's') . '.';
+if (!empty($digantikan)) {
+    $n = count($digantikan);
+    $pesan .= ' ' . $n . ' voucher' . ($n == 1 ? '' : 's')
+            . ' rescheduled, replacing an earlier plan.';
+}
+
 echo json_encode(array(
     'status'     => 'success',
     'doc_number' => $doc_number,
     'tersimpan'  => $tersimpan,
     'ditolak'    => $ditolak,
-    'message'    => 'Payment plan ' . $doc_number . ' saved with ' . $tersimpan
-                    . ' voucher' . ($tersimpan == 1 ? '' : 's') . '.',
+    'digantikan' => $digantikan,
+    'message'    => $pesan,
 ));
 ?>

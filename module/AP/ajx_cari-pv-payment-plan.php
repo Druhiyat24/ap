@@ -219,10 +219,13 @@ while ($row = mysqli_fetch_assoc($res)) {
     $tax   = (float) $row['tax'];
     $total = $bayar + $pph;              /* Total Invoice */
 
-    /* Pil "Current Plan" DIHAPUS beserta kolomnya di formulir: dgn saringan
-       di atas yang selalu menyala, isinya pasti "Not Scheduled". Kolom
-       p.plan_date / p.doc_number tetap diambil karena LEFT JOIN itulah yang
-       dipakai saringannya (p.no_kbon IS NULL). */
+    /* 'plan_date' = rencana yang SEDANG BERLAKU. Sejak 9 Nov 2026 voucher
+       yang sudah punya rencana ikut muncul di daftar (lihat hanya_belum di
+       create-payment-plan.php), dan nilai ini yang mengisi kolom Payment
+       Plan untuk voucher tsb.
+
+       TIDAK dibuatkan kolom sendiri: pemakai meminta satu kolom tanggal
+       yang terus diperbarui, bukan dua kolom yang harus dibandingkan. */
     $relasi = appRelasi($row['relasi']);
     $item   = (string) $row['item_type'];
     $flex   = trim((string) $row['flexibility']);
@@ -233,6 +236,11 @@ while ($row = mysqli_fetch_assoc($res)) {
         'tgl_kbon'     => appTgl($row['tgl_kbon']),
         'tgl_tempo'    => appTgl($row['tgl_tempo']),
         'plan_awal'    => appTgl($row['plan_awal']),
+        /* Rencana yang BERLAKU sekarang - kosong kalau vouchernya belum
+           pernah dijadwalkan. 'plan_doc' dipakai di modal rincian voucher,
+           supaya ketahuan rencana itu datang dari dokumen yang mana. */
+        'plan_date'    => appTgl($row['plan_date']),
+        'plan_doc'     => htmlspecialchars((string) $row['doc_number'], ENT_QUOTES),
         'term'         => ($row['term'] === null ? '' : (string) $row['term']),
         'relasi'       => htmlspecialchars($relasi !== '' ? $relasi : '-', ENT_QUOTES),
         'item_type'    => htmlspecialchars($item !== '' ? $item : '-', ENT_QUOTES),

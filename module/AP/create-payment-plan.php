@@ -460,10 +460,20 @@ if ($qSup) {
               <th style="text-align:center;vertical-align:middle;">PV Date</th>
               <th style="text-align:center;vertical-align:middle;">Supplier</th>
               <th style="text-align:center;vertical-align:middle;">Due Date</th>
-              <!-- Rencana bayar. Selama barisnya belum dicentang yang
-                   tampil adalah rencana yang BERLAKU SEKARANG: Kamis di
-                   minggu Minggu-Sabtu milik jatuh temponya (aturan tim AP,
-                   5 Nov 2026), dibaca dari ap_payment_plan_awal.
+              <!-- Rencana bayar - SATU tanggal yang terus diperbarui
+                   (diminta pemakai, 9 Nov 2026), bukan sepasang kolom
+                   "rencana sekarang" dan "rencana baru".
+
+                   Selama barisnya belum dicentang, yang tampil adalah
+                   rencana yang BERLAKU SEKARANG, dgn urutan:
+                     1. rencana aktif voucher itu, kalau sudah pernah
+                        dijadwalkan - termasuk hasil perubahan ke-1, ke-2,
+                        dan seterusnya;
+                     2. kalau belum pernah: rencana awal, yaitu Kamis di
+                        minggu Minggu-Sabtu milik jatuh temponya (aturan
+                        tim AP, 5 Nov 2026), dari ap_payment_plan_awal.
+                   Urutan itu HARUS sama dgn rencanaBaris(), kalau tidak
+                   tanggal yang terlihat beda dgn yang akan tersimpan.
 
                    Begitu barisnya DICENTANG, sel ini berubah jadi isian
                    tanggal berkalender (diminta pemakai, 5 Nov 2026) - itulah
@@ -475,9 +485,6 @@ if ($qSup) {
               <th style="text-align:center;vertical-align:middle;">Payment Plan</th>
               <th style="text-align:center;vertical-align:middle;">Curr</th>
               <!-- Yang DIBUANG dari tabel ini beserta alasannya:
-                     Current Plan  - isinya pasti "Not Scheduled", karena
-                                     daftarnya selalu disaring ke voucher yang
-                                     belum punya rencana.
                      Tax Base, VAT - yang dipakai memutuskan di layar ini
                                      hanya nilai yang akan dibayar.
                      Term, Relationship, Item Type, Flexibility
@@ -705,9 +712,16 @@ $(document).ready(function () {
      dgn tanggal dokumen - yang isinya hari ini. Yang diminta justru
      sebaliknya: rencana awal baris itu dipertahankan apa adanya, dan yang
      perlu lain dibetulkan di barisnya sendiri. */
-  function rencanaBaris(no, awal) {
+  /* LAPIS BARU di urutan kedua (9 Nov 2026): rencana yang SEDANG BERLAKU.
+     Sejak voucher yang sudah terjadwal ikut muncul di daftar, mencentangnya
+     harus memakai tanggal rencananya yang sekarang - bukan rencana awal
+     hasil aturan Kamis. Kalau tidak, menjadwalkan ulang satu voucher
+     diam-diam MENGEMBALIKAN tanggalnya ke hitungan otomatis, dan pemakai
+     baru sadar setelah tersimpan. */
+  function rencanaBaris(no, row) {
     if (rencana[no]) { return rencana[no]; }
-    if (awal) { return awal; }
+    if (row && row.plan_date) { return row.plan_date; }
+    if (row && row.plan_awal) { return row.plan_awal; }
     return $('#plan_date').val().trim();
   }
 
@@ -715,14 +729,19 @@ $(document).ready(function () {
      .app-plan-sel dipasang di DUA-DUANYA supaya selnya bisa ditemukan lagi
      tanpa menghitung indeks <td>: kolom yang sedang disembunyikan Responsive
      benar-benar lenyap dari DOM, jadi indeks <td> tidak bisa dipercaya. */
-  function gambarRencana(no, awal) {
+  function gambarRencana(no, row) {
     if (!dipilih[no]) {
+      /* Yang ditampilkan tanggal yang AKAN dipakai kalau baris ini
+         dicentang - jadi rencana berlaku lebih dulu, baru rencana awal.
+         Urutannya sengaja sama persis dgn rencanaBaris(). */
+      var tampil = (row && row.plan_date) ? row.plan_date
+                 : ((row && row.plan_awal) ? row.plan_awal : '');
       return '<span class="app-plan-sel app-plan-teks"'
-           + ' title="Tick this row to reschedule it">' + (awal ? awal : '-') + '</span>';
+           + ' title="Tick this row to reschedule it">' + (tampil ? tampil : '-') + '</span>';
     }
     return '<input type="text" class="form-control form-control-sm tanggal app-plan app-plan-sel"'
          + ' placeholder="dd Mon yyyy" autocomplete="off" value="'
-         + lolosAtr(rencanaBaris(no, awal)) + '">';
+         + lolosAtr(rencanaBaris(no, row)) + '">';
   }
 
   /* Menyamakan wajah sel Payment Plan dgn keadaan centang barisnya, untuk
@@ -743,11 +762,11 @@ $(document).ready(function () {
       if (!$sel.length) { return; }          /* kolomnya sedang disembunyikan */
       var mauIsian = !!dipilih[d.no_kbon];
       if ($sel.is('input') === mauIsian) {
-        if (mauIsian && !$sel.is(':focus')) { $sel.val(rencanaBaris(d.no_kbon, d.plan_awal)); }
+        if (mauIsian && !$sel.is(':focus')) { $sel.val(rencanaBaris(d.no_kbon, d)); }
         return;
       }
       lepasKalender($sel);
-      var $baru = $(gambarRencana(d.no_kbon, d.plan_awal));
+      var $baru = $(gambarRencana(d.no_kbon, d));
       $sel.replaceWith($baru);
       pasangKalenderKamis($baru.filter('input.app-plan'));
     });
@@ -796,9 +815,15 @@ $(document).ready(function () {
     var isi = [
       ['PV Date',              d.tgl_kbon],
       ['Due Date',             d.tgl_tempo],
-      ['Payment Plan (current)', d.plan_awal],
+      /* TIGA tanggal yang gampang tertukar, jadi disebut tegas:
+           Initial plan  - hitungan otomatis (Kamis di minggu jatuh tempo)
+           Current plan  - rencana yang sedang berlaku, dari dokumen lain
+           This document - yang akan disimpan dokumen yang sedang dibuat */
+      ['Initial plan',           d.plan_awal],
+      ['Current plan',           d.plan_date ? (d.plan_date + ' (' + d.plan_doc + ')')
+                                             : 'Not scheduled'],
       ['Payment Plan (this document)',
-        dipilih[d.no_kbon] ? rencanaBaris(d.no_kbon, d.plan_awal) : 'Not ticked yet'],
+        dipilih[d.no_kbon] ? rencanaBaris(d.no_kbon, d) : 'Not ticked yet'],
       ['Payment Term',         hari],
       ['Currency',             d.curr],
       ['Status',               d.status],
@@ -871,10 +896,23 @@ $(document).ready(function () {
         d.end_date    = $('#end_date').val();
         d.supplier    = $('#supplier').val();
         d.dasar       = $('#dasar').val();
-        /* SELALU '1': layar ini hanya menjadwalkan voucher yang belum
-           punya rencana aktif. Kotak centangnya dihapus - lihat catatan
-           di kepala berkas. */
-        d.hanya_belum = '1';
+        /* SELALU '0' sejak 9 Nov 2026: voucher yang SUDAH punya rencana
+           ikut ditampilkan, supaya rencananya bisa diubah lagi selama
+           vouchernya masih outstanding (permintaan pemakai).
+
+           TIDAK ada kolom "Current Plan" terpisah - diminta pemakai 9 Nov
+           2026. Kolom Payment Plan sendirilah tanggal yang BERLAKU
+           SEKARANG: isinya rencana aktif kalau vouchernya sudah pernah
+           dijadwalkan, dan rencana awal kalau belum. Jadi kolom itu terbaca
+           sbg satu tanggal yang terus diperbarui - dari yang disetel
+           pertama, lalu perubahan ke-1, ke-2, dan seterusnya - bukan
+           sepasang tanggal yang harus dibandingkan sendiri oleh pemakai.
+
+           Tidak ada yang perlu dihapus saat menjadwalkan ulang: rencana
+           lama dipadamkan oleh simpan_payment_plan.php di dalam transaksi
+           yang sama, dan tanggalnya tetap tersimpan di dokumen lamanya
+           sbg riwayat. */
+        d.hanya_belum = '0';
       },
       dataSrc: function (res) {
         if (res.error) {
@@ -928,7 +966,7 @@ $(document).ready(function () {
          adanya, supaya kotak Search DataTables masih bisa mencarinya. */
       { data: 'plan_awal',   responsivePriority: 6,
         render: function (d, t, row) {
-          return (t !== 'display') ? d : gambarRencana(row.no_kbon, d);
+          return (t !== 'display') ? d : gambarRencana(row.no_kbon, row);
         } },
       { data: 'curr',        responsivePriority: 7 },
       { data: 'total',       responsivePriority: 2 },
@@ -1051,7 +1089,7 @@ $(document).ready(function () {
     var v = $(this).val().trim();
     if (v === '') {
       delete rencana[data.no_kbon];
-      v = rencanaBaris(data.no_kbon, data.plan_awal);
+      v = rencanaBaris(data.no_kbon, data);
       $(this).val(v);
     }
     rencana[data.no_kbon] = v;
@@ -1080,7 +1118,7 @@ $(document).ready(function () {
          kalau pemakai tidak menyentuh kotak tanggalnya sama sekali, yang
          tersimpan tetap rencana awal baris itu. */
       if (!rencana[data.no_kbon]) {
-        rencana[data.no_kbon] = rencanaBaris(data.no_kbon, data.plan_awal);
+        rencana[data.no_kbon] = rencanaBaris(data.no_kbon, data);
       }
       /* Baris yang BARU dicentang ikut kebagian deskripsi dokumen selama
          saklarnya hidup - itu gunanya saklar, bukan tombol sekali tekan. */
@@ -1211,11 +1249,24 @@ $(document).ready(function () {
         return;
       }
       var lanjut = function () { window.location.href = 'list-payment-plan.php'; };
+      /* Dua kabar yang perlu dibaca orang, jadi digabung dalam satu kotak:
+         yang dilewati, dan yang rencana lamanya digantikan dokumen ini.
+         Penjadwalan ulang sengaja DIBERITAHUKAN - dokumen lain kehilangan
+         satu barisnya, dan itu tidak boleh terjadi diam-diam. */
+      var kabar = '';
+      if (res.digantikan && res.digantikan.length) {
+        kabar += 'Rescheduled, replacing an earlier plan:<br><small>'
+               + res.digantikan.join('<br>') + '</small>';
+      }
       if (res.ditolak && res.ditolak.length) {
+        if (kabar !== '') { kabar += '<br><br>'; }
+        kabar += 'These vouchers were skipped:<br><small>' + res.ditolak.join('<br>') + '</small>';
+      }
+      if (kabar !== '') {
         Swal.fire({
-          icon: 'warning',
+          icon: (res.ditolak && res.ditolak.length) ? 'warning' : 'success',
           title: res.message,
-          html: 'These vouchers were skipped:<br><small>' + res.ditolak.join('<br>') + '</small>'
+          html: kabar
         }).then(lanjut);
       } else {
         Swal.fire({ icon: 'success', title: res.message, timer: 1800, showConfirmButton: false }).then(lanjut);
