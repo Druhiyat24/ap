@@ -374,7 +374,7 @@ $(document).ready(function () {
 
   /* Judul payung kedua kelompok, disalin dari lembar "Projection". */
   var GRUP_PAYABLE  = 'Payable Amount';
-  var GRUP_PROYEKSI = 'Projected Cash Outflow from Accounts Payable Payment';
+  var GRUP_PROYEKSI = 'Projected Cash Outflow for Accounts Payable Payment';
 
   /* Satu tempat yang memutuskan warna Flexibility, sama seperti di layar
      Update Payment Plan. Nilai yang tidak dikenal TIDAK diberi warna:
