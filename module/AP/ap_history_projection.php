@@ -97,6 +97,7 @@ include '../header.php';
 
 .hpj-warn { background: #fdecea; border: 1px solid #f5c2bd; color: #a3281c;
             border-radius: 8px; padding: 9px 12px; margin-bottom: 10px; font-size: 12.5px; }
+.hpj-head-aksi { margin-left: auto; }
 .hpj-info { display: flex; flex-wrap: wrap; gap: 6px 26px; margin-bottom: 12px; }
 .hpj-info div { font-size: 12.5px; color: #475569; }
 .hpj-info b { color: #0f172a; }
@@ -177,6 +178,18 @@ include '../header.php';
             <div>
                 <h1 id="hpj-det-judul">Document detail</h1>
                 <span class="ftl-crumb" id="hpj-det-sub">Open a document from the list above.</span>
+            </div>
+            <!-- Ekspor Excel dokumen yang SEDANG terbuka. Ditaruh di kepala
+                 kartu, bukan di panel saringan di atas, karena yang diekspor
+                 satu dokumen - bukan hasil pencarian. margin-left:auto yang
+                 mendorongnya ke kanan; .ftl-head sudah flex & flex-wrap, jadi
+                 di layar sempit tombolnya turun sendiri, tidak menindih judul.
+                 Disembunyikan sampai ada dokumen yang dibuka - tombol yang
+                 ditekan sebelum itu hanya menghasilkan berkas kosong. -->
+            <div class="hpj-head-aksi" id="hpj-det-aksi" style="display:none;">
+                <button type="button" class="app-btn app-btn-excel app-btn-ctl app-btn-sm" id="hpj-excel">
+                    <i class="fa fa-file-excel-o" aria-hidden="true"></i> Excel
+                </button>
             </div>
         </div>
         <div class="ftl-body">
@@ -348,6 +361,11 @@ $(document).ready(function () {
 
   /* ================================================== RINCIAN DOKUMEN ==== */
   var tblDet = null;
+  /* Nomor dokumen yang SEDANG terbuka di kartu bawah - dipakai tombol Excel.
+     Disimpan di peubah sendiri, BUKAN dibaca ulang dari teks judulnya:
+     judulnya kembali jadi 'Document detail' waktu dokumennya dibatalkan, dan
+     tombol yang membaca judul akan mengekspor dokumen bernama itu. */
+  var docDibuka = '';
 
   var KOLOM_TETAP = [
     { data: 'no',             title: 'No',                   kelas: 'text-center' },
@@ -396,6 +414,9 @@ $(document).ready(function () {
     $('#hpj-det-judul').text(i.doc_number || 'Document detail');
     $('#hpj-det-sub').text((i.periode || '-') + '  ·  ' + (i.type || '-')
                            + '  ·  ' + (i.supplier || 'ALL'));
+
+    docDibuka = i.doc_number || '';
+    $('#hpj-det-aksi').toggle(docDibuka !== '');
 
     var kurs = '';
     if (i.kurs) {
@@ -550,6 +571,31 @@ $(document).ready(function () {
     bukaDokumen($(this).data('doc'));
   });
 
+  /* ---- Export Excel dokumen yang sedang terbuka -------------------------
+     Memakai window.location, bukan ajax: jawabannya berkas unduhan, bukan
+     JSON. Nomor dokumennya di-encode karena memuat garis miring
+     (AP-PPR/1126/00001) - tanpa itu potongan sesudah garis miring pertama
+     dibaca sbg bagian alamat, bukan nilai.
+
+     ekspor_history_projection.php membaca dokumen yang SAMA lewat endpoint
+     yang sama dgn layar ini, jadi isinya tidak bisa berbeda dari yang
+     terlihat - termasuk kurs dan rencana bayar yang dibekukan di potretnya. */
+  $('#hpj-excel').on('click', function () {
+    if (docDibuka === '') {
+      Swal.fire({ icon: 'info', title: 'No document opened',
+                  text: 'Open a document from the list above first.' });
+      return;
+    }
+    Swal.fire({ title: 'Preparing Excel...', allowOutsideClick: false,
+                didOpen: function () { Swal.showLoading(); } });
+    window.location.href = 'ekspor_history_projection.php?doc_number='
+                         + encodeURIComponent(docDibuka);
+    /* Unduhan tidak memuat ulang halaman, jadi tidak ada peristiwa yang bisa
+       ditunggu - kotaknya ditutup setelah jeda singkat, sama dgn layar
+       Projection dan Payment Plan. */
+    setTimeout(function () { Swal.close(); }, 1500);
+  });
+
   /* ---- Cancel: satu-satunya yang mengubah data di layar ini ----
      Dimintai konfirmasi dgn menyebut nomor dokumennya, dan dikatakan apa
      akibatnya - dokumennya diarsipkan, bukan dilenyapkan. Pemakai yang
@@ -590,6 +636,8 @@ $(document).ready(function () {
             $('#hpj-det-info').empty();
             $('#hpj-peringatan').empty();
             $('#hpj-belum').show().text('No document opened yet.');
+            docDibuka = '';
+            $('#hpj-det-aksi').hide();
           }
           Swal.fire({ icon: 'success', title: 'Cancelled',
                       html: '<b>' + lolos(res.doc_number) + '</b> moved to the archive ('

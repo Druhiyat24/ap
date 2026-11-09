@@ -24,9 +24,8 @@
    COA-nya memang beda di salinan itu. Seluruh 2.225 voucher 2026 punya COA
    yang relasi dan item_type1-nya terisi, jadi tidak perlu nilai cadangan.
 
-   Kosakatanya diterjemahkan ke bahasa lembar kerja: GROUP -> Related Party,
-   NON GROUP -> Third Party. Dibandingkan dgn UPPER() karena isinya campur
-   ('Group' dan 'GROUP' dua-duanya ada di master COA).
+   Kosakatanya HANYA dua: GROUP dan NON GROUP. Dibandingkan dgn UPPER()
+   karena isinya campur ('Group' dan 'GROUP' dua-duanya ada di master COA).
 
    FLEXIBILITY CATEGORY dari mastersupplier.payment_rating, disambung lewat
    NAMA supplier - kontrabon_h tidak menyimpan id supplier. Dari 271 nama
@@ -193,13 +192,20 @@ function appAngka($v)
     return number_format((float) $v, 2, '.', ',');
 }
 
-/* Kosakata master COA ke kosakata lembar kerja tim AP. Yang di luar dua itu
-   dibiarkan apa adanya supaya nilai baru tidak diam-diam hilang. */
+/* Relationship HANYA dua nilai: GROUP dan NON GROUP (permintaan pemakai
+   9 Nov 2026). Dulu di sini GROUP diganti nama jadi 'Related Party' dan
+   NON GROUP jadi 'Third Party'; padanannya persis itu, jadi yang berubah
+   cuma namanya. Disamakan dgn apprRelasi() di laporan proyeksi dan
+   aprvRelasi() di laporan realisasi supaya tiga layar ini sekosakata.
+   Yang di luar dua itu dibiarkan apa adanya supaya nilai baru tidak
+   diam-diam hilang. */
 function appRelasi($v)
 {
-    $v = trim((string) $v);
-    if ($v === 'GROUP')     { return 'Related Party'; }
-    if ($v === 'NON GROUP') { return 'Third Party'; }
+    $v = strtoupper(trim((string) $v));
+    if ($v === '') { return ''; }
+    /* 'NON' diperiksa lebih dulu - 'NON GROUP' juga memuat kata 'GROUP'. */
+    if (strpos($v, 'NON') !== false || strpos($v, 'THIRD') !== false) { return 'NON GROUP'; }
+    if (strpos($v, 'GROUP') !== false || strpos($v, 'RELATED') !== false) { return 'GROUP'; }
     return $v;
 }
 

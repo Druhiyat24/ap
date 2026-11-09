@@ -39,13 +39,16 @@ function appTgl($v)
 {
     return (!empty($v) && $v !== '0000-00-00') ? date('d M Y', strtotime($v)) : '-';
 }
-/* Kosakata master COA ke kosakata lembar kerja tim AP - sama spt
-   ajx_cari-pv-payment-plan.php. */
+/* Relationship HANYA dua nilai: GROUP dan NON GROUP - sama persis spt
+   ajx_cari-pv-payment-plan.php, supaya layar dan ekspornya tidak pernah
+   menyebut nama yang berbeda untuk voucher yang sama. */
 function appRelasi($v)
 {
-    $v = trim(strtoupper((string) $v));
-    if ($v === 'GROUP')     { return 'Related Party'; }
-    if ($v === 'NON GROUP') { return 'Third Party'; }
+    $v = strtoupper(trim((string) $v));
+    if ($v === '') { return ''; }
+    /* 'NON' diperiksa lebih dulu - 'NON GROUP' juga memuat kata 'GROUP'. */
+    if (strpos($v, 'NON') !== false || strpos($v, 'THIRD') !== false) { return 'NON GROUP'; }
+    if (strpos($v, 'GROUP') !== false || strpos($v, 'RELATED') !== false) { return 'GROUP'; }
     return $v;
 }
 

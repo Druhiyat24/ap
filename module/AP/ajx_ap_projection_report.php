@@ -100,6 +100,12 @@
        Total Invoice     = total + pph_idr
        VAT               = tax
        Tax Base          = total + pph_idr - tax
+
+   KOLOM HARIAN (Projected Cash Outflow) = sisa utang DIKURANGI PPh-nya,
+   bukan saldo buku. Untuk voucher yang belum dibayar sama sekali angkanya
+   sama persis dgn Payment Amount di baris yang sama. Alasan lengkapnya ada
+   di $kas, di dekat tempat hitungnya.
+
    Kolom subtotal TIDAK dipakai: isinya tidak konsisten antar jenis dokumen
    (SI/APR/NAG/2026/06/01376 berisi 109.337.000 padahal totalnya 54.668.500).
    ============================================================================ */
@@ -488,16 +494,43 @@ while ($jalan <= $akhir) {
    4. Baris.
    --------------------------------------------------------------------------- */
 function apprAngka($v) { return number_format((float) $v, 2, '.', ','); }
+/**
+ * Relationship HANYA dua nilai: GROUP dan NON GROUP (permintaan pemakai
+ * 9 Nov 2026).
+ *
+ * Sebelumnya fungsi ini MENGGANTI NAMA GROUP -> 'Related Party' dan
+ * NON GROUP -> 'Third Party'. Akibatnya potret proyeksi ikut menyimpan
+ * nama baru itu, sementara laporan Realization melengkapi voucher yang
+ * tidak ada di potret dari ap_saldo_payment_voucher yang menulis
+ * 'NON GROUP' - jadi satu layar memuat dua kosakata untuk hal yang sama,
+ * dan Executive Summary (yang mengelompokkan per Relationship x Item Type)
+ * memecah satu kelompok jadi dua.
+ *
+ * Padanannya: related party = GROUP, third party = NON GROUP. Potret LAMA
+ * yang terlanjur berisi nama lama tetap terbaca benar, karena
+ * ajx_ap_realization_report.php menyamakannya lagi lewat aprvRelasi().
+ */
 function apprRelasi($v)
 {
     $v = strtoupper(trim((string) $v));
-    if ($v === 'GROUP')     { return 'Related Party'; }
-    if ($v === 'NON GROUP') { return 'Third Party'; }
-    return $v !== '' ? $v : '-';
+    if ($v === '') { return '-'; }
+    /* 'NON' diperiksa lebih dulu - 'NON GROUP' juga memuat kata 'GROUP'. */
+    if (strpos($v, 'NON') !== false || strpos($v, 'THIRD') !== false) { return 'NON GROUP'; }
+    if (strpos($v, 'GROUP') !== false || strpos($v, 'RELATED') !== false) { return 'GROUP'; }
+    return $v;
 }
+/* '01 Oct 2026' - permintaan pemakai 9 Nov 2026, sepasang dgn layar
+   Payment Plan (appTgl) dan laporan Realization.
+
+   SEPASANG PULA dgn aprTglDb() di simpan_history_ap_projection.php: tanggal
+   yang disimpan ke potret dibaca kembali dari TEKS yang dihasilkan fungsi
+   ini. Dulu fungsi itu memecah teksnya di tanda '-', jadi bentuk baru ini
+   akan membuatnya mengembalikan NULL - sudah diperbaiki di sana supaya
+   mengerti dua bentuk sekaligus. Kalau bentuk di sini diubah lagi, periksa
+   fungsi itu juga. */
 function apprTampilTgl($v)
 {
-    return (!empty($v) && $v !== '0000-00-00') ? date('d-m-Y', strtotime($v)) : '-';
+    return (!empty($v) && $v !== '0000-00-00') ? date('d M Y', strtotime($v)) : '-';
 }
 function apprAdaTgl($v) { return (!empty($v) && $v !== '0000-00-00'); }
 /* Lapis mana yang akhirnya dipakai - URUTANNYA WAJIB sama dgn COALESCE di
@@ -538,14 +571,41 @@ while ($row = mysqli_fetch_assoc($res)) {
        memakai saldo_akhir_idr - lihat keterangan kurs di atas. */
     $sisa = round((float) $row['saldo_akhir'] * $rate, 2);
 
+    /* ---- PPh 23 TIDAK IKUT KELUAR DARI BANK -----------------------------
+       $sisa di atas adalah saldo BUKU Utang Usaha, dan saldo itu BRUTO:
+       jurnal PV mengkredit Utang Usaha sebesar subtotal + PPN, tanpa PPh
+       sama sekali, lalu jurnal pembayarannya mendebit Utang Usaha penuh dan
+       mengkredit PPh ke 2.52.xx. Jadi yang berpindah ke rekening pemasok
+       hanya BRUTO - PPh; PPh-nya disetor ke kas negara pada tanggal lain.
+
+       Laporan ini bernama "Projected Cash OUTFLOW", jadi yang dikolomkan
+       harus KASNYA. Sebelum 9 Nov 2026 yang dipakai $sisa bruto, sehingga
+       kolom harian satu baris tidak sama dgn kolom Payment Amount di baris
+       yang sama - dilaporkan pemakai dgn contoh REG/NAG/2026/09/02387:
+       Total Invoice 70.151.117,38 muncul di kolom 12 Nov padahal Payment
+       Amount-nya 68.887.133,48.
+
+       PEMBANDINGNYA, bukan pengurangan langsung: untuk voucher yang belum
+       dibayar sama sekali $sisa = $inv, jadi $kas = $bayar PERSIS - itu yang
+       diminta. Untuk voucher yang sudah dibayar sebagian, memotong $pph
+       penuh bisa membuat angkanya minus kalau sisanya tinggal sedikit,
+       sedangkan perbandingan selalu terkurung di antara 0 dan sisa itu
+       sendiri. Berapa PPh yang sudah benar-benar dipotong di pembayaran
+       pertama TIDAK diketahui dari sini; perbandingan adalah taksiran yang
+       paling tidak berbahaya.
+
+       Voucher tanpa PPh (sekitar 85% dari seluruh PV) -> $bayar = $inv ->
+       nisbahnya 1 -> angkanya sama sekali tidak berubah. */
+    $kas = ($inv != 0.0) ? round($sisa * ($bayar / $inv), 2) : $sisa;
+
     /* Kunci kolomnya = tanggal proyeksinya apa adanya; tidak ada keranjang
        lagi. Baris di luar periode mustahil sampai sini - $eProyeksi sudah
        menyaringnya di WHERE - tapi penjagaan isset() dipertahankan supaya
        satu baris nyasar tidak memunculkan notice & menghilangkan angkanya. */
     $k = date('Y-m-d', strtotime($row['tgl_proyeksi']));
     if (!isset($jumlah[$k])) { $jumlah[$k] = 0.0; }
-    $jumlah[$k] += $sisa;
-    $totalProyeksi += $sisa;
+    $jumlah[$k] += $kas;
+    $totalProyeksi += $kas;
 
     $b = array(
         'no'            => $no,
@@ -579,9 +639,17 @@ while ($row = mysqli_fetch_assoc($res)) {
         'total_invoice' => apprAngka($inv * $rate),
         'pph'           => apprAngka(-1 * $pph * $rate),
         'payment_amount'=> apprAngka($bayar * $rate),
-        'outstanding'   => apprAngka($sisa),
+        /* 'outstanding' = KAS yang diproyeksikan keluar, bukan saldo buku -
+           lihat keterangan $kas di atas. NAMANYA tetap 'outstanding' karena
+           dipakai apa adanya oleh tiga pihak: kolom harian di bawah ini,
+           kolom ap_projection_history_det.outstanding waktu potret disimpan,
+           dan sisi "Projected" di laporan Realization & Variance. Menggantinya
+           berarti migrasi kolom di produksi, dan produksi sedang terkunci.
+           Tidak ada kolom Outstanding di layar mana pun, jadi tidak ada yang
+           salah baca. */
+        'outstanding'   => apprAngka($kas),
     );
-    foreach ($urut as $kk) { $b['d_' . $kk] = ($kk === $k) ? apprAngka($sisa) : ''; }
+    foreach ($urut as $kk) { $b['d_' . $kk] = ($kk === $k) ? apprAngka($kas) : ''; }
     $data[] = $b;
 }
 

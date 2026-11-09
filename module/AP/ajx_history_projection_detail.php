@@ -16,11 +16,26 @@
    ============================================================================ */
 
 include '../../conn/conn.php';
-header('Content-Type: application/json');
+
+/* ---------------------------------------------------------------------------
+   BISA DIPAKAI SEBAGAI PUSTAKA, persis seperti ajx_ap_projection_report.php.
+   ekspor_history_projection.php menyetel HPJ_PUSTAKA dan $_POST['doc_number'],
+   meng-include berkas ini, lalu memakai keluarannya apa adanya - sehingga isi
+   Excel dijamin sama dgn yang tampil di layar.
+
+   Dua hal yang WAJIB digerbangi dalam keadaan itu:
+     - header() JSON, karena pemanggilnya sudah mengirim header .xls sendiri
+       dan header yang belakangan menang;
+     - exit, karena exit di dalam include mematikan SELURUH skrip pemanggil,
+       sehingga kesalahan apa pun menghasilkan berkas Excel kosong tanpa satu
+       pun pesan. Diganti return, yang hanya keluar dari include ini.
+   --------------------------------------------------------------------------- */
+if (!defined('HPJ_PUSTAKA')) { header('Content-Type: application/json'); }
 
 $doc = isset($_POST['doc_number']) ? trim((string) $_POST['doc_number']) : '';
 if ($doc === '') {
     echo json_encode(array('error' => 'No document number was sent.'));
+    if (defined('HPJ_PUSTAKA')) { return; }
     exit;
 }
 
@@ -28,6 +43,7 @@ $ada = mysqli_query($conn2, "SHOW TABLES LIKE 'ap_projection_history_h'");
 if (!$ada || mysqli_num_rows($ada) === 0) {
     echo json_encode(array('error' => 'The history table does not exist yet. '
         . 'Run db_migrate_LIVE_20261106_GABUNGAN.sql first.'));
+    if (defined('HPJ_PUSTAKA')) { return; }
     exit;
 }
 
@@ -36,6 +52,7 @@ $eDoc = mysqli_real_escape_string($conn2, $doc);
 $qh = mysqli_query($conn2, "SELECT * FROM ap_projection_history_h WHERE doc_number = '$eDoc'");
 if (!$qh || mysqli_num_rows($qh) === 0) {
     echo json_encode(array('error' => 'Document ' . htmlspecialchars($doc, ENT_QUOTES) . ' was not found.'));
+    if (defined('HPJ_PUSTAKA')) { return; }
     exit;
 }
 $h = mysqli_fetch_assoc($qh);
@@ -44,13 +61,18 @@ $qd = mysqli_query($conn2, "SELECT * FROM ap_projection_history_det
                             WHERE doc_number = '$eDoc' ORDER BY no_urut, id");
 if ($qd === false) {
     echo json_encode(array('error' => mysqli_error($conn2)));
+    if (defined('HPJ_PUSTAKA')) { return; }
     exit;
 }
 
 function hpdAngka($v) { return number_format((float) $v, 2, '.', ','); }
+/* '01 Oct 2026' - sebentuk dgn apprTampilTgl() di laporan proyeksi dan
+   tglRapi() di laporan realisasi (permintaan pemakai 9 Nov 2026). Halaman
+   ini membuka POTRET; bentuk tampilan boleh berubah karena yang tersimpan
+   di basis data tetap 'Y-m-d'. */
 function hpdTgl($v)
 {
-    return (!empty($v) && $v !== '0000-00-00') ? date('d-m-Y', strtotime($v)) : '-';
+    return (!empty($v) && $v !== '0000-00-00') ? date('d M Y', strtotime($v)) : '-';
 }
 function hpdLabel($v) { return date('d M Y', strtotime($v)); }
 function hpdAman($v) { return htmlspecialchars((string) $v, ENT_QUOTES); }

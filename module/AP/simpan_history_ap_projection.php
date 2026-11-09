@@ -50,10 +50,41 @@ function aprJawab($arr)
     exit;
 }
 /* 'd-m-Y' atau '-' -> 'Y-m-d' atau NULL (untuk kolom DATE) */
+/**
+ * Tanggal dari LAYAR (sudah berbentuk tampilan) ke bentuk basis data.
+ *
+ * Mengerti TIGA bentuk, dan urutannya penting:
+ *   1. '01 Oct 2026'  - bentuk baru sejak 9 Nov 2026 (apprTampilTgl)
+ *   2. '2026-10-01'   - bentuk basis data, kalau suatu saat dikirim mentah
+ *   3. '01-10-2026'   - bentuk lama; potret yang dibuat sebelum 9 Nov 2026
+ *                       dan penyaring tanggal di layar masih memakainya
+ *
+ * Kenapa tidak strtotime() saja untuk semuanya: '01-10-2026' dibaca PHP
+ * sbg hari-bulan-tahun, TAPI '10/01/2026' sbg bulan-hari-tahun - jadi
+ * bentuk bertanda hubung sengaja dirakit sendiri, bukan ditebak.
+ *
+ * Kalau bentuk tampilan di apprTampilTgl() diubah lagi, fungsi ini WAJIB
+ * ikut diperiksa: bentuk yang tidak dikenali mengembalikan null, dan null
+ * tersimpan sbg tanggal KOSONG di potret - diam-diam, tanpa pesan galat.
+ */
 function aprTglDb($v)
 {
     $v = trim((string) $v);
     if ($v === '' || $v === '-') { return null; }
+
+    /* 1. '01 Oct 2026' / '1 October 2026' */
+    if (preg_match('/^\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4}$/', $v)) {
+        $t = strtotime($v);
+        return $t ? date('Y-m-d', $t) : null;
+    }
+
+    /* 2. '2026-10-01' */
+    if (preg_match('/^\d{4}-\d{1,2}-\d{1,2}$/', $v)) {
+        $t = strtotime($v);
+        return $t ? date('Y-m-d', $t) : null;
+    }
+
+    /* 3. '01-10-2026' */
     $p = explode('-', $v);
     if (count($p) !== 3) { return null; }
     $t = strtotime($p[2] . '-' . $p[1] . '-' . $p[0]);
@@ -104,10 +135,29 @@ $awal = 'AP-PPR/' . $mmyy . '/';
 
 mysqli_query($conn2, 'START TRANSACTION');
 
-$qn = mysqli_query($conn2, "SELECT IFNULL(MAX(CAST(SUBSTRING(doc_number, "
-    . (strlen($awal) + 1) . ") AS UNSIGNED)), 0) + 1 nomor
-    FROM ap_projection_history_h
-    WHERE doc_number LIKE '" . mysqli_real_escape_string($conn2, $awal) . "%'");
+/* Nomornya dicari di tabel HIDUP *dan* di ARSIP pembatalan.
+   Kalau hanya tabel hidup yang dilihat, nomor dokumen yang sudah dibatalkan
+   jadi bebas lagi dan dipakai ulang dokumen berikutnya - lalu dua dokumen
+   yang berbeda berkumpul di arsip dgn satu nomor, dan penjaga jumlah baris
+   di batal_history_projection.php menolak membatalkan yang kedua (terlihat
+   6 Nov 2026 waktu penjaga laporan realisasi dijalankan dua kali: "167 row(s)
+   live vs 334 archived").
+
+   Arsipnya diperiksa ADA lebih dulu: di basis data yang migrasi tabel
+   _cancel-nya belum dijalankan, menyebut tabel yang tidak ada membuat
+   SELURUH query gagal - dan pesan galatnya akan menuduh tabel history yang
+   salah. */
+$kolNomor = 'CAST(SUBSTRING(doc_number, ' . (strlen($awal) + 1) . ') AS UNSIGNED)';
+$eAwal    = mysqli_real_escape_string($conn2, $awal);
+$adaArsip = mysqli_query($conn2, "SHOW TABLES LIKE 'ap_projection_history_h_cancel'");
+$sumberNomor = "SELECT $kolNomor n FROM ap_projection_history_h
+                 WHERE doc_number LIKE '$eAwal%'";
+if ($adaArsip && mysqli_num_rows($adaArsip) > 0) {
+    $sumberNomor .= " UNION ALL
+                SELECT $kolNomor n FROM ap_projection_history_h_cancel
+                 WHERE doc_number LIKE '$eAwal%'";
+}
+$qn = mysqli_query($conn2, "SELECT IFNULL(MAX(n), 0) + 1 nomor FROM ($sumberNomor) z");
 if (!$qn) {
     mysqli_query($conn2, 'ROLLBACK');
     aprJawab(array('status' => 'error',
