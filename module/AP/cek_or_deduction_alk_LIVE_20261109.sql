@@ -200,3 +200,91 @@ SELECT COUNT(*)                                            AS jml_baris_dn,
  WHERE g.tgl_alk BETWEEN '2026-01-01' AND '2026-12-31'
    AND g.status <> 'Cancel'
    AND g.curr <> 'IDR';
+
+-- ============================================================================
+-- BAGIAN 5 - MEMBUKTIKAN ANGKA TOTALNYA. (ditambahkan 10 Nov 2026)
+--
+-- Pemakai mengirim lembar kerja berisi 14 baris dgn selisih Rp 1.011.317,25
+-- dan menyimpulkan "kursnya beda". BAGIAN ini memecah angka itu menurut
+-- SEBABNYA, supaya terlihat kursnya sama dan yang beda jumlah USD-nya.
+--
+-- SUDAH DICOCOKKAN KE ANGKA PEMAKAI (10 Nov 2026), seluruhnya pas:
+--     PPN memo             56,24 USD  = Rp 1.010.245,47   (99,894%)
+--     Pembulatan alokasi    0,06 USD  = Rp      1.071,78   ( 0,106%)
+--     ------------------------------------------------------------
+--     JUMLAH               56,30 USD  = Rp 1.011.317,25
+--
+-- BUKTI BAHWA KURSNYA SAMA, dan ini yang paling menentukan: selisih SETIAP
+-- baris kalau dibagi kurs alokasinya sendiri menghasilkan angka USD bulat
+-- DUA DESIMAL - 7,23 / 0,01 / 1,06 / 0,01 / 0,04 / 7,10 / 0,95 / 0,50 /
+-- 5,45 / 4,32 / 29,63 - 14 dari 14 baris, tanpa sisa satu sen pun.
+-- Kalau dua sisi itu benar-benar memakai kurs BERBEDA, selisihnya akan
+-- berbentuk (jumlah USD x beda kurs), dan angka seperti itu hampir tidak
+-- mungkin jatuh tepat pada USD dua desimal di kurs mana pun. Yang berbeda
+-- hanya JUMLAH USD-nya; pengalinya satu dan sama.
+--
+-- Kolom "KURS SL" di lembar kerja itu bukan kurs yang tersimpan di mana pun:
+-- itu hasil bagi (nilai subledger / jumlah USD jurnal) = kurs asli x
+-- (1 - porsi PPN). Karena itu ia SELALU lebih kecil, tidak pernah lebih
+-- besar - pertanda yang tidak akan muncul pada beda kurs yang sungguhan.
+--
+-- Isi SEBELUM menjalankan:
+SET @dari := '2026-10-01';
+SET @sampai := '2026-10-31';
+
+SELECT '=== BAGIAN 5A - per memo ===' AS bagian;
+
+SELECT x.nm_memo,
+       x.no_alk,
+       x.rate                                      AS kurs_alokasi,
+       ROUND(x.usd_tanpa_vat, 2)                   AS usd_subledger,
+       ROUND(x.usd_dgn_vat, 2)                     AS usd_jurnal,
+       ROUND(x.usd_dgn_vat - x.usd_tanpa_vat, 2)   AS selisih_usd,
+       ROUND((x.usd_dgn_vat - x.usd_tanpa_vat) * x.rate, 2) AS selisih_rp,
+       CASE WHEN ROUND(x.usd_dgn_vat - x.usd_tanpa_vat, 2) = 0 THEN 'sama'
+            WHEN ROUND(x.usd_dgn_vat - x.usd_tanpa_vat, 2) <= 0.05 THEN 'pembulatan alokasi'
+            ELSE 'PPN memo' END                    AS sebab
+FROM (
+  SELECT c.nm_memo, g.no_alk, g.rate,
+         SUM(IF(b.nm_sub_ctg <> 'VAT', c.amount, 0)) AS usd_tanpa_vat,
+         SUM(c.amount)                               AS usd_dgn_vat
+    FROM memo_h a
+    INNER JOIN memo_det b            ON b.id_h = a.id_h
+    INNER JOIN tbl_debitnote_det c   ON c.id_memo_det = b.id
+    INNER JOIN tbl_debitnote_h e     ON e.no_dn = c.no_dn
+    INNER JOIN tbl_alokasi_detail f  ON f.no_ref = e.no_dn
+    INNER JOIN tbl_alokasi g         ON g.no_alk = f.no_alk
+   WHERE g.tgl_alk BETWEEN @dari AND @sampai
+     AND b.cancel = 'N' AND g.status <> 'Cancel' AND c.nm_memo IS NOT NULL
+   GROUP BY c.nm_memo, g.no_alk, g.rate
+) x
+ORDER BY selisih_rp DESC;
+
+SELECT '=== BAGIAN 5B - rekap per sebab, INI ANGKA YANG DICARI ===' AS bagian;
+
+SELECT y.sebab,
+       COUNT(*)                   AS jml_memo,
+       ROUND(SUM(y.selisih_usd),2) AS total_usd,
+       ROUND(SUM(y.selisih_rp),2)  AS total_rp
+FROM (
+  SELECT ROUND(x.usd_dgn_vat - x.usd_tanpa_vat, 2)                    AS selisih_usd,
+         ROUND((x.usd_dgn_vat - x.usd_tanpa_vat) * x.rate, 2)         AS selisih_rp,
+         CASE WHEN ROUND(x.usd_dgn_vat - x.usd_tanpa_vat, 2) = 0 THEN 'sama'
+              WHEN ROUND(x.usd_dgn_vat - x.usd_tanpa_vat, 2) <= 0.05 THEN 'pembulatan alokasi'
+              ELSE 'PPN memo' END                                     AS sebab
+  FROM (
+    SELECT c.nm_memo, g.rate,
+           SUM(IF(b.nm_sub_ctg <> 'VAT', c.amount, 0)) AS usd_tanpa_vat,
+           SUM(c.amount)                               AS usd_dgn_vat
+      FROM memo_h a
+      INNER JOIN memo_det b            ON b.id_h = a.id_h
+      INNER JOIN tbl_debitnote_det c   ON c.id_memo_det = b.id
+      INNER JOIN tbl_debitnote_h e     ON e.no_dn = c.no_dn
+      INNER JOIN tbl_alokasi_detail f  ON f.no_ref = e.no_dn
+      INNER JOIN tbl_alokasi g         ON g.no_alk = f.no_alk
+     WHERE g.tgl_alk BETWEEN @dari AND @sampai
+       AND b.cancel = 'N' AND g.status <> 'Cancel' AND c.nm_memo IS NOT NULL
+     GROUP BY c.nm_memo, g.no_alk, g.rate
+  ) x
+) y
+GROUP BY y.sebab WITH ROLLUP;
