@@ -16,10 +16,19 @@ $txt_indirect = $_POST['txt_indirect'];
 // Flag Bank In / Bank Out tanpa approval (bank_post_rule.php). Hanya diubah
 // kalau dikirim, supaya form lama yang belum punya field ini tidak mereset.
 $set_approve = '';
-foreach (['bankin_no_approve', 'bankout_no_approve'] as $kolom) {
+foreach (['bankin_no_approve', 'bankout_no_approve',
+          /* Kelompok Cost Center - dibaca get_coa_wajib_cc.php &
+             getCostCenter.php. Bisa diisi dari layar sejak 10 Nov 2026. */
+          'support_gen_adm', 'support_prod', 'prod', 'support_sell'] as $kolom) {
 	if (isset($_POST[$kolom])) {
-		$set_approve .= ", $kolom = '" . ($_POST[$kolom] === 'Y' ? 'Y' : 'N') . "'";
+		$set_approve .= ", $kolom = '" . (strtoupper(trim((string) $_POST[$kolom])) === 'Y' ? 'Y' : 'N') . "'";
 	}
+}
+// Kode register Kas Kecil (P/K/N/B/C), hanya untuk COA 1.01.xx. Boleh kosong.
+// Aturannya sama: hanya ditulis kalau dikirim, jadi form lama tidak mengosongkan.
+if (isset($_POST['kode_cash'])) {
+	$set_approve .= ", kode_cash = '"
+		. mysqli_real_escape_string($conn2, strtoupper(trim((string) $_POST['kode_cash']))) . "'";
 }
 $status = "Active";
 $create_user = $_POST['create_user'];

@@ -1,18 +1,88 @@
 <?php include '../header.php' ?>
+<?php
+/* ============================================================================
+   FORM EDIT MASTER CHART OF ACCOUNT
+
+   Tampilannya disamakan dgn Create (dan dgn menu Update Payment Plan): kartu
+   .pco-card, kepala biru berkotak ikon, isian dikelompokkan .pco-sec, tombol
+   .app-btn.
+
+   SATU BEDA YANG DISENGAJA dari Create: deretan isian LAMA di halaman ini
+   TIDAK dibongkar jadi kisi tiga kolom. Tiap isian di sini punya query
+   prefill-nya sendiri - termasuk dua select cash flow yang dibangun lewat
+   echo bercabang (pilihan sekarang dikeluarkan dari daftar sisanya) - jadi
+   memindahkannya berarti menulis ulang logika itu, bukan sekadar menggeser
+   markup. Yang dikerjakan di sini: kerangka, kosakata gaya, dan isian baru.
+   Isian lamanya tetap satu kolom.
+
+   LIMA ISIAN BARU (10 Nov 2026) - lihat keterangan panjangnya di
+   create-master-coa.php:
+     support_gen_adm / support_prod / prod / support_sell  -> kelompok Cost Center
+     kode_cash                                             -> kode register Kas Kecil
+   Dua flag approval Bank In/Out sudah ada sejak 9 Nov 2026.
+   ============================================================================ */
+?>
+<link rel="stylesheet" href="../css/app-skin-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-skin-form.css'); ?>">
+<link rel="stylesheet" href="../css/app-pco-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-pco-form.css'); ?>">
+<style>
+/* Saklar on/off - DISALIN dari create-payment-plan.php, sama dgn Create. */
+.app-switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+              margin: 0; user-select: none; height: 34px; }
+.app-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.app-switch-track { position: relative; width: 38px; height: 20px; border-radius: 20px;
+                    background: #cbd5e1; transition: background .15s ease; flex: 0 0 auto; }
+.app-switch-knob { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+                   border-radius: 50%; background: #fff;
+                   box-shadow: 0 1px 3px rgba(15, 23, 42, .35); transition: transform .15s ease; }
+.app-switch input:checked + .app-switch-track { background: #2563eb; }
+.app-switch input:checked + .app-switch-track .app-switch-knob { transform: translateX(18px); }
+.app-switch input:focus + .app-switch-track { box-shadow: 0 0 0 3px rgba(59, 130, 246, .25); }
+.app-switch-text { font-size: 12px; font-weight: 600; color: #475569; }
+
+.coa-sw { display: flex; align-items: center; gap: 10px; width: 100%;
+          border: 1px solid #e2e8f0; border-radius: 10px; background: #fff;
+          padding: 7px 11px; height: auto; min-height: 42px; }
+.coa-sw:hover { border-color: #bfd3f5; }
+.coa-sw .app-switch-text { font-size: 11.5px; line-height: 1.3; flex: 1 1 auto; }
+.coa-sw-val { font-family: ui-monospace, Menlo, Consolas, monospace; font-weight: 700;
+              font-size: 12px; min-width: 20px; text-align: center; border-radius: 6px;
+              padding: 1px 6px; background: #f1f5f9; color: #94a3b8; flex: 0 0 auto; }
+.coa-sw input:checked ~ .coa-sw-val { background: #dcfce7; color: #15803d; }
+
+.coa-ket { display: block; margin-top: 3px; font-size: 10.5px; color: #94a3b8; font-weight: 500; }
+
+/* Deretan isian LAMA halaman ini memakai .input-group berlabel selebar 150px.
+   Dirapikan di dalam kartu: labelnya sejajar, kotaknya tidak melar sampai
+   tepi kartu di layar lebar, dan latar abu-abu gelap bawaan select cash flow
+   (style="background-color: gray") ditimpa - di dalam kartu putih itu
+   terbaca seperti isian yang mati. */
+.pco-card .input-group { max-width: 560px; flex-wrap: nowrap; align-items: center; }
+.pco-card .input-group > .col-form-label {
+  flex: 0 0 150px; margin: 0; padding-right: 10px;
+  font-size: 11.5px; font-weight: 700; color: #475569;
+}
+.pco-card .input-group select[style*="gray"],
+.pco-card .input-group select { background-color: #fff !important; }
+.pco-card .input-group + br { display: none; }
+</style>
 
     <!-- MAIN -->
-    <div class="col p-4">
-        <h2 class="text-center">FORM EDIT MASTER CHART OF ACCOUNT</h2>
-<div class="box">
-    <div class="box header">
+<div class="col p-4">
+  <div class="pco-card">
 
-<div class="box footer">   
-        <form id="form-simpan">
-            </br> 
+    <div class="pco-head">
+      <span class="pco-head-icon"><i class="fa fa-sitemap" aria-hidden="true"></i></span>
+      <div>
+        <h1>Form Edit Master Chart of Account</h1>
+        <span class="pco-crumb">Master &rsaquo; Chart of Account &rsaquo; Edit</span>
+      </div>
+    </div><!-- /.pco-head -->
 
-            </br>
+    <form id="form-simpan">
+      <div class="pco-body">
 
-            <div class="col-md-5 mb-2">
+        <div class="pco-sec"><i class="fa fa-hashtag" aria-hidden="true"></i> Account</div>
+            <div class="mb-2">
 
                   <div class="input-group" >
                     <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>COA Number </b></label>                  
@@ -147,9 +217,8 @@
                 </select>        
                 </div>
                 </br>
-                <div class="input-group" >
-                    <label for="nama_supp" class="col-form-label" style="width: 150px;"><b><u>CASH FLOW</u></b></label>                 
-                </div>
+                <hr>
+                <div class="pco-sec"><i class="fa fa-exchange-alt" aria-hidden="true"></i> Cash Flow</div>
                 <div class="input-group" >
                     <label for="nama_supp" class="col-form-label" style="width: 150px;padding-left: 15px;"><b>Direct Debit</b></label>          
                     <?php 
@@ -335,6 +404,50 @@
                 </div>
                 </br>
 
+                <hr>
+                <div class="pco-sec"><i class="fa fa-building" aria-hidden="true"></i> Cost Center</div>
+                <?php
+                    /* Kelompok Cost Center yang boleh dipakai COA ini. Dibaca
+                       get_coa_wajib_cc.php & getCostCenter.php. Sebelum 10 Nov
+                       2026 keempatnya hanya bisa diisi lewat SQL. */
+                    $no_coa = base64_decode($_GET['no_coa']);
+                    $sqlCc = mysqli_query($conn2, "select support_gen_adm, support_prod, prod,
+                        support_sell, kode_cash from mastercoa_v2 where no_coa = '"
+                        . mysqli_real_escape_string($conn2, $no_coa) . "'");
+                    $rowCc = $sqlCc ? mysqli_fetch_array($sqlCc) : [];
+                    $coaCc = [
+                        'support_gen_adm' => 'Supporting General &amp; Administration',
+                        'support_prod'    => 'Supporting Production',
+                        'prod'            => 'Production',
+                        'support_sell'    => 'Supporting Selling',
+                    ];
+                    echo '<div class="row">';
+                    foreach ($coaCc as $kolom => $label) {
+                        /* Dibandingkan tegas dgn 'Y' - sama spt pembacanya di
+                           get_coa_wajib_cc.php. Nilai lain apa pun berarti tidak. */
+                        $ya = (strtoupper(trim((string) ($rowCc[$kolom] ?? 'N'))) === 'Y');
+                        echo '<div class="col-xl-3 col-lg-6 col-md-6 mb-2">
+            <label class="coa-sw app-switch" for="' . $kolom . '">
+              <input type="checkbox" id="' . $kolom . '" name="' . $kolom . '"' . ($ya ? ' checked' : '') . '>
+              <span class="app-switch-track"><span class="app-switch-knob"></span></span>
+              <span class="app-switch-text">' . $label . '</span>
+              <span class="coa-sw-val">' . ($ya ? 'Y' : 'N') . '</span>
+            </label>
+          </div>';
+                    }
+                    echo '</div>';
+                ?>
+                <span class="coa-ket">Kalau ada satu saja yang 'Y', COA ini WAJIB mengisi Cost Center saat dipakai di jurnal.</span>
+
+                <hr>
+                <div class="pco-sec"><i class="fa fa-money-bill-wave" aria-hidden="true"></i> Petty Cash &amp; Approval</div>
+                <div class="input-group" >
+                    <label for="kode_cash" class="col-form-label" style="width: 150px;"><b>Petty Cash Code</b></label>
+                    <input type="text" style="text-transform:uppercase; max-width:120px;" class="form-control" id="kode_cash" name="kode_cash" maxlength="5" autocomplete="off" placeholder="P" value="<?php echo htmlspecialchars((string) ($rowCc['kode_cash'] ?? ''), ENT_QUOTES); ?>">
+                </div>
+                <span class="coa-ket">Hanya untuk COA Kas Kecil (1.01.xx). Terpakai: P, K, N, B, C.</span>
+                </br>
+
                 <?php
                     // Bank In / Bank Out tipe None tanpa approval (langsung Post) kalau
                     // SEMUA COA detailnya ber-flag Y - dipakai bank_post_rule.php.
@@ -355,14 +468,15 @@
                 ?>
             </div>
 
-           <div class="form-row col">
-            <div class="col-md-3 mb-3">                               
-            <button type="button" style="border-radius: 6px" class="btn-outline-primary btn-sm" name="simpan" id="simpan"><span class="fa fa-floppy-o"></span> Save</button>                
-            <button type="button" style="border-radius: 6px" class="btn-outline-danger btn-sm" name="batal" id="batal" onclick="location.href='master-coa.php'"><span class="fa fa-angle-double-left"></span> Back</button>           
-            </div>
-            </div>                                    
-        </form>
+        <hr>
+        <div class="d-flex" style="gap:8px; flex-wrap:wrap;">
+          <button type="button" class="app-btn app-btn-primary" name="simpan" id="simpan"><i class="fa fa-floppy-o"></i> Save</button>
+          <button type="button" class="app-btn app-btn-light" name="batal" id="batal" onclick="location.href='master-coa.php'"><i class="fa fa-angle-double-left"></i> Back</button>
         </div>
+
+      </div><!-- /.pco-body -->
+    </form>
+  </div><!-- /.pco-card -->
 
 <div class="modal fade" id="mymodalkbon" data-target="#mymodalkbon" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
         <div class="modal-dialog">
@@ -391,9 +505,7 @@
       <!-- /.modal-dialog --> 
     </div>         
                                 
-</div><!-- body-row END -->
-</div>
-</div>
+</div><!-- /.col p-4 -->
 
   <!-- Bootstrap core JavaScript -->
   <script src="../vendor/jquery/jquery.min.js"></script>
@@ -467,6 +579,11 @@ $(function() {
       $('.select2bs4').select2({
         theme: 'bootstrap4'
       })
+
+      /* Huruf di sebelah saklar Cost Center mengikuti saklarnya. */
+      $('.coa-sw input[type="checkbox"]').on('change', function () {
+        $(this).siblings('.coa-sw-val').text(this.checked ? 'Y' : 'N');
+      });
     });
   </script>
 
@@ -817,7 +934,15 @@ function addListener(elm,index){
             $.ajax({
             type:'POST',
             url:'save_edit_mastercoa2.php',
-            data: {'no_coa':no_coa, 'nama_coa':nama_coa, 'nama_ctg1_h':nama_ctg1_h,'nama_ctg2':nama_ctg2, 'nama_ctg3_h':nama_ctg3_h, 'nama_ctg4_h':nama_ctg4_h,'nama_ctg5':nama_ctg5, 'txt_dirdebit':txt_dirdebit, 'txt_dircredit':txt_dircredit, 'txt_indirect':txt_indirect, 'create_user':create_user, 'bankin_no_approve':$('#bankin_no_approve').val(), 'bankout_no_approve':$('#bankout_no_approve').val()},
+            data: {'no_coa':no_coa, 'nama_coa':nama_coa, 'nama_ctg1_h':nama_ctg1_h,'nama_ctg2':nama_ctg2, 'nama_ctg3_h':nama_ctg3_h, 'nama_ctg4_h':nama_ctg4_h,'nama_ctg5':nama_ctg5, 'txt_dirdebit':txt_dirdebit, 'txt_dircredit':txt_dircredit, 'txt_indirect':txt_indirect, 'create_user':create_user,
+                   /* Saklar dikirim sbg huruf 'Y'/'N' - itu isi kolomnya di
+                      mastercoa_v2, bukan 1/0. */
+                   'support_gen_adm': $('#support_gen_adm').is(':checked') ? 'Y' : 'N',
+                   'support_prod':    $('#support_prod').is(':checked')    ? 'Y' : 'N',
+                   'prod':            $('#prod').is(':checked')            ? 'Y' : 'N',
+                   'support_sell':    $('#support_sell').is(':checked')    ? 'Y' : 'N',
+                   'kode_cash':       $.trim($('#kode_cash').val()).toUpperCase(),
+                   'bankin_no_approve':$('#bankin_no_approve').val(), 'bankout_no_approve':$('#bankout_no_approve').val()},
             cache: 'false',
             close: function(e){
                 e.preventDefault();

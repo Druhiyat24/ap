@@ -1,74 +1,121 @@
 <?php include '../header.php' ?>
+<?php
+/* ============================================================================
+   FORM MASTER CHART OF ACCOUNT
+
+   TAMPILANNYA DISAMAKAN DGN MENU UPDATE PAYMENT PLAN (create-payment-plan.php),
+   diminta pemakai 10 Nov 2026: kartu .pco-card, kepala biru berkotak ikon +
+   jejak menu, isian dikelompokkan .pco-sec, tombol .app-btn. Yang berubah
+   HANYA tampilan dan isian baru - SELURUH id, name, dan pengait JavaScript
+   lama dipertahankan apa adanya (changeValuectg1, changeValuectg34,
+   Change_dirdebit/dircredit/indirect, #simpan), jadi tidak ada satu pun
+   fungsi di bawah yang perlu disentuh.
+
+   TUJUH ISIAN BARU (diminta pemakai 10 Nov 2026). Ketujuh kolomnya SUDAH ADA
+   di mastercoa_v2 dan sudah dipakai kode lain; yang belum ada cuma cara
+   mengisinya dari layar - sebelum ini hanya bisa lewat SQL:
+
+     support_gen_adm / support_prod / prod / support_sell
+         Kelompok Cost Center yang boleh dipakai COA ini. Dibaca
+         get_coa_wajib_cc.php (satu saja 'Y' -> COA wajib isi Cost Center)
+         dan getCostCenter.php (menentukan daftar CC yang muncul).
+     kode_cash
+         Kode register Kas Kecil, hanya untuk COA 1.01.xx. Terpakai saat ini:
+         P, K, N, B, C. Dibaca berkas-berkas petty cash in/out.
+     bankin_no_approve / bankout_no_approve
+         Bank In/Out tipe None langsung Post tanpa approval - lihat
+         bank_post_rule.php.
+
+   Empat kolom Cost Center diisi lewat SAKLAR on/off, bukan dropdown
+   (pilihan pemakai). Nilai 'Y'/'N' yang sebenarnya tersimpan dicetak di
+   sebelah tiap saklar: saklar sendiri tidak memberi tahu apa yang masuk ke
+   basis data, sedangkan kolomnya memang berisi huruf - dan di halaman daftar
+   huruf itu pula yang terlihat.
+   ============================================================================ */
+?>
+<link rel="stylesheet" href="../css/app-skin-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-skin-form.css'); ?>">
+<link rel="stylesheet" href="../css/app-pco-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-pco-form.css'); ?>">
+<style>
+/* Saklar on/off. DISALIN dari create-payment-plan.php supaya bentuknya sama
+   persis, bukan sekadar mirip. Bootstrap 4.1.1 belum punya .custom-switch
+   (baru ada di 4.2), jadi memang harus ditulis sendiri. */
+.app-switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+              margin: 0; user-select: none; height: 34px; }
+.app-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.app-switch-track { position: relative; width: 38px; height: 20px; border-radius: 20px;
+                    background: #cbd5e1; transition: background .15s ease; flex: 0 0 auto; }
+.app-switch-knob { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+                   border-radius: 50%; background: #fff;
+                   box-shadow: 0 1px 3px rgba(15, 23, 42, .35); transition: transform .15s ease; }
+.app-switch input:checked + .app-switch-track { background: #2563eb; }
+.app-switch input:checked + .app-switch-track .app-switch-knob { transform: translateX(18px); }
+.app-switch input:focus + .app-switch-track { box-shadow: 0 0 0 3px rgba(59, 130, 246, .25); }
+.app-switch-text { font-size: 12px; font-weight: 600; color: #475569; }
+
+/* Kotak saklar Cost Center. */
+.coa-sw { display: flex; align-items: center; gap: 10px; width: 100%;
+          border: 1px solid #e2e8f0; border-radius: 10px; background: #fff;
+          padding: 7px 11px; height: auto; min-height: 42px; }
+.coa-sw:hover { border-color: #bfd3f5; }
+.coa-sw .app-switch-text { font-size: 11.5px; line-height: 1.3; flex: 1 1 auto; }
+.coa-sw-val { font-family: ui-monospace, Menlo, Consolas, monospace; font-weight: 700;
+              font-size: 12px; min-width: 20px; text-align: center; border-radius: 6px;
+              padding: 1px 6px; background: #f1f5f9; color: #94a3b8; flex: 0 0 auto; }
+.coa-sw input:checked ~ .coa-sw-val { background: #dcfce7; color: #15803d; }
+
+/* Keterangan kecil di bawah isian. */
+.coa-ket { display: block; margin-top: 3px; font-size: 10.5px; color: #94a3b8; font-weight: 500; }
+
+/* Checkbox "ikut Category 2" pada ketiga baris Cash Flow. Dulu hanya ikon
+   centang tanpa satu kata pun, jadi tidak ada yang tahu artinya apa. */
+.coa-ikut { display: inline-flex; align-items: center; gap: 6px; height: 34px;
+            font-size: 11.5px; color: #475569; font-weight: 600; white-space: nowrap; }
+.coa-ikut input { width: 15px; height: 15px; }
+
+/* Isian yang terisi sendiri dari Category 2 / Category 5 dibuat jelas
+   terkunci, bukan sekadar abu-abu samar. */
+.pco-card .form-control[readonly] { background: #f4f6fb; color: #64748b; }
+</style>
 
     <!-- MAIN -->
-    <div class="col p-4">
-        <h2 class="text-center">FORM MASTER CHART OF ACCOUNT</h2>
-<div class="box">
-    <div class="box header">
+<div class="col p-4">
+  <div class="pco-card">
 
-<div class="box footer">   
-        <form id="form-simpan">
-            </br> 
+    <div class="pco-head">
+      <span class="pco-head-icon"><i class="fa fa-sitemap" aria-hidden="true"></i></span>
+      <div>
+        <h1>Form Master Chart of Account</h1>
+        <span class="pco-crumb">Master &rsaquo; Chart of Account &rsaquo; Create</span>
+      </div>
+    </div><!-- /.pco-head -->
 
-            <!-- <div class="form-row col">
-                <label for="pajak" class="col-form-label" style="width: 150px;"><b>Doc Number</b></label>
-            <div class="col-md-3 mb-3">                              
-                <?php
-                $sqlss = mysqli_query($conn2,"select max(id) from b_masterbank");
-            $rowss = mysqli_fetch_array($sqlss);
-            $maxid = $rowss['max(id)'];
-            $sql = mysqli_query($conn2,"select doc_number from b_masterbank where id = '$maxid'");
-            $row = mysqli_fetch_array($sql);
-            $kodepay = $row['doc_number'];
-            $urutan = (int) substr($kodepay,17,5);
-            $urutan ++;
-            $maxid ++;
-            $bln = date("m");
-            $thn = date("y");
-            $huruf = "MB//NAG/$bln$thn/";
-            $kodepay = $huruf . sprintf("%05s", $urutan);
+    <form id="form-simpan">
+      <div class="pco-body">
 
-            echo'<input type="text" readonly style="font-size: 14px;text-transform:uppercase" class="form-control-plaintext" id="no_doc" name="no_doc" value="'.$kodepay.'">
-            <input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="no_urut" name="no_urut" value="'.sprintf("%05s", $urutan).'" hidden>
-            <input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="bulan" name="bulan" value="'.$bln.'" hidden>
-            <input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="tahun" name="tahun" value="'.$thn.'" hidden>
-            <input type="text" readonly style="font-size: 14px;" class="form-control-plaintext" id="maxid" name="maxid" value="'.$maxid.'" hidden>';
-            ?>
-            </div>
-            </div>           -->
-            <!-- <div class="form-row col">
-                <label for="total" class="col-form-label" style="width: 150px;">Balance</b></label>
-            <div class="col-md-3 mb-3">                              
-                <input type="text" class="form-control-plaintext" name="outstanding" id="outstanding" value="" placeholder="0.00" style="font-size: 14px;text-align: right;" readonly>
-            </div>
-            </div> -->
-            </br>
+        <!-- ===================== 1. Account ===================== -->
+        <div class="pco-sec"><i class="fa fa-hashtag" aria-hidden="true"></i> Account</div>
+        <div class="row">
+          <div class="col-lg-3 col-md-4 col-sm-6 mb-2">
+            <label for="no_coa"><b>COA Number</b> <i>*</i></label>
+            <input type="text" style="text-transform:uppercase" class="form-control" id="no_coa" name="no_coa" autocomplete="off" placeholder="1.01.01">
+          </div>
+          <div class="col-lg-5 col-md-8 col-sm-6 mb-2">
+            <label for="nama_coa"><b>COA Name</b> <i>*</i></label>
+            <input type="text" style="text-transform:uppercase" class="form-control" id="nama_coa" name="nama_coa" autocomplete="off">
+          </div>
+          <div class="col-lg-4 col-md-6 col-sm-6 mb-2">
+            <label><b>Status</b></label>
+            <input type="text" class="form-control" value="Active" readonly>
+            <span class="coa-ket">COA baru selalu Active - diubah dari halaman daftar.</span>
+          </div>
+        </div>
 
-            <div class="col-md-5 mb-2">
-
-                  <div class="input-group" >
-                    <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>COA Number </b></label>                  
-                    <input type="text" style="font-size: 14px;text-transform:uppercase" class="form-control" id="no_coa" name="no_coa" autocomplete="off"> 
-                </div>
-                </br>
-
-                <div class="input-group" >
-                    <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>COA Name </b></label>                  
-                    <input type="text" style="font-size: 14px;text-transform:uppercase" class="form-control" id="nama_coa" name="nama_coa" autocomplete="off"> 
-                </div>
-                </br>
-                <div class="input-group" >
-                    <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Category 1</b></label>                  
-                    <input type="text" style="font-size: 14px;text-transform:uppercase" class="form-control" id="nama_ctg1" name="nama_ctg1" readonly> 
-                    <input type="hidden" style="font-size: 14px;text-transform:uppercase" class="form-control" id="nama_ctg1_h" name="nama_ctg1_h" readonly> 
-                </div>
-                </br>
-          
-            <div class="input-group">
-                <label for="accountid" class="col-form-label" style="width: 150px;" ><b>Category 2</b></label>
-                <select class="form-control select2bs4" name="nama_ctg2" id="nama_ctg2" onchange='changeValuectg1(this.value)' required >
-                <option value="" disabled selected="true">Select Category 2</option> 
-                <?php 
+        <div class="row">
+          <div class="col-lg-4 col-md-6 mb-2">
+            <label for="nama_ctg2"><b>Category 2</b> <i>*</i></label>
+            <select class="form-control select2bs4" name="nama_ctg2" id="nama_ctg2" onchange='changeValuectg1(this.value)' required>
+              <option value="" disabled selected="true">Select Category 2</option>
+              <?php
                         $sqlacc = mysqli_query($conn1,"select a.id_ctg2,a.ind_name as name2,CONCAT(a.id_ctg2,' - ',a.ind_name) as name,b.id_ctg1,b.ind_name from master_coa_ctg2 a inner join master_coa_ctg1 b on b.id_ctg1 = a.id_ctg1 group by a.id");
                         $jsArray = "var prdName = new Array();\n";
 
@@ -80,30 +127,30 @@
                             }else{
                                 $isSelected = '';
                             }
-                            echo '<option name="nama_ctg2" value="'.$id_ctg2.'"'.$isSelected.'">'. $data .'</option>';    
+                            echo '<option name="nama_ctg2" value="'.$id_ctg2.'"'.$isSelected.'">'. $data .'</option>';
                             $jsArray .= "prdName['" . $row['id_ctg2'] . "'] = {nama_ctg1:'" . addslashes($row['ind_name']) . "',nama_ctg1_h:'".addslashes($row['id_ctg1'])."'};\n";
                         }
                         ?>
-                </select>  
-            </div>
-            </br>
-            <div class="input-group" >
-                    <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Category 3</b></label>                  
-                    <input type="text" style="font-size: 14px;text-transform:uppercase" class="form-control" id="nama_ctg3" name="nama_ctg3" readonly> 
-                    <input type="hidden" style="font-size: 14px;text-transform:uppercase" class="form-control" id="nama_ctg3_h" name="nama_ctg3_h" readonly> 
-                </div>
-                </br>
-            <div class="input-group" >
-                    <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Category 4</b></label>                  
-                    <input type="text" style="font-size: 14px;text-transform:uppercase" class="form-control" id="nama_ctg4" name="nama_ctg4" readonly> 
-                    <input type="hidden" style="font-size: 14px;text-transform:uppercase" class="form-control" id="nama_ctg4_h" name="nama_ctg4_h" readonly> 
-                </div>
-                </br>
-            <div class="input-group" >
-                    <label for="nama_supp" class="col-form-label" style="width: 150px;"><b>Category 5</b></label>         
-                    <select class="form-control select2bs4" name="nama_ctg5" id="nama_ctg5" onchange='changeValuectg34(this.value)' required>
-                    <option value="" disabled selected="true">Select Category 5</option>                    
-                    <!-- <?php 
+            </select>
+          </div>
+          <div class="col-lg-4 col-md-6 mb-2">
+            <label for="nama_ctg1"><b>Category 1</b> <span class="text-muted" style="font-size:11px;">(auto)</span></label>
+            <input type="text" style="text-transform:uppercase" class="form-control" id="nama_ctg1" name="nama_ctg1" readonly>
+            <input type="hidden" class="form-control" id="nama_ctg1_h" name="nama_ctg1_h" readonly>
+          </div>
+          <div class="col-lg-4 col-md-6 mb-2">
+            <label for="nama_ctg5"><b>Category 5</b> <i>*</i></label>
+            <select class="form-control select2bs4" name="nama_ctg5" id="nama_ctg5" onchange='changeValuectg34(this.value)' required>
+              <option value="" disabled selected="true">Select Category 5</option>
+              <!-- BLOK DI BAWAH SENGAJA DI DALAM KOMENTAR HTML, DAN JANGAN
+                   DIHAPUS. <option> yang di-echo di sini memang tidak pernah
+                   terlihat - daftar Category 5 diisi belakangan oleh
+                   changeValuectg1(). Yang dibutuhkan adalah EFEK SAMPINGnya:
+                   PHP di dalam komentar HTML tetap dijalankan, dan di sinilah
+                   $jsArray2 dibangun. $jsArray2 dicetak lebih ke bawah sbg
+                   "var prdName2" yang dipakai changeValuectg34() untuk mengisi
+                   Category 3 & 4 otomatis. -->
+              <!-- <?php
                         $sqlacc = mysqli_query($conn1,"select a.id_ctg5,CONCAT(a.id_ctg5,'.') as no_coa,CONCAT(a.id_ctg5,' - ',a.ind_name) as name,b.id_ctg3,b.ind_name as name3,c.id_ctg4,c.ind_name as name4 from master_coa_ctg5 a inner join master_coa_ctg3 b on b.id_ctg3 = a.id_ctg3 inner join master_coa_ctg4 c on c.id_ctg4 = a.id_ctg4 group by a.id");
                         $jsArray2 = "var prdName2 = new Array();\n";
 
@@ -115,25 +162,42 @@
                             }else{
                                 $isSelected = '';
                             }
-                            echo '<option name="nama_ctg2" value="'.$id_ctg5.'"'.$isSelected.'">'. $data .'</option>';    
+                            echo '<option name="nama_ctg2" value="'.$id_ctg5.'"'.$isSelected.'">'. $data .'</option>';
                             $jsArray2 .= "prdName2['" . $row['id_ctg5'] . "'] = {nama_ctg3:'" . addslashes($row['name3']) . "',nama_ctg3_h:'".addslashes($row['id_ctg3'])."',nama_ctg4:'" . addslashes($row['name4']) . "',nama_ctg4_h:'".addslashes($row['id_ctg4'])."'};\n";
                         }
                         ?> -->
-                </select>        
-                </div>
-                </br>
-                <div class="input-group" >
-                    <label for="nama_supp" class="col-form-label" style="width: 150px;"><b><u>CASH FLOW</u></b></label>                 
-                </div>
-                <div class="input-group" >
-                    <label for="nama_supp" class="col-form-label" style="width: 150px;padding-left: 15px;"><b>Direct Debit</b></label>         
-                    <select style="background-color: gray;" class="form-control select2bs4" name="txt_dirdebit" id="txt_dirdebit"  required>
-                    <option value="-" disabled selected="true">Select cash flow</option>                    
-                    <?php
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-4 col-md-6 mb-2">
+            <label for="nama_ctg3"><b>Category 3</b> <span class="text-muted" style="font-size:11px;">(auto)</span></label>
+            <input type="text" style="text-transform:uppercase" class="form-control" id="nama_ctg3" name="nama_ctg3" readonly>
+            <input type="hidden" class="form-control" id="nama_ctg3_h" name="nama_ctg3_h" readonly>
+          </div>
+          <div class="col-lg-4 col-md-6 mb-2">
+            <label for="nama_ctg4"><b>Category 4</b> <span class="text-muted" style="font-size:11px;">(auto)</span></label>
+            <input type="text" style="text-transform:uppercase" class="form-control" id="nama_ctg4" name="nama_ctg4" readonly>
+            <input type="hidden" class="form-control" id="nama_ctg4_h" name="nama_ctg4_h" readonly>
+          </div>
+        </div>
+
+        <hr>
+
+        <!-- ===================== 2. Cash Flow ===================== -->
+        <div class="pco-sec"><i class="fa fa-exchange-alt" aria-hidden="true"></i> Cash Flow</div>
+        <div class="row">
+          <div class="col-lg-4 col-md-6 mb-2">
+            <label for="txt_dirdebit"><b>Direct Debit</b></label>
+            <div class="d-flex" style="gap:10px;">
+              <select class="form-control select2bs4" name="txt_dirdebit" id="txt_dirdebit" required>
+                <option value="-" disabled selected="true">Select cash flow</option>
+                <?php
                 $txt_dirdebit ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $txt_dirdebit = isset($_POST['txt_dirdebit']) ? $_POST['txt_dirdebit']: null;
-                }                 
+                }
                 $sql = mysql_query("select id,ind_name from tbl_master_cashflow where id_group <= 3 and status = 'Active'",$conn1);
                 while ($row = mysql_fetch_array($sql)) {
                     $data = $row['ind_name'];
@@ -143,24 +207,24 @@
                     }else{
                         $isSelected = '';
                     }
-                    echo '<option value="'.$id.'"'.$isSelected.'">'. $data .'</option>';    
+                    echo '<option value="'.$id.'"'.$isSelected.'">'. $data .'</option>';
                 }?>
-                </select>
-                <div style="padding-left: 50px;" class="custom-control custom-checkbox col-sm-2">
-                                                <input class="custom-control-input" type="checkbox" id="check_dirdebit" name="check_dirdebit" onclick="Change_dirdebit()">
-                                                <label for="check_dirdebit" class="custom-control-label"><i class="fa fa-check" aria-hidden="true"></i></label>
-                                            </div>        
-                </div>
-                </br>
-                <div class="input-group" >
-                    <label for="nama_supp" class="col-form-label" style="width: 150px;padding-left: 15px;"><b>Direct Credit</b></label>         
-                    <select style="background-color: gray;" class="form-control select2bs4" name="txt_dircredit" id="txt_dircredit" required>
-                    <option value="-" disabled selected="true">Select cash flow</option>                    
-                    <?php
+              </select>
+              <label class="coa-ikut" for="check_dirdebit" title="Pakai daftar cash flow bawaan Category 2">
+                <input type="checkbox" id="check_dirdebit" name="check_dirdebit" onclick="Change_dirdebit()"> ikut Ctg 2
+              </label>
+            </div>
+          </div>
+          <div class="col-lg-4 col-md-6 mb-2">
+            <label for="txt_dircredit"><b>Direct Credit</b></label>
+            <div class="d-flex" style="gap:10px;">
+              <select class="form-control select2bs4" name="txt_dircredit" id="txt_dircredit" required>
+                <option value="-" disabled selected="true">Select cash flow</option>
+                <?php
                 $txt_dircredit ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $txt_dircredit = isset($_POST['txt_dircredit']) ? $_POST['txt_dircredit']: null;
-                }                 
+                }
                 $sql = mysql_query("select id,ind_name from tbl_master_cashflow where id_group <= 3 and status = 'Active'",$conn1);
                 while ($row = mysql_fetch_array($sql)) {
                     $data = $row['ind_name'];
@@ -170,25 +234,24 @@
                     }else{
                         $isSelected = '';
                     }
-                    echo '<option value="'.$id.'"'.$isSelected.'">'. $data .'</option>';    
+                    echo '<option value="'.$id.'"'.$isSelected.'">'. $data .'</option>';
                 }?>
-                </select>
-                <div style="padding-left: 50px;" class="custom-control custom-checkbox col-sm-2">
-                                                <input class="custom-control-input" type="checkbox" id="check_dircredit" name="check_dircredit" onclick="Change_dircredit()">
-                                                <label for="check_dircredit" class="custom-control-label"><i class="fa fa-check" aria-hidden="true"></i></label>
-                                            </div>         
-                </div>
-                </br>                       
-                                    
-                <div class="input-group" >
-                    <label for="nama_supp" class="col-form-label" style="width: 150px;padding-left: 15px;"><b>Indirect</b></label>         
-                    <select style="background-color: gray;" class="form-control select2bs4" name="txt_indirect" id="txt_indirect" required>
-                    <option value="-" disabled selected="true">Select cash flow</option>                    
-                    <?php
+              </select>
+              <label class="coa-ikut" for="check_dircredit" title="Pakai daftar cash flow bawaan Category 2">
+                <input type="checkbox" id="check_dircredit" name="check_dircredit" onclick="Change_dircredit()"> ikut Ctg 2
+              </label>
+            </div>
+          </div>
+          <div class="col-lg-4 col-md-6 mb-2">
+            <label for="txt_indirect"><b>Indirect</b></label>
+            <div class="d-flex" style="gap:10px;">
+              <select class="form-control select2bs4" name="txt_indirect" id="txt_indirect" required>
+                <option value="-" disabled selected="true">Select cash flow</option>
+                <?php
                 $txt_indirect ='';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $txt_indirect = isset($_POST['txt_indirect']) ? $_POST['txt_indirect']: null;
-                }                 
+                }
                 $sql = mysql_query("select id,ind_name from tbl_master_cashflow where id_group >= 4 and status = 'Active'",$conn1);
                 while ($row = mysql_fetch_array($sql)) {
                     $data = $row['ind_name'];
@@ -198,45 +261,94 @@
                     }else{
                         $isSelected = '';
                     }
-                    echo '<option value="'.$id.'"'.$isSelected.'">'. $data .'</option>';    
+                    echo '<option value="'.$id.'"'.$isSelected.'">'. $data .'</option>';
                 }?>
-                </select>
-                <div style="padding-left: 50px;" class="custom-control custom-checkbox col-sm-2">
-                                                <input class="custom-control-input" type="checkbox" id="check_indirect" name="check_indirect" onclick="Change_indirect()">
-                                                <label for="check_indirect" class="custom-control-label"><i class="fa fa-check" aria-hidden="true"></i></label>
-                                            </div>
-                </div>
-                </br>
-
-                <!-- Bank In / Bank Out tipe None tanpa approval (langsung Post) kalau
-                     SEMUA COA detailnya ber-flag Y - dipakai bank_post_rule.php. -->
-                <div class="input-group" >
-                    <label for="bankin_no_approve" class="col-form-label" style="width: 150px;"><b>Bank In Approval</b></label>
-                    <select class="form-control" name="bankin_no_approve" id="bankin_no_approve">
-                        <option value="N" selected>Required</option>
-                        <option value="Y">Not required (auto Post)</option>
-                    </select>
-                </div>
-                </br>
-                <div class="input-group" >
-                    <label for="bankout_no_approve" class="col-form-label" style="width: 150px;"><b>Bank Out Approval</b></label>
-                    <select class="form-control" name="bankout_no_approve" id="bankout_no_approve">
-                        <option value="N" selected>Required</option>
-                        <option value="Y">Not required (auto Post)</option>
-                    </select>
-                </div>
-                </br>
+              </select>
+              <label class="coa-ikut" for="check_indirect" title="Pakai daftar cash flow bawaan Category 2">
+                <input type="checkbox" id="check_indirect" name="check_indirect" onclick="Change_indirect()"> ikut Ctg 2
+              </label>
             </div>
-
-           <div class="form-row col">
-            <div class="col-md-3 mb-3">                              
-            <button type="button" style="border-radius: 6px" class="btn-outline-primary btn-sm" name="simpan" id="simpan"><span class="fa fa-floppy-o"></span> Save</button>                
-            <button type="button" style="border-radius: 6px" class="btn-outline-danger btn-sm" name="batal" id="batal" onclick="location.href='master-coa.php'"><span class="fa fa-angle-double-left"></span> Back</button>           
-            </div>
-            </div>                                    
-        </form>
+          </div>
         </div>
 
+        <hr>
+
+        <!-- ===================== 3. Cost Center ===================== -->
+        <div class="pco-sec"><i class="fa fa-building" aria-hidden="true"></i> Cost Center</div>
+        <div class="row">
+          <div class="col-xl-3 col-lg-6 col-md-6 mb-2">
+            <label class="coa-sw app-switch" for="support_gen_adm">
+              <input type="checkbox" id="support_gen_adm" name="support_gen_adm">
+              <span class="app-switch-track"><span class="app-switch-knob"></span></span>
+              <span class="app-switch-text">Supporting General &amp; Administration</span>
+              <span class="coa-sw-val">N</span>
+            </label>
+          </div>
+          <div class="col-xl-3 col-lg-6 col-md-6 mb-2">
+            <label class="coa-sw app-switch" for="support_prod">
+              <input type="checkbox" id="support_prod" name="support_prod">
+              <span class="app-switch-track"><span class="app-switch-knob"></span></span>
+              <span class="app-switch-text">Supporting Production</span>
+              <span class="coa-sw-val">N</span>
+            </label>
+          </div>
+          <div class="col-xl-3 col-lg-6 col-md-6 mb-2">
+            <label class="coa-sw app-switch" for="prod">
+              <input type="checkbox" id="prod" name="prod">
+              <span class="app-switch-track"><span class="app-switch-knob"></span></span>
+              <span class="app-switch-text">Production</span>
+              <span class="coa-sw-val">N</span>
+            </label>
+          </div>
+          <div class="col-xl-3 col-lg-6 col-md-6 mb-2">
+            <label class="coa-sw app-switch" for="support_sell">
+              <input type="checkbox" id="support_sell" name="support_sell">
+              <span class="app-switch-track"><span class="app-switch-knob"></span></span>
+              <span class="app-switch-text">Supporting Selling</span>
+              <span class="coa-sw-val">N</span>
+            </label>
+          </div>
+        </div>
+        <span class="coa-ket">Kalau ada satu saja yang 'Y', COA ini WAJIB mengisi Cost Center saat dipakai di jurnal.</span>
+
+        <hr>
+
+        <!-- ================ 4. Petty Cash &amp; Approval ================ -->
+        <div class="pco-sec"><i class="fa fa-money-bill-wave" aria-hidden="true"></i> Petty Cash &amp; Approval</div>
+        <div class="row">
+          <div class="col-lg-3 col-md-6 mb-2">
+            <label for="kode_cash"><b>Petty Cash Code</b></label>
+            <input type="text" style="text-transform:uppercase; max-width:120px;" class="form-control" id="kode_cash" name="kode_cash" maxlength="5" autocomplete="off" placeholder="P">
+            <span class="coa-ket">Hanya untuk COA Kas Kecil (1.01.xx). Terpakai: P, K, N, B, C.</span>
+          </div>
+          <div class="col-lg-3 col-md-6 mb-2">
+            <label for="bankin_no_approve"><b>Bank In Approval</b></label>
+            <select class="form-control select2bs4" name="bankin_no_approve" id="bankin_no_approve">
+              <option value="N" selected>Required</option>
+              <option value="Y">Not required (auto Post)</option>
+            </select>
+            <span class="coa-ket">Bank In tipe None langsung Post kalau SEMUA COA-nya 'Not required'.</span>
+          </div>
+          <div class="col-lg-3 col-md-6 mb-2">
+            <label for="bankout_no_approve"><b>Bank Out Approval</b></label>
+            <select class="form-control select2bs4" name="bankout_no_approve" id="bankout_no_approve">
+              <option value="N" selected>Required</option>
+              <option value="Y">Not required (auto Post)</option>
+            </select>
+            <span class="coa-ket">Aturan yang sama untuk Bank Out tipe None.</span>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="d-flex" style="gap:8px; flex-wrap:wrap;">
+          <button type="button" class="app-btn app-btn-primary" name="simpan" id="simpan"><i class="fa fa-floppy-o"></i> Save</button>
+          <button type="button" class="app-btn app-btn-light" name="batal" id="batal" onclick="location.href='master-coa.php'"><i class="fa fa-angle-double-left"></i> Back</button>
+        </div>
+
+      </div><!-- /.pco-body -->
+    </form>
+  </div><!-- /.pco-card -->
 <div class="modal fade" id="mymodalkbon" data-target="#mymodalkbon" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
         <div class="modal-dialog">
         <div class="modal-content">
@@ -264,9 +376,7 @@
       <!-- /.modal-dialog --> 
     </div>         
                                 
-</div><!-- body-row END -->
-</div>
-</div>
+</div><!-- /.col p-4 -->
 
   <!-- Bootstrap core JavaScript -->
   <script src="../vendor/jquery/jquery.min.js"></script>
@@ -340,6 +450,12 @@ $(function() {
       $('.select2bs4').select2({
         theme: 'bootstrap4'
       })
+
+      /* Huruf di sebelah saklar Cost Center mengikuti saklarnya. Ditulis
+         SEKALI di sini, bukan satu penangan per saklar. */
+      $('.coa-sw input[type="checkbox"]').on('change', function () {
+        $(this).siblings('.coa-sw-val').text(this.checked ? 'Y' : 'N');
+      });
     });
   </script>
 
@@ -690,7 +806,15 @@ function addListener(elm,index){
             $.ajax({
             type:'POST',
             url:'insertmastercoa.php',
-            data: {'no_coa':no_coa, 'nama_coa':nama_coa, 'nama_ctg1_h':nama_ctg1_h,'nama_ctg2':nama_ctg2, 'nama_ctg3_h':nama_ctg3_h, 'nama_ctg4_h':nama_ctg4_h,'nama_ctg5':nama_ctg5, 'txt_dirdebit':txt_dirdebit, 'txt_dircredit':txt_dircredit, 'txt_indirect':txt_indirect, 'create_user':create_user, 'bankin_no_approve':$('#bankin_no_approve').val(), 'bankout_no_approve':$('#bankout_no_approve').val()},
+            data: {'no_coa':no_coa, 'nama_coa':nama_coa, 'nama_ctg1_h':nama_ctg1_h,'nama_ctg2':nama_ctg2, 'nama_ctg3_h':nama_ctg3_h, 'nama_ctg4_h':nama_ctg4_h,'nama_ctg5':nama_ctg5, 'txt_dirdebit':txt_dirdebit, 'txt_dircredit':txt_dircredit, 'txt_indirect':txt_indirect, 'create_user':create_user,
+                   /* Saklar dikirim sbg huruf 'Y'/'N' - itu isi kolomnya di
+                      mastercoa_v2, bukan 1/0. */
+                   'support_gen_adm': $('#support_gen_adm').is(':checked') ? 'Y' : 'N',
+                   'support_prod':    $('#support_prod').is(':checked')    ? 'Y' : 'N',
+                   'prod':            $('#prod').is(':checked')            ? 'Y' : 'N',
+                   'support_sell':    $('#support_sell').is(':checked')    ? 'Y' : 'N',
+                   'kode_cash':       $.trim($('#kode_cash').val()).toUpperCase(),
+                   'bankin_no_approve':$('#bankin_no_approve').val(), 'bankout_no_approve':$('#bankout_no_approve').val()},
             cache: 'false',
             close: function(e){
                 e.preventDefault();

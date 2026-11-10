@@ -16,6 +16,25 @@ $txt_indirect = $_POST['txt_indirect'];
 // Flag Bank In / Bank Out tanpa approval (bank_post_rule.php), default perlu approval.
 $bankin_no_approve = ($_POST['bankin_no_approve'] ?? 'N') === 'Y' ? 'Y' : 'N';
 $bankout_no_approve = ($_POST['bankout_no_approve'] ?? 'N') === 'Y' ? 'Y' : 'N';
+
+/* Kelompok Cost Center yang boleh dipakai COA ini. Dibaca
+   get_coa_wajib_cc.php (satu saja 'Y' -> COA wajib isi Cost Center) dan
+   getCostCenter.php (menentukan daftar CC yang muncul). Sebelum 10 Nov
+   2026 keempatnya hanya bisa diisi lewat SQL.
+
+   DISARING KE 'Y'/'N' DI SINI, bukan dipercayakan ke kiriman layar:
+   kolomnya dibaca dgn perbandingan tegas = 'Y' di banyak tempat, jadi
+   nilai lain apa pun (kosong, '1', 'y') diam-diam berarti 'tidak'. */
+function coaYN($v) { return (strtoupper(trim((string) $v)) === 'Y') ? 'Y' : 'N'; }
+$support_gen_adm = coaYN($_POST['support_gen_adm'] ?? 'N');
+$support_prod    = coaYN($_POST['support_prod'] ?? 'N');
+$prod            = coaYN($_POST['prod'] ?? 'N');
+$support_sell    = coaYN($_POST['support_sell'] ?? 'N');
+
+/* Kode register Kas Kecil (P/K/N/B/C), hanya untuk COA 1.01.xx. Boleh
+   kosong - sebagian besar COA memang tidak punya. */
+$kode_cash = strtoupper(trim((string) ($_POST['kode_cash'] ?? '')));
+$kode_cash = mysqli_real_escape_string($conn2, $kode_cash);
 $status = "Active";
 $create_user = $_POST['create_user'];
 $create_date = date("Y-m-d H:i:s");
@@ -108,9 +127,9 @@ $ind_name8 = isset($row_indirect['ind_name']) ? $row_indirect['ind_name'] : "NA"
 $eng_name8 = isset($row_indirect['eng_name']) ? $row_indirect['eng_name'] : "NA";
 
 
-$query2 = "INSERT INTO mastercoa_v2 (no_coa, nama_coa, ind_categori1, eng_categori1, ind_categori2, eng_categori2, ind_categori3, eng_categori3, ind_categori4, eng_categori4, ind_categori5, eng_categori5, ind_debit_direct, eng_debit_direct, ind_credit_direct, eng_credit_direct, ind_indirect, eng_indirect, status,id_ctg1, id_ctg2, id_ctg3, id_ctg4, id_ctg5, id_direct_debit, id_direct_credit, id_indirect, bankin_no_approve, bankout_no_approve)
+$query2 = "INSERT INTO mastercoa_v2 (no_coa, nama_coa, ind_categori1, eng_categori1, ind_categori2, eng_categori2, ind_categori3, eng_categori3, ind_categori4, eng_categori4, ind_categori5, eng_categori5, ind_debit_direct, eng_debit_direct, ind_credit_direct, eng_credit_direct, ind_indirect, eng_indirect, status,id_ctg1, id_ctg2, id_ctg3, id_ctg4, id_ctg5, id_direct_debit, id_direct_credit, id_indirect, bankin_no_approve, bankout_no_approve, support_gen_adm, support_prod, prod, support_sell, kode_cash)
 VALUES
-	('$no_coa', '$nama_coa', '$ind_name1', '$eng_name1', '$ind_name2', '$eng_name2', '$ind_name3', '$eng_name3', '$ind_name4', '$eng_name4', '$ind_name5', '$eng_name5', '$ind_name6', '$eng_name6', '$ind_name7', '$eng_name7', '$ind_name8', '$eng_name8', 'Active', '$nama_ctg1_h', '$nama_ctg2', '$nama_ctg3_h', '$nama_ctg4_h', '$nama_ctg5', '$txt_dirdebit', '$txt_dircredit', '$txt_indirect', '$bankin_no_approve', '$bankout_no_approve')";
+	('$no_coa', '$nama_coa', '$ind_name1', '$eng_name1', '$ind_name2', '$eng_name2', '$ind_name3', '$eng_name3', '$ind_name4', '$eng_name4', '$ind_name5', '$eng_name5', '$ind_name6', '$eng_name6', '$ind_name7', '$eng_name7', '$ind_name8', '$eng_name8', 'Active', '$nama_ctg1_h', '$nama_ctg2', '$nama_ctg3_h', '$nama_ctg4_h', '$nama_ctg5', '$txt_dirdebit', '$txt_dircredit', '$txt_indirect', '$bankin_no_approve', '$bankout_no_approve', '$support_gen_adm', '$support_prod', '$prod', '$support_sell', '$kode_cash')";
 
 $execute2 = mysqli_query($conn2,$query2);
 }

@@ -2969,6 +2969,41 @@ $menuGroups = [
                     ],
                 ],
             ],
+            'master-coa' => [
+                'title' => 'Master COA', 'icon' => 'fa-sitemap', 'path' => 'module/AP/master-coa.php',
+                'doc' => [
+                    'summary' => 'Master Chart of Account: daftar seluruh COA (<code>master-coa.php</code>) beserta formulir tambah (<code>create-master-coa.php</code>) dan ubah (<code>edit-master-coa.php</code>). Satu-satunya tempat COA dibuat, dan - sejak 10 Nov 2026 - satu-satunya tempat tujuh kolom penentu perilaku COA bisa diisi tanpa SQL.',
+                    'purpose' => 'Tabel <code>mastercoa_v2</code> bukan sekadar daftar nama akun: beberapa kolomnya MENGATUR PERILAKU menu lain - kelompok Cost Center yang boleh dipakai, kode register Kas Kecil, dan boleh-tidaknya Bank In/Out lewat tanpa approval. Sebelum 10 Nov 2026 ketujuh kolom itu tidak punya isian di layar mana pun, jadi satu-satunya cara mengubahnya adalah UPDATE langsung ke basis data.',
+                    'variants' => [],
+                    'flow' => [
+                        ['title' => 'Daftar &amp; saring', 'desc' => 'Saringan Category 2, Category 5, dan Status (ALL/Active/Deactive), plus tombol Excel (<code>ekspor_master_coa.php</code>). Tombol Active/Deactive di kolom Action hanya muncul untuk pengguna ber-<code>userpassword.finance = 1</code> dan bukan STAFF.'],
+                        ['title' => 'Create', 'desc' => '<code>create-master-coa.php</code> - isi COA Number &amp; Name, pilih Category 2 dan Category 5; Category 1, 3, dan 4 TERISI SENDIRI. Lalu Cash Flow (Direct Debit/Credit/Indirect), empat saklar Cost Center, Petty Cash Code, dan dua pilihan Bank In/Out Approval. Simpan lewat <code>insertmastercoa.php</code>.'],
+                        ['title' => 'Edit', 'desc' => '<code>edit-master-coa.php</code> - nomor COA dikirim lewat querystring ber-<code>base64_encode</code>. COA Number, Category 2, dan Category 5 DIKUNCI (disabled); sisanya bisa diubah. Simpan lewat <code>save_edit_mastercoa2.php</code>.'],
+                    ],
+                    'status_flow' => [
+                        ['label' => 'Active', 'cls' => 'progress'],
+                        ['label' => 'Deactive', 'cls' => 'hold'],
+                    ],
+                    'tables_write' => [
+                        ['name' => 'mastercoa_v2', 'actions' => ['insert','update'], 'desc' => 'Insert saat Create, Update saat Edit dan saat tombol Active/Deactive ditekan dari daftar. Nomor COA TIDAK pernah diubah setelah dibuat.'],
+                    ],
+                    'tables_read' => [
+                        ['name' => 'master_coa_ctg1 s/d master_coa_ctg5', 'desc' => 'Lima lapis kategori. Category 2 menentukan Category 1; Category 5 menentukan Category 3 &amp; 4.'],
+                        ['name' => 'tbl_master_cashflow', 'desc' => 'Pilihan Cash Flow. <code>id_group &lt;= 3</code> untuk Direct Debit/Credit, <code>&gt;= 4</code> untuk Indirect.'],
+                        ['name' => 'userpassword', 'desc' => 'Kolom <code>finance</code> &amp; <code>Groupp</code> - menentukan tombol Active/Deactive dan Edit muncul atau tidak.'],
+                    ],
+                    'notes' => [
+                        'TUJUH KOLOM YANG MENGATUR MENU LAIN, dan inilah alasan menu ini penting lebih dari sekadar daftar nama akun: <code>support_gen_adm</code> / <code>support_prod</code> / <code>prod</code> / <code>support_sell</code> dibaca <code>get_coa_wajib_cc.php</code> (satu saja bernilai &#39;Y&#39; -&gt; COA ini WAJIB mengisi Cost Center) dan <code>getCostCenter.php</code> (yang &#39;Y&#39; menentukan kelompok Cost Center mana yang muncul di dropdown); <code>kode_cash</code> adalah kode register Kas Kecil yang dibaca berkas-berkas Petty Cash In/Out; <code>bankin_no_approve</code> / <code>bankout_no_approve</code> dibaca <code>bank_post_rule.php</code> (Bank In/Out tipe None langsung Post tanpa approval kalau SEMUA COA detailnya ber-flag Y).',
+                        'Penambahan (10 Nov 2026, diminta pemakai) - KETUJUH KOLOM ITU KINI PUNYA ISIAN DI LAYAR. Sebelumnya hanya bisa diubah lewat UPDATE langsung ke basis data; dua flag approval sudah dapat isian 9 Nov 2026, lima sisanya menyusul. Empat kolom Cost Center memakai SAKLAR on/off (pilihan pemakai: &quot;kalau mau pakai ceklis juga boleh atau button on off&quot;), bukan dropdown - bentuk saklarnya DISALIN dari <code>create-payment-plan.php</code> (<code>.app-switch</code>) supaya sama persis, bukan sekadar mirip. Di sebelah tiap saklar dicetak huruf &#39;Y&#39;/&#39;N&#39; yang SEBENARNYA tersimpan: saklar sendiri tidak memberi tahu apa yang masuk ke basis data, sedangkan kolomnya memang berisi huruf - dan di halaman daftar huruf itu pula yang akan terlihat.',
+                        'KEDUA PENYIMPAN MENYARING KE &#39;Y&#39;/&#39;N&#39; SENDIRI, tidak memercayai kiriman layar: kolom-kolom itu dibaca dgn perbandingan tegas <code>= &#39;Y&#39;</code> di banyak tempat, jadi nilai lain apa pun (kosong, &#39;1&#39;, &#39;y&#39;) diam-diam berarti &quot;tidak&quot;. Di <code>save_edit_mastercoa2.php</code> kelima kolom hanya ditulis KALAU DIKIRIM (<code>isset</code>), supaya formulir lama yang belum punya isian ini tidak diam-diam mengosongkan nilai yang sudah ada.',
+                        'Tampilan (10 Nov 2026) - FORMULIR CREATE &amp; EDIT disamakan dgn menu Update Payment Plan: kartu <code>.pco-card</code>, kepala biru berkotak ikon + jejak menu, isian dikelompokkan <code>.pco-sec</code> (Account / Cash Flow / Cost Center / Petty Cash &amp; Approval), tombol <code>.app-btn</code>. Seluruh id, name, dan pengait JavaScript lama DIPERTAHANKAN apa adanya - <code>changeValuectg1</code>, <code>changeValuectg34</code>, <code>Change_dirdebit/dircredit/indirect</code>, <code>#simpan</code> - jadi tidak ada satu pun fungsi yang perlu ikut diubah. Dibuktikan dgn membandingkan seluruh atribut <code>id=</code> sebelum &amp; sesudah: 0 hilang di halaman Edit, dan di Create yang hilang hanya enam id milik blok MATI warisan salin-tempel <code>b_masterbank</code> (<code>no_doc</code>, <code>no_urut</code>, <code>bulan</code>, <code>tahun</code>, <code>maxid</code>, <code>outstanding</code>) yang memang sudah berada di dalam komentar HTML dan penangannya terikat ke <code>input[name=sob]</code> yang tidak pernah ada di halaman ini.',
+                        'JEBAKAN YANG SEMPAT KENA waktu merapikan Create: blok PHP pengisi Category 5 ditulis DI DALAM KOMENTAR HTML. Terlihat mati, padahal PHP di dalam komentar HTML TETAP DIJALANKAN - dan di situlah <code>$jsArray2</code> dibangun, yang dicetak lebih ke bawah sbg <code>var prdName2</code> dan dipakai <code>changeValuectg34()</code> untuk mengisi Category 3 &amp; 4 otomatis. Sempat terbuang, lalu dikembalikan beserta komentar peringatannya. Kalau hilang, halamannya rusak DIAM-DIAM: Category 3 &amp; 4 tidak pernah terisi dan PHP hanya melempar notice.',
+                        'BELUM SELESAI (per 10 Nov 2026): halaman DAFTAR <code>master-coa.php</code> belum ikut dirapikan dan belum menampilkan ketujuh kolom itu. Rencananya kolomnya ditambahkan seluruhnya (tidak ada kolom lama yang dibuang atau digabung) dgn No COA &amp; Action dibekukan lewat DataTables FixedColumns. Rancangannya ada di <code>mockup_mastercoa.html</code>.',
+                        'Berkas-berkas ini memakai <code>mysql_query()</code> gaya lama berdampingan dgn <code>mysqli_*</code>. Itu bukan salah ketik: <code>conn/parser-php-version.php</code> menyediakan pembungkus <code>mysql_query()</code> sendiri. Jangan &quot;dibetulkan&quot; satu per satu tanpa menguji seluruh halaman.',
+                        'Halaman daftar membaca <code>$_POST[\'nama_ctg2\']</code> dan kawan-kawan tanpa <code>isset</code>, sehingga pada kunjungan pertama (GET) PHP melempar notice. Sudah begitu sejak awal dan TIDAK diubah 10 Nov 2026 - catatan ini supaya notice-nya tidak dikira akibat perubahan itu.',
+                    ],
+                ],
+            ],
         ],
     ],
     'cost-accounting' => [
