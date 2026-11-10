@@ -331,9 +331,28 @@
                     }
                     ?>   
                 <label for="check_indirect" class="custom-control-label"><i class="fa fa-check" aria-hidden="true"></i></label>
-                </div>        
+                </div>
                 </div>
                 </br>
+
+                <?php
+                    // Bank In / Bank Out tipe None tanpa approval (langsung Post) kalau
+                    // SEMUA COA detailnya ber-flag Y - dipakai bank_post_rule.php.
+                    $no_coa = base64_decode($_GET['no_coa']);
+                    $sqlApv = mysqli_query($conn2,"select bankin_no_approve, bankout_no_approve from mastercoa_v2 where no_coa = '".mysqli_real_escape_string($conn2, $no_coa)."'");
+                    $rowApv = $sqlApv ? mysqli_fetch_array($sqlApv) : [];
+                    foreach (['bankin_no_approve' => 'Bank In Approval', 'bankout_no_approve' => 'Bank Out Approval'] as $kolom => $label) {
+                        $tanpa = ($rowApv[$kolom] ?? 'N') === 'Y';
+                        echo '<div class="input-group" >
+                    <label for="'.$kolom.'" class="col-form-label" style="width: 150px;"><b>'.$label.'</b></label>
+                    <select class="form-control" name="'.$kolom.'" id="'.$kolom.'">
+                        <option value="N"'.($tanpa ? '' : ' selected').'>Required</option>
+                        <option value="Y"'.($tanpa ? ' selected' : '').'>Not required (auto Post)</option>
+                    </select>
+                </div>
+                </br>';
+                    }
+                ?>
             </div>
 
            <div class="form-row col">
@@ -798,7 +817,7 @@ function addListener(elm,index){
             $.ajax({
             type:'POST',
             url:'save_edit_mastercoa2.php',
-            data: {'no_coa':no_coa, 'nama_coa':nama_coa, 'nama_ctg1_h':nama_ctg1_h,'nama_ctg2':nama_ctg2, 'nama_ctg3_h':nama_ctg3_h, 'nama_ctg4_h':nama_ctg4_h,'nama_ctg5':nama_ctg5, 'txt_dirdebit':txt_dirdebit, 'txt_dircredit':txt_dircredit, 'txt_indirect':txt_indirect, 'create_user':create_user},
+            data: {'no_coa':no_coa, 'nama_coa':nama_coa, 'nama_ctg1_h':nama_ctg1_h,'nama_ctg2':nama_ctg2, 'nama_ctg3_h':nama_ctg3_h, 'nama_ctg4_h':nama_ctg4_h,'nama_ctg5':nama_ctg5, 'txt_dirdebit':txt_dirdebit, 'txt_dircredit':txt_dircredit, 'txt_indirect':txt_indirect, 'create_user':create_user, 'bankin_no_approve':$('#bankin_no_approve').val(), 'bankout_no_approve':$('#bankout_no_approve').val()},
             cache: 'false',
             close: function(e){
                 e.preventDefault();

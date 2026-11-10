@@ -13,6 +13,14 @@ $nama_ctg5 = $_POST['nama_ctg5'];
 $txt_dirdebit = $_POST['txt_dirdebit'];
 $txt_dircredit = $_POST['txt_dircredit'];
 $txt_indirect = $_POST['txt_indirect'];
+// Flag Bank In / Bank Out tanpa approval (bank_post_rule.php). Hanya diubah
+// kalau dikirim, supaya form lama yang belum punya field ini tidak mereset.
+$set_approve = '';
+foreach (['bankin_no_approve', 'bankout_no_approve'] as $kolom) {
+	if (isset($_POST[$kolom])) {
+		$set_approve .= ", $kolom = '" . ($_POST[$kolom] === 'Y' ? 'Y' : 'N') . "'";
+	}
+}
 $status = "Active";
 $create_user = $_POST['create_user'];
 $create_date = date("Y-m-d H:i:s");
@@ -104,7 +112,7 @@ $ind_name8 = isset($row_indirect['ind_name']) ? $row_indirect['ind_name'] : "NA"
 $eng_name8 = isset($row_indirect['eng_name']) ? $row_indirect['eng_name'] : "NA";
 
 
-$query2 = "	Update mastercoa_v2 set nama_coa = '$nama_coa', ind_categori1 = '$ind_name1', eng_categori1 = '$eng_name1', ind_categori2 = '$ind_name2', eng_categori2 = '$eng_name2', ind_categori3 = '$ind_name3', eng_categori3 = '$eng_name3', ind_categori4 = '$ind_name4', eng_categori4 = '$eng_name4', ind_categori5 = '$ind_name5', eng_categori5 = '$eng_name5',ind_debit_direct = '$ind_name6', eng_debit_direct = '$eng_name6', ind_credit_direct = '$ind_name7', eng_credit_direct = '$eng_name7', ind_indirect = '$ind_name8', eng_indirect = '$eng_name8',status = 'Active', id_ctg1 = '$nama_ctg1_h', id_ctg2 = '$nama_ctg2', id_ctg3 = '$nama_ctg3_h', id_ctg4 = '$nama_ctg4_h', id_ctg5 = '$nama_ctg5', id_direct_debit = '$txt_dirdebit', id_direct_credit = '$txt_dircredit', id_indirect = '$txt_indirect' where no_coa  = '$no_coa'";
+$query2 = "	Update mastercoa_v2 set nama_coa = '$nama_coa', ind_categori1 = '$ind_name1', eng_categori1 = '$eng_name1', ind_categori2 = '$ind_name2', eng_categori2 = '$eng_name2', ind_categori3 = '$ind_name3', eng_categori3 = '$eng_name3', ind_categori4 = '$ind_name4', eng_categori4 = '$eng_name4', ind_categori5 = '$ind_name5', eng_categori5 = '$eng_name5',ind_debit_direct = '$ind_name6', eng_debit_direct = '$eng_name6', ind_credit_direct = '$ind_name7', eng_credit_direct = '$eng_name7', ind_indirect = '$ind_name8', eng_indirect = '$eng_name8',status = 'Active', id_ctg1 = '$nama_ctg1_h', id_ctg2 = '$nama_ctg2', id_ctg3 = '$nama_ctg3_h', id_ctg4 = '$nama_ctg4_h', id_ctg5 = '$nama_ctg5', id_direct_debit = '$txt_dirdebit', id_direct_credit = '$txt_dircredit', id_indirect = '$txt_indirect'$set_approve where no_coa  = '$no_coa'";
 
 $execute2 = mysqli_query($conn2,$query2);
 // }

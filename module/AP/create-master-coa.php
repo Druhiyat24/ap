@@ -204,7 +204,26 @@
                 <div style="padding-left: 50px;" class="custom-control custom-checkbox col-sm-2">
                                                 <input class="custom-control-input" type="checkbox" id="check_indirect" name="check_indirect" onclick="Change_indirect()">
                                                 <label for="check_indirect" class="custom-control-label"><i class="fa fa-check" aria-hidden="true"></i></label>
-                                            </div>        
+                                            </div>
+                </div>
+                </br>
+
+                <!-- Bank In / Bank Out tipe None tanpa approval (langsung Post) kalau
+                     SEMUA COA detailnya ber-flag Y - dipakai bank_post_rule.php. -->
+                <div class="input-group" >
+                    <label for="bankin_no_approve" class="col-form-label" style="width: 150px;"><b>Bank In Approval</b></label>
+                    <select class="form-control" name="bankin_no_approve" id="bankin_no_approve">
+                        <option value="N" selected>Required</option>
+                        <option value="Y">Not required (auto Post)</option>
+                    </select>
+                </div>
+                </br>
+                <div class="input-group" >
+                    <label for="bankout_no_approve" class="col-form-label" style="width: 150px;"><b>Bank Out Approval</b></label>
+                    <select class="form-control" name="bankout_no_approve" id="bankout_no_approve">
+                        <option value="N" selected>Required</option>
+                        <option value="Y">Not required (auto Post)</option>
+                    </select>
                 </div>
                 </br>
             </div>
@@ -671,7 +690,7 @@ function addListener(elm,index){
             $.ajax({
             type:'POST',
             url:'insertmastercoa.php',
-            data: {'no_coa':no_coa, 'nama_coa':nama_coa, 'nama_ctg1_h':nama_ctg1_h,'nama_ctg2':nama_ctg2, 'nama_ctg3_h':nama_ctg3_h, 'nama_ctg4_h':nama_ctg4_h,'nama_ctg5':nama_ctg5, 'txt_dirdebit':txt_dirdebit, 'txt_dircredit':txt_dircredit, 'txt_indirect':txt_indirect, 'create_user':create_user},
+            data: {'no_coa':no_coa, 'nama_coa':nama_coa, 'nama_ctg1_h':nama_ctg1_h,'nama_ctg2':nama_ctg2, 'nama_ctg3_h':nama_ctg3_h, 'nama_ctg4_h':nama_ctg4_h,'nama_ctg5':nama_ctg5, 'txt_dirdebit':txt_dirdebit, 'txt_dircredit':txt_dircredit, 'txt_indirect':txt_indirect, 'create_user':create_user, 'bankin_no_approve':$('#bankin_no_approve').val(), 'bankout_no_approve':$('#bankout_no_approve').val()},
             cache: 'false',
             close: function(e){
                 e.preventDefault();
