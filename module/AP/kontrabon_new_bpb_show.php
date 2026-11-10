@@ -11,10 +11,24 @@ if ($no_bpb === '') { echo '<div class="text-danger p-3">BPB is empty.</div>'; e
 $where = "no_bpb = '" . mysqli_real_escape_string($conn1, $no_bpb) . "'";
 if ($supplier !== '') $where .= " AND supplier = '" . mysqli_real_escape_string($conn1, $supplier) . "'";
 
+// Baris yang DIBATALKAN / DI-REVERSE dibuang - sama dgn kontrabon_new_check_bpb.php,
+// dan dua-duanya harus tetap sejalan. Membatalkan BPB tidak menghapus barisnya:
+// baris lama ditandai status='Cancel' lalu BPB dibuat ulang dgn nomor yang SAMA,
+// sehingga tanpa saringan ini jendela Show memperlihatkan item yang sama dua kali
+// dan total di bawahnya tidak cocok dgn total di daftar.
 $q = mysqli_query($conn1, "SELECT ws, itemdesc, color, size, qty, uom, price, tax, curr,
     tgl_bpb, tgl_po, supplier, pono, top, confirm1, confirm2
-    FROM bpb_new WHERE $where ORDER BY id");
-if (!$q || mysqli_num_rows($q) === 0) { echo '<div class="text-danger p-3">BPB not found.</div>'; exit; }
+    FROM bpb_new WHERE $where AND status != 'Cancel' ORDER BY id");
+if (!$q || mysqli_num_rows($q) === 0) {
+    // Tidak ada baris hidup - beda sebab, beda pesan. Kalau barisnya memang ada
+    // tapi semuanya Cancel, "BPB not found" menyesatkan.
+    $qc = mysqli_query($conn1, "SELECT COUNT(*) n FROM bpb_new WHERE $where");
+    $nc = ($qc && ($rwc = mysqli_fetch_assoc($qc))) ? (int) $rwc['n'] : 0;
+    echo '<div class="text-danger p-3">'
+       . ($nc > 0 ? 'This BPB has been cancelled or reversed.' : 'BPB not found.')
+       . '</div>';
+    exit;
+}
 
 $rows = [];
 while ($r = mysqli_fetch_assoc($q)) $rows[] = $r;

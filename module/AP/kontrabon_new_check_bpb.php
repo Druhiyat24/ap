@@ -42,6 +42,26 @@ $pcCond = ($profitCtr !== '')
     ? " AND profit_center = '" . mysqli_real_escape_string($conn1, $profitCtr) . "'"
     : '';
 
+// SARINGAN STATUS. Baris yang DIBATALKAN / DI-REVERSE tidak boleh ikut
+// dijumlahkan, dan ini BUKAN kerapian - ia mengubah angkanya.
+//
+// bpb_new menyimpan satu baris per item, dan membatalkan sebuah BPB TIDAK
+// menghapus barisnya: baris lama ditandai status='Cancel' lalu BPB-nya
+// dibuat ulang dgn nomor yang SAMA. Jadi satu no_bpb bisa memuat dua
+// rombongan baris sekaligus. Tanpa saringan ini, SUM() di bawah menjumlahkan
+// KEDUANYA dan totalnya membengkak - inilah "ketarik jadi double" yang
+// dilaporkan pemakai 10 Nov 2026.
+//
+// Terukur di salinan lokal (signalbit_bk_sep26): 447 nomor BPB memuat baris
+// Cancel sekaligus baris hidup. Contoh GEN/IN/0726/02353 - yang hidup
+// 323.500, yang dibatalkan 988.500, dan endpoint ini mengembalikan
+// 1.312.000. Reverse ikut tertangkap: 714 dari 922 baris Cancel punya
+// reverse_user, jadi membalik BPB memang berujung status Cancel.
+//
+// Kolomnya ber-collation utf8mb4_general_ci, jadi 'CANCEL' (yang memang ada
+// di data) ikut tersaring tanpa perlu UPPER().
+$stCond = " AND status != 'Cancel'";
+
 // 1) Valid untuk supplier terpilih? DPP = SUM(qty*price), PPN = SUM(qty*price*tax/100),
 //    Total = DPP + PPN (tax = persen). No PO = pono.
 $r = mysqli_query($conn1, "SELECT no_bpb, MAX(supplier) supplier, GROUP_CONCAT(DISTINCT pono SEPARATOR ', ') no_po,
@@ -49,7 +69,7 @@ $r = mysqli_query($conn1, "SELECT no_bpb, MAX(supplier) supplier, GROUP_CONCAT(D
     ROUND(SUM(qty * price), 2) dpp,
     ROUND(SUM((qty * price) * (tax / 100)), 2) ppn,
     ROUND(SUM((qty * price) + ((qty * price) * (tax / 100))), 2) total
-    FROM bpb_new WHERE no_bpb = '$bpb_esc' AND supplier = '$supp_esc'$pcCond GROUP BY no_bpb LIMIT 1");
+    FROM bpb_new WHERE no_bpb = '$bpb_esc' AND supplier = '$supp_esc'$pcCond$stCond GROUP BY no_bpb LIMIT 1");
 
 $is_retur = false;
 if ($r && mysqli_num_rows($r) > 0) {
@@ -62,12 +82,36 @@ if ($r && mysqli_num_rows($r) > 0) {
         ROUND(SUM(qty * price), 2) dpp,
         ROUND(SUM((qty * price) * (tax / 100)), 2) ppn,
         ROUND(SUM((qty * price) + ((qty * price) * (tax / 100))), 2) total
-        FROM bppb_new WHERE (no_ro = '$bpb_esc' OR no_bppb = '$bpb_esc') AND supplier = '$supp_esc' LIMIT 1");
+        FROM bppb_new WHERE (no_ro = '$bpb_esc' OR no_bppb = '$bpb_esc') AND supplier = '$supp_esc'$stCond LIMIT 1");
     $tmp = ($rr_ && mysqli_num_rows($rr_) > 0) ? mysqli_fetch_assoc($rr_) : null;
     if ($tmp && $tmp['supplier'] !== null) {
         $row = $tmp;
         $is_retur = true;
     } else {
+        // SELURUH barisnya Cancel? Diperiksa PALING DULU supaya pemakai dapat
+        // sebab yang sebenarnya. Tanpa blok ini, BPB yang dibatalkan jatuh ke
+        // pemeriksaan di bawah - yang TIDAK menyaring status - lalu dilaporkan
+        // sbg "milik supplier lain", padahal suppliernya benar. Pesan seperti
+        // itu membuat orang mencari kesalahan di tempat yang salah.
+        //
+        // Diperiksa dgn saringan yang SAMA PERSIS seperti pencarian di atas
+        // (supplier + profit center) hanya tanpa $stCond: kalau di sana nihil
+        // sedangkan di sini ada, satu-satunya pembeda memang statusnya.
+        // Di salinan lokal ada 35 nomor BPB yang seluruh barisnya Cancel.
+        $rb = mysqli_query($conn1, "SELECT COUNT(*) n FROM bpb_new
+            WHERE no_bpb = '$bpb_esc' AND supplier = '$supp_esc'$pcCond");
+        $nb = ($rb && ($rw = mysqli_fetch_assoc($rb))) ? (int) $rw['n'] : 0;
+        if ($nb === 0) {
+            $rb2 = mysqli_query($conn1, "SELECT COUNT(*) n FROM bppb_new
+                WHERE (no_ro = '$bpb_esc' OR no_bppb = '$bpb_esc') AND supplier = '$supp_esc'");
+            $nb = ($rb2 && ($rw2 = mysqli_fetch_assoc($rb2))) ? (int) $rw2['n'] : 0;
+        }
+        if ($nb > 0) {
+            echo json_encode(['ok' => false, 'msg' => "'$no_bpb' has been cancelled or reversed"
+                . " and can no longer be invoiced."]);
+            exit;
+        }
+
         // Bedanya cuma PROFIT CENTER? Diperiksa lebih dulu supaya pesannya tepat -
         // kalau tidak, BPB milik NAK akan dilaporkan sbg "supplier lain" dan
         // pemakai mencari-cari kesalahan di tempat yang salah.
