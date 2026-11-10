@@ -398,6 +398,10 @@
 
 <script language="JavaScript" src="../css/4.1.1/select2.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
+<!-- Penjaga rentang From/To, dipakai bersama beberapa laporan AP.
+     SESUDAH jQuery, bootstrap-datepicker dan SweetAlert - ketiganya dipakai
+     di dalamnya. -->
+<script language="JavaScript" src="app_rentang_tanggal.js"></script>
 
 <script>
   $(function() {
@@ -448,6 +452,9 @@
       autoclose: true,
       startDate: "2026-07-01"
     });
+    /* To tidak boleh lebih kecil dari From - dikunci di kalendernya, dan
+       dijaga lagi di dataTableReload() untuk tanggal yang diketik tangan. */
+    apRentangTanggal('start_date', 'end_date');
   });
 </script>
 
@@ -1034,6 +1041,9 @@
   $('#table-pcs-sum-non-grup').on('draw.dt', function(){ datatable7.columns.adjust(); });
 
   function dataTableReload() {
+    /* Lapis kedua: isiannya teks biasa, jadi rentang terbalik masih bisa
+       masuk lewat ketikan tangan atau tempelan clipboard. */
+    if (!apRentangSah('start_date', 'end_date')) { return; }
     loadProjectionHeader();
     datatable.ajax.reload(()=>{ datatable.columns.adjust(); });
     datatable2.ajax.reload(()=>{ datatable2.columns.adjust(); });
@@ -1043,6 +1053,26 @@
     datatable6.ajax.reload(()=>{ datatable6.columns.adjust(); });
     datatable7.ajax.reload(()=>{ datatable7.columns.adjust(); });
   }
+
+  /* Penjaga ekspor. Keenam tombol Excel membangun URL-nya sendiri dari isian
+     tanggal, dan Export All pun begitu - jadi dijaga SEKALI di sini, bukan
+     ditempel tujuh kali.
+
+     Dipasang di document dgn capture:true supaya benar-benar berjalan
+     SEBELUM penangan masing-masing tombol menyetel href; penangan yang
+     dipasang di tombolnya sendiri jalan menurut urutan pendaftaran, jadi
+     tidak bisa diandalkan untuk mendahului. */
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest(
+      '#btnExportExcel_bpb, #btnExportExcel_pv, #btnExportExcel_sum_supp,'
+      + '#btnExportExcel_type1, #btnExportExcel_type2, #btnExportExcel_sum_grup,'
+      + '#btnExportAll');
+    if (!t) { return; }
+    if (!apRentangSah('start_date', 'end_date')) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, true);
 
   // Jaga-jaga supaya form filter tidak pernah benar-benar submit/reload
   // halaman (mis. Enter di field tanggal) - Search harus selalu lewat AJAX

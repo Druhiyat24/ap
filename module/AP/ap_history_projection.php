@@ -218,6 +218,9 @@ include '../header.php';
 <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
 <script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
+<!-- Penjaga rentang From/To, dipakai bersama beberapa laporan AP.
+     SESUDAH jQuery, bootstrap-datepicker dan SweetAlert. -->
+<script language="JavaScript" src="app_rentang_tanggal.js"></script>
 
 <script>
   // Hide submenus
@@ -240,6 +243,9 @@ include '../header.php';
 $(document).ready(function () {
 
   $('.tanggal').datepicker({ format: 'dd-mm-yyyy', autoclose: true });
+  /* Created To tidak boleh lebih kecil dari Created From. Kalendernya
+     dikunci di sini; penjaga saat Search ada di cariDaftar(). */
+  apRentangTanggal('hpj-dari', 'hpj-sampai');
 
   function lolos(v) {
     return $('<div>').text(v === null || v === undefined ? '' : v).html();
@@ -350,6 +356,9 @@ $(document).ready(function () {
   }
 
   function cariDaftar() {
+    /* Lapis kedua: isiannya teks biasa, jadi rentang terbalik masih bisa
+       masuk lewat ketikan tangan atau tempelan clipboard. */
+    if (!apRentangSah('hpj-dari', 'hpj-sampai')) { return; }
     $('#hpjLoad').addClass('is-loading');
     $.ajax({ url: 'ajx_history_projection_list.php', type: 'POST', dataType: 'json',
              data: { start_date: $('#hpj-dari').val(), end_date: $('#hpj-sampai').val(),

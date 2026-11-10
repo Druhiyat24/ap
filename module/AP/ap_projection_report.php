@@ -310,6 +310,9 @@ if ($qSup) { while ($r = mysqli_fetch_assoc($qSup)) { $supplierList[] = $r['nama
 <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
 <script language="JavaScript" src="../css/4.1.1/select2.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
+<!-- Penjaga rentang From/To, dipakai bersama beberapa laporan AP.
+     SESUDAH jQuery, bootstrap-datepicker dan SweetAlert. -->
+<script language="JavaScript" src="app_rentang_tanggal.js"></script>
 
 <script>
   // Hide submenus
@@ -332,6 +335,9 @@ if ($qSup) { while ($r = mysqli_fetch_assoc($qSup)) { $supplierList[] = $r['nama
 $(document).ready(function () {
 
   $('.tanggal').datepicker({ format: 'dd-mm-yyyy', autoclose: true });
+  /* To tidak boleh lebih kecil dari From. Kalendernya dikunci di sini;
+     penjaga saat Search ada di periodeSah(). */
+  apRentangTanggal('apr-dari', 'apr-sampai');
   $('.app-select2').each(function () {
     var $s = $(this);
     var o = { width: '100%', dropdownParent: $('body') };
@@ -568,6 +574,14 @@ $(document).ready(function () {
   function periodeSah(type, dari, sampai) {
     var a = tglObj(dari), b = tglObj(sampai);
     if (!a || !b) { return true; }
+
+    /* To < From diperiksa DI SINI, bukan hanya di kalendernya: ketiga
+       jalurnya (Search, Export, Save History) lewat fungsi ini, sedangkan
+       isiannya teks biasa yang masih bisa diketik tangan. Berlaku untuk
+       SEMUA type - pagar weekly/monthly di bawah tidak menangkapnya kalau
+       type-nya daily. */
+    if (!apRentangSah('apr-dari', 'apr-sampai')) { return false; }
+
     var selisih = Math.round((b - a) / 86400000);
 
     if (type === 'weekly') {
