@@ -164,9 +164,14 @@ $sql = "SELECT k.no_kbon, k.tgl_kbon, k.tgl_tempo, k.nama_supp,
         LEFT JOIN ap_payment_plan_awal pa ON pa.no_kbon = k.no_kbon
         /* Penyaring outstanding. GROUP BY-nya penjaga: kalau suatu saat
            query AP Report menghasilkan lebih dari satu baris per voucher,
-           daftar di sini tetap tidak menggandakan barisnya. */
+           daftar di sini tetap tidak menggandakan barisnya.
+           Sisa di bawah 1 (mata uang dokumen) dianggap LUNAS: itu pecahan
+           pembulatan antara utang di jurnal PV dan nilai yang dibayar, mis.
+           PV-AP/REG/NAG/2026/07/01709 utang 15.494.094,41 dibayar BK
+           15.494.094,40 - sisa 0,01 dulu membuatnya tetap muncul di sini
+           (10 Nov 2026). Sama dgn ajx_ap_projection_report.php. */
         INNER JOIN (SELECT no_kbon FROM ($sqlOutstanding) o
-                    WHERE ROUND(o.saldo_akhir_idr, 2) <> 0
+                    WHERE ABS(o.saldo_akhir) >= 1
                     GROUP BY no_kbon) os
                ON os.no_kbon = k.no_kbon
         WHERE " . implode(' AND ', $where) . "

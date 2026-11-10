@@ -373,9 +373,12 @@ $joinAwal = $adaTabelAwal
     : "";
 $eProyeksi = "COALESCE(p.plan_date, $awal, x.duedate)";
 
-/* ROUND(...,2) <> 0, BUKAN <> 0: saldo_akhir_idr menyisakan pecahan
-   pembulatan (ada baris 0,01 dan -0,01), dan tanpa pembulatan baris-baris itu
-   ikut terbawa sbg "masih berutang". */
+/* Sisa di bawah 1 (mata uang dokumen) dianggap LUNAS. saldo_akhir menyisakan
+   pecahan pembulatan antara utang di jurnal PV dan nilai yang dibayar (0,01;
+   -0,02; sampai 0,18), dan ROUND(saldo_akhir_idr,2) <> 0 yang dulu dipakai
+   masih meloloskannya - voucher yang sudah lunas di AP Report tetap terbawa
+   sbg "masih berutang" (10 Nov 2026, PV-AP/REG/NAG/2026/07/01709 & 01718).
+   Sama dgn penyaring di ajx_cari-pv-payment-plan.php. */
 $sqlLuar = "
     SELECT x.supplier, x.no_kbon, x.curr, x.relasi, x.item_type1,
            x.duedate, x.saldo_akhir, x.saldo_akhir_idr,
@@ -456,7 +459,7 @@ $sqlLuar = "
            ON s.Supplier = x.supplier
     LEFT JOIN $rencana p ON p.no_kbon = x.no_kbon
     $joinAwal
-    WHERE ROUND(x.saldo_akhir_idr, 2) <> 0
+    WHERE ABS(x.saldo_akhir) >= 1
       AND $eProyeksi BETWEEN '$fMulai' AND '$fAkhir'
     ORDER BY $eProyeksi ASC, x.supplier ASC, x.no_kbon ASC";
 
