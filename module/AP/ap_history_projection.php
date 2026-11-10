@@ -257,6 +257,11 @@ $(document).ready(function () {
      - Kolom SUPPLIER tetap ada walau AR tidak punya padanannya: potret AP
        bisa disaring per supplier, jadi tanpa kolom itu dua dokumen periode
        sama yang beda supplier tampak persis sama.
+     - (6 Nov 2026, menyusul) Tombol REALIZATION sekarang ADA. Catatan di
+       bawah ini ditulis waktu laporannya belum dibuat; begitu
+       ap_realization_report.php jadi, tombolnya dipasang - dan memang HARUS
+       dari sini, karena laporan itu tidak punya menu sendiri (acuannya satu
+       dokumen proyeksi, bukan rentang tanggal). Catatan lamanya:
      - Tombol REALIZATION milik AR TIDAK dibuat: laporan Realization &
        Variance versi AP belum ada, jadi tombolnya tidak punya tujuan. */
   var KOLOM_DAFTAR = [
@@ -295,6 +300,12 @@ $(document).ready(function () {
                + '<button type="button" class="app-btn app-btn-primary app-btn-sm hpj-buka"'
                + ' data-doc="' + lolos(row.doc_number) + '">'
                + '<i class="fa fa-eye" aria-hidden="true"></i> View</button>'
+               /* Realization membuka layar lain (laporan itu tidak punya
+                  menu sendiri), jadi nomor dokumennya lewat querystring -
+                  bukan dimuat ke dalam kartu rincian di bawah. */
+               + '<button type="button" class="app-btn app-btn-success app-btn-sm hpj-realisasi"'
+               + ' data-doc="' + lolos(row.doc_number) + '">'
+               + '<i class="fa fa-balance-scale" aria-hidden="true"></i> Realization</button>'
                + '<button type="button" class="app-btn app-btn-danger app-btn-sm hpj-batal"'
                + ' data-doc="' + lolos(row.doc_number) + '">'
                + '<i class="fa fa-ban" aria-hidden="true"></i> Cancel</button>'
@@ -594,6 +605,15 @@ $(document).ready(function () {
        ditunggu - kotaknya ditutup setelah jeda singkat, sama dgn layar
        Projection dan Payment Plan. */
     setTimeout(function () { Swal.close(); }, 1500);
+  });
+
+  /* ---- Realization: pindah ke laporan Realization & Variance ----
+     Nomor dokumennya di-encode: nomornya memuat garis miring
+     (AP-PPR/1026/00001), dan tanpa encodeURIComponent potongan sesudah
+     garis miring pertama akan dibaca sbg bagian alamat, bukan nilai. */
+  $('#hpj-tbl').on('click', '.hpj-realisasi', function () {
+    window.location = 'ap_realization_report.php?doc_number='
+                    + encodeURIComponent($(this).data('doc'));
   });
 
   /* ---- Cancel: satu-satunya yang mengubah data di layar ini ----
