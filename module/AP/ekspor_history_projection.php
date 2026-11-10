@@ -67,6 +67,13 @@ function ehpSelAngka($v, $kosongJadiStrip = false)
 }
 function ehpInfo($k, $bila = '-')
 {
+    /* `global` WAJIB. $info dibaca di luar fungsi ini, jadi tanpa baris ini
+       $info di dalam sini selalu kosong dan SELURUH keterangan kepala
+       tercetak '-' - persis yang terlihat di berkas .xls pertama (Document,
+       Period, Type, Outstanding as of, Saved by semuanya strip, sedangkan
+       Rate used benar karena yang itu membaca $info langsung di luar fungsi).
+       Diam-diam salah: berkasnya tetap terunduh dan tabelnya tetap benar. */
+    global $info;
     return isset($info[$k]) && $info[$k] !== '' ? $info[$k] : $bila;
 }
 
@@ -118,32 +125,30 @@ $KOLOM_ANGKA = array('invoice_amount', 'rate', 'tax_base', 'vat',
 </style>
 
 <table>
-    <tr><td class="judul" colspan="6">AP HISTORY PROJECTION</td></tr>
-    <tr><td class="ket" colspan="6">Document : <?php echo ehpTeks(ehpInfo('doc_number')); ?></td></tr>
-    <tr><td class="ket" colspan="6">Period : <?php echo ehpTeks(ehpInfo('periode')); ?></td></tr>
-    <tr><td class="ket" colspan="6">Type : <?php echo ehpTeks(strtoupper(ehpInfo('type'))); ?></td></tr>
-    <tr><td class="ket" colspan="6">Supplier : <?php echo ehpTeks(ehpInfo('supplier', 'ALL')); ?></td></tr>
     <?php
-    /* Keterangan potret - TIGA hal yang tidak ada di ekspor laporan hidupnya
-       dan justru jadi alasan dokumen ini disimpan: kapan sisa utangnya
-       dihitung, siapa yang menyimpan, dan kapan. Tanpa ini berkas .xls yang
-       beredar lepas dari layar tidak bisa dipertanggungjawabkan. */
+    /* KEPALANYA MENGIKUTI LEMBAR "Projection" di berkas gabungan
+       (ekspor_ap_realization_report.php, LEMBAR 4) - diminta pemakai 9 Nov
+       2026: judul, nomor dokumen, periode. Tiga baris itu saja.
+
+       Empat keterangan lama - Type / Supplier / Outstanding as of / Saved by
+       / Rate used - dibuang DARI BERKAS EXCEL-nya saja. Semuanya tetap
+       dikirim endpoint dan tetap tampil di kartu Document detail, jadi tidak
+       ada keterangan yang hilang dari sistem.
+
+       Judulnya SENGAJA sama dgn ekspor laporan hidupnya: dokumen potret ini
+       memang laporan proyeksi yang dibekukan, dan baris Doc Number di
+       bawahnya yang membedakan keduanya.
+
+       Ditulis sbg komentar PHP, BUKAN komentar HTML: komentar HTML ikut
+       terkirim ke dalam berkas .xls-nya. */
     ?>
-    <tr><td class="ket" colspan="6">Outstanding as of : <?php echo ehpTeks(ehpInfo('per_tanggal')); ?></td></tr>
-    <tr><td class="ket" colspan="6">Saved by : <?php echo ehpTeks(ehpInfo('created_by')); ?>
-        on <?php echo ehpTeks(ehpInfo('created_at')); ?></td></tr>
+    <tr><td class="judul" colspan="6">AP PAYMENT PROJECTION REPORT</td></tr>
+    <tr><td class="ket" colspan="6">Doc Number : <?php echo ehpTeks(ehpInfo('doc_number')); ?></td></tr>
+    <tr><td class="ket" colspan="6">Period : <?php echo ehpTeks(ehpInfo('periode')); ?></td></tr>
     <?php
-    /* Kurs yang dipakai waktu potret dibuat, bukan kurs hari ini. */
-    if (!empty($info['kurs']) && is_array($info['kurs'])) {
-        $sKurs = array();
-        foreach ($info['kurs'] as $mata => $k) {
-            $sKurs[] = $mata . ' ' . (isset($k['rate']) ? $k['rate'] : '-')
-                     . (isset($k['tanggal']) ? ' (' . $k['tanggal'] . ')' : '');
-        }
-        ?>
-    <tr><td class="ket" colspan="6">Rate used : <?php echo ehpTeks(implode(' | ', $sKurs)); ?></td></tr>
-        <?php
-    }
+    /* Peringatan DI BAWAH ini tetap dicetak. Ia bukan keterangan kepala yang
+       rutin - hanya muncul kalau dokumennya bermasalah, dan justru itulah
+       yang tidak boleh diam-diam hilang dari berkas yang beredar. */
     if ($pesanSalah !== '') { ?>
     <tr><td class="ket" colspan="6" style="color:#a3281c;">GAGAL: <?php echo ehpTeks($pesanSalah); ?></td></tr>
     <?php }
