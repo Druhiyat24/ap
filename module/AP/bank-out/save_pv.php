@@ -1,6 +1,7 @@
 <?php
 include '../../../conn/conn.php';
 include '../pv_data_functions.php';
+include '../bank_post_rule.php';
 session_start();
 
 date_default_timezone_set('Asia/Jakarta');
@@ -443,6 +444,9 @@ try {
         q($conn2, "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
             VALUES " . implode(',', $adjJournalValues));
     }
+
+    // Tanpa baris "add row" -> langsung Post tanpa approval (lihat bank_post_rule.php).
+    bank_terapkan_status($conn2, 'out', $doc_num, bank_tanpa_approval($conn2, 'out', $doc_num));
 
     // =========================
     // COMMIT

@@ -143,7 +143,7 @@ if (!empty($_SESSION['bankout_upload'])) {
                     <div class="col-md-2">
                         <label for="status" class="form-label"><b>Status</b></label>
                         <select class="form-control selectpicker" name="status" id="status" data-size="5">
-                            <option value="ALL" selected>ALL</option><option value="Draft">Draft</option><option value="Approved">Approved</option><option value="Cancel">Cancel</option>
+                            <option value="ALL" selected>ALL</option><option value="Draft">Draft</option><option value="Post">Post</option><option value="Approved">Approved</option><option value="Cancel">Cancel</option>
                         </select>
                     </div>
                     <div class="col-md-3"></div>
@@ -346,8 +346,13 @@ function SidebarCollapse () {
 <script type="text/javascript">
     $(document).on("click", ".edit-none", function() {
         let doc_num = $(this).data("bank");
-        // var closing = $(this).closest('tr').find('td:eq(13)').attr('value');
-        var closing = 'Open';
+        var closing = $(this).data("closing");
+        // Dokumen Post yang sudah dipakai Bank In tidak boleh diedit.
+        var blok = $(this).data("blok");
+        if (blok) {
+            Swal.fire({ icon: "error", title: "Sorry!", text: blok, confirmButtonText: "OK" });
+            return;
+        }
     // alert(no_kbon + ' ' + closing);
     let encodedDocNum = btoa(doc_num); // sama dengan base64_encode di PHP
 
@@ -380,8 +385,13 @@ function SidebarCollapse () {
 
     $(document).on("click", ".edit-pv", function() {
         let doc_num = $(this).data("bank");
-        // var closing = $(this).closest('tr').find('td:eq(13)').attr('value');
-        var closing = 'Open';
+        var closing = $(this).data("closing");
+        // Dokumen Post yang sudah dipakai Bank In tidak boleh diedit.
+        var blok = $(this).data("blok");
+        if (blok) {
+            Swal.fire({ icon: "error", title: "Sorry!", text: blok, confirmButtonText: "OK" });
+            return;
+        }
     // alert(no_kbon + ' ' + closing);
     let encodedDocNum = btoa(doc_num); // sama dengan base64_encode di PHP
 
@@ -414,8 +424,13 @@ function SidebarCollapse () {
 
     $(document).on("click", ".edit-lp", function() {
         let doc_num = $(this).data("bank");
-        // var closing = $(this).closest('tr').find('td:eq(13)').attr('value');
-        var closing = 'Open';
+        var closing = $(this).data("closing");
+        // Dokumen Post yang sudah dipakai Bank In tidak boleh diedit.
+        var blok = $(this).data("blok");
+        if (blok) {
+            Swal.fire({ icon: "error", title: "Sorry!", text: blok, confirmButtonText: "OK" });
+            return;
+        }
     // alert(no_kbon + ' ' + closing);
     let encodedDocNum = btoa(doc_num); // sama dengan base64_encode di PHP
 
@@ -448,6 +463,13 @@ function SidebarCollapse () {
 $(document).on("click", ".btn-cancel-bankout", function() {
     let no_bankout = $(this).data("bank");
     let update_user = '<?php echo $user; ?>';
+    // Hanya tombol dokumen Post yang membawa closing/blok: aturannya sama dgn Edit.
+    let closing = $(this).data("closing");
+    let blok = $(this).data("blok");
+    if (blok || (closing && closing !== 'Open')) {
+        Swal.fire({ icon: "error", title: "Sorry!", text: blok || "The Bank period has already been closed.", confirmButtonText: "OK" });
+        return;
+    }
 
     Swal.fire({
         title: "Yakin ingin cancel dokumen ini?",

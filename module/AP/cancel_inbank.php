@@ -1,11 +1,20 @@
 <?php
 include '../../conn/conn.php';
+include 'bank_post_rule.php';
 ini_set('date.timezone', 'Asia/Jakarta');
 
 $no_bi = $_POST['no_bi'];
 $status = 'Cancel';
 $cancel_date = date("Y-m-d H:i:s");
 $cancel_user = $_POST['cancel_user'];
+
+// Draft bebas di-cancel; Post hanya kalau periodenya Open & belum dialokasikan
+// di AR; Approved/Cancel ditolak (bank_post_rule.php).
+try {
+	bank_cek_boleh_cancel($conn2, 'in', $no_bi);
+} catch (Exception $e) {
+	die('Error: ' . $e->getMessage());
+}
 
 
 

@@ -195,7 +195,7 @@
                     <select class="form-control selectpicker" name="no_bk" id="no_bk" data-live-search="true" required onchange="this.form.submit()">
                     <option value="" disabled selected="true">Select no bank out</option> ';?> 
                     <?php 
-                    $sqlacc = mysqli_query($conn1,"select no_bankout from b_bankout_h where status = 'Approved' and stat_bi != 'Y' and nama_supp = 'PT. NIRWANA ALABARE GARMENT'");
+                    $sqlacc = mysqli_query($conn1,"select no_bankout from b_bankout_h where status IN ('Approved','Post') and stat_bi != 'Y' and nama_supp = 'PT. NIRWANA ALABARE GARMENT'");
 
                     while ($row = mysqli_fetch_array($sqlacc)) {
                         $data = $row['no_bankout'];

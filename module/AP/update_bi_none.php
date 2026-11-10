@@ -1,5 +1,6 @@
 <?php
 include '../../conn/conn.php';
+include 'bank_post_rule.php';
 ini_set('date.timezone', 'Asia/Jakarta');
 
 function q($conn, $sql) {
@@ -22,6 +23,8 @@ mysqli_begin_transaction($conn2);
 try {
 
 	$date = date("Y-m-d", strtotime($_POST['date']));
+	// Hanya Draft/Post, periode masih Open, belum dialokasikan (bank_post_rule.php).
+	$status_lama = bank_cek_boleh_edit($conn2, 'in', $old_doc_num, $date);
 	$ref_data = $_POST['ref_data'] ?? '';
 	$customer = $_POST['customer'] ?? '';
 	// Nama lawan transaksi ikut disimpan ke jurnal (kolom supplier).
@@ -244,6 +247,9 @@ try {
 
 	q($conn2, "INSERT INTO tbl_list_journal (no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr, status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date, profit_center, supplier)
 		VALUES " . implode(',', $journalValues));
+
+	// Post tetap Post kalau masih memenuhi aturan; Draft tetap Draft (harus di-approve).
+	bank_terapkan_status($conn2, 'in', $doc_num, $status_lama === 'Post' && bank_tanpa_approval($conn2, 'in', $doc_num));
 
 	mysqli_commit($conn2);
 

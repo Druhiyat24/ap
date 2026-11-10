@@ -1,5 +1,6 @@
 <?php
 include '../../conn/conn.php';
+include 'bank_post_rule.php';
 header('Content-Type: application/json');
 
 $nama_supp  = isset($_POST['nama_supp']) ? trim($_POST['nama_supp']) : 'ALL';
@@ -51,15 +52,22 @@ while ($row = mysqli_fetch_assoc($sql)) {
     } else {
         $action = '<div class="kbon-action-buttons">';
 
-        if (strcasecmp($rowStatus, 'Draft') === 0) {
+        // Post (tanpa approval) juga boleh diedit/di-cancel selama periodenya
+        // Open dan belum dialokasikan di AR - lihat bank_post_rule.php.
+        $isPost = strcasecmp($rowStatus, 'Post') === 0;
+        if (strcasecmp($rowStatus, 'Draft') === 0 || $isPost) {
+            $blok = $isPost ? bank_dipakai_dokumen_lain($conn2, 'in', $docNum) : '';
+            $dataEdit = 'data-bank="' . htmlspecialchars($docNum) . '" data-closing="' . htmlspecialchars($statusClosing) . '" data-blok="' . htmlspecialchars($blok) . '"';
             if ($refData === 'AR Collection') {
-                $action .= '<button type="button" class="btn btn-sm btn-outline-warning edit-ar-collection" data-bank="' . htmlspecialchars($docNum) . '" data-closing="' . htmlspecialchars($statusClosing) . '" title="Edit"><i class="fa fa-edit"></i> Edit</button>';
+                $action .= '<button type="button" class="btn btn-sm btn-outline-warning edit-ar-collection" ' . $dataEdit . ' title="Edit"><i class="fa fa-edit"></i> Edit</button>';
             } elseif ($refData === 'None') {
-                $action .= '<button type="button" class="btn btn-sm btn-outline-warning edit-none" data-bank="' . htmlspecialchars($docNum) . '" data-closing="' . htmlspecialchars($statusClosing) . '" title="Edit"><i class="fa fa-edit"></i> Edit</button>';
+                $action .= '<button type="button" class="btn btn-sm btn-outline-warning edit-none" ' . $dataEdit . ' title="Edit"><i class="fa fa-edit"></i> Edit</button>';
             } elseif ($refData === 'Bank Keluar') {
-                $action .= '<button type="button" class="btn btn-sm btn-outline-warning edit-bk" data-bank="' . htmlspecialchars($docNum) . '" data-closing="' . htmlspecialchars($statusClosing) . '" title="Edit"><i class="fa fa-edit"></i> Edit</button>';
+                $action .= '<button type="button" class="btn btn-sm btn-outline-warning edit-bk" ' . $dataEdit . ' title="Edit"><i class="fa fa-edit"></i> Edit</button>';
             }
-            $action .= '<button type="button" class="btn btn-sm btn-outline-danger btn-cancel-bankin" data-bank="' . htmlspecialchars($docNum) . '" title="Cancel"><i class="fa fa-ban"></i> Cancel</button>';
+            // Cancel: Draft bebas seperti dulu, Post ikut aturan Edit.
+            $dataCancel = $isPost ? $dataEdit : 'data-bank="' . htmlspecialchars($docNum) . '"';
+            $action .= '<button type="button" class="btn btn-sm btn-outline-danger btn-cancel-bankin" ' . $dataCancel . ' title="Cancel"><i class="fa fa-ban"></i> Cancel</button>';
         }
 
         $action .= '<a href="pdf_bankin.php?doc_num=' . htmlspecialchars(rawurlencode($docNum)) . '" target="_blank" class="btn btn-sm btn-outline-success" title="View PDF"><i class="fa fa-file-pdf-o"></i> Pdf</a>';

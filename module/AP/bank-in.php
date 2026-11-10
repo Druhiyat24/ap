@@ -116,6 +116,7 @@
                         <select class="form-control selectpicker" name="status" id="status" data-size="5">
                             <option value="ALL" selected>ALL</option>
                             <option value="Draft">Draft</option>
+                            <option value="Post">Post</option>
                             <option value="Approved">Approved</option>
                             <option value="Cancel">Cancel</option>
                         </select>
@@ -379,8 +380,16 @@
 </script>
 
 <script type="text/javascript">
-    function editWithClosingCheck(url, closing) {
-        if (closing === 'Open') {
+    function editWithClosingCheck(url, closing, blok) {
+        // blok = alasan dokumen Post tidak boleh diedit (sudah dialokasikan di AR).
+        if (blok) {
+            Swal.fire({
+                icon: "error",
+                title: "Sorry!",
+                text: blok,
+                confirmButtonText: "OK"
+            });
+        } else if (closing === 'Open') {
             Swal.fire({
                 title: "Are you sure?",
                 text: "You are about to edit this document.",
@@ -406,24 +415,36 @@
     $(document).on("click", ".edit-ar-collection", function() {
         let doc_num = $(this).data("bank");
         let closing = $(this).data("closing");
-        editWithClosingCheck("form_edit_bank_in.php?doc_num=" + btoa(doc_num), closing);
+        editWithClosingCheck("form_edit_bank_in.php?doc_num=" + btoa(doc_num), closing, $(this).data("blok"));
     });
 
     $(document).on("click", ".edit-none", function() {
         let doc_num = $(this).data("bank");
         let closing = $(this).data("closing");
-        editWithClosingCheck("form_edit_bank_in_none.php?doc_num=" + btoa(doc_num), closing);
+        editWithClosingCheck("form_edit_bank_in_none.php?doc_num=" + btoa(doc_num), closing, $(this).data("blok"));
     });
 
     $(document).on("click", ".edit-bk", function() {
         let doc_num = $(this).data("bank");
         let closing = $(this).data("closing");
-        editWithClosingCheck("form_edit_bank_in_bk.php?doc_num=" + btoa(doc_num), closing);
+        editWithClosingCheck("form_edit_bank_in_bk.php?doc_num=" + btoa(doc_num), closing, $(this).data("blok"));
     });
 
     $(document).on("click", ".btn-cancel-bankin", function() {
         let doc_num = $(this).data("bank");
         let cancel_user = '<?php echo $user; ?>';
+        // Hanya tombol dokumen Post yang membawa closing/blok: aturannya sama dgn Edit.
+        let closing = $(this).data("closing");
+        let blok = $(this).data("blok");
+        if (blok || (closing && closing !== 'Open')) {
+            Swal.fire({
+                icon: "error",
+                title: "Sorry!",
+                text: blok || "The Bank period has already been closed.",
+                confirmButtonText: "OK"
+            });
+            return;
+        }
 
         Swal.fire({
             title: "Yakin ingin cancel dokumen ini?",
@@ -438,7 +459,11 @@
                     type: 'POST',
                     url: 'cancel_inbank.php',
                     data: { no_bi: doc_num, cancel_user: cancel_user },
-                    success: function() {
+                    success: function(res) {
+                        if ($.trim(res).indexOf('Error') === 0) {
+                            Swal.fire('Error', res, 'error');
+                            return;
+                        }
                         Swal.fire('Dibatalkan!', 'Dokumen berhasil dibatalkan.', 'success');
                         datatable.ajax.reload(null, false);
                     },

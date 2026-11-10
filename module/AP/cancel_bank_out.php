@@ -1,5 +1,6 @@
 <?php
 include '../../conn/conn.php';
+include 'bank_post_rule.php';
 ini_set('date.timezone', 'Asia/Jakarta');
 
 $no_bi        = $_POST['no_pay'] ?? '';
@@ -9,6 +10,15 @@ $status       = 'Cancel';
 
 if ($no_bi === '') {
     echo "Error: no_bankout kosong";
+    exit;
+}
+
+// Draft bebas di-cancel; Post hanya kalau periodenya Open & belum dipakai Bank
+// In; Approved/Cancel ditolak (bank_post_rule.php).
+try {
+    bank_cek_boleh_cancel($conn2, 'out', $no_bi);
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage();
     exit;
 }
 

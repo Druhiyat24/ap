@@ -85,7 +85,7 @@
                         <option value="">Select Bank Out</option>
                         <?php
                         $no_bk = $_POST['no_bk'] ?? '';
-                        $sql = mysqli_query($conn1, "select no_bankout from b_bankout_h where status = 'Approved' and stat_bi != 'Y' and nama_supp = 'PT. NIRWANA ALABARE GARMENT'");
+                        $sql = mysqli_query($conn1, "select no_bankout from b_bankout_h where status IN ('Approved','Post') and stat_bi != 'Y' and nama_supp = 'PT. NIRWANA ALABARE GARMENT'");
                         while ($row = mysqli_fetch_array($sql)) {
                             $selected = ($row['no_bankout'] == $no_bk) ? 'selected' : '';
                             echo "<option value='" . $row['no_bankout'] . "' " . $selected . ">" . $row['no_bankout'] . "</option>";

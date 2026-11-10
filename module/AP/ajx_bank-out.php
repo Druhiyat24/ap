@@ -1,5 +1,6 @@
 <?php
 include '../../conn/conn.php';
+include 'bank_post_rule.php';
 header('Content-Type: application/json');
 
 function bankOutValue($key, $default = 'ALL') {
@@ -62,12 +63,22 @@ while ($row = mysqli_fetch_assoc($result)) {
             }
             $action .= '</div></div>';
         }
-        if (strcasecmp($row['status'], 'Draft') === 0) {
+        // Post (tanpa approval) juga boleh diedit/di-cancel selama periodenya
+        // Open dan belum dipakai Bank In - lihat bank_post_rule.php.
+        $isPost = strcasecmp($row['status'], 'Post') === 0;
+        if (strcasecmp($row['status'], 'Draft') === 0 || $isPost) {
+            $qClosing = mysqli_query($conn2, "SELECT status_closing FROM tbl_closing_periode WHERE '" . mysqli_real_escape_string($conn2, $row['bankout_date']) . "' BETWEEN tgl_awal AND tgl_akhir");
+            $rowClosing = mysqli_fetch_array($qClosing);
+            $statusClosing = $rowClosing['status_closing'] ?? 'Open';
+            $blok = $isPost ? bank_dipakai_dokumen_lain($conn2, 'out', $noBankout) : '';
+            $dataEdit = 'data-bank="' . $safeNoBankout . '" data-closing="' . bankOutEscape($conn1, $statusClosing) . '" data-blok="' . bankOutEscape($conn1, $blok) . '"';
             $editClass = $row['reff_doc'] === 'None' ? 'edit-none' : ($row['reff_doc'] === 'Payment Voucher' ? 'edit-pv' : ($row['reff_doc'] === 'List Payment' ? 'edit-lp' : ''));
             if ($editClass !== '') {
-                $action .= '<button type="button" class="btn btn-sm btn-warning ' . $editClass . '" data-bank="' . $safeNoBankout . '" title="Edit"><i class="fa fa-pencil-square-o"></i></button>';
+                $action .= '<button type="button" class="btn btn-sm btn-warning ' . $editClass . '" ' . $dataEdit . ' title="Edit"><i class="fa fa-pencil-square-o"></i></button>';
             }
-            $action .= '<button type="button" class="btn btn-sm btn-danger btn-cancel-bankout" data-bank="' . $safeNoBankout . '" title="Cancel"><i class="fa fa-ban"></i></button>';
+            // Cancel: Draft bebas seperti dulu, Post ikut aturan Edit.
+            $dataCancel = $isPost ? $dataEdit : 'data-bank="' . $safeNoBankout . '"';
+            $action .= '<button type="button" class="btn btn-sm btn-danger btn-cancel-bankout" ' . $dataCancel . ' title="Cancel"><i class="fa fa-ban"></i></button>';
         }
         $action .= '</div>';
     }

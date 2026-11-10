@@ -130,7 +130,7 @@ $no_bk_now = $row_bk['no_reff'] ?? '';
               <select class="form-control select2" name="no_bk" id="no_bk" data-live-search="true">
                 <option value="<?= $no_bk_now; ?>" selected="selected"><?= $no_bk_now; ?></option>
                 <?php
-                $sql_bko = mysqli_query($conn1,"select no_bankout from b_bankout_h where status = 'Approved' and stat_bi != 'Y' and nama_supp = 'PT. NIRWANA ALABARE GARMENT' and no_bankout != '$no_bk_now'");
+                $sql_bko = mysqli_query($conn1,"select no_bankout from b_bankout_h where status IN ('Approved','Post') and stat_bi != 'Y' and nama_supp = 'PT. NIRWANA ALABARE GARMENT' and no_bankout != '$no_bk_now'");
                 while ($row_bko = mysqli_fetch_array($sql_bko)) {
                     echo '<option value="'.$row_bko['no_bankout'].'">'.$row_bko['no_bankout'].'</option>';
                 }

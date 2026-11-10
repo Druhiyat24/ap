@@ -2,6 +2,7 @@
 include '../../conn/conn.php';
 require_once __DIR__ . '/cc_pc_guard.php';
 include 'pv_data_functions.php';
+include 'bank_post_rule.php';
 ini_set('date.timezone', 'Asia/Jakarta');
 
 function q($conn, $sql) {
@@ -24,6 +25,8 @@ mysqli_begin_transaction($conn2);
 try {
 
 	$date = date("Y-m-d", strtotime($_POST['date']));
+	// Hanya Draft/Post, periode masih Open, belum dipakai Bank In (bank_post_rule.php).
+	$status_lama = bank_cek_boleh_edit($conn2, 'out', $old_doc_num, $date);
 	$customer = $_POST['customer'] ?? '';
 	// Nama lawan transaksi ikut disimpan ke jurnal (kolom supplier).
 	$customer_esc = mysqli_real_escape_string($conn2, $customer);
@@ -466,6 +469,9 @@ try {
 			}
 		}
 	}
+
+	// Post tetap Post kalau masih memenuhi aturan; Draft tetap Draft (harus di-approve).
+	bank_terapkan_status($conn2, 'out', $doc_num, $status_lama === 'Post' && bank_tanpa_approval($conn2, 'out', $doc_num));
 
 	mysqli_commit($conn2);
 

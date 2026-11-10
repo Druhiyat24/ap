@@ -1,6 +1,7 @@
 <?php
 
 include '../../../conn/conn.php';
+include '../bank_post_rule.php';
 session_start();
 
 date_default_timezone_set('Asia/Jakarta');
@@ -257,7 +258,8 @@ INSERT INTO tbl_list_journal
 VALUES " . implode(',', $journalValues)
 );
 
-
+// Bank In dari Bank Keluar tidak perlu approval -> langsung Post (lihat bank_post_rule.php).
+bank_terapkan_status($conn2, 'in', $doc_num, bank_tanpa_approval($conn2, 'in', $doc_num));
 
 
 /* =========================
