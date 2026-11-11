@@ -437,7 +437,6 @@
                     }
                     echo '</div>';
                 ?>
-                <span class="coa-ket">Kalau ada satu saja yang 'Y', COA ini WAJIB mengisi Cost Center saat dipakai di jurnal.</span>
 
                 <hr>
                 <div class="pco-sec"><i class="fa fa-money-bill-wave" aria-hidden="true"></i> Petty Cash &amp; Approval</div>
