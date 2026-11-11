@@ -43,15 +43,15 @@ $sheet->setTitle('AP-BPB');
 
 $sheet->setCellValue('A1', 'Payable Card Statement - BPB');
 $sheet->setCellValue('A2', 'PERIODE: '.$start_date_text.' - '.$end_date_text);
-$sheet->mergeCells('A1:AM1');
-$sheet->mergeCells('A2:AM2');
+$sheet->mergeCells('A1:AN1');
+$sheet->mergeCells('A2:AN2');
 $sheet->getStyle('A1:A2')->getFont()->setBold(true)->setSize(12);
 
 $rowHeader1 = 4;
 $rowHeader2 = 5;
 
 $headersFix = [
-    'No','Nama Supplier','Bpb Number','Bpb Date','Due Date','Currency',
+    'No','Profit Center','Nama Supplier','Bpb Number','Bpb Date','Due Date','Currency',
     'Begining Balance','Addition','Reverse BPB','Deduction KB',
     'Reverse KB','Deduction GM','Ending Balance','Rate',
     'Ending Balance IDR','COA No','COA Name',
@@ -401,6 +401,7 @@ CASE
 while($data = mysqli_fetch_assoc($sql)){
     $col = 1; // pakai index angka untuk konsisten
     $sheet->setCellValueByColumnAndRow($col++, $rowNum, $no++);
+    $sheet->setCellValueByColumnAndRow($col++, $rowNum, $data['profit_center']);
     $sheet->setCellValueByColumnAndRow($col++, $rowNum, $data['supplier']);
     $sheet->setCellValueByColumnAndRow($col++, $rowNum, $data['no_bpb']);
     $sheet->setCellValueByColumnAndRow($col++, $rowNum, Date::stringToExcel($data['tgl_bpb']));
@@ -450,13 +451,16 @@ while($data = mysqli_fetch_assoc($sql)){
 
 $highestColumn = Coordinate::stringFromColumnIndex($lastColIndex);
 
-$sheet->getStyle('G6:'.$highestColumn.$rowNum)
+/* H, bukan G: kolom angka pertama (Begining Balance) bergeser satu ke
+   kanan sejak Profit Center disisipkan. */
+$sheet->getStyle('H6:'.$highestColumn.$rowNum)
       ->getNumberFormat()->setFormatCode('#,##0.00');
 
 $sheet->getStyle('A4:'.$highestColumn.($rowNum-1))
       ->applyFromArray(['borders'=>['allBorders'=>['borderStyle'=>Border::BORDER_THIN]]]);
 
-$sheet->getStyle('D:E')
+/* E:F, bukan D:E - dua kolom tanggal bergeser satu ke kanan. */
+$sheet->getStyle('E:F')
       ->getNumberFormat()
       ->setFormatCode('d-mmm-yy');
 
@@ -481,15 +485,15 @@ $sheet2->setTitle('AP-Payment Voucher');
 
 $sheet2->setCellValue('A1', 'Payable Card Statement - PAYMENT VOUCHER');
 $sheet2->setCellValue('A2', 'PERIODE: '.$start_date_text.' - '.$end_date_text);
-$sheet2->mergeCells('A1:AN1');
-$sheet2->mergeCells('A2:AN2');
+$sheet2->mergeCells('A1:AO1');
+$sheet2->mergeCells('A2:AO2');
 $sheet2->getStyle('A1:A2')->getFont()->setBold(true)->setSize(12);
 
 $rowHeader1 = 4;
 $rowHeader2 = 5;
 
 $headersFix = [
-    'No','Nama Supplier','Payment Voucher Number','PV Date','Due Date','Currency',
+    'No','Profit Center','Nama Supplier','Payment Voucher Number','PV Date','Due Date','Currency',
     'Begining Balance','Addition','Deduction Advance','Deduction Others',
     'Deduction Bank','Deduction Cash','Deduction Non Bank','Deduction GM','Reverse','Ending Balance',
     'Rate','Ending Balance IDR','COA No','COA Name',
@@ -776,6 +780,7 @@ THEN saldo_akhir_idr ELSE 0 END
 while($data = mysqli_fetch_assoc($sql)){
     $col = 1; // pakai index angka untuk konsisten
     $sheet2->setCellValueByColumnAndRow($col++, $rowNum, $no++);
+    $sheet2->setCellValueByColumnAndRow($col++, $rowNum, $data['profit_center']);
     $sheet2->setCellValueByColumnAndRow($col++, $rowNum, $data['supplier']);
     $sheet2->setCellValueByColumnAndRow($col++, $rowNum, $data['no_kbon']);
     $sheet2->setCellValueByColumnAndRow($col++, $rowNum, Date::stringToExcel($data['tgl_kbon']));
@@ -828,13 +833,14 @@ while($data = mysqli_fetch_assoc($sql)){
 
 $highestColumn = Coordinate::stringFromColumnIndex($lastColIndex);
 
-$sheet2->getStyle('G6:'.$highestColumn.$rowNum)
+/* H, bukan G - lihat catatan di lembar AP-BPB. */
+$sheet2->getStyle('H6:'.$highestColumn.$rowNum)
       ->getNumberFormat()->setFormatCode('#,##0.00');
 
 $sheet2->getStyle('A4:'.$highestColumn.($rowNum-1))
       ->applyFromArray(['borders'=>['allBorders'=>['borderStyle'=>Border::BORDER_THIN]]]);
 
-$sheet2->getStyle('D:E')
+$sheet2->getStyle('E:F')
       ->getNumberFormat()
       ->setFormatCode('d-mmm-yy');
 

@@ -18,6 +18,7 @@ if ($nama_supp !== 'ALL') {
 if ($search !== '') {
     $s = mysqli_real_escape_string($conn2, $search);
     $where .= " AND (
+        profit_center LIKE '%$s%' OR
         supplier   LIKE '%$s%' OR
         no_kbon    LIKE '%$s%' OR
         curr       LIKE '%$s%' OR
@@ -176,9 +177,46 @@ data_detail as (select supplier, no_kbon, tgl_kbon, duedate, curr, COALESCE(roun
 
 mutasi as (select supplier, no_kbon, tgl_kbon, duedate, curr, (saldo_awal + reverse_kontrabon_before + uang_muka_before + potongan_before + ppn_before - (if(ded_bank_before > 0,(ded_bank_before),0) + ded_gm_before + if(ded_cash_before > 0,(ded_cash_before),0) + if(ded_nonbank_before > 0,(ded_nonbank_before),0))) saldo_awal, total_in, pph, uang_muka, (potongan + ppn) potongan, if(ded_bank > 0,(ded_bank),0) ded_bank, if(ded_cash > 0,(ded_cash),0) ded_cash, if(ded_nonbank > 0,(ded_nonbank),0) ded_nonbank, ded_gm, reverse_kontrabon, rate, no_coa, nama_coa, item_type1, item_type2, relasi from data_detail),
 
-report_mutasi as (select supplier, no_kbon, tgl_kbon, duedate, a.curr, saldo_awal, total_in, pph, uang_muka, potongan, ded_bank, ded_cash, ded_nonbank, ded_gm, reverse_kontrabon, (saldo_awal + total_in + reverse_kontrabon + uang_muka + potongan - (ded_bank + ded_gm + ded_cash + ded_nonbank)) saldo_akhir, IFNULL(b.rate,1) rate, ((saldo_awal + total_in  + reverse_kontrabon + uang_muka + potongan - (ded_bank + ded_gm + ded_cash + ded_nonbank)) * IFNULL(b.rate,1)) saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi from mutasi a LEFT JOIN rate b on b.curr = a.curr)
+report_mutasi as (select
+/* PROFIT CENTER - sama bentuk & alasannya dgn query_bpb2.php: subquery
+   berkorelasi (bukan CTE + GROUP BY, yang makan +-7 detik), ditaruh di CTE
+   terakhir supaya jadi kolom sungguhan dan bisa disaring kotak cari.
 
-select supplier, no_kbon, tgl_kbon, duedate, curr, saldo_awal, total_in, pph, uang_muka, potongan, ded_bank, ded_cash, ded_nonbank, ded_gm, reverse_kontrabon, saldo_akhir, rate, saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi,
+   TIGA SUMBER BERURUTAN lewat COALESCE, dan urutannya penting:
+   1. JURNAL - ini laporan jurnal, jadi jurnal yang menang. Di salinan lokal
+      ada 36 PV yang profit center di jurnalnya BEDA dgn yang tercatat di
+      kontrabon_h; yang ditampilkan harus yang masuk buku besar.
+   2. INDUK CICILAN - anak kontrabon_h_installment_detail muncul di laporan
+      dgn nomornya sendiri (no_kbon_det) sementara jurnalnya menempel di
+      induk, dan jurnal induk ber-'/INS' justru DIBUANG di CTE in_kontrabon.
+      Tanpa langkah ini baris cicilan kosong profit center-nya.
+   3. SALDO CUT-OVER - baris dari ap_saldo_payment_voucher (per 30 Jun
+      2026). Tabel itu kebetulan punya kolom profit_center sendiri.
+
+   Tiap sumber SUDAH diterjemahkan ke nama penuh di dalam subquery-nya
+   masing-masing, lalu nama-nama itu yang di-COALESCE. Sengaja tidak
+   meng-COALESCE kodenya dulu lalu menerjemahkan sekali di luar: itu
+   menuntut derived table yang menengok kolom query luar, dan MySQL
+   melarangnya (perlu LATERAL). */
+COALESCE(
+  (select IFNULL(MAX(mp.nama_pc), MAX(j.profit_center))
+     from tbl_list_journal j
+     LEFT JOIN master_pc mp on mp.kode_pc = j.profit_center
+    where j.no_journal = a.no_kbon and j.type_journal = 'AP - Kontrabon'
+      and COALESCE(j.profit_center,'') != ''),
+  (select IFNULL(MAX(mp.nama_pc), MAX(h.profit_center))
+     from kontrabon_h_installment_detail ins
+     INNER JOIN kontrabon_h h on h.no_kbon = ins.no_kbon
+     LEFT JOIN master_pc mp on mp.kode_pc = h.profit_center
+    where ins.no_kbon_det = a.no_kbon and COALESCE(h.profit_center,'') != ''),
+  (select IFNULL(MAX(mp.nama_pc), MAX(v.profit_center))
+     from ap_saldo_payment_voucher v
+     LEFT JOIN master_pc mp on mp.kode_pc = v.profit_center
+    where v.no_kbon = a.no_kbon and COALESCE(v.profit_center,'') != '')
+) profit_center,
+supplier, no_kbon, tgl_kbon, duedate, a.curr, saldo_awal, total_in, pph, uang_muka, potongan, ded_bank, ded_cash, ded_nonbank, ded_gm, reverse_kontrabon, (saldo_awal + total_in + reverse_kontrabon + uang_muka + potongan - (ded_bank + ded_gm + ded_cash + ded_nonbank)) saldo_akhir, IFNULL(b.rate,1) rate, ((saldo_awal + total_in  + reverse_kontrabon + uang_muka + potongan - (ded_bank + ded_gm + ded_cash + ded_nonbank)) * IFNULL(b.rate,1)) saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi from mutasi a LEFT JOIN rate b on b.curr = a.curr)
+
+select IFNULL(profit_center, '-') profit_center, supplier, no_kbon, tgl_kbon, duedate, curr, saldo_awal, total_in, pph, uang_muka, potongan, ded_bank, ded_cash, ded_nonbank, ded_gm, reverse_kontrabon, saldo_akhir, rate, saldo_akhir_idr, no_coa, nama_coa, item_type1, item_type2, relasi,
 CASE
 WHEN duedate > '$end_date' THEN saldo_akhir_idr
 ELSE 0

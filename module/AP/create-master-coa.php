@@ -211,7 +211,7 @@
                 }?>
               </select>
               <label class="coa-ikut" for="check_dirdebit" title="Pakai daftar cash flow bawaan Category 2">
-                <input type="checkbox" id="check_dirdebit" name="check_dirdebit" onclick="Change_dirdebit()"> ikut Ctg 2
+                <input type="checkbox" id="check_dirdebit" name="check_dirdebit" onclick="Change_dirdebit()">
               </label>
             </div>
           </div>
@@ -238,7 +238,7 @@
                 }?>
               </select>
               <label class="coa-ikut" for="check_dircredit" title="Pakai daftar cash flow bawaan Category 2">
-                <input type="checkbox" id="check_dircredit" name="check_dircredit" onclick="Change_dircredit()"> ikut Ctg 2
+                <input type="checkbox" id="check_dircredit" name="check_dircredit" onclick="Change_dircredit()">
               </label>
             </div>
           </div>
@@ -265,7 +265,7 @@
                 }?>
               </select>
               <label class="coa-ikut" for="check_indirect" title="Pakai daftar cash flow bawaan Category 2">
-                <input type="checkbox" id="check_indirect" name="check_indirect" onclick="Change_indirect()"> ikut Ctg 2
+                <input type="checkbox" id="check_indirect" name="check_indirect" onclick="Change_indirect()">
               </label>
             </div>
           </div>
@@ -309,7 +309,6 @@
             </label>
           </div>
         </div>
-        <span class="coa-ket">Kalau ada satu saja yang 'Y', COA ini WAJIB mengisi Cost Center saat dipakai di jurnal.</span>
 
         <hr>
 
@@ -327,7 +326,6 @@
               <option value="N" selected>Required</option>
               <option value="Y">Not required (auto Post)</option>
             </select>
-            <span class="coa-ket">Bank In tipe None langsung Post kalau SEMUA COA-nya 'Not required'.</span>
           </div>
           <div class="col-lg-3 col-md-6 mb-2">
             <label for="bankout_no_approve"><b>Bank Out Approval</b></label>
@@ -335,7 +333,6 @@
               <option value="N" selected>Required</option>
               <option value="Y">Not required (auto Post)</option>
             </select>
-            <span class="coa-ket">Aturan yang sama untuk Bank Out tipe None.</span>
           </div>
         </div>
 

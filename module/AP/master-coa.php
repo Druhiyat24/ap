@@ -1,257 +1,325 @@
 <?php include '../header.php' ?>
-<style >
-    .modal {
-  text-align: center;
-  padding: 0!important;
+<?php
+/* ============================================================================
+   LIST CHART OF ACCOUNT
+
+   TAMPILANNYA DISAMAKAN DGN HALAMAN DAFTAR LAIN (List Payment Plan, List
+   Petty Cash Out, FTR CBD/DP) - diminta pemakai 11 Nov 2026: kartu
+   .ftl-card, kepala biru berkotak ikon + jejak menu, panel saringan
+   .ftl-panel, tombol .app-btn, tabel .ftl-tbl. Formulir Create & Edit sudah
+   disamakan lebih dulu (10 Nov 2026) memakai kosakata .pco-; halaman ini
+   pasangannya.
+
+   TUJUH KOLOM BARU - kelanjutan dari tujuh isian baru di formulirnya:
+       Cost Center      support_gen_adm, support_prod, prod, support_sell
+       Petty Cash Code  kode_cash
+       Bank Approval    bankin_no_approve, bankout_no_approve
+   Yang tersimpan di basis data memang huruf 'Y'/'N', jadi HURUFNYA pula yang
+   dicetak; warna pil .coa-yn cuma membantu memindai, bukan menggantikan
+   isinya. kode_cash kosong (688 dari 693 baris) dicetak '-' supaya beda jelas
+   dgn kode yang memang terisi.
+
+   PERLU MIGRASI DI PRODUKSI LEBIH DULU: dua kolom bankin_no_approve /
+   bankout_no_approve lahir dari
+   db_migrate_LIVE_20261109_bank_post_tanpa_approval.sql. Sebelum berkas itu
+   dijalankan, halaman ini (dan formulir Create/Edit) akan galat karena
+   kolomnya belum ada.
+
+   TIDAK ADA KOLOM LAMA YANG DIBUANG ATAU DIGABUNG. Delapan kolom nama Inggris
+   (Category 1-5 + Cash Flow Debit/Credit/Indirect) dulu dicetak sbg
+   <td style="display:none"> - tidak pernah terlihat, tapi ikut terbaca kotak
+   cari. Sekarang kolomnya diurus DataTables sendiri (visible:false,
+   searchable:true): tetap bisa dicari, tapi lebarnya tidak lagi ikut
+   dihitung oleh gulir mendatar.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------------------
+   SARINGAN. Formulirnya dipindah ke method="get" (dulu post) dgn tiga alasan:
+   (1) sesudah tombol Active/Deactive ditekan halaman ini memuat ulang - di
+   atas POST, Chrome memunculkan kotak "Confirm Form Resubmission"; (2) hasil
+   saringan jadi bisa ditautkan/di-bookmark; (3) tombol Excel meneruskan
+   saringan yang SAMA tanpa menebak. Dibaca lewat $_REQUEST supaya taut lama
+   yang masih mengirim POST tetap jalan.
+
+   Nilainya juga DILOLOSKAN (mysqli_real_escape_string) sebelum masuk WHERE -
+   dulu ditempel apa adanya dari POST.
+   --------------------------------------------------------------------------- */
+$nama_ctg2 = isset($_REQUEST['nama_ctg2']) && $_REQUEST['nama_ctg2'] !== '' ? $_REQUEST['nama_ctg2'] : 'ALL';
+$nama_ctg5 = isset($_REQUEST['nama_ctg5']) && $_REQUEST['nama_ctg5'] !== '' ? $_REQUEST['nama_ctg5'] : 'ALL';
+$Status    = isset($_REQUEST['Status'])    && $_REQUEST['Status']    !== '' ? $_REQUEST['Status']    : 'ALL';
+
+/* Dulu: saat halaman dibuka pertama kali (bukan POST) ketiga nilai ini kosong,
+   dan rangkaian if/elseif-nya jatuh ke cabang terakhir -> WHERE id_ctg2 = ''
+   and id_ctg5 = '' and status = '' -> TABEL KOSONG, padahal ketiga dropdown
+   memperlihatkan 'ALL'. Sekarang bawaannya ALL/ALL/ALL, jadi yang terlihat
+   sama dgn yang tertulis di saringannya. */
+$syarat = array();
+if ($nama_ctg2 !== 'ALL') { $syarat[] = "id_ctg2 = '" . mysqli_real_escape_string($conn1, $nama_ctg2) . "'"; }
+if ($nama_ctg5 !== 'ALL') { $syarat[] = "id_ctg5 = '" . mysqli_real_escape_string($conn1, $nama_ctg5) . "'"; }
+if ($Status    !== 'ALL') { $syarat[] = "status = '"  . mysqli_real_escape_string($conn1, $Status)    . "'"; }
+$where = $syarat ? 'where ' . implode(' and ', $syarat) : '';
+
+/* Taut Excel: tiga nilai saringan saja. Kolom WHERE TIDAK lagi dikirim lewat
+   alamat - ekspor_master_coa.php membangunnya sendiri dari ketiga nilai itu.
+   Dulu tautnya ditulis "...?nama_ctg2=X && nama_ctg5=Y && Status=Z && where=..."
+   pakai '&&' dan spasi, sehingga yang sampai di sana hanya satu parameter
+   berisi semuanya: SELURUH saringan tidak terbaca dan Excel-nya selalu
+   mengekspor semua baris. */
+$taut_excel = 'ekspor_master_coa.php?nama_ctg2=' . urlencode($nama_ctg2)
+            . '&nama_ctg5=' . urlencode($nama_ctg5)
+            . '&Status=' . urlencode($Status);
+
+/* Hak akses dibaca SEKALI di sini. Dulu query userpassword ini dijalankan
+   ULANG untuk setiap baris - 693 query tambahan sekali muat. */
+$rs_hak = mysqli_fetch_array(mysqli_query($conn1,
+    "select Groupp, finance, ap_apprv_lp from userpassword where username = '"
+    . mysqli_real_escape_string($conn1, $user) . "'"));
+$group = isset($rs_hak['Groupp'])  ? $rs_hak['Groupp']  : '';
+$fin   = isset($rs_hak['finance']) ? $rs_hak['finance'] : '';
+
+/* Pil Y/N. Hurufnya dicetak apa adanya - termasuk kalau isinya ternyata bukan
+   'Y'/'N' - supaya yang terlihat benar-benar isi kolomnya. */
+function coa_pil_yn($nilai)
+{
+    $isi = strtoupper(trim((string) $nilai));
+    if ($isi === '') { return '<span class="coa-yn kosong">-</span>'; }
+    return '<span class="coa-yn ' . ($isi === 'Y' ? 'y' : 'n') . '">'
+         . htmlspecialchars($isi, ENT_QUOTES) . '</span>';
+}
+?>
+<!-- Tiap berkas CSS ditaut sendiri dgn penanda versi dari filemtime, jadi
+     perubahannya langsung sampai ke pemakai tanpa kena cache. -->
+<link rel="stylesheet" href="../css/app-skin-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-skin-form.css'); ?>">
+<link rel="stylesheet" href="../css/app-ftr-list.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-ftr-list.css'); ?>">
+
+<style>
+/* ---- Kepala tabel bertingkat ----
+   Kelompok di baris atas, kolomnya di baris bawah. Ini BUKAN menggabungkan
+   kolom: tiap nilai tetap punya kolom sendiri. Warna latarnya SENGAJA sama
+   dgn kepala lain - versi pertama memberi baris kelompok navy yang lebih tua,
+   hasilnya kepala tabel terbelah jadi dua pita warna yang tidak rata
+   tingginya (sel rowspan=2 di kiri tetap warna asli) dan yang terbaca justru
+   beda warnanya, bukan kelompoknya. Pembedanya cukup garis tipis. */
+.ftl-tbl thead th.grp {
+  font-size: 10.5px; letter-spacing: .05em;
+  border-bottom: 1px solid rgba(30, 58, 138, .22) !important;
 }
 
-.modal:before {
-  content: '';
-  display: inline-block;
-  height: 100%;
-  vertical-align: middle;
-  margin-right: -4px;
-}
+/* Kolom Y/N dibuat sesempit mungkin - isinya satu huruf. Judulnya dibiarkan
+   membelah dua baris; tanpa itu lebar kolomnya mengikuti JUDUL dan tabelnya
+   jadi ratusan piksel lebih lebar dari perlunya. */
+.coa-tbl th.col-yn { white-space: normal !important; max-width: 62px; line-height: 1.25; }
+.coa-tbl td.col-yn { text-align: center; }
+/* Judul "Petty Cash Code" juga dibiarkan membelah dua baris - isinya cuma
+   satu huruf, sedangkan judulnya sendiri 144px kalau dipaksa satu baris. */
+.coa-tbl th.col-kode { white-space: normal !important; max-width: 84px; line-height: 1.25; }
 
-.modal-dialog {
-  display: inline-table;
-  width: 700px;
-  text-align: left;
-  vertical-align: middle;
+/* Nilai Y/N: hurufnya tetap terbaca apa adanya, warnanya cuma membantu
+   memindai kolom - bukan menggantikan isinya. */
+.coa-yn {
+  display: inline-block; min-width: 22px; padding: 1px 6px; border-radius: 6px;
+  font-size: 11px; font-weight: 700; line-height: 1.5;
+}
+.coa-yn.y      { background: #dcfce7; color: #15803d; }
+.coa-yn.n      { background: #f1f5f9; color: #94a3b8; }
+.coa-yn.kosong { background: transparent; color: #cbd5e1; }
+
+/* Kode kas hanya satu huruf - monospace supaya sejajar antar baris. */
+.coa-tbl td.col-kode { text-align: center; font-family: ui-monospace, Menlo, Consolas, monospace;
+                       font-weight: 700; color: #0f172a; }
+
+/* Nomor & nama COA: jangkar baca di kolom paling kiri. */
+.coa-tbl td.col-coa  { white-space: nowrap; font-weight: 700; color: #1e3a8a; }
+.coa-tbl td.col-nama { text-align: left; }
+
+/* Tabel ini 19 kolom terlihat, jadi memang digulir ke samping (scrollX).
+   Isi sel TIDAK boleh membungkus: kalau membungkus, tinggi barisnya ikut
+   melar dan 693 baris jadi tidak terbaca sekali pandang. */
+.coa-tbl td { white-space: nowrap; }
+
+/* Barisnya TIDAK membuka apa pun kalau diklik - di halaman daftar lain
+   .ftl-tbl memberi cursor:pointer karena barisnya membuka modal rincian. */
+.coa-tbl tbody tr { cursor: default; }
+
+/* ---- Kolom beku: No COA (kiri) & Action (kanan) ----
+   Memakai position:sticky LANGSUNG, bukan pustaka FixedColumns. Berkas
+   dataTables.fixedColumns.min.js yang ada di aplikasi ini versi 4.2.1
+   sedangkan DataTables-nya 1.10.21, dan CSS-nya ditaut header.php dari
+   cdn.datatables.net - dua hal yang tidak bisa diandalkan di jaringan pabrik.
+   Aturan di bawah tidak bergantung pada keduanya.
+
+   Dua baris kepala: kolom pertama/terakhir SELALU ada di baris kepala
+   PERTAMA (keduanya rowspan=2), jadi penunjuknya dibatasi ke tr:first-child -
+   kalau tidak, 'Debit' dan 'Bank Out' di baris kedua ikut dibekukan. */
+.coa-tbl thead tr:first-child > th:first-child,
+.coa-tbl tbody td:first-child {
+  position: sticky; left: 0; z-index: 3;
+}
+.coa-tbl thead tr:first-child > th:last-child,
+.coa-tbl tbody td:last-child {
+  position: sticky; right: 0; z-index: 3;
+}
+/* Latar WAJIB pekat: tanpa ini isi kolom yang lewat di belakangnya terbaca
+   menumpuk di atas nomor COA dan tombol Edit. Kepala tabel sudah punya latar
+   sendiri (#eef3fb) dari app-ftr-list.css. */
+.coa-tbl tbody td:first-child,
+.coa-tbl tbody td:last-child { background: #fff; z-index: 2; }
+.coa-tbl tbody tr:hover > td:first-child,
+.coa-tbl tbody tr:hover > td:last-child { background: #f5f8ff; }
+/* Garis bayangan tipis supaya terlihat kolomnya memang dipaku, bukan
+   kebetulan berhenti di situ. */
+.coa-tbl tr > :first-child { box-shadow: 1px 0 0 #e8edf5; }
+.coa-tbl tr > :last-child  { box-shadow: -1px 0 0 #e8edf5; }
+/* Kotak gulir DataTables menggantikan .ftl-tblwrap sbg tepi tabel. */
+.ftl-tblwrap .dataTables_scrollBody { border-radius: 0 0 10px 10px; }
+.ftl-tblwrap .dataTables_scrollHead { border-radius: 10px 10px 0 0; }
+
+/* Lebar kolom Action dijaga supaya kedua tombolnya tidak pernah terbelah. */
+.coa-tbl td.ftl-act-cell { min-width: 168px; }
+
+/* Di layar HP dua kolom beku memakan hampir seluruh lebar layar (No COA 61px
+   + Action 188px dari +-360px), jadi yang tersisa untuk isinya tinggal
+   seruas. Di bawah 768px kolom Action dilepas - No COA yang tetap dipaku,
+   karena itu yang dipakai orang untuk tahu sedang melihat baris mana. */
+@media (max-width: 767.98px) {
+  .coa-tbl thead tr:first-child > th:last-child,
+  .coa-tbl tbody td:last-child { position: static; box-shadow: none; }
 }
 </style>
 
-    <!-- MAIN -->
-    <div class="col p-4">
-        <h2 class="text-center">LIST CHART OF ACCOUNT</h2>
-<div class="box">
-    <div class="box header">
+<!-- MAIN -->
+<div class="container-fluid mt-3 p-3">
 
-        <form id="form-data" action="master-coa.php" method="post">        
-        <div class="form-row">
-           <div class="col-md-3">
-            <label for="nama_type"><b>Category 2</b></label>            
-              <select style="background-color: gray;" class="form-control select2bs4" name="nama_ctg2" id="nama_ctg2" required>
-                <option value="ALL">ALL</option>
-                <?php
-                $nama_ctg2 ='';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $nama_ctg2 = isset($_POST['nama_ctg2']) ? $_POST['nama_ctg2']: null;
-                }                 
-                $sql = mysql_query("select id_ctg2,ind_name, CONCAT(id_ctg2,' - ',ind_name) as name from master_coa_ctg2 group by id",$conn1);
-                while ($row = mysql_fetch_array($sql)) {
-                    $data = $row['name'];
-                    $id_ctg2 = $row['id_ctg2'];
-                    if($row['id_ctg2'] == $_POST['nama_ctg2']){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
-                    }
-                    echo '<option value="'.$id_ctg2.'"'.$isSelected.'">'. $data .'</option>';    
-                }?>
-                </select>
-                </div> 
+  <div class="ftl-card">
+    <div class="ftl-head">
+      <span class="ftl-head-icon"><i class="fa fa-sitemap" aria-hidden="true"></i></span>
+      <div>
+        <h1>List Chart of Account</h1>
+        <span class="ftl-crumb">Master &rsaquo; Chart of Account</span>
+      </div>
+    </div><!-- /.ftl-head -->
 
-                <div class="col-md-3">
-            <label for="nama_group"><b>Category 5</b></label>            
-              <select style="background-color: gray;" class="form-control select2bs4" name="nama_ctg5" id="nama_ctg5" required>
-                <option value="ALL">ALL</option>
-                <?php
-                $nama_ctg5 ='';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $nama_ctg5 = isset($_POST['nama_ctg5']) ? $_POST['nama_ctg5']: null;
-                }                 
-                $sql = mysql_query("select id_ctg5,ind_name, CONCAT(id_ctg5,' - ',ind_name) as name from master_coa_ctg5 group by id",$conn1);
-                while ($row = mysql_fetch_array($sql)) {
-                    $data = $row['name'];
-                    $id_ctg5 = $row['id_ctg5'];
-                    if($row['id_ctg5'] == $_POST['nama_ctg5']){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
-                    }
-                    echo '<option value="'.$id_ctg5.'"'.$isSelected.'">'. $data .'</option>';    
-                }?>
-                </select>
-                </div>
+    <div class="ftl-panel">
+      <form id="form-data" action="master-coa.php" method="get">
+        <div class="row">
 
-                <div class="col-md-3">
-            <label for="nama_supp"><b>Status</b></label>            
-              <select class="form-control select2bs4" name="Status" id="Status" data-dropup-auto="false" data-live-search="true" >
-                <option value="ALL" <?php
-                $Status = '';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $Status = isset($_POST['Status']) ? $_POST['Status']: null;
-                }                 
-                    if($Status == 'ALL'){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
-                    }
-                    echo $isSelected;
-                ?>                
-                >ALL</option>
-                <option value="Active" <?php
-                $Status = '';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $Status = isset($_POST['Status']) ? $_POST['Status']: null;
-                }                 
-                    if($Status == 'Active'){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
-                    }
-                    echo $isSelected;
-                ?>
-                >Active</option>
-                <option value="Deactive" <?php
-                $Status = '';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $Status = isset($_POST['Status']) ? $_POST['Status']: null;
-                }                 
-                    if($Status == 'Deactive'){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
-                    }
-                    echo $isSelected;
-                ?>
-                >Deactive</option>
-                </select>
-                </div> 
+          <div class="col-12 col-sm-6 col-lg-3 mb-2">
+            <label for="nama_ctg2"><b>Category 2</b></label>
+            <select class="form-control app-select2" name="nama_ctg2" id="nama_ctg2">
+              <option value="ALL"<?php echo $nama_ctg2 === 'ALL' ? ' selected="selected"' : ''; ?>>ALL</option>
+              <?php
+              $q_ctg2 = mysqli_query($conn1, "select id_ctg2, CONCAT(id_ctg2,' - ',ind_name) as name from master_coa_ctg2 group by id");
+              while ($row = mysqli_fetch_array($q_ctg2)) {
+                  echo '<option value="' . htmlspecialchars($row['id_ctg2'], ENT_QUOTES) . '"'
+                     . ($row['id_ctg2'] == $nama_ctg2 ? ' selected="selected"' : '') . '>'
+                     . htmlspecialchars($row['name'], ENT_QUOTES) . '</option>';
+              }
+              ?>
+            </select>
+          </div>
 
-            <div class="input-group-append col">                                   
-            <button  type="submit" id="submit" value=" Search " style="height: 35px; margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
-    line-height: 1;
-    padding: -2px 8px;
-    font-size: 1rem;
-    text-align: center;
-    color: #fff;
-    text-shadow: 1px 1px 1px #000;
-    border-radius: 6px;
-    background-color: rgb(46, 139, 87);"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
-            <button type="button" id="reset" value=" Reset " style="height: 35px; margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
-    line-height: 1;
-    padding: -2px 8px;
-    font-size: 1rem;
-    text-align: center;
-    color: #fff;
-    text-shadow: 1px 1px 1px #000;
-    border-radius: 6px;
-    background-color:rgb(250, 69, 1)"><i class="fa fa-repeat" aria-hidden="true"></i> Reset </button>
+          <div class="col-12 col-sm-6 col-lg-3 mb-2">
+            <label for="nama_ctg5"><b>Category 5</b></label>
+            <select class="form-control app-select2" name="nama_ctg5" id="nama_ctg5">
+              <option value="ALL"<?php echo $nama_ctg5 === 'ALL' ? ' selected="selected"' : ''; ?>>ALL</option>
+              <?php
+              /* Daftarnya DIPERSEMPIT oleh Category 2 lewat ubah_ctg5.php
+                 (AJAX) begitu Category 2 diubah. Waktu halaman dimuat ulang
+                 dgn saringan terpilih, pilihan yang sedang aktif harus sudah
+                 ada di dalam <select> ini - kalau tidak, isinya tampak
+                 kembali ke ALL padahal saringannya masih jalan. */
+              $sql_ctg5 = "select id_ctg5, CONCAT(id_ctg5,' - ',ind_name) as name from master_coa_ctg5";
+              if ($nama_ctg2 !== 'ALL') {
+                  $sql_ctg5 .= " where id_ctg2 = '" . mysqli_real_escape_string($conn1, $nama_ctg2) . "'";
+              }
+              $sql_ctg5 .= " group by id";
+              $q_ctg5 = mysqli_query($conn1, $sql_ctg5);
+              while ($row = mysqli_fetch_array($q_ctg5)) {
+                  echo '<option value="' . htmlspecialchars($row['id_ctg5'], ENT_QUOTES) . '"'
+                     . ($row['id_ctg5'] == $nama_ctg5 ? ' selected="selected"' : '') . '>'
+                     . htmlspecialchars($row['name'], ENT_QUOTES) . '</option>';
+              }
+              ?>
+            </select>
+          </div>
 
-    <?php
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $nama_ctg2 = isset($_POST['nama_ctg2']) ? $_POST['nama_ctg2']: null; 
-    $nama_ctg5 = isset($_POST['nama_ctg5']) ? $_POST['nama_ctg5']: null; 
-    $Status = isset($_POST['Status']) ? $_POST['Status']: null; 
-    }
-    if($nama_ctg2 == 'ALL' and $nama_ctg5 == 'ALL' and $Status == 'ALL'){
-     $where = "";
-    }elseif($nama_ctg2 != 'ALL' and $nama_ctg5 == 'ALL' and $Status == 'ALL'){
-     $where = "where id_ctg2 = '$nama_ctg2'";
-    }elseif($nama_ctg2 == 'ALL' and $nama_ctg5 != 'ALL' and $Status == 'ALL'){
-     $where = "where id_ctg5 = '$nama_ctg5'";
-    }elseif($nama_ctg2 == 'ALL' and $nama_ctg5 == 'ALL' and $Status != 'ALL'){
-     $where = "where status = '$Status'";
-    }elseif($nama_ctg2 != 'ALL' and $nama_ctg5 != 'ALL' and $Status == 'ALL'){
-     $where = "where id_ctg2 = '$nama_ctg2' and id_ctg5 = '$nama_ctg5'";
-    }elseif($nama_ctg2 != 'ALL' and $nama_ctg5 == 'ALL' and $Status != 'ALL'){
-     $where = "where id_ctg2 = '$nama_ctg2' and status = '$Status'";
-    }elseif($nama_ctg2 == 'ALL' and $nama_ctg5 != 'ALL' and $Status != 'ALL'){
-     $where = "where id_ctg5 = '$nama_ctg5' and status = '$Status'";
-    }else{
-     $where = "where id_ctg2 = '$nama_ctg2' and id_ctg5 = '$nama_ctg5' and status = '$Status'";  
-    }
+          <div class="col-12 col-sm-6 col-lg-2 mb-2">
+            <label for="Status"><b>Status</b></label>
+            <select class="form-control app-select2" name="Status" id="Status">
+              <option value="ALL"<?php      echo $Status === 'ALL'      ? ' selected="selected"' : ''; ?>>ALL</option>
+              <option value="Active"<?php   echo $Status === 'Active'   ? ' selected="selected"' : ''; ?>>Active</option>
+              <option value="Deactive"<?php echo $Status === 'Deactive' ? ' selected="selected"' : ''; ?>>Deactive</option>
+            </select>
+          </div>
 
-        echo '<a target="_blank" href="ekspor_master_coa.php?nama_ctg2='.$nama_ctg2.' && nama_ctg5='.$nama_ctg5.' && Status='.$Status.' && where='.$where.'"><button type="button" class="btn btn-success " style= "margin-top: 30px;"><i class="fa fa-file-excel-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;font-size: 1rem;color: #fff;text-shadow: 1px 1px 1px #000"> Excel</i></button></a>';
-        
-        ?>
+          <div class="col-12 col-lg-4 mb-2 ftl-actions">
+            <button type="submit" class="app-btn app-btn-primary app-btn-sm">
+              <i class="fa fa-search" aria-hidden="true"></i> Search
+            </button>
+            <button type="button" id="reset" class="app-btn app-btn-light app-btn-sm">
+              <i class="fa fa-repeat" aria-hidden="true"></i> Reset
+            </button>
+            <a target="_blank" href="<?php echo htmlspecialchars($taut_excel, ENT_QUOTES); ?>"
+               class="app-btn app-btn-excel app-btn-sm">
+              <i class="fa fa-file-excel-o" aria-hidden="true"></i> Excel
+            </a>
+            <button id="btncreate" type="button" class="app-btn app-btn-dark app-btn-sm">
+              <i class="fa fa-plus-circle" aria-hidden="true"></i> Create
+            </button>
+          </div>
 
-            </div>                                                            
-    </div>
-<br/>
+        </div>
+      </form>
+    </div><!-- /.ftl-panel -->
 
-</div>
-</form> 
+    <div class="ftl-body">
+      <form id="formdata2">
+        <div class="ftl-tblwrap">
+          <table id="datatable" class="table ftl-tbl coa-tbl" role="grid" cellspacing="0" style="width:100%;">
+            <thead>
+              <tr>
+                <th rowspan="2">No COA</th>
+                <th rowspan="2">COA Name</th>
+                <th rowspan="2">Category 1</th>
+                <th rowspan="2">Category 1 (English)</th>
+                <th rowspan="2">Category 2</th>
+                <th rowspan="2">Category 2 (English)</th>
+                <th rowspan="2">Category 3</th>
+                <th rowspan="2">Category 3 (English)</th>
+                <th rowspan="2">Category 4</th>
+                <th rowspan="2">Category 4 (English)</th>
+                <th rowspan="2">Category 5</th>
+                <th rowspan="2">Category 5 (English)</th>
+                <th colspan="4" class="grp">Category Cash Flow Direct</th>
+                <th rowspan="2">Category Cash Flow Indirect</th>
+                <th rowspan="2">Cash Flow Indirect (English)</th>
+                <th colspan="4" class="grp">Cost Center</th>
+                <th rowspan="2" class="col-kode">Petty Cash Code</th>
+                <th colspan="2" class="grp">Bank Approval</th>
+                <th rowspan="2">Status</th>
+                <th rowspan="2">Action</th>
+              </tr>
+              <tr>
+                <th>Debit</th>
+                <th>Debit (English)</th>
+                <th>Credit</th>
+                <th>Credit (English)</th>
+                <th class="col-yn">Supp Gen &amp; Adm</th>
+                <th class="col-yn">Supp Production</th>
+                <th class="col-yn">Production</th>
+                <th class="col-yn">Supp Selling</th>
+                <th class="col-yn">Bank In</th>
+                <th class="col-yn">Bank Out</th>
+              </tr>
+            </thead>
 
-<!-- <?php
-        $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create List payment'");
-        $rs = mysqli_fetch_array($querys);
-        $id = isset($rs['id']) ? $rs['id'] : 0;
-
-        if($id == '9'){
-    echo '<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>';
-        }else{
-    echo '';
-    }
-?> -->
-<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>
-    </div>             
-    <div class="box body">
-        <div class="row">       
-            <div class="col-md-12">
-
-  <form id="formdata2">               
-<table id="datatable" class="table table-striped table-bordered" role="grid" cellspacing="0" width="100%">
-    <thead style="font-size: 12px;">
-        <tr class="thead-dark">
-            <th rowspan="2" style="text-align: center;vertical-align: middle;">No COA</th>
-            <th rowspan="2" style="text-align: center;vertical-align: middle;">COA Name</th>
-            <th rowspan="2" style="text-align: center;vertical-align: middle;">Category 1</th>
-            <th rowspan="2" style="text-align: center;vertical-align: middle;">Category 2</th>
-            <th rowspan="2" style="text-align: center;vertical-align: middle;">Category 3</th>
-            <th rowspan="2" style="text-align: center;vertical-align: middle;">Category 4</th>
-            <th rowspan="2" style="text-align: center;vertical-align: middle;">Category 5</th>
-            <th colspan="2" style="text-align: center;vertical-align: middle;">Category Cash Flow Direct</th>
-            <th rowspan="2" style="text-align: center;vertical-align: middle;">Category Cash Flow Indirect</th>
-            <th rowspan="2" style="text-align: center;vertical-align: middle;">Status</th>
-            <th rowspan="2" style="text-align: center;vertical-align: middle;">Action</th>
-        </tr>
-        <tr class="thead-dark">
-            <th style="text-align: center;vertical-align: middle;">Debit</th>
-            <th style="text-align: center;vertical-align: middle;">Credit</th>
-            <th style="display: none;">Debit (Indonesia)</th>
-            <th style="display: none;">Credit (Indonesia)</th>
-            <th style="display: none;">Debit (Indonesia)</th>
-            <th style="display: none;">Credit (Indonesia)</th>
-            <th style="display: none;">Debit (Indonesia)</th>
-            <th style="display: none;">Credit (Indonesia)</th>
-            <th style="display: none;">Debit (Indonesia)</th>
-            <th style="display: none;">Credit (Indonesia)</th>
-        </tr>
-    </thead>
-   
-    <tbody id="tbl_cf">
-    <?php
-    $nama_ctg2 ='';
-    $nama_ctg5 = '';
-    $Status = '';
-    $date_now = date("Y-m-d");                
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $nama_ctg2 = isset($_POST['nama_ctg2']) ? $_POST['nama_ctg2']: null; 
-    $nama_ctg5 = isset($_POST['nama_ctg5']) ? $_POST['nama_ctg5']: null; 
-    $Status = isset($_POST['Status']) ? $_POST['Status']: null; 
-    }
-    if($nama_ctg2 == 'ALL' and $nama_ctg5 == 'ALL' and $Status == 'ALL'){
-     $where = "";
-    }elseif($nama_ctg2 != 'ALL' and $nama_ctg5 == 'ALL' and $Status == 'ALL'){
-     $where = "where id_ctg2 = '$nama_ctg2'";
-    }elseif($nama_ctg2 == 'ALL' and $nama_ctg5 != 'ALL' and $Status == 'ALL'){
-     $where = "where id_ctg5 = '$nama_ctg5'";
-    }elseif($nama_ctg2 == 'ALL' and $nama_ctg5 == 'ALL' and $Status != 'ALL'){
-     $where = "where status = '$Status'";
-    }elseif($nama_ctg2 != 'ALL' and $nama_ctg5 != 'ALL' and $Status == 'ALL'){
-     $where = "where id_ctg2 = '$nama_ctg2' and id_ctg5 = '$nama_ctg5'";
-    }elseif($nama_ctg2 != 'ALL' and $nama_ctg5 == 'ALL' and $Status != 'ALL'){
-     $where = "where id_ctg2 = '$nama_ctg2' and status = '$Status'";
-    }elseif($nama_ctg2 == 'ALL' and $nama_ctg5 != 'ALL' and $Status != 'ALL'){
-     $where = "where id_ctg5 = '$nama_ctg5' and status = '$Status'";
-    }else{
-     $where = "where id_ctg2 = '$nama_ctg2' and id_ctg5 = '$nama_ctg5' and status = '$Status'";  
-    }
-
-    $sql = mysql_query("select * from ((select no_coa,id_direct_debit,id_direct_credit,id_indirect,nama_coa,id_ctg5,id_ctg2,status from mastercoa_v2) coa INNER JOIN
+            <tbody id="tbl_cf">
+            <?php
+            /* Tujuh kolom baru ditambahkan ke daftar kolom subquery 'coa'.
+               Sisa querynya DIBIARKAN APA ADANYA - bentuk join bersarangnya
+               sama persis dgn ekspor_master_coa.php, dan keduanya memang
+               harus memberi baris yang sama. */
+            $sql = mysqli_query($conn1, "select * from ((select no_coa,id_direct_debit,id_direct_credit,id_indirect,nama_coa,id_ctg5,id_ctg2,status,support_gen_adm,support_prod,prod,support_sell,kode_cash,bankin_no_approve,bankout_no_approve from mastercoa_v2) coa INNER JOIN
 
 (select a.id_ctg5 as id_ctg5A,a.ind_name as indname5,a.eng_name as engname5, b.ind_name as indname4,b.eng_name as engname4, c.ind_name as indname3,c.eng_name as engname3, d.ind_name as indname2,d.eng_name as engname2, e.ind_name as indname1,e.eng_name as engname1 from master_coa_ctg5 a INNER JOIN master_coa_ctg4 b on b.id_ctg4 = a.id_ctg4 INNER JOIN master_coa_ctg3 c on c.id_ctg3 = a.id_ctg3 INNER JOIN master_coa_ctg2 d on d.id_ctg2 = a.id_ctg2 INNER JOIN master_coa_ctg1 e on e.id_ctg1 = a.id_ctg1 GROUP BY a.id_ctg5) a on a.id_ctg5A =coa.id_ctg5
 left join
@@ -260,243 +328,147 @@ left join
 
 (select id,ind_name as idndircredit, eng_name as engdircredit from tbl_master_cashflow) dircredit on dircredit.id = coa.id_direct_credit left join
 
-(select id,ind_name as idnindir, eng_name as engindir from tbl_master_cashflow) indir on indir.id = coa.id_indirect) $where",$conn1);
+(select id,ind_name as idnindir, eng_name as engindir from tbl_master_cashflow) indir on indir.id = coa.id_indirect) $where");
 
-    while($row = mysqli_fetch_array($sql)){
-          $status = $row['status']; 
-          $idndirdebit = isset($row['idndirdebit']) ? $row['idndirdebit'] : "NA";
-            $engdirdebit = isset($row['engdirdebit']) ? $row['engdirdebit'] : "NA";
-            $idndircredit = isset($row['idndircredit']) ? $row['idndircredit'] : "NA";
-            $engdircredit = isset($row['engdircredit']) ? $row['engdircredit'] : "NA";
-            $idnindir = isset($row['idnindir']) ? $row['idnindir'] : "NA";
-            $engindir = isset($row['engindir']) ? $row['engindir'] : "NA";         
-        echo '<tr style="font-size:11px;text-align:center;">
-            <td value = "'.$row['no_coa'].'">'.$row['no_coa'].'</td>
-            <td value = "'.$row['nama_coa'].'">'.$row['nama_coa'].'</td>
-            <td value = "'.$row['indname1'].'">'.$row['indname1'].'</td>
-            <td style="display: none" value = "'.$row['engname1'].'">'.$row['engname1'].'</td>
-            <td value = "'.$row['indname2'].'">'.$row['indname2'].'</td>
-            <td style="display: none" value = "'.$row['engname2'].'">'.$row['engname2'].'</td>
-            <td value = "'.$row['indname3'].'">'.$row['indname3'].'</td>
-            <td style="display: none" value = "'.$row['engname3'].'">'.$row['engname3'].'</td>
-            <td value = "'.$row['indname4'].'">'.$row['indname4'].'</td>
-            <td style="display: none" value = "'.$row['engname4'].'">'.$row['engname4'].'</td>
-            <td value = "'.$row['indname5'].'">'.$row['indname5'].'</td>
-            <td style="display: none" value = "'.$row['engname5'].'">'.$row['engname5'].'</td>
-            <td value = "'.$row['idndirdebit'].'">'.$idndirdebit.'</td>
-            <td style="display: none" value = "'.$row['engdirdebit'].'">'.$engdirdebit.'</td>
-            <td value = "'.$row['idndircredit'].'">'.$idndircredit.'</td>
-            <td style="display: none" value = "'.$row['engdircredit'].'">'.$engdircredit.'</td>
-            <td value = "'.$row['idnindir'].'">'.$idnindir.'</td>
-            <td style="display: none" value = "'.$row['engindir'].'">'.$engindir.'</td>
-            <td value = "'.$row['status'].'">'.$row['status'].'</td>';
+            while ($row = mysqli_fetch_array($sql)) {
+                $status = $row['status'];
+                /* Cash flow boleh belum dipilih (LEFT JOIN) - 'NA' sama dgn
+                   yang dipakai halaman ini sejak dulu dan dgn ekspornya. */
+                $idndirdebit  = isset($row['idndirdebit'])  ? $row['idndirdebit']  : "NA";
+                $engdirdebit  = isset($row['engdirdebit'])  ? $row['engdirdebit']  : "NA";
+                $idndircredit = isset($row['idndircredit']) ? $row['idndircredit'] : "NA";
+                $engdircredit = isset($row['engdircredit']) ? $row['engdircredit'] : "NA";
+                $idnindir     = isset($row['idnindir'])     ? $row['idnindir']     : "NA";
+                $engindir     = isset($row['engindir'])     ? $row['engindir']     : "NA";
+                $kode_cash    = trim((string) $row['kode_cash']);
 
-            $querys = mysqli_query($conn1,"select Groupp, finance, ap_apprv_lp from userpassword where username = '$user'");
-            $rs = mysqli_fetch_array($querys);
-            $group = $rs['Groupp'];
-            $fin = $rs['finance'];
-            $app = $rs['ap_apprv_lp'];
+                echo '<tr>
+                <td class="col-coa">' . htmlspecialchars($row['no_coa'], ENT_QUOTES) . '</td>
+                <td class="col-nama">' . htmlspecialchars($row['nama_coa'], ENT_QUOTES) . '</td>
+                <td>' . htmlspecialchars($row['indname1'], ENT_QUOTES) . '</td>
+                <td>' . htmlspecialchars($row['engname1'], ENT_QUOTES) . '</td>
+                <td>' . htmlspecialchars($row['indname2'], ENT_QUOTES) . '</td>
+                <td>' . htmlspecialchars($row['engname2'], ENT_QUOTES) . '</td>
+                <td>' . htmlspecialchars($row['indname3'], ENT_QUOTES) . '</td>
+                <td>' . htmlspecialchars($row['engname3'], ENT_QUOTES) . '</td>
+                <td>' . htmlspecialchars($row['indname4'], ENT_QUOTES) . '</td>
+                <td>' . htmlspecialchars($row['engname4'], ENT_QUOTES) . '</td>
+                <td>' . htmlspecialchars($row['indname5'], ENT_QUOTES) . '</td>
+                <td>' . htmlspecialchars($row['engname5'], ENT_QUOTES) . '</td>
+                <td>' . htmlspecialchars($idndirdebit, ENT_QUOTES) . '</td>
+                <td>' . htmlspecialchars($engdirdebit, ENT_QUOTES) . '</td>
+                <td>' . htmlspecialchars($idndircredit, ENT_QUOTES) . '</td>
+                <td>' . htmlspecialchars($engdircredit, ENT_QUOTES) . '</td>
+                <td>' . htmlspecialchars($idnindir, ENT_QUOTES) . '</td>
+                <td>' . htmlspecialchars($engindir, ENT_QUOTES) . '</td>
+                <td class="col-yn">' . coa_pil_yn($row['support_gen_adm']) . '</td>
+                <td class="col-yn">' . coa_pil_yn($row['support_prod']) . '</td>
+                <td class="col-yn">' . coa_pil_yn($row['prod']) . '</td>
+                <td class="col-yn">' . coa_pil_yn($row['support_sell']) . '</td>
+                <td class="col-kode">' . ($kode_cash === '' ? '<span class="coa-yn kosong">-</span>' : htmlspecialchars($kode_cash, ENT_QUOTES)) . '</td>
+                <td class="col-yn">' . coa_pil_yn($row['bankin_no_approve']) . '</td>
+                <td class="col-yn">' . coa_pil_yn($row['bankout_no_approve']) . '</td>
+                <td><span class="ftl-st ' . ($status === 'Active' ? 'is-approved' : 'is-cancel') . '">'
+                    . htmlspecialchars($status, ENT_QUOTES) . '</span></td>';
 
-            echo '<td width="100px;">';
-            if($status == 'Deactive' and $group != 'STAFF' and $fin == '1'){
-                echo '<button style="border-radius: 6px" type="button" id="btnupdate" name="btnupdate"  class="btn-xs btn-success"> Active </button>';
-            }elseif($status == 'Deactive' and $fin == '1'){
-                echo '-';
-            }elseif($status == 'Active' and $group != 'STAFF' and $fin == '1'){
-                echo '<button style="border-radius: 6px" type="button" id="btnupdate" name="btnupdate"  class="btn-xs btn-danger">Deactive</button>
-                <br>
-                <br>
-                <a href="edit-master-coa.php?no_coa='.base64_encode($row['no_coa']).' "><button style="border-radius: 6px" type="button" class="btn-xs btn-warning"><i class="fa fa-pencil-square-o" aria-hidden="true" style="padding-right: 10px; padding-left: 5px;"> Edit</i></button></a>';                
-            }elseif($status == 'Active' and $fin == '1') {
-                echo '-';                
-            } else {
-                echo '';                
-            }                                     
-            echo '</td>';
-            echo '</tr>';
-}?>
-</tbody>                    
-</table>
-</form>
-   
-    </div>
-    </div>
-</div>
-</div><!-- body-row END -->
-</div>
-</div>
+                /* Tombolnya membawa nomor COA & status di data-* sendiri.
+                   Dulu penangannya membaca td:eq(18) dan td:eq(0) - nomor
+                   urut sel yang langsung salah begitu ada kolom disisipkan,
+                   dan kini memang tidak bisa dipakai lagi: kolom yang
+                   disembunyikan DataTables dibuang dari DOM, jadi urutan sel
+                   di layar tidak sama dgn urutan kolom. Aturan siapa yang
+                   boleh menekan apa DIBIARKAN SAMA PERSIS - termasuk bahwa
+                   baris Deactive tidak punya tombol Edit. */
+                echo '<td class="ftl-act-cell">';
+                if ($status == 'Deactive' and $group != 'STAFF' and $fin == '1') {
+                    echo '<div class="ftl-act">'
+                       . '<button type="button" name="btnupdate" class="app-btn app-btn-success app-btn-sm js-coa-status"'
+                       . ' data-coa="' . htmlspecialchars($row['no_coa'], ENT_QUOTES) . '" data-status="' . htmlspecialchars($status, ENT_QUOTES) . '">Active</button>'
+                       . '</div>';
+                } elseif ($status == 'Deactive' and $fin == '1') {
+                    echo '-';
+                } elseif ($status == 'Active' and $group != 'STAFF' and $fin == '1') {
+                    echo '<div class="ftl-act">'
+                       . '<a href="edit-master-coa.php?no_coa=' . urlencode(base64_encode($row['no_coa'])) . '"'
+                       . ' class="app-btn app-btn-warning app-btn-sm"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Edit</a>'
+                       . '<button type="button" name="btnupdate" class="app-btn app-btn-danger app-btn-sm js-coa-status"'
+                       . ' data-coa="' . htmlspecialchars($row['no_coa'], ENT_QUOTES) . '" data-status="' . htmlspecialchars($status, ENT_QUOTES) . '">Deactive</button>'
+                       . '</div>';
+                } elseif ($status == 'Active' and $fin == '1') {
+                    echo '-';
+                } else {
+                    echo '';
+                }
+                echo '</td>';
+                echo '</tr>';
+            }
+            ?>
+            </tbody>
+          </table>
+        </div><!-- /.ftl-tblwrap -->
+      </form>
+    </div><!-- /.ftl-body -->
+  </div><!-- /.ftl-card -->
+</div><!-- /.container-fluid -->
 
-<div class="form-row">
-    <div class="modal fade" id="mymodal2" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-        <div style="width:400px;" class="modal-dialog modal-md">
-        <div style="height: 245px" class="modal-content">
-        <div class="modal-header">
+<!-- Modal sandi: penjaga sebelum status COA diubah. Bentuknya mengikuti
+     kosakata .ftl-modal yang dipakai halaman daftar lain. -->
+<div class="modal fade ftl-modal" id="mymodal2" tabindex="-1" role="dialog" aria-labelledby="Heading" aria-hidden="true">
+  <div class="modal-dialog modal-sm" role="document" style="max-width:420px;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="Heading">Change COA Status</h4>
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-        <h4 class="modal-title" id="Heading" style="text-align: center;"><b>Warning!!!</b></h4>
-        </div>
-          <div class="modal-body">
-          <div class="form-group">
-            <form id="modal-form2" method="post">
-                <div class="form-row">
-                    <div class="col-md-1 mb-3"> 
-                    </div>
-                <div class="col-md-10 mb-3"> 
-                <p for="nama_supp" style="text-align: center;"><b>Password Authentication Required</b></p> 
-                <input type="hidden" name="txt_pass" id="txt_pass" value="Cobaaja123">
-                <input type="hidden" name="txt_type" id="txt_type" value="">
-                <input type="hidden" name="txt_id" id="txt_id" value="">
-                 <div class="input-group">
-                        <input type="password" id="pass" name="pass" class="form-control">
-                        <div class="input-group-append">
-    
-                            <!-- kita pasang onclick untuk merubah icon buka/tutup mata setiap diklik  -->
-                            <span id="mybutton" onclick="change()" class="input-group-text">
-    
-                                <!-- icon mata bawaan bootstrap  -->
-                                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-eye-fill" fill="currentColor"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" />
-                                    <path fill-rule="evenodd"
-                                        d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" />
-                                </svg>
-                            </span>
-                        </div>
-                    </div>
-        </div>
-    </div>
-                <div class="form-row">
-                    <div class="col-md-8">
-                    </div>
-                <div class="col-md-4">
-                <div class="modal-footer">
-                    <button type="submit" id="send2" name="send2" class="btn btn-success btn-sm" style="width: 100%;"><span class="fa fa-thumbs-up"></span>
-                        Save
-                    </button>
-                    </div>
-                    </div>
-                </div>           
-            </form>
-        </div>
+      </div>
+      <div class="container">
+        <form id="modal-form2" method="post">
+          <p class="mb-2" style="font-size:12px;color:#475569;">
+            <b id="coa_info"></b><br>Password Authentication Required
+          </p>
+          <input type="hidden" name="txt_pass" id="txt_pass" value="Cobaaja123">
+          <input type="hidden" name="txt_type" id="txt_type" value="">
+          <input type="hidden" name="txt_id" id="txt_id" value="">
+          <div class="input-group">
+            <input type="password" id="pass" name="pass" class="form-control" autocomplete="off">
+            <div class="input-group-append">
+              <!-- onclick=change() menukar ikon mata buka/tutup -->
+              <span id="mybutton" onclick="change()" class="input-group-text" style="cursor:pointer;">
+                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-eye-fill" fill="currentColor"
+                     xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" />
+                  <path fill-rule="evenodd"
+                        d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" />
+                </svg>
+              </span>
+            </div>
+          </div>
+          <div class="text-right mt-3 mb-2">
+            <button type="button" class="app-btn app-btn-light app-btn-sm" data-dismiss="modal">
+              <i class="fa fa-times"></i> Cancel
+            </button>
+            <button type="submit" id="send2" name="send2" class="app-btn app-btn-primary app-btn-sm">
+              <i class="fa fa-thumbs-up"></i> Save
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
- </div>
-
-
-<div class="form-row">
-    <div class="modal fade" id="mymodal3" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-        <div style="width:450px;" class="modal-dialog modal-md">
-        <div class="modal-content">
-        <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-        <h4 class="modal-title" id="Heading">FORM CREATE CASH FLOW</h4>
-        </div>
-          <div class="modal-body">
-          <div class="form-group">
-            <form id="modal-form3" method="post">
-                <div class="form-row">
-                <div class="col-md-12 mb-3"> 
-                <label for="nama_supp"><b>Type</b></label> 
-                <select class="form-control" name="text_type" id="text_type" required>
-                <option value="" disabled selected="true">Select Type</option> 
-                <?php
-                $text_type ='';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $text_type = isset($_POST['text_type']) ? $_POST['text_type']: null;
-                }                 
-                $sql = mysql_query("select DISTINCT type from tbl_master_group_cf",$conn1);
-                while ($row = mysql_fetch_array($sql)) {
-                    $data = $row['type'];
-                    if($row['type'] == $_POST['text_type']){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
-                    }
-                    echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
-                }?>
-                </select>
-        </div>
-    </div>
-    <div class="form-row">
-                <div class="col-md-12 mb-3"> 
-                <label for="nama_supp"><b>Group</b></label> 
-                <select  class="form-control" name="txt_group" id="txt_group" required>
-                    <option value="" disabled selected="true">Select Group</option>
-                </select>
-        </div>
-    </div>
-                <div class="form-row">
-                 <div class="col-md-12 mb-3"> 
-                <label for="nama_supp"><b>Indonesian Name</b></label> 
-                <input type="text" style="font-size: 14px;font-weight: bold;" class="form-control" name="txt_indname" id="txt_indname" autocomplete="off" 
-            >
-        </div>
-        <div class="col-md-12 mb-3"> 
-                <label for="nama_supp"><b>English Name</b></label> 
-                <input type="text" style="font-size: 14px;font-weight: bold;" class="form-control" name="txt_engname" id="txt_engname" autocomplete="off" 
-            >
-        </div>   
-            </br>
-                    <div class="col-md-8">
-                    </div>
-                <div class="col-md-4">
-                <div class="modal-footer">
-                    <button type="submit" id="send3" name="send3" class="btn btn-success btn-lg" style="width: 100%;"><span class="fa fa-check"></span>
-                        Save
-                    </button>
-                    </div>
-                    </div>
-                </div>           
-            </form>
-        </div>
-      </div>
-    </div>
-  </div>
- </div>
-</div>               
-
-<div class="modal fade" id="mymodal" data-target="#mymodal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-        <div class="modal-dialog">
-        <div class="modal-content">
-        <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-        <h4 class="modal-title" id="txt_bpb"></h4>
-        </div>
-        <div class="container">
-        <div class="row">
-          <div id="txt_tglbpb" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-          <div id="txt_no_po" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-          <div id="txt_supp" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-<!--           <div id="txt_top" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>         
-          <div id="txt_curr" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div> -->
-          <div id="txt_confirm" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>
-  <!--         <div id="txt_tgl_po" class="modal-body col-6" style="font-size: 12px; padding: 0.5rem;"></div>  -->                    
-          <div id="details" class="modal-body col-12" style="font-size: 12px; padding: 0.5rem;"></div>          
-        </div>
-        </div>
-        </div>
-    <!-- /.modal-content 
-  </div>
-      /.modal-dialog 
-    </div> -->         
-                                
-</div><!-- body-row END -->
-</div>
 </div>
 
-  <!-- Bootstrap core JavaScript -->
-  <script src="../vendor/jquery/jquery.min.js"></script>
-  <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
-    <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
-  <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
-  <script language="JavaScript" src="../css/4.1.1/select2.full.min.js"></script>
-  <script>
-  // Hide submenus
-$('#body-row .collapse').collapse('hide'); 
+<!-- Bootstrap core JavaScript. header.php TIDAK memuat satu pun pustaka JS,
+     jadi tiap halaman memuat miliknya sendiri. -->
+<script src="../vendor/jquery/jquery.min.js"></script>
+<script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/select2.full.min.js"></script>
+
+<script>
+// Hide submenus
+$('#body-row .collapse').collapse('hide');
 
 // Collapse/Expand icon
-$('#collapse-icon').addClass('fa-angle-double-left'); 
+$('#collapse-icon').addClass('fa-angle-double-left');
 
 // Collapse click
 $('[data-toggle=sidebar-colapse]').click(function() {
@@ -508,7 +480,7 @@ function SidebarCollapse () {
     $('.sidebar-submenu').toggleClass('d-none');
     $('.submenu-icon').toggleClass('d-none');
     $('#sidebar-container').toggleClass('sidebar-expanded sidebar-collapsed');
-    
+
     // Treating d-flex/d-none on separators with title
     var SeparatorTitle = $('.sidebar-separator-title');
     if ( SeparatorTitle.hasClass('d-flex') ) {
@@ -516,50 +488,86 @@ function SidebarCollapse () {
     } else {
         SeparatorTitle.addClass('d-flex');
     }
-    
+
     // Collapse/Expand icon
     $('#collapse-icon').toggleClass('fa-angle-double-left fa-angle-double-right');
 }
 </script>
+
 <script>
-    $(document).ready(function() {
-    $('#datatable').dataTable();
-    
-     $("[data-toggle=tooltip]").tooltip();
-    
-} );
+  /* select2 di semua dropdown saringan - sama dgn List Payment Plan. Panelnya
+     ditempel ke <body> supaya tidak terpotong kartu, dan daftar pendek
+     (Status, 3 pilihan) tidak diberi kotak cari. */
+  $(function () {
+    $('.app-select2').each(function () {
+      var $s = $(this);
+      var o = { width: '100%', dropdownParent: $('body') };
+      if ($s.find('option').length < 8) { o.minimumResultsForSearch = Infinity; }
+      $s.select2(o);
+    });
+  });
 </script>
 
-<script type="text/javascript">
-    $(document).ready(function () {
-    $('.tanggal').datepicker({
-        format: "dd-mm-yyyy",
-        autoclose:true
-    });
+<script>
+$(document).ready(function () {
+
+  /* 27 kolom, 8 di antaranya nama Inggris yang tidak ditampilkan tapi TETAP
+     ikut dicari (visible:false, sedangkan searchable tetap bawaannya: true).
+     Nomor di bawah ini urutan kolom, dihitung dari 0:
+
+         0  No COA                  13  Debit (English)       *
+         1  COA Name                14  Credit
+         2  Category 1              15  Credit (English)      *
+         3  Category 1 (English)  * 16  Cash Flow Indirect
+         4  Category 2              17  Indirect (English)    *
+         5  Category 2 (English)  * 18  Supp Gen & Adm
+         6  Category 3              19  Supp Production
+         7  Category 3 (English)  * 20  Production
+         8  Category 4              21  Supp Selling
+         9  Category 4 (English)  * 22  Petty Cash Code
+        10  Category 5              23  Bank In
+        11  Category 5 (English)  * 24  Bank Out
+        12  Debit                   25  Status
+                                    26  Action
+
+     scrollX WAJIB: 19 kolom terlihat tidak mungkin masuk satu layar, dan
+     tanpa kotak gulir sendiri DataTables akan memeras kolomnya. */
+  $('#datatable').DataTable({
+    scrollX: true,
+    order: [],               /* urutan apa adanya dari query */
+    pageLength: 10,                 /* 10 baris per halaman - diminta pemakai */
+    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+    columnDefs: [
+      { targets: [3, 5, 7, 9, 11, 13, 15, 17], visible: false },
+      { targets: [26], orderable: false }
+    ],
+    language: { searchPlaceholder: 'Search COA...', search: '' }
+  });
 });
 </script>
 
-<script>
-    $(function() {
-      //Initialize Select2 Elements
-      $('.select2').select2()
-      //Initialize Select2 Elements
-      $('.select2bs4').select2({
-        theme: 'bootstrap4'
-      })
-    });
-  </script>
+<script type="text/javascript">
+  /* Tombol Active/Deactive -> modal sandi. Penangannya ditempel ke #formdata2
+     (bukan ke tombolnya) supaya tetap bekerja sesudah DataTables menggambar
+     ulang halaman tabel. */
+  $("#formdata2").on("click", ".js-coa-status", function () {
+    $('#txt_type').val($(this).data('status'));
+    $('#txt_id').val($(this).data('coa'));
+    $('#coa_info').text($(this).data('coa') + ' → ' + ($(this).data('status') === 'Active' ? 'Deactive' : 'Active'));
+    $('#pass').val('');
+    $('#mymodal2').modal('show');
+  });
+</script>
 
-
-  <script type="text/javascript">
-    $("#modal-form2").on("click", "#send2", function(){ 
+<script type="text/javascript">
+    $("#modal-form2").on("click", "#send2", function(){
         var pass = document.getElementById('pass').value;
         var txt_pass = document.getElementById('txt_pass').value;
         var status = document.getElementById('txt_type').value;
         var id_cf = document.getElementById('txt_id').value;
-        var update_user = '<?php echo $user; ?>';   
-         
-         if (pass == txt_pass) {    
+        var update_user = '<?php echo $user; ?>';
+
+         if (pass == txt_pass) {
         $.ajax({
             type:'POST',
             url:'update_coa.php',
@@ -569,289 +577,43 @@ function SidebarCollapse () {
                 e.preventDefault();
             },
             success: function(response){
-                $('#tbl_cf').html(response);
-                // console.log(response);
-                // $('#modal-form2').modal('toggle');
-                // $('#modal-form2').modal('hide');
-                 // alert("Data saved successfully");
                 window.location.reload(true);
                 },
             error: function (xhr, ajaxOptions, thrownError) {
                 console.log(xhr);
                 alert(xhr);
             }
-        }); 
-        }  
+        });
+        }
         if(document.getElementById('pass').value == document.getElementById('txt_pass').value){
             alert("Data changed successfully");
-            return false;   
+            return false;
         }else{
             alert("Incorrect Password");
-        return false;           
+        return false;
         }
-
- 
     });
-
-
-</script>
-
- <script type="text/javascript">
-    $("#modal-form3").on("click", "#send3", function(){ 
-        var txt_group = $('select[name=txt_group] option').filter(':selected').val();
-        var txt_indname = document.getElementById('txt_indname').value;
-        var txt_engname = document.getElementById('txt_engname').value;
-        var create_user = '<?php echo $user; ?>';   
-         
-         if (txt_group != '' && txt_indname != '' && txt_engname != '') {    
-        $.ajax({
-            type:'POST',
-            url:'insert_cashflow.php',
-            data: {'txt_group':txt_group, 'txt_indname':txt_indname, 'txt_engname':txt_engname, 'create_user':create_user},
-            cache: 'false',
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){
-                // $('#tbl_cf').html(response);
-                alert(response);
-                // $('#modal-form2').modal('toggle');
-                // $('#modal-form2').modal('hide');
-                 // alert("Data saved successfully");
-                window.location.reload(true);
-                },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                alert(xhr);
-            }
-        }); 
-        }  
-        if($('select[name=txt_group] option').filter(':selected').val() == ''){
-            alert("Please Select Group");
-            return false;   
-        }else if(document.getElementById('txt_indname').value == ''){
-            alert("Please Input Indonesian Name");
-            return false;   
-        }else if(document.getElementById('txt_engname').value == ''){
-            alert("Please Input English Name");
-            return false;   
-        }else{
-            alert("Data saved successfully");
-            return false;   
-        }
-
- 
-    });
-
-
-</script>
-
-<script>
-$(function() {
-    $('.selectpicker').selectpicker();
-});
-</script>
-
-<script type="text/javascript">     
-    $("#formdata2").on("click", "#btnupdate", function(){ 
-    var txt_type = $(this).closest('tr').find('td:eq(18)').attr('value'); 
-    var txt_id = $(this).closest('tr').find('td:eq(0)').attr('value');           
-    $('#mymodal2').modal('show');
-    $('#txt_type').val(txt_type);
-    $('#txt_id').val(txt_id);
-
-});
-
-</script>
-
-<!-- <script type="text/javascript">     
-    $("#btncreate").on("click", function(){
-    var txt_type = "Active"; 
-    var txt_id = 1;           
-    $('#mymodal3').modal('show');
-    $('#txt_type2').val(txt_type);
-    $('#txt_id2').val(txt_id);
-
-});
-
-</script> -->
-
-<script>
-            // membuat fungsi change
-            function change() {
-    
-                // membuat variabel berisi tipe input dari id='pass', id='pass' adalah form input password 
-                var x = document.getElementById('pass').type;
-    
-                //membuat if kondisi, jika tipe x adalah password maka jalankan perintah di bawahnya
-                if (x == 'password') {
-    
-                    //ubah form input password menjadi text
-                    document.getElementById('pass').type = 'text';
-                    
-                    //ubah icon mata terbuka menjadi tertutup
-                    document.getElementById('mybutton').innerHTML = `<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-eye-slash-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                                                                    <path d="M10.79 12.912l-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7.029 7.029 0 0 0 2.79-.588zM5.21 3.088A7.028 7.028 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474L5.21 3.089z"/>
-                                                                    <path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829l-2.83-2.829zm4.95.708l-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829z"/>
-                                                                    <path fill-rule="evenodd" d="M13.646 14.354l-12-12 .708-.708 12 12-.708.708z"/>
-                                                                    </svg>`;
-                }
-                else {
-    
-                    //ubah form input password menjadi text
-                    document.getElementById('pass').type = 'password';
-    
-                    //ubah icon mata terbuka menjadi tertutup
-                    document.getElementById('mybutton').innerHTML = `<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-eye-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                                                                    <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
-                                                                    <path fill-rule="evenodd" d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
-                                                                    </svg>`;
-                }
-            }
-        </script>
-
-        <script>
-            // membuat fungsi change
-            function change2() {
-    
-                // membuat variabel berisi tipe input dari id='pass', id='pass' adalah form input password 
-                var x = document.getElementById('pass2').type;
-    
-                //membuat if kondisi, jika tipe x adalah password maka jalankan perintah di bawahnya
-                if (x == 'password') {
-    
-                    //ubah form input password menjadi text
-                    document.getElementById('pass2').type = 'text';
-                    
-                    //ubah icon mata terbuka menjadi tertutup
-                    document.getElementById('mybutton2').innerHTML = `<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-eye-slash-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                                                                    <path d="M10.79 12.912l-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7.029 7.029 0 0 0 2.79-.588zM5.21 3.088A7.028 7.028 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474L5.21 3.089z"/>
-                                                                    <path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829l-2.83-2.829zm4.95.708l-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829z"/>
-                                                                    <path fill-rule="evenodd" d="M13.646 14.354l-12-12 .708-.708 12 12-.708.708z"/>
-                                                                    </svg>`;
-                }
-                else {
-    
-                    //ubah form input password menjadi text
-                    document.getElementById('pass2').type = 'password';
-    
-                    //ubah icon mata terbuka menjadi tertutup
-                    document.getElementById('mybutton2').innerHTML = `<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-eye-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                                                                    <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
-                                                                    <path fill-rule="evenodd" d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
-                                                                    </svg>`;
-                }
-            }
-        </script>
-
-<script type="text/javascript">
-    $("table tbody tr").on("click", "#active", function(){                 
-        var doc_number = $(this).closest('tr').find('td:eq(0)').attr('value');
-        var active_user = '<?php echo $user ?>';
-
-        $.ajax({
-            type:'POST',
-            url:'activebank.php',
-            data: {'doc_number':doc_number, 'active_user':active_user},
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(data){                
-                // console.log(data);
-                window.location.reload();
-                // alert("Active");                                              
-            },
-            error:  function (xhr, ajaxOptions, thrownError) {
-               alert(xhr);
-            }
-        });
-        });
 </script>
 
 <script type="text/javascript">
-    $("table tbody tr").on("click", "#deactive", function(){                 
-        var doc_number = $(this).closest('tr').find('td:eq(0)').attr('value');
-        var active_user = '<?php echo $user ?>';
-
+    /* Category 2 mempersempit daftar Category 5. */
+    $('#nama_ctg2').change(function() {
+        var id = $(this).val();
         $.ajax({
-            type:'POST',
-            url:'deactivebank.php',
-            data: {'doc_number':doc_number, 'active_user':active_user},
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(data){                
-                // console.log(data);
-                window.location.reload();
-                // alert("Deactive");                                              
-            },
-            error:  function (xhr, ajaxOptions, thrownError) {
-               alert(xhr);
-            }
-        });
-        });
-</script>
-
-<script type="text/javascript">
-    $('#nama_ctg2').change(function() { 
-        var id = $(this).val(); 
-        $.ajax({
-            type: 'POST', 
-            url: 'ubah_ctg5.php', 
+            type: 'POST',
+            url: 'ubah_ctg5.php',
             data: {'id':id},
-            success: function(response) { 
-                $('#nama_ctg5').html(response); 
+            success: function(response) {
+                /* .val('ALL') WAJIB: ubah_ctg5.php mencetak selected="selected"
+                   di SETIAP option, jadi yang terpilih jadi option TERAKHIR -
+                   saringan ikut berubah ke kategori yang tidak pernah dipilih
+                   pemakai. Berkas itu dipakai bersama master-costcenter.php,
+                   jadi dibetulkan di sini saja supaya menu lain tidak ikut
+                   berubah tanpa diminta. */
+                $('#nama_ctg5').html(response).val('ALL').trigger('change.select2');
             }
         });
     });
- 
-</script>
-
-<script type="text/javascript">
-    $('#text_type').change(function() { 
-        var id = $(this).val(); 
-        $.ajax({
-            type: 'POST', 
-            url: 'ubah_group2.php', 
-            data: {'id':id},
-            success: function(response) { 
-                $('#txt_group').html(response); 
-            }
-        });
-    });
- 
-</script>
-
-
-<script type="text/javascript">     
-    $('table tbody tr').on('click', 'td:eq(0)', function(){                
-    $('#mymodal').modal('show');
-    var no_ib = $(this).closest('tr').find('td:eq(0)').attr('value');
-    var date = $(this).closest('tr').find('td:eq(1)').text();
-    var reff = $(this).closest('tr').find('td:eq(2)').attr('value');
-    var reff_doc = $(this).closest('tr').find('td:eq(3)').attr('value');
-    var oth_doc = $(this).closest('tr').find('td:eq(4)').attr('value');
-    var curr = "IDR";
-
-    $.ajax({
-    type : 'post',
-    url : 'ajax_cashin.php',
-    data : {'no_ib': no_ib},
-    success : function(data){
-    $('#details').html(data); //menampilkan data ke dalam modal
-        }
-    });         
-        //make your ajax call populate items or what even you need
-    $('#txt_bpb').html(no_ib);
-    $('#txt_tglbpb').html('Date : ' + date + '');
-    $('#txt_no_po').html('Refference : ' + reff + '');
-    $('#txt_supp').html('Refference Document : ' + reff_doc + '');
-    // $('#txt_top').html('Other Document : ' + oth_doc + '');
-    // $('#txt_curr').html('Kas Account : ' + akun + '');        
-    $('#txt_confirm').html('Currency : ' + curr + '');
-    // $('#txt_tgl_po').html('Description : ' + desk + '');                    
-});
-
 </script>
 
 <script type="text/javascript">
@@ -866,19 +628,27 @@ $(function() {
 </script>
 
 <script>
-function alert_cancel() {
-  alert("Master Bank Deactive");
-  location.reload();
-}
-function alert_approve() {
-  alert("Master Bank Active");
-  location.reload();
-}
+    // membuat fungsi change - menukar ikon mata di kotak sandi
+    function change() {
+        var x = document.getElementById('pass').type;
+        if (x == 'password') {
+            document.getElementById('pass').type = 'text';
+            document.getElementById('mybutton').innerHTML = `<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-eye-slash-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                                            <path d="M10.79 12.912l-1.614-1.615a3.5 3.5 0 0 1-4.474-4.474l-2.06-2.06C.938 6.278 0 8 0 8s3 5.5 8 5.5a7.029 7.029 0 0 0 2.79-.588zM5.21 3.088A7.028 7.028 0 0 1 8 2.5c5 0 8 5.5 8 5.5s-.939 1.721-2.641 3.238l-2.062-2.062a3.5 3.5 0 0 0-4.474-4.474L5.21 3.089z"/>
+                                                            <path d="M5.525 7.646a2.5 2.5 0 0 0 2.829 2.829l-2.83-2.829zm4.95.708l-2.829-2.83a2.5 2.5 0 0 1 2.829 2.829z"/>
+                                                            <path fill-rule="evenodd" d="M13.646 14.354l-12-12 .708-.708 12 12-.708.708z"/>
+                                                            </svg>`;
+        }
+        else {
+            document.getElementById('pass').type = 'password';
+            document.getElementById('mybutton').innerHTML = `<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-eye-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                                            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+                                                            <path fill-rule="evenodd" d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
+                                                            </svg>`;
+        }
+    }
 </script>
 
-<!--<script src="//netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>-->
-  
 </body>
 
 </html>
