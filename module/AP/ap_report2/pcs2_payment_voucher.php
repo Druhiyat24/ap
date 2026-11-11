@@ -12,6 +12,7 @@
   class="table table-striped table-hover table-sm nowrap pcs2-table">
     <thead>
       <tr>
+        <th rowspan="2" class="grp-head-default">Profit Center</th>
         <th rowspan="2" class="grp-head-default">Nama Supplier</th>
         <th rowspan="2" class="grp-head-default">Payment Voucher Number</th>
         <th rowspan="2" class="grp-head-default">PV Date</th>
@@ -62,7 +63,7 @@
     <tbody></tbody>
     <tfoot>
       <tr class="pcs2-foot-idr">
-        <th></th><th></th><th></th><th></th><th></th>
+        <th></th><th></th><th></th><th></th><th></th><th></th>
         <th></th><th></th><th></th><th></th>
         <th></th><th></th><th></th><th></th>
         <th></th><th></th><th></th><th></th>
@@ -75,7 +76,7 @@
         <th></th><th></th><th></th>
       </tr>
       <tr class="pcs2-foot-usd">
-        <th></th><th></th><th></th><th></th><th></th>
+        <th></th><th></th><th></th><th></th><th></th><th></th>
         <th></th><th></th><th></th><th></th>
         <th></th><th></th><th></th><th></th>
         <th></th><th></th><th></th><th></th>
@@ -88,7 +89,7 @@
         <th></th><th></th><th></th>
       </tr>
       <tr class="pcs2-foot-all">
-        <th></th><th></th><th></th><th></th><th></th>
+        <th></th><th></th><th></th><th></th><th></th><th></th>
         <th></th><th></th><th></th><th></th>
         <th></th><th></th><th></th><th></th>
         <th></th><th></th><th></th><th></th>

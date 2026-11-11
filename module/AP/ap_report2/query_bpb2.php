@@ -18,6 +18,7 @@ if ($nama_supp !== 'ALL') {
 if ($search !== '') {
     $s = mysqli_real_escape_string($conn2, $search);
     $where .= " AND (
+        profit_center LIKE '%$s%' OR
         supplier   LIKE '%$s%' OR
         no_bpb     LIKE '%$s%' OR
         curr       LIKE '%$s%' OR
@@ -494,7 +495,45 @@ mutasi as (
 ),
 
 laporan_mutasi as (
-    SELECT supplier, no_bpb, tgl_bpb, duedate, curr,
+    SELECT
+           /* PROFIT CENTER - diambil dari tbl_list_journal, lalu KODE-nya
+              (NAG/NAK) diterjemahkan ke NAMA PENUH lewat master_pc, karena
+              yang diminta di layar nama penuhnya, bukan singkatannya.
+
+              BENTUKNYA SUBQUERY BERKORELASI, DAN ITU DISENGAJA. Cara yang
+              kelihatan lebih rapi - satu CTE berisi select no_journal,
+              MAX(profit_center) ... group by no_journal lalu di-LEFT JOIN -
+              SUDAH DICOBA dan DIBUANG: mengelompokkan no_journal (varchar
+              panjang) atas
+              seluruh tbl_list_journal makan +-7 DETIK sekali jalan, di atas
+              laporan yang sudah 21 detik. Bentuk ini sebaliknya hanya
+              sebanyak baris laporan (+-4.000) pencarian lewat indeks
+              no_journal, +-0,1 detik. Jangan dirapikan jadi CTE+GROUP BY.
+
+              DITARUH DI CTE INI, bukan di SELECT terakhir, supaya
+              profit_center menjadi KOLOM SUNGGUHAN milik laporan_mutasi -
+              dgn begitu kotak cari DataTables (lewat variabel where milik
+              berkas ini) bisa menyaringnya.
+              Kalau ditulis di SELECT terakhir ia cuma alias, dan MySQL tidak
+              menerima alias di WHERE.
+
+              TANPA BATAS TANGGAL - dan itu perlu: BPB sebelum cut-over
+              saldonya datang dari ap_report_saldo_bpb, dan tabel itu TIDAK
+              punya kolom profit center, jadi jurnal satu-satunya sumber.
+              Diperiksa di salinan lokal: 1.260 BPB saldo awal semuanya
+              ketemu jurnalnya (963 NAG, 297 NAK).
+
+              MAX() penjaga kalau satu dokumen punya lebih dari satu profit
+              center; diperiksa di data: tidak ada, kecuali dua baris sampah
+              ber-no_journal '' dan '-' yang tidak akan pernah dicari di
+              sini. */
+           (select IFNULL(MAX(mp.nama_pc), MAX(j.profit_center))
+              from tbl_list_journal j
+              LEFT JOIN master_pc mp on mp.kode_pc = j.profit_center
+             where j.no_journal = m.no_bpb
+               and j.type_journal IN ('AP - BPB','AP - BPB RETURN')
+               and COALESCE(j.profit_center,'') != '') profit_center,
+           supplier, no_bpb, tgl_bpb, duedate, curr,
            saldo_awal, in_bpb, reverse_bpb, ded_kontrabon, reverse_kontrabon, gm, saldo_akhir,
            rate, (saldo_akhir * rate) saldo_akhir_idr,
            no_coa, nama_coa, item_type1, item_type2, relasi,
@@ -555,10 +594,11 @@ laporan_mutasi as (
                     THEN (saldo_akhir*rate) ELSE 0 END
            ) AS tot_produe,
            CASE WHEN no_bpb LIKE '%RO%' OR no_bpb LIKE '%OUT%' THEN -1 ELSE 1 END AS f
-    from mutasi
+    from mutasi m
 )
 
 SELECT
+    IFNULL(profit_center, '-') profit_center,
     supplier, no_bpb, tgl_bpb, duedate, curr,
     saldo_awal*f AS saldo_awal,
     in_bpb*f AS in_bpb,

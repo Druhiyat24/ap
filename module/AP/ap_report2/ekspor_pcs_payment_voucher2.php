@@ -57,6 +57,7 @@ td.num     { text-align: right; }
 <thead>
 <tr>
     <th rowspan="2" class="h-default">No</th>
+    <th rowspan="2" class="h-default">Profit Center</th>
     <th rowspan="2" class="h-default">Nama Supplier</th>
     <th rowspan="2" class="h-default">Payment Voucher Number</th>
     <th rowspan="2" class="h-default">PV Date</th>
@@ -110,6 +111,7 @@ while ($row = mysqli_fetch_assoc($q)):
 ?>
 <tr style="font-size:10px;">
     <td style="text-align:center;"><?= $no++ ?></td>
+    <td><?= htmlspecialchars($row['profit_center']) ?></td>
     <td><?= htmlspecialchars($row['supplier']) ?></td>
     <td><?= htmlspecialchars($row['no_kbon']) ?></td>
     <td><?= date("d-M-Y", strtotime($row['tgl_kbon'])) ?></td>

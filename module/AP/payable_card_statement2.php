@@ -173,63 +173,82 @@
     overflow-y: hidden;
   }
 
-  /* ===== Freeze 5 kolom pertama (Nama Supplier..Currency) murni pakai CSS
+  /* ===== Freeze 6 kolom pertama (Profit Center..Currency) murni pakai CSS
      sticky di SATU tabel yang sama - tidak pakai plugin FixedColumns lagi
-     karena sering meleset menyamakan lebar kolom antar head/body/foot.   ===== */
+     karena sering meleset menyamakan lebar kolom antar head/body/foot.
+
+     ANGKA `left` DI BAWAH HANYA CADANGAN. Yang dipakai sehari-hari adalah
+     nilai `left` yang dihitung JavaScript (pcs2SetelKolomBeku) dari LEBAR
+     KOLOM SEBENARNYA sesudah tabel digambar. Alasannya: lebar kolom di sini
+     ditentukan ISI DATA (tabel nowrap, autoWidth:false), jadi angka tetap
+     tidak mungkin selalu benar. Dibuktikan pada skema lama yang 5 kolom:
+     dgn nama supplier sepanjang "PT. TAICHANG WRAPPER INTERNATIONAL" kolom
+     1 melebar jadi 264px padahal left kolom 2 tertulis 170px - begitu tabel
+     digeser ke kanan, kolom 2 MENIMPA kolom 1 sebanyak 94px dan tiga kolom
+     berikutnya saling menimpa 10px. Itu cacat yang sudah ada sebelum kolom
+     Profit Center ditambahkan, dan ikut dibetulkan di sini.
+     ===== */
   /* Freeze kolom hanya untuk BPB dan Payment Voucher */
   #table-pcs-bpb thead tr:first-child th:nth-child(1),
   #table-pcs-bpb tbody td:nth-child(1),
   #table-pcs-bpb tfoot th:nth-child(1),
   #table-pcs-pv thead tr:first-child th:nth-child(1),
   #table-pcs-pv tbody td:nth-child(1),
-  #table-pcs-pv tfoot th:nth-child(1) { position: sticky; left: 0px;   min-width: 170px; }
+  #table-pcs-pv tfoot th:nth-child(1) { position: sticky; left: 0px; min-width: 168px; }
 
   #table-pcs-bpb thead tr:first-child th:nth-child(2),
   #table-pcs-bpb tbody td:nth-child(2),
   #table-pcs-bpb tfoot th:nth-child(2),
   #table-pcs-pv thead tr:first-child th:nth-child(2),
   #table-pcs-pv tbody td:nth-child(2),
-  #table-pcs-pv tfoot th:nth-child(2) { position: sticky; left: 170px; min-width: 150px; }
+  #table-pcs-pv tfoot th:nth-child(2) { position: sticky; left: 168px; min-width: 170px; }
 
   #table-pcs-bpb thead tr:first-child th:nth-child(3),
   #table-pcs-bpb tbody td:nth-child(3),
   #table-pcs-bpb tfoot th:nth-child(3),
   #table-pcs-pv thead tr:first-child th:nth-child(3),
   #table-pcs-pv tbody td:nth-child(3),
-  #table-pcs-pv tfoot th:nth-child(3) { position: sticky; left: 320px; min-width: 95px; }
+  #table-pcs-pv tfoot th:nth-child(3) { position: sticky; left: 338px; min-width: 150px; }
 
   #table-pcs-bpb thead tr:first-child th:nth-child(4),
   #table-pcs-bpb tbody td:nth-child(4),
   #table-pcs-bpb tfoot th:nth-child(4),
   #table-pcs-pv thead tr:first-child th:nth-child(4),
   #table-pcs-pv tbody td:nth-child(4),
-  #table-pcs-pv tfoot th:nth-child(4) { position: sticky; left: 415px; min-width: 95px; }
+  #table-pcs-pv tfoot th:nth-child(4) { position: sticky; left: 488px; min-width: 95px; }
 
   #table-pcs-bpb thead tr:first-child th:nth-child(5),
   #table-pcs-bpb tbody td:nth-child(5),
   #table-pcs-bpb tfoot th:nth-child(5),
   #table-pcs-pv thead tr:first-child th:nth-child(5),
   #table-pcs-pv tbody td:nth-child(5),
-  #table-pcs-pv tfoot th:nth-child(5) { position: sticky; left: 510px; min-width: 70px; }
+  #table-pcs-pv tfoot th:nth-child(5) { position: sticky; left: 583px; min-width: 95px; }
 
-  #table-pcs-bpb thead th:nth-child(-n+5),
-  #table-pcs-pv thead th:nth-child(-n+5) { z-index: 6; }
+  #table-pcs-bpb thead tr:first-child th:nth-child(6),
+  #table-pcs-bpb tbody td:nth-child(6),
+  #table-pcs-bpb tfoot th:nth-child(6),
+  #table-pcs-pv thead tr:first-child th:nth-child(6),
+  #table-pcs-pv tbody td:nth-child(6),
+  #table-pcs-pv tfoot th:nth-child(6) { position: sticky; left: 678px; min-width: 70px; }
 
-  #table-pcs-bpb tbody td:nth-child(-n+5),
-  #table-pcs-pv tbody td:nth-child(-n+5) {
+  #table-pcs-bpb thead th:nth-child(-n+6),
+  #table-pcs-pv thead th:nth-child(-n+6) { z-index: 6; }
+
+  #table-pcs-bpb tbody td:nth-child(-n+6),
+  #table-pcs-pv tbody td:nth-child(-n+6) {
     z-index: 2;
     background-color: #fff;
     box-shadow: 2px 0 4px -2px rgba(0,0,0,.12);
   }
 
-  #table-pcs-bpb tbody tr:nth-of-type(odd) td:nth-child(-n+5),
-  #table-pcs-pv tbody tr:nth-of-type(odd) td:nth-child(-n+5) { background-color: #f7f8fb; }
+  #table-pcs-bpb tbody tr:nth-of-type(odd) td:nth-child(-n+6),
+  #table-pcs-pv tbody tr:nth-of-type(odd) td:nth-child(-n+6) { background-color: #f7f8fb; }
 
-  #table-pcs-bpb tbody tr:hover td:nth-child(-n+5),
-  #table-pcs-pv tbody tr:hover td:nth-child(-n+5) { background-color: #eef6ff; }
+  #table-pcs-bpb tbody tr:hover td:nth-child(-n+6),
+  #table-pcs-pv tbody tr:hover td:nth-child(-n+6) { background-color: #eef6ff; }
 
-  #table-pcs-bpb tfoot th:nth-child(-n+5),
-  #table-pcs-pv tfoot th:nth-child(-n+5) {
+  #table-pcs-bpb tfoot th:nth-child(-n+6),
+  #table-pcs-pv tfoot th:nth-child(-n+6) {
     z-index: 5;
     box-shadow: 2px 0 4px -2px rgba(0,0,0,.12);
   }
@@ -437,7 +456,26 @@
     // tampilkan tab yang dipilih
     document.getElementById(tabName).style.display = "block";
     evt.currentTarget.classList.add("active");
+
+    /* Baru SESUDAH tab terlihat lebar kolomnya bisa diukur; selagi
+       display:none semua lebar 0. */
+    if (typeof pcs2SetelKolomBeku === 'function') {
+      pcs2SetelKolomBeku('table-pcs-bpb', 6);
+      pcs2SetelKolomBeku('table-pcs-pv', 6);
+    }
   }
+
+  /* Lebar kolom ikut berubah kalau jendela diubah ukurannya, jadi offset
+     kolom beku harus dihitung ulang - kalau tidak, kolom beku saling
+     menimpa persis seperti cacat skema angka tetap yang lama. */
+  window.addEventListener('resize', function () {
+    if (typeof pcs2SetelKolomBeku !== 'function') return;
+    clearTimeout(window.pcs2TungguResize);
+    window.pcs2TungguResize = setTimeout(function () {
+      pcs2SetelKolomBeku('table-pcs-bpb', 6);
+      pcs2SetelKolomBeku('table-pcs-pv', 6);
+    }, 150);
+  });
 
   // buka default tab saat halaman load
   document.addEventListener("DOMContentLoaded", function () {
@@ -480,8 +518,48 @@
         [datatable,datatable2,datatable3,datatable4,datatable5,datatable6,datatable7].forEach(function(dt){
           if (typeof dt !== 'undefined') dt.columns.adjust();
         });
+        pcs2SetelKolomBeku('table-pcs-bpb', 6);
+        pcs2SetelKolomBeku('table-pcs-pv', 6);
       }
     });
+  }
+
+  /* ===== Offset kolom beku dihitung dari LEBAR SEBENARNYA =====
+     Lebar kolom tabel ini ditentukan isi datanya (nowrap, autoWidth:false),
+     jadi `left` yang ditulis tetap di CSS pasti meleset begitu ada satu sel
+     yang lebih lebar dari perkiraan - kolom beku lalu saling menimpa.
+     Fungsi ini menumpuk lebar kolom satu per satu dan menuliskannya sebagai
+     inline style, dipanggil ulang setiap kali tabel digambar.
+     Baris kedua thead TIDAK disentuh: isinya kepala Aging & Projection yang
+     memang tidak dibekukan. */
+  function pcs2SetelKolomBeku(idTabel, jmlKolom) {
+    var tabel = document.getElementById(idTabel);
+    if (!tabel) return;
+
+    var kepala = tabel.querySelectorAll('thead tr:first-child > th');
+    if (kepala.length < jmlKolom) return;
+
+    var offset = [], kiri = 0;
+    for (var i = 0; i < jmlKolom; i++) {
+      offset.push(kiri);
+      kiri += kepala[i].getBoundingClientRect().width;
+    }
+
+    /* Tab yang sedang disembunyikan (display:none) melaporkan lebar 0. Kalau
+       itu ditulis, keenam kolom beku jadi menumpuk di left:0 sampai gambar
+       berikutnya. Jadi kalau tabelnya belum terlihat, biarkan saja angka
+       cadangan dari CSS yang berlaku. */
+    if (kiri === 0) return;
+
+    var baris = tabel.querySelectorAll('thead tr:first-child, tbody tr, tfoot tr');
+    for (var b = 0; b < baris.length; b++) {
+      /* baris "No data available" cuma punya satu sel ber-colspan - lewati,
+         kalau tidak sel itu ikut dibekukan dan tulisannya menggantung. */
+      if (baris[b].children.length < jmlKolom) continue;
+      for (var k = 0; k < jmlKolom; k++) {
+        baris[b].children[k].style.left = offset[k] + 'px';
+      }
+    }
   }
 
   $(document).ready(function () {
@@ -509,6 +587,7 @@
     },
 
     columns: [
+      { data: 'profit_center' },
       { data: 'supplier' },
       { data: 'no_bpb' },
       { data: 'tgl_bpb' },
@@ -551,7 +630,7 @@
 
     columnDefs: [
       {
-        targets: [7, 8, 10], // reverse_bpb & reverse_kontrabon
+        targets: [8, 9, 11], // reverse_bpb & reverse_kontrabon
         className: "text-right",
         render: function (data, type) {
           let val = parseFloat(data);
@@ -572,12 +651,12 @@
         }
       },
       {
-        targets: [5, 6,
-          9, 11,
-          13,
-          20, 21, 22, 23, 24, 25, 26, 27, 28,
-          30, 31, 32, 33, 34, 35, 36,
-          37],
+        targets: [6, 7,
+          10, 12,
+          14,
+          21, 22, 23, 24, 25, 26, 27, 28, 29,
+          31, 32, 33, 34, 35, 36, 37,
+          38],
         className: "text-right",
         render: function (data) {
           let val = parseFloat(data);
@@ -611,31 +690,31 @@
       }
 
       const map = {
-        5:  'saldo_awal',
-        6:  'in_bpb',
-        7:  'reverse_bpb',
-        8:  'ded_kontrabon',
-        9:  'reverse_kontrabon',
-        10: 'gm',
-        11: 'saldo_akhir',
-        13: 'saldo_akhir_idr',
-        20: 'due_current',
-        21: 'due_1_30',
-        22: 'due_31_60',
-        23: 'due_61_90',
-        24: 'due_91_120',
-        25: 'due_121_180',
-        26: 'due_181_360',
-        27: 'due_gt_360',
-        28: 'total_due',
-        30: 'pro_due',
-        31: 'pro_due0',
-        32: 'pro_due1',
-        33: 'pro_due2',
-        34: 'pro_due3',
-        35: 'pro_due4',
-        36: 'pro_due5',
-        37: 'tot_produe'
+        6:  'saldo_awal',
+        7:  'in_bpb',
+        8:  'reverse_bpb',
+        9:  'ded_kontrabon',
+        10: 'reverse_kontrabon',
+        11: 'gm',
+        12: 'saldo_akhir',
+        14: 'saldo_akhir_idr',
+        21: 'due_current',
+        22: 'due_1_30',
+        23: 'due_31_60',
+        24: 'due_61_90',
+        25: 'due_91_120',
+        26: 'due_121_180',
+        27: 'due_181_360',
+        28: 'due_gt_360',
+        29: 'total_due',
+        31: 'pro_due',
+        32: 'pro_due0',
+        33: 'pro_due1',
+        34: 'pro_due2',
+        35: 'pro_due3',
+        36: 'pro_due4',
+        37: 'pro_due5',
+        38: 'tot_produe'
       };
 
       Object.keys(map).forEach(function (colIdx) {
@@ -672,12 +751,12 @@
         .html('<b>SUMMARY TOTAL</b>')
         .css({ 'text-align': 'left', 'font-weight': 'bold' });
 
-      for (let i = 1; i <= 4; i++) {
+      for (let i = 1; i <= 5; i++) {
         rowIDR.find('th:eq(' + i + ')').html('');
         rowUSD.find('th:eq(' + i + ')').html('');
       }
 
-      for (let i = 1; i <= 12; i++) {
+      for (let i = 1; i <= 13; i++) {
         rowALL.find('th:eq(' + i + ')').html('');
       }
 
@@ -688,11 +767,13 @@
 
     initComplete: function () {
       this.api().columns.adjust();
+      pcs2SetelKolomBeku('table-pcs-bpb', 6);
     }
   });
 
   $('#table-pcs-bpb').on('draw.dt', function () {
     datatable.columns.adjust();
+    pcs2SetelKolomBeku('table-pcs-bpb', 6);
   });
 
   // ===== PAYMENT VOUCHER =====
@@ -717,6 +798,7 @@
     },
 
     columns: [
+      { data: 'profit_center' },
       { data: 'supplier' },
       { data: 'no_kbon' },
       { data: 'tgl_kbon' },
@@ -762,7 +844,7 @@
 
     columnDefs: [
       {
-        targets: [7, 8, 13],
+        targets: [8, 9, 14],
         className: "text-right",
         render: function (data, type) {
           let val = parseFloat(data);
@@ -777,9 +859,9 @@
         }
       },
       {
-        targets: [5, 6, 9, 10, 11, 12, 14, 15, 16,
-          23, 24, 25, 26, 27, 28, 29, 30, 31,
-          33, 34, 35, 36, 37, 38, 39, 40],
+        targets: [6, 7, 10, 11, 12, 13, 15, 16, 17,
+          24, 25, 26, 27, 28, 29, 30, 31, 32,
+          34, 35, 36, 37, 38, 39, 40, 41],
         className: "text-right",
         render: function (data) {
           let val = parseFloat(data);
@@ -805,16 +887,16 @@
       }
 
       const map = {
-        5: 'saldo_awal', 6: 'total_in', 7: 'uang_muka', 8: 'potongan',
-        9: 'ded_bank', 10: 'ded_cash', 11: 'ded_nonbank',
-        12: 'ded_gm', 13: 'reverse_kontrabon',
-        14: 'saldo_akhir', 16: 'saldo_akhir_idr',
-        23: 'due_current', 24: 'due_1_30', 25: 'due_31_60',
-        26: 'due_61_90', 27: 'due_91_120', 28: 'due_121_180',
-        29: 'due_181_360', 30: 'due_gt_360', 31: 'total_due',
-        33: 'pro_due', 34: 'pro_due0', 35: 'pro_due1',
-        36: 'pro_due2', 37: 'pro_due3', 38: 'pro_due4',
-        39: 'pro_due5', 40: 'tot_produe'
+        6: 'saldo_awal', 7: 'total_in', 8: 'uang_muka', 9: 'potongan',
+        10: 'ded_bank', 11: 'ded_cash', 12: 'ded_nonbank',
+        13: 'ded_gm', 14: 'reverse_kontrabon',
+        15: 'saldo_akhir', 17: 'saldo_akhir_idr',
+        24: 'due_current', 25: 'due_1_30', 26: 'due_31_60',
+        27: 'due_61_90', 28: 'due_91_120', 29: 'due_121_180',
+        30: 'due_181_360', 31: 'due_gt_360', 32: 'total_due',
+        34: 'pro_due', 35: 'pro_due0', 36: 'pro_due1',
+        37: 'pro_due2', 38: 'pro_due3', 39: 'pro_due4',
+        40: 'pro_due5', 41: 'tot_produe'
       };
 
       Object.keys(map).forEach(function (i) {
@@ -827,19 +909,20 @@
       rowUSD.find('th:eq(0)').html('<b>TOTAL USD</b>').css({'text-align':'left','font-weight':'bold'});
       rowALL.find('th:eq(0)').html('<b>SUMMARY TOTAL</b>').css({'text-align':'left','font-weight':'bold'});
 
-      for (let i = 1; i <= 4;  i++) { rowIDR.find('th:eq('+i+')').html(''); rowUSD.find('th:eq('+i+')').html(''); }
-      for (let i = 1; i <= 15; i++) { rowALL.find('th:eq('+i+')').html(''); }
+      for (let i = 1; i <= 5; i++) { rowIDR.find('th:eq('+i+')').html(''); rowUSD.find('th:eq('+i+')').html(''); }
+      for (let i = 1; i <= 16; i++) { rowALL.find('th:eq('+i+')').html(''); }
 
       rowIDR.find('th:not(:eq(0))').css('text-align', 'right');
       rowUSD.find('th:not(:eq(0))').css('text-align', 'right');
       rowALL.find('th:not(:eq(0))').css('text-align', 'right');
     },
 
-    initComplete: function () { this.api().columns.adjust(); }
+    initComplete: function () { this.api().columns.adjust(); pcs2SetelKolomBeku('table-pcs-pv', 6); }
   });
 
   $('#table-pcs-pv').on('draw.dt', function () {
     datatable2.columns.adjust();
+    pcs2SetelKolomBeku('table-pcs-pv', 6);
   });
 
   // ===== SUMMARY SUPPLIER =====
