@@ -10,20 +10,18 @@
    disamakan lebih dulu (10 Nov 2026) memakai kosakata .pco-; halaman ini
    pasangannya.
 
-   TUJUH KOLOM BARU - kelanjutan dari tujuh isian baru di formulirnya:
-       Cost Center      support_gen_adm, support_prod, prod, support_sell
-       Petty Cash Code  kode_cash
-       Bank Approval    bankin_no_approve, bankout_no_approve
-   Yang tersimpan di basis data memang huruf 'Y'/'N', jadi HURUFNYA pula yang
-   dicetak; warna pil .coa-yn cuma membantu memindai, bukan menggantikan
-   isinya. kode_cash kosong (688 dari 693 baris) dicetak '-' supaya beda jelas
-   dgn kode yang memang terisi.
+   KOLOMNYA TETAP SEPERTI SEBELUMNYA. Sempat ditambahkan tujuh kolom baru
+   (empat Cost Center, Petty Cash Code, dua Bank Approval) mengikuti tujuh
+   isian baru di formulirnya, lalu DICABUT LAGI atas permintaan pemakai pada
+   hari yang sama: "ini ngga perlu ditampilkan, untuk kolom kolom pakai yang
+   sebelumnya saja, cuman merubah styling". Ketujuh kolom itu tetap bisa
+   diisi & dilihat lewat formulir Create/Edit. Catatan ini ditulis supaya
+   tidak ada yang menambahkannya lagi sbg "kelanjutan yang terlupa".
 
-   PERLU MIGRASI DI PRODUKSI LEBIH DULU: dua kolom bankin_no_approve /
-   bankout_no_approve lahir dari
-   db_migrate_LIVE_20261109_bank_post_tanpa_approval.sql. Sebelum berkas itu
-   dijalankan, halaman ini (dan formulir Create/Edit) akan galat karena
-   kolomnya belum ada.
+   Karena itu pula halaman ini TIDAK menyentuh bankin_no_approve /
+   bankout_no_approve, jadi tidak bergantung pada migrasi
+   db_migrate_LIVE_20261109_bank_post_tanpa_approval.sql - berbeda dgn
+   formulir Create/Edit-nya.
 
    TIDAK ADA KOLOM LAMA YANG DIBUANG ATAU DIGABUNG. Delapan kolom nama Inggris
    (Category 1-5 + Cash Flow Debit/Credit/Indirect) dulu dicetak sbg
@@ -77,15 +75,6 @@ $rs_hak = mysqli_fetch_array(mysqli_query($conn1,
 $group = isset($rs_hak['Groupp'])  ? $rs_hak['Groupp']  : '';
 $fin   = isset($rs_hak['finance']) ? $rs_hak['finance'] : '';
 
-/* Pil Y/N. Hurufnya dicetak apa adanya - termasuk kalau isinya ternyata bukan
-   'Y'/'N' - supaya yang terlihat benar-benar isi kolomnya. */
-function coa_pil_yn($nilai)
-{
-    $isi = strtoupper(trim((string) $nilai));
-    if ($isi === '') { return '<span class="coa-yn kosong">-</span>'; }
-    return '<span class="coa-yn ' . ($isi === 'Y' ? 'y' : 'n') . '">'
-         . htmlspecialchars($isi, ENT_QUOTES) . '</span>';
-}
 ?>
 <!-- Tiap berkas CSS ditaut sendiri dgn penanda versi dari filemtime, jadi
      perubahannya langsung sampai ke pemakai tanpa kena cache. -->
@@ -105,34 +94,11 @@ function coa_pil_yn($nilai)
   border-bottom: 1px solid rgba(30, 58, 138, .22) !important;
 }
 
-/* Kolom Y/N dibuat sesempit mungkin - isinya satu huruf. Judulnya dibiarkan
-   membelah dua baris; tanpa itu lebar kolomnya mengikuti JUDUL dan tabelnya
-   jadi ratusan piksel lebih lebar dari perlunya. */
-.coa-tbl th.col-yn { white-space: normal !important; max-width: 62px; line-height: 1.25; }
-.coa-tbl td.col-yn { text-align: center; }
-/* Judul "Petty Cash Code" juga dibiarkan membelah dua baris - isinya cuma
-   satu huruf, sedangkan judulnya sendiri 144px kalau dipaksa satu baris. */
-.coa-tbl th.col-kode { white-space: normal !important; max-width: 84px; line-height: 1.25; }
-
-/* Nilai Y/N: hurufnya tetap terbaca apa adanya, warnanya cuma membantu
-   memindai kolom - bukan menggantikan isinya. */
-.coa-yn {
-  display: inline-block; min-width: 22px; padding: 1px 6px; border-radius: 6px;
-  font-size: 11px; font-weight: 700; line-height: 1.5;
-}
-.coa-yn.y      { background: #dcfce7; color: #15803d; }
-.coa-yn.n      { background: #f1f5f9; color: #94a3b8; }
-.coa-yn.kosong { background: transparent; color: #cbd5e1; }
-
-/* Kode kas hanya satu huruf - monospace supaya sejajar antar baris. */
-.coa-tbl td.col-kode { text-align: center; font-family: ui-monospace, Menlo, Consolas, monospace;
-                       font-weight: 700; color: #0f172a; }
-
 /* Nomor & nama COA: jangkar baca di kolom paling kiri. */
 .coa-tbl td.col-coa  { white-space: nowrap; font-weight: 700; color: #1e3a8a; }
 .coa-tbl td.col-nama { text-align: left; }
 
-/* Tabel ini 19 kolom terlihat, jadi memang digulir ke samping (scrollX).
+/* Tabel ini 12 kolom terlihat, jadi memang digulir ke samping (scrollX).
    Isi sel TIDAK boleh membungkus: kalau membungkus, tinggi barisnya ikut
    melar dan 693 baris jadi tidak terbaca sekali pandang. */
 .coa-tbl td { white-space: nowrap; }
@@ -293,9 +259,6 @@ function coa_pil_yn($nilai)
                 <th colspan="4" class="grp">Category Cash Flow Direct</th>
                 <th rowspan="2">Category Cash Flow Indirect</th>
                 <th rowspan="2">Cash Flow Indirect (English)</th>
-                <th colspan="4" class="grp">Cost Center</th>
-                <th rowspan="2" class="col-kode">Petty Cash Code</th>
-                <th colspan="2" class="grp">Bank Approval</th>
                 <th rowspan="2">Status</th>
                 <th rowspan="2">Action</th>
               </tr>
@@ -304,22 +267,15 @@ function coa_pil_yn($nilai)
                 <th>Debit (English)</th>
                 <th>Credit</th>
                 <th>Credit (English)</th>
-                <th class="col-yn">Supp Gen &amp; Adm</th>
-                <th class="col-yn">Supp Production</th>
-                <th class="col-yn">Production</th>
-                <th class="col-yn">Supp Selling</th>
-                <th class="col-yn">Bank In</th>
-                <th class="col-yn">Bank Out</th>
               </tr>
             </thead>
 
             <tbody id="tbl_cf">
             <?php
-            /* Tujuh kolom baru ditambahkan ke daftar kolom subquery 'coa'.
-               Sisa querynya DIBIARKAN APA ADANYA - bentuk join bersarangnya
-               sama persis dgn ekspor_master_coa.php, dan keduanya memang
-               harus memberi baris yang sama. */
-            $sql = mysqli_query($conn1, "select * from ((select no_coa,id_direct_debit,id_direct_credit,id_indirect,nama_coa,id_ctg5,id_ctg2,status,support_gen_adm,support_prod,prod,support_sell,kode_cash,bankin_no_approve,bankout_no_approve from mastercoa_v2) coa INNER JOIN
+            /* Query DIBIARKAN APA ADANYA - bentuk join bersarangnya sama
+               persis dgn ekspor_master_coa.php, dan keduanya memang harus
+               memberi baris yang sama. */
+            $sql = mysqli_query($conn1, "select * from ((select no_coa,id_direct_debit,id_direct_credit,id_indirect,nama_coa,id_ctg5,id_ctg2,status from mastercoa_v2) coa INNER JOIN
 
 (select a.id_ctg5 as id_ctg5A,a.ind_name as indname5,a.eng_name as engname5, b.ind_name as indname4,b.eng_name as engname4, c.ind_name as indname3,c.eng_name as engname3, d.ind_name as indname2,d.eng_name as engname2, e.ind_name as indname1,e.eng_name as engname1 from master_coa_ctg5 a INNER JOIN master_coa_ctg4 b on b.id_ctg4 = a.id_ctg4 INNER JOIN master_coa_ctg3 c on c.id_ctg3 = a.id_ctg3 INNER JOIN master_coa_ctg2 d on d.id_ctg2 = a.id_ctg2 INNER JOIN master_coa_ctg1 e on e.id_ctg1 = a.id_ctg1 GROUP BY a.id_ctg5) a on a.id_ctg5A =coa.id_ctg5
 left join
@@ -340,7 +296,6 @@ left join
                 $engdircredit = isset($row['engdircredit']) ? $row['engdircredit'] : "NA";
                 $idnindir     = isset($row['idnindir'])     ? $row['idnindir']     : "NA";
                 $engindir     = isset($row['engindir'])     ? $row['engindir']     : "NA";
-                $kode_cash    = trim((string) $row['kode_cash']);
 
                 echo '<tr>
                 <td class="col-coa">' . htmlspecialchars($row['no_coa'], ENT_QUOTES) . '</td>
@@ -361,13 +316,6 @@ left join
                 <td>' . htmlspecialchars($engdircredit, ENT_QUOTES) . '</td>
                 <td>' . htmlspecialchars($idnindir, ENT_QUOTES) . '</td>
                 <td>' . htmlspecialchars($engindir, ENT_QUOTES) . '</td>
-                <td class="col-yn">' . coa_pil_yn($row['support_gen_adm']) . '</td>
-                <td class="col-yn">' . coa_pil_yn($row['support_prod']) . '</td>
-                <td class="col-yn">' . coa_pil_yn($row['prod']) . '</td>
-                <td class="col-yn">' . coa_pil_yn($row['support_sell']) . '</td>
-                <td class="col-kode">' . ($kode_cash === '' ? '<span class="coa-yn kosong">-</span>' : htmlspecialchars($kode_cash, ENT_QUOTES)) . '</td>
-                <td class="col-yn">' . coa_pil_yn($row['bankin_no_approve']) . '</td>
-                <td class="col-yn">' . coa_pil_yn($row['bankout_no_approve']) . '</td>
                 <td><span class="ftl-st ' . ($status === 'Active' ? 'is-approved' : 'is-cancel') . '">'
                     . htmlspecialchars($status, ENT_QUOTES) . '</span></td>';
 
@@ -511,27 +459,24 @@ function SidebarCollapse () {
 <script>
 $(document).ready(function () {
 
-  /* 27 kolom, 8 di antaranya nama Inggris yang tidak ditampilkan tapi TETAP
+  /* 20 kolom, 8 di antaranya nama Inggris yang tidak ditampilkan tapi TETAP
      ikut dicari (visible:false, sedangkan searchable tetap bawaannya: true).
      Nomor di bawah ini urutan kolom, dihitung dari 0:
 
-         0  No COA                  13  Debit (English)       *
-         1  COA Name                14  Credit
-         2  Category 1              15  Credit (English)      *
-         3  Category 1 (English)  * 16  Cash Flow Indirect
-         4  Category 2              17  Indirect (English)    *
-         5  Category 2 (English)  * 18  Supp Gen & Adm
-         6  Category 3              19  Supp Production
-         7  Category 3 (English)  * 20  Production
-         8  Category 4              21  Supp Selling
-         9  Category 4 (English)  * 22  Petty Cash Code
-        10  Category 5              23  Bank In
-        11  Category 5 (English)  * 24  Bank Out
-        12  Debit                   25  Status
-                                    26  Action
+         0  No COA                  10  Category 5
+         1  COA Name                11  Category 5 (English)  *
+         2  Category 1              12  Debit
+         3  Category 1 (English)  * 13  Debit (English)       *
+         4  Category 2              14  Credit
+         5  Category 2 (English)  * 15  Credit (English)      *
+         6  Category 3              16  Cash Flow Indirect
+         7  Category 3 (English)  * 17  Indirect (English)    *
+         8  Category 4              18  Status
+         9  Category 4 (English)  * 19  Action
 
-     scrollX WAJIB: 19 kolom terlihat tidak mungkin masuk satu layar, dan
-     tanpa kotak gulir sendiri DataTables akan memeras kolomnya. */
+     scrollX WAJIB: 12 kolom terlihat tidak muat satu layar (nama kategori &
+     cash flow panjang-panjang), dan tanpa kotak gulir sendiri DataTables
+     akan memeras kolomnya. */
   $('#datatable').DataTable({
     scrollX: true,
     order: [],               /* urutan apa adanya dari query */
@@ -539,7 +484,7 @@ $(document).ready(function () {
     lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
     columnDefs: [
       { targets: [3, 5, 7, 9, 11, 13, 15, 17], visible: false },
-      { targets: [26], orderable: false }
+      { targets: [19], orderable: false }
     ],
     language: { searchPlaceholder: 'Search COA...', search: '' }
   });
