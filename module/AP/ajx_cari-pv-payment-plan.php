@@ -169,9 +169,14 @@ $sql = "SELECT k.no_kbon, k.tgl_kbon, k.tgl_tempo, k.nama_supp,
            pembulatan antara utang di jurnal PV dan nilai yang dibayar, mis.
            PV-AP/REG/NAG/2026/07/01709 utang 15.494.094,41 dibayar BK
            15.494.094,40 - sisa 0,01 dulu membuatnya tetap muncul di sini
-           (10 Nov 2026). Sama dgn ajx_ap_projection_report.php. */
+           (10 Nov 2026). Sama dgn ajx_ap_projection_report.php.
+           SALDO NEGATIF BUKAN UTANG (12 Nov 2026): yang dipakai saldo_akhir
+           >= 1, bukan ABS(...) >= 1. Saldo minus artinya pembayarannya
+           MELEBIHI utangnya - tidak ada yang perlu dijadwalkan. Dulu ABS()
+           ikut menangkapnya, sehingga PV-AP/REG/NAG/2026/10/02574 (sisa
+           -1,66) tetap muncul di sini padahal di AP Report sudah lunas. */
         INNER JOIN (SELECT no_kbon FROM ($sqlOutstanding) o
-                    WHERE ABS(o.saldo_akhir) >= 1
+                    WHERE o.saldo_akhir >= 1
                     GROUP BY no_kbon) os
                ON os.no_kbon = k.no_kbon
         WHERE " . implode(' AND ', $where) . "

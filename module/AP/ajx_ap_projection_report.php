@@ -378,7 +378,10 @@ $eProyeksi = "COALESCE(p.plan_date, $awal, x.duedate)";
    -0,02; sampai 0,18), dan ROUND(saldo_akhir_idr,2) <> 0 yang dulu dipakai
    masih meloloskannya - voucher yang sudah lunas di AP Report tetap terbawa
    sbg "masih berutang" (10 Nov 2026, PV-AP/REG/NAG/2026/07/01709 & 01718).
-   Sama dgn penyaring di ajx_cari-pv-payment-plan.php. */
+   Sama dgn penyaring di ajx_cari-pv-payment-plan.php.
+   SALDO NEGATIF BUKAN UTANG (12 Nov 2026): dipakai saldo_akhir >= 1, bukan
+   ABS(...) >= 1 - saldo minus artinya pembayarannya melebihi utangnya, jadi
+   tidak ada yang perlu diproyeksikan. */
 $sqlLuar = "
     SELECT x.supplier, x.no_kbon, x.curr, x.relasi, x.item_type1,
            x.duedate, x.saldo_akhir, x.saldo_akhir_idr,
@@ -459,7 +462,7 @@ $sqlLuar = "
            ON s.Supplier = x.supplier
     LEFT JOIN $rencana p ON p.no_kbon = x.no_kbon
     $joinAwal
-    WHERE ABS(x.saldo_akhir) >= 1
+    WHERE x.saldo_akhir >= 1
       AND $eProyeksi BETWEEN '$fMulai' AND '$fAkhir'
     ORDER BY $eProyeksi ASC, x.supplier ASC, x.no_kbon ASC";
 
