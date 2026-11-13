@@ -68,15 +68,23 @@ $hanya_blm  = !(isset($_POST['hanya_belum']) && $_POST['hanya_belum'] === '0');
 /* Voucher yang sudah disetujui saja. Ejaan statusnya beragam di produksi
    ('Approved', 'FIRST APPROVED', 'SECOND APPROVED'), jadi didaftar tegas -
    bukan lewat LIKE '%APPROVE%' yang ikut menangkap kata lain. */
-$where = array("k.status IN ('Approved','FIRST APPROVED','SECOND APPROVED')");
+/* Tanggal voucher. TIDAK semua baris berasal dari kontrabon_h (lihat
+   keterangan panjang di bawah), jadi dibaca berurutan dari tiga
+   sumbernya - sama dgn laporan Proyeksi AP. */
+$eTglKbon = 'COALESCE(k.tgl_kbon, sa.tgl_kbon, ki.tgl_kbon)';
+
+/* Status hanya dimiliki baris kontrabon_h. Baris cicilan & saldo awal
+   tidak punya kolom itu, dan sudah lolos saringan "masih outstanding"
+   milik AP Report - itu patokan yang sebenarnya. */
+$where = array("(k.no_kbon IS NULL OR k.status IN ('Approved','FIRST APPROVED','SECOND APPROVED'))");
 
 if ($start_date !== '' && $end_date !== '') {
-    $kolom = ($dasar === 'kbon') ? 'k.tgl_kbon' : 'k.tgl_tempo';
+    $kolom = ($dasar === 'kbon') ? $eTglKbon : 'x.duedate';
     $where[] = $kolom . " BETWEEN '" . mysqli_real_escape_string($conn1, $start_date)
              . "' AND '" . mysqli_real_escape_string($conn1, $end_date) . "'";
 }
 if ($supplier !== '') {
-    $where[] = "k.nama_supp = '" . mysqli_real_escape_string($conn1, $supplier) . "'";
+    $where[] = "x.supplier = '" . mysqli_real_escape_string($conn1, $supplier) . "'";
 }
 if ($hanya_blm) {
     $where[] = "p.no_kbon IS NULL";
@@ -136,12 +144,52 @@ chdir($dirAsal);
 $_POST = $simpanPost;
 $where = $whereSaya;
 
-$sql = "SELECT k.no_kbon, k.tgl_kbon, k.tgl_tempo, k.nama_supp,
-               k.curr, k.rate, k.total, k.tax, IFNULL(k.pph_idr, 0) AS pph, k.no_coa,
+/* ---------------------------------------------------------------------------
+   DAFTARNYA DIBANGUN DARI SISI "MASIH OUTSTANDING", BUKAN DARI kontrabon_h.
+
+   Sampai 12 Nov 2026 query ini berjalan FROM kontrabon_h lalu menyaring
+   dgn daftar outstanding. Akibatnya voucher yang TIDAK punya baris di
+   kontrabon_h tidak pernah muncul di layar ini sama sekali - padahal
+   utangnya ada dan di AP Report maupun laporan Proyeksi AP terbaca.
+   Dilaporkan pemakai: nomor CICILAN tidak ada di menu ini.
+
+   Diperiksa ke produksi: dari 326 voucher outstanding, hanya 191 yang ada
+   di kontrabon_h. Sisanya 29 baris cicilan (Rp 1,71 M) dan 106 baris saldo
+   awal (Rp 6,16 M, 70 di antaranya BELUM jatuh tempo) - semuanya hilang.
+
+   Sekarang dibalik: FROM daftar outstanding, lalu tiga sumber nilainya
+   ditempel sbg LEFT JOIN. Susunannya MENIRU ajx_ap_projection_report.php
+   supaya dua layar yang memakai patokan sama tidak lagi berbeda isi.
+
+   Semua cadangan DIKELOMPOKKAN DULU (GROUP BY): tabel sumbernya bisa
+   memuat lebih dari satu baris untuk satu nomor, dan LEFT JOIN mentah akan
+   MENGGANDAKAN baris di layar. Daftar outstanding-nya sendiri sudah satu
+   baris per nomor (dicek ke produksi: 326 baris, 326 nomor berbeda).
+   --------------------------------------------------------------------------- */
+$sql = "SELECT x.no_kbon,
+               $eTglKbon                                    AS tgl_kbon,
+               x.duedate                                    AS tgl_tempo,
+               x.supplier                                   AS nama_supp,
+               x.curr,
+               COALESCE(k.total,   sa.total, ins.total, 0)  AS total,
+               COALESCE(k.tax,     sa.tax,   ins.ppn,   0)  AS tax,
+               COALESCE(k.pph_idr, sa.pph,   ins.pph,   0)  AS pph,
+               /* Lima kolom berikut hanya dimiliki kontrabon_h - untuk baris
+                  cicilan & saldo awal memang kosong, dan di modal rincian
+                  tampil sbg tanda hubung. */
                k.status, k.create_user, k.no_faktur, k.supp_inv, k.tgl_inv,
-               DATEDIFF(k.tgl_tempo, k.tgl_kbon) AS term,
-               UPPER(IFNULL(c.relasi, ''))     AS relasi,
-               UPPER(IFNULL(c.item_type1, '')) AS item_type,
+               /* PAYMENT TERM = TOP menurut PO, sama untuk semua cicilan satu
+                  dokumen - bukan jarak hari ke jatuh tempo cicilan itu. Urutan
+                  cadangannya disamakan dgn laporan Proyeksi AP. */
+               COALESCE(DATEDIFF(k.tgl_tempo,   k.tgl_kbon),
+                        DATEDIFF(ind.tgl_tempo, ind.tgl_kbon),
+                        ins.top,
+                        DATEDIFF(sa.tgl_tempo,  sa.tgl_kbon))  AS term,
+               /* Relationship & Item Type diambil dari daftar outstanding-nya
+                  langsung - di sana sudah disambung ke mastercoa_v2, jadi
+                  sumbernya persis sama dgn AP Report. */
+               UPPER(IFNULL(x.relasi, ''))     AS relasi,
+               UPPER(IFNULL(x.item_type1, '')) AS item_type,
                IFNULL(s.payment_rating, '')    AS flexibility,
                p.plan_date, p.doc_number,
                /* RENCANA AWAL - Kamis di minggu Minggu-Sabtu milik jatuh
@@ -151,21 +199,50 @@ $sql = "SELECT k.no_kbon, k.tgl_kbon, k.tgl_tempo, k.nama_supp,
                   DAYOFWEEK: 1=Minggu, Kamis=5, jadi selisihnya 5-DAYOFWEEK
                   (negatif untuk Jumat & Sabtu - memang begitu maunya). */
                COALESCE(pa.plan_awal,
-                        DATE_ADD(k.tgl_tempo, INTERVAL (5 - DAYOFWEEK(k.tgl_tempo)) DAY)) AS plan_awal
-        FROM kontrabon_h k
-        LEFT JOIN mastercoa_v2 c   ON c.no_coa = k.no_coa
+                        DATE_ADD(x.duedate, INTERVAL (5 - DAYOFWEEK(x.duedate)) DAY)) AS plan_awal
+        FROM ($sqlOutstanding) x
+
+        /* 1. voucher biasa */
+        LEFT JOIN kontrabon_h k ON k.no_kbon = x.no_kbon
+
+        /* DOKUMEN INDUK dari sebuah baris cicilan, dipakai kolom Payment Term.
+           DUA bentuk sufiks yang hidup berdampingan:
+             'SI/APR/NAG/2025/12/02515 - 10'  (spasi-strip-spasi, dokumen lama
+                                               & baris saldo awal)
+             'PV-AP/INS/NAG/2026/08/00001-001' (strip + tiga angka, cicilan baru)
+           Nomor yang bukan cicilan menunjuk dirinya sendiri, jadi join ini tidak
+           pernah mengubah apa pun untuk baris biasa. Sufiks revisi '-REV_01'
+           sengaja TIDAK dipotong - itu dokumen tersendiri, bukan cicilan. */
+        LEFT JOIN kontrabon_h ind ON ind.no_kbon =
+            CASE WHEN x.no_kbon LIKE '% - %'
+                      THEN SUBSTRING_INDEX(x.no_kbon, ' - ', 1)
+                 WHEN x.no_kbon REGEXP '-[0-9]{3}$'
+                      THEN LEFT(x.no_kbon, CHAR_LENGTH(x.no_kbon) - 4)
+                 ELSE x.no_kbon END
+
+        /* 2. saldo awal (utang pembukaan per 30 Jun 2026) */
+        LEFT JOIN (SELECT no_kbon, MAX(tgl_kbon) AS tgl_kbon, MAX(tgl_tempo) AS tgl_tempo,
+                          MAX(tax) AS tax, MAX(pph) AS pph, MAX(total) AS total
+                   FROM ap_saldo_payment_voucher GROUP BY no_kbon) sa
+               ON sa.no_kbon = x.no_kbon
+
+        /* 3. cicilan - nomor anak spt PV-AP/INS/.../00001-002 */
+        LEFT JOIN (SELECT no_kbon_det, MAX(no_kbon) AS induk, MAX(top) AS top,
+                          SUM(ppn) AS ppn, SUM(pph) AS pph, SUM(total) AS total
+                   FROM kontrabon_h_installment_detail GROUP BY no_kbon_det) ins
+               ON ins.no_kbon_det = x.no_kbon
+        LEFT JOIN kontrabon_h ki ON ki.no_kbon = ins.induk
+
         /* mastersupplier DIKELOMPOKKAN DULU: tabelnya bisa memuat lebih dari
            satu baris untuk satu nama supplier (mis. 'PT. OBOR MAJU JAYA'
            punya dua), dan LEFT JOIN mentah MENGGANDAKAN baris voucher. */
         LEFT JOIN (SELECT Supplier, MAX(payment_rating) AS payment_rating
                    FROM mastersupplier GROUP BY Supplier) s
-               ON s.Supplier = k.nama_supp
-        LEFT JOIN $rencana p       ON p.no_kbon = k.no_kbon
-        LEFT JOIN ap_payment_plan_awal pa ON pa.no_kbon = k.no_kbon
-        /* Penyaring outstanding. GROUP BY-nya penjaga: kalau suatu saat
-           query AP Report menghasilkan lebih dari satu baris per voucher,
-           daftar di sini tetap tidak menggandakan barisnya.
-           Sisa di bawah 1 (mata uang dokumen) dianggap LUNAS: itu pecahan
+               ON s.Supplier = x.supplier
+        LEFT JOIN $rencana p              ON p.no_kbon = x.no_kbon
+        LEFT JOIN ap_payment_plan_awal pa ON pa.no_kbon = x.no_kbon
+
+        /* Sisa di bawah 1 (mata uang dokumen) dianggap LUNAS: itu pecahan
            pembulatan antara utang di jurnal PV dan nilai yang dibayar, mis.
            PV-AP/REG/NAG/2026/07/01709 utang 15.494.094,41 dibayar BK
            15.494.094,40 - sisa 0,01 dulu membuatnya tetap muncul di sini
@@ -175,12 +252,8 @@ $sql = "SELECT k.no_kbon, k.tgl_kbon, k.tgl_tempo, k.nama_supp,
            MELEBIHI utangnya - tidak ada yang perlu dijadwalkan. Dulu ABS()
            ikut menangkapnya, sehingga PV-AP/REG/NAG/2026/10/02574 (sisa
            -1,66) tetap muncul di sini padahal di AP Report sudah lunas. */
-        INNER JOIN (SELECT no_kbon FROM ($sqlOutstanding) o
-                    WHERE o.saldo_akhir >= 1
-                    GROUP BY no_kbon) os
-               ON os.no_kbon = k.no_kbon
-        WHERE " . implode(' AND ', $where) . "
-        ORDER BY k.tgl_tempo ASC, k.no_kbon ASC";
+        WHERE x.saldo_akhir >= 1 AND " . implode(' AND ', $where) . "
+        ORDER BY x.duedate ASC, x.no_kbon ASC";
 
 $res = mysqli_query($conn1, $sql);
 if ($res === false) {

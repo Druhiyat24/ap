@@ -15,10 +15,12 @@
    ap_payment_plan_det.plan_date - yaitu tanggal PER BARIS - jadi yang
    menentukan di situ memang tanggal barisnya, bukan tanggal kepalanya.
 
-   Voucher yang nomornya tidak ada di kontrabon_h atau vouchernya belum
-   disetujui DITOLAK - supaya dokumen rencana tidak memuat nomor karangan
-   yang nanti tidak bisa dipasangkan ke laporan proyeksi. Yang ditolak
-   dikembalikan lewat 'ditolak', bukan membatalkan seluruh dokumen.
+   Voucher yang nomornya tidak ketemu di SALAH SATU dari tiga sumbernya
+   (kontrabon_h, ap_saldo_payment_voucher, kontrabon_h_installment_detail)
+   atau vouchernya belum disetujui DITOLAK - supaya dokumen rencana tidak
+   memuat nomor karangan yang nanti tidak bisa dipasangkan ke laporan
+   proyeksi. Yang ditolak dikembalikan lewat 'ditolak', bukan membatalkan
+   seluruh dokumen.
 
    Voucher yang SUDAH punya rencana aktif dulu ikut ditolak. Sejak
    9 Nov 2026 tidak lagi: rencananya boleh diubah selama vouchernya masih
@@ -117,18 +119,42 @@ foreach ($baris as $b) {
     if ($no_kbon === '') { continue; }
     $no_esc = mysqli_real_escape_string($conn1, $no_kbon);
 
-    /* Nomornya harus ada di kontrabon_h dan vouchernya sudah disetujui -
-       sama dgn penyaring daftarnya, supaya tidak ada yang bisa menjadwalkan
-       voucher batal lewat permintaan yang dirakit sendiri. Nilai & mata
-       uangnya diambil dari tabelnya, bukan dari kiriman halaman. */
-    $cek = mysqli_query($conn1, "SELECT curr, total FROM kontrabon_h
-            WHERE no_kbon = '$no_esc'
-              AND status IN ('Approved','FIRST APPROVED','SECOND APPROVED') LIMIT 1");
-    if (!$cek || !mysqli_num_rows($cek)) {
+    /* Nomornya harus benar-benar ada dan vouchernya sudah disetujui - supaya
+       tidak ada yang bisa menjadwalkan voucher batal lewat permintaan yang
+       dirakit sendiri. Nilai & mata uangnya diambil dari tabelnya, BUKAN dari
+       kiriman halaman.
+
+       TIGA SUMBER, sama dgn daftarnya di ajx_cari-pv-payment-plan.php
+       (12 Nov 2026). Dulu di sini hanya kontrabon_h, jadi baris CICILAN dan
+       SALDO AWAL - yang sejak hari itu ikut tampil di layar - pasti ditolak
+       waktu Save dgn pesan 'voucher not found or not approved'.
+
+       Mata uang cicilan diambil dari dokumen INDUKNYA: tabel cicilan tidak
+       punya kolom curr (dicek ke produksi: 31 dari 31 baris cicilan induknya
+       ada di kontrabon_h, jadi tidak ada yang kehilangan mata uang). */
+    $cek = mysqli_query($conn1, "SELECT COALESCE(k.curr, sa.curr, ki.curr)        AS curr,
+                   COALESCE(k.total, sa.total, ins.total, 0)  AS total,
+                   k.no_kbon AS ada_voucher, sa.no_kbon AS ada_saldo_awal,
+                   ins.no_kbon_det AS ada_cicilan
+            FROM (SELECT '$no_esc' AS no_kbon) z
+            LEFT JOIN kontrabon_h k
+                   ON k.no_kbon = z.no_kbon
+                  AND k.status IN ('Approved','FIRST APPROVED','SECOND APPROVED')
+            LEFT JOIN (SELECT no_kbon, MAX(curr) AS curr, MAX(total) AS total
+                       FROM ap_saldo_payment_voucher
+                       WHERE status IN ('Approved','FIRST APPROVED','SECOND APPROVED')
+                       GROUP BY no_kbon) sa
+                   ON sa.no_kbon = z.no_kbon
+            LEFT JOIN (SELECT no_kbon_det, MAX(no_kbon) AS induk, SUM(total) AS total
+                       FROM kontrabon_h_installment_detail GROUP BY no_kbon_det) ins
+                   ON ins.no_kbon_det = z.no_kbon
+            LEFT JOIN kontrabon_h ki ON ki.no_kbon = ins.induk LIMIT 1");
+    $v = $cek ? mysqli_fetch_assoc($cek) : null;
+    if (!$v || ($v['ada_voucher'] === null && $v['ada_saldo_awal'] === null
+                && $v['ada_cicilan'] === null)) {
         $ditolak[] = $no_kbon . ' (voucher not found or not approved)';
         continue;
     }
-    $v = mysqli_fetch_assoc($cek);
 
     /* Satu voucher hanya boleh punya SATU rencana aktif. Dulu penjaganya
        cuma di tampilan: formulirnya menyaring voucher yang sudah punya
