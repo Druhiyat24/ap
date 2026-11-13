@@ -452,7 +452,12 @@ try {
 				} elseif ($type_pv === 'CBD') {
 					$sqlpph = q($conn2, "SELECT no_coa, nama_coa FROM mtax WHERE idtax = (SELECT MAX(idtax) FROM kontrabon_cbd WHERE no_kbon = '$no_kbon_esc')");
 				} else {
-					$sqlpph = q($conn2, "SELECT no_coa, nama_coa FROM mtax WHERE idtax = (SELECT MAX(idtax) FROM kontrabon WHERE no_kbon = '$no_kbon_esc')");
+					// akun PPh: hanya pajak kategori PPH. idtax yang terisi persentase (bug edit PV s/d 13 Nov 2026,
+                    // mis. 2 = PPN Penjualan 2.52.03) diabaikan -> dicari dari persentase PPh (pph_code).
+                    $sqlpph = q($conn2, "SELECT m.no_coa, m.nama_coa FROM kontrabon k INNER JOIN mtax m ON m.idtax = k.idtax AND m.category_tax = 'PPH' WHERE k.no_kbon = '$no_kbon_esc' ORDER BY k.idtax DESC LIMIT 1");
+                    if (mysqli_num_rows($sqlpph) == 0) {
+                        $sqlpph = q($conn2, "SELECT no_coa, nama_coa FROM mtax WHERE category_tax = 'PPH' AND percentage = (SELECT MAX(CAST(pph_code AS DECIMAL(10,4))) FROM kontrabon WHERE no_kbon = '$no_kbon_esc') ORDER BY idtax DESC LIMIT 1");
+                    }
 				}
 				$rowpph = mysqli_fetch_assoc($sqlpph);
 				$no_coa_pph  = mysqli_real_escape_string($conn2, $rowpph['no_coa'] ?? '');

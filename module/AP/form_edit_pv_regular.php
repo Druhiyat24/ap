@@ -286,6 +286,17 @@ if ($pf_pc !== '') {
 
 
                                 while($row = mysqli_fetch_array($sql)){
+                                    // PPh baris ini: data-idtax WAJIB id pajak (mtax.idtax), bukan pph_code (=persentase).
+                                    // Baris yang pernah diedit sebelum 13 Nov 2026 bisa ber-idtax = persentase
+                                    // (mis. 2 = PPN Penjualan) -> dicari ulang dari pajak PPH dgn persentase sama.
+                                    $idtaxRow = 0; $persenRow = $row['percentage']; $kriteriaRow = $row['kriteria'];
+                                    if ($row['pph_code'] != 0) {
+                                        $cekPph = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT idtax, kriteria, percentage FROM mtax WHERE category_tax = 'PPH' AND idtax = '".$row['idtax']."'"));
+                                        if (!$cekPph) {
+                                            $cekPph = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT idtax, kriteria, percentage FROM mtax WHERE category_tax = 'PPH' AND percentage = '".(float)$row['pph_code']."' ORDER BY idtax DESC LIMIT 1"));
+                                        }
+                                        if ($cekPph) { $idtaxRow = $cekPph['idtax']; $persenRow = $cekPph['percentage']; $kriteriaRow = $cekPph['kriteria']; }
+                                    }
                                     // $bpb = $row['no_bpb'];
                                     // $id_supplier = $row['id_supplier'];
                                     // $pono = isset($row['pono']) ? $row['pono'] : null;
@@ -300,7 +311,7 @@ if ($pf_pc !== '') {
                                    <td class="dt_tax" style="width:100px;text-align:right;" data-tax="'.$row['tax'].'">'.number_format($row['tax'],2).'</td>
                                    <td style="width:120px;">
                                    <select name="combo_pph_edit" class="combo_pph_edit form-control form-control-sm" style="width:100%;min-width:110px;">
-                                   <option data-idtax="'.$row['pph_code'].'" value="'.$row['percentage'].'">'.$row['kriteria'].'</option>';
+                                   <option data-idtax="'.$idtaxRow.'" value="'.$persenRow.'">'.$kriteriaRow.'</option>';
                                    if ($row['pph_code'] != 0) {
                                        echo '<option data-idtax="0" value="0">Non PPH</option>';
                                    }
@@ -310,7 +321,7 @@ if ($pf_pc !== '') {
                                     "SELECT idtax, kriteria, percentage 
                                     FROM mtax 
                                     WHERE category_tax = 'PPH' 
-                                    AND idtax != '".$row['idtax']."'"
+                                    AND idtax != '".$idtaxRow."'"
                                 );
 
                                    while ($tax = mysqli_fetch_assoc($sql_tax)) {

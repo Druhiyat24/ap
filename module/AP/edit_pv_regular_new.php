@@ -488,9 +488,11 @@ foreach ($__banks as $b) {
                                 $no_bpb = isset($rows['no_bpb']) ?  $rows['no_bpb'] : null;
 
 
-                                $q = mysqli_query($conn1,"select idtax, kriteria, percentage from mtax where category_tax = 'PPH'");
+                                $q = mysqli_query($conn1,"select idtax, kriteria, percentage from mtax where category_tax = 'PPH' order by idtax");
+                                $pphList = [];   // idtax => kriteria & persen, dipakai juga utk membetulkan baris lama
                                 while($rs = mysqli_fetch_array($q)){
                                     $persen .= '<option data-idtax="'.$rs['idtax'].'" value="'.$rs['percentage'].'">'.$rs['kriteria'].'</option>';
+                                    $pphList[$rs['idtax']] = ['kriteria' => $rs['kriteria'], 'percentage' => $rs['percentage']];
                                 }
 
                                 // ============================================================
@@ -517,7 +519,17 @@ foreach ($__banks as $b) {
                                     if ((int)$rx['pph_code'] == 0 && (float)$rx['percentage'] == 0) {
                                         $comboEx = '<option data-idtax="0" value="0" selected="selected">Non PPH</option>'.$persen;
                                     } else {
-                                        $comboEx = '<option data-idtax="'.$rx['pph_code'].'" value="'.$rx['percentage'].'" selected="selected">'.$rx['kriteria'].'</option><option data-idtax="0" value="0">Non PPH</option>'.$persen;
+                                        // data-idtax WAJIB id pajak (mtax.idtax), bukan pph_code (=persentase).
+                                        // Baris yang pernah diedit sebelum 13 Nov 2026 bisa ber-idtax = persentase
+                                        // (mis. 2 = PPN Penjualan) -> dicari ulang dari pajak PPH dgn persentase sama.
+                                        $idtaxEx = $rx['idtax'];
+                                        if (!isset($pphList[$idtaxEx])) {
+                                            foreach ($pphList as $idp => $p) {
+                                                if ((float)$p['percentage'] == (float)$rx['pph_code']) { $idtaxEx = $idp; }
+                                            }
+                                        }
+                                        $pphEx = isset($pphList[$idtaxEx]) ? $pphList[$idtaxEx] : ['kriteria' => $rx['kriteria'], 'percentage' => $rx['pph_code']];
+                                        $comboEx = '<option data-idtax="'.$idtaxEx.'" value="'.$pphEx['percentage'].'" selected="selected">'.$pphEx['kriteria'].'</option><option data-idtax="0" value="0">Non PPH</option>'.$persen;
                                     }
                                     echo '<tr data-nofaktur="'.htmlspecialchars($__no_fk_bpb, ENT_QUOTES).'" data-tglfaktur="'.htmlspecialchars($tgl_fk_bpb, ENT_QUOTES).'">
                                     <td style="width:10px;"><input type="checkbox" class="chkA" id="select" name="select[]" value="" checked></td>
