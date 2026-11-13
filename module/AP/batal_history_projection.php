@@ -43,6 +43,16 @@ if ($userLogin === '') {
 $eDoc  = mysqli_real_escape_string($conn2, $doc);
 $eUser = mysqli_real_escape_string($conn2, $userLogin);
 
+// Hak Cancel diatur di menu User Role ("AP History Projection - Cancel").
+// Dicek di sini juga, bukan cuma tombolnya yang disembunyikan.
+$hak = mysqli_query($conn2, "SELECT 1 FROM useraccess WHERE username = '$eUser'
+                             AND menu = 'AP History Projection - Cancel' LIMIT 1");
+if (!$hak || mysqli_num_rows($hak) === 0) {
+    bhpJawab(array('status' => 'error',
+        'message' => 'You do not have access to cancel History Projection documents. '
+                   . 'Ask the admin to enable "AP History Projection - Cancel" in User Role.'));
+}
+
 /* Tabel arsipnya BOLEH BELUM ADA - migrasinya dijalankan terpisah di
    produksi. Tanpa penjaga ini, Cancel akan MENGHAPUS tanpa sempat
    mengarsipkan, dan itu kehilangan data yang tidak bisa dikembalikan. */

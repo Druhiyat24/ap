@@ -20,6 +20,12 @@
    Susunan & kosakatanya mengikuti ap_projection_report.php.
    ============================================================================ */
 include '../header.php';
+
+// tombol Cancel hanya utk user yg diberi hak "AP History Projection - Cancel" di menu User Role
+$hpjUser = mysqli_real_escape_string($conn2, isset($_SESSION['username']) ? $_SESSION['username'] : '');
+$hpjHak  = mysqli_query($conn2, "SELECT 1 FROM useraccess WHERE username = '$hpjUser'
+                                 AND menu = 'AP History Projection - Cancel' LIMIT 1");
+$bolehCancel = ($hpjHak && mysqli_num_rows($hpjHak) > 0);
 ?>
 
 <link rel="stylesheet" href="../css/app-skin-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-skin-form.css'); ?>">
@@ -240,6 +246,9 @@ include '../header.php';
 </script>
 
 <script>
+// hak tombol Cancel (dari User Role: "AP History Projection - Cancel")
+var BOLEH_CANCEL = <?php echo $bolehCancel ? 'true' : 'false'; ?>;
+
 $(document).ready(function () {
 
   $('.tanggal').datepicker({ format: 'dd-mm-yyyy', autoclose: true });
@@ -312,9 +321,12 @@ $(document).ready(function () {
                + '<button type="button" class="app-btn app-btn-success app-btn-sm hpj-realisasi"'
                + ' data-doc="' + lolos(row.doc_number) + '">'
                + '<i class="fa fa-balance-scale" aria-hidden="true"></i> Realization</button>'
-               + '<button type="button" class="app-btn app-btn-danger app-btn-sm hpj-batal"'
-               + ' data-doc="' + lolos(row.doc_number) + '">'
-               + '<i class="fa fa-ban" aria-hidden="true"></i> Cancel</button>'
+               // Cancel hanya muncul kalau user punya hak (User Role)
+               + (BOLEH_CANCEL
+                  ? '<button type="button" class="app-btn app-btn-danger app-btn-sm hpj-batal"'
+                    + ' data-doc="' + lolos(row.doc_number) + '">'
+                    + '<i class="fa fa-ban" aria-hidden="true"></i> Cancel</button>'
+                  : '')
                + '</span>';
         };
       } else if (KOLOM_DAFTAR[a].data === 'type') {
