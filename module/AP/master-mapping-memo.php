@@ -8,7 +8,7 @@
 
         <form id="form-data" action="master-mapping-memo.php" method="post">        
         <div class="form-row">
-            <div class="col-md-4">
+            <div class="col-md-4 app-kol-sedang">
             <label for="nama_supp"><b>Category Name</b></label>            
               <select class="form-control selectpicker" name="nama_ctg" id="nama_ctg" data-dropup-auto="false" data-live-search="true">
                 <option value="ALL" selected="true">ALL</option>                                                
@@ -31,7 +31,7 @@
                 </select>
                 </div>
 
-                <div class="col-md-2">
+                <div class="col-md-2 app-kol-pendek">
             <label for="status"><b>Status</b></label>            
               <select class="form-control selectpicker" name="status" id="status" data-dropup-auto="false" data-live-search="true">
                 <option value="ALL" selected="true">ALL</option>                                                
@@ -61,7 +61,7 @@
                 </select>
                 </div> -->
 
-            <div class="input-group-append col">                                   
+            <div class="input-group-append col app-kol-tombol">                                   
             <button type="submit" id="submit" value=" Search " style="margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
     line-height: 2;
     padding: -2px 8px;
@@ -121,7 +121,7 @@
             <div class="col-md-12">
 
             
-<table id="datatable" class="table table-striped table-bordered" role="grid" cellspacing="0" width="100%">
+<table id="datatable" class="table table-striped table-bordered tbl-gaya-ppn" role="grid" cellspacing="0" width="100%">
     <thead>
         <tr class="thead-dark">
             <th style="text-align: center;vertical-align: middle;width: 10%;">ID Category</th>

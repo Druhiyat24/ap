@@ -8,7 +8,7 @@
 
         <form id="form-data" action="master-bank.php" method="post">        
         <div class="form-row">
-            <div class="col-md-4">
+            <div class="col-md-4 app-kol-sedang">
             <label for="nama_supp"><b>Bank</b></label>            
               <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true">
                 <option value="ALL" selected="true">ALL</option>                                                
@@ -30,7 +30,7 @@
                 </select>
                 </div>
 
-            <div class="col-md-3">
+            <div class="col-md-3 app-kol-pendek">
             <label for="status"><b>Currency</b></label>            
               <select class="form-control selectpicker" name="curren" id="curren" data-dropup-auto="false" data-live-search="true">
                 <option value="ALL" <?php
@@ -75,7 +75,7 @@
                 </select>
                 </div>
 
-                <div class="col-md-3">
+                <div class="col-md-3 app-kol-pendek">
             <label for="status"><b>Status</b></label>            
               <select class="form-control selectpicker" name="status" id="status" data-dropup-auto="false" data-live-search="true">
                 <option value="ALL" <?php
@@ -120,7 +120,7 @@
                 </select>
                 </div>
 
-            <div class="input-group-append col">                                   
+            <div class="input-group-append col app-kol-tombol">                                   
             <button type="submit" id="submit" value=" Search " style="margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
     line-height: 1;
     padding: -2px 8px;
@@ -130,15 +130,18 @@
     text-shadow: 1px 1px 1px #000;
     border-radius: 6px;
     background-color: rgb(46, 139, 87);"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
-            <button type="button" id="reset" value=" Reset " style="margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
-    line-height: 1;
-    padding: -2px 8px;
-    font-size: 1rem;
-    text-align: center;
-    color: #fff;
-    text-shadow: 1px 1px 1px #000;
-    border-radius: 6px;
-    background-color:rgb(250, 69, 1)"><i class="fa fa-repeat" aria-hidden="true"></i> Reset </button>
+    <?php
+        // tombol Create (dulu di bawah saringan) dipindah ke barisan tombol, pengganti Reset
+        $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create Bank'");
+        $rs = mysqli_fetch_array($querys);
+        $id = isset($rs['id']) ? $rs['id'] : 0;
+
+        if($id == '37'){
+    echo '<button id="btncreate" type="button" class="btn btn-primary" style="margin-top: 30px; margin-bottom: 5px; margin-right: 15px;"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Create</button>';
+        }else{
+    echo '';
+    }
+?>
 
 <!--     <?php
         $status = isset($_POST['status']) ? $_POST['status']: null;
@@ -163,24 +166,13 @@
 </div>
 </form> 
 
-<?php
-        $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create Bank'");
-        $rs = mysqli_fetch_array($querys);
-        $id = isset($rs['id']) ? $rs['id'] : 0;
-
-        if($id == '37'){
-    echo '<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>';
-        }else{
-    echo '';
-    }
-?>
     </div>
     <div class="box body">
         <div class="row">       
             <div class="col-md-12">
 
             
-<table id="datatable" class="table table-striped table-bordered" role="grid" cellspacing="0" width="100%">
+<table id="datatable" class="table table-striped table-bordered tbl-gaya-ppn" role="grid" cellspacing="0" width="100%">
     <thead>
         <tr class="thead-dark">
             <th style="text-align: center;vertical-align: middle;">Doc Number</th>
@@ -455,12 +447,6 @@ $(function() {
     location.href = "create-master-bank.php";
 };
 </script>
-<script type="text/javascript">
-    document.getElementById('reset').onclick = function () {
-    location.href = "master-bank.php";
-};
-</script>
-
 <script>
 function alert_cancel() {
   alert("Master Bank Deactive");

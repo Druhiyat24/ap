@@ -222,11 +222,8 @@ $fin   = isset($rs_hak['finance']) ? $rs_hak['finance'] : '';
             <button type="submit" class="app-btn app-btn-primary app-btn-sm">
               <i class="fa fa-search" aria-hidden="true"></i> Search
             </button>
-            <button type="button" id="reset" class="app-btn app-btn-light app-btn-sm">
-              <i class="fa fa-repeat" aria-hidden="true"></i> Reset
-            </button>
             <a target="_blank" href="<?php echo htmlspecialchars($taut_excel, ENT_QUOTES); ?>"
-               class="app-btn app-btn-excel app-btn-sm">
+               class="app-btn app-btn-success app-btn-sm">
               <i class="fa fa-file-excel-o" aria-hidden="true"></i> Excel
             </a>
             <button id="btncreate" type="button" class="app-btn app-btn-dark app-btn-sm">
@@ -241,7 +238,7 @@ $fin   = isset($rs_hak['finance']) ? $rs_hak['finance'] : '';
     <div class="ftl-body">
       <form id="formdata2">
         <div class="ftl-tblwrap">
-          <table id="datatable" class="table ftl-tbl coa-tbl" role="grid" cellspacing="0" style="width:100%;">
+          <table id="datatable" class="table ftl-tbl coa-tbl tbl-gaya-ppn" role="grid" cellspacing="0" style="width:100%;">
             <thead>
               <tr>
                 <th rowspan="2">No COA</th>
@@ -564,11 +561,6 @@ $(document).ready(function () {
 <script type="text/javascript">
     document.getElementById('btncreate').onclick = function () {
     location.href = "create-master-coa.php";
-};
-</script>
-<script type="text/javascript">
-    document.getElementById('reset').onclick = function () {
-    location.href = "master-coa.php";
 };
 </script>
 

@@ -29,12 +29,14 @@
 
         <form id="form-data" action="master-coa-category2.php" method="post">
         <div class="form-row">    
-        <div style="padding-left: 10px;" class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
-            <button style="border-radius: 3px" id="btnctg1" type="button" class="btn-secondary btn-xs"><span></span> Category 1</button>
-            <button style="border-radius: 3px" id="btnctg2" type="button" class="btn-primary btn-xs"><span></span> Category 2</button>
-            <button style="border-radius: 3px" id="btnctg3" type="button" class="btn-secondary btn-xs"><span></span> Category 3</button>
-            <button style="border-radius: 3px" id="btnctg4" type="button" class="btn-secondary btn-xs"><span></span> Category 4</button>
-            <button style="border-radius: 3px" id="btnctg5" type="button" class="btn-secondary btn-xs"><span></span> Category 5</button>
+        <div style="padding-left: 5px;">
+        <div class="app-tab-halaman" role="tablist" aria-label="COA category level">
+            <button id="btnctg1" type="button" class="app-tab">Category 1</button>
+            <button id="btnctg2" type="button" class="app-tab aktif" aria-current="page">Category 2</button>
+            <button id="btnctg3" type="button" class="app-tab">Category 3</button>
+            <button id="btnctg4" type="button" class="app-tab">Category 4</button>
+            <button id="btnctg5" type="button" class="app-tab">Category 5</button>
+        </div>
 
         </div>
         <!-- <div class="btn-group" role="group">
@@ -52,7 +54,7 @@
     </div>
         <div class="form-row" style="padding-top: 5px;"> 
 
-                <div class="col-md-4">
+                <div class="col-md-4 app-kol-lebar">
             <label for="nama_group"><b>Category Name</b></label>            
               <select style="background-color: gray;" class="form-control select2bs4" name="id_ctg2" id="id_ctg2" required>
                 <option value="ALL" selected="true">ALL</option>   
@@ -75,7 +77,7 @@
                 </select>
                 </div>
 
-            <div class="input-group-append col">                                   
+            <div class="input-group-append col app-kol-tombol">                                   
             <button  type="submit" id="submit" value=" Search " style="height: 35px; margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
     line-height: 1;
     padding: -2px 8px;
@@ -85,15 +87,18 @@
     text-shadow: 1px 1px 1px #000;
     border-radius: 6px;
     background-color: rgb(46, 139, 87);"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
-            <button type="button" id="reset" value=" Reset " style="height: 35px; margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
-    line-height: 1;
-    padding: -2px 8px;
-    font-size: 1rem;
-    text-align: center;
-    color: #fff;
-    text-shadow: 1px 1px 1px #000;
-    border-radius: 6px;
-    background-color:rgb(250, 69, 1)"><i class="fa fa-repeat" aria-hidden="true"></i> Reset </button>
+    <?php
+        // tombol Create (dulu di bawah saringan) dipindah ke barisan tombol, pengganti Reset
+        $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create List payment'");
+        $rs = mysqli_fetch_array($querys);
+        $id = isset($rs['id']) ? $rs['id'] : 0;
+
+        if($id == '9'){
+    echo '<button id="btncreate" type="button" class="btn btn-primary" style="margin-top: 30px; margin-bottom: 5px; margin-right: 15px;"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Create</button>';
+        }else{
+    echo '';
+    }
+?>
 
     <?php
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -118,24 +123,13 @@
 </div>
 </form> 
 
-<?php
-        $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create List payment'");
-        $rs = mysqli_fetch_array($querys);
-        $id = isset($rs['id']) ? $rs['id'] : 0;
-
-        if($id == '9'){
-    echo '<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>';
-        }else{
-    echo '';
-    }
-?>
     </div>             
     <div class="box body">
         <div class="row">       
             <div class="col-md-12">
 
   <form id="formdata2">               
-<table id="datatable" class="table table-striped table-bordered" role="grid" cellspacing="0" width="100%">
+<table id="datatable" class="table table-striped table-bordered tbl-gaya-ppn" role="grid" cellspacing="0" width="100%">
     <thead>
         <tr class="thead-dark">
             <th style="text-align: center;vertical-align: middle;width: 5%;">No</th>
@@ -729,12 +723,6 @@ $(function() {
     location.href = "create-cashin.php";
 };
 </script> -->
-<script type="text/javascript">
-    document.getElementById('reset').onclick = function () {
-    location.href = "master-coa-category2.php";
-};
-</script>
-
 <script>
 function alert_cancel() {
   alert("Master Bank Deactive");

@@ -1,4 +1,5 @@
 <?php include '../header.php' ?>
+<link rel="stylesheet" href="../css/app-loading.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-loading.css'); ?>">
 <style >
     .modal {
   text-align: center;
@@ -19,18 +20,36 @@
   text-align: left;
   vertical-align: middle;
 }
+
+/* filter: lebar isian mengikuti isinya (Type/Status pendek, Group muat nama terpanjang).
+   Di HP tetap selebar layar. */
+@media (min-width: 768px) {
+  .cf-kol-pendek { flex: 0 0 160px; max-width: 160px; }
+  .cf-kol-group  { flex: 0 0 340px; max-width: 340px; }
+  .cf-kol-tombol { min-width: 290px; }
+}
+
+/* modal Create Cash Flow */
+.cf-modal .modal-header { display: flex; align-items: center; }
+.cf-modal .modal-header .modal-title { flex: 1 1 auto; }
+.cf-modal .modal-header .close { float: none; margin: 0 0 0 10px; padding: 0 2px; }
+.cf-modal .modal-body { padding: 16px 18px 10px; }
+.cf-modal .modal-body label { font-weight: 600; margin-bottom: 4px; }
+.cf-modal .modal-body .form-group { margin-bottom: 12px; }
+.cf-modal .modal-footer { padding: 10px 18px; background: #f8fafc; justify-content: flex-end; }
+.cf-modal .modal-footer .btn { min-width: 90px; }
 </style>
 
     <!-- MAIN -->
     <div class="col p-4">
-        <h2 class="text-center">LIST CASH FLOW</h2>
+        <h2 class="text-center"><span class="judul-ikon"><i class="fa fa-exchange" aria-hidden="true"></i></span> LIST CASH FLOW</h2>
 <div class="box">
     <div class="box header">
 
         <form id="form-data" action="master-cash-flow.php" method="post">        
         <div class="form-row">
-           <div class="col-md-3">
-            <label for="nama_type"><b>Type</b></label>            
+           <div class="col-md-3 cf-kol-pendek">
+            <label for="nama_type"><b>Type</b></label>          
               <select class="form-control select2bs4" name="nama_type" id="nama_type" data-dropup-auto="false" data-live-search="true" >
                 <option value="ALL" <?php
                 $nama_type = '';
@@ -74,8 +93,8 @@
                 </select>
                 </div> 
 
-                <div class="col-md-3">
-            <label for="nama_group"><b>Group</b></label>            
+                <div class="col-md-3 cf-kol-group">
+            <label for="nama_group"><b>Group</b></label>           
               <select style="background-color: gray;" class="form-control select2bs4" name="nama_group" id="nama_group" required>
                 <option value="ALL">ALL</option>
                 <?php
@@ -96,8 +115,8 @@
                 </select>
                 </div>
 
-                <div class="col-md-3">
-            <label for="nama_supp"><b>Status</b></label>            
+                <div class="col-md-3 cf-kol-pendek">
+            <label for="nama_supp"><b>Status</b></label>           
               <select class="form-control select2bs4" name="Status" id="Status" data-dropup-auto="false" data-live-search="true" >
                 <option value="ALL" <?php
                 $Status = '';
@@ -141,7 +160,7 @@
                 </select>
                 </div> 
 
-            <div class="input-group-append col">                                   
+            <div class="input-group-append col cf-kol-tombol">
             <button  type="submit" id="submit" value=" Search " style="height: 35px; margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
     line-height: 1;
     padding: -2px 8px;
@@ -151,15 +170,15 @@
     text-shadow: 1px 1px 1px #000;
     border-radius: 6px;
     background-color: rgb(46, 139, 87);"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
-            <button type="button" id="reset" value=" Reset " style="height: 35px; margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
-    line-height: 1;
-    padding: -2px 8px;
-    font-size: 1rem;
-    text-align: center;
-    color: #fff;
-    text-shadow: 1px 1px 1px #000;
-    border-radius: 6px;
-    background-color:rgb(250, 69, 1)"><i class="fa fa-repeat" aria-hidden="true"></i> Reset </button>
+    <?php
+        // tombol Create (pengganti Reset) hanya untuk user yang punya akses 'Create List payment'
+        $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create List payment'");
+        $rs = mysqli_fetch_array($querys);
+        $id = isset($rs['id']) ? $rs['id'] : 0;
+        if($id == '9'){
+            echo '<button id="btncreate" type="button" class="btn btn-primary" style="margin-top: 30px; margin-bottom: 5px; margin-right: 15px;"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Create</button>';
+        }
+    ?>
 
     <?php
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -197,26 +216,22 @@
 <br/>
 
 </div>
-</form> 
-
-<?php
-        $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create List payment'");
-        $rs = mysqli_fetch_array($querys);
-        $id = isset($rs['id']) ? $rs['id'] : 0;
-
-        if($id == '9'){
-    echo '<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>';
-        }else{
-    echo '';
-    }
-?>
-    </div>             
+</form>
+    </div>
     <div class="box body">
         <div class="row">       
             <div class="col-md-12">
 
-  <form id="formdata2">               
-<table id="datatable" class="table table-striped table-bordered" role="grid" cellspacing="0" width="100%">
+  <form id="formdata2">
+   <!-- DataTable 10 baris per halaman + loading (dinyalakan saat Search, dimatikan setelah tabel siap) -->
+   <div class="app-loading-wrap is-loading" id="cfLoad">
+     <div class="app-loading">
+       <div class="app-loading-box">
+         <div class="app-spinner"></div>
+         <div class="app-loading-text">Loading data...</div>
+       </div>
+     </div>
+<table id="datatable" class="table table-striped table-bordered tbl-laporan tbl-gaya-ppn" role="grid" cellspacing="0" width="100%">
     <thead>
         <tr class="thead-dark">
             <th style="display: none;">Type</th>
@@ -292,8 +307,9 @@
             echo '</td>';
             echo '</tr>';
 }?>
-</tbody>                    
+</tbody>
 </table>
+   </div>
 </form>
    
     </div>
@@ -360,77 +376,50 @@
  </div>
 
 
-<div class="form-row">
-    <div class="modal fade" id="mymodal3" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-        <div style="width:450px;" class="modal-dialog modal-md">
-        <div class="modal-content">
-        <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-        <h4 class="modal-title" id="Heading">FORM CREATE CASH FLOW</h4>
-        </div>
-          <div class="modal-body">
-          <div class="form-group">
-            <form id="modal-form3" method="post">
-                <div class="form-row">
-                <div class="col-md-12 mb-3"> 
-                <label for="nama_supp"><b>Type</b></label> 
-                <select class="form-control" name="text_type" id="text_type" required>
-                <option value="" disabled selected="true">Select Type</option> 
-                <?php
-                $text_type ='';
-                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $text_type = isset($_POST['text_type']) ? $_POST['text_type']: null;
-                }                 
-                $sql = mysql_query("select DISTINCT type from tbl_master_group_cf",$conn1);
-                while ($row = mysql_fetch_array($sql)) {
-                    $data = $row['type'];
-                    if($row['type'] == $_POST['text_type']){
-                        $isSelected = ' selected="selected"';
-                    }else{
-                        $isSelected = '';
-                    }
-                    echo '<option value="'.$data.'"'.$isSelected.'">'. $data .'</option>';    
-                }?>
-                </select>
-        </div>
-    </div>
-    <div class="form-row">
-                <div class="col-md-12 mb-3"> 
-                <label for="nama_supp"><b>Group</b></label> 
-                <select  class="form-control" name="txt_group" id="txt_group" required>
-                    <option value="" disabled selected="true">Select Group</option>
-                </select>
-        </div>
-    </div>
-                <div class="form-row">
-                 <div class="col-md-12 mb-3"> 
-                <label for="nama_supp"><b>Indonesian Name</b></label> 
-                <input type="text" style="font-size: 14px;font-weight: bold;" class="form-control" name="txt_indname" id="txt_indname" autocomplete="off" 
-            >
-        </div>
-        <div class="col-md-12 mb-3"> 
-                <label for="nama_supp"><b>English Name</b></label> 
-                <input type="text" style="font-size: 14px;font-weight: bold;" class="form-control" name="txt_engname" id="txt_engname" autocomplete="off" 
-            >
-        </div>   
-            </br>
-                    <div class="col-md-8">
-                    </div>
-                <div class="col-md-4">
-                <div class="modal-footer">
-                    <button type="submit" id="send3" name="send3" class="btn btn-success btn-lg" style="width: 100%;"><span class="fa fa-check"></span>
-                        Save
-                    </button>
-                    </div>
-                    </div>
-                </div>           
-            </form>
-        </div>
+<!-- ===== Modal Create Cash Flow ===== -->
+<div class="modal fade cf-modal" id="mymodal3" tabindex="-1" role="dialog" aria-labelledby="cfJudulCreate" aria-hidden="true">
+  <div class="modal-dialog" style="width:460px; max-width:calc(100vw - 20px);">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cfJudulCreate"><i class="fa fa-plus-circle" aria-hidden="true"></i> Create Cash Flow</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span class="fa fa-times"></span></button>
       </div>
+      <form id="modal-form3" method="post">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="text_type">Type <span class="text-danger">*</span></label>
+            <select class="form-control" name="text_type" id="text_type" required>
+              <option value="" disabled selected="true">Select Type</option>
+              <?php
+              $sql = mysql_query("select DISTINCT type from tbl_master_group_cf",$conn1);
+              while ($row = mysql_fetch_array($sql)) {
+                  echo '<option value="'.$row['type'].'">'.$row['type'].'</option>';
+              }?>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="txt_group">Group <span class="text-danger">*</span></label>
+            <select class="form-control" name="txt_group" id="txt_group" required>
+              <option value="" disabled selected="true">Select Group</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="txt_indname">Indonesian Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="txt_indname" id="txt_indname" autocomplete="off">
+          </div>
+          <div class="form-group mb-0">
+            <label for="txt_engname">English Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="txt_engname" id="txt_engname" autocomplete="off">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i> Cancel</button>
+          <button type="submit" id="send3" name="send3" class="btn btn-success"><i class="fa fa-check" aria-hidden="true"></i> Save</button>
+        </div>
+      </form>
     </div>
   </div>
- </div>
-</div>               
+</div>
 
 <div class="modal fade" id="mymodal" data-target="#mymodal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
         <div class="modal-dialog">
@@ -468,6 +457,7 @@
     <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
   <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
   <script language="JavaScript" src="../css/4.1.1/select2.full.min.js"></script>
+  <script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
   <script>
   // Hide submenus
 $('#body-row .collapse').collapse('hide'); 
@@ -500,10 +490,25 @@ function SidebarCollapse () {
 </script>
 <script>
     $(document).ready(function() {
-    $('#datatable').dataTable();
-    
+    // DataTable 10 baris per halaman; kolom 0 (id) tetap ada tapi disembunyikan
+    $('#datatable').DataTable({
+        pageLength: 10,
+        order: [],
+        autoWidth: false,
+        dom: "<'row'<'col-sm-6'l><'col-sm-6'f>><'tbl-gulir-polos't><'row'<'col-sm-5'i><'col-sm-7'p>>",
+        columnDefs: [
+            { targets: [2, 3, 4], className: 'kol-teks' },  // nama panjang boleh terlipat
+            { targets: 6, orderable: false }                 // kolom Action
+        ]
+    });
+    $('#cfLoad').removeClass('is-loading');
+    // Search mengirim form -> loading tampil sampai hasil baru selesai dimuat
+    $('#form-data').on('submit', function () {
+        $('#cfLoad').addClass('is-loading');
+    });
+
      $("[data-toggle=tooltip]").tooltip();
-    
+
 } );
 </script>
 
@@ -574,55 +579,55 @@ function SidebarCollapse () {
 </script>
 
  <script type="text/javascript">
-    $("#modal-form3").on("click", "#send3", function(){ 
-        var txt_group = $('select[name=txt_group] option').filter(':selected').val();
+    // notifikasi kecil (SweetAlert)
+    function cfPesan(ikon, judul, teks) {
+        return Swal.fire({ icon: ikon, title: judul, text: teks || '', confirmButtonColor: '#1e3a8a' });
+    }
+
+    $("#modal-form3").on("click", "#send3", function(){
+        var txt_type = $('#text_type').val() || '';
+        var txt_group = $('#txt_group').val() || '';
         var txt_indname = document.getElementById('txt_indname').value;
         var txt_engname = document.getElementById('txt_engname').value;
-        var create_user = '<?php echo $user; ?>';   
-         
-         if (txt_group != '' && txt_indname != '' && txt_engname != '') {    
+        var create_user = '<?php echo $user; ?>';
+
+        // cek isian dulu
+        if (txt_type == '')             { cfPesan('warning', 'Please select Type'); return false; }
+        if (txt_group == '')            { cfPesan('warning', 'Please select Group'); return false; }
+        if ($.trim(txt_indname) == '')  { cfPesan('warning', 'Please input Indonesian Name'); return false; }
+        if ($.trim(txt_engname) == '')  { cfPesan('warning', 'Please input English Name'); return false; }
+
+        var tombol = $('#send3').prop('disabled', true);   // cegah klik dua kali
         $.ajax({
             type:'POST',
             url:'insert_cashflow.php',
             data: {'txt_group':txt_group, 'txt_indname':txt_indname, 'txt_engname':txt_engname, 'create_user':create_user},
-            cache: 'false',
-            close: function(e){
-                e.preventDefault();
-            },
+            cache: false,
             success: function(response){
-                // $('#tbl_cf').html(response);
-                // alert(response);
-                // $('#modal-form2').modal('toggle');
-                // $('#modal-form2').modal('hide');
-                 // alert("Data saved successfully");
-                 if (response == '') {
-                    alert("Successful Save");
-                    window.location.reload(true);
-                }else{
-                    alert("Cash Flow Already Exist");
-                    document.getElementById('txt_indname').focus();
+                response = $.trim(response);
+                if (response == '') {
+                    // tersimpan: tutup form, beri notif, lalu muat ulang daftar sesuai filter
+                    $('#mymodal3').modal('hide');
+                    Swal.fire({ icon: 'success', title: 'Saved', text: 'Cash flow saved successfully.',
+                                timer: 1500, showConfirmButton: false })
+                        // klik Search (form.submit() tertutup oleh tombol ber-id "submit")
+                        .then(function () { document.getElementById('submit').click(); });
+                } else if (/error|warning|fatal|notice/i.test(response)) {
+                    tombol.prop('disabled', false);
+                    cfPesan('error', 'Failed to save', response.replace(/<[^>]*>/g, ''));
+                } else {
+                    // insert_cashflow.php mengembalikan nama yang sudah ada
+                    tombol.prop('disabled', false);
+                    cfPesan('warning', 'Cash Flow Already Exist', '"' + txt_indname + '" already exists in this group.')
+                        .then(function () { $('#txt_indname').focus(); });
                 }
-                },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                alert(xhr);
+            },
+            error: function (xhr) {
+                tombol.prop('disabled', false);
+                cfPesan('error', 'Failed to save', xhr.status + ' ' + xhr.statusText);
             }
-        }); 
-        }  
-        if($('select[name=txt_group] option').filter(':selected').val() == ''){
-            alert("Please Select Group");
-            return false;   
-        }else if(document.getElementById('txt_indname').value == ''){
-            alert("Please Input Indonesian Name");
-            return false;   
-        }else if(document.getElementById('txt_engname').value == ''){
-            alert("Please Input English Name");
-            return false;   
-        }else{
-            return false;   
-        }
-
- 
+        });
+        return false;
     });
 
 
@@ -841,11 +846,6 @@ $(function() {
     location.href = "create-cashin.php";
 };
 </script> -->
-<script type="text/javascript">
-    document.getElementById('reset').onclick = function () {
-    location.href = "master-cash-flow.php";
-};
-</script>
 
 <script>
 function alert_cancel() {

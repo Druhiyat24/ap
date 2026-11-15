@@ -63,7 +63,7 @@
     <div class="card-body p-3">
       <div class="table-responsive">
         <table id="tbl-supbank"
-               class="table table-striped table-bordered table-hover table-sm"
+               class="table table-striped table-bordered table-hover table-sm tbl-gaya-ppn"
                style="width:100%">
           <thead class="table-gradient">
             <tr>

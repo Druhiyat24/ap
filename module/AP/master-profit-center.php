@@ -29,7 +29,7 @@
 
         <form id="form-data" action="master-profit-center.php" method="post">        
         <div class="form-row">
-           <div class="col-md-3">
+           <div class="col-md-3 app-kol-pendek">
             <label for="nama_type"><b>Type</b></label>            
               <select class="form-control select2bs4" name="nama_type" id="nama_type" data-dropup-auto="false" data-live-search="true" >                         
                 <option value="Parent" <?php
@@ -61,7 +61,7 @@
                 </select>
                 </div> 
 
-                <div class="col-md-3">
+                <div class="col-md-3 app-kol-pendek">
             <label for="nama_supp"><b>Status</b></label>            
               <select class="form-control select2bs4" name="Status" id="Status" data-dropup-auto="false" data-live-search="true" >
                 <option value="ALL" <?php
@@ -106,7 +106,7 @@
                 </select>
                 </div> 
 
-            <div class="input-group-append col">                                   
+            <div class="input-group-append col app-kol-tombol">                                   
             <button type="submit" id="submit" value=" Search " style="margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
     line-height: 1;
     padding: -2px 8px;
@@ -116,15 +116,22 @@
     text-shadow: 1px 1px 1px #000;
     border-radius: 6px;
     background-color: rgb(46, 139, 87);"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
-            <button type="button" id="reset" value=" Reset " style="margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
-    line-height: 1;
-    padding: -2px 8px;
-    font-size: 1rem;
-    text-align: center;
-    color: #fff;
-    text-shadow: 1px 1px 1px #000;
-    border-radius: 6px;
-    background-color:rgb(250, 69, 1)"><i class="fa fa-repeat" aria-hidden="true"></i> Reset </button>
+    <?php
+        // tombol Create (dulu di bawah saringan) dipindah ke barisan tombol, pengganti Reset
+        $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create List payment'");
+        $rs = mysqli_fetch_array($querys);
+        $id = isset($rs['id']) ? $rs['id'] : 0;
+        $nama_type = isset($_POST['nama_type']) ? $_POST['nama_type']: null;
+
+        if($nama_type == 'Parent'){
+        echo '<button id="btncreate" type="button" class="btn btn-primary" style="margin-top: 30px; margin-bottom: 5px; margin-right: 15px;"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Create Parent</button>';
+        }elseif($nama_type == 'Children'){
+         echo '<button id="btncreate5" type="button" class="btn btn-primary" style="margin-top: 30px; margin-bottom: 5px; margin-right: 15px;"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Create Children</button>';   
+        }else{
+        echo '<button id="btncreate" type="button" class="btn btn-primary" style="margin-top: 30px; margin-bottom: 5px; margin-right: 15px;"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Create Parent</button>
+        <button id="btncreate5" type="button" class="btn btn-primary" style="margin-top: 30px; margin-bottom: 5px; margin-right: 15px;"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Create Children</button>';
+    }
+?>
 
             </div>                                                            
     </div>
@@ -133,28 +140,13 @@
 </div>
 </form> 
 
-<?php
-        $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create List payment'");
-        $rs = mysqli_fetch_array($querys);
-        $id = isset($rs['id']) ? $rs['id'] : 0;
-        $nama_type = isset($_POST['nama_type']) ? $_POST['nama_type']: null;
-
-        if($nama_type == 'Parent'){
-        echo '<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span>Create Parent</button>';
-        }elseif($nama_type == 'Children'){
-         echo '<button id="btncreate5" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span>Create Children</button>';   
-        }else{
-        echo '<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span>Create Parent</button>
-        <button id="btncreate5" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span>Create Children</button>';
-    }
-?>
     </div>             
     <div class="box body">
         <div class="row">       
             <div class="col-md-12">
 
   <form id="formdata2">               
-<table id="datatable" class="table table-striped table-bordered" role="grid" cellspacing="0" width="100%">
+<table id="datatable" class="table table-striped table-bordered tbl-gaya-ppn" role="grid" cellspacing="0" width="100%">
     <thead>
         <?php
         $nama_type = isset($_POST['nama_type']) ? $_POST['nama_type']: null;
@@ -1048,12 +1040,6 @@ $(function() {
     location.href = "create-cashin.php";
 };
 </script> -->
-<script type="text/javascript">
-    document.getElementById('reset').onclick = function () {
-    location.href = "master-profit-center.php";
-};
-</script>
-
 <script>
 function alert_cancel() {
   alert("Master Bank Deactive");

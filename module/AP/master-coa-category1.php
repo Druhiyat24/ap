@@ -1,4 +1,5 @@
 <?php include '../header.php' ?>
+<link rel="stylesheet" href="../css/app-loading.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-loading.css'); ?>">
 <style >
     .modal {
   text-align: center;
@@ -19,22 +20,30 @@
   text-align: left;
   vertical-align: middle;
 }
+
+/* filter: lebar pilihan mengikuti isinya; di HP tetap selebar layar */
+@media (min-width: 768px) {
+  .coa-kol-pilih  { flex: 0 0 300px; max-width: 300px; }
+  .coa-kol-tombol { min-width: 290px; }
+}
 </style>
 
     <!-- MAIN -->
     <div class="col p-4">
-        <h2 class="text-center">LIST CATEGORY COA 1</h2>
+        <h2 class="text-center"><span class="judul-ikon"><i class="fa fa-sitemap" aria-hidden="true"></i></span> LIST CATEGORY COA 1</h2>
 <div class="box">
     <div class="box header">
 
         <form id="form-data" action="master-coa-category1.php" method="post">
         <div class="form-row">    
-        <div style="padding-left: 10px;" class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
-            <button style="border-radius: 3px" id="btnctg1" type="button" class="btn-primary btn-xs"><span></span> Category 1</button>
-            <button style="border-radius: 3px" id="btnctg2" type="button" class="btn-secondary btn-xs"><span></span> Category 2</button>
-            <button style="border-radius: 3px" id="btnctg3" type="button" class="btn-secondary btn-xs"><span></span> Category 3</button>
-            <button style="border-radius: 3px" id="btnctg4" type="button" class="btn-secondary btn-xs"><span></span> Category 4</button>
-            <button style="border-radius: 3px" id="btnctg5" type="button" class="btn-secondary btn-xs"><span></span> Category 5</button>
+        <div style="padding-left: 5px;">
+        <div class="app-tab-halaman" role="tablist" aria-label="COA category level">
+            <button id="btnctg1" type="button" class="app-tab aktif" aria-current="page">Category 1</button>
+            <button id="btnctg2" type="button" class="app-tab">Category 2</button>
+            <button id="btnctg3" type="button" class="app-tab">Category 3</button>
+            <button id="btnctg4" type="button" class="app-tab">Category 4</button>
+            <button id="btnctg5" type="button" class="app-tab">Category 5</button>
+        </div>
 
         </div>
         <!-- <div class="btn-group" role="group">
@@ -52,8 +61,8 @@
     </div>
         <div class="form-row" style="padding-top: 5px;"> 
 
-                <div class="col-md-4">
-            <label for="nama_group"><b>Category Name</b></label>            
+                <div class="col-md-4 coa-kol-pilih">
+            <label for="id_ctg1"><b>Category Name</b></label>            
               <select style="background-color: gray;" class="form-control select2bs4" name="id_ctg1" id="id_ctg1" required>
                 <option value="ALL" selected="true">ALL</option>   
                 <?php
@@ -75,7 +84,7 @@
                 </select>
                 </div>
 
-            <div class="input-group-append col">                                   
+            <div class="input-group-append col coa-kol-tombol">                                   
             <button  type="submit" id="submit" value=" Search " style="height: 35px; margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
     line-height: 1;
     padding: -2px 8px;
@@ -85,15 +94,15 @@
     text-shadow: 1px 1px 1px #000;
     border-radius: 6px;
     background-color: rgb(46, 139, 87);"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
-            <button type="button" id="reset" value=" Reset " style="height: 35px; margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
-    line-height: 1;
-    padding: -2px 8px;
-    font-size: 1rem;
-    text-align: center;
-    color: #fff;
-    text-shadow: 1px 1px 1px #000;
-    border-radius: 6px;
-    background-color:rgb(250, 69, 1)"><i class="fa fa-repeat" aria-hidden="true"></i> Reset </button>
+    <?php
+        // tombol Create (pengganti Reset) hanya untuk user yang punya akses 'Create List payment'
+        $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create List payment'");
+        $rs = mysqli_fetch_array($querys);
+        $id = isset($rs['id']) ? $rs['id'] : 0;
+        if($id == '9'){
+            echo '<button id="btncreate" type="button" class="btn btn-primary" style="margin-top: 30px; margin-bottom: 5px; margin-right: 15px;"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Create</button>';
+        }
+    ?>
 
     <?php
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -117,25 +126,21 @@
 
 </div>
 </form> 
-
-<?php
-        $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create List payment'");
-        $rs = mysqli_fetch_array($querys);
-        $id = isset($rs['id']) ? $rs['id'] : 0;
-
-        if($id == '9'){
-    echo '<button id="btncreate" type="button" class="btn-primary btn-xs" style="border-radius: 6%"><span class="fa fa-pencil-square-o"></span> Create</button>';
-        }else{
-    echo '';
-    }
-?>
     </div>             
     <div class="box body">
         <div class="row">       
             <div class="col-md-12">
 
   <form id="formdata2">               
-<table id="datatable" class="table table-striped table-bordered" role="grid" cellspacing="0" width="100%">
+   <!-- DataTable 10 baris per halaman + loading (dinyalakan saat Search, dimatikan setelah tabel siap) -->
+   <div class="app-loading-wrap is-loading" id="coaLoad">
+     <div class="app-loading">
+       <div class="app-loading-box">
+         <div class="app-spinner"></div>
+         <div class="app-loading-text">Loading data...</div>
+       </div>
+     </div>
+<table id="datatable" class="table table-striped table-bordered tbl-laporan tbl-gaya-ppn" role="grid" cellspacing="0" width="100%">
     <thead>
         <tr class="thead-dark">
             <th style="text-align: center;vertical-align: middle;width: 5%;">No</th>
@@ -176,6 +181,7 @@
 }?>
 </tbody>                    
 </table>
+   </div>
 </form>
    
     </div>
@@ -242,51 +248,38 @@
  </div>
 
 
-<div class="form-row">
-    <div class="modal fade" id="mymodal3" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-        <div style="width:450px;" class="modal-dialog modal-md">
-        <div class="modal-content">
-        <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="fa fa-times"></span></button>
-        <h4 class="modal-title" id="Heading">FORM CREATE CATEGORY COA 1</h4>
-        </div>
-          <div class="modal-body">
-          <div class="form-group">
-            <form id="modal-form3" method="post">
-                <div class="form-row">
-                 <div class="col-md-12 mb-3"> 
-                <label for="nama_supp"><b>ID Category</b></label> 
-                <input type="text" style="font-size: 14px;font-weight: bold;" class="form-control" name="txt_idctg1" id="txt_idctg1" autocomplete="off" 
-            >
-        </div>
-        <div class="col-md-12 mb-3"> 
-                <label for="nama_supp"><b>Indonesian Name</b></label> 
-                <input type="text" style="font-size: 14px;font-weight: bold;" class="form-control" name="txt_indname" id="txt_indname" autocomplete="off" 
-            >
-        </div>
-        <div class="col-md-12 mb-3"> 
-                <label for="nama_supp"><b>English Name</b></label> 
-                <input type="text" style="font-size: 14px;font-weight: bold;" class="form-control" name="txt_engname" id="txt_engname" autocomplete="off" 
-            >
-        </div>     
-            </br>
-                    <div class="col-md-8">
-                    </div>
-                <div class="col-md-4">
-                <div class="modal-footer">
-                    <button type="submit" id="send3" name="send3" class="btn btn-success btn-lg" style="width: 100%;"><span class="fa fa-check"></span>
-                        Save
-                    </button>
-                    </div>
-                    </div>
-                </div>           
-            </form>
-        </div>
+<!-- ===== Modal Create Category COA 1 ===== -->
+<div class="modal fade app-modal-form" id="mymodal3" tabindex="-1" role="dialog" aria-labelledby="coaJudulCreate" aria-hidden="true">
+  <div class="modal-dialog" style="width:460px; max-width:calc(100vw - 20px);">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="coaJudulCreate"><i class="fa fa-plus-circle" aria-hidden="true"></i> Create Category COA 1</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span class="fa fa-times"></span></button>
       </div>
+      <form id="modal-form3" method="post">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="txt_idctg1">ID Category <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="txt_idctg1" id="txt_idctg1" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label for="txt_indname">Indonesian Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="txt_indname" id="txt_indname" autocomplete="off">
+          </div>
+          <div class="form-group mb-0">
+            <label for="txt_engname">English Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="txt_engname" id="txt_engname" autocomplete="off">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i> Cancel</button>
+          <button type="submit" id="send3" name="send3" class="btn btn-success"><i class="fa fa-check" aria-hidden="true"></i> Save</button>
+        </div>
+      </form>
     </div>
   </div>
- </div>
-</div>               
+</div>
+
 
 <div class="modal fade" id="mymodal" data-target="#mymodal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
         <div class="modal-dialog">
@@ -324,6 +317,7 @@
     <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
   <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
   <script language="JavaScript" src="../css/4.1.1/select2.full.min.js"></script>
+  <script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
   <script>
   // Hide submenus
 $('#body-row .collapse').collapse('hide'); 
@@ -356,7 +350,19 @@ function SidebarCollapse () {
 </script>
 <script>
     $(document).ready(function() {
-    $('#datatable').dataTable();
+    // DataTable 10 baris per halaman
+    $('#datatable').DataTable({
+        pageLength: 10,
+        order: [],
+        autoWidth: false,
+        dom: "<'row'<'col-sm-6'l><'col-sm-6'f>><'tbl-gulir-polos't><'row'<'col-sm-5'i><'col-sm-7'p>>",
+        columnDefs: [{ targets: [2, 3], className: 'kol-teks' }]   // nama panjang boleh terlipat
+    });
+    $('#coaLoad').removeClass('is-loading');
+    // Search mengirim form -> loading tampil sampai hasil baru selesai dimuat
+    $('#form-data').on('submit', function () {
+        $('#coaLoad').addClass('is-loading');
+    });
     
      $("[data-toggle=tooltip]").tooltip();
     
@@ -430,54 +436,56 @@ function SidebarCollapse () {
 </script>
 
  <script type="text/javascript">
+    // notifikasi kecil (SweetAlert)
+    function coaPesan(ikon, judul, teks) {
+        return Swal.fire({ icon: ikon, title: judul, text: teks || '', confirmButtonColor: '#1e3a8a' });
+    }
+
     $("#modal-form3").on("click", "#send3", function(){ 
         var txt_idctg1 = document.getElementById('txt_idctg1').value;
         var txt_indname = document.getElementById('txt_indname').value;
         var txt_engname = document.getElementById('txt_engname').value;
         var create_user = '<?php echo $user; ?>';   
-         
-         if (txt_idctg1 != '' && txt_indname != '' && txt_engname != '') {    
+
+        // cek isian dulu
+        if ($.trim(txt_idctg1) == '')   { coaPesan('warning', 'Please input ID Category'); return false; }
+        if ($.trim(txt_indname) == '')  { coaPesan('warning', 'Please input Indonesian Name'); return false; }
+        if ($.trim(txt_engname) == '')  { coaPesan('warning', 'Please input English Name'); return false; }
+
+        var tombol = $('#send3').prop('disabled', true);   // cegah klik dua kali
         $.ajax({
             type:'POST',
             url:'insert_ctg1.php',
             data: {'txt_idctg1':txt_idctg1, 'txt_indname':txt_indname, 'txt_engname':txt_engname, 'create_user':create_user},
-            cache: 'false',
-            close: function(e){
-                e.preventDefault();
-            },
+            cache: false,
             success: function(response){
-                // $('#tbl_cf').html(response);
-               if (response == '') {
-                    alert("Successful Save");
-                    window.location.reload(true);
-                }else if (response == '123') {
-                    alert("Coa Number Can't be empty");
-                }else{
-                    alert("COA Number Already Exist");
-                    document.getElementById('txt_idctg1').focus();
+                response = $.trim(response);
+                if (response == '') {
+                    // tersimpan: tutup form, beri notif, lalu muat ulang daftar sesuai filter
+                    $('#mymodal3').modal('hide');
+                    Swal.fire({ icon: 'success', title: 'Saved', text: 'Category COA 1 saved successfully.',
+                                timer: 1500, showConfirmButton: false })
+                        // klik Search (form.submit() tertutup oleh tombol ber-id "submit")
+                        .then(function () { document.getElementById('submit').click(); });
+                } else if (response == '123') {
+                    tombol.prop('disabled', false);
+                    coaPesan('warning', 'Please input ID Category');
+                } else if (/error|warning|fatal|notice/i.test(response)) {
+                    tombol.prop('disabled', false);
+                    coaPesan('error', 'Failed to save', response.replace(/<[^>]*>/g, ''));
+                } else {
+                    // insert_ctg1.php mengembalikan ID yang sudah ada
+                    tombol.prop('disabled', false);
+                    coaPesan('warning', 'ID Category Already Exist', '"' + txt_idctg1 + '" is already used.')
+                        .then(function () { $('#txt_idctg1').focus(); });
                 }
-                
-                },
-            error: function (xhr, ajaxOptions, thrownError) {
-                console.log(xhr);
-                alert(xhr);
+            },
+            error: function (xhr) {
+                tombol.prop('disabled', false);
+                coaPesan('error', 'Failed to save', xhr.status + ' ' + xhr.statusText);
             }
-        }); 
-        }  
-        if(document.getElementById('txt_idctg1').value == ''){
-            alert("Please Input Id Category");
-            return false;   
-        }else if(document.getElementById('txt_indname').value == ''){
-            alert("Please Input Indonesian Name");
-            return false;   
-        }else if(document.getElementById('txt_engname').value == ''){
-            alert("Please Input English Name");
-            return false;   
-        }else{
-            return false;   
-        }
-
- 
+        });
+        return false;
     });
 
 
@@ -696,11 +704,6 @@ $(function() {
     location.href = "create-cashin.php";
 };
 </script> -->
-<script type="text/javascript">
-    document.getElementById('reset').onclick = function () {
-    location.href = "master-coa-category1.php";
-};
-</script>
 
 <script>
 function alert_cancel() {
