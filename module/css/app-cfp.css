@@ -1,0 +1,170 @@
+/* app-cfp.css - menu Cash > Projection > Other.
+   Dipakai cash-projection.php (daftar) dan create-cash-projection.php (form).
+   Ditaut hanya oleh kedua halaman itu, bukan dari header.php. */
+
+
+/* ---- pita tab di halaman Create ----
+   Bentuknya mengikuti create-in-bank.php, warnanya disetel ke biru skin baru. */
+.tab-container {
+  display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; margin-bottom: 14px;
+  background: #f4f6f9; border: 1px solid #e2e8f0; border-radius: 10px;
+}
+.tablinks {
+  display: inline-flex; align-items: center; gap: 7px;
+  border: 0; background: #fff; color: #555;
+  padding: 8px 14px; font-size: 12.5px; font-weight: 600;
+  border-radius: 8px; cursor: pointer; transition: all .2s ease;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .08);
+}
+.tablinks:hover { background: #2f6bdd; color: #fff; transform: translateY(-1px); }
+.tablinks.active {
+  background: linear-gradient(135deg, #2f6bdd, #1d4ed8); color: #fff;
+  box-shadow: 0 4px 10px rgba(47, 107, 221, .35);
+}
+.tablinks:disabled { opacity: .5; cursor: not-allowed; }
+.tablinks:disabled:hover { background: #fff; color: #555; transform: none; }
+.tabcontent { display: none; }
+.tabcontent.on { display: block; }
+
+
+/* ---- pil jenis di kolom Type ---- */
+.cfp-jenis {
+  display: inline-block; padding: 2px 8px; border-radius: 7px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .03em; white-space: nowrap;
+}
+.cfp-jenis.bt { background: #eef4ff; color: #1d4ed8; }
+.cfp-jenis.oi { background: #eaf8f1; color: #15724a; }
+.cfp-jenis.pv { background: #fdf7e9; color: #8a5a06; }
+
+
+/* ---- tabel daftar ---- */
+.cfp-tbl td { white-space: nowrap; }
+.cfp-tbl tbody tr { cursor: default; }
+.cfp-tbl td.num, .cfp-tbl th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* kolom siapa & kapan - diredupkan, tapi tetap terbaca penuh */
+.cfp-tbl td.jejak { color: #94a3b8; font-size: 11.5px; }
+
+/* baris yang sudah Cancel - angkanya dicoret supaya tidak terbaca masih dihitung */
+.cfp-tbl tbody tr.batal td { color: #b0b8c4; }
+.cfp-tbl tbody tr.batal td.num { text-decoration: line-through; }
+
+.cfp-tbl td.ftl-act-cell { padding-left: 4px; padding-right: 4px; }
+
+
+/* ---- lebar kolom daftar ----
+   Delapan kolom tetap, jadi lebarnya dipatok persen biar rata di layar
+   lebar maupun sempit. table-layout:fixed supaya isi yang panjang tidak
+   menarik kolomnya jadi melebar sendiri. */
+.cfp-tbl { table-layout: fixed; width: 100%; }
+
+/* app-ftr-list.css MENOLKAN lebar kolom pertama - di halaman lain kolom
+   itu milik tombol "+" DataTables Responsive. Daftar ini tidak memakai
+   tombol itu, kolom pertamanya No Doc, jadi aturannya dibatalkan di sini
+   (padding-nya pakai !important karena di sana juga !important). */
+.cfp-tbl thead th:first-child,
+.cfp-tbl tbody td:first-child {
+  padding-left: 10px !important; padding-right: 10px !important;
+}
+
+/* thead/tbody ditulis lengkap supaya spesifisitasnya menang atas aturan
+   kolom pertama di app-ftr-list.css di atas. */
+.cfp-tbl thead th:nth-child(1), .cfp-tbl tbody td:nth-child(1) { width: 15%; }   /* No Doc       */
+.cfp-tbl thead th:nth-child(2), .cfp-tbl tbody td:nth-child(2) { width: 16%; }   /* Date         */
+.cfp-tbl thead th:nth-child(3), .cfp-tbl tbody td:nth-child(3) { width: 12%; }   /* Type         */
+.cfp-tbl thead th:nth-child(4), .cfp-tbl tbody td:nth-child(4) { width: 14%; }   /* Total Amount */
+.cfp-tbl thead th:nth-child(5), .cfp-tbl tbody td:nth-child(5) { width:  8%; }   /* Status       */
+.cfp-tbl thead th:nth-child(6), .cfp-tbl tbody td:nth-child(6) { width: 11%; }   /* Created By   */
+.cfp-tbl thead th:nth-child(7), .cfp-tbl tbody td:nth-child(7) { width: 13%; }   /* Created Date */
+.cfp-tbl thead th:nth-child(8), .cfp-tbl tbody td:nth-child(8) { width: 11%; }   /* Action       */
+
+/* No Doc & Created By boleh patah ke baris kedua daripada terpotong */
+.cfp-tbl tbody td:nth-child(1), .cfp-tbl tbody td:nth-child(6) { white-space: normal; }
+
+/* di layar sempit tabelnya digeser ke samping, lebarnya kembali ikut isi */
+@media (max-width: 991.98px) {
+  .ftl-tblwrap { overflow-x: auto; }
+  .cfp-tbl { table-layout: auto; min-width: 900px; }
+}
+
+
+/* ---- form Create ---- */
+/* Label ganda Currency + Rate.
+   inline-flex, bukan flex: label biasa itu inline-block, jadi duduknya di
+   baris teks dan turun beberapa piksel. Kalau wadahnya block, kotak isian
+   di bawahnya naik dan tidak sejajar dgn kolom sebelahnya. */
+.cfp-dual-label { display: inline-flex; width: 100%; }
+
+/* isian yang terisi sendiri dibedakan latarnya */
+.pco-body input[readonly] { background: #f8fafc !important; color: #475569; }
+
+/* tabel baris yang akan disimpan - kolomnya banyak, digeser ke samping
+   supaya kartunya tidak melebar keluar layar */
+.cfp-gridwrap { overflow-x: auto; }
+.cfp-grid { font-size: 12px; }
+.cfp-grid thead th {
+  background: #eef3fb; color: #1e3a8a; font-size: 10.5px; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase; padding: 8px 10px;
+  border: 0; border-bottom: 2px solid #c9d8f0; white-space: nowrap;
+}
+.cfp-grid tbody td {
+  padding: 7px 10px; border: 0; border-bottom: 1px solid #eef2f7;
+  vertical-align: middle; color: #334155; white-space: nowrap;
+}
+.cfp-grid tbody td.num, .cfp-grid tfoot td.num,
+.cfp-grid thead th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.cfp-grid tfoot td { padding: 8px 10px; font-weight: 700; color: #0f172a; border-top: 2px solid #c9d8f0; }
+.cfp-kosong { padding: 18px; text-align: center; color: #94a3b8; font-size: 12px; }
+
+/* baris yang sedang ditarik ke isian untuk diubah */
+.cfp-grid tbody tr.bt-sedang td { background: #fff8e6; }
+
+/* ---- modal rincian dokumen ----
+   Kerangkanya menumpang .ftl-modal.is-wide di app-ftr-list.css (kepala biru,
+   lebar 96vw, badan biru muda yang menggulir). Yang diatur di sini cuma
+   isinya: sebaris kartu keterangan + tabel barisnya. */
+
+.cfp-detail-memuat { padding: 26px; text-align: center; color: #94a3b8; font-size: 12.5px; }
+
+/* kartu keterangan - ikut melebar sendiri, tidak dipatok berapa kolom */
+.cfp-detail-head {
+  display: grid; gap: 8px; margin-bottom: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+}
+.cfp-detail-head > div {
+  background: #fff; border: 1px solid #e6ebf3; border-radius: 10px; padding: 8px 12px;
+  display: flex; flex-direction: column; gap: 1px; min-width: 0;
+}
+.cfp-detail-head span {
+  font-size: 10px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: #94a3b8;
+}
+.cfp-detail-head b {
+  font-size: 12.5px; font-weight: 600; color: #0f172a;
+  overflow-wrap: anywhere;
+}
+.cfp-detail-head i { font-style: normal; font-size: 11px; color: #94a3b8; }
+
+/* nomor dokumennya dibuat menonjol - itu yang dicari mata lebih dulu */
+.cfp-detail-head .cfp-doc { border-color: #c9d8f0; background: #f6f9ff; }
+.cfp-detail-head .cfp-doc b { font-size: 14px; font-weight: 700; color: #1d4ed8; }
+
+/* tabel barisnya diberi permukaan putih sendiri di atas badan modal */
+.cfp-detail-tbl {
+  background: #fff; border: 1px solid #e6ebf3; border-radius: 10px;
+  overflow: auto; max-height: 56vh;
+}
+.cfp-detail-tbl .cfp-grid { margin: 0; }
+.cfp-detail-tbl .cfp-grid td, .cfp-detail-tbl .cfp-grid th { padding: 8px 10px; }
+
+/* kepala tabel ikut menempel waktu barisnya banyak & digulir */
+.cfp-detail-tbl .cfp-grid thead th { position: sticky; top: 0; z-index: 2; }
+.cfp-detail-tbl .cfp-grid tfoot td {
+  position: sticky; bottom: 0; background: #f8fafc; z-index: 2;
+}
+
+/* kaki modal: tombol tutup di kanan, latar putih biar lepas dari badan biru */
+.ftl-modal .modal-foot {
+  display: flex; justify-content: flex-end; gap: 8px;
+  padding: 10px 16px; background: #fff; border-top: 1px solid #e6ebf3;
+}

@@ -1,0 +1,231 @@
+<?php
+/* Alat bersama menu Cash > Projection > Other.
+   Dipakai halaman daftar, formulir, dan penyimpannya.
+   Berkas ini tidak include conn.php - pemanggilnya yang sudah punya koneksi. */
+
+
+/* Daftar akun untuk dropdown Source & Destination.
+   Bank dari b_masterbank (tabel yang dipakai menu Bank, bukan masterbank).
+   Kas per COA, daftarnya sama dgn dropdown Account di Create Petty Cash. */
+function cfp_daftar_akun($conn)
+{
+    $akun = array();
+
+    // nama pendek PC: NAG -> GARMENT, NAK -> KNITTING
+    $pc = array();
+    $q = mysqli_query($conn, "select kode_pc, nama_pc from master_pc where status = 'Active'");
+    while ($r = mysqli_fetch_assoc($q)) {
+        $kata = explode(' ', trim($r['nama_pc']));
+        $pc[$r['kode_pc']] = strtoupper(end($kata));
+    }
+
+    // akun bank
+    $q = mysqli_query($conn, "select bank_name, bank_account, curr, profit_center_bank
+                              from b_masterbank where status = 'Active'
+                              order by bank_name, bank_account");
+    while ($r = mysqli_fetch_assoc($q)) {
+        $label = trim($r['bank_name']) . ' - ' . trim($r['bank_account']);
+        $kode  = $r['profit_center_bank'];
+        $akun[$label] = array(
+            'label'   => $label,
+            'curr'    => $r['curr'] ? strtoupper($r['curr']) : 'IDR',
+            'kode_pc' => $kode,
+            'nama_pc' => isset($pc[$kode]) ? $pc[$kode] : $kode,
+        );
+    }
+
+    // akun kas - per COA, yang ditandai kode_cash. Selalu IDR.
+    // PC-nya cuma dua: yang knitting milik NAK, selain itu NAG. Dikenali
+    // dari nomor 1.01.11 atau dari namanya, biar kas knitting baru ikut
+    // terbaca. Cocok dgn isi tbl_list_journal.
+    $q = mysqli_query($conn, "select no_coa, nama_coa from mastercoa_v2
+                              where kode_cash is not null and kode_cash <> ''
+                                and status = 'Active' order by no_coa");
+    while ($r = mysqli_fetch_assoc($q)) {
+        $no_coa = trim($r['no_coa']);
+        $label  = $no_coa . ' ' . trim($r['nama_coa']);
+        $knit   = ($no_coa == '1.01.11' || strpos(strtoupper($r['nama_coa']), 'KNITTING') !== false);
+        $kode   = $knit ? 'NAK' : 'NAG';
+        $akun[$label] = array(
+            'label'   => $label,
+            'curr'    => 'IDR',
+            'kode_pc' => $kode,
+            'nama_pc' => isset($pc[$kode]) ? $pc[$kode] : $kode,
+        );
+    }
+
+    return $akun;
+}
+
+
+/* Daftar akun BANK saja - dipakai tab Other Inflow & PV Expense, yang di
+   Excel kolomnya memang "Bank". */
+function cfp_daftar_bank($conn)
+{
+    $bank = array();
+    foreach (cfp_daftar_akun($conn) as $label => $a) {
+        if (strpos($label, '1.01.') !== 0) { $bank[$label] = $a; }
+    }
+    return $bank;
+}
+
+
+/* Daftar supplier untuk dropdown Supplier Name di tab PV Expense.
+   Balikannya id => nama. Hanya tipe 'S' (supplier, bukan customer/lainnya)
+   dan yang masih aktif - proyeksi ini untuk pembayaran yang akan datang. */
+function cfp_daftar_supplier($conn)
+{
+    $daftar = array();
+    $q = mysqli_query($conn, "select Id_Supplier, Supplier from mastersupplier
+                              where tipe_sup = 'S'
+                                and (non_aktif is null or non_aktif <> '1')
+                                and trim(Supplier) <> ''
+                              order by Supplier");
+    while ($r = mysqli_fetch_assoc($q)) {
+        $daftar[(string) $r['Id_Supplier']] = trim($r['Supplier']);
+    }
+    return $daftar;
+}
+
+
+/* Daftar customer untuk dropdown Customer Name di tab Other Inflow.
+   Tabelnya SAMA dgn supplier (mastersupplier) - yang membedakan hanya
+   tipe_sup: 'C' customer, 'S' supplier. Balikannya id => nama. */
+function cfp_daftar_customer($conn)
+{
+    $daftar = array();
+    $q = mysqli_query($conn, "select Id_Supplier, Supplier from mastersupplier
+                              where tipe_sup = 'C'
+                                and (non_aktif is null or non_aktif <> '1')
+                                and trim(Supplier) <> ''
+                              order by Supplier");
+    while ($r = mysqli_fetch_assoc($q)) {
+        $daftar[(string) $r['Id_Supplier']] = trim($r['Supplier']);
+    }
+    return $daftar;
+}
+
+
+/* Nama satu supplier ATAU customer dari id-nya - keduanya tinggal di
+   mastersupplier, jadi satu fungsi cukup. Sengaja TIDAK menyaring tipe
+   maupun aktif/tidak: dropdown-nya sudah membatasi pilihan, sedangkan
+   dokumen lama yang namanya belakangan dinonaktifkan harus tetap bisa
+   disimpan ulang. */
+function cfp_nama_master($conn, $id)
+{
+    $id = (int) $id;
+    if ($id <= 0) { return ''; }
+    $r = mysqli_fetch_assoc(mysqli_query($conn,
+        "select Supplier from mastersupplier where Id_Supplier = $id limit 1"));
+    return $r ? trim($r['Supplier']) : '';
+}
+
+
+/* Kategori arus kas dari master. $jenis: 'Cash In' atau 'Cash Out'. */
+function cfp_daftar_kategori($conn, $jenis)
+{
+    $daftar = array();
+    $j = mysqli_real_escape_string($conn, $jenis);
+    $q = mysqli_query($conn, "select nama from ap_cf_category
+                              where jenis = '$j' and status = 'Active'
+                              order by urut, nama");
+    while ($r = mysqli_fetch_assoc($q)) {
+        $daftar[] = $r['nama'];
+    }
+    return $daftar;
+}
+
+
+/* Kurs PAJAK untuk satu tanggal.
+   Dicari kurs terakhir yang tanggalnya <= tanggal dokumen, bukan tanggal
+   persis: ini proyeksi, tanggalnya di depan dan masterrate belum terisi. */
+function cfp_kurs_pajak($conn, $tanggal, $curr = 'USD')
+{
+    $hasil = array('rate' => 1, 'tanggal' => $tanggal, 'mundur' => false, 'ketemu' => true);
+    if (strtoupper($curr) === 'IDR') {
+        return $hasil;
+    }
+
+    $tgl  = date('Y-m-d', strtotime($tanggal));
+    $curr = mysqli_real_escape_string($conn, strtoupper($curr));
+    $sql  = "select rate, tanggal from masterrate
+             where curr = '$curr' and v_codecurr = 'PAJAK' and tanggal <= '$tgl'
+             order by tanggal desc limit 1";
+    $r = mysqli_fetch_assoc(mysqli_query($conn, $sql));
+
+    if ($r) {
+        $hasil['rate']    = (float) $r['rate'];
+        $hasil['tanggal'] = $r['tanggal'];
+        $hasil['mundur']  = ($r['tanggal'] != $tgl);
+    } else {
+        $hasil['ketemu'] = false;
+    }
+    return $hasil;
+}
+
+
+/* Awalan nomor dokumen per jenis - ketiganya sudah dipastikan pemakai.
+   PV Expense memakai EXP: di laporan, kolom "Payment Voucher No" memang
+   diisi nomor dokumen ini, bukan nomor PV yang lain. */
+function cfp_awalan_doc($jenis)
+{
+    if ($jenis == 'BOOK TRANSFER') { return 'BTR'; }
+    if ($jenis == 'OTHER INFLOW')  { return 'OTH'; }
+    if ($jenis == 'PV EXPENSE')    { return 'EXP'; }
+    return 'CFP';
+}
+
+
+/* Nomor dokumen: BTR/NAG/1126/00001.
+   Bulan-tahun ikut tanggal dokumen, nomor urut per awalan + PC + bulan. */
+function cfp_no_doc_berikut($conn, $jenis, $kode_pc, $tanggal)
+{
+    $awalan = cfp_awalan_doc($jenis) . '/' . strtoupper($kode_pc) . '/' . date('my', strtotime($tanggal)) . '/';
+    $cari   = mysqli_real_escape_string($conn, $awalan);
+
+    $r = mysqli_fetch_assoc(mysqli_query($conn,
+        "select max(no_doc) as maks from ap_cf_projection where no_doc like '$cari%'"));
+
+    $urut = 0;
+    if ($r && $r['maks']) {
+        $urut = (int) substr($r['maks'], strlen($awalan));
+    }
+    return $awalan . str_pad($urut + 1, 5, '0', STR_PAD_LEFT);
+}
+
+
+/* Hitung satu baris Book Transfer. $kurs = kurs PAJAK USD tanggal itu.
+   Amount selalu dalam mata uang akun Source, lalu dihitung nilai rupiah
+   dan nilai dolarnya. Rupiah ke rupiah tidak punya sisi dolar - diisi 0.
+   Yang mendarat di akun tujuan tinggal pilih salah satunya. */
+function cfp_hitung_transfer($amount, $kurs, $curr_source, $curr_tujuan)
+{
+    $amount        = (float) $amount;
+    $rate          = (float) $kurs;
+    $rupiah        = (strtoupper($curr_source) == 'IDR');
+    $tujuan_rupiah = (strtoupper($curr_tujuan) == 'IDR');
+
+    $amount_idr = $rupiah ? $amount : $amount * $rate;
+
+    $amount_usd = 0;
+    if (!$rupiah) {
+        $amount_usd = $amount;
+    } elseif (!$tujuan_rupiah && $rate > 0) {
+        $amount_usd = $amount / $rate;
+    }
+
+    $amount_tujuan = $tujuan_rupiah ? $amount_idr : $amount_usd;
+
+    return array(
+        'amount_idr'    => round($amount_idr, 2),
+        'amount_usd'    => round($amount_usd, 2),
+        'amount_tujuan' => round($amount_tujuan, 2),
+    );
+}
+
+
+/* PC sama = Intra PC, beda = Inter PC. */
+function cfp_intra_inter($pc_source, $pc_tujuan)
+{
+    return ($pc_source != '' && $pc_source == $pc_tujuan) ? 'Intra PC' : 'Inter PC';
+}
