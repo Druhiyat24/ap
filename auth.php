@@ -26,7 +26,10 @@ if($result == 1)
 {
 	$_SESSION['username']= $data['username'];
 	$_SESSION['FullName']= $data['FullName'];
-	header("location:module/");
+	// kembali ke halaman terakhir kalau login ulang karena sesi habis
+	include_once 'login_next.php';
+	$next = login_next_aman(isset($_POST['next']) ? $_POST['next'] : '');
+	header("location:" . ($next !== '' ? $next : "module/"));
 }
 else
 {

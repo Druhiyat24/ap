@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Mockup Halaman NDS</title>
+<link rel="icon" type="image/png" sizes="32x32" href="../../images/nds/icon-32.png?v=2">
+<style>
+    img {
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      height: 30px;
+  }
+  .notif-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #ff5b5b, #d62828);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1;
+      padding: 2px 7px;
+      border-radius: 10px;
+      margin-left: 6px;
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.08), 0 1px 3px rgba(0,0,0,0.4);
+      vertical-align: middle;
+      animation: notif-pulse 2s infinite;
+  }
+  @keyframes notif-pulse {
+      0% {
+          box-shadow: 0 0 0 2px rgba(255,255,255,0.08), 0 1px 3px rgba(0,0,0,0.4), 0 0 0 0 rgba(214,40,40,0.55);
+      }
+      70% {
+          box-shadow: 0 0 0 2px rgba(255,255,255,0.08), 0 1px 3px rgba(0,0,0,0.4), 0 0 0 6px rgba(214,40,40,0);
+      }
+      100% {
+          box-shadow: 0 0 0 2px rgba(255,255,255,0.08), 0 1px 3px rgba(0,0,0,0.4), 0 0 0 0 rgba(214,40,40,0);
+      }
+  }
+  .box {
+      border-style: outset;
+      box-sizing: border-box;
+  }
+  .body {
+      font-size: 12px;     
+  }
+
+/*  body {
+      transform: scale(0.9);  
+    transform-origin: 0 0;     
+     width: 111.11%;
+  }*/
+  .box .header {
+      font-size: 12px;
+  }
+  .form-control-plaintext {
+      border: 1px solid grey;
+  }
+  .form-row {
+      margin-right: 0;
+      margin-left: -10px;
+  }
+  .filter-option {
+      font-size: 12px;
+  }
+  .datatable_wrapper{
+      font-size: 12px;
+  }
+
+  .container-1 input#myInput{
+      width: 220px;
+      height: 32px;
+      position: relative;
+      background: white;
+      font-size: 10pt;
+      float: right;
+      color: #63717f;
+      padding-left: 15px;
+      -webkit-border-radius: 5px;
+      -moz-border-radius: 5px;
+      border-radius: 5px;
+  }
+
+  a{
+      font-size: 14px;
+  }
+  button{
+      font-size: 13px !important;
+  }
+
+  table{
+      font-size: 12px;
+  }
+
+  table{
+      font-size: 12px;
+  }
+
+  h2.text-center{
+      font-size: 20px;
+  }
+
+  h3.text-center{
+      font-size: 20px;
+  }
+
+  h4{
+      font-size: 20px;
+  }
+
+  h5.text-white{
+      font-size: 18px;
+  }
+
+
+  /* Chrome, Safari, Edge, Opera */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+  }
+
+  .tableFix { /* Scrollable parent element */
+      position: relative;
+      overflow: auto;
+      height: 100px;
+      font-size: 12px;
+  }
+
+  .tableFix table{
+      width: 100%;
+      border-collapse: collapse;
+  }
+
+  .tableFix th,
+  .tableFix td{
+      padding: 8px;
+      text-align: left;
+  }
+
+  .tableFix thead {
+      position: sticky;  /* Edge, Chrome, FF */
+      top: 0px;
+      background: #F0F8FF;  /* Some background is needed */
+  }
+
+
+  /* Navbar & dropdown: lihat css/app-navbar.css */
+
+  .swal-wide{
+      width:400px !important;
+      height: 200px !important;
+  }
+
+  /* Chrome, Safari, Edge */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+
+</style>
+<link href="../css/4.1.1/main.css" rel="stylesheet">
+<link href="../css/4.1.1/bootstrap.min.css" rel="stylesheet">
+<link href="../fontawesome5/css/all.min.css" rel="stylesheet">
+<link href="../fontawesome5/css/v4-shims.min.css" rel="stylesheet">
+<link href="../css/app-navbar.css" rel="stylesheet">
+<style>
+/* ===== Mockup halaman NDS: Dashboard / List / Create, dua arah (arah-1 / arah-2) ===== */
+:root {
+  --navy-900: #0b1d4a; --navy-700: #1e3a8a; --biru: #2f62dc; --emas: #e5a913; --emas-muda: #f5c84c;
+  --latar: #f4f7fd; --garis: #e3e9f5; --teks: #1e293b; --redup: #64748b;
+}
+body { background: var(--latar); color: var(--teks); }
+.mk-hal { display: none; }
+body.hal-dash .mk-dash, body.hal-list .mk-list, body.hal-create .mk-create { display: block; }
+.mk-isi { padding: 22px 24px 120px; max-width: 1680px; margin: 0 auto; }
+
+/* ---------- judul halaman + remah roti ---------- */
+.mk-judul { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.mk-judul h1 { font-size: 20px; font-weight: 800; color: var(--navy-900); margin: 0; }
+.mk-remah { font-size: 12px; color: var(--redup); }
+.mk-remah b { color: var(--navy-700); }
+.mk-judul .ml-auto { margin-left: auto; }
+
+/* ---------- kartu ---------- */
+.mk-kartu { background: #fff; border: 1px solid var(--garis); border-radius: 14px; box-shadow: 0 10px 30px -18px rgba(15, 37, 87, .35); overflow: hidden; margin-bottom: 18px; }
+.mk-kartu-kepala { display: flex; align-items: center; gap: 10px; padding: 12px 18px; }
+.mk-kartu-kepala h5 { margin: 0; font-size: 15px; font-weight: 800; letter-spacing: .02em; }
+.mk-kartu-kepala .mk-ikon { width: 30px; height: 30px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; }
+.mk-kartu-kepala .mk-aksi { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+.mk-kartu-badan { padding: 16px 18px; }
+
+/* Arah 1: kepala biru khas (navy -> biru) + garis emas */
+.arah-1 .mk-kartu-kepala { background: linear-gradient(90deg, #0b1d4a 0%, #1e3a8a 45%, #2f62dc 100%); color: #fff; box-shadow: inset 0 -3px 0 var(--emas); }
+.arah-1 .mk-kartu-kepala .mk-ikon { background: rgba(255, 255, 255, .14); color: var(--emas-muda); }
+/* Arah 2: kepala putih, judul navy, ikon emas, garis bawah tipis */
+.arah-2 .mk-kartu-kepala { background: #fff; color: var(--navy-900); border-bottom: 1px solid var(--garis); }
+.arah-2 .mk-kartu-kepala .mk-ikon { background: #fdf4dc; color: #b7860b; }
+.arah-2 .mk-kartu-kepala h5::after { content: ""; display: block; width: 34px; height: 3px; border-radius: 3px; background: var(--emas); margin-top: 4px; }
+
+/* ---------- isian ---------- */
+.mk-label { display: block; font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--redup); margin-bottom: 5px; }
+.mk-label .wajib { color: #dc2626; }
+.mk-input { width: 100%; height: 40px; padding: 0 12px; font-size: 13.5px; color: var(--teks); background: #fff; border: 1.5px solid #d6deeb; border-radius: 10px; outline: none; transition: border-color .15s, box-shadow .15s; }
+.mk-input:focus { border-color: var(--biru); box-shadow: 0 0 0 4px rgba(47, 98, 220, .13); }
+.mk-input[readonly] { background: #f1f5fb; color: var(--redup); }
+select.mk-input { appearance: auto; }
+textarea.mk-input { height: 70px; padding: 9px 12px; resize: vertical; }
+.mk-ket { font-size: 11px; color: #94a3b8; margin-top: 3px; display: block; }
+
+/* bagian di dalam formulir */
+.mk-bagian { display: flex; align-items: center; gap: 8px; margin: 6px 0 12px; font-size: 11.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--navy-700); }
+.mk-bagian i { color: var(--emas); }
+.mk-bagian::after { content: ""; flex: 1; height: 1px; background: var(--garis); }
+
+/* ---------- tombol ---------- */
+.mk-btn { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 16px; font-size: 13px; font-weight: 700; border-radius: 10px; border: 1.5px solid transparent; cursor: pointer; white-space: nowrap; transition: filter .12s, transform .12s; }
+.mk-btn:hover { filter: brightness(1.07); transform: translateY(-1px); }
+.mk-btn-utama { color: #fff; background: linear-gradient(180deg, #2f62dc, #1e3a8a); box-shadow: 0 8px 16px -10px rgba(30, 64, 175, .8); }
+.mk-btn-garis { color: var(--navy-700); background: #fff; border-color: #c7d3ea; }
+.mk-btn-hijau { color: #fff; background: #16a34a; }
+.mk-btn-emas { color: var(--navy-900); background: linear-gradient(180deg, #f5c84c, #e5a913); }
+.arah-1 .mk-kartu-kepala .mk-btn-garis { background: rgba(255, 255, 255, .12); color: #fff; border-color: rgba(255, 255, 255, .35); }
+
+/* ---------- tabel ---------- */
+.mk-tabel-bungkus { overflow-x: auto; border: 1px solid var(--garis); border-radius: 12px; }
+.mk-tabel { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+.mk-tabel th { background: var(--navy-700); color: #fff; font-weight: 700; padding: 10px 12px; white-space: nowrap; position: sticky; top: 0; }
+.arah-2 .mk-tabel th { background: #eef3ff; color: var(--navy-900); border-bottom: 2px solid var(--emas); }
+.mk-tabel td { padding: 9px 12px; border-top: 1px solid #edf1f8; vertical-align: middle; }
+.mk-tabel tbody tr:nth-child(even) td { background: #f8faff; }
+.mk-tabel tbody tr:hover td { background: #eef3ff; }
+.mk-tabel .angka { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mk-tabel tfoot td { background: #f1f5fb; font-weight: 800; border-top: 2px solid var(--garis); }
+.mk-status { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 700; }
+.mk-status.draft { background: #f1f5f9; color: #475569; }
+.mk-status.post { background: #e0ecff; color: #1d4ed8; }
+.mk-status.approved { background: #dcfce7; color: #15803d; }
+.mk-status.cancel { background: #fee2e2; color: #b91c1c; }
+.mk-ikon-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid #d6deeb; background: #fff; color: var(--navy-700); display: inline-flex; align-items: center; justify-content: center; margin-right: 4px; }
+.mk-ikon-btn.merah { color: #dc2626; }
+
+/* ---------- dashboard ---------- */
+.mk-kpi-angka { font-size: 26px; font-weight: 800; color: var(--navy-900); letter-spacing: -.01em; }
+.mk-kpi-angka small { font-size: 15px; color: var(--redup); font-weight: 700; margin-right: 4px; }
+.mk-kpi-waktu { font-size: 11.5px; color: #94a3b8; margin: 2px 0 12px; }
+.mk-bar { display: flex; height: 8px; border-radius: 8px; overflow: hidden; background: #edf1f8; }
+.mk-bar span { display: block; height: 100%; }
+.mk-kpi-baris { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; margin-top: 10px; flex-wrap: wrap; }
+.mk-kpi-baris b { color: var(--navy-900); }
+.mk-titik { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+.mk-petak { background: #fff; border: 1px solid var(--garis); border-radius: 12px; padding: 14px 16px; height: 100%; border-left: 4px solid var(--biru); }
+.arah-1 .mk-petak { border-left-color: var(--navy-700); }
+.mk-petak .mk-label { margin-bottom: 8px; }
+.mk-petak .nilai { font-size: 18px; font-weight: 800; color: var(--navy-900); }
+.mk-petak .sub { font-size: 12px; color: var(--redup); }
+.mk-grafik { display: flex; align-items: flex-end; gap: 14px; height: 230px; padding: 10px 6px 0; border-bottom: 1px solid var(--garis); }
+.mk-grafik div { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+.mk-grafik i { display: block; width: 100%; max-width: 46px; border-radius: 8px 8px 0 0; background: linear-gradient(180deg, #2f62dc, #1e3a8a); }
+.mk-grafik div:first-child i { background: linear-gradient(180deg, #f5c84c, #e5a913); }
+.mk-grafik b { font-size: 11px; color: var(--navy-900); margin-bottom: 4px; white-space: nowrap; }
+.mk-grafik-label { display: flex; gap: 14px; padding: 6px 6px 0; }
+.mk-grafik-label span { flex: 1; font-size: 10.5px; color: var(--redup); text-align: center; line-height: 1.2; }
+
+/* ---------- tombol pilihan mockup ---------- */
+.mk-pilih { position: fixed; right: 16px; bottom: 16px; z-index: 2000; background: #fff; border: 1px solid var(--garis); border-radius: 14px; box-shadow: 0 14px 34px -12px rgba(15, 37, 87, .45); padding: 10px 12px; font-size: 12px; max-width: calc(100vw - 32px); }
+.mk-pilih b { display: block; color: var(--navy-700); margin: 2px 0 4px; }
+.mk-pilih button { border: 1px solid #cbd5e1; background: #fff; color: #334155; border-radius: 9px; padding: 5px 10px; margin: 2px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.mk-pilih button.on { background: var(--navy-700); border-color: var(--navy-700); color: #fff; }
+
+/* ---------- layar kecil ---------- */
+@media (max-width: 767.98px) {
+  .mk-isi { padding: 14px 12px 150px; }
+  .mk-kartu-badan { padding: 14px 12px; }
+  .mk-kartu-kepala { flex-wrap: wrap; }
+  .mk-kartu-kepala .mk-aksi { margin-left: 0; width: 100%; }
+  .mk-kpi-angka { font-size: 21px; }
+  .mk-grafik { gap: 6px; height: 180px; }
+  .mk-grafik b { font-size: 9px; }
+  .mk-grafik-label { gap: 6px; }
+  .mk-grafik-label span { font-size: 9px; }
+}
+
+/* =====================================================================
+   Arah 3-5 ("tenang"): warna inti hanya navy, merah hanya utk yg perlu perhatian,
+   latar abu kebiruan (tidak putih polos). Kelas .tenang dipakai bersama.
+   ===================================================================== */
+.tenang .mk-bar span:first-child { background: #1e3a8a !important; }
+.tenang .mk-kpi-baris > span:first-child .mk-titik { background: #1e3a8a !important; }
+.tenang .mk-grafik i { background: #5b7cc4; }
+.tenang .mk-grafik div:first-child i { background: #1e3a8a; }
+.tenang .mk-petak { border-left: 1px solid var(--garis); }
+.tenang .mk-petak .mk-label i { color: #1e3a8a; }
+.tenang .mk-btn-emas { color: #fff; background: linear-gradient(180deg, #2f62dc, #1e3a8a); }
+.tenang .mk-btn-hijau { color: #15803d; background: #fff; border-color: #bfe3cb; }
+.tenang .mk-kartu-kepala h5 { font-size: 14px; letter-spacing: .03em; }
+
+/* ---- 3. Biru tenang: kepala kartu navy polos, kepala tabel terang ---- */
+body.arah-3 { background: #e9eef5; }
+.arah-3 .mk-kartu { border-color: #d9e1ee; box-shadow: 0 6px 18px -14px rgba(15, 37, 87, .35); }
+.arah-3 .mk-kartu-kepala { background: #1e3a8a; color: #fff; padding: 10px 18px; }
+.arah-3 .mk-kartu-kepala .mk-ikon { width: 26px; height: 26px; background: rgba(255, 255, 255, .13); color: #fff; font-size: 12px; }
+.arah-3 .mk-kartu-kepala .mk-btn-garis { background: rgba(255, 255, 255, .1); color: #fff; border-color: rgba(255, 255, 255, .35); }
+.arah-3 .mk-kartu-kepala .mk-btn-emas { background: #fff; color: #1e3a8a; }
+.arah-3 .mk-tabel th { background: #eef2f9; color: #1e3a8a; border-bottom: 1px solid #d9e1ee; }
+
+/* ---- 4. Abu kebiruan: kepala kartu biru-abu muda + garis navy kiri, kepala tabel navy ---- */
+body.arah-4 { background: #e4eaf3; }
+.arah-4 .mk-kartu { border-color: #d6deeb; box-shadow: 0 6px 18px -14px rgba(15, 37, 87, .3); }
+.arah-4 .mk-kartu-kepala { background: #f2f5fa; color: #1e3a8a; border-bottom: 1px solid #dfe6f1; box-shadow: inset 4px 0 0 #1e3a8a; }
+.arah-4 .mk-kartu-kepala .mk-ikon { width: 28px; height: 28px; background: #1e3a8a; color: #fff; font-size: 12px; }
+.arah-4 .mk-tabel th { background: #1e3a8a; color: #fff; }
+
+/* ---- 5. Pita navy: judul halaman di pita navy, kartu putih mengambang di atasnya ---- */
+body.arah-5 { background: linear-gradient(180deg, #13285f 0, #13285f 190px, #edf1f7 190px) no-repeat, #edf1f7; }
+.arah-5 .mk-judul h1 { color: #fff; }
+.arah-5 .mk-remah { color: rgba(255, 255, 255, .7); }
+.arah-5 .mk-remah b { color: #fff; }
+.arah-5 .mk-kartu { border-color: #e1e7f1; box-shadow: 0 14px 32px -18px rgba(15, 37, 87, .5); }
+.arah-5 .mk-kartu-kepala { background: #fff; color: #1e3a8a; border-bottom: 1px solid #e8edf5; }
+.arah-5 .mk-kartu-kepala .mk-ikon { width: 28px; height: 28px; background: #eef3ff; color: #1e3a8a; font-size: 12px; }
+.arah-5 .mk-tabel th { background: #f1f5fb; color: #1e3a8a; border-bottom: 2px solid #1e3a8a; }
+.arah-5 .mk-petak { box-shadow: 0 10px 24px -18px rgba(15, 37, 87, .45); }
+
+/* ikon judul bagian formulir ikut navy di arah tenang */
+.tenang .mk-bagian i { color: #1e3a8a; }
+</style>
+</head>
+<body>
+<nav class="navbar navbar-expand-xl navbar-dark bg-primary">
+  <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+  <a class="mn-brand" href="#"><span class="mn-brand-ikon"><img src="../../images/nds/icon-64.png?v=2" alt=""></span><span class="mn-brand-teks"><b>NDS</b><small>Nirwana Digital Solution</small></span></a>
+<div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav mr-auto">
+        
+
+      
+      <li class="nav-item dropdown active">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span class="fas fa-database mr-1"></span> Master
+        </a>
+        <div class="dropdown-menu bg-dark " aria-labelledby="navbarDropdown" style="width:200px;">
+            
+              <a href="../AP/master-cash-flow.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-paperclip fa-fw"></span>
+              <span class="menu-collapsed">Cash Flow - Accounting</span>
+
+              </a>
+              <a href="../AP/master-cash-flow-mapping.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-random fa-fw"></span>
+              <span class="menu-collapsed">Cash Flow - Finance</span>
+              </a>
+              <a href="../AP/master-coa-category1.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-paperclip fa-fw "></span>
+              <span class="menu-collapsed">Category COA</span>
+              </a>
+              <a href="../AP/master-coa.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-paperclip fa-fw "></span>
+              <span class="menu-collapsed">Chart Of Account</span>
+              </a>
+              <a href="../AP/master-costcenter.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-paperclip fa-fw "></span>
+              <span class="menu-collapsed">Cost Center</span>
+              </a>
+              <a href="../AP/master-profit-center.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-paperclip fa-fw "></span>
+              <span class="menu-collapsed">Profit Center</span>
+              </a>
+              <a href="../AP/master-bank.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-paperclip fa-fw "></span>
+              <span class="menu-collapsed">Bank</span>
+              </a>
+              <a href="../AP/master-mapping-memo.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-paperclip fa-fw "></span>
+              <span class="menu-collapsed">Mapping Memo</span>
+              </a>
+              <a href="../AP/master-supplier-bank.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-university fa-fw "></span>
+              <span class="menu-collapsed">Master Bank Supplier</span>
+              </a>
+              <a href="../AP/master-pilihan-bank.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-university fa-fw "></span>
+              <span class="menu-collapsed">Master Pilihan Bank</span>
+              </a>
+              <a href="../AP/master-rate.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-paperclip fa-fw "></span>
+              <span class="menu-collapsed">Rate</span>
+              </a>
+                
+      </div>
+  </li>
+
+  
+  <li class="nav-item dropdown active">
+      <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fas fa-file-invoice-dollar mr-1"></span> AP<span class="caret"></span></a>
+      <ul class="dropdown-menu bg-dark text-white" role="menu">
+        
+      <li class="dropdown-submenu ">
+      <a class="dropdown-item bg-dark text-white" href="#">
+      <span class="fa fa-envelope-o fa-fw "></span>
+      <span class="menu-collapsed">BPB Garment</span>
+      </a>
+      <ul class="dropdown-menu bg-dark text-white" role="menu">
+         <a href="../AP/formapprovebpb.php" class="dropdown-item bg-dark text-white">
+         <span class="fa fa fa-thumbs-up fa-fw "></span>
+         <span class="menu-collapsed">Approve BPB</span>
+         <span class="notif-badge">134</span>
+         </a>
+         <a href="../AP/verifikasibpb.php" class="dropdown-item bg-dark text-white">
+         <span class="fa fa-share fa-fw "></span>
+         <span class="menu-collapsed">Verifikasi BPB</span>
+         </a>
+         <a href="../AP/formapprovebppb.php" class="dropdown-item bg-dark text-white">
+         <span class="fa fa fa-thumbs-up fa-fw mr-2"></span>
+         <span class="menu-collapsed">Approve BPB Return</span>
+         <span class="notif-badge">1</span>
+         </a>
+         <a href="../AP/verifikasibppb.php" class="dropdown-item bg-dark text-white">
+         <span class="fa fa-share fa-fw "></span>
+         <span class="menu-collapsed">Verifikasi BPB Return</span>
+         </a> <a href="../AP/update_bpb.php" class="dropdown-item bg-dark text-white">
+      <span  class="fa fa-pencil fa-fw "></span>
+      <span class="menu-collapsed">Update BPB</span>
+      </a>
+      <a href="../AP/report-faktur-pajak.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-files-o fa-fw "></span>
+      <span class="menu-collapsed">Report FP</span>
+      </a></ul>
+  </li>
+
+
+
+    <li class="dropdown-submenu ">
+    <a class="dropdown-item bg-dark text-white" href="#">
+    <span class="fa fa-envelope-o fa-fw "></span>
+    <span class="menu-collapsed">BPB Knitting</span>
+    </a>
+    <ul class="dropdown-menu bg-dark text-white" role="menu">
+      <a href="../AP/verifikasibpb_knitting.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-share fa-fw "></span>
+      <span class="menu-collapsed">Verifikasi BPB</span>
+      </a>
+      <a href="../AP/formapprovebpb_knitting.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa fa-thumbs-up fa-fw "></span>
+      <span class="menu-collapsed">Approve BPB</span>
+      <span class="notif-badge">9</span>
+      </a> </ul>
+</li>
+
+  <li class="dropdown-submenu ">
+  <a class="dropdown-item bg-dark text-white" href="#">
+  <span s class="fa fa-money fa-fw "></span>
+  <span class="menu-collapsed">FTR</span>
+  </a>
+  <ul class="dropdown-menu bg-dark text-white" role="menu">
+      <a href="../AP/ftrcbd.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-paper-plane-o fa-fw "></span>
+      <span class="menu-collapsed">FTR CBD</span>
+      </a>
+      <a href="../AP/ftrdp.php" class="dropdown-item bg-dark text-white">
+      <span  class="fa fa-paper-plane-o fa-fw "></span>
+      <span class="menu-collapsed">FTR DP</span>
+      </a>
+      <li class="dropdown-submenu">
+      <a class="dropdown-item bg-dark text-white" href="#">
+      <span class="fas fa-check-circle fa-fw "></span>
+      <span class="menu-collapsed">Approval</span>
+      </a>
+      <ul class="dropdown-menu bg-dark text-white ubf-sub" role="menu" data-judul="Approval FTR">
+          <a href="../AP/approve_ftrcbd.php" class="dropdown-item bg-dark text-white d-flex align-items-center">
+          <span class="fa fa-paper-plane-o fa-fw "></span>
+          <span class="menu-collapsed">FTR CBD</span><span class="badge badge-danger ml-auto">2</span></a>
+          <a href="../AP/approve_ftrdp.php" class="dropdown-item bg-dark text-white d-flex align-items-center">
+          <span class="fa fa-paper-plane-o fa-fw "></span>
+          <span class="menu-collapsed">FTR DP</span><span class="badge badge-danger ml-auto">1</span></a>
+      </ul>
+      </li>
+  </ul>
+  </li>
+
+<li class="dropdown-submenu ">
+<a class="dropdown-item bg-dark text-white" href="#">
+<span s class="fa fa-list-alt fa-fw "></span>
+<span class="menu-collapsed">Document Tracking</span>
+</a>
+<ul class="dropdown-menu bg-dark text-white" role="menu"><a href="../AP/document_handover.php" class="dropdown-item text-white" style="background:#1e90ff !important;font-weight:600;">
+  <span class="fa fa-exchange fa-fw "></span>
+  <span class="menu-collapsed">Document Handover</span>
+  </a><a href="../AP/report_invoice_received.php" class="dropdown-item bg-dark text-white">
+  <span class="fa fa-tags fa-fw "></span>
+  <span class="menu-collapsed">IR Report</span>
+  </a><a href="../AP/approve_transfer_memo.php" class="dropdown-item bg-dark text-white">
+  <span class="fa fa-thumbs-o-up fa-fw "></span>
+  <span class="menu-collapsed">Approve Transfer Memo</span>
+  </a>
+
+  <a href="../AP/transfer_memo.php" class="dropdown-item bg-dark text-white">
+  <span class="fa fa-paper-plane fa-fw "></span>
+  <span class="menu-collapsed">Transfer Memo</span>
+  </a></ul>
+</li>            
+
+
+                
+                    <li class="dropdown-submenu ">
+                    <a class="dropdown-item bg-dark text-white" href="#">
+                    <span s class="fa fa-btc fa-fw "></span>
+                    <span class="menu-collapsed">Kontra Bon</span>
+                    </a>
+                    <ul class="dropdown-menu bg-dark text-white" role="menu">
+                    <a href="../AP/kontrabon.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-ticket fa-fw "></span>
+                    <span class="menu-collapsed">Kontra Bon Reg</span>
+                    </a>
+                    <a href="../AP/kontrabonftrcbd.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-ticket fa-fw "></span>
+                    <span class="menu-collapsed">Kontra Bon FTR CBD</span>
+                    </a>
+                    <a href="../AP/kontrabonftrdp.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-ticket fa-fw "></span>
+                    <span class="menu-collapsed">Kontra Bon FTR DP</span>
+                    </a>
+                    </ul>
+                    </li>
+                    <li class="dropdown-submenu ">
+                    <a class="dropdown-item bg-dark text-white" href="#">
+                    <span class="fa fa-inbox fa-fw "></span>
+                    <span class="menu-collapsed">Invoice Received</span>
+                    </a>
+                    <ul class="dropdown-menu bg-dark text-white" role="menu">
+                    <a href="../AP/kontrabon_new.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-list-alt fa-fw "></span>
+                    <span class="menu-collapsed">Invoice Received</span>
+                    </a>
+                    <a href="../AP/kontrabon_new_ref.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-hashtag fa-fw "></span>
+                    <span class="menu-collapsed">Reference Number</span>
+                    </a>
+                    </ul>
+                    </li>
+                    <li class="dropdown-submenu ">
+                    <a class="dropdown-item bg-dark text-white" href="#">
+                    <span s class="fa fa-credit-card fa-fw "></span>
+                    <span class="menu-collapsed">Payment Voucher</span>
+                    </a>
+                    <ul class="dropdown-menu bg-dark text-white" role="menu">
+
+                    <a href="../AP/payment-voucher-ap.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-ticket fa-fw "></span>
+                    <span class="menu-collapsed">Payment Voucher</span>
+                    </a>
+
+                    <a href="../AP/payment-voucher-list.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-list-alt fa-fw "></span>
+                    <span class="menu-collapsed">Payment Voucher list</span>
+                    </a>
+
+                    </ul>
+                    </li>
+                    <li class="dropdown-submenu ">
+                    <a class="dropdown-item bg-dark text-white" href="#">
+                    <span class="fa fa-calendar-check-o fa-fw "></span>
+                    <span class="menu-collapsed">Payment Plan</span>
+                    </a>
+                    <ul class="dropdown-menu bg-dark text-white" role="menu">
+
+                    <a href="../AP/list-payment-plan.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-calendar fa-fw "></span>
+                    <span class="menu-collapsed">Update Payment Plan</span>
+                    </a>
+
+                    </ul>
+                    </li>
+
+                
+                    <li class="dropdown-submenu ">
+                    <a class="dropdown-item bg-dark text-white" href="#">
+                    <span class="fa fa-usd fa-fw"></span>
+                    <span class="menu-collapsed">List Payment</span>
+                    </a>
+                    <ul class="dropdown-menu bg-dark text-white" role="menu">
+                    <a href="../AP/payment.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-tags fa-fw "></span>
+                    <span class="menu-collapsed">List Payment Reg</span>
+                    </a>
+                    <a href="../AP/listpaymentcbd.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-tags fa-fw "></span>
+                    <span class="menu-collapsed">List Payment CBD</span>
+                    </a>
+                    <a href="../AP/listpaymentdp.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-tags fa-fw "></span>
+                    <span class="menu-collapsed">List Payment DP</span>
+                    </a>
+                    </ul>
+                    </li>
+
+                
+                    <li class="dropdown-submenu ">
+                    <a class="dropdown-item bg-dark text-white" href="#">
+                    <span class="fa fa-usd fa-fw"></span>
+                    <span class="menu-collapsed">Payment</span>
+                    </a>
+                    <ul class="dropdown-menu bg-dark text-white" role="menu">
+                    <a href="../AP/pelunasanftr.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-tags fa-fw "></span>
+                    <span class="menu-collapsed">Payment Reg</span>
+                    </a>
+                    <a href="../AP/pelunasanftrcbd.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-tags fa-fw "></span>
+                    <span class="menu-collapsed">Payment CBD</span>
+                    </a>
+                    <a href="../AP/pelunasanftrdp.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-tags fa-fw "></span>
+                    <span class="menu-collapsed">Payment DP</span>
+                    </a>
+                    </ul>
+                    </li>
+                
+                    <li class="dropdown-submenu ">
+                    <a class="dropdown-item bg-dark text-white" href="#">
+                    <span class="fa fa-credit-card fa-fw"></span>
+                    <span class="menu-collapsed">Closing Payment</span>
+                    </a>
+                    <ul class="dropdown-menu bg-dark text-white" role="menu">
+                    <a href="../AP/form-closing-payreg.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-tags fa-fw "></span>
+                    <span class="menu-collapsed">Close Payment Reg</span>
+                    <span class="notif-badge">262</span>
+                    </a>
+                    <a href="../AP/formclosing-paycbd.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-tags fa-fw "></span>
+                    <span class="menu-collapsed">Close Payment CBD</span>
+                    
+                    </a>
+                    <a href="../AP/formclosing-paydp.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-tags fa-fw "></span>
+                    <span class="menu-collapsed"> Close Payment DP</span>
+                    
+                    </a>
+                    <a href="../AP/status_closing.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-tags fa-fw "></span>
+                    <span class="menu-collapsed">Closing Info</span>
+                    </a>
+                    </ul>
+                    </li>
+                
+                    <li class="dropdown-submenu ">
+                    <a class="dropdown-item bg-dark text-white" href="#">
+                    <span class="fa fa-list-ul fa-fw"></span>
+                    <span class="menu-collapsed">Status</span>
+                    </a>
+                    <ul class="dropdown-menu bg-dark text-white" role="menu">
+                    <a href="../AP/status.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-paperclip fa-fw"></span>
+                    <span class="menu-collapsed">Status</span>
+                    </a>
+                    </ul>
+                    </li>
+                <li class="dropdown-submenu ">
+                <a class="dropdown-item bg-dark text-white" href="#">
+                <span class="fa fa-files-o fa-fw"></span>
+                <span class="menu-collapsed">Report</span>
+                </a>
+                <ul class="dropdown-menu bg-dark text-white" role="menu"><a href="../AP/pcs_detail.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-tags fa-fw "></span>
+                    <span class="menu-collapsed">AP Report (Apr 2022 - Dec 2025)</span>
+                    </a>
+                    <a href="../AP/payable_card_statement.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-tags fa-fw "></span>
+                    <span class="menu-collapsed">AP Report (Jan 2026 - Jun 2026)</span>
+                    </a>
+                    <a href="../AP/payable_card_statement2.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-tags fa-fw "></span>
+                    <span class="menu-collapsed">AP Report</span>
+                    </a>
+                    <a href="../AP/rekap-pelunasan.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-tags fa-fw "></span>
+                    <span class="menu-collapsed">Rekap Pelunasan</span>
+                    </a><a href="../AP/laporan_pembelian.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-tags fa-fw "></span>
+                    <span class="menu-collapsed">Purchase Report</span>
+                    </a>
+                    <a href="../AP/laporan_retur_pembelian.php" class="dropdown-item bg-dark text-white">
+                    <span class="fa fa-tags fa-fw "></span>
+                    <span class="menu-collapsed">Purchase Return Report</span>
+                    </a><li class="dropdown-submenu">
+                    <a class="dropdown-item bg-dark text-white" href="#">
+                    <span class="fa fa-line-chart fa-fw"></span>
+                    <span class="menu-collapsed">Projection</span>
+                    </a>
+                    <ul class="dropdown-menu bg-dark text-white" role="menu"><a href="../AP/ap_projection_report.php" class="dropdown-item bg-dark text-white">
+                        <span class="fa fa-bar-chart fa-fw"></span>
+                        <span class="menu-collapsed">Projection Report</span>
+                        </a></ul>
+                    </li></ul>
+            </li>
+            <li class="dropdown-submenu ">
+          <a class="dropdown-item bg-dark text-white" href="#">
+          <span class="fa fa-thumbs-o-up fa-fw"></span>
+          <span class="menu-collapsed">Approval</span>
+          </a>
+          <ul class="dropdown-menu bg-dark text-white" role="menu"><a href="../AP/formapprovekb.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-ticket fa-fw "></span>
+              <span class="menu-collapsed">Kontrabon Reg</span>
+              <span class="notif-badge">21</span>
+              </a><a href="../AP/formapprovelp.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-ticket fa-fw "></span>
+              <span class="menu-collapsed">List Payment Reg</span>
+              <span class="notif-badge">85</span>
+              </a><a href="../AP/form_approve_payment.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-ticket fa-fw "></span>
+              <span class="menu-collapsed">Payment Reg</span>
+              
+              </a><a href="../AP/approve-payment-voucher-ap-first.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-ticket fa-fw "></span>
+              <span class="menu-collapsed">Payment Voucher - First</span>
+              <span class="notif-badge">21</span>
+              </a><a href="../AP/approve-payment-voucher-ap-second.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-ticket fa-fw "></span>
+              <span class="menu-collapsed">Payment Voucher - Second</span>
+              <span class="notif-badge">86</span>
+              </a><a href="../AP/approve-payment-voucher-list.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-ticket fa-fw "></span>
+              <span class="menu-collapsed">Payment Voucher List</span>
+              <span class="notif-badge">2</span>
+              </a></ul>
+          </li>
+          
+              <a href="../AP/request_debitnote.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-registered fa-fw"></span>
+              <span class="menu-collapsed">Request Debit Note</span>
+              </a>
+      </ul>
+  </li>
+
+
+  
+  
+  <li class="nav-item dropdown active">
+      <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fa fa-university mr-1"></span> Bank<span class="caret"></span></a>
+      <ul class="dropdown-menu bg-dark text-white" role="menu">
+        
+          <a href="../AP/bank-in.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-sign-in fa-fw mr-3"></span>
+          <span class="menu-collapsed">Bank In</span>
+          </a>
+          <a href="../AP/bank-out.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-sign-out fa-fw mr-3"></span>
+          <span class="menu-collapsed">Bank Out</span>
+          </a>
+          <a href="../AP/payment-voucher.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-money fa-fw mr-3"></span>
+          <span class="menu-collapsed">Payment Voucher</span>
+          </a>
+          <li class="dropdown-submenu ">
+          <a class="dropdown-item bg-dark text-white" href="#">
+          <span class="fa fa-file-excel-o fa-fw mr-3"></span>
+          <span class="menu-collapsed">Report</span>
+          </a>
+          <ul class="dropdown-menu bg-dark text-white" role="menu">
+          <a href="../AP/bankreport.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-file-excel-o fa-fw mr-3"></span>
+          <span class="menu-collapsed">Report Bank</span>
+          </a>
+          <a href="../AP/report-cashflow-realisation.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-line-chart fa-fw mr-3"></span>
+          <span class="menu-collapsed">Report Cash Flow Realisation</span>
+          </a>
+          </ul>
+          </li><a href="../AP/e_statement.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-money fa-fw mr-3"></span>
+          <span class="menu-collapsed">E-Statement</span>
+          </a><a href="../AP/payment-list.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-list-alt fa-fw mr-3"></span>
+          <span class="menu-collapsed">Payment List</span>
+          </a><a href="../AP/transfer-list.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-exchange fa-fw mr-3"></span>
+          <span class="menu-collapsed">Transfer List</span>
+          </a>      
+      <li class="dropdown-submenu ">
+      <a class="dropdown-item bg-dark text-white" href="#">
+      <span class="fa fa-thumbs-up fa-fw"></span>
+      <span class="menu-collapsed">Approval</span>
+      </a>
+      <ul class="dropdown-menu bg-dark text-white" role="menu">
+          <a href="../AP/approve-pv.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-thumbs-up fa-fw "></span>
+          <span class="menu-collapsed">Payment Voucher</span>
+          </a>
+          <a href="../AP/approve-inbank.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-thumbs-up fa-fw "></span>
+          <span class="menu-collapsed">Incoming Bank</span>
+          </a>
+          <a href="../AP/approve_bank_out.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-thumbs-up fa-fw "></span>
+          <span class="menu-collapsed">Outgoing bank</span>
+          </a> <a href="../AP/approve-payment-list-first.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-ticket fa-fw "></span>
+              <span class="menu-collapsed">Payment List - First</span>
+              
+              </a><a href="../AP/approve-payment-list-second.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-ticket fa-fw "></span>
+              <span class="menu-collapsed">Payment List - Second</span>
+              <span class="notif-badge">3</span>
+              </a></ul>
+      </li>  </ul>
+</li>
+
+
+
+<li class="nav-item dropdown active">
+  <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fas fa-money-bill-wave mr-1"></span> Cash<span class="caret"></span></a>
+  <ul class="dropdown-menu bg-dark text-white" role="menu">
+    
+      <a href="../AP/cash-in.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-sign-in fa-fw"></span>
+      <span class="menu-collapsed">Cash In</span>
+      </a>
+      <a href="../AP/cash-out.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-sign-out fa-fw"></span>
+      <span class="menu-collapsed">Cash Out</span>
+      </a>
+      <a href="../AP/petty-cashin.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-credit-card fa-fw"></span>
+      <span class="menu-collapsed">Petty Cash In</span>
+      </a>
+      <a href="../AP/petty-cashout.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-credit-card fa-fw"></span>
+      <span class="menu-collapsed">Petty Cash Out</span>
+      </a>
+  
+      <li class="dropdown-submenu ">
+      <a class="dropdown-item bg-dark text-white" href="#">
+      <span class="fa fa-file-excel-o fa-fw"></span>
+      <span class="menu-collapsed">Report</span>
+      </a>
+      <ul class="dropdown-menu bg-dark text-white" role="menu">
+      <a href="../AP/cashreport.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-file-excel-o fa-fw"></span>
+      <span class="menu-collapsed">Report Cash</span>
+      </a>
+      <a href="../AP/petty-cashflow-realisation.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-line-chart fa-fw"></span>
+      <span class="menu-collapsed">Petty Cash Flow Realisation</span>
+      </a>
+      </ul>
+      </li>
+  
+      <li class="dropdown-submenu ">
+      <a class="dropdown-item bg-dark text-white" href="#">
+      <span class="fa fa-line-chart fa-fw"></span>
+      <span class="menu-collapsed">Projection</span>
+      </a>
+      <ul class="dropdown-menu bg-dark text-white" role="menu">
+      <a href="../AP/cash-projection.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-exchange fa-fw"></span>
+      <span class="menu-collapsed">Other</span>
+      </a>
+      </ul>
+      </li>
+  
+  <li class="dropdown-submenu ">
+  <a class="dropdown-item bg-dark text-white" href="#">
+  <span class="fa fa-thumbs-up fa-fw"></span>
+  <span class="menu-collapsed">Approval</span>
+  </a>
+  <ul class="dropdown-menu bg-dark text-white" role="menu">
+      <a href="../AP/approve-cashin.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-thumbs-up fa-fw"></span>
+      <span class="menu-collapsed">Cash In</span>
+      </a>
+      <a href="../AP/approve-cashout.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-thumbs-up fa-fw"></span>
+      <span class="menu-collapsed">Cash Out</span>
+      </a>
+      <a href="../AP/approve-petty-cashin.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-thumbs-up fa-fw"></span>
+      <span class="menu-collapsed">Petty Cash In</span>
+      </a>
+      <a href="../AP/approve-petty-cashout.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-thumbs-up fa-fw"></span>
+      <span class="menu-collapsed">Petty Cash Out</span>
+      </a> </ul>
+  </li></ul>
+</li>
+
+
+
+<li class="nav-item dropdown active">
+  <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fas fa-chart-line mr-1"></span> Accounting<span class="caret"></span></a>
+  <ul class="dropdown-menu bg-dark text-white" role="menu">
+    <a href="../AP/memorial-journal.php" class="dropdown-item bg-dark text-white">
+         <span class="fa fa-bars fa-fw"></span>
+         <span class="menu-collapsed">Memorial Journal</span>
+         </a><a href="../AP/list-journal.php" class="dropdown-item bg-dark text-white">
+         <span class="fa fa-list-alt fa-fw"></span>
+         <span class="menu-collapsed">List Journal</span>
+         </a><a href="../AP/general_ledger.php" class="dropdown-item bg-dark text-white">
+         <span class="fa fa-print fa-list"></span>
+         <span class="menu-collapsed">General Ledger</span>
+         </a><li class="dropdown-submenu ">
+     <a class="dropdown-item bg-dark text-white" href="#">
+     <span class="fa fa-list-ul fa-fw"></span>
+     <span class="menu-collapsed">Sub Ledger</span>
+     </a>
+     <ul class="dropdown-menu bg-dark text-white" role="menu"><a href="../AP/other_receivable_report.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-fax fa-fw"></span>
+      <span class="menu-collapsed">Other Receivable</span>
+      </a><a href="../AP/other_payable_report.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-fax fa-fw"></span>
+      <span class="menu-collapsed">Other Payable</span>
+      </a><a href="../AP/purchase_advance_report.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-fax fa-fw"></span>
+      <span class="menu-collapsed">Purchase Advance</span>
+      </a><a href="../AP/prepaid_tax_report.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-fax fa-fw"></span>
+      <span class="menu-collapsed">VAT In Unbilled</span>
+      </a><a href="../AP/ppn_masukan_report.php" class="dropdown-item bg-dark text-white">
+  <span class="fa fa-fax fa-fw"></span>
+  <span class="menu-collapsed">VAT In</span>
+  </a></ul>
+  </li><a href="../AP/financial_statement.php" class="dropdown-item bg-dark text-white">
+ <span class="fa fa-balance-scale fa-fw"></span>
+ <span class="menu-collapsed">Financial Statement</span>
+ </a><a href="../AP/closing-periode.php" class="dropdown-item bg-dark text-white">
+ <span class="fas fa-lock fa-fw"></span>
+ <span class="menu-collapsed">Closing Periode</span>
+ </a><li class="dropdown-submenu ">
+<a class="dropdown-item bg-dark text-white" href="#">
+<span class="fab fa-rev"></span>
+<span class="menu-collapsed">Repost Journal</span>
+</a>
+<ul class="dropdown-menu bg-dark text-white" role="menu"><a href="../AP/repost-bank-out.php" class="dropdown-item bg-dark text-white">
+  <span class="fas fa-landmark"></span>
+  <span class="menu-collapsed">Bank Out</span>
+  </a><a href="../AP/repost-bpb.php" class="dropdown-item bg-dark text-white">
+  <span class="fas fa-archive"></span>
+  <span class="menu-collapsed">BPB</span>
+  </a></ul>
+</li><a href="../AP/rekonsiliasi_jurnal_bpb.php" class="dropdown-item bg-dark text-white">
+  <span class="fas fa-file-contract"></span>
+  <span class="menu-collapsed">Rekonsiliasi Jurnal-BPB</span>
+  </a><a href="../AP/edit-journal.php" class="dropdown-item bg-dark text-white">
+  <span class="fas fa-pencil-alt"></span>
+  <span class="menu-collapsed">Edit Jurnal</span>
+  </a></ul>
+</li>
+
+
+
+<li class="nav-item dropdown active">
+  <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fas fa-calculator mr-1"></span> Cost Accounting<span class="caret"></span></a>
+  <ul class="dropdown-menu bg-dark text-white" role="menu">
+               
+      <li class="dropdown-submenu ">
+      <a class="dropdown-item bg-dark text-white" href="#">
+      <span s class="fa fa-tasks fa-fw "></span>
+      <span class="menu-collapsed">Fabric</span>
+      </a>
+      <ul class="dropdown-menu bg-dark text-white" role="menu">
+
+
+      <a href="../AP/ca_fabric_list_barcode.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-barcode fa-fw "></span>
+      <span class="menu-collapsed">List Barcode</span>
+      </a>
+      <a href="../AP/ca_fabric_trx_in_new.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-cart-arrow-down fa-fw "></span>
+      <span class="menu-collapsed">Trx Item In</span>
+      </a>
+      <a href="../AP/ca_fabric_trx_in_barcode.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-cart-arrow-down fa-fw "></span>
+      <span class="menu-collapsed">Trx Barcode In</span>
+      </a>
+      
+      <a href="../AP/ca_fabric_trx_out_item.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-paper-plane fa-fw "></span>
+      <span class="menu-collapsed">Trx Item Out</span>
+      </a>
+      <a href="../AP/ca_fabric_trx_out_barcode.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-paper-plane fa-fw "></span>
+      <span class="menu-collapsed">Trx Barcode Out</span>
+      </a>
+      
+      <a href="../AP/ca_fabric_summary_item.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-calculator fa-fw "></span>
+      <span class="menu-collapsed">Summary Item</span>
+      </a>
+      <a href="../AP/ca_fabric_summary_barcode.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-calculator fa-fw "></span>
+      <span class="menu-collapsed">Summary Barcode</span>
+      </a>
+      <a href="../AP/ca_fabric_summary_sc.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-calculator fa-fw "></span>
+      <span class="menu-collapsed">Summary Subcont</span>
+      </a>
+      <a href="../AP/ca_fabric_summary_subcont.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-calculator fa-fw "></span>
+      <span class="menu-collapsed">Summary Subcont New</span>
+      </a>
+      <a href="../AP/update_bpb_fabric.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-pencil-square fa-fw "></span>
+      <span class="menu-collapsed">Update Trx In</span>
+      </a>
+      <a href="../AP/update_np_revisi.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-pencil-square fa-fw "></span>
+      <span class="menu-collapsed">Revisi Barcode</span>
+      </a>
+      <a href="../AP/adjust-subcont.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-pencil-square fa-fw "></span>
+      <span class="menu-collapsed">Update Subcontractor</span>
+      </a>
+
+      </ul>
+      </li>           
+      <li class="dropdown-submenu ">
+      <a class="dropdown-item bg-dark text-white" href="#">
+      <span s class="fa fa-tasks fa-fw "></span>
+      <span class="menu-collapsed">Item General</span>
+      </a>
+      <ul class="dropdown-menu bg-dark text-white" role="menu">
+
+      
+      <a href="../AP/item_general_usage.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-cart-arrow-down fa-fw "></span>
+      <span class="menu-collapsed">Item General Usage</span>
+      </a>
+
+      </ul>
+      </li>
+      <li class="dropdown-submenu ">
+      <a class="dropdown-item bg-dark text-white" href="#">
+      <span s class="far fa-edit fa-fw "></span>
+      <span class="menu-collapsed">Update BPB</span>
+      </a>
+      <ul class="dropdown-menu bg-dark text-white" role="menu">
+          <li class="dropdown-submenu">
+          <a class="dropdown-item bg-dark text-white" href="#">
+          <span class="fas fa-warehouse fa-fw "></span>
+          <span class="menu-collapsed">Fabric</span>
+          </a>
+          <ul class="dropdown-menu bg-dark text-white ubf-sub" role="menu" data-judul="Fabric">
+            <a href="../AP/update-bpb-fabric.php" class="dropdown-item bg-dark text-white">
+            <span class="fas fa-file-invoice fa-fw "></span>
+            <span class="menu-collapsed">Request</span>
+            </a>
+            <a href="../AP/approve_update_bpb_fabric.php" class="dropdown-item bg-dark text-white d-flex align-items-center">
+            <span class="fas fa-check-circle fa-fw "></span>
+            <span class="menu-collapsed">Approval</span></a>
+          </ul>
+          </li>
+          <li class="dropdown-submenu">
+          <a class="dropdown-item bg-dark text-white" href="#">
+          <span class="fas fa-puzzle-piece fa-fw "></span>
+          <span class="menu-collapsed">Accessories</span>
+          </a>
+          <ul class="dropdown-menu bg-dark text-white ubf-sub" role="menu" data-judul="Accessories">
+            <a href="../AP/update-bpb-accessories.php" class="dropdown-item bg-dark text-white">
+            <span class="fas fa-file-invoice fa-fw "></span>
+            <span class="menu-collapsed">Request</span>
+            </a>
+            <a href="../AP/approve_update_bpb_accessories.php" class="dropdown-item bg-dark text-white d-flex align-items-center">
+            <span class="fas fa-check-circle fa-fw "></span>
+            <span class="menu-collapsed">Approval</span></a>
+          </ul>
+          </li>
+          <li class="dropdown-submenu">
+          <a class="dropdown-item bg-dark text-white" href="#">
+          <span class="fas fa-tools fa-fw "></span>
+          <span class="menu-collapsed">General</span>
+          </a>
+          <ul class="dropdown-menu bg-dark text-white ubf-sub" role="menu" data-judul="General">
+            <a href="../AP/update-bpb-general.php" class="dropdown-item bg-dark text-white">
+            <span class="fas fa-file-invoice fa-fw "></span>
+            <span class="menu-collapsed">Request</span>
+            </a>
+            <a href="../AP/approve_update_bpb_general.php" class="dropdown-item bg-dark text-white d-flex align-items-center">
+            <span class="fas fa-check-circle fa-fw "></span>
+            <span class="menu-collapsed">Approval</span></a>
+          </ul>
+          </li>
+          <li class="dropdown-submenu">
+          <a class="dropdown-item bg-dark text-white" href="#">
+          <span class="fas fa-industry fa-fw "></span>
+          <span class="menu-collapsed">WIP</span>
+          </a>
+          <ul class="dropdown-menu bg-dark text-white ubf-sub" role="menu" data-judul="WIP">
+            <a href="../AP/update-bpb-wip.php" class="dropdown-item bg-dark text-white">
+            <span class="fas fa-file-invoice fa-fw "></span>
+            <span class="menu-collapsed">Request</span>
+            </a>
+            <a href="../AP/approve_update_bpb_wip.php" class="dropdown-item bg-dark text-white d-flex align-items-center">
+            <span class="fas fa-check-circle fa-fw "></span>
+            <span class="menu-collapsed">Approval</span></a>
+          </ul>
+          </li>
+      </ul>
+      </li>
+      <li class="dropdown-submenu ">
+      <a class="dropdown-item bg-dark text-white" href="#">
+      <span class="fas fa-calendar-times fa-fw "></span>
+      <span class="menu-collapsed">Closing Period</span>
+      </a>
+      <ul class="dropdown-menu bg-dark text-white" role="menu"><a href="../AP/ca_fabric_closing_periode.php" class="dropdown-item bg-dark text-white">
+      <span class="fas fa-warehouse fa-fw "></span>
+      <span class="menu-collapsed">Fabric Warehouse</span>
+      </a></ul>
+      </li>
+
+</ul>
+</li>
+
+
+
+
+<li class="nav-item dropdown active">
+  <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fas fa-ship mr-1"></span> Exim<span class="caret"></span></a>
+  <ul class="dropdown-menu bg-dark text-white" role="menu">
+    <a href="../AP/exim-calculatin-cost-report.php" class="dropdown-item bg-dark text-white">
+         <span class="fa fa-bars fa-fw"></span>
+         <span class="menu-collapsed">Calculation Cost Report</span>
+         </a></ul>
+</li>
+
+
+<li class="nav-item dropdown active">
+    <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fas fa-retweet mr-1"></span> Reverse<span class="caret"></span></a>
+    <ul class="dropdown-menu bg-dark text-white" role="menu">
+      
+      <li class="dropdown-submenu ">
+      <a class="dropdown-item bg-dark text-white" href="#">
+      <span class="fa fa-envelope fa-fw"></span>
+      <span class="menu-collapsed">BPB</span>
+      </a>
+      <ul class="dropdown-menu bg-dark text-white" role="menu"><a href="../AP/maintain-bpb.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-minus-square-o fa-fw "></span>
+        <span class="menu-collapsed">BPB</span>
+        </a>
+        <a href="../AP/formreversebpb.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-minus-square-o fa-fw"></span>
+        <span class="menu-collapsed">Verifikasi BPB</span>                
+        </a></ul>
+    </li>
+    
+        <li class="dropdown-submenu ">
+        <a class="dropdown-item bg-dark text-white" href="#">
+        <span class="fa fa-money fa-fw"></span>
+        <span class="menu-collapsed">FTR</span>
+        </a>
+        <ul class="dropdown-menu bg-dark text-white" role="menu">
+        <a href="../AP/pengajuan_ftrcbd.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-minus-square-o fa-fw"></span>
+        <span class="menu-collapsed">FTR CBD</span>
+        </a>
+        <a href="../AP/pengajuan_ftrdp.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-minus-square-o fa-fw"></span>
+        <span class="menu-collapsed">FTR DP</span>
+        </a>
+        </ul>
+        </li>
+    
+        <li class="dropdown-submenu ">
+        <a class="dropdown-item bg-dark text-white" href="#">
+        <span class="fa fa-btc fa-fw"></span>
+        <span class="menu-collapsed">Kontra Bon</span>
+        </a>
+        <ul class="dropdown-menu bg-dark text-white" role="menu">
+        <a href="../AP/pengajuankb.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-minus-square-o fa-fw"></span>
+        <span class="menu-collapsed"> Kontrabon Reg</span>
+        </a>
+        <a href="../AP/pengajuankb_cbd.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-minus-square-o fa-fw"></span>
+        <span class="menu-collapsed">Kontrabon CBD</span>
+        </a>
+        <a href="../AP/pengajuankb_dp.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-minus-square-o fa-fw"></span>
+        <span class="menu-collapsed">Kontrabon DP</span>
+        </a>
+        </ul>
+        </li>
+    
+        <li class="dropdown-submenu ">
+        <a class="dropdown-item bg-dark text-white" href="#">
+        <span class="fa fa-usd fa-fw"></span>
+        <span class="menu-collapsed">List Payment</span>
+        </a>
+        <ul class="dropdown-menu bg-dark text-white" role="menu">
+        <a href="../AP/pengajuanpayment.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-minus-square-o fa-fw"></span>
+        <span class="menu-collapsed">List Payment Reg</span>
+        </a>
+        <a href="../AP/pengajuanpaymentcbd.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-minus-square-o fa-fw"></span>
+        <span class="menu-collapsed">List Payment CBD</span>
+        </a>
+        <a href="../AP/pengajuanpaymentdp.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-minus-square-o fa-fw"></span>
+        <span class="menu-collapsed">List Payment DP</span>
+        </a>
+        </ul>
+        </li>
+    <li class="dropdown-submenu ">
+    <a class="dropdown-item bg-dark text-white" href="#">
+    <span class="fas fa-history fa-fw"></span>
+    <span class="menu-collapsed">Reverse</span>
+    </a>
+    <ul class="dropdown-menu bg-dark text-white" role="menu"><a href="../AP/reverse_kontrabon.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-angle-right fa-fw"></span>
+        <span class="menu-collapsed">Kontrabon</span>
+        </a><a href="../AP/reverse_payment.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-angle-right fa-fw"></span>
+        <span class="menu-collapsed">Payment</span>
+        </a><a href="../AP/reverse_bank.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-angle-right fa-fw"></span>
+      <span class="menu-collapsed">Bank</span>
+      </a><a href="../AP/reverse_petty_cash.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-angle-right fa-fw"></span>
+      <span class="menu-collapsed">Petty Cash</span>
+      </a><a href="../AP/reverse_payment_voucher.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-angle-right fa-fw"></span>
+      <span class="menu-collapsed">Payment Voucher</span>
+      </a><a href="../AP/reverse_payment_voucher_list.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-angle-right fa-fw"></span>
+      <span class="menu-collapsed">Payment Voucher List</span>
+      </a><a href="../AP/reverse_payment_list.php" class="dropdown-item bg-dark text-white">
+      <span class="fa fa-angle-right fa-fw"></span>
+      <span class="menu-collapsed">Payment List</span>
+      </a></ul>
+  </li>
+  <li class="dropdown-submenu ">
+<a class="dropdown-item bg-dark text-white" href="#">
+<span class="fa fa-thumbs-o-up fa-fw"></span>
+<span class="menu-collapsed">Approval</span>
+</a>
+<ul class="dropdown-menu bg-dark text-white" role="menu"><a href="../AP/form_approve_reverse_kontrabon.php" class="dropdown-item bg-dark text-white">
+    <span class="fas fa-angle-right fa-fw "></span>
+    <span class="menu-collapsed">Kontrabon</span>
+    
+    </a><a href="../AP/form_approve_reverse_payment.php" class="dropdown-item bg-dark text-white">
+    <span class="fa fa-angle-right fa-fw "></span>
+    <span class="menu-collapsed">Payment</span>
+    <span class="notif-badge">1</span>
+    </a><a href="../AP/form_approve_reverse_bank.php" class="dropdown-item bg-dark text-white">
+    <span class="fa fa-angle-right fa-fw "></span>
+    <span class="menu-collapsed">Bank</span>
+    
+    </a><a href="../AP/form_approve_reverse_petty_cash.php" class="dropdown-item bg-dark text-white">
+    <span class="fa fa-angle-right fa-fw "></span>
+    <span class="menu-collapsed">Petty Cash</span>
+    
+    </a><a href="../AP/form_approve_reverse_payment_list.php" class="dropdown-item bg-dark text-white">
+    <span class="fa fa-angle-right fa-fw "></span>
+    <span class="menu-collapsed">Payment List</span>
+    
+    </a><a href="../AP/form_approve_reverse_payment_voucher_list.php" class="dropdown-item bg-dark text-white">
+    <span class="fa fa-angle-right fa-fw "></span>
+    <span class="menu-collapsed">Payment Voucher List</span>
+    
+    </a><a href="../AP/form_approve_reverse_payment_voucher.php" class="dropdown-item bg-dark text-white">
+    <span class="fa fa-angle-right fa-fw "></span>
+    <span class="menu-collapsed">Payment Voucher</span>
+    
+    </a></ul>
+</li>
+</ul>
+</li>
+
+
+<li class="nav-item dropdown active">
+    <a href="" class="nav-link dropdown-toggle" data-toggle="dropdown"><span class="fa fa-cogs mr-1"></span> Setting<span class="caret"></span></a>
+    <ul class="dropdown-menu bg-dark text-white" role="menu">
+      
+        <a href="../AP/userrole.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-user-plus fa-fw"></span>
+        <span class="menu-collapsed">Userrole</span>
+        </a>
+        <a href="../AP/project-progress.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-tasks fa-fw"></span>
+        <span class="menu-collapsed">Project Progress</span>
+        </a></ul>
+</li>
+
+
+<li class="nav-item active">
+  <a href="../AP/project.php" class="nav-link">
+    <span class="fa fa-rocket mr-1"></span> Project
+  </a>
+</li>
+
+
+      
+</ul>
+
+
+<ul class="navbar-nav ml-auto">
+   <li class="nav-item active">
+      <a class="nav-link ubf-logout" href="../function/logout.php" style="font-size:12px;"><span class="fa fa-power-off">Log-out</a>
+      </li>
+      <li class="nav-item active">
+        <a class="nav-link" href="../index.php" style="font-size:12px;"><span class="fa fa-home">Home</a>
+        </li>
+        <li class="nav-item active">
+          <span class="navbar-text text-white" style="font-size:12px;"><span class="fa fa-user"> indro </span></span>
+      </li>
+  </div>
+
+
+</nav>
+<div class="mk-isi">
+
+<!-- ===================================================== DASHBOARD ===================================================== -->
+<section class="mk-hal mk-dash">
+  <div class="mk-judul">
+    <div>
+      <h1>Dashboard</h1>
+      <div class="mk-remah">Welcome back, <b>indro</b> &middot; Data updated 10 Sep 2026, 22:55</div>
+    </div>
+    <div class="ml-auto" style="min-width:240px;">
+      <select class="mk-input"><option>Dashboard AP</option><option>Dashboard Bank</option></select>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-lg-6 col-xl-4 mb-3">
+      <div class="mk-kartu h-100 mb-0">
+        <div class="mk-kartu-kepala"><span class="mk-ikon"><i class="fas fa-chart-line"></i></span><h5>NET PURCHASE YEAR TO DATE</h5></div>
+        <div class="mk-kartu-badan">
+          <div class="mk-kpi-angka"><small>IDR</small>110,148,054,103.48</div>
+          <div class="mk-kpi-waktu"><i class="far fa-clock"></i> Updated 10 Sep 2026, 22:55</div>
+          <div class="mk-bar"><span style="width:98.4%;background:#16a34a"></span><span style="width:1.6%;background:#dc2626"></span></div>
+          <div class="mk-kpi-baris"><span><span class="mk-titik" style="background:#16a34a"></span>Purchase YTD <b>98.4%</b></span><span>Purchase Return <b>1.6%</b><span class="mk-titik ml-1" style="background:#dc2626"></span></span></div>
+          <div class="mk-kpi-baris"><b>IDR 111,882,585,863.06</b><b>IDR (1,734,531,759.58)</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-lg-6 col-xl-4 mb-3">
+      <div class="mk-kartu h-100 mb-0">
+        <div class="mk-kartu-kepala"><span class="mk-ikon"><i class="fas fa-calendar-alt"></i></span><h5>NET PURCHASE CURRENT MONTH</h5></div>
+        <div class="mk-kartu-badan">
+          <div class="mk-kpi-angka"><small>IDR</small>3,947,832,236.94</div>
+          <div class="mk-kpi-waktu"><i class="far fa-clock"></i> Updated 10 Sep 2026, 22:55</div>
+          <div class="mk-bar"><span style="width:99.8%;background:#16a34a"></span><span style="width:.2%;background:#dc2626"></span></div>
+          <div class="mk-kpi-baris"><span><span class="mk-titik" style="background:#16a34a"></span>Purchase Current Month <b>99.8%</b></span><span>Purchase Return <b>0.2%</b><span class="mk-titik ml-1" style="background:#dc2626"></span></span></div>
+          <div class="mk-kpi-baris"><b>IDR 3,956,277,227.94</b><b>IDR (8,444,991.00)</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-xl-4 mb-3">
+      <div class="mk-kartu h-100 mb-0">
+        <div class="mk-kartu-kepala"><span class="mk-ikon"><i class="fas fa-balance-scale"></i></span><h5>ACCOUNT PAYABLE TOTAL OUTSTANDING</h5></div>
+        <div class="mk-kartu-badan">
+          <div class="mk-kpi-angka"><small>IDR</small>30,147,908,351.96</div>
+          <div class="mk-kpi-waktu"><i class="far fa-clock"></i> Updated 10 Sep 2026, 22:55</div>
+          <div class="mk-bar"><span style="width:65.1%;background:#2f62dc"></span><span style="width:34.9%;background:#dc2626"></span></div>
+          <div class="mk-kpi-baris"><span><span class="mk-titik" style="background:#2f62dc"></span>Not Due <b>65.1%</b></span><span>Over Due <b>34.9%</b><span class="mk-titik ml-1" style="background:#dc2626"></span></span></div>
+          <div class="mk-kpi-baris"><b>IDR 19,614,148,299.50</b><b>IDR 10,533,760,052.47</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-12 col-xl-7 mb-3">
+      <div class="mk-kartu h-100 mb-0">
+        <div class="mk-kartu-kepala"><span class="mk-ikon"><i class="fas fa-trophy"></i></span><h5>TOP 10 SUPPLIER BY AMOUNT (YTD)</h5></div>
+        <div class="mk-kartu-badan">
+          <div class="mk-grafik">
+            <div><b>11.1B</b><i style="height:92%"></i></div><div><b>5.0B</b><i style="height:42%"></i></div><div><b>4.7B</b><i style="height:39%"></i></div>
+            <div><b>3.7B</b><i style="height:31%"></i></div><div><b>3.1B</b><i style="height:26%"></i></div><div><b>2.2B</b><i style="height:19%"></i></div>
+            <div><b>2.1B</b><i style="height:18%"></i></div><div><b>2.0B</b><i style="height:17%"></i></div><div><b>1.9B</b><i style="height:16%"></i></div><div><b>1.9B</b><i style="height:16%"></i></div>
+          </div>
+          <div class="mk-grafik-label"><span>Gunajaya Santosa</span><span>PT Best &amp; Best</span><span>Antorcha Ent.</span><span>PT Sudong M.</span><span>Soijer Abadi</span><span>PT Coats Rejo</span><span>PT Warrenty</span><span>Mitra Adhi Sukses</span><span>PT Kon Baju</span><span>YKK Zipper Ind.</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-xl-5 mb-3">
+      <div class="row">
+        <div class="col-12 col-sm-6 mb-3"><div class="mk-petak"><span class="mk-label"><i class="fas fa-building"></i> AP Group</span><div class="nilai">IDR 7,432,373,891.55</div></div></div>
+        <div class="col-12 col-sm-6 mb-3"><div class="mk-petak"><span class="mk-label"><i class="fas fa-sitemap"></i> AP Non Group</span><div class="nilai">IDR 22,715,534,460.42</div></div></div>
+        <div class="col-12 col-sm-6 mb-3"><div class="mk-petak"><span class="mk-label"><i class="fas fa-cogs"></i> AP Machine</span><div class="nilai">IDR 12,173,651,771.72</div></div></div>
+        <div class="col-12 col-sm-6 mb-3"><div class="mk-petak"><span class="mk-label"><i class="fas fa-box"></i> AP Non Machine</span><div class="nilai">IDR 10,541,882,688.70</div></div></div>
+        <div class="col-12 col-sm-6 mb-3"><div class="mk-petak"><span class="mk-label"><i class="fas fa-dollar-sign"></i> AP USD</span><div class="nilai">USD 736,451.19</div><div class="sub">IDR 13,045,496,379.66</div></div></div>
+        <div class="col-12 col-sm-6 mb-3"><div class="mk-petak"><span class="mk-label"><i class="fas fa-money-bill"></i> AP IDR</span><div class="nilai">IDR 17,102,411,972.30</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================== LIST ===================================================== -->
+<section class="mk-hal mk-list">
+  <div class="mk-judul">
+    <div><h1>Incoming Bank</h1><div class="mk-remah">Bank &rsaquo; <b>Bank In</b></div></div>
+  </div>
+
+  <div class="mk-kartu">
+    <div class="mk-kartu-kepala"><span class="mk-ikon"><i class="fas fa-filter"></i></span><h5>FILTER</h5>
+      <div class="mk-aksi"><button class="mk-btn mk-btn-emas"><i class="fas fa-plus"></i> Create</button></div>
+    </div>
+    <div class="mk-kartu-badan">
+      <div class="row">
+        <div class="col-12 col-sm-6 col-xl-3 mb-3"><label class="mk-label">Source</label><select class="mk-input"><option>ALL</option><option>AR Collection</option><option>Bank Keluar</option><option>None</option></select></div>
+        <div class="col-12 col-sm-6 col-xl-3 mb-3"><label class="mk-label">Bank</label><select class="mk-input"><option>ALL</option><option>BCA</option><option>MANDIRI</option></select></div>
+        <div class="col-12 col-sm-6 col-xl-3 mb-3"><label class="mk-label">Account</label><select class="mk-input"><option>ALL</option><option>BCA 1979</option></select></div>
+        <div class="col-12 col-sm-6 col-xl-3 mb-3"><label class="mk-label">Status</label><select class="mk-input"><option>ALL</option><option>Draft</option><option>Post</option><option>Approved</option><option>Cancel</option></select></div>
+        <div class="col-12 col-sm-6 col-xl-3 mb-3"><label class="mk-label">From</label><input class="mk-input" value="01 Nov 2026"></div>
+        <div class="col-12 col-sm-6 col-xl-3 mb-3"><label class="mk-label">To</label><input class="mk-input" value="13 Nov 2026"></div>
+        <div class="col-12 col-xl-6 mb-3 d-flex align-items-end" style="gap:8px;flex-wrap:wrap;"><button class="mk-btn mk-btn-utama"><i class="fas fa-search"></i> Search</button><button class="mk-btn mk-btn-hijau"><i class="fas fa-file-excel"></i> Excel</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mk-kartu">
+    <div class="mk-kartu-kepala"><span class="mk-ikon"><i class="fas fa-university"></i></span><h5>LIST INCOMING BANK</h5><div class="mk-aksi"><span style="font-size:12px;opacity:.8;">5 documents</span></div></div>
+    <div class="mk-kartu-badan">
+      <div class="mk-tabel-bungkus">
+        <table class="mk-tabel">
+          <thead><tr><th>No Bank In</th><th>Source</th><th>Date</th><th>Currency</th><th class="angka">Amount</th><th class="angka">Outstanding</th><th>Status</th><th>Approve Date</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td>BM/BCA1979/NAG/1126/00012</td><td>AR Collection</td><td>11 Nov 2026</td><td>IDR</td><td class="angka">125,400,000.00</td><td class="angka">0.00</td><td><span class="mk-status post">Post</span></td><td>-</td><td><button class="mk-ikon-btn"><i class="fas fa-eye"></i></button><button class="mk-ikon-btn"><i class="fas fa-edit"></i></button><button class="mk-ikon-btn merah"><i class="fas fa-times"></i></button></td></tr>
+            <tr><td>BM/BCA1979/NAG/1126/00011</td><td>None</td><td>10 Nov 2026</td><td>IDR</td><td class="angka">2,150,000.00</td><td class="angka">2,150,000.00</td><td><span class="mk-status draft">Draft</span></td><td>-</td><td><button class="mk-ikon-btn"><i class="fas fa-eye"></i></button><button class="mk-ikon-btn"><i class="fas fa-edit"></i></button><button class="mk-ikon-btn merah"><i class="fas fa-times"></i></button></td></tr>
+            <tr><td>BM/MDR0911/NAG/1126/00010</td><td>Bank Keluar</td><td>09 Nov 2026</td><td>USD</td><td class="angka">3,200.00</td><td class="angka">0.00</td><td><span class="mk-status approved">Approved</span></td><td>09 Nov 2026</td><td><button class="mk-ikon-btn"><i class="fas fa-eye"></i></button></td></tr>
+            <tr><td>BM/BCA1979/NAG/1126/00009</td><td>AR Collection</td><td>07 Nov 2026</td><td>IDR</td><td class="angka">48,000,000.00</td><td class="angka">12,500,000.00</td><td><span class="mk-status approved">Approved</span></td><td>08 Nov 2026</td><td><button class="mk-ikon-btn"><i class="fas fa-eye"></i></button></td></tr>
+            <tr><td>BM/BCA1979/NAG/1126/00008</td><td>None</td><td>05 Nov 2026</td><td>IDR</td><td class="angka">750,000.00</td><td class="angka">0.00</td><td><span class="mk-status cancel">Cancel</span></td><td>-</td><td><button class="mk-ikon-btn"><i class="fas fa-eye"></i></button></td></tr>
+          </tbody>
+          <tfoot><tr><td colspan="4">Total (IDR)</td><td class="angka">176,300,000.00</td><td class="angka">14,650,000.00</td><td colspan="3"></td></tr></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================== CREATE ===================================================== -->
+<section class="mk-hal mk-create">
+  <div class="mk-judul">
+    <div><h1>Form Incoming Bank</h1><div class="mk-remah">Bank &rsaquo; Bank In &rsaquo; <b>Create</b></div></div>
+  </div>
+
+  <div class="mk-kartu">
+    <div class="mk-kartu-kepala"><span class="mk-ikon"><i class="fas fa-file-invoice-dollar"></i></span><h5>DOCUMENT</h5></div>
+    <div class="mk-kartu-badan">
+      <div class="mk-bagian"><i class="fas fa-hashtag"></i> Header</div>
+      <div class="row">
+        <div class="col-12 col-sm-6 col-xl-3 mb-3"><label class="mk-label">Doc Number</label><input class="mk-input" value="BM/BCA1979/NAG/1126/00013" readonly><span class="mk-ket">Generated automatically</span></div>
+        <div class="col-12 col-sm-6 col-xl-3 mb-3"><label class="mk-label">Date <span class="wajib">*</span></label><input class="mk-input" value="13 Nov 2026"></div>
+        <div class="col-12 col-sm-6 col-xl-3 mb-3"><label class="mk-label">Reference <span class="wajib">*</span></label><select class="mk-input"><option>None</option><option>AR Collection</option><option>Bank Keluar</option></select></div>
+        <div class="col-12 col-sm-6 col-xl-3 mb-3"><label class="mk-label">Profit Center <span class="wajib">*</span></label><select class="mk-input"><option>NAG</option><option>NAK</option></select></div>
+      </div>
+      <div class="mk-bagian"><i class="fas fa-university"></i> Bank</div>
+      <div class="row">
+        <div class="col-12 col-sm-6 col-xl-3 mb-3"><label class="mk-label">Account <span class="wajib">*</span></label><select class="mk-input"><option>1.02.01 - BCA 1979</option></select></div>
+        <div class="col-12 col-sm-6 col-xl-3 mb-3"><label class="mk-label">Bank</label><input class="mk-input" value="BCA" readonly></div>
+        <div class="col-12 col-sm-6 col-xl-2 mb-3"><label class="mk-label">Currency</label><input class="mk-input" value="IDR" readonly></div>
+        <div class="col-12 col-sm-6 col-xl-2 mb-3"><label class="mk-label">Amount <span class="wajib">*</span></label><input class="mk-input text-right" value="2,150,000.00"></div>
+        <div class="col-12 col-sm-6 col-xl-2 mb-3"><label class="mk-label">Rate</label><input class="mk-input text-right" value="1.00" readonly></div>
+        <div class="col-12 col-xl-6 mb-3"><label class="mk-label">Descriptions</label><textarea class="mk-input">Bunga jasa giro Oktober 2026</textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mk-kartu">
+    <div class="mk-kartu-kepala"><span class="mk-ikon"><i class="fas fa-list-ol"></i></span><h5>DETAIL</h5>
+      <div class="mk-aksi"><button class="mk-btn mk-btn-garis"><i class="fas fa-plus"></i> Add Row</button></div>
+    </div>
+    <div class="mk-kartu-badan">
+      <div class="mk-tabel-bungkus">
+        <table class="mk-tabel">
+          <thead><tr><th>COA</th><th>Profit Center</th><th>Cost Center</th><th>Buyer</th><th>WS</th><th>Currency</th><th class="angka">Debit</th><th class="angka">Credit</th><th>Description</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><select class="mk-input" style="min-width:320px"><option>8.05.01 - PENDAPATAN JASA GIRO</option></select></td><td><select class="mk-input" style="min-width:90px"><option>NAG</option></select></td><td><select class="mk-input" style="min-width:150px"><option>-</option></select></td><td><select class="mk-input" style="min-width:120px"><option>-</option></select></td><td><input class="mk-input" style="min-width:90px" value="-"></td><td>IDR</td><td><input class="mk-input text-right" style="min-width:160px" value="0.00"></td><td><input class="mk-input text-right" style="min-width:160px" value="2,150,000.00"></td><td><input class="mk-input" style="min-width:220px" value="Jasa giro Oktober 2026"></td><td><button class="mk-ikon-btn merah"><i class="fas fa-trash"></i></button></td></tr>
+          </tbody>
+          <tfoot><tr><td colspan="6">Total</td><td class="angka">0.00</td><td class="angka">2,150,000.00</td><td colspan="2"><span class="mk-status approved"><i class="fas fa-check"></i> Balance with header amount</span></td></tr></tfoot>
+        </table>
+      </div>
+      <div class="d-flex mt-3" style="gap:8px;flex-wrap:wrap;">
+        <button class="mk-btn mk-btn-utama"><i class="fas fa-save"></i> Save</button>
+        <button class="mk-btn mk-btn-garis"><i class="fas fa-angle-double-left"></i> Back</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<div class="mk-pilih">
+  <b>Halaman:</b>
+  <button data-hal="hal-dash">Dashboard</button><button data-hal="hal-list">List</button><button data-hal="hal-create">Create</button>
+  <b>Arah gaya:</b>
+  <button data-arah="arah-3 tenang">3. Biru tenang</button><button data-arah="arah-4 tenang">4. Abu kebiruan</button><button data-arah="arah-5 tenang">5. Pita navy</button><br><span style="color:#94a3b8">sebelumnya:</span> <button data-arah="arah-1">1</button><button data-arah="arah-2">2</button>
+</div>
+<script>
+// pilihan halaman & arah; bisa juga lewat alamat: ?hal=hal-list&arah=arah-2
+(function () {
+  var q = location.search, hal = (q.match(/hal=([a-z-]+)/) || [0, 'hal-dash'])[1], arah = decodeURIComponent((q.match(/arah=([a-z0-9%+ -]+)/) || [0, 'arah-3 tenang'])[1]).replace(/\+/g, ' ');
+  function pakai() {
+    document.body.className = hal + ' ' + arah;
+    var b = document.querySelectorAll('.mk-pilih button');
+    for (var i = 0; i < b.length; i++) { b[i].classList.toggle('on', b[i].getAttribute('data-hal') === hal || b[i].getAttribute('data-arah') === arah); }
+  }
+  document.querySelector('.mk-pilih').addEventListener('click', function (e) {
+    var t = e.target.closest('button'); if (!t) { return; }
+    if (t.getAttribute('data-hal')) { hal = t.getAttribute('data-hal'); }
+    if (t.getAttribute('data-arah')) { arah = t.getAttribute('data-arah'); }
+    pakai();
+  });
+  pakai();
+})();
+</script>
+
+<script src="../vendor/jquery/jquery.min.js"></script>
+<script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const selects = document.querySelectorAll('select[name="nama_supp"]');
+
+    selects.forEach(function(select) {
+      if (!select.value || select.value === '') {
+        const optAll = select.querySelector('option[value="ALL"]');
+        if (optAll) {
+          optAll.selected = true;
+      }
+  }
+});
+});
+</script>
+
+<script>
+  // Dropdown submenu (.dropdown-submenu) dulu cuma kebuka via CSS :hover -
+  // di Android/touch itu ga reliable (butuh tap dua kali: tap pertama cuma
+  // "hover", baru tap kedua benar-benar jalan). Di sini ditambah trigger
+  // klik/tap murni vanilla JS (bukan jQuery) karena file ini di-include di
+  // ATAS tiap halaman, sebelum jQuery/bootstrap.bundle.js sempat dimuat oleh
+  // masing-masing halaman di bagian bawahnya.
+  document.addEventListener('click', function (e) {
+    var trigger = e.target.closest ? e.target.closest('.dropdown-submenu > a') : null;
+
+    if (trigger) {
+      e.preventDefault();
+      // stopPropagation saja tidak cukup - listener auto-close dropdown dari
+      // Bootstrap JUGA terpasang di document (level yang sama persis),
+      // stopPropagation cuma menghentikan event naik ke ancestor, bukan
+      // listener lain di elemen yang sama. Makanya submenu sempat kebuka
+      // lalu langsung ketutup lagi oleh Bootstrap. stopImmediatePropagation
+      // mencegah listener lain di document (termasuk punya Bootstrap) ikut
+      // jalan untuk klik ini.
+      e.stopImmediatePropagation();
+
+      var li = trigger.parentElement;
+      var wasOpen = li.classList.contains('open-submenu');
+      var siblingList = li.parentElement ? li.parentElement.children : [];
+
+      Array.prototype.forEach.call(siblingList, function (sibling) {
+        if (sibling !== li) {
+          sibling.classList.remove('open-submenu');
+        }
+      });
+
+      li.classList.toggle('open-submenu', !wasOpen);
+      return;
+    }
+
+    var openSubmenus = document.querySelectorAll('.dropdown-submenu.open-submenu');
+    Array.prototype.forEach.call(openSubmenus, function (li) {
+      if (!li.contains(e.target)) {
+        li.classList.remove('open-submenu');
+      }
+    });
+  });
+</script>
+
+
+    <!-- sidebar-container END -->
+<script>
+/* ---- Navbar: penanda halaman aktif & dropdown panjang ----
+   Dikerjakan di sini, bukan di PHP, supaya tidak perlu menyentuh ~100
+   cabang menu satu per satu - cukup mencocokkan nama berkas yang sedang
+   dibuka dgn href tiap tautan menu. */
+(function () {
+    var berkas = (location.pathname.split('/').pop() || '').toLowerCase();
+    var tautan = document.querySelectorAll('.navbar-nav.mr-auto a[href]');
+    var menuIni = null;
+
+    /* 1B. Menu utama yang memuat halaman ini ditandai. */
+    if (berkas) {
+        for (var i = 0; i < tautan.length; i++) {
+            var h = (tautan[i].getAttribute('href') || '').split('?')[0].split('/').pop().toLowerCase();
+            if (!h || h !== berkas) { continue; }
+            menuIni = tautan[i];
+            /* naik sampai ketemu <li> yang anak langsung dari .mr-auto */
+            var n = tautan[i];
+            while (n && n.parentNode && !(n.parentNode.classList && n.parentNode.classList.contains('mr-auto'))) {
+                n = n.parentNode;
+            }
+            if (n && n.classList && n.classList.contains('nav-item')) {
+                var utama = n.querySelector('.nav-link');
+                if (utama) { utama.classList.add('aktif'); }
+            }
+            break;
+        }
+    }
+
+    /* 3. Batas tinggi HANYA untuk panel tingkat satu yang tidak memuat
+       submenu - kalau dipasang pada panel ber-submenu, panel anaknya ikut
+       terpotong (jebakan yang sama dgn .table-responsive). */
+    var panel = document.querySelectorAll('.navbar-nav.mr-auto > .nav-item > .dropdown-menu');
+    for (var j = 0; j < panel.length; j++) {
+        if (!panel[j].querySelector('.dropdown-submenu')) {
+            panel[j].classList.add('ubf-gulir');
+        }
+    }
+
+    /* 4. Judul tab peramban = nama menu halaman ini. */
+    function namaMenu(a) {
+        var salin = a.cloneNode(true);
+        var angka = salin.querySelectorAll('.badge, .notif-badge');   // angka notifikasi dibuang
+        for (var k = 0; k < angka.length; k++) { angka[k].parentNode.removeChild(angka[k]); }
+        return salin.textContent.replace(/\s+/g, ' ').trim();
+    }
+    /* nama submenu (atau menu utama) tempat tautan itu berada */
+    function namaKelompok(a) {
+        var li = a.parentNode.closest('.dropdown-submenu, .nav-item');
+        var induk = li ? li.querySelector(':scope > a') : null;
+        return (induk && induk !== a) ? namaMenu(induk) : '';
+    }
+
+    var judul = menuIni ? namaMenu(menuIni) : '';
+    if (judul !== '') {
+        /* Nama yang juga dipakai menu lain ("Payment Voucher" ada di Bank,
+           Approval, Reverse) atau cuma satu kata ("Other", "Bank") diberi
+           nama kelompoknya, mis. "Projection - Other" - kecuali nama
+           kelompok itu sudah termuat ("Cash In", bukan "Cash - Cash In"). */
+        var kembar = 0;
+        for (var m = 0; m < tautan.length; m++) {
+            var hm = (tautan[m].getAttribute('href') || '').split('?')[0].split('/').pop().toLowerCase();
+            if (hm !== berkas && namaMenu(tautan[m]) === judul) { kembar++; }
+        }
+        var kelompok = namaKelompok(menuIni);
+        var termuat = judul.toLowerCase().indexOf(kelompok.toLowerCase()) >= 0;
+        if ((kembar > 0 || judul.indexOf(' ') < 0) && kelompok !== '' && !termuat) {
+            judul = kelompok + ' - ' + judul;
+        }
+        document.title = judul;
+    } else {
+        /* Tidak ada di menu (Create/Edit/Detail): pakai judul besar halaman. */
+        document.addEventListener('DOMContentLoaded', function () {
+            var kepala = document.querySelectorAll('h1, h2, h3, h4, h5');
+            for (var n = 0; n < kepala.length; n++) {
+                if (kepala[n].closest('.modal, nav')) { continue; }
+                var teks = kepala[n].textContent.replace(/\s+/g, ' ').trim();
+                if (teks !== '') { document.title = teks; break; }
+            }
+        });
+    }
+})();
+</script>
+
+
+<script src="../js/app-navbar.js"></script>
+</body>
+</html>

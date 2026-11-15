@@ -1,0 +1,298 @@
+/* =====================================================================
+   Navbar NDS (gaya "Navy Gelap"). Dimuat oleh module/header.php dan
+   module/index.php (Dashboard) - ubah di sini saja, jangan di halaman.
+   Isi menu & hak akses ada di module/menu.php, tidak terpengaruh berkas ini.
+   ===================================================================== */
+
+/* ---------- batang navbar ---------- */
+nav.navbar.bg-primary {
+    position: sticky;              /* tetap terlihat saat halaman digulir */
+    top: 0;
+    z-index: 1030;                 /* di bawah modal (1050) */
+    background: #0b1d4a !important;
+    box-shadow: inset 0 -2px 0 rgba(229, 169, 19, .9), 0 6px 18px -6px rgba(5, 15, 40, .6);
+    padding-top: .45rem;
+    padding-bottom: .45rem;
+}
+
+/* ---------- logo NDS ---------- */
+.mn-brand { display: inline-flex; align-items: center; gap: 10px; margin-right: 16px; text-decoration: none !important; }
+.mn-brand-ikon {
+    width: 38px; height: 38px; flex: 0 0 38px;
+    display: flex; align-items: center; justify-content: center;
+    background: #fff; border-radius: 11px;
+}
+.mn-brand-ikon img { width: 30px; height: 30px !important; margin: 0 !important; display: block; }
+.mn-brand-teks { display: flex; flex-direction: column; line-height: 1.05; }
+.mn-brand-teks b { font-size: 17px; font-weight: 800; letter-spacing: .09em; color: #fff; }
+.mn-brand-teks small { font-size: 9.5px; font-weight: 600; letter-spacing: .03em; margin-top: 3px; white-space: nowrap; color: rgba(255, 255, 255, .6); }
+/* layar < 1700px: nama perusahaan disembunyikan supaya semua menu muat satu baris */
+@media (max-width: 1699.98px) {
+    .mn-brand { margin-right: 10px; gap: 8px; }
+    .mn-brand-teks small { display: none; }
+    .mn-brand-teks b { font-size: 15px; }
+}
+
+/* ---------- menu utama (Master, AP, Bank, ...) ---------- */
+.navbar-nav .nav-link {
+    position: relative;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .01em;
+    padding: .6rem .9rem !important;
+    border-radius: 6px;
+    white-space: nowrap;
+    color: rgba(255, 255, 255, .86) !important;
+    transition: background-color .15s ease, color .15s ease;
+}
+.navbar-nav.mr-auto > .nav-item { margin: 0 2px; }
+
+.navbar-nav.mr-auto > .nav-item > .nav-link > .fa,
+.navbar-nav.mr-auto > .nav-item > .nav-link > .fas,
+.navbar-nav.mr-auto > .nav-item > .nav-link > .far {
+    color: inherit;
+    opacity: .85;
+    margin-right: 6px;
+    font-size: 12.5px;
+}
+
+/* garis emas di bawah menu: saat disorot, terbuka, atau halaman aktif */
+.navbar-nav.mr-auto > .nav-item > .nav-link::before {
+    content: "";
+    position: absolute;
+    left: 10px; right: 10px; bottom: 1px;
+    height: 3px;
+    border-radius: 2px;
+    background: #e5a913;
+    transform: scaleX(0);
+    transition: transform .18s ease;
+}
+.navbar-nav.mr-auto > .nav-item > .nav-link:hover,
+.navbar-nav.mr-auto > .nav-item > .nav-link:focus { color: #fff !important; }
+.navbar-nav.mr-auto > .nav-item > .nav-link:hover::before,
+.navbar-nav.mr-auto > .nav-item > .nav-link:focus::before,
+.navbar-nav.mr-auto > .nav-item:hover > .nav-link::before,
+.navbar-nav.mr-auto > .nav-item.show > .nav-link::before,
+.navbar-nav.mr-auto > .nav-item > .nav-link.aktif::before { transform: scaleX(1); }
+
+/* menu yang memuat halaman yang sedang dibuka (kelas .aktif dipasang JS di header.php) */
+.navbar-nav.mr-auto > .nav-item > .nav-link.aktif { background-color: rgba(255, 255, 255, .12); color: #fff !important; }
+
+/* panah kecil di samping menu utama */
+.navbar-nav .dropdown-toggle::after {
+    display: inline-block;
+    content: "\f078";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    font-size: 8px;
+    border: none;
+    vertical-align: 1px;
+    margin-left: 6px;
+    opacity: .55;
+}
+.navbar-nav .nav-item.dropdown:hover > .nav-link.dropdown-toggle::after,
+.navbar-nav .nav-item.dropdown.show > .nav-link.dropdown-toggle::after { opacity: 1; }
+
+/* ---------- panel dropdown (navy, makin dalam makin terang) ---------- */
+.navbar-nav .dropdown-menu {
+    background-color: #10265e !important;
+    border: 1px solid rgba(255, 255, 255, .06);
+    border-radius: 10px;
+    box-shadow: 0 18px 38px -12px rgba(3, 10, 30, .7);
+    padding: 6px;
+    margin-top: 6px;
+    animation: ubfTurun .14s ease-out both;
+}
+.navbar-nav .dropdown-submenu > .dropdown-menu { background-color: #15306f !important; }
+.navbar-nav .dropdown-submenu .dropdown-submenu > .dropdown-menu { background-color: #1a3a80 !important; }
+@keyframes ubfTurun {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: none; }
+}
+
+.navbar-nav .dropdown-menu .dropdown-item {
+    display: flex;
+    align-items: center;
+    background-color: transparent !important;
+    color: rgba(255, 255, 255, .88) !important;
+    font-size: 12.5px;
+    line-height: 1.25;
+    padding: 7px 11px;
+    border-radius: 8px;
+    transition: background-color .12s ease;
+}
+.navbar-nav .dropdown-menu .dropdown-item .menu-collapsed { white-space: nowrap; }
+
+/* ikon butir: kotak kecil emas */
+.navbar-nav .dropdown-menu .dropdown-item > .fa,
+.navbar-nav .dropdown-menu .dropdown-item > .fas,
+.navbar-nav .dropdown-menu .dropdown-item > .far,
+.navbar-nav .dropdown-menu .dropdown-item > .fab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px; height: 22px; min-width: 22px;
+    border-radius: 7px;
+    background: rgba(229, 169, 19, .15);
+    color: #f5c84c;
+    font-size: 11px;
+    margin-right: 9px;
+}
+
+/* butir yang disorot: biru */
+.navbar-nav .dropdown-menu .dropdown-item:hover,
+.navbar-nav .dropdown-menu .dropdown-item:focus { background-color: #2f62dc !important; color: #fff !important; }
+.navbar-nav .dropdown-menu .dropdown-item:hover > .fa,
+.navbar-nav .dropdown-menu .dropdown-item:hover > .fas,
+.navbar-nav .dropdown-menu .dropdown-item:hover > .far,
+.navbar-nav .dropdown-menu .dropdown-item:hover > .fab { background: rgba(255, 255, 255, .22); color: #fff; }
+
+/* judul kecil di kepala panel tingkat ketiga (Update BPB: Request/Approval) */
+.navbar-nav .dropdown-menu.ubf-sub::before {
+    content: attr(data-judul);
+    display: block;
+    padding: 4px 11px 7px;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, .38);
+}
+
+/* panel panjang tanpa submenu: dibatasi tinggi & bisa digulir (kelas dipasang JS) */
+.navbar-nav .dropdown-menu.ubf-gulir { max-height: calc(100vh - 96px); overflow-y: auto; overscroll-behavior: contain; }
+.navbar-nav .dropdown-menu.ubf-gulir::-webkit-scrollbar { width: 8px; }
+.navbar-nav .dropdown-menu.ubf-gulir::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .18); border-radius: 8px; }
+.navbar-nav .dropdown-menu.ubf-gulir::-webkit-scrollbar-track { background: transparent; }
+
+/* ---------- submenu (butir yang punya anak) ---------- */
+.dropdown-submenu { position: relative; }
+.dropdown-submenu > .dropdown-menu {
+    top: -6px;
+    left: 100%;
+    margin-left: 4px;
+    padding: 6px;
+    border-radius: 10px;
+}
+/* dibuka dgn disorot ATAU diklik (klik dipakai di layar sentuh, lihat JS) */
+.dropdown-submenu:hover > .dropdown-menu,
+.dropdown-submenu.open-submenu > .dropdown-menu { display: block; }
+
+.dropdown-submenu > a:after {
+    content: "\f054";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    font-size: 10px;
+    color: rgba(255, 255, 255, .4);
+    margin-left: auto;
+    padding-left: 10px;
+}
+.dropdown-submenu:hover > a:after,
+.dropdown-submenu.open-submenu > a:after { color: #f5c84c; }
+
+/* induk yang sedang terbuka: lebih lembut dari butir yang disorot + garis emas di kiri */
+.navbar-nav .dropdown-submenu > a.dropdown-item { position: relative; }
+.navbar-nav .dropdown-submenu > a.dropdown-item::before {
+    content: "";
+    position: absolute;
+    left: 3px; top: 7px; bottom: 7px;
+    width: 3px;
+    border-radius: 3px;
+    background: #e5a913;
+    opacity: 0;
+    transition: opacity .15s ease;
+}
+.navbar-nav .dropdown-submenu:hover > a.dropdown-item,
+.navbar-nav .dropdown-submenu.open-submenu > a.dropdown-item { background-color: rgba(255, 255, 255, .08) !important; color: #fff !important; }
+.navbar-nav .dropdown-submenu:hover > a.dropdown-item::before,
+.navbar-nav .dropdown-submenu.open-submenu > a.dropdown-item::before { opacity: 1; }
+
+.dropdown-submenu.pull-left { float: none; }
+.dropdown-submenu.pull-left > .dropdown-menu { left: -100%; margin-left: 10px; border-radius: 6px 0 6px 6px; }
+
+/* ---------- menu utama dibuka dgn DISOROT (layar lebar + mouse) ----------
+   Klik tetap jalan lewat Bootstrap; JS di js/app-navbar.js menutup panel
+   hasil klik saat menu lain disorot. */
+@media (min-width: 1200px) and (hover: hover) {
+    .navbar-nav.mr-auto > .nav-item.dropdown:hover > .dropdown-menu { display: block; }
+    /* jembatan tak terlihat di celah antara menu & panelnya, supaya panel tidak tertutup saat mouse turun */
+    .navbar-nav.mr-auto > .nav-item.dropdown::after {
+        content: "";
+        position: absolute;
+        left: 0; right: 0; top: 100%;
+        height: 10px;
+    }
+}
+
+/* ---------- grup kanan: Log-out / Home / nama user ---------- */
+.navbar-nav.ml-auto {
+    align-items: center;
+    padding-left: 14px;
+    margin-left: 6px;
+    border-left: 1px solid rgba(255, 255, 255, .2);
+}
+.navbar-nav.ml-auto > .nav-item { margin: 0 2px; }
+.navbar-nav.ml-auto .nav-link {
+    font-size: 12px;
+    padding: .5rem .85rem !important;
+    border-radius: 20px;
+}
+.navbar-nav.ml-auto .nav-item:hover > .nav-link,
+.navbar-nav.ml-auto .nav-link:hover,
+.navbar-nav.ml-auto .nav-link:focus { background-color: rgba(255, 255, 255, .14); color: #fff !important; }
+.navbar-nav.ml-auto .navbar-text {
+    white-space: nowrap;
+    background: rgba(255, 255, 255, .14);
+    padding: .35rem .85rem;
+    border-radius: 20px;
+    font-size: 12px;
+}
+/* teks Log-out/Home/nama ada DI DALAM span ikon, jadi dikembalikan ke huruf biasa;
+   ikonnya tetap lewat ::before */
+.navbar-nav.ml-auto .fa { font-family: inherit; font-weight: 600; }
+.navbar-nav.ml-auto .fa::before { font-family: "Font Awesome 5 Free"; font-weight: 900; margin-right: 6px; }
+/* Log-out bersemburat merah saat disorot */
+.navbar-nav.ml-auto .nav-link.ubf-logout:hover,
+.navbar-nav.ml-auto .nav-link.ubf-logout:focus { background-color: rgba(239, 68, 68, .20) !important; color: #ffb4b4 !important; }
+
+/* ---------- layar 14": sepuluh menu dirapatkan ---------- */
+@media (min-width: 1200px) and (max-width: 1500px) {
+    .navbar-nav.mr-auto > .nav-item { margin: 0 1px; }
+    .navbar-nav .nav-link { font-size: 12.5px; padding: .55rem .62rem !important; }
+    .navbar-nav.mr-auto > .nav-item > .nav-link > .fa,
+    .navbar-nav.mr-auto > .nav-item > .nav-link > .fas,
+    .navbar-nav.mr-auto > .nav-item > .nav-link > .far { margin-right: 5px; font-size: 12px; }
+}
+/* layar 1200-1320px (mis. 1280): masih lebih 6px -> jarak menu dirapatkan lagi */
+@media (min-width: 1200px) and (max-width: 1320px) {
+    .navbar-nav .nav-link { padding: .55rem .48rem !important; }
+}
+/* 1200-1260px: paling sempit sebelum jadi hamburger -> huruf & jarak dikecilkan lagi */
+@media (min-width: 1200px) and (max-width: 1260px) {
+    .navbar-nav .nav-link { font-size: 12px; padding: .55rem .36rem !important; }
+    .navbar-nav.mr-auto > .nav-item > .nav-link > .fa,
+    .navbar-nav.mr-auto > .nav-item > .nav-link > .fas,
+    .navbar-nav.mr-auto > .nav-item > .nav-link > .far { margin-right: 4px; }
+    .mn-brand { margin-right: 6px; }
+}
+
+/* ---------- di bawah 1200px: menu jadi daftar bertumpuk (tombol hamburger) ---------- */
+@media (max-width: 1199.98px) {
+    .navbar-nav.ml-auto {
+        align-items: stretch;
+        padding-left: 0;
+        margin-left: 0;
+        margin-top: 8px;
+        padding-top: 10px;
+        border-left: none;
+        border-top: 1px solid rgba(255, 255, 255, .2);
+    }
+    .navbar-nav.ml-auto > .nav-item { margin: 2px 0; }
+    .navbar-nav.ml-auto .nav-link,
+    .navbar-nav.ml-auto .navbar-text {
+        display: flex;
+        justify-content: flex-start;
+        border-radius: 6px;
+        width: 100%;
+    }
+}

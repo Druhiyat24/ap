@@ -459,7 +459,7 @@
                     dataLabels: { position: 'top' }
                 }
             },
-            colors: ['#2a78d6'],
+            colors: ['<?php echo (defined('TAMPILAN_BARU') && TAMPILAN_BARU) ? '#1e3a8a' : '#2a78d6'; ?>'],   // tema NDS: navy
             dataLabels: {
                 enabled: true,
                 formatter: fmtCompactIDR,

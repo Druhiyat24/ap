@@ -1,0 +1,465 @@
+/* =====================================================================
+   Tema NDS "Biru tenang" untuk SEMUA halaman modul (dimuat header.php
+   hanya kalau TAMPILAN_BARU = true). Hanya tampilan - tidak mengubah isian.
+   Warna inti navy; merah/hijau hanya untuk arti (hapus, simpan, status).
+   ===================================================================== */
+:root {
+    --nds-navy: #1e3a8a;
+    --nds-navy-tua: #0b1d4a;
+    --nds-biru: #2f62dc;
+    --nds-latar: #e9eef5;
+    --nds-garis: #d9e1ee;
+    --nds-muda: #eef2f9;
+    --nds-teks: #1e293b;
+    --nds-redup: #64748b;
+}
+
+body { background: var(--nds-latar); color: var(--nds-teks); }
+
+/* ---------- judul halaman lama: <h2 class="text-center"> + .box = kartu ---------- */
+h2.text-center:not(.modal h2):not(table h2) {
+    margin: 0 0 14px;
+    padding: 10px 16px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    text-align: left !important;
+    color: #fff;
+    background: var(--nds-navy);
+    border-radius: 12px;
+}
+h2.text-center:not(.modal h2):has(+ .box) { margin-bottom: 0; border-radius: 12px 12px 0 0; }
+/* ikon di depan judul: <span class="judul-ikon"><i class="fa ..."></i></span> */
+.judul-ikon {
+    width: 28px; height: 28px; margin-right: 8px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center; vertical-align: middle;
+    background: rgba(255, 255, 255, .16); border: 1px solid rgba(255, 255, 255, .3);
+    font-size: 14px; letter-spacing: 0;
+}
+/* .box lama (bingkai 3D "outset" dari header.php) -> kartu putih; .box bersarang polos */
+.box { border-style: none; }
+.box:not(.box .box) {
+    background: #fff;
+    border: 1px solid var(--nds-garis);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    box-shadow: 0 6px 18px -14px rgba(15, 37, 87, .35);
+}
+h2.text-center:not(.modal h2) + .box { border-top: 0; border-radius: 0 0 12px 12px; }
+
+/* ---------- kartu ---------- */
+.card {
+    border: 1px solid var(--nds-garis);
+    border-radius: 12px;
+    box-shadow: 0 6px 18px -14px rgba(15, 37, 87, .35);
+}
+.card > .card-header:first-child { border-radius: 11px 11px 0 0; }
+.card-header { background: var(--nds-muda); border-bottom: 1px solid var(--nds-garis); color: var(--nds-navy); font-weight: 700; }
+/* kepala kartu yang dulu berwarna (gradasi inline / bg-*) -> navy polos */
+.card-header[style*="gradient"],
+.card-header[style*="background"],
+.card-header.bg-primary, .card-header.bg-info, .card-header.bg-dark, .card-header.bg-success {
+    background: var(--nds-navy) !important;
+    color: #fff !important;
+    border-bottom: 0;
+}
+.card-header h5, .card-header h4 { font-size: 14px; font-weight: 800; letter-spacing: .03em; }
+
+/* daftar & formulir gaya baru (.ftl- / .pco-) ikut navy polos */
+.ftl-head, .pco-head { background: var(--nds-navy) !important; }
+
+/* ---------- modal ---------- */
+.modal-content { border: 0; border-radius: 12px; overflow: hidden; box-shadow: 0 24px 60px -20px rgba(11, 29, 74, .55); }
+.modal-header { background: var(--nds-navy) !important; color: #fff !important; border-bottom: 0; padding: .7rem 1rem; }
+.modal-header .modal-title { font-size: 15px; font-weight: 800; color: #fff !important; }
+.modal-header .close { color: #fff; opacity: .8; text-shadow: none; }
+.modal-header .close:hover { color: #fff; opacity: 1; }
+.modal-footer { background: #f7f9fc; border-top: 1px solid var(--nds-garis); }
+
+/* ---------- isian: semua ukuran kecil (sm) ---------- */
+.form-control,
+.custom-select {
+    height: calc(1.5em + .5rem + 2px);
+    padding: .25rem .55rem;
+    font-size: .8125rem;
+    border: 1px solid #cfd8e6;
+    border-radius: 8px;
+}
+textarea.form-control, select[multiple].form-control, select[size].form-control { height: auto; }
+.custom-select, select.form-control { padding-right: 1.6rem; }      /* ruang untuk panah */
+.form-control:focus, .custom-select:focus { border-color: var(--nds-biru); box-shadow: 0 0 0 3px rgba(47, 98, 220, .15); }
+.form-control[readonly], .form-control:disabled { background: #f1f5fb; }
+.input-group-text { font-size: .8125rem; padding: .25rem .55rem; background: var(--nds-muda); border-color: #cfd8e6; }
+label, .col-form-label { font-size: .8125rem; color: #334155; margin-bottom: .25rem; }
+
+/* ---------- tombol: SEMUA ukuran sm (setinggi isian sm: 29,5px) ----------
+   !important supaya tombol yang diberi ukuran sendiri oleh halaman/CSS lain ikut kecil.
+   Tinggi tidak dikunci: tombol ikon kotak di tabel tetap memakai ukurannya sendiri. */
+.btn, .btn-lg, .btn-group-lg > .btn, .app-btn, .ub-btn-brand {
+    padding: .25rem .5rem !important;
+    font-size: .8125rem !important;
+    line-height: 1.5 !important;
+    border-radius: 8px;
+    font-weight: 600;
+}
+.btn .fa, .btn .fas, .btn .far, .app-btn .fa, .app-btn .fas, .app-btn .far { font-size: .8125rem; }
+/* semua <button> & input tombol di isi halaman: sm dan tinggi PERSIS 29,5px
+   (sama dgn isian/select2). Termasuk tombol lama tanpa kelas .btn yang ukurannya
+   ditulis di style="...". Dikecualikan: navbar, tutup modal, select2, SweetAlert,
+   dan tombol yang berperan sbg butir dropdown/daftar/tab. */
+body > :not(nav):not(.swal2-container) button:not(.close):not(.select2-selection__choice__remove):not(.dropdown-item):not(.list-group-item):not(.nav-link),
+body > :not(nav):not(.swal2-container) input[type="button"],
+body > :not(nav):not(.swal2-container) input[type="submit"],
+body > :not(nav):not(.swal2-container) input[type="reset"] {
+    padding: .25rem .5rem !important;
+    font-size: .8125rem !important;
+    line-height: 1.5 !important;
+    height: calc(1.5em + .5rem + 2px) !important;
+    white-space: nowrap;
+}
+
+/* isian: dikunci sm, termasuk yang diberi tinggi sendiri oleh CSS halaman (mis. .pco 34px) */
+.form-control:not(textarea):not([multiple]):not([size]),
+.custom-select:not([multiple]):not([size]) {
+    height: calc(1.5em + .5rem + 2px) !important;
+    padding-top: .25rem !important;
+    padding-bottom: .25rem !important;
+    font-size: .8125rem !important;
+}
+.btn-primary { background: var(--nds-navy); border-color: var(--nds-navy); }
+.btn-primary:hover, .btn-primary:focus { background: var(--nds-navy-tua); border-color: var(--nds-navy-tua); }
+.btn-info { background: var(--nds-biru); border-color: var(--nds-biru); color: #fff; }
+.btn-info:hover, .btn-info:focus { background: #2552c0; border-color: #2552c0; color: #fff; }
+.btn-outline-primary { color: var(--nds-navy); border-color: var(--nds-navy); }
+.btn-outline-primary:hover { background: var(--nds-navy); border-color: var(--nds-navy); }
+
+/* ---------- tabel ---------- */
+.table { font-size: 12.5px; color: var(--nds-teks); }
+.table th, .table td { padding: .4rem .55rem; vertical-align: middle; }
+.table thead th,
+.table-gradient th, .table-gradient2 th {
+    background: var(--nds-muda) !important;
+    color: var(--nds-navy) !important;
+    font-weight: 700;
+    border-bottom: 1px solid var(--nds-garis) !important;
+    white-space: nowrap;
+}
+/* kepala tabel yang diberi warna inline */
+.table thead[style], .table thead tr[style] { background: var(--nds-muda) !important; color: var(--nds-navy) !important; }
+.table-striped tbody tr:nth-of-type(odd) { background-color: #f8faff; }
+.table-hover tbody tr:hover { background-color: #eef3ff; }
+.table-bordered, .table-bordered th, .table-bordered td { border-color: #e1e7f1; }
+
+/* DataTables: kontrol kecil */
+.dataTables_wrapper { font-size: 12.5px; }
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select { height: 30px; padding: 2px 8px; font-size: 12.5px; border: 1px solid #cfd8e6; border-radius: 8px; }
+.dataTables_wrapper .dataTables_length select { width: auto; min-width: 66px; padding-right: 24px; }
+.dataTables_wrapper .page-item.active .page-link { background: var(--nds-navy); border-color: var(--nds-navy); }
+.dataTables_wrapper .page-link { color: var(--nds-navy); font-size: 12.5px; padding: .25rem .55rem; }
+.dt-button, .dt-buttons .btn { font-size: .8125rem !important; }
+
+/* ---------- select2 (semua <select>, lihat js/app-tema.js) ---------- */
+.select2-container--bootstrap4 .select2-selection,
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple {
+    min-height: calc(1.5em + .5rem + 2px) !important;
+    border: 1px solid #cfd8e6 !important;
+    border-radius: 8px !important;
+    font-size: .8125rem;
+    background: #fff;
+}
+.select2-container--bootstrap4 .select2-selection--single,
+.select2-container--default .select2-selection--single { height: calc(1.5em + .5rem + 2px) !important; }
+.select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered,
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: calc(1.5em + .5rem) !important;
+    padding-left: .55rem !important;
+    color: var(--nds-teks);
+}
+.select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow,
+.select2-container--default .select2-selection--single .select2-selection__arrow { top: 0 !important; height: 100% !important; right: 6px !important; }
+.select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow b,
+.select2-container--default .select2-selection--single .select2-selection__arrow b { top: 50% !important; margin-top: -2px !important; }
+.select2-container--bootstrap4.select2-container--focus .select2-selection,
+.select2-container--default.select2-container--focus .select2-selection,
+.select2-container--open .select2-selection { border-color: var(--nds-biru) !important; box-shadow: 0 0 0 3px rgba(47, 98, 220, .15) !important; }
+.select2-container--disabled .select2-selection { background: #f1f5fb !important; }
+.select2-dropdown { border: 1px solid #cfd8e6 !important; border-radius: 10px !important; box-shadow: 0 16px 32px -14px rgba(11, 29, 74, .45); overflow: hidden; font-size: .8125rem; z-index: 2000; text-align: left; }
+.select2-search--dropdown .select2-search__field { height: 30px; border: 1px solid #cfd8e6 !important; border-radius: 7px; font-size: .8125rem; padding: 2px 8px; }
+.select2-results__option { padding: 5px 10px; }
+.select2-container--bootstrap4 .select2-results__option--highlighted,
+.select2-container--default .select2-results__option--highlighted[aria-selected],
+.select2-container--default .select2-results__option--highlighted.select2-results__option--selectable { background: var(--nds-navy) !important; color: #fff !important; }
+.select2-container--default .select2-results__option[aria-selected=true],
+.select2-container--default .select2-results__option--selected { background: var(--nds-muda); color: var(--nds-navy); }
+.select2-selection__choice { font-size: .75rem; background: var(--nds-muda) !important; border-color: var(--nds-garis) !important; color: var(--nds-navy) !important; border-radius: 6px !important; }
+/* select2 di dalam modal tetap di atas modal */
+.modal .select2-container { z-index: auto; }
+
+/* bootstrap-select (kalau masih ada yang belum dialihkan) dibuat mirip */
+.bootstrap-select > .dropdown-toggle { height: calc(1.5em + .5rem + 2px); padding: .25rem .55rem; font-size: .8125rem; border: 1px solid #cfd8e6; border-radius: 8px; background: #fff; }
+
+/* ---------- datepicker ---------- */
+.datepicker.dropdown-menu { padding: 8px; border: 1px solid #cfd8e6; border-radius: 12px; box-shadow: 0 16px 32px -14px rgba(11, 29, 74, .45); font-size: 12.5px; }
+.datepicker table tr td, .datepicker table tr th { width: 32px; height: 30px; border-radius: 8px; }
+.datepicker .datepicker-switch, .datepicker .prev, .datepicker .next { color: var(--nds-navy); font-weight: 700; }
+.datepicker .datepicker-switch:hover, .datepicker .prev:hover, .datepicker .next:hover,
+.datepicker table tr td.day:hover, .datepicker table tr td span:hover { background: var(--nds-muda); }
+.datepicker table tr th.dow { color: var(--nds-redup); font-weight: 700; font-size: 11px; }
+.datepicker table tr td.today { background: #fff; border: 1.5px solid var(--nds-biru); color: var(--nds-navy); }
+.datepicker table tr td.active, .datepicker table tr td.active:hover,
+.datepicker table tr td span.active, .datepicker table tr td span.active:hover {
+    background: var(--nds-navy) !important;
+    background-image: none !important;
+    color: #fff !important;
+    text-shadow: none;
+}
+
+/* ---------- lain-lain ---------- */
+.badge { font-weight: 700; border-radius: 6px; }
+.page-link { color: var(--nds-navy); }
+
+/* ---------- layar sempit (tablet & HP) ---------- */
+@media (max-width: 991.98px) {
+    .box:not(.box .box), .box.body, .card-body, .dataTables_wrapper { overflow-x: auto; }   /* tabel lebar digeser di dalam kartu, halaman tetap selebar layar */
+}
+@media (max-width: 575.98px) {
+    .col.p-4, .col.p-3 { padding: 12px !important; }
+    label[style*="width"] { width: auto !important; min-width: 0 !important; }
+    .form-inline > * { margin-bottom: 6px; }
+    h2.text-center:not(.modal h2) { font-size: 14px; }
+}
+
+/* ---------- kepala bergradasi milik CSS bersama lain -> navy polos ---------- */
+.app-card-header, .ftr-head, .pcs2-header { background: var(--nds-navy) !important; }
+.pcs2-header::after { display: none; }
+/* jejak menu di kepala navy: putih redup, bagian aktif putih */
+.pco-head [class*="crumb"], .ftl-head [class*="crumb"], .ftr-head [class*="crumb"] { color: rgba(255, 255, 255, .72) !important; }
+.pco-head [class*="crumb"] a, .pco-head [class*="crumb"] b,
+.ftl-head [class*="crumb"] a, .ftl-head [class*="crumb"] b,
+.ftr-head [class*="crumb"] a, .ftr-head [class*="crumb"] b { color: #fff !important; }
+
+/* ---------- Dashboard AP (dashboard/dashboard-ap.php): warna inti navy, merah tetap ---------- */
+.ap-summary { --ap-blue: #1e3a8a !important; --ap-green: #1e3a8a !important; }
+
+/* kolom baca-saja .form-control-plaintext (104 halaman) & <input> polos tanpa kelas: ikut sm */
+.form-control-plaintext,
+body > :not(nav):not(.swal2-container) input[type="text"]:not([class]),
+body > :not(nav):not(.swal2-container) input[type="number"]:not([class]),
+body > :not(nav):not(.swal2-container) input[type="date"]:not([class]) {
+    height: calc(1.5em + .5rem + 2px) !important;
+    padding: .25rem .55rem !important;
+    font-size: .8125rem !important;
+    line-height: 1.5;
+    border: 1px solid #cfd8e6;
+    border-radius: 8px;
+}
+.form-control-plaintext { background: #f1f5fb; color: var(--nds-teks); }
+
+/* ---------- halaman laporan lama: .box luar membungkus .box.header (saringan) + .box.body (tabel)
+   -> dua kartu terpisah seperti AP Projection Report: kartu 1 judul + saringan, kartu 2 tabel ---------- */
+.box:not(.box .box):has(> .box.body) {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+}
+.box:not(.box .box):has(> .box.body) > .box.header,
+.box:not(.box .box):has(> .box.body) > .box.body {
+    background: #fff;
+    border: 1px solid var(--nds-garis);
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 6px 18px -14px rgba(15, 37, 87, .35);
+}
+h2.text-center:not(.modal h2) + .box:has(> .box.body) > .box.header { border-top: 0; border-radius: 0 0 12px 12px; }
+.box:not(.box .box):has(> .box.body) > .box.body { margin-top: 16px; }
+
+/* tabel ber-kepala-menempel (.tableFix, tinggi dikunci di style="height:450px"):
+   tinggi mengikuti isi, maksimal setinggi layar -> data kosong tidak menyisakan bidang kosong */
+.tableFix { height: auto !important; max-height: calc(100vh - 160px); }
+
+/* teks yang ditaruh DI DALAM ikon, mis. <i class="fa fa-file-excel-o"> Excel</i> (133 halaman):
+   teksnya pakai huruf biasa (tadinya jatuh ke huruf serif), ikonnya tetap lewat ::before */
+.fa:not(:empty), .fas:not(:empty), .far:not(:empty) { font-family: inherit !important; font-weight: inherit !important; }
+.fa:not(:empty)::before, .fas:not(:empty)::before { font-family: "Font Awesome 5 Free"; font-weight: 900; }
+.far:not(:empty)::before { font-family: "Font Awesome 5 Free"; font-weight: 400; }
+button .fa:not(:empty), .btn .fa:not(:empty), button .fas:not(:empty), .btn .fas:not(:empty) { font-size: inherit !important; }
+
+/* baris total di <tfoot> */
+.table tfoot th, .table tfoot td { background: #f1f5fb; color: var(--nds-teks); font-weight: 800; border-top: 2px solid var(--nds-garis); }
+
+/* ---------- tabel laporan (pakai: class="... tbl-laporan"), bentuk seperti AP Projection Report ----------
+   kepala & penutup ABU MUDA (bukan navy - permintaan user), baris tanpa garis tegak,
+   isi tidak terlipat (kecuali .kol-teks) */
+.tbl-laporan { border-collapse: separate !important; border-spacing: 0; margin-bottom: 0 !important; }
+.tbl-laporan thead th {
+    background-color: #eef1f5 !important;
+    color: #1e293b !important;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    text-align: center;
+    vertical-align: middle;
+    padding: 12px 10px;
+    white-space: nowrap;
+    border: 0 !important;
+    border-right: 1px solid #e2e7ef !important;
+    border-bottom: 2px solid #d5dce6 !important;
+}
+.tbl-laporan thead th:last-child { border-right: 0 !important; }
+.tbl-laporan tbody td {
+    padding: 8px 10px;
+    font-size: 12px;
+    color: #334155;
+    white-space: nowrap;
+    vertical-align: middle;
+    font-variant-numeric: tabular-nums;
+    border: 0 !important;
+    border-bottom: 1px solid #eef2f7 !important;
+}
+.tbl-laporan tbody tr:nth-of-type(odd), .tbl-laporan tbody tr:nth-of-type(even) { background: #fff; }
+.tbl-laporan tbody tr:hover > td { background: #f5f8ff; }
+.tbl-laporan .kol-teks { white-space: normal !important; min-width: 190px; }
+.tbl-laporan tfoot th, .tbl-laporan tfoot td {
+    background: #eef1f5 !important;
+    color: #0f172a !important;
+    font-weight: 700;
+    padding: 11px 10px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    border: 0 !important;
+    border-top: 2px solid #d5dce6 !important;
+}
+/* pembungkus gulir mendatar (dipasang lewat opsi dom DataTables) */
+.tbl-laporan-gulir { overflow-x: auto; border-radius: 10px; border: 1px solid var(--nds-garis); margin: 6px 0 2px; }
+
+/* gaya tabel seperti Sub Ledger VAT In (ppn_masukan_report.php): kepala biru-abu muda, tulisan navy,
+   garis tegak tipis, TANPA garis hitam thead-dark/table-bordered. Bisa dipakai sendiri:
+   class="table ... tbl-gaya-ppn"  (isi boleh terlipat), atau bersama tbl-laporan (isi tidak terlipat). */
+.tbl-gaya-ppn { border: 0 !important; border-collapse: separate !important; border-spacing: 0; }
+table.tbl-gaya-ppn thead th, table.tbl-gaya-ppn thead td {
+    background-color: #eef2f9 !important;
+    color: #1e3a8a !important;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    text-transform: none;
+    text-align: center;
+    vertical-align: middle !important;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 255, 255, .42) !important;
+}
+table.tbl-gaya-ppn tbody td {
+    font-size: 13px;
+    padding: 7px 10px;
+    color: #334155;
+    vertical-align: middle;
+    border: 0 !important;
+    border-right: 1px solid #d7dfea !important;
+    border-bottom: 1px solid #e3e9f2 !important;
+}
+table.tbl-gaya-ppn tbody td:last-child { border-right: 0 !important; }
+table.tbl-gaya-ppn tbody tr:nth-of-type(odd), table.tbl-gaya-ppn tbody tr:nth-of-type(even) { background: #fff; }
+table.tbl-gaya-ppn tbody tr:hover > td { background: #f5f8ff; }
+table.tbl-gaya-ppn tfoot th, table.tbl-gaya-ppn tfoot td {
+    background: #e2e8f0 !important;
+    padding: 10px;
+    border: 0 !important;
+    border-top: 2px solid #1e3a8a !important;
+    border-right: 1px solid #cbd5e1 !important;
+}
+.tbl-gulir-polos { overflow-x: auto; margin: 6px 0 2px; }
+
+/* tombol lama yang diturunkan 30px (style="margin-top: 30px") supaya sejajar dgn isian di bawah label:
+   label sekarang 19,5px + jarak 4px = 23,5px (dipakai 222x di 119 halaman) */
+[style*="margin-top: 30px"], [style*="margin-top:30px"] { margin-top: 23.5px !important; }
+
+/* ---------- warna tombol lama diseragamkan (app-interaksi.js) ----------
+   Search biru (sama dgn .app-btn-primary menu baru), Reset abu, Excel/Export hijau.
+   Tombol lama bergaya inline dikenali dari warna inline-nya; yang ber-class diberi class oleh JS.
+   Semua berawalan .app-interaksi (dipasang JS) -> ikut mati kalau saklar TEMA_INTERAKSI false. */
+.app-interaksi button[style*="text-shadow: 1px 1px 1px #000"] { text-shadow: none !important; border-radius: 6px !important; font-weight: 600; }
+.app-interaksi button i[style*="text-shadow"], .app-interaksi .btn i[style*="text-shadow"] { text-shadow: none !important; }
+.app-interaksi button[style*="rgb(46, 139, 87)"], .btn.app-warna-cari, input.app-warna-cari {
+    background: linear-gradient(180deg, #2f6bdd, #1d4ed8) !important; border-color: #1d4ed8 !important; color: #fff !important;
+}
+.app-interaksi button[style*="rgb(250, 69, 1)"], .btn.app-warna-reset, input.app-warna-reset {
+    background: #64748b !important; border-color: #64748b !important; color: #fff !important;
+}
+.app-interaksi button[style*="rgb(0, 135, 131)"], .btn.app-warna-excel, input.app-warna-excel {
+    background: linear-gradient(180deg, #22c07f, #10b981) !important; border-color: #10b981 !important; color: #fff !important;
+}
+.app-interaksi button[style*="rgb(46, 139, 87)"]:hover, .app-interaksi button[style*="rgb(250, 69, 1)"]:hover, .app-interaksi button[style*="rgb(0, 135, 131)"]:hover,
+.app-warna-cari:hover, .app-warna-reset:hover, .app-warna-excel:hover { filter: brightness(.93); }
+button[disabled][data-app-kunci] { opacity: .65; cursor: progress; }
+/* tombol Reset tidak dipakai lagi di semua menu: Reset lama (id="reset" / oranye inline) langsung lewat CSS
+   supaya tidak sempat berkedip; Reset ber-class lain diberi .app-sembunyi oleh JS. Tombolnya tetap ada
+   di halaman (disembunyikan), jadi skrip halaman yang memasang onclick ke #reset tidak error. */
+.app-interaksi #reset, .app-interaksi button[style*="rgb(250, 69, 1)"], .app-sembunyi { display: none !important; }
+
+/* ---------- layar loading saat form dikirim (app-interaksi.js) ---------- */
+.app-sibuk {
+    position: fixed; inset: 0; z-index: 3000; display: none;
+    align-items: center; justify-content: center;
+    background: rgba(233, 238, 245, .55); backdrop-filter: blur(1.5px);
+}
+.app-sibuk.tampil { display: flex; animation: app-sibuk-muncul .2s ease .15s both; }   /* jeda 0,15 dtk: tidak berkedip kalau cepat */
+@keyframes app-sibuk-muncul { from { opacity: 0; } to { opacity: 1; } }
+.app-sibuk-kotak {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    padding: 20px 28px; border-radius: 14px; background: #fff;
+    border: 1px solid var(--nds-garis); box-shadow: 0 18px 40px -18px rgba(11, 29, 74, .45);
+}
+.app-sibuk-putar {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 3px solid #dbe4f3; border-top-color: var(--nds-navy);
+    animation: app-sibuk-putar .8s linear infinite;
+}
+@keyframes app-sibuk-putar { to { transform: rotate(360deg); } }
+.app-sibuk-teks { font-size: 13px; font-weight: 600; color: var(--nds-teks); }
+.app-sibuk-tutup {
+    display: none; border: 0; background: none; padding: 0; height: auto !important;
+    font-size: 12px; color: var(--nds-redup); text-decoration: underline; cursor: pointer;
+}
+.app-sibuk.lama .app-sibuk-tutup { display: inline; }
+
+/* ---------- modal form (Create/Edit) gaya NDS: <div class="modal fade app-modal-form"> ----------
+   kepala flex (judul kiri, tombol x sejajar), footer Cancel + Save rata kanan */
+.app-modal-form .modal-header { display: flex; align-items: center; }
+.app-modal-form .modal-header .modal-title { flex: 1 1 auto; }
+.app-modal-form .modal-header .close { float: none; margin: 0 0 0 10px; padding: 0 2px; }
+.app-modal-form .modal-body { padding: 16px 18px 10px; }
+.app-modal-form .modal-body label { font-weight: 600; margin-bottom: 4px; }
+.app-modal-form .modal-body .form-group { margin-bottom: 12px; }
+.app-modal-form .modal-footer { padding: 10px 18px; background: #f8fafc; justify-content: flex-end; }
+.app-modal-form .modal-footer .btn { min-width: 90px; }
+
+/* ---------- tab halaman (mis. Category 1-5 di Master COA): <div class="app-tab-halaman"> ---------- */
+.app-tab-halaman {
+    display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 3px; margin-bottom: 12px;
+    background: var(--nds-muda); border: 1px solid var(--nds-garis); border-radius: 10px;
+}
+.app-tab-halaman .app-tab {
+    border: 0; background: transparent; color: #475569; font-weight: 600;
+    border-radius: 7px; min-width: 96px; cursor: pointer;
+}
+.app-tab-halaman .app-tab:hover { background: #fff; color: var(--nds-navy); }
+.app-tab-halaman .app-tab.aktif { background: var(--nds-navy); color: #fff; box-shadow: 0 2px 6px -2px rgba(30, 58, 138, .5); }
+
+/* tombol berupa <a class="app-btn"> (mis. Excel yg membuka tab baru) setinggi tombol <button> lain (29,5px) */
+a.app-btn { height: calc(1.5em + .5rem + 2px) !important; display: inline-flex; align-items: center; vertical-align: middle; }
+
+/* ---------- lebar kolom saringan mengikuti isinya (dipakai di menu Master) ----------
+   di HP tetap selebar layar */
+@media (min-width: 768px) {
+    .app-kol-pendek { flex: 0 0 160px; max-width: 160px; }   /* mis. Status: ALL/Active/Deactive */
+    .app-kol-sedang { flex: 0 0 340px; max-width: 340px; }   /* nama +-35 huruf */
+    .app-kol-lebar  { flex: 0 0 480px; max-width: 480px; }   /* nama +-55 huruf */
+    .app-kol-xlebar { flex: 0 0 680px; max-width: 680px; }   /* nama +-90 huruf */
+    .app-kol-supplier { flex: 0 0 560px; max-width: 560px; } /* nama supplier terpanjang +-480px */
+    .app-kol-tombol { min-width: 290px; }                     /* Search, Create, Excel tetap satu baris */
+}
