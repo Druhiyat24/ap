@@ -11,7 +11,9 @@ $attn = $_POST['attn'];
 $seasons = $_POST['seasons'];
 $no_reff = $_POST['no_reff'];
 $id_bpb = $_POST['id_bpb'];
-$no_bpb = $_POST['no_bpb'];
+// Nomor BPB dibersihkan dari spasi/tab/enter (alat pindai sering
+// menyelipkan TAB di ujung) supaya cocok dgn nomor di tabel bpb.
+$no_bpb = preg_replace('/\s+/', '', (string) $_POST['no_bpb']);
 $tgl_bpb = $_POST['tgl_bpb'];
 $id_jo = $_POST['id_jo'];
 $id_item = $_POST['id_item'];
