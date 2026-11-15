@@ -17,6 +17,8 @@ try {
         echo 'Access restricted.';
         exit;
     }
+    /* Data project SELALU dari produksi - penjelasannya di project.php. */
+    $conn2 = $conn_live;
 
     $filter_status = $_GET['status'] ?? '';
     $filter_module = $_GET['module'] ?? '';
