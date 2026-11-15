@@ -1,4 +1,6 @@
 <?php include '../header.php' ?>
+<!-- overlay loading (dipakai tabel laporan) -->
+<link rel="stylesheet" href="../css/app-loading.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-loading.css'); ?>">
 <style >
     .modal {
   text-align: center;
@@ -140,8 +142,15 @@
     <div class="box body">
         <div class="row">       
             <div class="col-md-12">      
-   <div class="tableFix" style="height: 450px;">        
-<table id="mytable2" class="table table-striped table-bordered" role="grid" cellspacing="0" width="100%">
+   <!-- DataTable 10 baris per halaman + loading (dinyalakan saat Search, dimatikan setelah tabel siap) -->
+   <div class="app-loading-wrap is-loading" id="opLoad">
+     <div class="app-loading">
+       <div class="app-loading-box">
+         <div class="app-spinner"></div>
+         <div class="app-loading-text">Loading data...</div>
+       </div>
+     </div>
+<table id="mytable2" class="table table-striped table-bordered tbl-laporan" role="grid" cellspacing="0" width="100%">
         <thead>
         <tr class="thead-dark">
             <th style="text-align: center;vertical-align: middle;width: 10%;">No Memo</th>
@@ -156,7 +165,7 @@
             <th style="text-align: center;vertical-align: middle;width: 10%;">Ending Balance</th>
         </tr>
     </thead>
-        </tbody>
+        <tbody>
 
     <?php
     $coa_number ='';
@@ -274,18 +283,18 @@ select reff_doc,tgl_journal,sum((debit * rate) - (credit * rate)) total, '0','0'
         }
 }
 
-        echo ' <tr >
-            <th colspan="4" style="text-align : center;" value = "Total">Total</td>
+        // baris Total di <tfoot>: tidak ikut diurutkan/dipecah DataTables, selalu tampil di bawah
+        echo '</tbody><tfoot><tr>
+            <th colspan="4" style="text-align : center;" value = "Total">Total</th>
             <th style="text-align : right;" value = "'.$ttl_beg.'">'.number_format($ttl_beg,2).'</th>
             <th style="text-align : right;" value = "'.$ttl_add.'">'.number_format($ttl_add,2).'</th>
             <th style="text-align : right;" value = "'.$ttl_ded.'">'.number_format($ttl_ded,2).'</th>
             <th style="text-align : right;" value = "'.$ttl_mj.'">'.number_format($ttl_mj,2).'</th>
             <th style="text-align : right;" value = "'.$ttl_for.'">'.number_format($ttl_for,2).'</th>
             <th style="text-align : right;" value = "'.$ttl_end.'">'.number_format($ttl_end,2).'</th>
-            </tr>
+            </tr></tfoot>
             ';
-?>  
-</tbody>
+?>
 </table>
 </div>                  
 </div>
@@ -394,6 +403,25 @@ function SidebarCollapse () {
     
 } );
 </script> -->
+
+<script>
+    // tabel laporan: DataTable 10 baris per halaman, urutan tetap seperti dari server
+    $(document).ready(function () {
+        $('#mytable2').DataTable({
+            pageLength: 10,
+            order: [],
+            autoWidth: false,
+            // tabel dibungkus div bergulir mendatar; Show/Search/paging tetap diam
+            dom: "<'row'<'col-sm-6'l><'col-sm-6'f>><'tbl-laporan-gulir't><'row'<'col-sm-5'i><'col-sm-7'p>>",
+            columnDefs: [{ targets: 3, className: 'kol-teks' }]     // kolom Supplier boleh terlipat
+        });
+        $('#opLoad').removeClass('is-loading');
+        // Search mengirim form -> loading tampil sampai hasil baru selesai dimuat
+        $('#form-data').on('submit', function () {
+            $('#opLoad').addClass('is-loading');
+        });
+    });
+</script>
 
 <script>
     $(document).ready(function() {
