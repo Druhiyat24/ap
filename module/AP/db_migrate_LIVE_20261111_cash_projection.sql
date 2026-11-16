@@ -9,7 +9,9 @@
      1. Tabel ap_cf_projection          - penyimpan ketiga jenis proyeksi
      2. menurole id 148                 - hak akses menunya
      3. useraccess                      - pemberian akses ke pemakai
-     4. ap_cf_category                 - master kategori arus kas (Master CF)
+
+   TIDAK ADA bagian master kategori. Kategori arus kasnya diambil dari
+   master_cash_flow yang SUDAH ADA - lihat keterangan di bawah.
 
    Seluruhnya ditulis supaya AMAN DIJALANKAN ULANG: tabelnya pakai
    CREATE TABLE IF NOT EXISTS, dua insert lainnya pakai WHERE NOT EXISTS.
@@ -131,79 +133,34 @@ WHERE NOT EXISTS (
 );
 
 /* ---------------------------------------------------------------------------
-   4. MASTER KATEGORI ARUS KAS
-   Isinya SALINAN lembar "Master CF" di berkas Excel aslinya - 12 kategori
-   Cash In (dipakai tab Other Inflow) dan 42 kategori Cash Out (dipakai tab
-   PV Expense). Dijadikan tabel supaya kategori baru cukup ditambah lewat
-   data, tidak perlu menyentuh kode program.
-   --------------------------------------------------------------------------- */
-CREATE TABLE IF NOT EXISTS `ap_cf_category` (
-  `id`     INT(11)      NOT NULL AUTO_INCREMENT,
-  `jenis`  VARCHAR(20)  NOT NULL COMMENT 'Cash In / Cash Out',
-  `nama`   VARCHAR(255) NOT NULL,
-  `urut`   INT(11)      NOT NULL DEFAULT 0,
-  `status` VARCHAR(20)  NOT NULL DEFAULT 'Active',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_jenis_nama` (`jenis`, `nama`),
-  KEY `idx_jenis` (`jenis`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+   4. MASTER KATEGORI ARUS KAS - DIBATALKAN (16 Nov 2026)
 
-/* INSERT IGNORE: aman dijalankan ulang, yang sudah ada dilewati. */
-INSERT IGNORE INTO `ap_cf_category` (`jenis`, `nama`, `urut`) VALUES
-  ('Cash Out', 'Pengeluaran Pembayaran Utang Usaha', 1),
-  ('Cash In', 'Penerimaan Piutang Usaha (Existing)', 1),
-  ('Cash Out', 'Pengeluaran Pembayaran Uang Muka Supplier', 2),
-  ('Cash In', 'Penerimaan Piutang Usaha (Planning)', 2),
-  ('Cash Out', 'Pengeluaran Pembayaran PPh', 3),
-  ('Cash In', 'Penerimaan Piutang Lain-lain', 3),
-  ('Cash Out', 'Pengeluaran Pembayaran PPN', 4),
-  ('Cash In', 'Penerimaan Uang Muka Penjualan', 4),
-  ('Cash Out', 'Pengeluaran Pembayaran Biaya Gaji Operator', 5),
-  ('Cash In', 'Penerimaan Pendapatan Bunga Giro', 5),
-  ('Cash Out', 'Pengeluaran Pembayaran Biaya Gaji Staff', 6),
-  ('Cash In', 'Penerimaan Antar Bank (Dalam Satu PT)', 6),
-  ('Cash Out', 'Pengeluaran Pembayaran Biaya THR', 7),
-  ('Cash In', 'Penerimaan Lain-lain', 7),
-  ('Cash Out', 'Pengeluaran Pembayaran Biaya BPJS TK', 8),
-  ('Cash In', 'Setoran Modal', 8),
-  ('Cash Out', 'Pengeluaran Pembayaran Biaya BPJS KS', 9),
-  ('Cash In', 'Penerimaan Pinjaman Bank', 9),
-  ('Cash Out', 'Pengeluaran Pembayaran Biaya Listrik', 10),
-  ('Cash In', 'Penerimaan Pinjaman Group', 10),
-  ('Cash Out', 'Pengeluaran Pembayaran Biaya Telepon', 11),
-  ('Cash In', 'Penerimaan Pinjaman Shareholder', 11),
-  ('Cash Out', 'Pengeluaran Pembayaran Biaya Internet', 12),
-  ('Cash In', 'Penerimaan Pinjaman Antar Divisi', 12),
-  ('Cash Out', 'Pengeluaran Pembayaran Biaya Keperluan Pabrik', 13),
-  ('Cash Out', 'Pengeluaran Pembayaran Biaya Perjalanan Dinas', 14),
-  ('Cash Out', 'Pengeluaran Pembayaran Biaya Pemeliharaan Gedung', 15),
-  ('Cash Out', 'Pengeluaran Pembayaran Biaya Pemeliharaan Mesin', 16),
-  ('Cash Out', 'Pengeluaran Pembayaran Biaya Pemeliharaan Kendaraan', 17),
-  ('Cash Out', 'Pengeluaran Pembayaran Biaya Pemeliharaan Peralatan', 18),
-  ('Cash Out', 'Pengeluaran Pembayaran Biaya Sewa Tanah & Bangunan', 19),
-  ('Cash Out', 'Pengeluaran Pembayaran Biaya Transportasi', 20),
-  ('Cash Out', 'Pengeluaran Pembayaran Biaya ATK', 21),
-  ('Cash Out', 'Pengeluaran Pembayaran Biaya Export & Import', 22),
-  ('Cash Out', 'Pengeluaran Pembayaran Biaya Jasa Profesional', 23),
-  ('Cash Out', 'Pengeluaran Pembayaran Biaya Administrasi Bank', 24),
-  ('Cash Out', 'Pengeluaran Pembayaran Biaya Provisi Bank', 25),
-  ('Cash Out', 'Pengeluaran Antar Bank (Pemindahbukuan Internal)', 26),
-  ('Cash Out', 'Pengeluaran Lain-lain', 27),
-  ('Cash Out', 'Pembelian Tanah', 28),
-  ('Cash Out', 'Pembelian Bangunan', 29),
-  ('Cash Out', 'Pembelian Instalasi Pabrik', 30),
-  ('Cash Out', 'Pembelian Mesin', 31),
-  ('Cash Out', 'Pembelian Peralatan', 32),
-  ('Cash Out', 'Pembelian Kendaraan', 33),
-  ('Cash Out', 'Pembelian Perangkat Lunak', 34),
-  ('Cash Out', 'Pelunasan Pinjaman Bank', 35),
-  ('Cash Out', 'Pelunasan Pinjaman Non Bank', 36),
-  ('Cash Out', 'Pelunasan Pinjaman Group', 37),
-  ('Cash Out', 'Pelunasan Pinjaman Shareholder', 38),
-  ('Cash Out', 'Pelunasan Pinjaman Antar Divisi', 39),
-  ('Cash Out', 'Pembayaran Bunga Pinjaman Bank', 40),
-  ('Cash Out', 'Pembayaran Bunga Pinjaman Group', 41),
-  ('Cash Out', 'Pembayaran Bunga Pinjaman Shareholder', 42);
+   Versi pertama berkas ini membuat tabel sendiri `ap_cf_category` berisi
+   salinan 54 kategori dari lembar "Master CF" di Excel aslinya. ITU KELIRU
+   dan sudah dibuang: tabel `master_cash_flow` yang sudah lama ada di
+   aplikasi ini TERNYATA SUDAH MEMUAT SEMUANYA.
+
+   Dicocokkan satu per satu: ke-54 kategori salinan itu ada semua di
+   master_cash_flow, dan master_cash_flow malah punya 2 lagi yang tidak ada
+   di salinan ("Pengakuan Keuntungan/Kerugian Selisih Kurs"). Jadi salinan
+   itu bukan cuma mubazir - dia LEBIH MISKIN dari masternya.
+
+   Yang lebih berbahaya: master_cash_flow punya menunya sendiri (Master Cash
+   Flow) dan dipakai dropdown Bank In & Bank Out. Kalau halaman proyeksi
+   memakai salinan, kategori yang ditambah atau dinonaktifkan lewat menu itu
+   TIDAK akan pernah ikut ke sini - persis cacat yang dulu terjadi pada
+   ind_categori4.
+
+   Sisi kodenya sudah diubah: cfp_daftar_kategori() di
+   module/AP/cash_projection/cfp_lib.php membaca master_cash_flow
+   (type_cashflow + status='Y'), dan tidak ada lagi yang menyentuh
+   ap_cf_category.
+
+   TIDAK PERLU tindakan apa pun di produksi: tabel ap_cf_category memang
+   BELUM PERNAH dibuat di sana (diperiksa 15 Nov 2026). Kalau di basis data
+   lokal terlanjur ada, dia cuma menganggur dan boleh dibuang sendiri:
+       DROP TABLE IF EXISTS `ap_cf_category`;
+   --------------------------------------------------------------------------- */
 
 /* ---------------------------------------------------------------------------
    PEMERIKSAAN SESUDAH DIJALANKAN
@@ -215,6 +172,10 @@ SELECT 'menurole'   AS bagian, COUNT(*) FROM menurole   WHERE menu = 'Bank Proje
 UNION ALL
 SELECT 'useraccess' AS bagian, COUNT(*) FROM useraccess WHERE menu = 'Bank Projection Other'
 UNION ALL
-SELECT 'kategori Cash In'  AS bagian, COUNT(*) FROM ap_cf_category WHERE jenis = 'Cash In'
+/* Sumber kategorinya master_cash_flow yang sudah ada - tidak dibuat di sini,
+   hanya dipastikan isinya memang ada sebelum menunya dipakai. */
+SELECT 'kategori Cash In (master_cash_flow)'  AS bagian, COUNT(*) FROM master_cash_flow
+  WHERE type_cashflow = 'Cash In'  AND status = 'Y'
 UNION ALL
-SELECT 'kategori Cash Out' AS bagian, COUNT(*) FROM ap_cf_category WHERE jenis = 'Cash Out';
+SELECT 'kategori Cash Out (master_cash_flow)' AS bagian, COUNT(*) FROM master_cash_flow
+  WHERE type_cashflow = 'Cash Out' AND status = 'Y';

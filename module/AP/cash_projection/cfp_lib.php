@@ -121,16 +121,39 @@ function cfp_nama_master($conn, $id)
 }
 
 
-/* Kategori arus kas dari master. $jenis: 'Cash In' atau 'Cash Out'. */
+/* Kategori arus kas dari master. $jenis: 'Cash In' atau 'Cash Out'.
+
+   SUMBERNYA master_cash_flow - master yang SUDAH ADA dan punya menunya
+   sendiri (Master Cash Flow). Dulu halaman ini memakai tabel sendiri
+   ap_cf_category berisi salinan 54 kategori dari lembar Excel; ternyata
+   master_cash_flow sudah memuat semuanya (malah 2 lebih banyak: Selisih
+   Kurs). Salinan itu DIBUANG - kalau dibiarkan, kategori yang ditambah
+   atau dinonaktifkan lewat menu Master Cash Flow tidak akan pernah ikut
+   ke sini, persis cacat yang dulu terjadi pada ind_categori4.
+
+   Penyaringnya sama dgn dropdown Bank In/Bank Out yang membaca master yang
+   sama: status 'Y' saja.
+
+   URUTANNYA SENGAJA TIDAK memakai "order by nama_category" seperti Bank In.
+   Diurutkan menurut abjad, FINANCING naik ke paling atas - padahal dropdown
+   di halaman ini selama ini OPERATING dulu (Utang Usaha di urutan pertama,
+   yang paling sering dipakai). FIELD() mengunci urutan kelompoknya supaya
+   isi dropdown-nya persis seperti sebelumnya. Kelompok baru yang belum
+   terdaftar di FIELD() bernilai 0; dibuat jadi 9 supaya jatuh ke bawah,
+   bukan melompat ke atas.
+
+   Yang dikembalikan tetap nama_subcategory - itu yang selama ini
+   tersimpan di ap_cf_projection.kategori, jadi dokumen lama tetap cocok. */
 function cfp_daftar_kategori($conn, $jenis)
 {
     $daftar = array();
     $j = mysqli_real_escape_string($conn, $jenis);
-    $q = mysqli_query($conn, "select nama from ap_cf_category
-                              where jenis = '$j' and status = 'Active'
-                              order by urut, nama");
+    $urut = "FIELD(nama_category, 'OPERATING ACTIVITIES', 'INVESTING ACTIVITIES', 'FINANCING ACTIVITIES')";
+    $q = mysqli_query($conn, "select nama_subcategory from master_cash_flow
+                              where type_cashflow = '$j' and status = 'Y'
+                              order by IF($urut = 0, 9, $urut) asc, urutan asc");
     while ($r = mysqli_fetch_assoc($q)) {
-        $daftar[] = $r['nama'];
+        $daftar[] = $r['nama_subcategory'];
     }
     return $daftar;
 }
