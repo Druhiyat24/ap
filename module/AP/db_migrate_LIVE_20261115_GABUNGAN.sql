@@ -1,6 +1,10 @@
 /* ============================================================================
-   MIGRASI PRODUKSI - GABUNGAN  (15 Nov 2026)
+   MIGRASI PRODUKSI - GABUNGAN  (dirakit 15 Nov 2026, direvisi 16 Nov 2026)
    Basis data: signalbit_erp @ 10.10.5.12
+
+   REVISI 16 Nov 2026: bagian "master kategori arus kas" DIBUANG - lihat
+   keterangannya di BAGIAN 3 di bawah. Berkas ini yang dipakai, bukan versi
+   sebelumnya yang masih membuat tabel ap_cf_category.
 
    DIJALANKAN SEKALI, SEBELUM kode terbaru ditarik ke server.
 
