@@ -73,8 +73,8 @@
     .ppn-tbl thead { position: sticky; top: 0; z-index: 2; background: #1E3A8A; }
     .ppn-tbl thead tr { background: linear-gradient(90deg, #1E3A8A, #2f5bbf); }
     .ppn-tbl thead th {
-        background: transparent;
-        color: #fff; border: 0; border-bottom: 2px solid #16306e;
+        background: transparent !important;
+        color: #fff !important; border: 0; border-bottom: 2px solid #16306e;
         font-size: 11px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase;
         white-space: nowrap; vertical-align: middle; padding: 9px 10px;
     }

@@ -92,6 +92,7 @@
         if ($el.hasClass('select2-hidden-accessible')) { segarkan($, el); return; }   // sudah select2: segarkan tampilannya
         if (!dipaksa && dilewati($, el)) { return; }
         $el.removeData('nds-lepas');
+        kunciUnik(el);
         var modal = $el.closest('.modal');
         var adaCari = el.getAttribute('data-live-search') === 'true' || el.options.length > 8;
         try {
@@ -102,6 +103,19 @@
                 minimumResultsForSearch: adaCari ? 0 : Infinity
             });
         } catch (e) { /* kalau gagal, biarkan select asli */ }
+    }
+
+    /* select2 menyimpan instance-nya memakai id elemen sbg kunci
+       (data-select2-id = "select2-data-<id>"). Halaman lama sering menyalin
+       baris dengan id yang SAMA (mis. tombol Add Row di jurnal): select2 baris
+       baru lalu membuang select2 baris sebelumnya, dan baris lama berubah jadi
+       sel kosong yang tidak bisa diisi. Kunci unik dipasang lebih dulu di sini;
+       atribut id aslinya TIDAK diubah supaya kode halaman yang memakai #id aman. */
+    var nomorKunci = 0;
+    function kunciUnik(el) {
+        if (!el.getAttribute('data-select2-id')) {
+            el.setAttribute('data-select2-id', 'nds-' + (++nomorKunci) + '-' + Date.now().toString(36));
+        }
     }
 
     /* perbarui teks yang tampil di select2 TANPA memicu event apa pun.

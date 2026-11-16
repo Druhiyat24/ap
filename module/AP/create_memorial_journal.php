@@ -149,6 +149,14 @@
     width: 100% !important;
   }
 
+  /* Tema baru memakai select2, bukan .bootstrap-select, jadi aturan di atas
+     tidak mengenainya. Tanpa ini select2 memakai data-width="200px" milik
+     bootstrap-select sbg lebar TETAP, sehingga dropdown meluber menimpa
+     kolom sebelahnya (Profit Center menempel ke Cost Center). */
+  #mytablenone .select2-container {
+    width: 100% !important;
+  }
+
   .total-box{
     border:1px solid #dcdcdc;
     border-radius:6px;
@@ -531,13 +539,17 @@
       var rowCount = table.rows.length;
       var row = table.insertRow(rowCount);
 
+      /* Baris jurnal sengaja TANPA id: isi tiap baris sama persis, dan id
+         kembar membuat select2 baris BARU membunuh select2 baris LAMA
+         (select2 memakai id sbg kunci instance), jadi baris lama berubah
+         menjadi sel kosong. Field tetap dikirim lewat name="x[]". */
       var element = `
 <tr>
     <td>
-    <input type="checkbox" id="select" name="select[]" value="" checked disabled>
+    <input type="checkbox" name="select[]" value="" checked disabled>
     </td>
     <td>
-    <select class="form-control selectpicker no_coa" name="nomor_coa[]" id="nomor_coa" data-live-search="true" data-width="200px" data-size="5">
+    <select class="form-control selectpicker no_coa" name="nomor_coa[]" data-live-search="true" data-width="200px" data-size="5">
     <option value="-">-</option>
     <?php 
     $sql = mysqli_query($conn1, "SELECT no_coa AS id_coa, CONCAT(no_coa, ' ', nama_coa) AS coa FROM mastercoa_v2"); 
@@ -548,7 +560,7 @@
 </select>
 </td>
 <td>
-<select class="form-control selectpicker prof_ctr" name="prof_ctr[]" id="prof_ctr" data-live-search="true" data-width="200px" data-size="5">
+<select class="form-control selectpicker prof_ctr" name="prof_ctr[]" data-live-search="true" data-width="200px" data-size="5">
 <option value="-"> - </option>
 <?php
 $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
@@ -558,7 +570,7 @@ foreach ($sql3 as $fc) : ?>
 </select>
 </td>
 <td>
-<select class="form-control selectpicker nomor_cc" name="nomor_cc[]" id="nomor_cc" data-live-search="true" data-width="200px" data-size="5">
+<select class="form-control selectpicker nomor_cc" name="nomor_cc[]" data-live-search="true" data-width="200px" data-size="5">
 <option value="-"> - </option>
 </select>
 </td>
@@ -575,7 +587,7 @@ foreach ($sql3 as $fc) : ?>
 <input type="text" class="form-control tanggal" style="font-size: 12px;width: 150px;" name="fakturdate[]" placeholder="" autocomplete="off">
 </td>
 <td>
-<select class="form-control selectpicker" name="buyer[]" id="buyer" data-live-search="true" data-width="200px" data-size="5">
+<select class="form-control selectpicker" name="buyer[]" data-live-search="true" data-width="200px" data-size="5">
 <option value="-">-</option>
 <?php 
 $sql4 = mysqli_query($conn1, "SELECT DISTINCT(Supplier) AS buyer FROM mastersupplier WHERE tipe_sup = 'C' ORDER BY Supplier ASC"); 
@@ -586,7 +598,7 @@ foreach ($sql4 as $ms) :
 </select>
 </td>
 <td>
-<select class="form-control selectpicker" name="no_ws[]" id="no_ws" data-live-search="true" data-width="200px" data-size="5">
+<select class="form-control selectpicker" name="no_ws[]" data-live-search="true" data-width="200px" data-size="5">
 <option value="-">-</option>
 <?php 
 $sql3 = mysqli_query($conn1, "SELECT a.kpno AS no_ws, b.Supplier FROM act_costing a 
@@ -599,16 +611,16 @@ foreach ($sql3 as $ws) :
 </select>
 </td>
 <td>
-<select class="form-control selectpicker" name="currenc[]" id="currenc" data-live-search="true" data-size="5">
+<select class="form-control selectpicker" name="currenc[]" data-live-search="true" data-size="5">
 <option value="IDR">IDR</option>
 <option value="USD">USD</option>
 </select>
 </td>
 <td style="text-align: right;">
-<input type="number" min="1" style="font-size: 12px;width: 150px;" class="form-control" id="txt_debit" name="txt_debit[]" oninput="modal_input_deb(this)" autocomplete="off">
+<input type="number" min="1" style="font-size: 12px;width: 150px;" class="form-control" name="txt_debit[]" oninput="modal_input_deb(this)" autocomplete="off">
 </td>
 <td>
-<input type="number" min="1" style="font-size: 12px;width: 150px;" class="form-control" id="txt_credit" name="txt_credit[]" oninput="modal_input_cre(this)" autocomplete="off">
+<input type="number" min="1" style="font-size: 12px;width: 150px;" class="form-control" name="txt_credit[]" oninput="modal_input_cre(this)" autocomplete="off">
 </td>
 <td>
 <input type="text" class="form-control" style="font-size: 12px;width: 150px;" name="keterangan[]" placeholder="" autocomplete="off">
@@ -727,13 +739,17 @@ foreach ($sql3 as $ws) :
 
           if (chkbox && chkbox.checked) {
 
+            /* Baris jurnal sengaja TANPA id: isi tiap baris sama persis, dan id
+               kembar membuat select2 baris BARU membunuh select2 baris LAMA
+               (select2 memakai id sbg kunci instance), jadi baris lama berubah
+               menjadi sel kosong. Field tetap dikirim lewat name="x[]". */
             var element2 = `
 <tr>
     <td>
-    <input type="checkbox" id="select" name="select[]" value="" checked disabled>
+    <input type="checkbox" name="select[]" value="" checked disabled>
     </td>
     <td>
-    <select class="form-control selectpicker no_coa" name="nomor_coa[]" id="nomor_coa" data-live-search="true" data-width="200px" data-size="5">
+    <select class="form-control selectpicker no_coa" name="nomor_coa[]" data-live-search="true" data-width="200px" data-size="5">
     <option value="-">-</option>
     <?php 
     $sql = mysqli_query($conn1, "SELECT no_coa AS id_coa, CONCAT(no_coa, ' ', nama_coa) AS coa FROM mastercoa_v2"); 
@@ -744,7 +760,7 @@ foreach ($sql3 as $ws) :
 </select>
 </td>
 <td>
-<select class="form-control selectpicker prof_ctr" name="prof_ctr[]" id="prof_ctr" data-live-search="true" data-width="200px" data-size="5">
+<select class="form-control selectpicker prof_ctr" name="prof_ctr[]" data-live-search="true" data-width="200px" data-size="5">
 <option value="-"> - </option>
 <?php
 $sql3 = mysqli_query($conn1, "select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
@@ -754,7 +770,7 @@ foreach ($sql3 as $fc) : ?>
 </select>
 </td>
 <td>
-<select class="form-control selectpicker nomor_cc" name="nomor_cc[]" id="nomor_cc" data-live-search="true" data-width="200px" data-size="5">
+<select class="form-control selectpicker nomor_cc" name="nomor_cc[]" data-live-search="true" data-width="200px" data-size="5">
 <option value="-"> - </option>
 </select>
 </td>
@@ -771,7 +787,7 @@ foreach ($sql3 as $fc) : ?>
 <input type="text" class="form-control tanggal" style="font-size: 12px;width: 150px;" name="fakturdate[]" placeholder="" autocomplete="off">
 </td>
 <td>
-<select class="form-control selectpicker" name="buyer[]" id="buyer" data-live-search="true" data-width="200px" data-size="5">
+<select class="form-control selectpicker" name="buyer[]" data-live-search="true" data-width="200px" data-size="5">
 <option value="-">-</option>
 <?php 
 $sql4 = mysqli_query($conn1, "SELECT DISTINCT(Supplier) AS buyer FROM mastersupplier WHERE tipe_sup = 'C' ORDER BY Supplier ASC"); 
@@ -782,7 +798,7 @@ foreach ($sql4 as $ms) :
 </select>
 </td>
 <td>
-<select class="form-control selectpicker" name="no_ws[]" id="no_ws" data-live-search="true" data-width="200px" data-size="5">
+<select class="form-control selectpicker" name="no_ws[]" data-live-search="true" data-width="200px" data-size="5">
 <option value="-">-</option>
 <?php 
 $sql3 = mysqli_query($conn1, "SELECT a.kpno AS no_ws, b.Supplier FROM act_costing a 
@@ -795,16 +811,16 @@ foreach ($sql3 as $ws) :
 </select>
 </td>
 <td>
-<select class="form-control selectpicker" name="currenc[]" id="currenc" data-live-search="true" data-size="5">
+<select class="form-control selectpicker" name="currenc[]" data-live-search="true" data-size="5">
 <option value="IDR">IDR</option>
 <option value="USD">USD</option>
 </select>
 </td>
 <td style="text-align: right;">
-<input type="number" min="1" style="font-size: 12px;width: 150px;" class="form-control" id="txt_debit" name="txt_debit[]" oninput="modal_input_deb(this)" autocomplete="off">
+<input type="number" min="1" style="font-size: 12px;width: 150px;" class="form-control" name="txt_debit[]" oninput="modal_input_deb(this)" autocomplete="off">
 </td>
 <td>
-<input type="number" min="1" style="font-size: 12px;width: 150px;" class="form-control" id="txt_credit" name="txt_credit[]" oninput="modal_input_cre(this)" autocomplete="off">
+<input type="number" min="1" style="font-size: 12px;width: 150px;" class="form-control" name="txt_credit[]" oninput="modal_input_cre(this)" autocomplete="off">
 </td>
 <td>
 <input type="text" class="form-control" style="font-size: 12px;width: 150px;" name="keterangan[]" placeholder="" autocomplete="off">

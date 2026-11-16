@@ -310,7 +310,7 @@ if (isset($conn1) && $conn1) {
 /* Tanpa !important: kelas warisan .table-gradient sudah dilepas dari markup
    tabel ini, jadi tidak ada lagi aturan latar yang perlu dilawan. */
 .mju-tbl thead th {
-    background: transparent; color: #fff; border: 0; border-bottom: 2px solid #16306e;
+    background: transparent !important; color: #fff !important; border: 0; border-bottom: 2px solid #16306e;
     font-size: 11px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase;
     white-space: nowrap; vertical-align: middle; padding: 9px 10px;
 }

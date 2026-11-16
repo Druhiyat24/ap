@@ -36,7 +36,16 @@ if (isset($_POST['prof_ctr']) && isset($_POST['no_coa'])) {
     $resGroup = mysqli_query($conn2, $sqlGroup);
     $rowGroup = mysqli_fetch_assoc($resGroup);
 
-    $groupFilter = $rowGroup['groups']; // hasil string: 'PRODUCTION','SUPPORTING SELLING'
+    $groupFilter = $rowGroup ? $rowGroup['groups'] : ''; // hasil: 'PRODUCTION','SUPPORTING SELLING'
+
+    // COA yang tidak dipetakan ke grup mana pun (mis. akun bank) membuat
+    // $groupFilter kosong -> "group2 IN ()" adalah SQL yang salah, query gagal
+    // dan PHP mencetak Warning di tengah JSON sehingga jawabannya tak terbaca.
+    // Jawab daftar kosong saja: baris itu memang tidak punya cost center.
+    if (trim($groupFilter) === '') {
+        echo json_encode([]);
+        exit;
+    }
 
     // Query utama ke CC dengan filter group2
     $sql = "
