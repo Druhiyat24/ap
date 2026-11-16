@@ -108,7 +108,7 @@ $batal = (strcasecmp($h['status'], 'Cancel') === 0);
       if ($jenis == 'BOOK TRANSFER') {
           echo '<td>' . dcp($b['akun_source']) . '</td><td>' . dcp($b['akun_tujuan']) . '</td>';
       } else {
-          echo '<td>' . dcp($b['nama']) . '</td><td>' . dcp($b['kategori']) . '</td>'
+          echo '<td>' . dcp($b['nama_supplier']) . '</td><td>' . dcp($b['kategori']) . '</td>'
              . '<td>' . dcp($b['akun_tujuan']) . '</td>';
       }
       echo '<td>' . dcp_tgl($b['tanggal']) . '</td>

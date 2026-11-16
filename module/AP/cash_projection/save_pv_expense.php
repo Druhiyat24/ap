@@ -87,7 +87,7 @@ foreach ($baris as $b) {
     }
 
     $sql = "insert into ap_cf_projection
-            (no_doc, jenis, tanggal, akun_tujuan, pc_tujuan, nama, id_supplier, kategori, deskripsi,
+            (no_doc, jenis, tanggal, akun_tujuan, pc_tujuan, nama_supplier, id_supplier, kategori, deskripsi,
              curr, amount, rate, amount_idr, amount_usd, curr_tujuan, amount_tujuan,
              status, created_by, created_date)
             values ('" . mysqli_real_escape_string($conn2, $no_doc) . "',

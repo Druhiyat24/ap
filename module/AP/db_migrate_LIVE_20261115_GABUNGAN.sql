@@ -2,9 +2,11 @@
    MIGRASI PRODUKSI - GABUNGAN  (dirakit 15 Nov 2026, direvisi 16 Nov 2026)
    Basis data: signalbit_erp @ 10.10.5.12
 
-   REVISI 16 Nov 2026: bagian "master kategori arus kas" DIBUANG - lihat
-   keterangannya di BAGIAN 3 di bawah. Berkas ini yang dipakai, bukan versi
-   sebelumnya yang masih membuat tabel ap_cf_category.
+   PAKAI BERKAS INI, bukan versi sebelumnya. Dua revisi 16 Nov 2026:
+     - bagian "master kategori arus kas" DIBUANG (tabel ap_cf_category tidak
+       lagi dibuat) - keterangannya ada di dalam BAGIAN 1-2 di bawah;
+     - kolom `nama` pada ap_cf_projection berganti nama jadi `nama_supplier`
+       atas permintaan pemakai.
 
    DIJALANKAN SEKALI, SEBELUM kode terbaru ditarik ke server.
 
@@ -109,7 +111,11 @@ CREATE TABLE IF NOT EXISTS `ap_cf_projection` (
   `pc_source`     VARCHAR(50)    DEFAULT NULL,
   `pc_tujuan`     VARCHAR(50)    DEFAULT NULL,
   `intra_inter`   VARCHAR(20)    DEFAULT NULL COMMENT 'Intra PC / Inter PC - Book Transfer saja',
-  `nama`          VARCHAR(255)   DEFAULT NULL COMMENT 'Customer Name / Supplier Name',
+  /* Diberi nama nama_supplier atas permintaan pemakai (16 Nov 2026). Isinya
+     memang dipakai DUA jenis: Supplier Name di PV Expense dan Customer Name
+     di Other Inflow - keduanya diambil dari mastersupplier, yang membedakan
+     cuma tipe_sup. Jadi namanya menyebut supplier, isinya lebih luas. */
+  `nama_supplier` VARCHAR(255)   DEFAULT NULL COMMENT 'Customer Name / Supplier Name',
   /* Id_Supplier dari mastersupplier - dipakai DUA jenis: PV Expense
      (supplier, tipe_sup 'S') dan Other Inflow (customer, tipe_sup 'C').
      Tabel masternya memang satu, yang membedakan cuma tipe_sup.
@@ -156,6 +162,34 @@ CREATE TABLE IF NOT EXISTS `ap_cf_projection` (
   KEY `idx_tanggal` (`tanggal`),
   KEY `idx_status`  (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+/* ---------------------------------------------------------------------------
+   1b. GANTI NAMA KOLOM `nama` -> `nama_supplier`  (16 Nov 2026)
+
+   Hanya untuk basis data yang TERLANJUR dibuat dgn nama kolom lama (mis.
+   basis data lokal). Di produksi tabelnya belum pernah dibuat - diperiksa
+   16 Nov 2026 - jadi CREATE TABLE di atas langsung memakai nama barunya dan
+   blok ini tidak melakukan apa-apa.
+
+   Memakai CHANGE, bukan RENAME COLUMN: RENAME COLUMN baru ada di MySQL 8.
+   Dibungkus pernyataan siap-pakai supaya TIDAK galat kalau kolom `nama`
+   memang sudah tidak ada - ALTER TABLE biasa akan berhenti di situ dan
+   sisa berkas ini ikut tidak jalan.
+   --------------------------------------------------------------------------- */
+SET @ada_kolom_lama := (
+  SELECT COUNT(*) FROM information_schema.columns
+   WHERE table_schema = DATABASE()
+     AND table_name   = 'ap_cf_projection'
+     AND column_name  = 'nama');
+
+SET @sql_ganti := IF(@ada_kolom_lama > 0,
+  'ALTER TABLE `ap_cf_projection` CHANGE `nama` `nama_supplier` VARCHAR(255) DEFAULT NULL COMMENT ''Customer Name / Supplier Name''',
+  'SELECT ''kolom nama_supplier sudah benar - tidak ada yang diubah'' AS keterangan');
+
+PREPARE p_ganti FROM @sql_ganti;
+EXECUTE p_ganti;
+DEALLOCATE PREPARE p_ganti;
+
 
 /* ---------------------------------------------------------------------------
    CATATAN 13 Nov 2026 - MENUNYA PINDAH DARI Cash KE Bank.
@@ -304,6 +338,14 @@ SELECT 'menurole Bank Projection Other', COUNT(*), '1' FROM menurole
 UNION ALL
 SELECT 'useraccess Bank Projection Other', COUNT(*), '1 atau lebih' FROM useraccess
  WHERE menu = 'Bank Projection Other'
+UNION ALL
+SELECT 'kolom nama_supplier', COUNT(*), '1 = ada' FROM information_schema.columns
+ WHERE table_schema = DATABASE() AND table_name = 'ap_cf_projection'
+   AND column_name = 'nama_supplier'
+UNION ALL
+SELECT 'kolom lama `nama` masih ada', COUNT(*), '0' FROM information_schema.columns
+ WHERE table_schema = DATABASE() AND table_name = 'ap_cf_projection'
+   AND column_name = 'nama'
 UNION ALL
 SELECT 'req_dn ber-TAB',        COUNT(*), '0' FROM req_dn
  WHERE no_bpb REGEXP '[[:space:]]'

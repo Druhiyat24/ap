@@ -107,7 +107,7 @@ foreach ($baris as $b) {
     $amount_usd = ($curr == 'IDR') ? 0 : $amount;
 
     $sql = "insert into ap_cf_projection
-            (no_doc, jenis, tanggal, akun_tujuan, pc_tujuan, nama, id_supplier, kategori, deskripsi,
+            (no_doc, jenis, tanggal, akun_tujuan, pc_tujuan, nama_supplier, id_supplier, kategori, deskripsi,
              curr, amount, rate, amount_idr, amount_usd, curr_tujuan, amount_tujuan,
              status, created_by, created_date, update_by, update_date)
             values ('" . $doc . "',

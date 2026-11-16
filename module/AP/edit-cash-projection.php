@@ -23,7 +23,7 @@ while ($row = mysqli_fetch_assoc($sql)) {
 
     // Other Inflow: bentuknya ikut oi_form.php
     $oi[] = array(
-        'nama'        => $row['nama'],
+        'nama'        => $row['nama_supplier'],   // kolomnya bernama nama_supplier; kunci kiriman ke formulir tetap nama
         'id_supplier' => $row['id_supplier'],   // terisi hanya di PV Expense
         'kategori'   => $row['kategori'],
         'bank'       => $row['akun_tujuan'],

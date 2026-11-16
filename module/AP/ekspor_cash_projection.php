@@ -59,7 +59,7 @@ function ek_waktu($t) { return ($t == '' || $t == '0000-00-00 00:00:00') ? '' : 
         <td>' . ek_tgl($row['tanggal']) . '</td>
         <td>' . ek($row['akun_source']) . '</td>
         <td>' . ek($row['akun_tujuan']) . '</td>
-        <td>' . ek($row['nama']) . '</td>
+        <td>' . ek($row['nama_supplier']) . '</td>
         <td>' . ek($row['id_supplier']) . '</td>
         <td>' . ek($row['kategori']) . '</td>
         <td>' . ek($row['deskripsi']) . '</td>
