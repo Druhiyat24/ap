@@ -92,7 +92,7 @@ $status = isset($_POST['status']) ? $_POST['status'] : 'ALL';
     <div class="card shadow border-0 mt-4">
         <div class="card-body p-4">
             <div class="table-responsive">
-                <table id="datatable" class="table table-hover table-gradient" style="width:100%">
+                <table id="datatable" class="table table-hover table-gradient tbl-gaya-ppn" style="width:100%">
                     <thead>
                         <tr>
                             <th>ID</th>

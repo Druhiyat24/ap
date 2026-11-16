@@ -1055,6 +1055,30 @@ echo'</ul>
           </a>';
       }
 
+      /* Submenu "Projection" - isinya satu butir "Other". Hak aksesnya
+         sendiri (menurole 148), bukan ikut 'Bank'. Dipindah dari menu Cash
+         ke sini 13 Nov 2026 atas permintaan pemakai; yang berubah hanya
+         letaknya, syarat tampilnya tetap sama persis. */
+      $qProj  = mysqli_query($conn2,"select menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Bank Projection Other'");
+      $rsProj = mysqli_fetch_array($qProj);
+      $idProj = isset($rsProj['id']) ? $rsProj['id'] : 0;
+
+      if($idProj == '148'){
+          echo '
+          <li class="dropdown-submenu ">
+          <a class="dropdown-item bg-dark text-white" href="#">
+          <span class="fa fa-line-chart fa-fw"></span>
+          <span class="menu-collapsed">Projection</span>
+          </a>
+          <ul class="dropdown-menu bg-dark text-white" role="menu">
+          <a href="../AP/cash-projection.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-exchange fa-fw"></span>
+          <span class="menu-collapsed">Other</span>
+          </a>
+          </ul>
+          </li>';
+      }
+
       ?>
       <?php
       $querys = mysqli_query($conn2,"select 'Y' as ket,GROUP_CONCAT(useraccess.menu) as menu,useraccess.username as username, GROUP_CONCAT(menurole.id ORDER BY menurole.id asc) as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and  useraccess.menu like '%Bank%' and useraccess.menu like '%Approval%' and useraccess.menu not like '%reverse%' group by username");

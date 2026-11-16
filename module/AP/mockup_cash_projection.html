@@ -1,0 +1,833 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup Cash Flow Projection</title>
+
+<!-- CSS YANG SAMA PERSIS dgn yang dimuat header.php + berkas skin aplikasi,
+     supaya yang terlihat di sini benar-benar yang akan terlihat di halaman
+     aslinya - bukan perkiraan. -->
+<link href="../css/4.1.1/bootstrap.min.css" rel="stylesheet">
+<link href="../css/4.1.1/datatables.min.css" rel="stylesheet">
+<link href="../fontawesome5/css/all.min.css" rel="stylesheet">
+<link href="../fontawesome5/css/v4-shims.min.css" rel="stylesheet">
+<link href="../css/4.1.1/select2.min.css" rel="stylesheet">
+<link href="../css/4.1.1/select2-bootstrap4.min.css" rel="stylesheet">
+<link href="../css/app-skin-form.css" rel="stylesheet">
+<link href="../css/app-pco-form.css" rel="stylesheet">
+<link href="../css/app-ftr-list.css" rel="stylesheet">
+
+<style>
+/* ===== HANYA untuk mockup ini - tidak ikut ke halaman asli ===== */
+body { background:#f4f6fb; }
+.mk-bar {
+  position: sticky; top: 0; z-index: 30;
+  background:#0f172a; color:#e2e8f0; padding:9px 16px;
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:12px;
+}
+.mk-bar b { color:#fff; }
+.mk-seg { display:inline-flex; gap:2px; padding:3px; background:rgba(255,255,255,.1); border-radius:9px; }
+.mk-seg button { border:0; background:transparent; color:#cbd5e1; font-size:12px; font-weight:600;
+                 padding:5px 12px; border-radius:7px; cursor:pointer; }
+.mk-seg button.on { background:#fff; color:#0f172a; }
+.mk-note { margin-left:auto; color:#94a3b8; font-size:11.5px; }
+.mk-wrap { padding:18px 16px 60px; max-width:1680px; margin:0 auto; }
+.mk-hint { background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af;
+           border-radius:10px; padding:9px 13px; font-size:12px; margin-bottom:14px; }
+.mk-hint code { background:rgba(30,64,175,.1); color:#1e3a8a; padding:1px 5px; border-radius:4px; }
+.mk-tanya { background:#fffbeb; border:1px solid #fde68a; color:#92400e;
+            border-radius:10px; padding:9px 13px; font-size:12px; margin-bottom:14px; }
+.mk-tanya code { background:rgba(146,64,14,.1); color:#78350f; padding:1px 5px; border-radius:4px; }
+
+/* ===== Yang DIUSULKAN ikut ke halaman asli ===== */
+
+/* ---- Pita tab di halaman Create ----
+   Bentuknya DISALIN dari create-in-bank.php / create-out-bank.php (kelas
+   .tab-container / .tablinks / openTab()) supaya pemakai yang sudah biasa
+   dgn Create Bank In tidak perlu belajar bentuk baru. Warnanya disetel ke
+   biru skin baru (#2f6bdd) supaya sekeluarga dgn kepala kartunya. */
+.tab-container { display:flex; flex-wrap:wrap; gap:6px; padding:8px;
+                 background:#f4f6f9; border-radius:10px; border:1px solid #e2e8f0; margin-bottom:14px; }
+.tablinks { border:0; background:#fff; color:#555; padding:8px 14px; font-size:12.5px;
+            font-weight:600; border-radius:8px; cursor:pointer; transition:all .2s ease;
+            box-shadow:0 1px 3px rgba(15,23,42,.08); display:inline-flex; align-items:center; gap:7px; }
+.tablinks:hover { background:#2f6bdd; color:#fff; transform:translateY(-1px); }
+.tablinks.active { background:linear-gradient(135deg,#2f6bdd,#1d4ed8); color:#fff;
+                   box-shadow:0 4px 10px rgba(47,107,221,.35); }
+.tabcontent { display:none; }
+.tabcontent.on { display:block; }
+
+/* Pil jenis di kolom Type - warnanya membantu memindai, tulisannya tetap
+   terbaca apa adanya. */
+.cfp-jenis { display:inline-block; padding:2px 8px; border-radius:7px;
+             font-size:10.5px; font-weight:700; letter-spacing:.03em; white-space:nowrap; }
+.cfp-jenis.bt { background:#eef4ff; color:#1d4ed8; }
+.cfp-jenis.oi { background:#eaf8f1; color:#15724a; }
+.cfp-jenis.pv { background:#fdf7e9; color:#8a5a06; }
+
+/* Kolom uang: angka rata kanan & sejajar antar baris. */
+.cfp-tbl td.num, .cfp-tbl th.num { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.cfp-tbl td { white-space:nowrap; }
+.cfp-tbl tbody tr { cursor:default; }
+/* Kolom jejak (siapa & kapan) diredupkan - tetap terbaca penuh, tapi tidak
+   ikut beradu perhatian dgn angka. Tidak disingkat, tidak digabung. */
+.cfp-tbl td.jejak { color:#94a3b8; font-size:11.5px; }
+/* Baris yang sudah di-Cancel: angkanya diredupkan supaya tidak terbaca
+   seolah masih dihitung di proyeksi. */
+.cfp-tbl tbody tr.batal td { color:#b0b8c4; }
+.cfp-tbl tbody tr.batal td.num { text-decoration:line-through; }
+
+/* Kolom beku: No Doc (kiri) & Action (kanan). Sama dgn yang dipasang di
+   List Master COA - position:sticky langsung, tanpa pustaka FixedColumns. */
+.cfp-tbl thead tr:first-child > th:first-child,
+.cfp-tbl tbody td:first-child { position:sticky; left:0; z-index:3; }
+.cfp-tbl thead tr:first-child > th:last-child,
+.cfp-tbl tbody td:last-child { position:sticky; right:0; z-index:3; }
+.cfp-tbl tbody td:first-child,
+.cfp-tbl tbody td:last-child { background:#fff; z-index:2; }
+.cfp-tbl tbody tr:hover > td:first-child,
+.cfp-tbl tbody tr:hover > td:last-child { background:#f5f8ff; }
+.cfp-tbl tr > :first-child { box-shadow:1px 0 0 #e8edf5; }
+.cfp-tbl tr > :last-child  { box-shadow:-1px 0 0 #e8edf5; }
+
+/* Isian yang TERISI SENDIRI (kurs, equivalent, PC dari bank, Intra/Inter PC,
+   status Post) diberi latar abu supaya jelas mana yang diketik dan mana yang
+   dihitung sistem. */
+.pco-body input[readonly], .pco-body select[disabled] { background:#f8fafc !important; color:#475569; }
+
+/* Grid baris yang sudah ditambahkan sebelum disimpan. */
+.cfp-grid { font-size:12px; }
+.cfp-grid thead th { background:#eef3fb; color:#1e3a8a; font-size:10.5px; font-weight:700;
+                     letter-spacing:.06em; text-transform:uppercase; padding:8px 10px;
+                     border:0; border-bottom:2px solid #c9d8f0; white-space:nowrap; }
+.cfp-grid tbody td { padding:7px 10px; border:0; border-bottom:1px solid #eef2f7;
+                     vertical-align:middle; color:#334155; }
+.cfp-grid tbody td.num { text-align:right; font-variant-numeric:tabular-nums; }
+.cfp-grid tfoot td { padding:8px 10px; font-weight:700; color:#0f172a; border-top:2px solid #c9d8f0; }
+.cfp-grid tfoot td.num { text-align:right; font-variant-numeric:tabular-nums; }
+</style>
+</head>
+<body>
+
+<div class="mk-bar">
+  <b>MOCKUP Cash Flow Projection</b>
+  <span class="mk-seg">
+    <button type="button" class="on" data-mk="list">List (satu daftar)</button>
+    <button type="button" data-mk="create">Create (3 tab)</button>
+  </span>
+  <span class="mk-note">berkas latihan &mdash; belum ada halaman asli yang dibuat</span>
+</div>
+
+<div class="mk-wrap">
+
+<!-- ====================================================================
+     A. LIST - SATU daftar untuk ketiga jenis
+     ==================================================================== -->
+<section id="mk-list">
+
+  <div class="mk-hint">
+    <b>Bentuknya mengikuti Bank In:</b> <code>bank-in.php</code> juga satu daftar untuk tiga jenis
+    (AR Collection / Bank Out / None), dibedakan satu kolom, dan ketiganya tersimpan di
+    <b>satu tabel</b> (<code>tbl_bankin_arcollection</code>). Di sini pembedanya kolom <b>Type</b>
+    + saringan Type di panel atas. Kolom <b>No Doc</b> dan <b>Action</b> dibekukan, jadi tetap
+    terlihat waktu tabel digeser ke samping.
+  </div>
+
+  <div class="mk-tanya">
+    <b>Tujuh kolom jejak sudah terpasang</b> sesuai permintaan: <code>status</code>
+    <code>created_by</code> <code>created_date</code> <code>cancel_by</code> <code>cancel_date</code>
+    <code>approve_by</code> <code>approve_date</code>. Saat Create statusnya langsung
+    <b>Post</b>; yang ada cuma <b>Post</b> dan <b>Cancel</b>. Dua kolom approve sengaja
+    sudah ada tapi masih kosong &mdash; kalau nanti approval jadi dipakai, tinggal diisi,
+    <b>tidak perlu ubah struktur tabel lagi</b>. Semua ditampilkan apa adanya di daftar;
+    bilang saja kalau mau sebagian disembunyikan.
+  </div>
+
+  <div class="ftl-card">
+    <div class="ftl-head">
+      <span class="ftl-head-icon"><i class="fa fa-line-chart" aria-hidden="true"></i></span>
+      <!-- Menunya SATU butir bernama "Other" di dalam submenu Projection
+           (diminta pemakai 11 Nov 2026) - jadi Cash > Projection > Other.
+           Namanya "Other" karena sisi proyeksi yang lain sudah punya
+           sumbernya sendiri: AR Existing/AR Projection datang dari modul AR
+           dan PV AP dari data utang; yang diketik tangan di sini justru yang
+           di luar keduanya - Book Transfer, Other Inflow, dan PV Expense. -->
+      <div>
+        <h1>Projection Other</h1>
+        <span class="ftl-crumb">Cash &rsaquo; Projection &rsaquo; Other</span>
+      </div>
+    </div>
+
+    <div class="ftl-panel">
+      <!-- Saringan dipangkas jadi tiga (diminta pemakai 11 Nov 2026): Type,
+           From, dan To. Profit Center, Bank, dan Status dicabut - kotak
+           Search bawaan DataTables di atas tabel sudah bisa menyaring
+           ketiganya, jadi isian sendiri cuma mengerjakan hal yang sama dua
+           kali. Alasan & pola yang sama dgn saringan "Document Number" yang
+           dicabut dari List Payment Plan 5 Nov 2026.
+
+           Tombol: Search, Create, Excel - TANPA Reset. Create memakai hijau
+           .app-btn-success, sama dgn "Create New" di List Payment Plan;
+           Excel-nya hijau lebih pekat (.app-btn-excel) yang memang dibuat
+           supaya tidak tertukar dgn hijau Create. -->
+      <div class="row">
+        <!-- Type paling kiri (diminta pemakai 11 Nov 2026): jenis dokumen
+             yang menentukan arti kolom-kolom berikutnya, jadi dibaca lebih
+             dulu daripada rentang tanggalnya. -->
+        <div class="col-12 col-sm-6 col-lg-3 mb-2">
+          <label><b>Type</b></label>
+          <select class="form-control s2">
+            <option>ALL</option>
+            <option>Book Transfer</option>
+            <option>Other Inflow</option>
+            <option>PV Expense</option>
+          </select>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-2 mb-2">
+          <label><b>Date From</b></label>
+          <input type="text" class="form-control" value="01 Nov 2026">
+        </div>
+        <div class="col-12 col-sm-6 col-lg-2 mb-2">
+          <label><b>To</b></label>
+          <input type="text" class="form-control" value="30 Nov 2026">
+        </div>
+        <div class="col-12 col-lg-5 mb-2 ftl-actions">
+          <button type="button" class="app-btn app-btn-primary app-btn-sm"><i class="fa fa-search"></i> Search</button>
+          <button type="button" class="app-btn app-btn-success app-btn-sm" data-mk-go="create"><i class="fa fa-plus-circle"></i> Create</button>
+          <button type="button" class="app-btn app-btn-excel app-btn-sm"><i class="fa fa-file-excel-o"></i> Excel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ftl-body">
+      <div class="ftl-tblwrap">
+        <table id="cfp-tbl" class="table ftl-tbl cfp-tbl" style="width:100%;">
+          <thead>
+            <tr>
+              <th>No Doc</th>
+              <th>Type</th>
+              <th>Date</th>
+              <th>Source</th>
+              <th>Destination / Bank</th>
+              <th>Customer / Supplier</th>
+              <th>Category</th>
+              <th>PV No</th>
+              <th>Curr</th>
+              <th class="num">Amount</th>
+              <th class="num">Rate</th>
+              <th class="num">Equivalent IDR</th>
+              <th>PC Source</th>
+              <th>PC Destination</th>
+              <th>Intra / Inter PC</th>
+              <th>Status</th>
+              <th>Created By</th>
+              <th>Created Date</th>
+              <th>Approve By</th>
+              <th>Approve Date</th>
+              <th>Cancel By</th>
+              <th>Cancel Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>CFP2611-0001</td>
+              <td><span class="cfp-jenis bt">BOOK TRANSFER</span></td>
+              <td>05 Nov 2026</td>
+              <td>BNI - 4422442000</td>
+              <td>CASH GARMENT</td>
+              <td>-</td><td>-</td><td>-</td>
+              <td>IDR</td>
+              <td class="num">51.500.000,00</td>
+              <td class="num">1,00</td>
+              <td class="num">51.500.000,00</td>
+              <td>GARMENT</td><td>GARMENT</td>
+              <td>Intra PC</td>
+              <td><span class="ftl-st is-approved">Post</span></td>
+              <td class="jejak">indro</td><td class="jejak">11 Nov 2026 09:12</td>
+              <td class="jejak">-</td><td class="jejak">-</td>
+              <td class="jejak">-</td><td class="jejak">-</td>
+              <td class="ftl-act">
+                <a class="app-btn app-btn-warning app-btn-sm" href="#"><i class="fa fa-pencil-square-o"></i> Edit</a>
+                <button class="app-btn app-btn-danger app-btn-sm"><i class="fa fa-ban"></i> Cancel</button>
+              </td>
+            </tr>
+            <tr>
+              <td>CFP2611-0002</td>
+              <td><span class="cfp-jenis bt">BOOK TRANSFER</span></td>
+              <td>04 Nov 2026</td>
+              <td>BCA - 0089971979</td>
+              <td>BCA - 0087595858</td>
+              <td>-</td><td>-</td><td>-</td>
+              <td>IDR</td>
+              <td class="num">300.000.000,00</td>
+              <td class="num">1,00</td>
+              <td class="num">300.000.000,00</td>
+              <td>GARMENT</td><td>KNITTING</td>
+              <td>Inter PC</td>
+              <td><span class="ftl-st is-approved">Post</span></td>
+              <td class="jejak">indro</td><td class="jejak">11 Nov 2026 09:14</td>
+              <td class="jejak">-</td><td class="jejak">-</td>
+              <td class="jejak">-</td><td class="jejak">-</td>
+              <td class="ftl-act">
+                <a class="app-btn app-btn-warning app-btn-sm" href="#"><i class="fa fa-pencil-square-o"></i> Edit</a>
+                <button class="app-btn app-btn-danger app-btn-sm"><i class="fa fa-ban"></i> Cancel</button>
+              </td>
+            </tr>
+            <tr class="batal">
+              <td>CFP2611-0003</td>
+              <td><span class="cfp-jenis bt">BOOK TRANSFER</span></td>
+              <td>13 Nov 2026</td>
+              <td>BCA - 0087515757</td>
+              <td>BCA - 0087595858</td>
+              <td>-</td><td>-</td><td>-</td>
+              <td>USD</td>
+              <td class="num">100.000,00</td>
+              <td class="num">18.128,00</td>
+              <td class="num">1.812.800.000,00</td>
+              <td>KNITTING</td><td>KNITTING</td>
+              <td>Intra PC</td>
+              <td><span class="ftl-st is-cancel">Cancel</span></td>
+              <td class="jejak">indro</td><td class="jejak">11 Nov 2026 09:20</td>
+              <td class="jejak">-</td><td class="jejak">-</td>
+              <td class="jejak">dede</td><td class="jejak">11 Nov 2026 10:05</td>
+              <td class="ftl-act"><span class="text-danger font-weight-bold" style="font-size:11.5px;">Cancelled</span></td>
+            </tr>
+            <tr>
+              <td>CFP2611-0004</td>
+              <td><span class="cfp-jenis oi">OTHER INFLOW</span></td>
+              <td>30 Nov 2026</td>
+              <td>-</td>
+              <td>CIMB - 800177814600</td>
+              <td>Bunga</td>
+              <td>Penerimaan Pendapatan Bunga Giro</td>
+              <td>-</td>
+              <td>IDR</td>
+              <td class="num">617.204,72</td>
+              <td class="num">1,00</td>
+              <td class="num">617.204,72</td>
+              <td>-</td><td>GARMENT</td>
+              <td>-</td>
+              <td><span class="ftl-st is-approved">Post</span></td>
+              <td class="jejak">indro</td><td class="jejak">11 Nov 2026 09:31</td>
+              <td class="jejak">-</td><td class="jejak">-</td>
+              <td class="jejak">-</td><td class="jejak">-</td>
+              <td class="ftl-act">
+                <a class="app-btn app-btn-warning app-btn-sm" href="#"><i class="fa fa-pencil-square-o"></i> Edit</a>
+                <button class="app-btn app-btn-danger app-btn-sm"><i class="fa fa-ban"></i> Cancel</button>
+              </td>
+            </tr>
+            <tr>
+              <td>CFP2611-0005</td>
+              <td><span class="cfp-jenis pv">PV EXPENSE</span></td>
+              <td>01 Nov 2026</td>
+              <td>-</td>
+              <td>BNI - 4422442000</td>
+              <td>GAJI PERIODE 26 SEPTEMBER &ndash; 25 OKTOBER 2026</td>
+              <td>Pengeluaran Pembayaran Biaya Gaji Operator</td>
+              <td>-</td>
+              <td>IDR</td>
+              <td class="num">10.738.322.800,00</td>
+              <td class="num">1,00</td>
+              <td class="num">10.738.322.800,00</td>
+              <td>-</td><td>GARMENT</td>
+              <td>-</td>
+              <td><span class="ftl-st is-approved">Post</span></td>
+              <td class="jejak">indro</td><td class="jejak">11 Nov 2026 09:40</td>
+              <td class="jejak">-</td><td class="jejak">-</td>
+              <td class="jejak">-</td><td class="jejak">-</td>
+              <td class="ftl-act">
+                <a class="app-btn app-btn-warning app-btn-sm" href="#"><i class="fa fa-pencil-square-o"></i> Edit</a>
+                <button class="app-btn app-btn-danger app-btn-sm"><i class="fa fa-ban"></i> Cancel</button>
+              </td>
+            </tr>
+            <tr>
+              <td>CFP2611-0006</td>
+              <td><span class="cfp-jenis pv">PV EXPENSE</span></td>
+              <td>01 Nov 2026</td>
+              <td>-</td>
+              <td>BCA - 0089981982</td>
+              <td>GAJI PERIODE 26 SEPTEMBER &ndash; 25 OKTOBER 2026</td>
+              <td>Pengeluaran Pembayaran Biaya Gaji Staff</td>
+              <td>-</td>
+              <td>USD</td>
+              <td class="num">2.450,00</td>
+              <td class="num">18.128,00</td>
+              <td class="num">44.413.600,00</td>
+              <td>-</td><td>GARMENT</td>
+              <td>-</td>
+              <td><span class="ftl-st is-approved">Post</span></td>
+              <td class="jejak">indro</td><td class="jejak">11 Nov 2026 09:41</td>
+              <td class="jejak">-</td><td class="jejak">-</td>
+              <td class="jejak">-</td><td class="jejak">-</td>
+              <td class="ftl-act">
+                <a class="app-btn app-btn-warning app-btn-sm" href="#"><i class="fa fa-pencil-square-o"></i> Edit</a>
+                <button class="app-btn app-btn-danger app-btn-sm"><i class="fa fa-ban"></i> Cancel</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================================================================
+     B. CREATE - satu halaman, tiga tab
+     ==================================================================== -->
+<section id="mk-create" hidden>
+
+  <div class="mk-hint">
+    <b>Satu halaman Create, tiga tab</b> &mdash; persis bentuk <code>create-in-bank.php</code>
+    (tab AR Collection / Bank Out / None). Tiap tab nanti jadi berkas sendiri di folder
+    <code>cash_projection/</code>, seperti <code>bank_in/inbank_ar_collection.php</code> dsb.
+    Isian ber-latar abu <b>terisi sendiri</b>: Currency, Rate, dan Equivalent IDR. Status, Profit
+    Center, dan Intra/Inter PC <b>tidak ditampilkan di isian</b> sama sekali - ketiganya baru muncul
+    di tabel bawah begitu barisnya ditambahkan.
+  </div>
+
+  <div class="pco-card">
+    <div class="pco-head">
+      <span class="pco-head-icon"><i class="fa fa-plus-circle" aria-hidden="true"></i></span>
+      <div>
+        <h1>Form Projection Other</h1>
+        <span class="pco-crumb">Cash &rsaquo; Projection &rsaquo; Other &rsaquo; Create</span>
+      </div>
+    </div>
+
+    <div class="pco-body">
+
+      <div class="tab-container">
+        <button class="tablinks active" data-tab="tab-bt"><i class="fa fa-exchange"></i> Book Transfer</button>
+        <button class="tablinks" data-tab="tab-oi"><i class="fa fa-sign-in"></i> Other Inflow</button>
+        <button class="tablinks" data-tab="tab-pv"><i class="fa fa-sign-out"></i> PV Expense</button>
+      </div>
+
+      <!-- ============ TAB 1: BOOK TRANSFER ============ -->
+      <div id="tab-bt" class="tabcontent on">
+        <div class="pco-sec"><i class="fa fa-exchange" aria-hidden="true"></i> Book Transfer &mdash; pindah dana antar rekening</div>
+
+        <!-- DAFTAR AKUN - Source dan Destination memakai daftar yang SAMA
+             (diminta pemakai 11 Nov 2026: "source nya juga bisa dari cash
+             jadi pilihan source dan destination samakan saja, kita ikuti
+             dulu excel dari contoh").
+
+             DAFTAR BANKNYA DARI MASTER, bukan disalin dari Excel (ditegaskan
+             pemakai 11 Nov 2026: "tapi itu bank nya tetep ambil dari master
+             ya"). Sumbernya b_masterbank yang status = Active, di-join ke
+             master_pc lewat profit_center_bank - query yang sama dgn
+             dropdown Account di Create Bank In (bank_in/inbank_none.php).
+             CATATAN: menu Bank memakai b_masterbank, BUKAN tabel masterbank.
+
+             Jadi isi dropdown di bawah ini contoh dari isi master saat ini -
+             8 rekening aktif - dan ikut berubah sendiri kalau ada rekening
+             ditambah/di-nonaktifkan di menu Master Bank. Bedanya dgn Excel
+             cuma satu: BRI 013201001623307 ada di master tapi tidak ada di
+             sheet Balance.
+
+             Mata uang dan Profit Center tiap akun juga datang dari master
+             yang sama (b_masterbank.curr & profit_center_bank), jadi
+             Currency, PC Source, dan PC Destination tidak perlu diketik.
+
+             KAS CUKUP DUA: CASH GARMENT & CASH KNITTING - satu per Profit
+             Center, BUKAN per akun Kas Kecil. Jadi dropdown Create Petty
+             Cash (5 COA: 1.01.01/02/04/05/11) TIDAK dipakai di sini.
+
+             DUA HAL YANG BELUM DIPUTUSKAN:
+             1. Bentuk tulisannya ("BCA - 0089971979") tidak tersimpan di
+                b_masterbank - yang ada b_code 'BCA1979' dan bank_account
+                '008-997-1979'. Mau diturunkan dari keduanya, atau ditambah
+                satu kolom nama pendek di master bank?
+             2. CASH GARMENT & CASH KNITTING belum ada barisnya di master.
+                b_masterbank sendiri SUDAH pernah dipakai untuk kas - ada
+                baris "KAS KECIL PABRIK" (status Deactive), jadi keduanya
+                bisa dibuatkan baris di master yang sama supaya seluruh
+                daftar akun datang dari satu tempat. -->
+        <div class="row">
+          <div class="col-lg-4 col-md-6 mb-2">
+            <label><b>Source</b> <i>*</i></label>
+            <select class="form-control s2" data-ph="Pilih akun asal">
+              <option></option>
+              <option>BCA - 0089971979</option>
+              <option>BCA - 0089981982</option>
+              <option selected>BNI - 4422442000</option>
+              <option>CIMB - 800177814600</option>
+              <option>MDR - 1300002077777</option>
+              <option>CASH GARMENT</option>
+              <option>BCA - 0087595858</option>
+              <option>BCA - 0087515757</option>
+              <option>BRI - 013201001623307</option>
+              <option>CASH KNITTING</option>
+            </select>
+          </div>
+          <div class="col-lg-4 col-md-6 mb-2">
+            <label><b>Destination</b> <i>*</i></label>
+            <select class="form-control s2" data-ph="Pilih akun tujuan">
+              <option></option>
+              <option>BCA - 0089971979</option>
+              <option>BCA - 0089981982</option>
+              <option>BNI - 4422442000</option>
+              <option>CIMB - 800177814600</option>
+              <option>MDR - 1300002077777</option>
+              <option selected>CASH GARMENT</option>
+              <option>BCA - 0087595858</option>
+              <option>BCA - 0087515757</option>
+              <option>BRI - 013201001623307</option>
+              <option>CASH KNITTING</option>
+            </select>
+          </div>
+          <div class="col-lg-4 col-md-6 mb-2">
+            <label><b>Received Date</b> <i>*</i></label>
+            <input type="text" class="form-control" value="12 Nov 2026">
+          </div>
+        </div>
+
+        <!-- SATU MATA UANG DI LAYAR: yang terlihat pemakai hanya Currency
+             milik akun SOURCE-nya (ditegaskan pemakai 11 Nov 2026: "jangan
+             tambah kolom dan inputan apapun ini hanya terjadi dibelakang
+             layar, yang user lihat curr hanya 1 yang diambil dari source
+             nya"). Bentuk ini sama persis dgn sheet Excel-nya: Currency,
+             Amount, Rate, Equivalent IDR - tidak lebih.
+
+             DI BELAKANG LAYAR perpindahannya tetap bisa beda mata uang
+             (IDR->IDR, USD->USD, USD->IDR, IDR->USD), dan penyimpannya yang
+             mengurus: kalau mata uang Source beda dgn mata uang Destination,
+             nilai yang mendarat di akun tujuan dihitung dgn kurs yang sama -
+             DIKALI kalau USD->IDR, DIBAGI kalau IDR->USD. Tidak ada satu pun
+             isian atau kolom tambahan untuk itu.
+
+             Mata uang akunnya dibaca dari master (b_masterbank.curr); akun
+             kas selalu IDR.
+
+             Rate: 1 kalau Currency-nya IDR, selain itu dari master rate -
+             masterrate dgn v_codecurr = 'PAJAK' dan curr = 'USD',
+             dicocokkan ke TANGGAL RECEIVED-nya (diminta pemakai 11 Nov
+             2026). Ganti tanggal -> kursnya ikut ganti, dan kolomnya tidak
+             bisa diketik.
+             Equivalent IDR = Amount x Rate.
+
+             PENJAGA YANG PERLU DISIAPKAN: ini laporan PROYEKSI, tanggalnya
+             di masa depan, sedangkan masterrate hanya terisi sampai tanggal
+             yang sudah berjalan (PAJAK dicatat satu baris per hari, tapi
+             hanya untuk tanggal yang sudah lewat). Kalau tanggalnya belum
+             ada barisnya, kursnya kosong - jadi ambil kurs PAJAK TERAKHIR
+             sebelum tanggal itu, dan beri tanda bahwa yang dipakai kurs
+             tanggal lain. -->
+        <div class="row">
+          <div class="col-lg-2 col-md-4 mb-2">
+            <label><b>Currency</b></label>
+            <input type="text" class="form-control" value="IDR" readonly>
+          </div>
+          <div class="col-lg-3 col-md-4 mb-2">
+            <label><b>Amount</b> <i>*</i></label>
+            <input type="text" class="form-control text-right" value="27.500.000,00">
+          </div>
+          <div class="col-lg-2 col-md-4 mb-2">
+            <label><b>Rate</b></label>
+            <input type="text" class="form-control text-right" value="1,00" readonly>
+          </div>
+          <div class="col-lg-3 col-md-6 mb-2">
+            <label><b>Equivalent IDR</b></label>
+            <input type="text" class="form-control text-right" value="27.500.000,00" readonly>
+          </div>
+          <!-- Status, PC Source, PC Destination, dan Intra/Inter PC TIDAK
+               ditampilkan di isian (diminta pemakai 11 Nov 2026): keempatnya
+               terisi sendiri, jadi di sini cuma menambah barang yang harus
+               dibaca tanpa ada yang bisa diubah. Nilainya baru muncul di
+               tabel di bawah begitu barisnya ditambahkan - di situ justru
+               berguna, karena jadi bisa diperiksa sebelum disimpan.
+
+               PC Destination terisi sendiri untuk kesembilan akun: tiap akun
+               di sheet Balance punya Profit Center tetap, termasuk CASH
+               GARMENT & CASH KNITTING yang PC-nya menempel di namanya. -->
+          <div class="col-lg-2 col-md-6 mb-2">
+            <label>&nbsp;</label>
+            <div class="ftl-actions">
+              <button type="button" class="app-btn app-btn-primary"><i class="fa fa-plus"></i> Add to list</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pco-sec mt-3"><i class="fa fa-list" aria-hidden="true"></i> Baris yang akan disimpan</div>
+        <table class="table cfp-grid mb-0">
+          <thead>
+            <tr>
+              <th>#</th><th>Source</th><th>Destination</th><th>Date</th><th>Curr</th>
+              <th class="num">Amount</th><th class="num">Rate</th><th class="num">Equivalent IDR</th>
+              <th>PC Source</th><th>PC Dest</th><th>Intra / Inter PC</th><th>Status</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td><td>BNI - 4422442000</td><td>CASH GARMENT</td><td>05 Nov 2026</td><td>IDR</td>
+              <td class="num">51.500.000,00</td><td class="num">1,00</td><td class="num">51.500.000,00</td>
+              <td>GARMENT</td><td>GARMENT</td><td>Intra PC</td><td>Post</td>
+              <td><button class="app-btn app-btn-danger app-btn-sm"><i class="fa fa-trash"></i></button></td>
+            </tr>
+            <tr>
+              <td>2</td><td>BCA - 0089971979</td><td>BCA - 0087515757</td><td>04 Nov 2026</td><td>IDR</td>
+              <td class="num">1.812.800.000,00</td><td class="num">1,00</td><td class="num">1.812.800.000,00</td>
+              <td>GARMENT</td><td>KNITTING</td><td>Inter PC</td><td>Post</td>
+              <td><button class="app-btn app-btn-danger app-btn-sm"><i class="fa fa-trash"></i></button></td>
+            </tr>
+            <tr>
+              <td>3</td><td>BCA - 0089981982</td><td>BNI - 4422442000</td><td>13 Nov 2026</td><td>USD</td>
+              <td class="num">50.000,00</td><td class="num">18.128,00</td><td class="num">906.400.000,00</td>
+              <td>GARMENT</td><td>GARMENT</td><td>Intra PC</td><td>Post</td>
+              <td><button class="app-btn app-btn-danger app-btn-sm"><i class="fa fa-trash"></i></button></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="7">TOTAL 3 baris</td>
+              <td class="num">2.770.700.000,00</td>
+              <td colspan="5"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- ============ TAB 2: OTHER INFLOW ============ -->
+      <div id="tab-oi" class="tabcontent">
+        <div class="pco-sec"><i class="fa fa-sign-in" aria-hidden="true"></i> Other Inflow &mdash; penerimaan di luar piutang</div>
+
+        <div class="row">
+          <div class="col-lg-4 col-md-6 mb-2">
+            <label><b>Customer Name</b> <i>*</i></label>
+            <input type="text" class="form-control" value="Bunga" placeholder="mis. Bunga, Klaim Asuransi">
+          </div>
+          <div class="col-lg-5 col-md-6 mb-2">
+            <label><b>Income Category</b> <i>*</i></label>
+            <select class="form-control s2" data-ph="Pilih kategori penerimaan">
+              <option></option>
+              <option>Penerimaan Piutang Usaha (Existing)</option>
+              <option>Penerimaan Piutang Lain-lain</option>
+              <option>Penerimaan Uang Muka Penjualan</option>
+              <option selected>Penerimaan Pendapatan Bunga Giro</option>
+              <option>Penerimaan Antar Bank (Dalam Satu PT)</option>
+              <option>Penerimaan Lain-lain</option>
+              <option>Setoran Modal</option>
+              <option>Penerimaan Pinjaman Bank</option>
+            </select>
+          </div>
+          <div class="col-lg-3 col-md-6 mb-2">
+            <label><b>Received Date</b> <i>*</i></label>
+            <input type="text" class="form-control" value="30 Nov 2026">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-2 col-md-4 mb-2">
+            <label><b>Currency</b> <i>*</i></label>
+            <select class="form-control s2"><option>IDR</option><option>USD</option></select>
+          </div>
+          <div class="col-lg-3 col-md-4 mb-2">
+            <label><b>Amount</b> <i>*</i></label>
+            <input type="text" class="form-control text-right" value="617.204,72">
+          </div>
+          <div class="col-lg-2 col-md-4 mb-2">
+            <label><b>Rate</b></label>
+            <input type="text" class="form-control text-right" value="1,00" readonly>
+          </div>
+          <div class="col-lg-2 col-md-6 mb-2">
+            <label><b>Equivalent IDR</b></label>
+            <input type="text" class="form-control text-right" value="617.204,72" readonly>
+          </div>
+          <div class="col-lg-3 col-md-6 mb-2">
+            <label><b>Bank</b> <i>*</i></label>
+            <select class="form-control s2" data-ph="Pilih bank penerima">
+              <option></option>
+              <option selected>CIMB - 800177814600</option>
+              <option>BNI - 4422442000</option>
+              <option>MDR - 1300002077777</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-3 col-md-6 mb-2">
+            <label>&nbsp;</label>
+            <div class="ftl-actions">
+              <button type="button" class="app-btn app-btn-primary"><i class="fa fa-plus"></i> Add to list</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pco-sec mt-3"><i class="fa fa-list" aria-hidden="true"></i> Baris yang akan disimpan</div>
+        <table class="table cfp-grid mb-0">
+          <thead>
+            <tr>
+              <th>#</th><th>Customer Name</th><th>Income Category</th><th>Date</th><th>Curr</th>
+              <th class="num">Amount</th><th class="num">Rate</th><th class="num">Equivalent IDR</th>
+              <th>Bank</th><th>PC</th><th>Status</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td><td>Bunga</td><td>Penerimaan Pendapatan Bunga Giro</td><td>30 Nov 2026</td><td>IDR</td>
+              <td class="num">617.204,72</td><td class="num">1,00</td><td class="num">617.204,72</td>
+              <td>CIMB - 800177814600</td><td>GARMENT</td><td>Post</td>
+              <td><button class="app-btn app-btn-danger app-btn-sm"><i class="fa fa-trash"></i></button></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr><td colspan="7">TOTAL 1 baris</td><td class="num">617.204,72</td><td colspan="4"></td></tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- ============ TAB 3: PV EXPENSE ============ -->
+      <div id="tab-pv" class="tabcontent">
+        <div class="pco-sec"><i class="fa fa-sign-out" aria-hidden="true"></i> PV Expense &mdash; rencana pengeluaran biaya</div>
+
+        <div class="row">
+          <div class="col-lg-3 col-md-6 mb-2">
+            <label><b>Payment Voucher No</b></label>
+            <input type="text" class="form-control" placeholder="boleh dikosongkan">
+          </div>
+          <div class="col-lg-5 col-md-6 mb-2">
+            <label><b>Supplier Name</b> <i>*</i></label>
+            <input type="text" class="form-control" value="GAJI PERIODE 26 OKTOBER &ndash; 25 NOVEMBER 2026">
+          </div>
+          <div class="col-lg-4 col-md-6 mb-2">
+            <label><b>Cost Category</b> <i>*</i></label>
+            <select class="form-control s2" data-ph="Pilih kategori pengeluaran">
+              <option></option>
+              <option>Pengeluaran Pembayaran Utang Usaha</option>
+              <option>Pengeluaran Pembayaran Uang Muka Supplier</option>
+              <option>Pengeluaran Pembayaran PPh</option>
+              <option>Pengeluaran Pembayaran PPN</option>
+              <option selected>Pengeluaran Pembayaran Biaya Gaji Operator</option>
+              <option>Pengeluaran Pembayaran Biaya Gaji Staff</option>
+              <option>Pengeluaran Pembayaran Biaya THR</option>
+              <option>Pengeluaran Pembayaran Biaya Listrik</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-2 col-md-4 mb-2">
+            <label><b>Currency</b> <i>*</i></label>
+            <select class="form-control s2"><option>IDR</option><option>USD</option></select>
+          </div>
+          <div class="col-lg-3 col-md-4 mb-2">
+            <label><b>Amount</b> <i>*</i></label>
+            <input type="text" class="form-control text-right" value="10.738.322.800,00">
+          </div>
+          <div class="col-lg-2 col-md-4 mb-2">
+            <label><b>Rate</b></label>
+            <input type="text" class="form-control text-right" value="1,00" readonly>
+          </div>
+          <div class="col-lg-2 col-md-6 mb-2">
+            <label><b>Equivalent IDR</b></label>
+            <input type="text" class="form-control text-right" value="10.738.322.800,00" readonly>
+          </div>
+          <div class="col-lg-3 col-md-6 mb-2">
+            <label><b>Due Date</b> <i>*</i></label>
+            <input type="text" class="form-control" value="01 Dec 2026">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-4 col-md-6 mb-2">
+            <label><b>Bank</b> <i>*</i></label>
+            <select class="form-control s2" data-ph="Pilih bank pembayar">
+              <option></option>
+              <option selected>BNI - 4422442000</option>
+              <option>BCA - 0089971979</option>
+              <option>CIMB - 800177814600</option>
+            </select>
+          </div>
+          <div class="col-lg-3 col-md-6 mb-2">
+            <label>&nbsp;</label>
+            <div class="ftl-actions">
+              <button type="button" class="app-btn app-btn-primary"><i class="fa fa-plus"></i> Add to list</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pco-sec mt-3"><i class="fa fa-list" aria-hidden="true"></i> Baris yang akan disimpan</div>
+        <table class="table cfp-grid mb-0">
+          <thead>
+            <tr>
+              <th>#</th><th>PV No</th><th>Supplier Name</th><th>Cost Category</th><th>Due Date</th><th>Curr</th>
+              <th class="num">Amount</th><th class="num">Rate</th><th class="num">Equivalent IDR</th>
+              <th>Bank</th><th>PC</th><th>Status</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td><td>-</td><td>GAJI PERIODE 26 OKTOBER &ndash; 25 NOVEMBER 2026</td>
+              <td>Pengeluaran Pembayaran Biaya Gaji Operator</td><td>01 Dec 2026</td><td>IDR</td>
+              <td class="num">10.738.322.800,00</td><td class="num">1,00</td><td class="num">10.738.322.800,00</td>
+              <td>BNI - 4422442000</td><td>GARMENT</td><td>Post</td>
+              <td><button class="app-btn app-btn-danger app-btn-sm"><i class="fa fa-trash"></i></button></td>
+            </tr>
+            <tr>
+              <td>2</td><td>-</td><td>GAJI PERIODE 26 OKTOBER &ndash; 25 NOVEMBER 2026</td>
+              <td>Pengeluaran Pembayaran Biaya Gaji Staff</td><td>05 Dec 2026</td><td>IDR</td>
+              <td class="num">400.584.000,00</td><td class="num">1,00</td><td class="num">400.584.000,00</td>
+              <td>BCA - 0089971979</td><td>GARMENT</td><td>Post</td>
+              <td><button class="app-btn app-btn-danger app-btn-sm"><i class="fa fa-trash"></i></button></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr><td colspan="8">TOTAL 2 baris</td><td class="num">11.138.906.800,00</td><td colspan="4"></td></tr>
+          </tfoot>
+        </table>
+      </div>
+
+    </div><!-- /.pco-body -->
+
+    <div class="pco-foot">
+      <button type="button" class="app-btn app-btn-light" data-mk-go="list"><i class="fa fa-angle-double-left"></i> Back</button>
+      <button type="button" class="app-btn app-btn-primary"><i class="fa fa-save"></i> Save</button>
+    </div>
+  </div>
+</section>
+
+</div><!-- /.mk-wrap -->
+
+<script src="../vendor/jquery/jquery.min.js"></script>
+<script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="../css/4.1.1/select2.full.min.js"></script>
+<script src="../css/4.1.1/datatables.min.js"></script>
+<script>
+$(function () {
+
+  $('.s2').each(function () {
+    $(this).select2({ width: '100%', dropdownParent: $('body'),
+                      placeholder: $(this).data('ph') || '', allowClear: false });
+  });
+
+  /* Tabel daftar: scrollX supaya 23 kolomnya bisa digeser, dgn No Doc &
+     Action dipaku lewat position:sticky (lihat CSS di atas). */
+  $('#cfp-tbl').DataTable({
+    scrollX: true, paging: true, pageLength: 10, info: true, ordering: false,
+    language: { searchPlaceholder: 'Search...', search: '' }
+  });
+
+  /* Pita tab - sama cara kerjanya dgn openTab() di create-in-bank.php,
+     ditulis lebih pendek. */
+  $('.tablinks').on('click', function () {
+    $('.tablinks').removeClass('active');
+    $(this).addClass('active');
+    $('.tabcontent').removeClass('on');
+    $('#' + $(this).data('tab')).addClass('on');
+  });
+
+  /* ---- alat bantu mockup ---- */
+  function tampilkan(m) {
+    $('.mk-seg button').removeClass('on').filter('[data-mk="' + m + '"]').addClass('on');
+    $('#mk-list').prop('hidden', m !== 'list');
+    $('#mk-create').prop('hidden', m !== 'create');
+    $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
+  }
+  $('.mk-seg button').on('click', function () { tampilkan($(this).data('mk')); });
+  $('[data-mk-go]').on('click', function () { tampilkan($(this).data('mk-go')); });
+  if (location.hash === '#create') { tampilkan('create'); }
+});
+</script>
+</body>
+</html>

@@ -9,6 +9,8 @@ if ($current_user !== 'indro') {
     echo json_encode(['status' => 'error', 'message' => 'Access restricted.']);
     exit;
 }
+/* Data project SELALU dari produksi - penjelasannya di project.php. */
+$conn2 = $conn_live;
 
 $project_id = intval($_POST['project_id'] ?? 0);
 if ($project_id === 0) {

@@ -1,4 +1,15 @@
 <?php include '../header.php' ?>
+<style>
+/* isi tabel tidak terlipat, kecuali kolom Supplier */
+#datatable tbody td:not(:nth-child(3)) { white-space: nowrap; }
+/* saringan satu baris (muat juga di laptop 1366px); lebar = isi terpanjang + ruang panah */
+@media (min-width: 768px) {
+  #form-data .vb-supplier { flex: 0 0 545px; max-width: 545px; }
+  #form-data .vb-status   { flex: 0 0 135px; max-width: 135px; }
+  #form-data .vb-tgl      { flex: 0 0 125px; max-width: 125px; }
+  #form-data .vb-tombol   { flex: 1 1 190px; }   /* Search+Create butuh +-190px; kurang dari itu turun ke baris bawah */
+}
+</style>
 
     <!-- MAIN -->
     <div class="col p-4">
@@ -8,7 +19,7 @@
 
  <form id="form-data" action="pelunasanftr.php" method="post">        
         <div class="form-row">
-            <div class="col-md-12">
+            <div class="col-md-6 vb-supplier">
             <label for="nama_supp"><b>Supplier</b></label>            
               <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true">
                 <option value="ALL" selected="true">ALL</option>                                                
@@ -30,7 +41,7 @@
                 </select>
                 </div>
 
-         <div class="col-md-5">
+         <div class="col-md-3 vb-status">
             <label for="status"><b>Status</b></label>            
               <select class="form-control selectpicker" name="status" id="status" data-dropup-auto="false" data-live-search="true">
                 <option value="ALL" <?php
@@ -75,8 +86,7 @@
                 </select>
                 </div>
 
-        <div class="form-row">
-            <div class="col-md-6"> 
+            <div class="col-md-3 vb-tgl">
             <label for="start_date"><b>From</b></label>
             <input type="text" class="form-control tanggal" id="start_date" name="start_date" 
             value="<?php
@@ -93,7 +103,7 @@
             placeholder="Start Date" autocomplete='off'>
             </div>
 
-            <div class="col-md-6 mb-1">
+            <div class="col-md-3 vb-tgl">
             <label for="end_date"><b>To</b></label>        
             <input type="text" class="form-control tanggal" id="end_date" name="end_date" 
             value="<?php
@@ -107,11 +117,10 @@
             else{
                echo date("d-m-Y");
             } ?>" 
-            placeholder="Tanggal Akhir">
+            placeholder="End Date">
             </div>
-        </div>
 
-            <div class="input-group-append col">                                   
+            <div class="input-group-append col vb-tombol">                                   
             <button type="submit" id="submit" value=" Search " style="margin-top: 30px; margin-bottom: 5px;margin-right: 15px;border: 0;
     line-height: 1;
     padding: -2px 8px;
@@ -121,39 +130,29 @@
     text-shadow: 1px 1px 1px #000;
     border-radius: 6px;
     background-color: rgb(46, 139, 87);"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
-            <button type="button" id="reset" value=" Reset " style="margin-top: 30px; margin-bottom: 5px;border: 0;
-    line-height: 1;
-    padding: -2px 8px;
-    font-size: 1rem;
-    text-align: center;
-    color: #fff;
-    text-shadow: 1px 1px 1px #000;
-    border-radius: 6px;
-    background-color:rgb(250, 69, 1)"><i class="fa fa-repeat" aria-hidden="true"></i> Reset </button>
-            </div>                                                            
-    </div>
-</div>
-</form> 
-
-
-<?php
+    <?php
+        // tombol Create (dulu melayang di luar kartu) masuk barisan Search; Reset tidak dipakai lagi
         $querys = mysqli_query($conn2,"select useraccess.menu as menu,useraccess.username as username, useraccess.fullname as fullname, menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Create Payment'");
         $rs = mysqli_fetch_array($querys);
         $id = isset($rs['id']) ? $rs['id'] : 0;
 
         if($id == '11'){
-    echo '<button id="btncreate" type="button" class="btn-primary btn-xs"><span class="fa fa-pencil-square-o"></span> Create</button>';
+    echo '<button id="btncreate" type="button" class="btn btn-primary" style="margin-top: 30px; margin-bottom: 5px;"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Create</button>';
         }else{
     echo '';
     }
 ?>
+            </div>                                                            
+    </div>
+</form>
+</div>
     </div>
     <div class="box body">
         <div class="row">       
             <div class="col-md-12">
 
             
-<table id="datatable" class="table table-striped table-bordered" role="grid" cellspacing="0" width="100%">
+<table id="datatable" class="table table-striped table-bordered tbl-gaya-ppn" role="grid" cellspacing="0" width="100%">
     <thead>
         <tr class="thead-dark">
             <th style="text-align: center;vertical-align: middle;width: 130px">No Payment</th>
@@ -466,12 +465,6 @@ $(function() {
     location.href = "form_pelunasan.php";
 };
 </script>
-<script type="text/javascript">
-    document.getElementById('reset').onclick = function () {
-    location.href = "pelunasanftr.php";
-};
-</script>
-
 <script>
 function alert_cancel() {
   alert("Data Berhasil di Cancel");

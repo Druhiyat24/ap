@@ -63,10 +63,14 @@ foreach ($rows as $row) {
     if ($qty <= 0 || $price <= 0) { continue; } // syarat sama seperti versi lama
 
     $tglBpb = !empty($row['tgl_bpb']) ? date('Y-m-d', strtotime($row['tgl_bpb'])) : null;
+    // Nomor BPB dibersihkan dari spasi/tab/enter. Alat pindai sering
+    // menyelipkan TAB di ujung; MySQL tidak menganggapnya sama dgn
+    // nomor di tabel bpb, jadi laporannya jadi tidak ketemu.
+    $noBpb = preg_replace('/\s+/', '', (string) ($row['no_bpb'] ?? ''));
     $vals[] = "('" . $e($kode) . "', '" . $e($row['no_po'] ?? '') . "', '" . $e($row['item'] ?? '') . "',"
             . " '" . $e($qty) . "', '" . $e($price) . "', '" . $e($row['attn'] ?? '') . "',"
             . " '" . $e($row['seasons'] ?? '') . "', '" . $e($row['no_reff'] ?? '') . "',"
-            . " '" . $e($row['id_bpb'] ?? '') . "', '" . $e($tglBpb) . "', '" . $e($row['no_bpb'] ?? '') . "',"
+            . " '" . $e($row['id_bpb'] ?? '') . "', '" . $e($tglBpb) . "', '" . $e($noBpb) . "',"
             . " '" . $e($row['id_jo'] ?? '-') . "', '" . $e($row['id_item'] ?? '-') . "', '" . $e($row['unit'] ?? '-') . "',"
             . " '" . $e($create_user) . "', '" . $e($create_date) . "')";
     $n++;

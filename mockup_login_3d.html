@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MONETA | Log in (mockup 3D)</title>
+<link rel="icon" type="image/png" sizes="32x32" href="images/moneta/icon-32.png?v=2">
+<link rel="stylesheet" href="module/fontawesome5/css/all.min.css">
+<style>
+/* Mockup login MONETA gaya 3D. index.php yang asli BELUM disentuh. */
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #1e3a8a;
+  background:
+    radial-gradient(ellipse 55% 45% at 92% 0%, rgba(255, 221, 150, .40), transparent 70%),
+    radial-gradient(ellipse 45% 40% at 0% 100%, rgba(253, 232, 180, .45), transparent 70%),
+    linear-gradient(135deg, #f8faff 0%, #edf3fc 55%, #f5f7fc 100%);
+  overflow-x: hidden;
+}
+
+/* ---------- hiasan latar (tidak bisa diklik) ----------
+   closest-side: gradasinya habis TEPAT di tepi kotak, kalau tidak tepi kotaknya kelihatan */
+.mn3-hias { position: fixed; pointer-events: none; z-index: 0; }
+.mn3-awan1 {                                   /* awan biru kiri atas */
+  width: 620px; height: 520px; left: -200px; top: -200px;
+  background: radial-gradient(closest-side, rgba(186, 211, 250, .85), rgba(186, 211, 250, 0));
+}
+.mn3-awan2 {                                   /* awan emas di belakang ilustrasi */
+  width: 560px; height: 460px; left: 4%; bottom: 6%;
+  background: radial-gradient(closest-side, rgba(250, 226, 160, .55), rgba(250, 226, 160, 0));
+}
+.mn3-awan3 {                                   /* gelombang biru kanan bawah */
+  width: 520px; height: 360px; right: -160px; bottom: -170px;
+  background: radial-gradient(closest-side, rgba(147, 190, 245, .55), rgba(147, 190, 245, 0));
+}
+.mn3-garis-kiri  { left: 0; top: 0; width: 520px; height: 460px; }
+.mn3-garis-kanan { right: 0; bottom: 0; width: 420px; height: 260px; }
+
+/* ---------- tata letak: ilustrasi | formulir ---------- */
+/* sengaja TANPA z-index: z-index membuat lapisan sendiri, dan logo yang
+   memakai mix-blend-mode jadi tidak bisa melebur ke latar body */
+.mn3-wrap {
+  position: relative;
+  min-height: 100vh;
+  max-width: 1640px;
+  margin: 0 auto;
+  padding: 32px 4vw;
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  align-items: center;
+  gap: 3vw;
+}
+
+/* ---------- kiri: ilustrasi 3D ---------- */
+.mn3-art { display: flex; justify-content: center; }
+.mn3-art img {
+  width: 100%;
+  max-width: 780px;
+  max-height: 80vh;
+  object-fit: contain;
+  animation: mn3-melayang 7s ease-in-out infinite;
+  /* ujung bawah pantulan lantai dipudarkan supaya menyatu dgn latar */
+  -webkit-mask-image: linear-gradient(to bottom, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 88%, transparent 100%);
+}
+@keyframes mn3-melayang {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+
+/* ---------- kanan: logo + kartu kaca ---------- */
+.mn3-panel { width: 100%; max-width: 540px; justify-self: center; }
+
+.mn3-logo {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  margin: 0 auto 12px;
+  mix-blend-mode: multiply;      /* jaga-jaga kalau logo berlatar putih */
+}
+
+/* "AP . CASH . BANK . ACCOUNTING" diapit garis emas */
+.mn3-modul {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 auto 30px;
+  max-width: 500px;
+}
+.mn3-modul i { flex: 1; height: 3px; border-radius: 3px; background: linear-gradient(90deg, rgba(229, 169, 19, 0), #e5a913); }
+.mn3-modul i:last-child { background: linear-gradient(90deg, #e5a913, rgba(229, 169, 19, 0)); }
+.mn3-modul b { font-size: 15px; font-weight: 700; letter-spacing: .07em; white-space: nowrap; }
+.mn3-modul b em { font-style: normal; color: #e5a913; margin: 0 8px; }
+
+/* kartu kaca: tembus pandang + blur latar + bayangan berlapis */
+.mn3-kartu {
+  position: relative;
+  padding: 32px 32px 28px;
+  border-radius: 22px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, .82), rgba(255, 255, 255, .55));
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, .95);
+  box-shadow:
+    0 34px 60px -28px rgba(30, 58, 138, .38),
+    0 14px 26px -14px rgba(30, 58, 138, .20),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+}
+.mn3-kartu::before {           /* pendar putih di sekeliling kartu */
+  content: "";
+  position: absolute;
+  inset: -18px;
+  z-index: -1;
+  border-radius: 34px;
+  background: radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, .9), rgba(255, 255, 255, 0) 70%);
+  filter: blur(12px);
+}
+
+.mn3-isian { position: relative; margin-bottom: 16px; }
+.mn3-isian > i {
+  position: absolute;
+  left: 19px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: #475569;
+  pointer-events: none;
+}
+.mn3-isian input {
+  width: 100%;
+  height: 56px;
+  padding: 0 54px;
+  font-size: 16px;
+  color: #1e3a8a;
+  background: rgba(255, 255, 255, .92);
+  border: 1.5px solid #9db1d8;
+  border-radius: 13px;
+  outline: none;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, .06), 0 1px 0 rgba(255, 255, 255, .8);
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.mn3-isian input::placeholder { color: #64748b; }
+.mn3-isian input:focus {
+  border-color: #1e3a8a;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, .14), inset 0 1px 2px rgba(15, 23, 42, .06);
+}
+.mn3-mata {
+  position: absolute;
+  right: 8px; top: 50%;
+  transform: translateY(-50%);
+  width: 42px; height: 42px;
+  display: flex; align-items: center; justify-content: center;
+  border: 0; background: transparent; border-radius: 9px;
+  color: #475569; font-size: 18px;
+  cursor: pointer;
+}
+.mn3-mata:hover { background: rgba(30, 58, 138, .07); }
+
+.mn3-ingat {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px 0 22px 4px;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+.mn3-ingat input { width: 18px; height: 18px; accent-color: #1e3a8a; cursor: pointer; }
+
+/* tombol timbul: gradasi + kilap atas + bayangan biru */
+.mn3-tombol {
+  width: 100%;
+  height: 60px;
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  font-size: 20px; font-weight: 700; letter-spacing: .02em;
+  color: #fff;
+  border: 0;
+  border-radius: 14px;
+  cursor: pointer;
+  background: linear-gradient(180deg, #2f62dc 0%, #1e3a8a 100%);
+  box-shadow:
+    0 16px 30px -12px rgba(30, 64, 175, .75),
+    inset 0 1px 0 rgba(255, 255, 255, .35),
+    inset 0 -3px 0 rgba(0, 0, 0, .18);
+  transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+}
+.mn3-tombol i { transition: transform .15s ease; }
+.mn3-tombol:hover { filter: brightness(1.06); transform: translateY(-1px);
+  box-shadow: 0 20px 34px -12px rgba(30, 64, 175, .85), inset 0 1px 0 rgba(255, 255, 255, .35), inset 0 -3px 0 rgba(0, 0, 0, .18); }
+.mn3-tombol:hover i { transform: translateX(4px); }
+.mn3-tombol:active { transform: translateY(1px);
+  box-shadow: 0 8px 18px -10px rgba(30, 64, 175, .8), inset 0 2px 4px rgba(0, 0, 0, .2); }
+
+.mn3-kaki { display: flex; align-items: center; gap: 14px; margin-top: 28px; }
+.mn3-kaki i { flex: 1; height: 2px; border-radius: 2px; background: linear-gradient(90deg, rgba(30, 58, 138, 0), rgba(30, 58, 138, .45)); }
+.mn3-kaki i:last-child { background: linear-gradient(90deg, rgba(30, 58, 138, .45), rgba(30, 58, 138, 0)); }
+.mn3-kaki span { font-size: 13.5px; font-weight: 600; white-space: nowrap; }
+
+/* ---------- layar sedang & kecil ---------- */
+@media (max-width: 1199.98px) {
+  .mn3-wrap { grid-template-columns: 1fr 1fr; padding: 28px 3vw; }
+  .mn3-logo { max-width: 360px; }
+}
+@media (max-width: 991.98px) {          /* tablet: ilustrasi di atas, formulir di bawah */
+  .mn3-wrap { grid-template-columns: 1fr; gap: 8px; padding: 24px 24px 36px; align-content: center; }
+  .mn3-art img { max-width: 440px; max-height: 38vh; }
+  .mn3-logo { max-width: 320px; }
+  .mn3-modul b { font-size: 13px; }
+}
+@media (max-width: 575.98px) {          /* HP: formulir saja */
+  .mn3-art { display: none; }
+  .mn3-wrap { padding: 20px 16px 32px; }
+  .mn3-kartu { padding: 24px 18px 20px; }
+  .mn3-isian input { height: 52px; }
+  .mn3-tombol { height: 56px; font-size: 18px; }
+  .mn3-garis-kiri { width: 300px; height: 260px; }
+  .mn3-garis-kanan { width: 260px; height: 160px; }
+}
+@media (max-width: 440px) {
+  .mn3-logo { max-width: 240px; }
+  .mn3-modul { gap: 8px; margin-bottom: 22px; justify-content: center; }
+  .mn3-modul i { display: none; }
+  .mn3-modul b { font-size: 12px; white-space: normal; text-align: center; }
+  .mn3-kaki { justify-content: center; }
+  .mn3-kaki i { display: none; }
+  .mn3-kaki span { font-size: 12px; white-space: normal; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mn3-art img { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- hiasan latar -->
+<div class="mn3-hias mn3-awan1"></div>
+<div class="mn3-hias mn3-awan2"></div>
+<div class="mn3-hias mn3-awan3"></div>
+<svg class="mn3-hias mn3-garis-kiri" viewBox="0 0 520 460" fill="none" aria-hidden="true">
+  <g stroke="#e5a913" stroke-width="1.6" stroke-linecap="round" opacity=".55">
+    <line x1="34" y1="0" x2="34" y2="250"/>
+    <line x1="52" y1="0" x2="52" y2="330"/>
+    <line x1="70" y1="0" x2="70" y2="280"/>
+    <line x1="88" y1="0" x2="88" y2="360"/>
+  </g>
+  <path d="M0 440 C 150 330, 290 150, 520 60" stroke="#e5a913" stroke-width="1.6" opacity=".45"/>
+  <path d="M0 400 C 170 300, 300 120, 500 0" stroke="#e5a913" stroke-width="1.2" opacity=".30"/>
+  <circle cx="104" cy="30" r="6" fill="#e5a913" opacity=".8"/>
+</svg>
+<svg class="mn3-hias mn3-garis-kanan" viewBox="0 0 420 260" fill="none" aria-hidden="true">
+  <path d="M420 40 C 330 70, 250 150, 210 260 L420 260 Z" fill="#bcd5f8" opacity=".55"/>
+  <path d="M420 110 C 360 130, 300 190, 280 260 L420 260 Z" fill="#9cc0f2" opacity=".45"/>
+  <path d="M130 260 C 190 170, 300 90, 420 70" stroke="#e5a913" stroke-width="1.6" opacity=".55"/>
+</svg>
+
+<div class="mn3-wrap">
+
+  <div class="mn3-art">
+    <!-- di HP ilustrasi disembunyikan; <source> ini mencegah HP ikut mengunduh gambarnya -->
+    <picture>
+      <source media="(max-width: 575.98px)" srcset="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+      <img src="images/moneta/login-art-3d.webp?v=2" alt="">
+    </picture>
+  </div>
+
+  <div class="mn3-panel">
+
+    <img class="mn3-logo" src="images/moneta/wordmark.png" alt="MONETA">
+
+    <div class="mn3-modul">
+      <i></i>
+      <b>AP<em>&bull;</em>CASH<em>&bull;</em>BANK<em>&bull;</em>ACCOUNTING</b>
+      <i></i>
+    </div>
+
+    <form class="mn3-kartu" method="post" action="auth.php">
+
+      <div class="mn3-isian">
+        <i class="far fa-user" aria-hidden="true"></i>
+        <input type="text" name="user" id="mn_user" placeholder="Username" autocomplete="username" autofocus required>
+      </div>
+
+      <div class="mn3-isian">
+        <i class="fas fa-lock" aria-hidden="true"></i>
+        <input type="password" name="pass" id="mn_pass" placeholder="Password" autocomplete="current-password" required>
+        <button type="button" class="mn3-mata" id="mn_lihat" title="Show password">
+          <i class="far fa-eye" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <label class="mn3-ingat">
+        <input type="checkbox" id="mn_ingat"> Remember me
+      </label>
+
+      <button type="submit" class="mn3-tombol">
+        Login <i class="fas fa-arrow-right" aria-hidden="true"></i>
+      </button>
+
+    </form>
+
+    <div class="mn3-kaki">
+      <i></i>
+      <span>PT Nirwana Alabare Garment</span>
+      <i></i>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* Tombol mata: perlihatkan / sembunyikan kata sandi. */
+document.getElementById('mn_lihat').addEventListener('click', function () {
+  var isi = document.getElementById('mn_pass');
+  var mata = this.querySelector('i');
+  var sembunyi = (isi.type === 'password');
+  isi.type = sembunyi ? 'text' : 'password';
+  mata.className = sembunyi ? 'far fa-eye-slash' : 'far fa-eye';
+  this.title = sembunyi ? 'Hide password' : 'Show password';
+  isi.focus();
+});
+
+/* "Remember me" = ingat NAMA PENGGUNA saja (di peramban ini), bukan kata sandi. */
+(function () {
+  var user  = document.getElementById('mn_user');
+  var ingat = document.getElementById('mn_ingat');
+  var simpan;
+  try { simpan = window.localStorage; } catch (e) { simpan = null; }
+  if (!simpan) { return; }
+
+  var tersimpan = simpan.getItem('moneta_user');
+  if (tersimpan) {
+    user.value = tersimpan;
+    ingat.checked = true;
+    document.getElementById('mn_pass').focus();
+  }
+
+  user.form.addEventListener('submit', function () {
+    try {
+      if (ingat.checked) { simpan.setItem('moneta_user', user.value); }
+      else { simpan.removeItem('moneta_user'); }
+    } catch (e) { /* penyimpanan diblokir - abaikan */ }
+  });
+})();
+</script>
+
+</body>
+</html>

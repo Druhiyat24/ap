@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MONETA | Log in (mockup)</title>
+<link rel="icon" type="image/png" sizes="32x32" href="images/moneta/icon-32.png">
+<link rel="stylesheet" href="module/fontawesome5/css/all.min.css">
+<style>
+/* ============================================================
+   Mockup halaman login MONETA.
+   Berkas terpisah - index.php yang asli BELUM disentuh.
+   ============================================================ */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #1e3a8a;
+  background: #fff;
+}
+
+/* dua kolom: ilustrasi | formulir */
+.mn-wrap {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ---------- kiri: ilustrasi ---------- */
+.mn-art {
+  flex: 0 0 48%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* bulatan-bulatan lembut di latar, dibuat dgn CSS supaya tidak perlu gambar lagi */
+.mn-art::before,
+.mn-art::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  z-index: 0;
+}
+/* ditaruh agak keluar layar supaya tidak menindih ilustrasinya */
+.mn-art::before {
+  width: 400px; height: 400px;
+  background: #eaf1fd;
+  top: -170px; right: -170px;
+}
+.mn-art::after {
+  width: 320px; height: 320px;
+  background: #fdf4e3;
+  bottom: -150px; left: -140px;
+}
+
+/* garis kuning tipis di pojok kiri atas */
+.mn-garis {
+  position: absolute;
+  top: 0; left: 46px;
+  width: 92px; height: 300px;
+  z-index: 1;
+}
+.mn-garis span {
+  position: absolute;
+  top: -40px; bottom: 0;
+  width: 2px;
+  background: #f5b912;
+  opacity: .55;
+  border-radius: 2px;
+}
+.mn-garis span:nth-child(1) { left: 0;    height: 230px; }
+.mn-garis span:nth-child(2) { left: 14px; height: 300px; }
+.mn-garis span:nth-child(3) { left: 28px; height: 255px; }
+.mn-garis span:nth-child(4) { left: 42px; height: 320px; }
+.mn-titik {
+  position: absolute;
+  top: 26px; left: 78px;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: #f5b912;
+  z-index: 1;
+}
+
+.mn-art img {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 620px;
+  height: auto;
+  mix-blend-mode: multiply;   /* latar putih gambar melebur ke bulatan di belakangnya */
+}
+
+/* ---------- kanan: formulir ---------- */
+.mn-form {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 48px;
+  background: #fff;
+}
+.mn-box {
+  width: 100%;
+  max-width: 560px;
+}
+
+.mn-logo {
+  display: block;
+  margin: 0 auto 10px;
+  width: 100%;
+  max-width: 430px;
+  height: auto;
+}
+
+/* baris "AP . CASH . BANK . ACCOUNTING" diapit garis kuning */
+.mn-modul {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 auto 34px;
+  max-width: 500px;
+}
+.mn-modul i {
+  flex: 1;
+  height: 3px;
+  background: #f5b912;
+  border-radius: 3px;
+}
+.mn-modul b {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: #1e3a8a;
+  white-space: nowrap;
+}
+.mn-modul b em {
+  font-style: normal;
+  color: #5a9bf6;
+  margin: 0 7px;
+}
+
+/* kartu isian */
+.mn-kartu {
+  border: 1px solid #e6ebf3;
+  border-radius: 18px;
+  padding: 30px 30px 26px;
+  box-shadow: 0 10px 30px rgba(30, 58, 138, .05);
+}
+
+.mn-isian {
+  position: relative;
+  margin-bottom: 16px;
+}
+.mn-isian > i.fas {
+  position: absolute;
+  left: 20px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 17px;
+  color: #334155;
+}
+.mn-isian input {
+  width: 100%;
+  height: 56px;
+  padding: 0 52px;
+  font-size: 15px;
+  color: #1e3a8a;
+  background: #fff;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.mn-isian input::placeholder { color: #94a3b8; font-weight: 600; }
+.mn-isian input:focus {
+  border-color: #2f6bdd;
+  box-shadow: 0 0 0 4px rgba(47, 107, 221, .12);
+}
+.mn-mata {
+  position: absolute;
+  right: 8px; top: 50%;
+  transform: translateY(-50%);
+  width: 42px; height: 42px;
+  display: flex; align-items: center; justify-content: center;
+  border: 0; background: transparent;
+  color: #475569; font-size: 17px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.mn-mata:hover { background: #f1f5f9; }
+
+/* ingat saya */
+.mn-ingat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 22px 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e3a8a;
+  cursor: pointer;
+  user-select: none;
+}
+.mn-ingat input { width: 18px; height: 18px; accent-color: #2f6bdd; cursor: pointer; }
+
+.mn-tombol {
+  width: 100%;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 19px;
+  font-weight: 700;
+  color: #fff;
+  background: #1e3a8a;
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background .15s ease, transform .1s ease;
+}
+.mn-tombol:hover { background: #17307a; }
+.mn-tombol:active { transform: translateY(1px); }
+
+/* kaki */
+.mn-kaki {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 30px;
+}
+.mn-kaki i { flex: 1; height: 2px; background: #cbd5e1; border-radius: 2px; }
+.mn-kaki span {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e3a8a;
+  white-space: nowrap;
+}
+
+/* ---------- layar sempit ---------- */
+@media (max-width: 991.98px) {
+  .mn-wrap { flex-direction: column; }
+  .mn-art { flex: none; padding: 26px 20px 0; }
+  .mn-art img { max-width: 380px; }
+  .mn-form { padding: 26px 20px 40px; }
+  .mn-logo { max-width: 300px; }
+  .mn-modul b { font-size: 13px; }
+}
+@media (max-width: 575.98px) {
+  .mn-art { display: none; }     /* di HP, layar dipakai formulir saja */
+  .mn-kartu { padding: 22px 18px 20px; border: 0; box-shadow: none; }
+  .mn-isian input { height: 52px; }
+  .mn-tombol { height: 54px; font-size: 17px; }
+}
+
+/* HP sempit (360-420 px): garis kuning pengapit dilepas dan tulisannya
+   boleh turun baris supaya tidak ada yang terpotong ke samping. */
+@media (max-width: 440px) {
+  .mn-form { padding: 20px 14px 32px; }
+  .mn-logo { max-width: 240px; }
+  .mn-modul { gap: 8px; margin-bottom: 26px; justify-content: center; }
+  .mn-modul i { display: none; }
+  .mn-modul b { font-size: 12px; white-space: normal; text-align: center; }
+  .mn-kartu { padding: 18px 10px 16px; }
+  .mn-kaki { justify-content: center; }
+  .mn-kaki i { display: none; }
+  .mn-kaki span { font-size: 12px; white-space: normal; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<div class="mn-wrap">
+
+  <div class="mn-art">
+    <div class="mn-garis"><span></span><span></span><span></span><span></span></div>
+    <div class="mn-titik"></div>
+    <img src="images/moneta/login-art.png" alt="">
+  </div>
+
+  <div class="mn-form">
+    <div class="mn-box">
+
+      <img class="mn-logo" src="images/moneta/wordmark.png" alt="MONETA">
+
+      <div class="mn-modul">
+        <i></i>
+        <b>AP <em>&bull;</em> CASH <em>&bull;</em> BANK <em>&bull;</em> ACCOUNTING</b>
+        <i></i>
+      </div>
+
+      <form class="mn-kartu" method="post" action="auth.php">
+
+        <div class="mn-isian">
+          <i class="fas fa-user" aria-hidden="true"></i>
+          <input type="text" name="user" id="mn_user" placeholder="Username" autocomplete="username" autofocus>
+        </div>
+
+        <div class="mn-isian">
+          <i class="fas fa-lock" aria-hidden="true"></i>
+          <input type="password" name="pass" id="mn_pass" placeholder="Password" autocomplete="current-password">
+          <button type="button" class="mn-mata" id="mn_lihat" title="Show password">
+            <i class="fas fa-eye" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <label class="mn-ingat">
+          <input type="checkbox" id="mn_ingat"> Remember me
+        </label>
+
+        <button type="submit" class="mn-tombol">
+          Login <i class="fas fa-arrow-right" aria-hidden="true"></i>
+        </button>
+
+      </form>
+
+      <div class="mn-kaki">
+        <i></i>
+        <span>PT Nirwana Alabare Garment</span>
+        <i></i>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* Tombol mata: perlihatkan / sembunyikan kata sandi. */
+document.getElementById('mn_lihat').addEventListener('click', function () {
+  var isi = document.getElementById('mn_pass');
+  var mata = this.querySelector('i');
+  var sembunyi = (isi.type === 'password');
+  isi.type = sembunyi ? 'text' : 'password';
+  mata.className = sembunyi ? 'fas fa-eye-slash' : 'fas fa-eye';
+  this.title = sembunyi ? 'Hide password' : 'Show password';
+  isi.focus();
+});
+
+/* "Remember me" = ingat NAMA PENGGUNA saja, bukan kata sandinya.
+   Disimpan di peramban masing-masing, tidak dikirim ke mana pun. */
+(function () {
+  var user  = document.getElementById('mn_user');
+  var ingat = document.getElementById('mn_ingat');
+  var simpan;
+  try { simpan = window.localStorage; } catch (e) { simpan = null; }
+  if (!simpan) { return; }
+
+  var tersimpan = simpan.getItem('moneta_user');
+  if (tersimpan) {
+    user.value = tersimpan;
+    ingat.checked = true;
+    document.getElementById('mn_pass').focus();
+  }
+
+  user.form.addEventListener('submit', function () {
+    try {
+      if (ingat.checked) { simpan.setItem('moneta_user', user.value); }
+      else { simpan.removeItem('moneta_user'); }
+    } catch (e) { /* mode penyamaran / penyimpanan diblokir - abaikan saja */ }
+  });
+})();
+</script>
+
+</body>
+</html>

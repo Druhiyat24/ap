@@ -1,4 +1,15 @@
 <?php include '../header.php' ?>
+<style>
+/* kotak cari No BPB di atas tabel */
+.vb-cari { position: relative; width: 280px; max-width: 100%; }
+.vb-cari .fa { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
+.vb-cari input { padding-left: 30px !important; }
+/* tombol Back + Save di kaki kartu */
+.vb-aksi { display: flex; justify-content: flex-end; gap: 8px; padding-top: 12px; margin-top: 10px; border-top: 1px solid #e3e9f2; }
+.vb-aksi .btn { min-width: 96px; }
+/* isi tabel rata tengah seperti aslinya (style="text-align:center" di <table> tertimpa aturan lain) */
+#mytable tbody td { text-align: center; }
+</style>
 
     <!-- MAIN -->    
     <div class="col p-4">
@@ -7,7 +18,7 @@
     <div class="box header">
 <form id="form-data" action="formverifikasibpb.php" method="post">
         <div class="form-row">
-            <div class="col-md-6">
+            <div class="col-md-6 app-kol-supplier">
             <label for="nama_supp"><b>Supplier</b></label>            
               <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true" onchange="this.form.submit()">
                 <option value="ALL" <?php
@@ -41,9 +52,9 @@
                 </select>
                 </div>  
 
-            <div class="col-md-3 mb-3"> 
+            <div class="col-md-3 mb-3 app-kol-pendek"> 
             <label for="start_date"><b>From</b></label>          
-            <input type="text" style="font-size: 12px;" class="form-control tanggal" id="start_date" name="start_date" 
+            <input type="text" class="form-control tanggal" id="start_date" name="start_date" 
             value="<?php
             $start_date ='';
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -55,12 +66,12 @@
             else{
                echo date("d-m-Y");
             } ?>" 
-            placeholder="Tanggal Awal" onchange="this.form.submit()">
+            placeholder="Start Date" onchange="this.form.submit()">
             </div>
 
-            <div class="col-md-3 mb-3"> 
+            <div class="col-md-3 mb-3 app-kol-pendek"> 
             <label for="end_date"><b>To</b></label>          
-            <input type="text" style="font-size: 12px;" class="form-control tanggal" id="end_date" name="end_date" 
+            <input type="text" class="form-control tanggal" id="end_date" name="end_date" 
             value="<?php
             $end_date ='';
             if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -72,7 +83,7 @@
             else{
                echo date("d-m-Y");
             } ?>" 
-            placeholder="Tanggal Awal" onchange="this.form.submit()">
+            placeholder="End Date" onchange="this.form.submit()">
             </div>           
 </div>                   
     </div>
@@ -81,20 +92,19 @@
         <div class="row">
         
             <div class="col-md-12">
-                <div class="col-md-12">
-                <div class="container-1">
-                <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Search no bpb..">
+                <div class="d-flex justify-content-end mb-2">
+                <div class="vb-cari">
+                <i class="fa fa-search" aria-hidden="true"></i>
+                <input type="text" class="form-control" id="myInput" onkeyup="myFunction()" placeholder="Search BPB number..." autocomplete="off">
                 </div>
-            </div>
-            </br>
-        </br>
+                </div>
            <div class="tableFix" style="height: 500px;">
-            <table id="mytable" class="table table-head-fixed text-nowrap" cellspacing="0" width="100%" style="font-size: 13px;text-align:center;">
+            <table id="mytable" class="table table-head-fixed text-nowrap tbl-gaya-ppn" cellspacing="0" width="100%" style="font-size: 13px;text-align:center;">
                     <thead>
                         <tr>
                             <th style="width:10px;"><input type="checkbox" id="select_all"></th>                        
                             <th style="width:50px;">No BPB</th>
-                            <th style="width:100px;">Tgl BPB</th>
+                            <th style="width:100px;">BPB Date</th>
                             <th style="width:100px;">No PO</th>
                             <th style="width:100px;">From BPB</th>                                                                                
                             <th style="width:100px;">Supplier</th>
@@ -208,13 +218,10 @@
                     
 <div class="box footer">   
         <form id="form-simpan">
-           <div class="form-row col">
-            <div class="col-md-3 mb-3"> 
-            </br>                             
-            <button type="button" style="border-radius: 6px" class="btn-outline-primary btn-sm" name="simpan" id="simpan"><span class="fa fa-floppy-o"></span> Save</button>                
-            <button type="button" style="border-radius: 6px" class="btn-outline-danger btn-sm" name="batal" id="batal" onclick="location.href='verifikasibpb.php'"><span class="fa fa-angle-double-left"></span> Back</button>               
+            <div class="vb-aksi">
+            <button type="button" class="btn btn-light" name="batal" id="batal" onclick="location.href='verifikasibpb.php'"><i class="fa fa-angle-double-left" aria-hidden="true"></i> Back</button>
+            <button type="button" class="btn btn-success" name="simpan" id="simpan"><i class="fa fa-floppy-o" aria-hidden="true"></i> Save</button>
             </div>
-            </div>                                   
         </form>
         </div>        
                                 
@@ -480,7 +487,7 @@ $(document).ready(function(){
             .fail(function(){
                 fmvSaving = false;
                 $btn.prop('disabled', false);
-                alert("Gagal menyimpan sebagian data. Silakan cek lalu ulangi.");
+                alert("Some data could not be saved. Please check and try again.");
             });
     });
 </script>

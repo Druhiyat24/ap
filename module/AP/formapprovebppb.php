@@ -1,15 +1,32 @@
 <?php include '../header.php' ?>
 
-    <!-- MAIN -->    
-    <div class="col p-4">
-        <h2 class="text-center">APPROVE BPB RETURN</h2>
-<div class="box">
-    <div class="box header">
+<!-- Tiap berkas CSS ditaut sendiri-sendiri dgn penanda versi dari
+     filemtime. Kosakata .ftl- dipakai bersama daftar FTR CBD/DP dan
+     Petty Cash Out - bentuknya sama dgn List Memorial Journal.
+
+     Bentuknya mengikuti Approve BPB Knitting; yang TIDAK ikut adalah
+     isi tabelnya - halaman ini berisi dokumen retur (No RO / No BPPB /
+     No BPB, 9 kolom) dgn endpoint approvebppb & cancelbppb sendiri. -->
+<link rel="stylesheet" href="../css/app-skin-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-skin-form.css'); ?>">
+<link rel="stylesheet" href="../css/app-ftr-list.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-ftr-list.css'); ?>">
+
+<!-- MAIN -->
+<div class="container-fluid mt-3 p-3">
+  <div class="ftl-card">
+    <div class="ftl-head">
+      <span class="ftl-head-icon"><i class="fa fa-thumbs-up" aria-hidden="true"></i></span>
+      <div>
+        <h1>Approve BPB Return</h1>
+        <span class="ftl-crumb">AP &rsaquo; Approve BPB Return</span>
+      </div>
+    </div><!-- /.ftl-head -->
+
+    <div class="ftl-panel">
 <form id="form-data" action="formapprovebppb.php" method="post">
         <div class="form-row">
-            <div class="col-md-6">
+            <div class="col-12 col-sm-6 col-xl-4 mb-2">
             <label for="nama_supp"><b>Supplier</b></label>            
-              <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true" onchange="this.form.submit()">
+              <select class="form-control selectpicker" name="nama_supp" id="nama_supp" data-dropup-auto="false" data-live-search="true" onchange="this.form.submit()" data-container="body">
                 <option value="ALL" <?php
                 $nama_supp = '';
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -42,20 +59,19 @@
                 </div>  
 
            
-</div>                   
-    </br>
-    </div>
+        </div>
 </form>
-    <div class="box body">
-        <div class="row">
-        
-            <div class="col-md-12">
-                <div class="col-md-12">
-                <div class="container-1">
-                <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Search no bpb return..">
-                </div>
+    </div><!-- /.ftl-panel -->
+  </div><!-- /.ftl-card: kartu filter -->
 
-            <table id="mytable" class="table table-striped table-bordered" cellspacing="0" width="100%" style="font-size: 12px;text-align:center;">
+  <div class="ftl-card mt-3">
+    <div class="ftl-body">
+      <!-- Kotak cari buatan sendiri (#myInput + myFunction) DIBUANG.
+           Ia menyapu <tr> di DOM, padahal DataTables hanya merender baris
+           halaman aktif - jadi yang tersaring cuma halaman yang sedang
+           dibuka. Pencarian bawaan DataTables menyaring seluruh data. -->
+      <div class="ftl-tblwrap">
+            <table id="mytable" class="table ftl-tbl" cellspacing="0" width="100%">
                     <thead>
                         <tr class="thead-dark">
                             <th style="width:10px;"><input type="checkbox" id="select_all"></th>                        
@@ -100,9 +116,10 @@
                    
                     } ?>
                     </tbody>
-                    </table>                     
+                    </table>
+      </div><!-- /.ftl-tblwrap -->
 
-<div class="modal fade" id="mymodal" data-target="#mymodal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
+<div class="modal fade ftl-modal" id="mymodal" data-target="#mymodal" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
         <div class="modal-dialog">
         <div class="modal-content">
         <div class="modal-header">
@@ -126,21 +143,13 @@
       <!-- /.modal-dialog --> 
     </div>                            
                     
-<div class="box footer">   
-        <form id="form-simpan">
-           <div class="form-row col">
-            <div class="col-md-3 mb-3">  
-            </br>                            
-            <button style="border-radius: 10px" type="button" class="btn-outline-primary" name="approve" id="approve"><span class="fa fa-thumbs-up"></span> Approve</button>                
-            <button style="border-radius: 10px" type="button" class="btn-outline-danger" name="cancel" id="cancel"><span class="fa fa-ban"></span> Cancel</button>           
-            </div>
-            </div>                                   
-        </form>
-        </div>        
-                                
-</div><!-- body-row END -->
-</div>
-</div>
+      <form id="form-simpan" class="ftl-actions mt-3">
+        <button type="button" class="app-btn app-btn-primary app-btn-sm" name="approve" id="approve"><i class="fa fa-thumbs-up" aria-hidden="true"></i> Approve</button>
+        <button type="button" class="app-btn app-btn-danger app-btn-sm" name="cancel" id="cancel"><i class="fa fa-ban" aria-hidden="true"></i> Cancel</button>
+      </form>
+    </div><!-- /.ftl-body -->
+  </div><!-- /.ftl-card: kartu tabel -->
+</div><!-- /.container-fluid -->
 
   <!-- Bootstrap core JavaScript -->
   <script src="../vendor/jquery/jquery.min.js"></script>
@@ -148,6 +157,9 @@
   <script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
   <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
   <script language="JavaScript" src="../css/4.1.1/bootstrap-select.min.js"></script>
+  <!-- SweetAlert2 belum pernah dimuat halaman ini; dipakai utk konfirmasi
+       dan pesan hasil Approve/Cancel. -->
+  <script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
 
 <script>
   // Hide submenus
@@ -181,9 +193,33 @@ function SidebarCollapse () {
 </script>
 
 <script>
+    /* Dideklarasikan DI LUAR blok siap-dokumen supaya tombol Approve, Cancel,
+       dan centang "pilih semua" di blok <script> lain bisa memakainya - tanpa
+       ini ia cuma jadi variabel global tersirat. */
+    var tabelBpb;
+
     $(document).ready(function() {
-    $('#mytable').dataTable({
-        "bFilter": false,
+    /* Pencarian bawaan DataTables DIHIDUPKAN (dulu "bFilter": false).
+       Ia menyaring SELURUH data - bukan cuma baris halaman aktif - dan
+       ikut memperbarui jumlah entri serta penomoran halamannya.
+
+       Variabelnya disimpan karena tombol Approve/Cancel dan centang
+       "pilih semua" perlu API-nya untuk menjangkau baris di halaman lain
+       yang TIDAK ADA di DOM. */
+    tabelBpb = $('#mytable').DataTable({
+        order: [[1, 'asc']],
+        pageLength: 25,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+        columnDefs: [
+            { targets: [0], orderable: false, searchable: false, className: 'text-center' },
+            { targets: [1], className: 'text-left ftl-doc' },
+            { targets: [2, 4, 5], className: 'text-left' }
+        ],
+        language: {
+            search: 'Search:',
+            emptyTable: 'No BPB Return waiting for approval.',
+            zeroRecords: 'No BPB Return matches your search.'
+        }
     });
     
      $("[data-toggle=tooltip]").tooltip();
@@ -191,29 +227,7 @@ function SidebarCollapse () {
 } );
 </script>
 
-<script>
-function myFunction() {
-  // Declare variables
-  var input, filter, table, tr, td, i, txtValue;
-  input = document.getElementById("myInput");
-  filter = input.value.toUpperCase();
-  table = document.getElementById("mytable");
-  tr = table.getElementsByTagName("tr");
-
-  // Loop through all table rows, and hide those who don't match the search query
-  for (i = 0; i < tr.length; i++) {
-    td = tr[i].getElementsByTagName("td")[2];
-    if (td) {
-      txtValue = td.textContent || td.innerText;
-      if (txtValue.toUpperCase().indexOf(filter) > -1) {
-        tr[i].style.display = "";
-      } else {
-        tr[i].style.display = "none";
-      }
-    }
-  }
-}
-</script>
+<!-- Blok myFunction() dibuang: lihat keterangan di dekat tabel. -->
 
 <script type="text/javascript">
     $(document).ready(function () {
@@ -231,7 +245,10 @@ $(function() {
 </script>
 
 <script type="text/javascript">     
-    $('table tbody tr').on('click', 'td:eq(1)', function(){                
+    /* Didelegasikan ke #mytable tbody, bukan diikat ke baris yang kebetulan ada
+       saat halaman dimuat: DataTables membuat ulang barisnya setiap kali
+       berpindah halaman atau mencari, jadi ikatan lama ikut hilang. */
+    $('#mytable tbody').on('click', 'td:nth-child(2)', function(){                
     $('#mymodal').modal('show');
     var no_ro = $(this).closest('tr').find('td:eq(1)').attr('value');
     var tgl_bpb = $(this).closest('tr').find('td:eq(4)').text();
@@ -299,24 +316,11 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
     console.log(e)
   }
 };
-    $("input[type=checkbox]").change(function(){
-    var sub = 0;
-    var tax = 0;
-    var total = 0;
-    var ceklist = 0;         
-    $("input[type=checkbox]:checked").each(function () {        
-    var price = parseFloat($(this).closest('tr').find('td:eq(5)').attr('value'),10) || 0;
-    var qty = parseFloat($(this).closest('tr').find('td:eq(7)').attr('value'),10) ||0;
-    var tax = parseFloat($(this).closest('tr').find('td:eq(8)').attr('value'),10) ||0;               
-    sub += price * qty;
-    tax += tax;
-    total = sub + tax;     
-    });
-    $("#subtotal").val(formatMoney(sub));
-    $("#pajak").val(formatMoney(tax));
-    $("#total").val(formatMoney(total));
-    $("#select").val("1");                    
-});        
+    /* Penghitung subtotal/pajak/total DIBUANG - salinan dari halaman lain:
+       isian tujuannya (#subtotal, #pajak, #total) tidak ada di halaman ini,
+       dan indeks kolom yang dibacanya tidak cocok dgn tabel ini. Pemilih
+       centangnya juga tidak dibatasi ke tabel sehingga ikut terpicu
+       centang "pilih semua". */        
 </script>
 
 <!--<script type="text/javascript">
@@ -343,72 +347,112 @@ $(document).ready(function(){
 </script>-->
 
 <script type="text/javascript">
-    $("#form-simpan").on("click", "#approve", function(){
-        $("input[type=checkbox]:checked").each(function () {                
-        var no_ro = $(this).closest('tr').find('td:eq(1)').attr('value');
-        var approve_user = '<?php echo $user ?>';
-        var update_user = '<?php echo $user ?>';
+    /* Baris yang tercentang diambil lewat API DataTables, BUKAN dari DOM.
+       Saat tabel memakai halaman, baris halaman lain tidak dirender sama
+       sekali - jadi $('input:checked') hanya melihat halaman yang terbuka.
+       rows().nodes() mencakup semuanya.
 
-        $.ajax({
-            type:'POST',
-            url:'approvebppb.php',
-            data: {'no_ro':no_ro, 'approve_user':approve_user, 'update_user':update_user},
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){                
-                console.log(response);
-                window.location = 'formapprovebppb.php';
-                                               
-            },
-            error:  function (xhr, ajaxOptions, thrownError) {
-               alert(xhr);
-            }
+       Dibatasi ke input bernama select[] supaya centang "pilih semua" di
+       kepala tabel tidak ikut terhitung; dulu ikut, dan mengirim satu
+       permintaan tambahan dgn no_ro kosong. */
+    function barisTercentang() {
+        var hasil = [];
+        tabelBpb.rows().nodes().each(function (tr) {
+            var c = $(tr).find('input[name="select[]"]');
+            if (c.length && c.prop('checked')) { hasil.push($(tr)); }
         });
+        return hasil;
+    }
+
+    function nilaiKolom($tr, i) {
+        return $tr.find('td:eq(' + i + ')').attr('value');
+    }
+
+    /* Permintaan dikumpulkan dulu, lalu DITUNGGU semuanya dgn $.when baru
+       halaman berpindah. Sebelumnya tiap permintaan langsung memindahkan
+       halaman pada yang pertama selesai, sehingga sisanya bisa terputus. */
+    function kirimBanyak(url, daftar, kataKerja, pesanSukses) {
+        if (!daftar.length) {
+            Swal.fire({ icon: 'warning', title: 'Oops...', text: 'Please tick at least one RO first.' });
+            return;
+        }
+
+        /* Jumlah dokumen disebut di pertanyaannya: Approve/Cancel di sini bisa
+           mengenai banyak baris sekaligus - termasuk baris di halaman lain yang
+           tidak terlihat - jadi angkanya penting sebelum menekan Yes. */
+        Swal.fire({
+            icon: 'question',
+            title: 'Are you sure?',
+            text: kataKerja + ' ' + daftar.length + ' RO?',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, ' + kataKerja.toLowerCase() + ' it!',
+            cancelButtonText: 'Cancel'
+        }).then(function (hasil) {
+            if (!hasil.isConfirmed) { return; }
+
+            $('#approve, #cancel').prop('disabled', true);
+            Swal.fire({
+                title: 'Processing...',
+                allowOutsideClick: false,
+                didOpen: function () { Swal.showLoading(); }
+            });
+
+            var janji = daftar.map(function (d) {
+                return $.ajax({ type: 'POST', url: url, data: d });
+            });
+            $.when.apply($, janji).done(function () {
+                Swal.fire({ icon: 'success', title: 'Success', text: pesanSukses })
+                    .then(function () { window.location = 'formapprovebppb.php'; });
+            }).fail(function (xhr) {
+                $('#approve, #cancel').prop('disabled', false);
+                Swal.fire({
+                    icon: 'error', title: 'Failed',
+                    text: 'HTTP ' + (xhr && xhr.status ? xhr.status : '?') + ' - ' + (xhr && xhr.responseText ? xhr.responseText : 'no response')
+                });
+            });
         });
-        if(document.querySelectorAll("input[name='select[]']:checked").length >= 1){
-            alert("Saved Successfully");
-        }else{
-            alert("Please check RO Number");
-        }        
+    }
+
+    $("#form-simpan").on("click", "#approve", function () {
+        var pengguna = '<?php echo $user ?>';
+        var daftar = barisTercentang().map(function ($tr) {
+            return {
+                no_ro:        nilaiKolom($tr, 1),
+                approve_user: pengguna,
+                update_user:  pengguna
+            };
+        });
+        kirimBanyak('approvebppb.php', daftar, 'Approve', 'The selected RO have been approved.');
     });
 </script>
 
 <script type="text/javascript">
-    $("#form-simpan").on("click", "#cancel", function(){
-        $("input[type=checkbox]:checked").each(function () {                     
-        var no_ro = $(this).closest('tr').find('td:eq(1)').attr('value');
-        var update_user = '<?php echo $user ?>';
-
-        $.ajax({
-            type:'POST',
-            url:'cancelbppb.php',
-            data: {'no_ro':no_ro, 'update_user':update_user},
-            close: function(e){
-                e.preventDefault();
-            },
-            success: function(response){                
-                console.log(response);
-                window.location = 'formapprovebppb.php';                                               
-            },
-            error:  function (xhr, ajaxOptions, thrownError) {
-               alert(xhr);
-            }
+    $("#form-simpan").on("click", "#cancel", function () {
+        var pengguna = '<?php echo $user ?>';
+        var daftar = barisTercentang().map(function ($tr) {
+            return { no_ro: nilaiKolom($tr, 1), update_user: pengguna };
         });
-        });
-        if(document.querySelectorAll("input[name='select[]']:checked").length >= 1){
-            alert("Data Berhasil Di Cancel");
-        }else{
-            alert("Please check RO Number");
-        }        
+        kirimBanyak('cancelbppb.php', daftar, 'Cancel', 'The selected RO have been cancelled.');
     });
 </script>
 
 <script type="text/javascript">
-$("#select_all").click(function() {
+/* Dulu $(':checkbox') - mencentang SEMUA kotak centang di halaman, termasuk
+   yang di luar tabel, dan hanya yang sedang terlihat. Sekarang lewat API
+   DataTables supaya baris di halaman lain ikut, dan dibatasi pada baris
+   yang SEDANG TERSARING - jadi "pilih semua" setelah mencari benar-benar
+   berarti "semua hasil pencarian". */
+$("#select_all").click(function () {
   var c = this.checked;
-  $(':checkbox').prop('checked', c);
-});  
+  tabelBpb.rows({ search: 'applied' }).nodes().each(function (tr) {
+    $(tr).find('input[name="select[]"]').prop('checked', c);
+  });
+});
+
+/* Centang kepala dilepas kalau ada baris yang dilepas satu per satu. */
+$('#mytable tbody').on('change', 'input[name="select[]"]', function () {
+  if (!this.checked) { $('#select_all').prop('checked', false); }
+});
 </script>
 
 <!--<script>

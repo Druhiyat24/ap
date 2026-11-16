@@ -39,22 +39,35 @@
 
     <table style="width:100%;font-size:10px;" border="1" width="100%">
         <tr>
-            <th style="text-align: center;vertical-align: middle;">No</th>
-            <th style="text-align: center;vertical-align: middle;">No PO</th>
-            <th style="text-align: center;vertical-align: middle;">No BPB</th>
-            <th style="text-align: center;vertical-align: middle;">BPB Date</th>
-            <th style="text-align: center;vertical-align: middle;">Supplier</th>
-            <th style="text-align: center;vertical-align: middle;">Buyer</th>
-            <th style="text-align: center;vertical-align: middle;">No Req</th>
-            <th style="text-align: center;vertical-align: middle;">Req Date</th>
-            <th style="text-align: center;vertical-align: middle;">No DN</th>
-            <th style="text-align: center;vertical-align: middle;">DN Date</th>
-            <th style="text-align: center;vertical-align: middle;">Begining Balance</th>
-            <th style="text-align: center;vertical-align: middle;">Addition</th>
-            <th style="text-align: center;vertical-align: middle;">Deduction (ALK)</th>
-            <th style="text-align: center;vertical-align: middle;">Deduction (GM)</th>
-            <th style="text-align: center;vertical-align: middle;">Forex Gain / (Loss)</th>
-            <th style="text-align: center;vertical-align: middle;">Ending Balance</th>
+            <th rowspan="2" style="text-align: center;vertical-align: middle;">No</th>
+            <th rowspan="2" style="text-align: center;vertical-align: middle;">No PO</th>
+            <th rowspan="2" style="text-align: center;vertical-align: middle;">No BPB</th>
+            <th rowspan="2" style="text-align: center;vertical-align: middle;">BPB Date</th>
+            <th rowspan="2" style="text-align: center;vertical-align: middle;">Supplier</th>
+            <th rowspan="2" style="text-align: center;vertical-align: middle;">Buyer</th>
+            <th rowspan="2" style="text-align: center;vertical-align: middle;">No Req</th>
+            <th rowspan="2" style="text-align: center;vertical-align: middle;">Req Date</th>
+            <th rowspan="2" style="text-align: center;vertical-align: middle;">No DN</th>
+            <th rowspan="2" style="text-align: center;vertical-align: middle;">DN Date</th>
+            <th rowspan="2" style="text-align: center;vertical-align: middle;">Rate</th>
+            <th colspan="3" style="text-align: center;vertical-align: middle;">Begining Balance</th>
+            <th colspan="3" style="text-align: center;vertical-align: middle;">Addition</th>
+            <th colspan="3" style="text-align: center;vertical-align: middle;">Addition Return</th>
+            <th colspan="5" style="text-align: center;vertical-align: middle;">Deduction Return</th>
+            <th colspan="3" style="text-align: center;vertical-align: middle;">Deduction (ALK)</th>
+            <th colspan="3" style="text-align: center;vertical-align: middle;">Deduction (GM)</th>
+            <th colspan="3" style="text-align: center;vertical-align: middle;">Forex Gain / (Loss)</th>
+            <th colspan="3" style="text-align: center;vertical-align: middle;">Ending Balance</th>
+        </tr>
+        <tr>
+            <?php
+            $sub = '<th style="text-align: center;">Currency</th>'
+                 . '<th style="text-align: center;">Amount OCY</th>'
+                 . '<th style="text-align: center;">Eqv IDR</th>';
+            $subRI = '<th style="text-align: center;">Doc No</th>'
+                   . '<th style="text-align: center;">Date</th>' . $sub;
+            echo str_repeat($sub, 3) . $subRI . str_repeat($sub, 4);
+            ?>
         </tr>
         <?php 
         // koneksi database
@@ -108,7 +121,69 @@
         /* Versi teks utk dipakai di dalam SQL. Satu daftar, dua bentuk -
            supaya penambahan BPB baru cukup di satu tempat. */
         $OR_FX_BPB = "'" . implode("','", $OR_FX_ARR) . "'";
-                $sql = mysqli_query($conn2,"SELECT pono, bpbno_int, bpbdate, supplier, buyer,no_req, tgl_req, no_dn, tgl_dn, curr, round(COALESCE(saldo_awal,0) - COALESCE(ded_alk_bfr,0) - COALESCE(tot_gm_before,0),2) saldo_awal, coalesce(tambah,0) tambah, COALESCE(ded_alk,0) ded_alk, COALESCE(tot_gm,0) ded_gm, COALESCE(ded_fgl,0) ded_fgl, round(COALESCE(saldo_awal,0) - COALESCE(ded_alk_bfr,0)  - COALESCE(tot_gm_before,0) - COALESCE(tot_gm,0) + COALESCE(tambah,0) - (COALESCE(ded_alk,0) + COALESCE(ded_fgl,0)),2) saldo_akhir from (select a.pono, a.bpbno_int, a.bpbdate, b.supplier, buyer, curr, round(if(a.curr = 'IDR', (sum((qty - COALESCE(qty_reject,0)) * price) + (sum((qty - COALESCE(qty_reject,0)) * price) * (ph.ppn/ 100))), (round(sum((qty - COALESCE(qty_reject,0)) * price) + (sum((qty - COALESCE(qty_reject,0)) * price) * (ph.ppn/ 100)),4) * rate)),2) saldo_awal, 0 tambah from bpb a 
+                /* ---------------------------------------------------------
+                   BARIS RETUR DIPISAH JADI DUA KOLOM (13 Nov 2026, pemakai).
+
+                   Selama ini BPB bernomor .../RI/... ikut masuk kolom
+                   Addition. Sekarang dipisah: nilai RI-nya ke kolom
+                   'Deduction Return', dan pasangan RO-nya ke kolom
+                   'Addition Return' bertanda MINUS.
+
+                   PASANGAN RI-RO lewat NOMOR SURAT JALAN, bukan nomor
+                   dokumen: bpb.bppbno dicocokkan ke bppb.bppbno, lalu
+                   bppb.bppbno_int itulah nomor RO-nya (cara ini diberi tahu
+                   pemakai). Tabelnya bppb, BUKAN bppb_new - di bppb_new
+                   pasangannya tidak ketemu satu pun.
+
+                   NILAI PASANGANNYA SAMA PERSIS dlm mata uang aslinya,
+                   jadi kedua kolom itu SALING MENIADAKAN. Memang begitu
+                   kenyataannya: barang keluar lalu masuk lagi dgn nilai
+                   yang sama.
+
+                   KURSNYA PAKAI TANGGAL DOKUMENNYA MASING-MASING
+                   (permintaan pemakai 13 Nov 2026): RI pakai kurs pajak
+                   tanggal RI, RO pakai kurs pajak tanggal RO. Utk dokumen
+                   USD yang tanggalnya beda, rupiahnya jadi tidak sama lagi
+                   - SELISIHNYA MASUK KE KOLOM FOREX GAIN/(LOSS), jadi
+                   Ending Balance-nya tetap nol. Dicek ke produksi Okt-Nov
+                   2026: 18 pasang, total selisih 8.153,29.
+
+                   BATAS 1 OKT 2026 (pemakai: 'September ke belakang jangan
+                   diubah'). Penandanya TANGGAL BPB-nya, bukan periode yang
+                   sedang dilihat, supaya laporan bulan lama tetap sama
+                   persis - termasuk waktu dokumennya terbawa sbg saldo awal
+                   periode berikutnya.
+                   --------------------------------------------------------- */
+                $eRetur = "(a.bpbno_int LIKE '%/RI/%' AND a.bpbdate >= '2026-10-01')";
+
+                /* Baris retur yang jatuh di SALDO AWAL (tanggalnya sebelum
+                   periode). Hanya baris ini yang pasangan RO-nya dipotong
+                   lewat saldo_awal - baris periode berjalan sudah ditangani
+                   dua kolom barunya, kalau ikut dipotong di sini RO-nya
+                   terhitung DUA KALI. */
+                $eReturAwal = "($eRetur AND a.bpbdate < '$start_date')";
+
+                /* RI yang terjadi DI periode ini - dibedakan dari yang cuma
+                   terbawa sbg saldo awal, supaya kolom returnya tidak terisi
+                   lagi di periode-periode berikutnya. */
+                $eReturIni = "($eRetur AND a.bpbdate >= '$start_date')";
+
+                /* Nilai RO pasangan dlm rupiah. Pengkursannya dikerjakan di
+                   dalam sambungannya, pakai KURS TANGGAL RO SENDIRI. */
+                $eRO = "ROUND(COALESCE(ro.idr,0), 2)";
+
+                /* Nilai RI-nya. Satu baris cuma mengisi salah satu kolom:
+                   kalau RI-nya di periode ini isinya 'tambah', kalau terbawa
+                   dari periode lalu isinya 'saldo_awal'. */
+                $eNilaiRI = "ROUND(COALESCE(saldo_awal,0) + COALESCE(tambah,0), 2)";
+
+                /* SELISIH KURS RI vs RO -> kolom Forex Gain/(Loss). Hanya
+                   kalau pasangan RO-nya KETEMU; kalau tidak ketemu, RI-nya
+                   dibiarkan menggantung supaya kelihatan - jangan disapu
+                   diam-diam ke forex. */
+                $eSelisih = "IF(ro.bppbno IS NULL, 0, ROUND($eNilaiRI - $eRO, 2))";
+
+                $sql = mysqli_query($conn2,"SELECT pono, bpbno_int, bpbdate, supplier, buyer,no_req, tgl_req, no_dn, tgl_dn, curr, COALESCE(nilai_asli,0) nilai_asli, COALESCE(rate_doc,1) rate_doc, IF($eRetur, COALESCE(ro.asli,0), 0) nilai_asli_ro, IF($eRetur, COALESCE(ro.rate_ro,0), 0) rate_ro, IF($eRetur, COALESCE(ro.no_ro,'-'), '-') no_ro, IF($eRetur, COALESCE(ro.tgl_ro,'-'), '-') tgl_ro, round(IF($eReturAwal, COALESCE(saldo_awal,0) - $eRO - $eSelisih, COALESCE(saldo_awal,0)) - COALESCE(ded_alk_bfr,0) - COALESCE(tot_gm_before,0),2) saldo_awal, IF($eRetur, 0, COALESCE(tambah,0)) tambah, IF($eReturIni, -$eRO, 0) tambah_retur, IF($eReturIni, COALESCE(tambah,0), 0) ded_retur, COALESCE(ded_alk,0) ded_alk, COALESCE(tot_gm,0) ded_gm, round(COALESCE(ded_fgl,0) + IF($eReturIni, $eSelisih, 0),2) ded_fgl, round(IF($eReturAwal, COALESCE(saldo_awal,0) - $eRO - $eSelisih, COALESCE(saldo_awal,0)) - COALESCE(ded_alk_bfr,0)  - COALESCE(tot_gm_before,0) - COALESCE(tot_gm,0) + IF($eRetur, 0, COALESCE(tambah,0)) + IF($eReturIni, -$eRO, 0) + IF($eReturIni, COALESCE(tambah,0), 0) - (COALESCE(ded_alk,0) + COALESCE(ded_fgl,0) + IF($eReturIni, $eSelisih, 0)),2) saldo_akhir from (select a.pono, a.bpbno_int, a.bpbdate, b.supplier, buyer, curr, round(if(a.curr = 'IDR', (sum((qty - COALESCE(qty_reject,0)) * price) + (sum((qty - COALESCE(qty_reject,0)) * price) * (ph.ppn/ 100))), (round(sum((qty - COALESCE(qty_reject,0)) * price) + (sum((qty - COALESCE(qty_reject,0)) * price) * (ph.ppn/ 100)),4) * rate)),2) saldo_awal, 0 tambah, round(sum((qty - COALESCE(qty_reject,0)) * price) + (sum((qty - COALESCE(qty_reject,0)) * price) * (ph.ppn/ 100)),4) nilai_asli, MAX(a.bppbno) bppbno, MAX(rt.rate) rate_doc from bpb a 
                     inner join mastersupplier b on b.id_supplier = a.id_supplier 
                     left join (select id_jo,kpno,styleno, b.supplier buyer from act_costing ac inner join so on ac.id=so.id_cost 
                         inner join jo_det jod on so.id=jod.id_so inner join mastersupplier b on b.id_supplier = ac.id_buyer  group by id_jo) c on c. id_jo = a.id_jo 
@@ -116,7 +191,7 @@
                     left join po_header ph on a.pono = ph.pono
                     left join po_header_draft phd on phd.id = ph.id_draft where phd.tipe_com = 'Buyer' and a.bpbdate > '2024-10-01' and a.bpbdate < '$start_date' and a.cancel != 'Y' and a.confirm = 'Y' GROUP BY a.bpbno_int
                     UNION
-                    select a.pono, a.bpbno_int, a.bpbdate, b.supplier, buyer, curr, 0 saldo_awal, round(if(a.curr = 'IDR', (sum((qty - COALESCE(qty_reject,0)) * price) + (sum((qty - COALESCE(qty_reject,0)) * price) * (ph.ppn/ 100))), (round(sum((qty - COALESCE(qty_reject,0)) * price) + (sum((qty - COALESCE(qty_reject,0)) * price) * (ph.ppn/ 100)),4) * rate)),2) tambah from bpb a 
+                    select a.pono, a.bpbno_int, a.bpbdate, b.supplier, buyer, curr, 0 saldo_awal, round(if(a.curr = 'IDR', (sum((qty - COALESCE(qty_reject,0)) * price) + (sum((qty - COALESCE(qty_reject,0)) * price) * (ph.ppn/ 100))), (round(sum((qty - COALESCE(qty_reject,0)) * price) + (sum((qty - COALESCE(qty_reject,0)) * price) * (ph.ppn/ 100)),4) * rate)),2) tambah, round(sum((qty - COALESCE(qty_reject,0)) * price) + (sum((qty - COALESCE(qty_reject,0)) * price) * (ph.ppn/ 100)),4) nilai_asli, MAX(a.bppbno) bppbno, MAX(rt.rate) rate_doc from bpb a 
                     inner join mastersupplier b on b.id_supplier = a.id_supplier 
                     left join (select id_jo,kpno,styleno, b.supplier buyer from act_costing ac inner join so on ac.id=so.id_cost 
                         inner join jo_det jod on so.id=jod.id_so inner join mastersupplier b on b.id_supplier = ac.id_buyer  group by id_jo) c on c. id_jo = a.id_jo 
@@ -131,9 +206,44 @@
                 (select reff_doc, if(curr = 'IDR',sum((credit * rate) - (debit * rate)),(credit - debit)) tot_gm from tbl_list_journal where no_coa = '1.34.05' and no_journal like '%GM/%' and tgl_journal BETWEEN '$start_date' and '$end_date' GROUP BY reff_doc) d on d.reff_doc = a.bpbno_int
                 LEFT JOIN
                 (select reff_doc reff_before, if(curr = 'IDR',sum((credit * rate) - (debit * rate)),(credit - debit)) tot_gm_before from tbl_list_journal where no_coa = '1.34.05' and no_journal like '%GM/%' and tgl_journal >= '2024-10-01' and tgl_journal < '$start_date' GROUP BY reff_doc) e on e.reff_before = a.bpbno_int
+                /* DOKUMEN RO pasangan baris RI, dicari lewat nomor surat
+                   jalannya. TIDAK disaring periode: pasangan RO-RI satu
+                   kejadian, dan tanggalnya bisa beda bulan (mis.
+                   GACC/RI/1126/07004 pasangannya GACC/RO/1026/14182).
+                   Kalau RO-nya ikut disaring periode, pasangannya bisa
+                   lepas dan barisnya tidak lagi net nol.
+                   Dikelompokkan per bppbno supaya tidak menggandakan baris.
+                   Rupiahnya dihitung DI SINI, per baris RO, supaya tiap RO
+                   memakai kurs pajak tanggalnya sendiri. */
                 LEFT JOIN
-                (select GROUP_CONCAT(no_req) no_req, GROUP_CONCAT(tgl_req) tgl_req,GROUP_CONCAT(no_dn) no_dn, GROUP_CONCAT(tgl_dn) tgl_dn, no_bpb from (select a.no_req,a.tgl_req,c.no_dn,c.tgl_dn,b.no_bpb from req_dn_h a left join req_dn b on b.no_req = a.no_req left join tbl_debitnote_h c on c.no_dn = a.no_dn where a.status != 'Cancel' and no_bpb is not null GROUP BY b.no_bpb) a GROUP BY no_bpb ) f on f.no_bpb = a.bpbno_int");
+                (select x.bppbno, GROUP_CONCAT(DISTINCT x.bppbno_int) no_ro,
+                        MIN(x.bppbdate) tgl_ro,
+                        ROUND(SUM(x.qty * x.price * (1 + COALESCE(x.ppn,0)/100)),4) asli,
+                        MAX(r2.rate) rate_ro,
+                        ROUND(SUM(IF(x.curr = 'IDR',
+                                     x.qty * x.price * (1 + COALESCE(x.ppn,0)/100),
+                                     x.qty * x.price * (1 + COALESCE(x.ppn,0)/100) * COALESCE(r2.rate,1))),2) idr
+                 from bppb x
+                 left join (select tanggal, rate from masterrate where v_codecurr = 'PAJAK' GROUP BY tanggal) r2
+                        on r2.tanggal = x.bppbdate
+                 where x.cancel = 'N' and x.bppbno_int like '%/RO/%'
+                 group by x.bppbno) ro on ro.bppbno = a.bppbno
+                LEFT JOIN
+                /* No Req & No DN per BPB. Dikelompokkan per (BPB, request) supaya 1 BPB yang diminta di beberapa RQDN tampil semuanya, bukan cuma 1. Nomor BPB dibersihkan dulu dari spasi/tab/enter yang kebawa dari alat pindai - TRIM saja TIDAK cukup, MySQL cuma mengabaikan SPASI di belakang, tab tetap bikin tidak ketemu. '-' = request ada tapi DN-nya belum terbit. */ (select GROUP_CONCAT(no_req ORDER BY no_req SEPARATOR ', ') no_req, GROUP_CONCAT(tgl_req ORDER BY no_req SEPARATOR ', ') tgl_req, GROUP_CONCAT(COALESCE(no_dn,'-') ORDER BY no_req SEPARATOR ', ') no_dn, GROUP_CONCAT(COALESCE(tgl_dn,'-') ORDER BY no_req SEPARATOR ', ') tgl_dn, no_bpb from (select no_req, tgl_req, no_dn, tgl_dn, no_bpb from (select a.no_req, a.tgl_req, c.no_dn, c.tgl_dn, replace(replace(replace(trim(b.no_bpb),char(9),''),char(13),''),char(10),'') no_bpb from req_dn_h a left join req_dn b on b.no_req = a.no_req left join tbl_debitnote_h c on c.no_dn = a.no_dn where COALESCE(a.status,'') != 'Cancel' and b.no_bpb is not null) x where no_bpb not in ('','-') GROUP BY no_bpb, no_req) a GROUP BY no_bpb ) f on f.no_bpb = trim(a.bpbno_int)");
 
+/* Sama persis dgn yang dipakai di other_receivable_report.php: satu bagian
+   uang = mata uang, nilai di mata uang aslinya (OCY), dan setara rupiahnya. */
+if (!function_exists('orGrup')) {
+    function orGrup($curr, $ocy, $idr) {
+        $des = ($curr == 'IDR') ? 2 : 4;
+        return '<td style="text-align:center;">'.$curr.'</td>'
+             . '<td style="text-align:right;" value = "'.$ocy.'">'.number_format($ocy,$des).'</td>'
+             . '<td style="text-align:right;" value = "'.$idr.'">'.number_format($idr,2).'</td>';
+    }
+    function orOcy($curr, $kurs, $idr) {
+        return ($curr == 'IDR') ? $idr : round($idr / $kurs, 4);
+    }
+}
 $ttl_beg =0;
 $ttl_add =0;
 $ttl_ded =0;
@@ -152,6 +262,19 @@ while($row2 = mysqli_fetch_array($sql)){
     $ded_gm = isset($row2['ded_gm']) ? $row2['ded_gm'] : 0;
     $ded_fgl = isset($row2['ded_fgl']) ? $row2['ded_fgl'] : 0;
     $saldo_akhir = isset($row2['saldo_akhir']) ? $row2['saldo_akhir'] : 0;
+    $tambah_retur = isset($row2['tambah_retur']) ? $row2['tambah_retur'] : 0;
+    $ded_retur = isset($row2['ded_retur']) ? $row2['ded_retur'] : 0;
+    $nilai_asli = isset($row2['nilai_asli']) ? $row2['nilai_asli'] : 0;
+    $rate_doc = isset($row2['rate_doc']) ? $row2['rate_doc'] : 1;
+    $nilai_asli_ro = isset($row2['nilai_asli_ro']) ? $row2['nilai_asli_ro'] : 0;
+    $cr = isset($row2['curr']) ? $row2['curr'] : 'IDR';
+    /* Baris retur: identitas barisnya dokumen RO, nomor RI-nya tampil di
+       bagian Deduction Return. Sama spt di other_receivable_report.php. */
+    $ada_ro = (isset($row2['no_ro']) && $row2['no_ro'] != '-' && $row2['no_ro'] != '');
+    $no_bpb_tampil  = $ada_ro ? $row2['no_ro']  : $row2['bpbno_int'];
+    $tgl_bpb_tampil = $ada_ro ? $row2['tgl_ro'] : $row2['bpbdate'];
+    $no_ri_tampil   = $ada_ro ? $row2['bpbno_int'] : '-';
+    $tgl_ri_tampil  = $ada_ro ? $row2['bpbdate']   : '-';
 
     /* BPB yang selisih kursnya diakui sbg Forex Gain/(Loss).
        Dipakai SISA SEBENARNYA, bukan selisih kurs yang dihitung ulang:
@@ -178,27 +301,42 @@ while($row2 = mysqli_fetch_array($sql)){
     $ttl_for +=$ded_fgl;
     $ttl_end +=$saldo_akhir;
 
-    if ($saldo_awal == 0 && $tambah == 0) {
+    $kurs = ($rate_doc > 0) ? $rate_doc : 1;
+    $beg_ocy    = orOcy($cr, $kurs, $saldo_awal);
+    $add_ocy    = ($tambah == 0) ? 0 : $nilai_asli;
+    $addret_ocy = ($tambah_retur == 0) ? 0 : -$nilai_asli_ro;
+    $dedret_ocy = ($ded_retur == 0) ? 0 : $nilai_asli;
+    $alk_ocy    = orOcy($cr, $kurs, $ded_alk);
+    $gm_ocy     = orOcy($cr, $kurs, $ded_gm);
+    $end_ocy    = orOcy($cr, $kurs, $saldo_akhir);
+
+    /* Baris retur: Addition & saldo awalnya 0, angkanya ada di dua kolom retur. */
+    if ($saldo_awal == 0 && $tambah == 0 && $tambah_retur == 0 && $ded_retur == 0) {
             // code...
     }else{
         echo ' <tr style="font-size:12px;text-align:center;">
         <td style="text-align : left;" value = "'.$no.'">'.$no.'</td>
         <td style="text-align : left;" value = "'.$row2['pono'].'">'.$row2['pono'].'</td>
-        <td style="text-align : left;" value = "'.$row2['bpbno_int'].'">'.$row2['bpbno_int'].'</td>
-        <td style="width: 100px;" value = "'.$row2['bpbdate'].'">'.date("d-M-Y",strtotime($row2['bpbdate'])).'</td>
+        <td style="text-align : left;" value = "'.$no_bpb_tampil.'">'.$no_bpb_tampil.'</td>
+        <td style="width: 100px;" value = "'.$tgl_bpb_tampil.'">'.date("d-M-Y",strtotime($tgl_bpb_tampil)).'</td>
         <td style="text-align : left;" value = "'.$row2['supplier'].'">'.$row2['supplier'].'</td>
         <td style="text-align : left;" value = "'.$row2['buyer'].'">'.$row2['buyer'].'</td>
         <td style="text-align : left;" value = "'.$row2['no_req'].'">'.$row2['no_req'].'</td>
         <td style="text-align : left;" value = "'.$row2['tgl_req'].'">'.$row2['tgl_req'].'</td>
         <td style="text-align : left;" value = "'.$row2['no_dn'].'">'.$row2['no_dn'].'</td>
         <td style="text-align : left;" value = "'.$row2['tgl_dn'].'">'.$row2['tgl_dn'].'</td>
-        <td style="text-align : right;" value = "'.$saldo_awal.'">'.number_format($saldo_awal,2).'</td>
-        <td style="text-align : right;" value = "'.$tambah.'">'.number_format($tambah,2).'</td>
-        <td style="text-align : right;" value = "'.$ded_alk.'">'.number_format($ded_alk,2).'</td>
-        <td style="text-align : right;" value = "'.$ded_gm.'">'.number_format($ded_gm,2).'</td>
-        <td style="text-align : right;" value = "'.$ded_fgl.'">'.number_format($ded_fgl,2).'</td>
-        <td style="text-align : right;" value = "'.$saldo_akhir.'">'.number_format($saldo_akhir,2).'</td>
-        </tr>
+        <td style="text-align : right;" value = "'.$rate_doc.'">'.number_format($rate_doc,2).'</td>'
+        . orGrup($cr, $beg_ocy, $saldo_awal)
+        . orGrup($cr, $add_ocy, $tambah)
+        . orGrup($cr, $addret_ocy, $tambah_retur)
+        . '<td style="text-align:left;">'.$no_ri_tampil.'</td>'
+        . '<td>'.($tgl_ri_tampil == '-' ? '-' : date("d-M-Y", strtotime($tgl_ri_tampil))).'</td>'
+        . orGrup($cr, $dedret_ocy, $ded_retur)
+        . orGrup($cr, $alk_ocy, $ded_alk)
+        . orGrup($cr, $gm_ocy, $ded_gm)
+        . orGrup('IDR', $ded_fgl, $ded_fgl)
+        . orGrup($cr, $end_ocy, $saldo_akhir)
+        . '</tr>
         ';
 }
 

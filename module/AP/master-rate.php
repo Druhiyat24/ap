@@ -99,7 +99,7 @@
     <div class="card-body p-4">
       <div class="table-responsive">
           <table id="table-data" 
-          class="table table-striped table-bordered table-hover table-sm nowrap" >
+          class="table table-striped table-bordered table-hover table-sm nowrap tbl-gaya-ppn" >
           <thead class="table-gradient">
             <tr>
                 <th style="text-align: center;vertical-align: middle;">Type</th>
