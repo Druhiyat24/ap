@@ -2058,11 +2058,16 @@ echo '</ul>
         echo '';
     }
 
+    /* Project - dipindah ke SINI 16 Nov 2026 (permintaan pemakai). Dulu
+       butir navbar tersendiri di sebelah Setting. Butir "Project Progress"
+       yang dulu di tempat ini DIHILANGKAN, juga atas permintaan pemakai;
+       halamannya (project-progress.php) tidak dihapus, hanya tidak lagi
+       ditautkan dari menu. */
     if($user === 'indro'){
         echo '
-        <a href="../AP/project-progress.php" class="dropdown-item bg-dark text-white">
-        <span class="fa fa-tasks fa-fw"></span>
-        <span class="menu-collapsed">Project Progress</span>
+        <a href="../AP/project.php" class="dropdown-item bg-dark text-white">
+        <span class="fa fa-rocket fa-fw"></span>
+        <span class="menu-collapsed">Project</span>
         </a>';
     }
     ?>
@@ -2071,12 +2076,12 @@ echo '</ul>
 <!-- END Menu Other Menu -->
 
 <?php if ($user == 'indro'): ?>
-<li class="nav-item active">
-  <a href="../AP/project.php" class="nav-link">
-    <span class="fa fa-rocket mr-1"></span> Project
-  </a>
-</li>
-<?php /* Disembunyikan sementara - halaman tetap bisa diakses via link langsung
+<?php /* Butir "Project" PINDAH ke dalam menu Setting (16 Nov 2026, permintaan
+         pemakai) - lihat blok Setting di atas. Dulu ia butir navbar sendiri
+         di sini.
+
+         Dua butir di bawah memang sudah lama disembunyikan; halamannya tetap
+         bisa dibuka lewat tautan langsung.
 <li class="nav-item active">
   <a href="../AP/menu-docs.php" class="nav-link">
     <span class="fa fa-book mr-1"></span> Menu Docs
