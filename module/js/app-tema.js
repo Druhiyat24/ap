@@ -14,6 +14,7 @@
         pasangAdaptor($);
         tambalVal($);
         siapkanSelect2($, function () {
+            saringSelect2($);
             for (var i = 0; i < antrian.length; i++) { pasang($, antrian[i], true); }
             antrian = [];
             // select biasa diubah SESUDAH skrip halaman selesai (halaman yang memasang select2 sendiri didahulukan)
@@ -83,6 +84,25 @@
         s.src = dasar + 'css/4.1.1/select2.full.min.js';
         s.onload = function () { if ($.fn.select2) { lanjut(); } };
         document.head.appendChild(s);
+    }
+
+    /* ---------- $('.select2').select2() dari halaman lama ---------- */
+    /* Kotak tampilan select2 (<span>) juga berkelas "select2". Halaman lama yang
+       memanggil $('.select2').select2() (mis. tiap Add Row) ikut memasang select2
+       pada span itu -> muncul kotak kosong "No results found" yang menutupi
+       kotak asli. Span seperti itu dilewati. */
+    function saringSelect2($) {
+        var asli = $.fn.select2;
+        if (!asli || asli.ndsSaring) { return; }
+        var saring = function () {
+            var target = this.not('.select2-container');
+            if (target.length === this.length) { return asli.apply(this, arguments); }
+            var hasil = asli.apply(target, arguments);
+            return hasil === target ? this : hasil;
+        };
+        for (var k in asli) { if (asli.hasOwnProperty(k)) { saring[k] = asli[k]; } }   // defaults, amd, dll
+        saring.ndsSaring = true;
+        $.fn.select2 = saring;
     }
 
     /* ---------- pasang select2 pada satu <select> ---------- */
