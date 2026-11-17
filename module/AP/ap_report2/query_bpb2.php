@@ -75,7 +75,7 @@ trx_in as (
             where tgl_journal BETWEEN '$start_date' and '$end_date'
               and tgl_journal > '2026-06-30'
               and type_journal IN ('AP - BPB','AP - BPB RETURN')
-              and nama_coa like '%GR/IR%'
+              and (nama_coa like 'GR/IR%' or nama_coa like 'GR PIHAK%')
         ) a
         INNER JOIN po_bpb b on b.bpbno_int = a.no_journal
         INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa
@@ -98,7 +98,7 @@ trx_in_before as (
             where tgl_journal < '$start_date'
               and tgl_journal > '2026-06-30'
               and type_journal IN ('AP - BPB','AP - BPB RETURN')
-              and nama_coa like '%GR/IR%'
+              and (nama_coa like 'GR/IR%' or nama_coa like 'GR PIHAK%')
         ) a
         INNER JOIN po_bpb b on b.bpbno_int = a.no_journal
         INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa
@@ -121,7 +121,7 @@ trx_in_reverse as (
             where tgl_journal BETWEEN '$start_date' and '$end_date'
               and tgl_journal > '2026-06-30'
               and type_journal IN ('Reverse AP - BPB','Reverse AP - BPB RETURN')
-              and nama_coa like '%GR/IR%'
+              and (nama_coa like 'GR/IR%' or nama_coa like 'GR PIHAK%')
         ) a
         INNER JOIN po_bpb b on b.bpbno_int = a.no_journal
         INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa
@@ -144,7 +144,7 @@ trx_in_reverse_before as (
             where tgl_journal < '$start_date'
               and tgl_journal > '2026-06-30'
               and type_journal IN ('Reverse AP - BPB','Reverse AP - BPB RETURN')
-              and nama_coa like '%GR/IR%'
+              and (nama_coa like 'GR/IR%' or nama_coa like 'GR PIHAK%')
         ) a
         INNER JOIN po_bpb b on b.bpbno_int = a.no_journal
         INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa
@@ -166,7 +166,7 @@ trx_out_kb as (
             where tgl_journal BETWEEN '$start_date' and '$end_date'
               and tgl_journal > '2026-06-30'
               and type_journal IN ('AP - Kontrabon')
-              and nama_coa like '%GR/IR%'
+              and (nama_coa like 'GR/IR%' or nama_coa like 'GR PIHAK%')
               and no_journal not like '%-REV_%'
         ) a
         INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa
@@ -190,7 +190,7 @@ trx_out_kb_before as (
             where tgl_journal < '$start_date'
               and tgl_journal > '2026-06-30'
               and type_journal IN ('AP - Kontrabon')
-              and nama_coa like '%GR/IR%'
+              and (nama_coa like 'GR/IR%' or nama_coa like 'GR PIHAK%')
               and no_journal not like '%-REV_%'
         ) a
         INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa
@@ -213,7 +213,7 @@ trx_out_reverse_kb as (
             where tgl_journal BETWEEN '$start_date' and '$end_date'
               and tgl_journal > '2026-06-30'
               and type_journal IN ('Reverse AP - Kontrabon')
-              and nama_coa like '%GR/IR%'
+              and (nama_coa like 'GR/IR%' or nama_coa like 'GR PIHAK%')
               and no_journal not like '%-REV_%'
         ) a
         INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa
@@ -236,7 +236,7 @@ trx_out_reverse_kb_before as (
             where tgl_journal < '$start_date'
               and tgl_journal > '2026-06-30'
               and type_journal IN ('Reverse AP - Kontrabon')
-              and nama_coa like '%GR/IR%'
+              and (nama_coa like 'GR/IR%' or nama_coa like 'GR PIHAK%')
               and no_journal not like '%-REV_%'
         ) a
         INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa
@@ -260,7 +260,7 @@ trx_out_kb_revisi as (
             where tgl_journal BETWEEN '$start_date' and '$end_date'
               and tgl_journal > '2026-06-30'
               and type_journal IN ('AP - Kontrabon')
-              and nama_coa like '%GR/IR%'
+              and (nama_coa like 'GR/IR%' or nama_coa like 'GR PIHAK%')
               and no_journal like '%-REV_%'
         ) a
         INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa
@@ -284,7 +284,7 @@ trx_out_kb_revisi_before as (
             where tgl_journal < '$start_date'
               and tgl_journal > '2026-06-30'
               and type_journal IN ('AP - Kontrabon')
-              and nama_coa like '%GR/IR%'
+              and (nama_coa like 'GR/IR%' or nama_coa like 'GR PIHAK%')
               and no_journal like '%-REV_%'
         ) a
         INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa
@@ -307,7 +307,7 @@ trx_out_reverse_kb_revisi as (
             where tgl_journal BETWEEN '$start_date' and '$end_date'
               and tgl_journal > '2026-06-30'
               and type_journal IN ('Reverse AP - Kontrabon')
-              and nama_coa like '%GR/IR%'
+              and (nama_coa like 'GR/IR%' or nama_coa like 'GR PIHAK%')
               and no_journal like '%-REV_%'
         ) a
         INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa
@@ -330,7 +330,7 @@ trx_out_reverse_kb_revisi_before as (
             where tgl_journal < '$start_date'
               and tgl_journal > '2026-06-30'
               and type_journal IN ('Reverse AP - Kontrabon')
-              and nama_coa like '%GR/IR%'
+              and (nama_coa like 'GR/IR%' or nama_coa like 'GR PIHAK%')
               and no_journal like '%-REV_%'
         ) a
         INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa
@@ -356,7 +356,7 @@ trx_out_gm as (
             where tgl_journal BETWEEN '$start_date' and '$end_date'
               and tgl_journal > '2026-06-30'
               and type_journal IN ('ACCOUNT PAYABLE')
-              and nama_coa like '%GR/IR%'
+              and (nama_coa like 'GR/IR%' or nama_coa like 'GR PIHAK%')
         ) a
         INNER JOIN po_bpb b on b.bpbno_int = a.reff_doc
         INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa
@@ -380,7 +380,7 @@ trx_out_gm_before as (
             where tgl_journal < '$start_date'
               and tgl_journal > '2026-06-30'
               and type_journal IN ('ACCOUNT PAYABLE')
-              and nama_coa like '%GR/IR%'
+              and (nama_coa like 'GR/IR%' or nama_coa like 'GR PIHAK%')
         ) a
         INNER JOIN po_bpb b on b.bpbno_int = a.reff_doc
         INNER JOIN mastercoa_v2 c on c.no_coa = a.no_coa

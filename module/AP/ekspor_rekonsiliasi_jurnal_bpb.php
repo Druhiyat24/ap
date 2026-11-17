@@ -88,7 +88,7 @@ select * from bppb where total != 0) a),
 
 data_jurnal as (SELECT no_journal, SUM(
             CASE 
-                WHEN nama_coa LIKE 'GR/IR%' 
+                WHEN (nama_coa LIKE 'GR/IR%' OR nama_coa LIKE 'GR PIHAK%') 
                      OR nama_coa LIKE 'PIUTANG LAIN-LAIN%'
                 THEN (credit - debit)
                 ELSE 0 
