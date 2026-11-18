@@ -4,9 +4,13 @@
    Dipanggil create-pvbiaya-payment-date.php lewat AJAX, balasannya JSON.
 
    SUMBER BARISNYA = cabang 'Biaya' milik Bank Out (bank-out/get_pv_ajax.php),
-   bukan kontrabon/LP. Jadi "PV Biaya" di sini berarti hal yang SAMA PERSIS
-   dgn yang bisa dibayar lewat Bank Out:
-     - tbl_pv_h.status = 'Approved' DAN status_pl = 'SECOND APPROVED'
+   bukan kontrabon/LP. Cara menghitung nilainya sama, tapi SATU SYARAT SENGAJA
+   DILONGGARKAN (permintaan pemakai 18 Nov 2026):
+     - tbl_pv_h.status = 'Approved' SAJA. status_pl TIDAK dibaca, jadi PV yang
+       belum SECOND APPROVED pun sudah boleh dijadwalkan - rencana bayar memang
+       disusun sebelum approval terakhir selesai. Akibatnya daftar di sini BISA
+       LEBIH PANJANG daripada yang sudah bisa dibayar lewat Bank Out; itu yang
+       dikehendaki. Rencana hanyalah tanggal, tidak membayar apa pun.
      - nilainya dihitung dari baris tbl_pv: (amount - ded_add) + ppn - pph
      - dikurangi yang sudah terbayar di b_bankout_det (type_pv 'Biaya',
        dokumen bank out yang belum dibatalkan)
@@ -92,7 +96,7 @@ with total_pv as (
           - SUM((b.amount * b.pph/100) - (b.ded_add * b.pph/100))) total
     from tbl_pv_h a
     inner join tbl_pv b on b.no_pv = a.no_pv
-   where a.status = 'Approved' and a.status_pl = 'SECOND APPROVED'
+   where a.status = 'Approved'
    group by a.no_pv, b.profit_center),
 total_bk as (
   select a.profit_center, a.no_reff, sum(a.total) total_pv

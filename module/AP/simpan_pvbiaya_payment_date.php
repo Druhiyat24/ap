@@ -22,8 +22,8 @@
    rencana aktif. Tanggal lamanya tidak hilang: barisnya tetap ada sbg
    riwayat, yang berubah cuma penandanya.
 
-   Voucher yang nomornya tidak ketemu, sudah tidak outstanding, atau belum
-   SECOND APPROVED DITOLAK - dikembalikan lewat 'ditolak', bukan membatalkan
+   Voucher yang nomornya tidak ketemu atau sudah tidak outstanding DITOLAK
+   - dikembalikan lewat 'ditolak', bukan membatalkan
    seluruh dokumen. Pemeriksaannya DIULANG DI SINI dgn query yang sama persis
    dgn ajx_cari-pv-biaya.php, karena kiriman layar tidak boleh dipercaya:
    antara Search dan Save, vouchernya bisa saja sudah dibayar orang lain.
@@ -81,7 +81,7 @@ with total_pv as (
           - SUM((b.amount * b.pph/100) - (b.ded_add * b.pph/100))) total
     from tbl_pv_h a
     inner join tbl_pv b on b.no_pv = a.no_pv
-   where a.status = 'Approved' and a.status_pl = 'SECOND APPROVED'
+   where a.status = 'Approved'
    group by a.no_pv, b.profit_center),
 total_bk as (
   select a.profit_center, a.no_reff, sum(a.total) total_pv

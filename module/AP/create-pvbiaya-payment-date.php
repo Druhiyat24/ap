@@ -22,7 +22,7 @@ include '../header.php';
    supaya dropdown-nya tidak sepanjang master supplier (ribuan baris). */
 $supplierList = array();
 $qSup = mysqli_query($conn2, "SELECT DISTINCT nama_supp FROM tbl_pv_h
-        WHERE status = 'Approved' AND status_pl = 'SECOND APPROVED'
+        WHERE status = 'Approved'
           AND nama_supp IS NOT NULL AND nama_supp <> ''
         ORDER BY nama_supp ASC");
 if ($qSup) { while ($r = mysqli_fetch_assoc($qSup)) { $supplierList[] = $r['nama_supp']; } }
