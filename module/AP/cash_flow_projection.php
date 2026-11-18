@@ -140,12 +140,24 @@ include '../header.php';
                 </button>
             </span>
         </div>
-        <div class="cfd-scroll">
-            <table class="cfd" id="cfd-tbl">
-                <thead><tr><th>Descriptions</th><th class="cfd-num">Total</th></tr></thead>
-                <tbody><tr><td colspan="2" class="cfd-kosong">Pick a type and a period, then click Search.</td></tr></tbody>
-            </table>
-        </div>
+        <!-- Overlay spinner: menutupi AREA TABELNYA saja, bukan kepala kartu -
+             judul & tombol Opening Balance tetap terbaca selagi menunggu.
+             Markupnya sama persis dgn ap_projection_report.php. -->
+        <div class="app-loading-wrap" id="cfdLoad">
+            <div class="app-loading">
+                <div class="app-loading-box">
+                    <div class="app-spinner"></div>
+                    <div class="app-loading-text">Building the projection...</div>
+                </div>
+            </div>
+
+            <div class="cfd-scroll">
+                <table class="cfd" id="cfd-tbl">
+                    <thead><tr><th>Descriptions</th><th class="cfd-num">Total</th></tr></thead>
+                    <tbody><tr><td colspan="2" class="cfd-kosong">Pick a type and a period, then click Search.</td></tr></tbody>
+                </table>
+            </div>
+        </div><!-- /.app-loading-wrap -->
     </div>
 
 </div><!-- /MAIN -->
@@ -312,9 +324,14 @@ function cfdCari() {
        permintaan dikirim supaya judulnya tidak tertinggal lingkup lama
        kalau pencariannya gagal. */
     $('#cfd-judul').text('Cash Flow Projection \u2014 ' + $('#cfd-pc option:selected').text());
-    $('#cfd-sub').text('Loading...');
+    /* Spinner-nya yang mengabarkan "sedang dihitung", jadi keterangan periode
+       lama dikosongkan - kalau dibiarkan, yang terbaca keterangan hasil yang
+       SEBELUMNYA, padahal angkanya sedang diganti. */
+    $('#cfd-sub').text('');
+    $('#cfdLoad').addClass('is-loading');
     $.post('ajx_cash_flow_projection.php', kirim, null, 'json')
         .done(function (res) {
+            $('#cfdLoad').removeClass('is-loading');
             if (!res || res.error) {
                 $('#cfd-sub').text('');
                 Swal.fire({ icon: 'warning', title: 'Cannot build the report', text: (res && res.error) ? res.error : 'Unknown error' });
@@ -347,6 +364,7 @@ function cfdCari() {
             cfdPasangBank(res.bank, $('#cfd-bank').val());
         })
         .fail(function (x) {
+            $('#cfdLoad').removeClass('is-loading');
             $('#cfd-sub').text('');
             Swal.fire({ icon: 'error', title: 'Request failed', text: (x.responseText || '').slice(0, 300) });
         });
@@ -561,8 +579,8 @@ $(function () {
                 cfoBerubah = true;
                 /* Tidak ada kotak "Saved" (permintaan pemakai 18 Nov 2026):
                    modalnya tutup, lalu handler hidden-nya menjalankan
-                   laporannya - tanda jadinya ya tulisan Loading... itu
-                   sendiri, tanpa perlu ditekan OK dulu. */
+                   laporannya - tanda jadinya overlay spinner di area
+                   tabelnya, tanpa perlu ditekan OK dulu. */
                 $('#modal-opening').modal('hide');
             })
             .fail(function (x) {
