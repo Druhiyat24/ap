@@ -122,6 +122,9 @@
                 dropdownParent: modal.length ? modal : $(document.body),
                 minimumResultsForSearch: adaCari ? 0 : Infinity
             });
+            $el.on('change.ndsNative', function (e) {
+                if (e.isTrigger) { sampaikanKeNative($, el); }
+            });
         } catch (e) { /* kalau gagal, biarkan select asli */ }
     }
 
@@ -135,6 +138,45 @@
     function kunciUnik(el) {
         if (!el.getAttribute('data-select2-id')) {
             el.setAttribute('data-select2-id', 'nds-' + (++nomorKunci) + '-' + Date.now().toString(36));
+        }
+    }
+
+    /* ---------- jembatan 'change' ke listener addEventListener ----------
+       select2 mengabarkan perubahan lewat jQuery .trigger('change'). jQuery
+       menjalankan handler-nya sendiri dan onchange="..." di HTML, TAPI TIDAK
+       pernah menyentuh listener yang dipasang addEventListener('change', ...).
+       Belasan halaman lama memakai pola itu di dropdown Profit Center untuk
+       (a) mengingat PC terakhir di localStorage dan (b) MENGOSONGKAN tabel
+       yang sudah tampil saat PC diganti. Sejak selectpicker dialihkan ke
+       select2, dua-duanya diam - akibat terparah yang sudah terjadi: nomor
+       dokumen PAY/LP//1126/00007 (ruas profit center kosong) di menu Payment,
+       dan baris milik PC lama bisa tertinggal di layar.
+
+       Kejadiannya disampaikan ulang sbg event ASLI, dgn tiga penjaga supaya
+       tidak ada yang berjalan dua kali:
+         - bubbles:false  -> hanya listener yang menempel LANGSUNG di select
+           ini yang menerima; handler delegasi (sudah dapat dari jQuery)
+           tidak kebagian.
+         - handler jQuery & onchange="..." dilepas sebentar selama penyampaian
+           ini - dua-duanya sudah dijalankan jQuery barusan.
+         - cuma untuk event buatan (e.isTrigger). Event asli dari pemakai
+           sudah sampai sendiri ke listener native. */
+    var sedangSampaikan = false;
+    function sampaikanKeNative($, el) {
+        if (sedangSampaikan) { return; }
+        sedangSampaikan = true;
+        var data = $._data ? $._data(el) : null;
+        var handle = data && data.handle;          /* satu-satunya listener native milik jQuery */
+        var inline = el.onchange;
+        if (handle) { el.removeEventListener('change', handle, false); }
+        el.onchange = null;
+        try {
+            el.dispatchEvent(new Event('change', { bubbles: false }));
+        } catch (e) { /* perambah lama: biarkan */ }
+        finally {
+            el.onchange = inline;
+            if (handle) { el.addEventListener('change', handle, false); }
+            sedangSampaikan = false;
         }
     }
 

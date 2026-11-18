@@ -28,6 +28,15 @@ try {
     $status       = 'draft';
 
     // Generate doc number server-side (same format as getnomor_pelunasan.php)
+    //
+    // PENJAGA TERAKHIR. 18 Nov 2026 empat dokumen tersimpan sbg
+    // "PAY/LP//1126/00007" - ruas profit center kosong karena layarnya
+    // mengirim nilai kosong. Nomor dokumen tidak boleh cacat apa pun yang
+    // terjadi di sisi layar: lebih baik gagal di sini, dgn pesan yang jelas,
+    // daripada melahirkan nomor yang tidak bisa dicari siapa pun.
+    if ($profit_center === '') {
+        throw new Exception("Profit Center is required. Please select it again before saving.");
+    }
     $mmyy = date('my', strtotime($tgl_pay));
     $prefix = "PAY/LP/$profit_center/$mmyy/";
 

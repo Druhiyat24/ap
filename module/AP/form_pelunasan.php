@@ -66,7 +66,15 @@ require_once 'pv_data_functions.php';
                 <select class="form-control form-control-sm selectpicker" name="profit_center" id="profit_center" data-dropup-auto="false" data-live-search="true" onchange="updateNoPAY()">
                     <option value="" disabled selected="true">Select Profit Center</option>                                                 
                     <?php
-                    $profit_center = isset($_POST['profit_center']) ? $_POST['profit_center']: null;               
+                    /* Pencarian supplier dikirim dari formulir MODAL, yang
+                       membawa h_profit_center - bukan profit_center. Tanpa
+                       cadangan ini dropdown-nya kembali kosong tiap selesai
+                       mencari, dan satu-satunya yang memulihkannya cuma
+                       localStorage (lihat DOMContentLoaded di bawah). Itulah
+                       asal nomor PAY/LP//1126/00007 yang ruas PC-nya hilang. */
+                    $profit_center = isset($_POST['profit_center']) && $_POST['profit_center'] !== ''
+                                     ? $_POST['profit_center']
+                                     : (isset($_POST['h_profit_center']) ? $_POST['h_profit_center'] : null);
                     $sql = mysqli_query($conn1,"select kode_pc, id_pc,nama_pc, CONCAT(id_pc,' - ',nama_pc) tampil from master_pc where status = 'Active'");
                     while ($row = mysqli_fetch_array($sql)) {
                         $data = $row['kode_pc'];
@@ -632,7 +640,9 @@ document.addEventListener("DOMContentLoaded", function() {
     ubahtanggal(tanggal);
 });
 
-document.getElementById("profit_center").addEventListener("change", function() {
+/* Dipasang lewat jQuery, bukan addEventListener: dropdown ini sekarang
+   dikendalikan select2, yang mengabarkan perubahan lewat jQuery. */
+$(document).on('change', '#profit_center', function () {
     localStorage.setItem("profit_center", this.value);
     document.querySelector("#mytable tbody").innerHTML = "";
     updateNoPAY();
