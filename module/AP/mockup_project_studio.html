@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project Studio &amp; Data Room</title>
+<link rel="stylesheet" href="../fontawesome5/css/all.min.css">
+<style>
+@font-face { font-family: 'PJ Poppins'; src: url('../../fonts/poppins/Poppins-Regular.ttf') format('truetype'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'PJ Poppins'; src: url('../../fonts/poppins/Poppins-Medium.ttf') format('truetype'); font-weight: 500; font-display: swap; }
+@font-face { font-family: 'PJ Poppins'; src: url('../../fonts/poppins/Poppins-SemiBold.ttf') format('truetype'); font-weight: 600; font-display: swap; }
+@font-face { font-family: 'PJ Poppins'; src: url('../../fonts/poppins/Poppins-Bold.ttf') format('truetype'); font-weight: 700; font-display: swap; }
+:root {
+  --navy: #0b1d4a; --navy2: #1e3a8a; --blue: #2563eb; --gold: #e4c47c; --gold2: #e5a913;
+  --ink: #0f172a; --ink2: #334155; --muted: #64748b; --faint: #94a3b8; --line: #e2e8f0; --bg: #f6f8fb;
+  --font: 'PJ Poppins', 'Segoe UI', system-ui, Roboto, Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 13px; -webkit-font-smoothing: antialiased; }
+button, input, select, textarea { font-family: inherit; }
+.wrap { padding: 24px; max-width: 1680px; margin: 0 auto; }
+.mock-tag { position: fixed; top: 10px; right: 12px; z-index: 300; background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; border-radius: 999px; padding: 4px 12px; font-size: 11px; font-weight: 600; letter-spacing: .06em; }
+
+/* ---- Hero + panggung 3D (sama dgn project.php mode 3D) ---- */
+.hero { position: relative; border-radius: 24px; overflow: hidden; min-height: 640px; color: #fff;
+  background: radial-gradient(380px 260px at 100% 0%, rgba(30,144,255,.45), rgba(30,144,255,0) 70%), linear-gradient(160deg, #070b22 0%, #10185a 50%, #1a3d9a 100%);
+  box-shadow: 0 30px 60px -30px rgba(11,29,74,.6); }
+.hero-top { position: relative; z-index: 3; display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 28px 30px 0; pointer-events: none; }
+.hero-brand { display: flex; gap: 18px; max-width: 46%; }
+.hero-mark { width: 54px; height: 54px; flex: 0 0 54px; border-radius: 16px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.25); font-size: 20px; }
+.hero-eyebrow { font-size: 11px; letter-spacing: .16em; font-weight: 600; color: rgba(255,255,255,.75); display: flex; align-items: center; gap: 8px; }
+.hero-eyebrow::before { content: ''; width: 18px; height: 2px; background: var(--gold2); }
+.hero h1 { margin: 4px 0 6px; font-size: 30px; font-weight: 700; letter-spacing: -.01em; }
+.hero-sub { margin: 0; font-size: 13.5px; line-height: 1.55; color: rgba(255,255,255,.82); }
+.hero-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; pointer-events: auto; }
+.seg { display: inline-flex; padding: 4px; border-radius: 12px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); backdrop-filter: blur(6px); }
+.seg button { border: 0; background: transparent; color: rgba(255,255,255,.85); font-size: 12.5px; font-weight: 600; padding: 7px 12px; border-radius: 9px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+.seg button:hover { color: #fff; }
+.seg button[aria-pressed="true"] { background: #fff; color: var(--navy); box-shadow: 0 4px 12px -6px rgba(0,0,0,.6); }
+.seg .n { font-size: 10.5px; font-weight: 700; background: rgba(255,255,255,.18); border-radius: 999px; padding: 1px 7px; }
+.seg button[aria-pressed="true"] .n { background: #e0e7ff; color: var(--navy2); }
+.seg-new { position: relative; }
+.seg-new::after { content: 'NEW'; position: absolute; top: -8px; right: -6px; font-size: 8.5px; font-weight: 700; letter-spacing: .06em; background: var(--gold2); color: #1b1300; border-radius: 6px; padding: 1px 5px; }
+
+.scene { position: absolute; inset: 0; z-index: 0; }
+/* bayangan halus di belakang judul & legenda supaya teks tetap terbaca di atas ruangan */
+.scene::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: radial-gradient(700px 260px at 0% 0%, rgba(7,11,34,.78), rgba(7,11,34,0) 75%), linear-gradient(0deg, rgba(5,8,26,.72) 0%, rgba(5,8,26,0) 34%); }
+.scene canvas { position: absolute; inset: 0; display: block; width: 100% !important; height: 100% !important; touch-action: pan-y; cursor: grab; outline: none; }
+.scene canvas.drag { cursor: grabbing; }
+.scene canvas.hot { cursor: pointer; }
+.fade { position: absolute; inset: 0; z-index: 1; background: #05081a; opacity: 0; pointer-events: none; transition: opacity .35s; }
+.fade.on { opacity: 1; }
+.loading { position: absolute; inset: 0; z-index: 1; display: flex; align-items: center; justify-content: center; font-size: 12px; color: rgba(255,255,255,.7); pointer-events: none; }
+.legend { position: absolute; left: 30px; bottom: 24px; z-index: 2; max-width: 560px; pointer-events: none; }
+.legend .room { font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.legend .room i { color: var(--gold); font-size: 16px; }
+.legend .cap { font-size: 10.5px; letter-spacing: .14em; font-weight: 600; color: rgba(255,255,255,.7); text-transform: uppercase; margin-bottom: 8px; }
+.legend .items { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; }
+.legend .it { display: inline-flex; align-items: center; gap: 7px; }
+.legend .sw { width: 10px; height: 14px; border-radius: 2px; flex: 0 0 auto; }
+.legend .note { margin-top: 7px; font-size: 11.5px; color: rgba(255,255,255,.65); }
+.ctrl { position: absolute; right: 24px; bottom: 22px; z-index: 2; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; max-width: 60%; }
+.ctrl .hint { font-size: 11.5px; color: rgba(255,255,255,.7); margin-right: 6px; }
+.ctrl button { height: 36px; border-radius: 10px; border: 1px solid rgba(255,255,255,.25); background: rgba(10,16,48,.55); color: #fff; padding: 0 12px; display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; cursor: pointer; backdrop-filter: blur(6px); }
+.ctrl button:hover { background: rgba(255,255,255,.16); }
+.ctrl button.gold { background: var(--gold); color: #2a1d05; border-color: var(--gold); }
+.tip { position: absolute; z-index: 4; pointer-events: none; min-width: 210px; max-width: 290px; background: rgba(9,14,40,.93); border: 1px solid rgba(228,196,124,.45); border-radius: 12px; padding: 10px 12px; font-size: 12px; color: #e2e8f0; box-shadow: 0 16px 30px -12px rgba(0,0,0,.6); opacity: 0; transform: translateY(4px); transition: opacity .15s, transform .15s; }
+.tip.on { opacity: 1; transform: none; }
+.tip b { display: block; font-size: 13px; color: #fff; margin-bottom: 3px; }
+.tip .st { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.tip .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.tip .go { margin-top: 6px; color: var(--gold); font-size: 11px; }
+.pop { position: absolute; z-index: 5; right: 24px; bottom: 66px; width: 300px; background: #fff; color: var(--ink); border-radius: 14px; box-shadow: 0 20px 40px -12px rgba(0,0,0,.5); padding: 8px; display: none; }
+.pop.on { display: block; }
+.pop .h { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 6px 8px; }
+.pop button { width: 100%; border: 0; background: transparent; text-align: left; padding: 8px; border-radius: 9px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 12.5px; }
+.pop button:hover { background: #f1f5f9; }
+.pop button small { display: block; color: var(--muted); font-size: 11px; }
+
+/* ---- Lucca: asisten project (bicara bahasa Indonesia) ---- */
+.lucca { --lc: #5ee7ff; position: absolute; left: 30px; bottom: 24px; z-index: 3; width: min(480px, calc(100% - 60px)); background: rgba(8,13,36,.9); border: 1px solid var(--lc); border-radius: 16px; color: #e2e8f0; backdrop-filter: blur(8px);
+  box-shadow: 0 20px 40px -14px rgba(0,0,0,.7), 0 0 34px -12px var(--lc); animation: luIn .3s ease-out; }
+.lucca[hidden] { display: none; }
+@keyframes luIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.lu-h { display: flex; align-items: center; gap: 9px; padding: 11px 14px 6px; }
+.lu-eye { width: 12px; height: 12px; border-radius: 50%; background: var(--lc, #5ee7ff); box-shadow: 0 0 10px var(--lc, #5ee7ff); animation: luPulse 1.8s ease-in-out infinite; flex: 0 0 auto; display: inline-block; }
+@keyframes luPulse { 50% { transform: scale(.7); opacity: .6; } }
+.lu-h b { font-size: 14px; color: #fff; }
+.lu-h small { color: var(--lc); font-size: 11px; font-weight: 600; }
+.lu-x { margin-left: auto; border: 0; background: transparent; color: rgba(255,255,255,.6); cursor: pointer; font-size: 14px; }
+.lu-x:hover { color: #fff; }
+.lu-t { padding: 0 14px 8px; font-size: 13px; line-height: 1.55; }
+.lu-list { max-height: 196px; overflow: auto; padding: 0 8px 10px; scrollbar-width: thin; }
+.lu-it { display: flex; gap: 10px; align-items: flex-start; padding: 7px 6px; border-top: 1px solid rgba(255,255,255,.07); font-size: 12.5px; line-height: 1.45; }
+.lu-it .ic { width: 18px; text-align: center; margin-top: 3px; flex: 0 0 auto; }
+.lu-it.alert .ic { color: #ff5d73; } .lu-it.watch .ic { color: #ffc35a; } .lu-it.info .ic { color: #5ee7ff; }
+.lu-it b { color: #fff; font-weight: 600; }
+.lu-it button { margin-left: auto; flex: 0 0 auto; border: 1px solid rgba(255,255,255,.25); background: transparent; color: #fff; border-radius: 8px; font-size: 11px; font-weight: 600; padding: 3px 9px; cursor: pointer; white-space: nowrap; }
+.lu-it button:hover { background: rgba(255,255,255,.12); }
+.scene.lucca-open .legend { opacity: 0; pointer-events: none; }
+.ctrl .lu-btn .lu-eye { width: 9px; height: 9px; }
+
+/* ---- Kartu Project Workflow ---- */
+.card { background: #fff; border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 2px 4px rgba(15,23,42,.04), 0 18px 40px -28px rgba(15,23,42,.35); margin-top: 18px; position: relative; }
+.card-h { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.card-h .ic { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, var(--navy2), var(--blue)); color: #fff; display: flex; align-items: center; justify-content: center; }
+.card-h b { font-size: 15px; font-weight: 600; }
+.card-h .sub { color: var(--muted); font-size: 12px; }
+.people { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+.person { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #fde68a; border-radius: 999px; padding: 6px 14px; font-size: 12px; background: #fffbeb; color: #92400e; }
+.av { width: 24px; height: 24px; border-radius: 50%; color: #fff; font-size: 10px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+.chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+.chip::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.chip.draft { background: #f1f5f9; color: #475569; }
+.chip.review { background: #fef3c7; color: #92400e; }
+.chip.changes { background: #fee2e2; color: #b91c1c; }
+.chip.approved, .chip.done { background: #d1fae5; color: #047857; }
+.chip.progress { background: #dbeafe; color: #1d4ed8; }
+.chip.todo, .chip.waiting { background: #f8fafc; color: #94a3b8; border: 1px dashed #cbd5e1; }
+.tb-wrap { padding: 4px 20px 20px; overflow-x: auto; }
+table.tb { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 900px; }
+.tb th { text-align: left; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #1e3a8a; background: #eef2f9; padding: 10px 12px; }
+.tb th:first-child { border-radius: 10px 0 0 10px; } .tb th:last-child { border-radius: 0 10px 10px 0; }
+.tb td { padding: 12px; border-bottom: 1px solid #e3e9f2; vertical-align: middle; }
+.tb tr:hover td { background: #f8fbff; }
+.tb .pn { font-weight: 600; font-size: 13px; }
+.tb .mod { font-size: 10.5px; font-weight: 700; color: var(--navy2); background: #e0e7ff; border-radius: 6px; padding: 2px 7px; margin-left: 6px; }
+.trk { display: flex; align-items: center; gap: 9px; cursor: pointer; border-radius: 10px; padding: 4px 6px; margin: -4px -6px; }
+.trk:hover { background: #eef4ff; }
+.trk .tic { width: 30px; height: 30px; border-radius: 9px; background: #f1f5f9; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; flex: 0 0 auto; }
+.trk .due { font-size: 10.5px; color: var(--muted); }
+.trk .meta { display: flex; flex-direction: column; gap: 3px; }
+.trk.lock { cursor: default; } .trk.lock:hover { background: transparent; }
+.bar { height: 6px; border-radius: 3px; background: #e2e8f0; overflow: hidden; min-width: 90px; }
+.bar span { display: block; height: 100%; background: linear-gradient(90deg, var(--navy2), var(--blue)); border-radius: 3px; }
+.pct { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.rule { margin: 0 20px 18px; font-size: 11.5px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+
+/* ---- Panel (lembar di atas halaman) ---- */
+.ov { position: fixed; inset: 0; z-index: 100; background: rgba(5,8,26,.62); backdrop-filter: blur(3px); display: none; align-items: center; justify-content: center; padding: 24px; }
+.ov.on { display: flex; }
+.sheet { background: #fff; border-radius: 18px; width: min(1360px, 100%); height: min(880px, 100%); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 40px 80px -20px rgba(0,0,0,.6); animation: sheetIn .25s ease-out; }
+@keyframes sheetIn { from { transform: translateY(14px) scale(.985); opacity: 0; } to { transform: none; opacity: 1; } }
+.sh-head { display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: linear-gradient(90deg, var(--navy), var(--navy2)); color: #fff; }
+.sh-head .ic { width: 38px; height: 38px; border-radius: 11px; background: rgba(255,255,255,.14); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+.sh-head h2 { margin: 0; font-size: 16px; font-weight: 600; }
+.sh-head .sub { font-size: 11.5px; opacity: .8; margin-top: 1px; }
+.sh-head .x { margin-left: auto; width: 34px; height: 34px; border-radius: 10px; border: 0; background: rgba(255,255,255,.12); color: #fff; cursor: pointer; font-size: 15px; }
+.sh-head .x:hover { background: rgba(255,255,255,.25); }
+.flow { display: flex; gap: 8px; padding: 10px 18px; border-bottom: 1px solid var(--line); background: #f8fafc; flex-wrap: wrap; align-items: center; }
+.flow .stp { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 5px 10px; font-size: 12px; }
+.flow .stp.cur { border-color: #93c5fd; box-shadow: 0 0 0 3px #dbeafe; }
+.flow .stp b { font-weight: 600; }
+.flow .arr { color: var(--faint); font-size: 11px; }
+.flow .gate { margin-left: auto; font-size: 11.5px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.sh-body { flex: 1; min-height: 0; display: grid; }
+.pane { min-height: 0; overflow: auto; }
+.pane-h { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 14px 16px 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.btn { border: 1px solid var(--line); background: #fff; color: var(--ink2); border-radius: 9px; padding: 0 12px; height: 32px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+.btn:hover { background: #f8fafc; }
+.btn.pri { background: linear-gradient(135deg, var(--navy2), var(--blue)); color: #fff; border-color: transparent; }
+.btn.ok { background: #16a34a; color: #fff; border-color: #16a34a; }
+.btn.no { background: #fff; color: #b91c1c; border-color: #fecaca; }
+.btn.no:hover { background: #fef2f2; }
+.btn.sm { height: 28px; padding: 0 9px; font-size: 11.5px; }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+
+/* panel mockup */
+.mk-body { grid-template-columns: 270px 1fr 310px; }
+.mk-body > .pane + .pane { border-left: 1px solid var(--line); }
+.ver { margin: 0 12px 8px; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; cursor: pointer; background: #fff; }
+.ver:hover { border-color: #bfdbfe; }
+.ver.on { border-color: var(--blue); box-shadow: 0 0 0 3px #dbeafe; }
+.ver .top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ver .v { font-weight: 700; font-size: 13px; }
+.ver .by { display: flex; align-items: center; gap: 7px; margin-top: 7px; font-size: 11.5px; color: var(--muted); }
+.ver .by .av { width: 20px; height: 20px; font-size: 9px; }
+.ver .nt { margin-top: 6px; font-size: 12px; color: var(--ink2); line-height: 1.45; }
+.pv { display: flex; flex-direction: column; background: #e9eef6; }
+.pv-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #fff; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.pv-bar .seg2 { display: inline-flex; background: #f1f5f9; border-radius: 9px; padding: 3px; }
+.pv-bar .seg2 button { border: 0; background: transparent; font-size: 11.5px; font-weight: 600; padding: 5px 10px; border-radius: 7px; cursor: pointer; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+.pv-bar .seg2 button.on { background: #fff; color: var(--navy2); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.pv-bar .lbl { font-size: 12px; font-weight: 600; margin-right: auto; display: flex; align-items: center; gap: 8px; }
+.pv-stage { flex: 1; min-height: 0; overflow: auto; display: flex; justify-content: center; padding: 18px; }
+.pv-stage iframe { border: 0; background: #fff; border-radius: 10px; box-shadow: 0 10px 30px -12px rgba(15,23,42,.35); width: 100%; height: 100%; min-height: 480px; transition: width .25s; }
+.empty { margin: auto; text-align: center; color: var(--muted); max-width: 360px; padding: 30px; }
+.empty i { font-size: 34px; color: #cbd5e1; margin-bottom: 12px; }
+.empty b { display: block; color: var(--ink); font-size: 14px; margin-bottom: 6px; }
+.rv { margin: 0 14px 10px; display: flex; gap: 10px; }
+.rv .bub { flex: 1; background: #f8fafc; border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; font-size: 12px; line-height: 1.45; }
+.rv .bub .w { font-size: 11px; color: var(--muted); margin-bottom: 3px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.rv.changes .bub { background: #fef2f2; border-color: #fecaca; }
+.rv.approved .bub { background: #ecfdf5; border-color: #a7f3d0; }
+.rv-form { margin: 6px 14px 14px; }
+.rv-form textarea { width: 100%; min-height: 70px; border: 1px solid #dbe4f3; border-radius: 10px; padding: 9px 10px; font-size: 12.5px; resize: vertical; }
+.rv-form .acts { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.rv-form .who { font-size: 11px; color: var(--muted); margin-top: 8px; }
+
+/* panel ERD */
+.erd-body { grid-template-columns: 230px 1fr 370px; }
+.erd-body > .pane + .pane { border-left: 1px solid var(--line); }
+.tl { margin: 0 10px; }
+.tl button { width: 100%; border: 0; background: transparent; text-align: left; padding: 7px 8px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink2); }
+.tl button:hover { background: #f1f5f9; }
+.tl button.on { background: #eff6ff; color: var(--navy2); font-weight: 600; }
+.tl .sq { width: 10px; height: 10px; border-radius: 3px; flex: 0 0 auto; }
+.tl .cnt { margin-left: auto; font-size: 10.5px; color: var(--faint); }
+.search { margin: 0 10px 8px; position: relative; }
+.search input { width: 100%; height: 32px; border: 1px solid #dbe4f3; border-radius: 9px; padding: 0 10px 0 30px; font-size: 12px; }
+.search i { position: absolute; left: 10px; top: 9px; color: var(--faint); font-size: 12px; }
+.erd-main { display: flex; flex-direction: column; min-width: 0; }
+.erd-tools { display: flex; gap: 6px; padding: 8px 10px; border-bottom: 1px solid var(--line); flex-wrap: wrap; align-items: center; background: #fff; }
+.erd-tools .sp { flex: 1; }
+.erd-hint { font-size: 11.5px; color: #92400e; background: #fef3c7; border-radius: 8px; padding: 5px 10px; display: none; }
+.erd-hint.on { display: inline-block; }
+.erd-stage { flex: 1; min-height: 0; position: relative; }
+.erd-svg { width: 100%; height: 100%; display: block; background-color: #f8fafc; background-image: radial-gradient(#d7deea 1px, transparent 1px); background-size: 20px 20px; cursor: grab; touch-action: none; user-select: none; font-family: var(--font); }
+.erd-svg.panning { cursor: grabbing; }
+.erd-svg .card2 { fill: #fff; stroke: #cbd5e1; }
+.erd-svg .t { cursor: move; }
+.erd-svg .t.new .hd { fill: #0b1d4a; } .erd-svg .t.new .card2 { stroke: #e4c47c; stroke-width: 1.4; }
+.erd-svg .t.old .hd { fill: #64748b; }
+.erd-svg .t.sel .card2 { stroke: #2563eb; stroke-width: 2.2; }
+.erd-svg .hn { fill: #fff; font-weight: 600; font-size: 12.5px; }
+.erd-svg .bdg { font-size: 8.5px; font-weight: 700; letter-spacing: .08em; }
+.erd-svg .t.new .bdg { fill: #e4c47c; } .erd-svg .t.old .bdg { fill: #e2e8f0; }
+.erd-svg .cn { font-size: 11.5px; fill: #1e293b; }
+.erd-svg .ct { font-size: 10px; fill: #94a3b8; }
+.erd-svg .ico { font-family: 'Font Awesome 5 Free'; font-weight: 900; font-size: 9.5px; }
+.erd-svg .ico.pk { fill: #d4a017; } .erd-svg .ico.fk { fill: #2563eb; } .erd-svg .ico.uq { fill: #7c3aed; }
+.erd-svg .rowbg { fill: transparent; }
+.erd-svg .col:hover .rowbg { fill: #eff6ff; }
+.erd-svg .col.pick .rowbg { fill: #fde68a; }
+.erd-svg .relp { fill: none; stroke: #2563eb; stroke-width: 1.6; opacity: .85; }
+.erd-svg .relp.hl { stroke: #e5a913; stroke-width: 2.4; opacity: 1; }
+.erd-zoom { position: absolute; right: 12px; bottom: 12px; display: flex; flex-direction: column; gap: 6px; }
+.erd-zoom button { width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--line); background: #fff; cursor: pointer; color: var(--ink2); }
+.erd-legend { position: absolute; left: 12px; bottom: 12px; background: rgba(255,255,255,.92); border: 1px solid var(--line); border-radius: 10px; padding: 7px 10px; font-size: 11px; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; }
+.erd-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.erd-legend .sq { width: 12px; height: 9px; border-radius: 2px; }
+.erd-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.erd-empty[hidden] { display: none; }
+.erd-empty .empty { pointer-events: auto; background: #fff; border: 1px dashed #cbd5e1; border-radius: 16px; }
+.insp { padding: 0 14px 14px; }
+.insp label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); margin: 10px 0 5px; text-transform: uppercase; letter-spacing: .06em; }
+.insp input[type=text], .insp select { width: 100%; height: 32px; border: 1px solid #dbe4f3; border-radius: 8px; padding: 0 9px; font-size: 12px; background: #fff; }
+.colrow { display: grid; grid-template-columns: 1fr 118px 58px 22px; gap: 5px; margin-bottom: 5px; align-items: center; }
+.relro { font-size: 12px; padding: 6px 2px; border-bottom: 1px dashed #e2e8f0; overflow-wrap: anywhere; line-height: 1.45; }
+.relro span { display: block; color: var(--muted); font-size: 11.5px; }
+.colrow input, .colrow select { height: 28px !important; font-size: 11.5px !important; padding: 0 6px !important; }
+.colrow .rm { border: 0; background: transparent; color: #ef4444; cursor: pointer; height: 28px; }
+.ro { font-size: 11.5px; color: #475569; background: #f1f5f9; border-radius: 10px; padding: 9px 10px; line-height: 1.45; margin-top: 10px; display: flex; gap: 8px; }
+.colro { display: flex; justify-content: space-between; font-size: 12px; padding: 6px 2px; border-bottom: 1px dashed #e2e8f0; gap: 8px; }
+.colro span:last-child { color: var(--faint); font-size: 11px; }
+
+/* dialog kecil (Pull from database, SQL) */
+.dlg-ov { position: fixed; inset: 0; z-index: 150; background: rgba(5,8,26,.45); display: none; align-items: center; justify-content: center; padding: 20px; }
+.dlg-ov.on { display: flex; }
+.dlg { background: #fff; border-radius: 16px; width: min(640px, 100%); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 30px 60px -20px rgba(0,0,0,.5); }
+.dlg-h { padding: 14px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.dlg-h small { font-weight: 400; color: var(--muted); }
+.dlg-h .x { margin-left: auto; border: 0; background: transparent; cursor: pointer; font-size: 15px; color: var(--muted); }
+.dlg-b { padding: 12px 16px; overflow: auto; }
+.dlg-f { padding: 12px 16px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 8px; }
+.pull-row { display: flex; align-items: center; gap: 10px; padding: 8px 6px; border-bottom: 1px solid #f1f5f9; cursor: pointer; font-size: 12.5px; }
+.pull-row:hover { background: #f8fafc; }
+.pull-row small { color: var(--muted); margin-left: auto; }
+.pull-row.dis { opacity: .45; cursor: default; }
+pre.sql { margin: 0; background: #0f172a; color: #e2e8f0; border-radius: 12px; padding: 14px; font-size: 11.5px; line-height: 1.55; overflow: auto; max-height: 56vh; white-space: pre; }
+
+.toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 20px); background: #0f172a; color: #fff; border-radius: 12px; padding: 10px 16px; font-size: 12.5px; opacity: 0; transition: .25s; z-index: 400; max-width: calc(100% - 32px); pointer-events: none; display: flex; gap: 10px; align-items: center; }
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+.toast i { color: var(--gold); }
+
+/* ---- Layar sedang & kecil ---- */
+@media (max-width: 1180px) {
+  .mk-body { grid-template-columns: 230px 1fr; }
+  .mk-body .pane.rvp { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--line); }
+  .erd-body { grid-template-columns: 210px 1fr; }
+  .erd-body .pane.inspp { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--line); max-height: 260px; }
+  .ctrl .hint { display: none; }
+}
+@media (max-width: 767.98px) {
+  .wrap { padding: 12px; }
+  .hero { min-height: 0; border-radius: 18px; }
+  .hero-top { flex-direction: column; padding: 18px 16px 0; }
+  .hero-brand { max-width: none; }
+  .hero h1 { font-size: 23px; }
+  .hero-actions { align-items: stretch; width: 100%; }
+  .seg { width: 100%; } .seg button { flex: 1; justify-content: center; padding: 7px 6px; }
+  .seg .n { display: none; }
+  .scene { position: relative; inset: auto; height: 440px; margin-top: 12px; }
+  .legend { left: 14px; right: 14px; bottom: 60px; }
+  .legend .items { font-size: 11px; gap: 4px 10px; }
+  .legend .note, .legend .cap { display: none; }
+  .ctrl { right: 12px; bottom: 12px; left: 12px; max-width: none; justify-content: flex-start; }
+  .pop { left: 12px; right: 12px; width: auto; bottom: 56px; }
+  .lucca { left: 12px; right: 12px; width: auto; bottom: 58px; }
+  .lu-list { max-height: 118px; }
+  .ctrl { flex-wrap: nowrap; }
+  .ctrl #cTeam .lbl { display: none; }
+  .card { margin: 14px 0 0; }
+  .ov { padding: 0; }
+  .sheet { width: 100%; height: 100%; border-radius: 0; }
+  .sh-body { display: block; overflow: auto; }
+  .mk-body .pane, .erd-body .pane { overflow: visible; border-left: 0 !important; border-top: 1px solid var(--line); }
+  .pv-stage { min-height: 520px; padding: 10px; }
+  .erd-main { height: 520px; }
+  .flow .gate { margin-left: 0; }
+  .vers { display: flex; overflow-x: auto; padding-bottom: 8px; }
+  .vers .ver { min-width: 230px; }
+  .mock-tag { top: auto; bottom: 10px; }
+  /* tabel Team Workflow jadi kartu per project */
+  .tb-wrap { padding: 4px 12px 12px; }
+  table.tb { min-width: 0; }
+  .tb thead { display: none; }
+  .tb, .tb tbody, .tb tr, .tb td { display: block; width: 100%; }
+  .tb tr { border: 1px solid var(--line); border-radius: 14px; margin-bottom: 10px; padding: 4px 0; }
+  .tb td { border-bottom: 1px dashed #e3e9f2; padding: 10px 12px; }
+  .tb td:last-child { border-bottom: 0; }
+  .tb td[data-l]::before { content: attr(data-l); display: block; font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #1e3a8a; margin-bottom: 6px; }
+}
+</style>
+</head>
+<body>
+<span class="mock-tag">MOCKUP · SAMPLE DATA</span>
+
+<div class="wrap">
+  <header class="hero" id="hero">
+    <div class="hero-top">
+      <div class="hero-brand">
+        <span class="hero-mark"><i class="fas fa-rocket"></i></span>
+        <div>
+          <div class="hero-eyebrow">FINANCE SYSTEMS · DELIVERY PORTFOLIO</div>
+          <h1>Project Dashboard</h1>
+          <p class="hero-sub" id="heroSub"></p>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <div class="seg" aria-label="View">
+          <button type="button" aria-pressed="false"><i class="fas fa-th-large"></i>Normal</button>
+          <button type="button" aria-pressed="true"><i class="fas fa-cube"></i>3D</button>
+        </div>
+        <div class="seg" id="roomSeg" aria-label="Room">
+          <button type="button" data-room="library" aria-pressed="false"><i class="fas fa-book"></i>Library</button>
+          <button type="button" data-room="studio" class="seg-new" aria-pressed="true"><i class="fas fa-pencil-ruler"></i>Design Studio <span class="n" id="nStudio"></span></button>
+          <button type="button" data-room="data" class="seg-new" aria-pressed="false"><i class="fas fa-database"></i>Data Room <span class="n" id="nData"></span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="scene" id="scene">
+      <div class="loading" id="loading"><i class="fas fa-circle-notch fa-spin"></i>&nbsp; Building the rooms...</div>
+      <div class="fade" id="fade"></div>
+      <div class="legend" id="legend"></div>
+      <div class="ctrl" id="ctrl"></div>
+      <div class="pop" id="pop"></div>
+      <div class="lucca" id="lucca" role="status" hidden></div>
+      <div class="tip" id="tip"></div>
+    </div>
+  </header>
+
+  <section class="card" id="team">
+    <div class="card-h">
+      <span class="ic"><i class="fas fa-users"></i></span>
+      <div>
+        <b>Project Workflow</b>
+        <div class="sub">Every project goes through three steps — Mockup, ERD, Coding — each with its own status and due date.</div>
+      </div>
+      <div class="people" id="people"></div>
+    </div>
+    <div class="tb-wrap"><table class="tb" id="teamTb"></table></div>
+    <div class="rule"><i class="fas fa-lock"></i><span>Coding starts once both the Mockup and the ERD are <b>Approved</b>. Click a Mockup or ERD cell to open it.</span></div>
+  </section>
+</div>
+
+<!-- Panel Mockup -->
+<div class="ov" id="mkOv">
+  <div class="sheet">
+    <div class="sh-head">
+      <span class="ic"><i class="fas fa-pencil-ruler"></i></span>
+      <div><h2 id="mkTitle"></h2><div class="sub" id="mkSub"></div></div>
+      <button class="x" data-close="mkOv" title="Close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="flow" id="mkFlow"></div>
+    <div class="sh-body mk-body">
+      <div class="pane">
+        <div class="pane-h">Versions
+          <label class="btn sm pri" title="Upload an .html mockup file"><i class="fas fa-upload"></i>Upload new version<input type="file" id="mkFile" accept=".html,.htm" hidden></label>
+        </div>
+        <div class="vers" id="mkVers"></div>
+      </div>
+      <div class="pane pv">
+        <div class="pv-bar">
+          <div class="lbl" id="mkLbl"></div>
+          <div class="seg2" id="mkDev">
+            <button data-w="100%" class="on"><i class="fas fa-desktop"></i>Desktop</button>
+            <button data-w="820px"><i class="fas fa-tablet-alt"></i>Tablet</button>
+            <button data-w="390px"><i class="fas fa-mobile-alt"></i>Phone</button>
+          </div>
+          <button class="btn sm" id="mkFull"><i class="fas fa-expand"></i>Full screen</button>
+          <button class="btn sm" id="mkDl"><i class="fas fa-download"></i>.html</button>
+        </div>
+        <div class="pv-stage" id="mkStage"></div>
+      </div>
+      <div class="pane rvp">
+        <div class="pane-h">Review notes</div>
+        <div id="mkRv"></div>
+        <div class="rv-form">
+          <textarea id="mkNote" placeholder="Write a review note for this version..."></textarea>
+          <div class="acts">
+            <button class="btn ok" id="mkApprove"><i class="fas fa-check"></i>Approve</button>
+            <button class="btn no" id="mkChanges"><i class="fas fa-undo"></i>Request changes</button>
+          </div>
+          <div class="who"><i class="fas fa-info-circle"></i> Every approval is kept per version with its date and time.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Panel ERD -->
+<div class="ov" id="erdOv">
+  <div class="sheet">
+    <div class="sh-head">
+      <span class="ic"><i class="fas fa-project-diagram"></i></span>
+      <div><h2 id="erdTitle"></h2><div class="sub" id="erdSub"></div></div>
+      <button class="x" data-close="erdOv" title="Close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="flow" id="erdFlow"></div>
+    <div class="sh-body erd-body">
+      <div class="pane">
+        <div class="pane-h">Tables <span id="erdCount"></span></div>
+        <div class="search"><i class="fas fa-search"></i><input type="text" id="erdFind" placeholder="Find table..."></div>
+        <div class="tl" id="erdList"></div>
+      </div>
+      <div class="erd-main">
+        <div class="erd-tools">
+          <button class="btn sm" id="erdPull"><i class="fas fa-download"></i>Pull from database</button>
+          <button class="btn sm" id="erdAdd"><i class="fas fa-plus"></i>New table</button>
+          <button class="btn sm" id="erdRel"><i class="fas fa-link"></i>Add relation</button>
+          <span class="erd-hint" id="erdHint"></span>
+          <span class="sp"></span>
+          <button class="btn sm" id="erdSql"><i class="fas fa-file-code"></i>Migration SQL</button>
+          <button class="btn sm" id="erdPng"><i class="fas fa-image"></i>PNG</button>
+          <button class="btn sm pri" id="erdSubmit"><i class="fas fa-paper-plane"></i>Submit for review</button>
+        </div>
+        <div class="erd-stage" id="erdStage">
+          <svg class="erd-svg" id="erdSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+          <div class="erd-legend">
+            <span><i class="sq" style="background:#0b1d4a;outline:1.5px solid #e4c47c"></i>New table (needs migration)</span>
+            <span><i class="sq" style="background:#64748b"></i>Existing table (read only)</span>
+            <span><i class="fas fa-key" style="color:#d4a017"></i>PK</span>
+            <span><i class="fas fa-link" style="color:#2563eb"></i>FK</span>
+          </div>
+          <div class="erd-zoom">
+            <button id="zIn" title="Zoom in"><i class="fas fa-plus"></i></button>
+            <button id="zOut" title="Zoom out"><i class="fas fa-minus"></i></button>
+            <button id="zFit" title="Fit"><i class="fas fa-expand-arrows-alt"></i></button>
+          </div>
+          <div class="erd-empty" id="erdEmpty" hidden>
+            <div class="empty"><i class="fas fa-project-diagram"></i><b>No ERD yet</b>Start by pulling the tables this feature reads from the database, then add the new tables it needs.<br><br><button class="btn pri" id="erdStart"><i class="fas fa-download"></i>Pull from database</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="pane inspp">
+        <div class="pane-h">Table detail</div>
+        <div class="insp" id="erdInsp"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dialog -->
+<div class="dlg-ov" id="dlgOv">
+  <div class="dlg">
+    <div class="dlg-h" id="dlgH"></div>
+    <div class="dlg-b" id="dlgB"></div>
+    <div class="dlg-f" id="dlgF"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import * as THREE from '../lib/three-0.160.0/three.module.min.js';
+
+/* =========================================================================
+   DATA CONTOH (di halaman asli dari tabel project_track / project_mockup /
+   project_erd). Tanpa nama orang: mockup & ERD dibuat lewat sesi Claude Code,
+   yang meng-approve hanya pemilik project.
+   ========================================================================= */
+const ST = {
+  draft:    { label: 'Draft',             col: '#94a3b8' },
+  review:   { label: 'In review',         col: '#f59e0b' },
+  changes:  { label: 'Changes requested', col: '#ef4444' },
+  approved: { label: 'Approved',          col: '#10b981' },
+  progress: { label: 'In progress',       col: '#3b82f6' },
+  done:     { label: 'Done',              col: '#10b981' },
+  todo:     { label: 'Not started',       col: '#cbd5e1' },
+  waiting:  { label: 'Waiting',           col: '#cbd5e1' }
+};
+
+const ERDS = {
+  cf: { v: 2, status: 'approved', tables: [
+    { id: 'b_masterbank', x: 40, y: 40, old: true, cols: [['id','INT(11)','pk'],['bank_name','VARCHAR(100)'],['bank_account','VARCHAR(50)'],['curr','VARCHAR(10)'],['id_coa','VARCHAR(20)'],['fac_limit','DECIMAL(20,2)']] },
+    { id: 'ap_cf_bank_setting', x: 360, y: 20, cols: [['id','INT(11)','pk'],['doc_number','VARCHAR(50)','fk'],['akun','VARCHAR(150)','fk'],['curr','VARCHAR(10)'],['saldo_tarik','DECIMAL(20,2)'],['saldo_pakai','DECIMAL(20,2)'],['min_balance','DECIMAL(20,2)'],['limit_amount','DECIMAL(20,2)'],['update_by','VARCHAR(100)'],['update_date','DATETIME']] },
+    { id: 'ap_cf_opening', x: 40, y: 290, cols: [['id','INT(11)','pk'],['tanggal','DATE'],['akun','VARCHAR(150)','fk'],['curr','VARCHAR(10)'],['saldo_sistem','DECIMAL(20,2)'],['saldo_manual','DECIMAL(20,2)'],['keterangan','VARCHAR(255)'],['update_by','VARCHAR(100)']] },
+    { id: 'ap_cf_opening_log', x: 40, y: 540, cols: [['id','BIGINT(20)','pk'],['tanggal','DATE'],['akun','VARCHAR(150)','fk'],['aksi','VARCHAR(10)'],['nilai_lama','DECIMAL(20,2)'],['nilai_baru','DECIMAL(20,2)'],['waktu','DATETIME']] },
+    { id: 'ap_cf_history_h', x: 690, y: 40, cols: [['id','INT(11)','pk'],['doc_number','VARCHAR(50)','uq'],['periode_dari','DATE'],['periode_sampai','DATE'],['create_by','VARCHAR(100)'],['status','VARCHAR(20)']] },
+    { id: 'ap_cf_history_det', x: 690, y: 290, cols: [['id','BIGINT(20)','pk'],['doc_number','VARCHAR(50)','fk'],['blok','VARCHAR(30)'],['urut','INT(11)'],['tanggal','DATE'],['nilai','DECIMAL(20,2)']] },
+    { id: 'ap_pvbiaya_plan_det', x: 360, y: 390, old: true, cols: [['id','INT(11)','pk'],['doc_number','VARCHAR(100)'],['no_pv','VARCHAR(50)'],['plan_date','DATE'],['amount','DECIMAL(20,2)']] }
+  ], rels: [
+    ['ap_cf_bank_setting','akun','b_masterbank','bank_account'],
+    ['ap_cf_opening','akun','b_masterbank','bank_account'],
+    ['ap_cf_opening_log','akun','ap_cf_opening','akun'],
+    ['ap_cf_bank_setting','doc_number','ap_cf_history_h','doc_number'],
+    ['ap_cf_history_det','doc_number','ap_cf_history_h','doc_number']
+  ] },
+  pv: { v: 1, status: 'review', tables: [
+    { id: 'ap_saldo_payment_voucher', x: 40, y: 40, old: true, cols: [['id','INT(11)','pk'],['no_pv','VARCHAR(50)'],['reff_doc','VARCHAR(50)'],['supplier','VARCHAR(150)'],['saldo','DECIMAL(20,2)']] },
+    { id: 'ap_pvbiaya_plan_h', x: 380, y: 30, cols: [['id','INT(11)','pk'],['doc_number','VARCHAR(100)','uq'],['plan_date','DATE'],['keterangan','VARCHAR(255)'],['status','VARCHAR(20)'],['create_by','VARCHAR(100)'],['create_date','DATETIME']] },
+    { id: 'ap_pvbiaya_plan_det', x: 380, y: 280, cols: [['id','INT(11)','pk'],['doc_number','VARCHAR(100)','fk'],['no_pv','VARCHAR(50)','fk'],['plan_date','DATE'],['amount','DECIMAL(20,2)'],['curr','VARCHAR(10)']] },
+    { id: 'b_masterbank', x: 720, y: 280, old: true, cols: [['id','INT(11)','pk'],['bank_name','VARCHAR(100)'],['bank_account','VARCHAR(50)'],['curr','VARCHAR(10)']] }
+  ], rels: [
+    ['ap_pvbiaya_plan_det','doc_number','ap_pvbiaya_plan_h','doc_number'],
+    ['ap_pvbiaya_plan_det','no_pv','ap_saldo_payment_voucher','no_pv']
+  ] },
+  bank: { v: 3, status: 'approved', tables: [
+    { id: 'b_masterbank', x: 40, y: 40, old: true, cols: [['id','INT(11)','pk'],['bank_name','VARCHAR(100)'],['bank_account','VARCHAR(50)'],['curr','VARCHAR(10)']] },
+    { id: 'ap_recon_h', x: 370, y: 40, cols: [['id','INT(11)','pk'],['doc_number','VARCHAR(50)','uq'],['bank_id','INT(11)','fk'],['periode','DATE'],['saldo_bank','DECIMAL(20,2)'],['saldo_buku','DECIMAL(20,2)'],['status','VARCHAR(20)']] },
+    { id: 'ap_recon_det', x: 370, y: 300, cols: [['id','BIGINT(20)','pk'],['doc_number','VARCHAR(50)','fk'],['tanggal','DATE'],['uraian','VARCHAR(255)'],['debit','DECIMAL(20,2)'],['kredit','DECIMAL(20,2)'],['matched','TINYINT(1)']] }
+  ], rels: [
+    ['ap_recon_h','bank_id','b_masterbank','id'],
+    ['ap_recon_det','doc_number','ap_recon_h','doc_number']
+  ] }
+};
+
+const PROJECTS = [
+  { id: 1, name: 'Cash Flow Projection', module: 'AP', kind: 'report',
+    mockup: { due: '12 Nov' }, erd: { due: '14 Nov', key: 'cf' }, code: { st: 'progress', due: '28 Nov' },
+    versions: [
+      { v: 3, st: 'approved', date: '14 Nov 2026', note: 'Opening balance editable per bank; loan simulation moved to its own block.',
+        rv: [{ act: 'approved', note: 'Approved — matches the Excel layout finance uses today.', when: '14 Nov 15:12' }] },
+      { v: 2, st: 'changes', date: '12 Nov 2026', note: 'Daily columns, weekly subtotal.',
+        rv: [{ act: 'changes', note: 'Split the loan simulation from the bank rows, and show the opening balance source.', when: '12 Nov 16:03' }] },
+      { v: 1, st: 'draft', date: '10 Nov 2026', note: 'First sketch from the Excel sample.', rv: [] }
+    ] },
+  { id: 2, name: 'Payment Date PV Biaya', module: 'AP', kind: 'form',
+    mockup: { due: '18 Nov' }, erd: { due: '19 Nov', key: 'pv' }, code: { st: 'waiting', due: '27 Nov' },
+    versions: [
+      { v: 2, st: 'review', date: '16 Nov 2026', note: 'Select several PVs and change their payment date at once.', rv: [] },
+      { v: 1, st: 'changes', date: '13 Nov 2026', note: 'One PV per row.',
+        rv: [{ act: 'changes', note: 'Need a supplier filter and a bulk date change.', when: '14 Nov 10:20' }] }
+    ] },
+  { id: 3, name: 'AP Realization & Variance', module: 'AP', kind: 'table',
+    mockup: { due: '19 Nov' }, erd: { due: '21 Nov', key: null }, code: { st: 'waiting', due: '3 Dec' },
+    versions: [
+      { v: 2, st: 'changes', date: '15 Nov 2026', note: 'Projection vs realization per supplier.',
+        rv: [{ act: 'changes', note: 'Variance must show both amount and %; red only when realization is over plan.', when: '15 Nov 14:31' }] },
+      { v: 1, st: 'draft', date: '13 Nov 2026', note: 'Layout idea.', rv: [] }
+    ] },
+  { id: 4, name: 'AR Aging Dashboard', module: 'AR', kind: 'dash',
+    mockup: { due: '22 Nov' }, erd: { due: '24 Nov', key: null }, code: { st: 'waiting', due: '5 Dec' },
+    versions: [{ v: 1, st: 'draft', date: '17 Nov 2026', note: 'KPI cards + aging buckets.', rv: [] }] },
+  { id: 5, name: 'Bank Reconciliation', module: 'AP', kind: 'table2',
+    mockup: { due: '30 Oct' }, erd: { due: '4 Nov', key: 'bank' }, code: { st: 'done', due: '14 Nov' },
+    versions: [
+      { v: 4, st: 'approved', date: '29 Oct 2026', note: 'Matched / unmatched tabs.', rv: [{ act: 'approved', note: 'Approved.', when: '30 Oct 11:02' }] },
+      { v: 3, st: 'changes', date: '27 Oct 2026', note: '', rv: [] }, { v: 2, st: 'changes', date: '24 Oct 2026', note: '', rv: [] }, { v: 1, st: 'draft', date: '22 Oct 2026', note: '', rv: [] }
+    ] },
+  { id: 6, name: 'Supplier Portal', module: 'NDS', kind: 'form',
+    mockup: { due: '25 Nov' }, erd: { due: '28 Nov', key: null }, code: { st: 'waiting', due: '12 Dec' },
+    versions: [] }
+];
+PROJECTS.forEach(p => { p.erdData = p.erd.key ? structuredClone(ERDS[p.erd.key]) : null; });
+
+// status jalur: Mockup = versi terakhir, ERD = status ERD, Coding = isian sendiri
+function mockSt(p) { return p.versions.length ? p.versions[0].st : 'todo'; }
+function erdSt(p) { return p.erdData ? p.erdData.status : 'todo'; }
+function codeSt(p) { return p.code.st; }
+function gateOpen(p) { return mockSt(p) === 'approved' && erdSt(p) === 'approved'; }
+const VAL = { todo: 0, waiting: 0, draft: .35, changes: .45, review: .75, approved: 1, progress: .5, done: 1 };
+function progress(p) { return Math.round((VAL[mockSt(p)] * 25) + (VAL[erdSt(p)] * 25) + (VAL[codeSt(p)] * 50)); }
+
+/* ---- alat kecil ---- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+function chip(st, text) { return `<span class="chip ${st}">${esc(text || ST[st].label)}</span>`; }
+const TRACK_ICON = { mockup: 'pencil-ruler', erd: 'project-diagram', code: 'code' };
+function trackIc(track, st) { return `<span class="tic" style="color:${ST[st].col}"><i class="fas fa-${TRACK_ICON[track]}"></i></span>`; }
+let toastT;
+function toast(msg, icon) { const t = $('#toast'); t.innerHTML = `<i class="fas fa-${icon || 'info-circle'}"></i><span>${msg}</span>`; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 3200); }
+
+/* =========================================================================
+   LUCCA - asisten project. Memantau mockup, ERD & coding, lalu melapor.
+   Lucca SELALU bicara bahasa Indonesia (teks UI lain tetap Inggris).
+   ========================================================================= */
+const TODAY = new Date(2026, 10, 17);   // mockup: anggap hari ini 17 Nov 2026
+const BLN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const BLN_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+function dueDate(s) { const a = s.split(' '); return new Date(2026, BLN.indexOf(a[1]), +a[0]); }
+function tgl(s) { const a = s.split(' '); return a[0] + ' ' + BLN_ID[BLN.indexOf(a[1])]; }
+function sisa(s) { const n = Math.round((dueDate(s) - TODAY) / 86400000); return n < 0 ? `sudah lewat ${-n} hari` : n === 0 ? 'hari ini' : n === 1 ? 'besok' : `${n} hari lagi`; }
+function telat(s) { return dueDate(s) < TODAY; }
+function luccaItems(where) {
+  const it = [], st = where !== 'data', dt = where !== 'studio';
+  PROJECTS.forEach(p => {
+    const ms = mockSt(p), es = erdSt(p), nm = `<b>${esc(p.name)}</b>`;
+    const tg = d => `Tenggat ${tgl(d)} (${sisa(d)}).`;
+    if (st) {
+      if (ms === 'review') it.push({ lv: 'watch', ic: 'pencil-ruler', t: `Mockup ${nm} v${p.versions[0].v} menunggu persetujuan Anda.`, go: ['mockup', p.id], b: 'Periksa' });
+      else if (ms === 'changes') it.push({ lv: telat(p.mockup.due) ? 'alert' : 'info', ic: 'undo', t: `Mockup ${nm} sedang direvisi, versi barunya belum masuk. ${tg(p.mockup.due)}`, go: ['mockup', p.id], b: 'Lihat' });
+      else if (ms === 'draft') it.push({ lv: telat(p.mockup.due) ? 'alert' : 'info', ic: 'pencil-alt', t: `Mockup ${nm} masih draf v${p.versions[0].v}. ${tg(p.mockup.due)}`, go: ['mockup', p.id], b: 'Lihat' });
+      else if (ms === 'todo') it.push({ lv: telat(p.mockup.due) ? 'alert' : 'info', ic: 'image', t: `${nm} belum punya mockup. ${tg(p.mockup.due)}`, go: ['mockup', p.id], b: 'Lihat' });
+    }
+    if (dt) {
+      if (es === 'review') it.push({ lv: 'watch', ic: 'project-diagram', t: `ERD ${nm} v${p.erdData.v} menunggu persetujuan Anda.`, go: ['erd', p.id], b: 'Periksa' });
+      else if (es === 'draft') it.push({ lv: telat(p.erd.due) ? 'alert' : 'info', ic: 'project-diagram', t: `ERD ${nm} masih draf. ${tg(p.erd.due)}`, go: ['erd', p.id], b: 'Lihat' });
+      else if (es === 'todo') it.push({ lv: telat(p.erd.due) ? 'alert' : 'info', ic: 'database', t: `${nm} belum punya ERD. ${tg(p.erd.due)}`, go: ['erd', p.id], b: 'Lihat' });
+      else if (es === 'approved' && codeSt(p) !== 'done') { const n = p.erdData.tables.filter(t => !t.old).length; it.push({ lv: 'info', ic: 'file-code', t: `ERD ${nm} sudah disetujui. Ada ${n} tabel baru — SQL migrasinya belum tercatat dijalankan di produksi.`, go: ['sql', p.id], b: 'Lihat SQL' }); }
+    }
+    if (gateOpen(p) && codeSt(p) === 'progress') it.push({ lv: telat(p.code.due) ? 'alert' : 'info', ic: 'code', t: `Coding ${nm} sedang berjalan. ${tg(p.code.due)}` });
+  });
+  const urut = { alert: 0, watch: 1, info: 2 };
+  return it.sort((a, b) => urut[a.lv] - urut[b.lv]);
+}
+function luccaMood() { const a = luccaItems('all'); return a.some(i => i.lv === 'alert') ? 'alert' : a.some(i => i.lv === 'watch') ? 'watch' : 'calm'; }
+function salam() { const h = new Date().getHours(); return h < 11 ? 'Selamat pagi' : h < 15 ? 'Selamat siang' : h < 18 ? 'Selamat sore' : 'Selamat malam'; }
+function luccaRender() {
+  const box = $('#lucca'), items = luccaItems(room), mood = luccaMood();
+  const w = items.filter(i => i.lv === 'watch').length, a = items.filter(i => i.lv === 'alert').length;
+  const tempat = room === 'studio' ? 'di studio' : 'di ruang data';
+  let t = `${salam()}. `;
+  if (a) t += `Ada <b>${a}</b> pekerjaan yang sudah lewat tenggat ${tempat}. `;
+  if (w) t += `<b>${w}</b> hal ${tempat} menunggu persetujuan Anda.`;
+  else if (!a) t += `Tidak ada yang menunggu persetujuan Anda ${tempat}.`;
+  box.style.setProperty('--lc', LUCCA_COL[mood]);
+  box.innerHTML = `<div class="lu-h"><span class="lu-eye"></span><b>Lucca</b><small>Asisten project</small><button class="lu-x" title="Tutup"><i class="fas fa-times"></i></button></div><div class="lu-t">${t}</div>
+    <div class="lu-list">${items.map((i, k) => `<div class="lu-it ${i.lv}"><i class="fas fa-${i.ic} ic"></i><span>${i.t}</span>${i.go ? `<button data-k="${k}">${i.b}</button>` : ''}</div>`).join('')}</div>`;
+  box.querySelector('.lu-x').onclick = () => luccaToggle(false);
+  box.querySelectorAll('[data-k]').forEach(b => b.onclick = () => {
+    const g = items[+b.dataset.k].go, p = PROJECTS.find(x => x.id === g[1]);
+    if (g[0] === 'mockup') openMockup(p); else { openErd(p); if (g[0] === 'sql') setTimeout(() => $('#erdSql').click(), 80); }
+  });
+}
+function luccaToggle(on) {
+  const box = $('#lucca'); if (on === undefined) on = box.hidden;
+  if (on) luccaRender();
+  box.hidden = !on; $('#scene').classList.toggle('lucca-open', on);
+}
+// warna hologram & laporan ikut berubah setiap ada approve / revisi / upload
+function luccaRefresh() {
+  const mood = luccaMood(), col = new THREE.Color(LUCCA_COL[mood]);
+  [studio, data].forEach(r => { if (r) r.lucca.cols.forEach(c => c.copy(col)); });
+  if (!$('#lucca').hidden) luccaRender();
+  const b = $('#cLucca'); if (b) b.style.setProperty('--lc', LUCCA_COL[mood]);
+}
+
+/* =========================================================================
+   PROJECT WORKFLOW (di bawah hero)
+   ========================================================================= */
+function renderTeam() {
+  // ringkasan: berapa yang menunggu approval
+  const wait = PROJECTS.filter(p => mockSt(p) === 'review').length + PROJECTS.filter(p => erdSt(p) === 'review').length;
+  $('#people').innerHTML = `<span class="person"><i class="fas fa-hourglass-half" style="color:#f59e0b"></i><b>${wait}</b> waiting for your approval</span>`;
+
+  const cell = (p, track) => {
+    const t = p[track === 'code' ? 'code' : track];
+    let st = track === 'mockup' ? mockSt(p) : track === 'erd' ? erdSt(p) : codeSt(p);
+    let extra = '';
+    if (track === 'mockup' && p.versions.length) extra = ' · v' + p.versions[0].v;
+    if (track === 'erd' && p.erdData) extra = ' · v' + p.erdData.v;
+    let label = ST[st].label + extra;
+    if (track === 'code' && st === 'waiting') label = 'Waiting for ' + [mockSt(p) !== 'approved' ? 'Mockup' : '', erdSt(p) !== 'approved' ? 'ERD' : ''].filter(Boolean).join(' + ');
+    const lock = track === 'code';
+    return `<div class="trk${lock ? ' lock' : ''}" data-open="${track}" data-pid="${p.id}">${trackIc(track, st)}<div class="meta">${chip(st, label)}<span class="due"><i class="far fa-calendar"></i> due ${esc(t.due)}</span></div></div>`;
+  };
+  $('#teamTb').innerHTML = '<thead><tr><th>Project</th><th><i class="fas fa-pencil-ruler"></i> Mockup</th><th><i class="fas fa-project-diagram"></i> ERD</th><th><i class="fas fa-code"></i> Coding</th><th>Progress</th></tr></thead><tbody>' +
+    PROJECTS.map(p => `<tr><td><span class="pn">${esc(p.name)}</span><span class="mod">${p.module}</span></td><td data-l="Mockup">${cell(p, 'mockup')}</td><td data-l="ERD">${cell(p, 'erd')}</td><td data-l="Coding">${cell(p, 'code')}</td><td data-l="Progress"><div class="bar"><span style="width:${progress(p)}%"></span></div><div class="pct">${progress(p)}%</div></td></tr>`).join('') + '</tbody>';
+  $('#nStudio').textContent = PROJECTS.filter(p => p.versions.length).length;
+  $('#nData').textContent = PROJECTS.filter(p => p.erdData).length;
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('.trk[data-open]');
+  if (!t || t.classList.contains('lock')) return;
+  const p = PROJECTS.find(x => x.id === +t.dataset.pid);
+  if (t.dataset.open === 'mockup') openMockup(p); else openErd(p);
+});
+
+/* =========================================================================
+   ISI MOCKUP (HTML contoh per jenis layar, gaya kartu biru aplikasi)
+   ========================================================================= */
+const TITLES = { report: 'Cash Flow Projection Daily', form: 'Update Payment Date — PV Biaya', table: 'AP Realization & Variance', dash: 'AR Aging Dashboard', table2: 'Bank Reconciliation' };
+function mockHTML(p, ver) {
+  const kind = p.kind, title = p.id === 6 ? 'Supplier Portal — Register' : TITLES[kind];
+  const rows = (n, f) => Array.from({ length: n }, (_, i) => f(i)).join('');
+  const num = v => v.toLocaleString('en-US');
+  let body = '';
+  const flt = (fields) => `<div class="flt">${fields.map(f => `<div class="f"><label>${f[0]}</label><div class="in">${f[1]}</div></div>`).join('')}<button class="b">Search</button><button class="b g">Excel</button></div>`;
+  if (kind === 'report') {
+    body = flt([['Profit Center', 'NAG'], ['Bank', 'All banks'], ['Type', 'Daily'], ['From', '17 Nov 2026'], ['To', '30 Nov 2026']]) +
+      `<table><thead><tr><th>Date</th><th>Opening</th><th>Bank In</th><th>Bank Out</th><th>PV Plan</th><th>Loan</th><th>Closing</th></tr></thead><tbody>${rows(10, i => { const o = 4200000000 - i * 152000000; return `<tr><td>${17 + i} Nov 2026</td><td>${num(o)}</td><td>${num(310000000 + i * 9000000)}</td><td>${num(280000000 + i * 12000000)}</td><td>${num(150000000 + (i % 3) * 40000000)}</td><td>${i === 6 ? num(500000000) : '-'}</td><td><b>${num(o - 120000000)}</b></td></tr>`; })}</tbody></table>`;
+  } else if (kind === 'form') {
+    body = `<div class="grid">${[['Doc Number', 'PPU-E/1126/00012'], ['Plan Date', '20 Nov 2026'], ['Supplier', 'All suppliers'], ['Notes', 'Payment run week 47']].map(f => `<div class="f"><label>${f[0]}</label><div class="in">${f[1]}</div></div>`).join('')}</div>
+      <table><thead><tr><th style="width:30px"><input type="checkbox" checked></th><th>PV Number</th><th>Supplier</th><th>Amount</th><th>Current Date</th><th>New Payment Date</th></tr></thead><tbody>${rows(7, i => `<tr><td><input type="checkbox" ${i < 4 ? 'checked' : ''}></td><td>PV/NAG/1126/0${2140 + i}</td><td>${['PT Sinar Abadi', 'CV Mitra Jaya', 'PT Tekstil Prima', 'PT Logistik Nusantara', 'CV Kemas Indah', 'PT Benang Emas', 'PT Warna Cerah'][i]}</td><td>${num(12500000 + i * 3250000)}</td><td>${18 + i} Nov 2026</td><td><span class="in sm">${i < 4 ? '20 Nov 2026' : '—'}</span></td></tr>`)}</tbody></table>
+      <div class="acts"><button class="b l">Back</button><button class="b g">Save</button></div>`;
+  } else if (kind === 'table' || kind === 'table2') {
+    const rec = kind === 'table2';
+    body = flt(rec ? [['Bank', 'BCA 123-456'], ['Period', 'Oct 2026'], ['Status', 'All']] : [['Supplier', 'All suppliers'], ['From', '1 Nov 2026'], ['To', '30 Nov 2026']]) +
+      `<table><thead><tr>${rec ? '<th>Date</th><th>Description</th><th>Debit</th><th>Credit</th><th>Status</th>' : '<th>Supplier</th><th>Projection</th><th>Realization</th><th>Variance</th><th>%</th>'}</tr></thead><tbody>${rows(9, i => {
+        if (rec) return `<tr><td>${i + 1} Oct 2026</td><td>${['Transfer in', 'Bank charge', 'PV payment', 'Interest', 'Customer receipt'][i % 5]}</td><td>${i % 2 ? num(2500000 * (i + 1)) : '-'}</td><td>${i % 2 ? '-' : num(1800000 * (i + 1))}</td><td><span class="pill ${i % 4 === 3 ? 'r' : 'gr'}">${i % 4 === 3 ? 'Unmatched' : 'Matched'}</span></td></tr>`;
+        const pj = 50000000 + i * 8000000, rl = pj + (i % 3 - 1) * 6000000, vr = rl - pj;
+        return `<tr><td>${['PT Sinar Abadi', 'CV Mitra Jaya', 'PT Tekstil Prima', 'PT Logistik Nusantara', 'CV Kemas Indah', 'PT Benang Emas', 'PT Warna Cerah', 'PT Kancing Mas', 'CV Label Jaya'][i]}</td><td>${num(pj)}</td><td>${num(rl)}</td><td class="${vr > 0 ? 'neg' : ''}">${num(vr)}</td><td class="${vr > 0 ? 'neg' : ''}">${(vr / pj * 100).toFixed(1)}%</td></tr>`;
+      })}</tbody></table>`;
+  } else {
+    body = `<div class="kpi">${[['Total AR', '18,420,000,000'], ['Current', '11,050,000,000'], ['Overdue > 30', '4,310,000,000'], ['Overdue > 90', '1,120,000,000']].map((k, i) => `<div class="k ${i > 1 ? 'warn' : ''}"><small>${k[0]}</small><b>${k[1]}</b></div>`).join('')}</div>
+      <div class="chart">${[62, 48, 30, 22, 12, 8].map((h, i) => `<div class="col"><span style="height:${h * 2.2}px"></span><small>${['0-30', '31-60', '61-90', '91-120', '121-180', '>180'][i]}</small></div>`).join('')}</div>`;
+  }
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+    body{margin:0;font-family:"Segoe UI",Roboto,Arial,sans-serif;font-size:12.5px;color:#1e293b;background:#f1f5f9}
+    .nav{background:#0b1d4a;color:#fff;padding:10px 16px;display:flex;gap:18px;align-items:center;border-bottom:2px solid #e5a913;font-size:12px;flex-wrap:wrap}.nav b{font-size:14px}
+    .w{padding:14px}.card{background:#fff;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden}
+    .hd{background:linear-gradient(90deg,#1e3a8a,#2f5bbf);color:#fff;padding:11px 14px;font-weight:600;font-size:14px}
+    .flt,.grid{display:flex;flex-wrap:wrap;gap:10px;padding:12px 14px;align-items:flex-end;border-bottom:1px solid #e2e8f0}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+    .f label{display:block;font-size:10.5px;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:4px}
+    .in{border:1px solid #cbd5e1;border-radius:7px;padding:6px 9px;min-width:120px;background:#fff}.in.sm{min-width:0;display:inline-block}
+    .b{border:0;border-radius:7px;padding:8px 14px;background:#2563eb;color:#fff;font-weight:600}.b.g{background:#16a34a}.b.l{background:#e2e8f0;color:#334155}
+    .tw{overflow:auto}table{width:100%;border-collapse:collapse}th{background:#eef2f9;color:#1e3a8a;text-align:left;padding:8px 10px;font-size:11.5px;white-space:nowrap}
+    td{padding:7px 10px;border-bottom:1px solid #e3e9f2;white-space:nowrap}td.neg{color:#dc2626;font-weight:600}
+    .acts{display:flex;justify-content:flex-end;gap:8px;padding:12px 14px}
+    .pill{border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600}.pill.gr{background:#d1fae5;color:#047857}.pill.r{background:#fee2e2;color:#b91c1c}
+    .kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:14px}.k{border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px}.k small{color:#64748b;display:block}.k b{font-size:17px}.k.warn b{color:#dc2626}
+    .chart{display:flex;gap:14px;align-items:flex-end;padding:10px 18px 18px;height:170px}.chart .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}.chart span{display:block;width:100%;max-width:46px;background:linear-gradient(#2563eb,#1e3a8a);border-radius:6px 6px 0 0}.chart small{color:#64748b;font-size:10.5px}
+    .ver{position:fixed;right:10px;bottom:10px;background:#0b1d4a;color:#e4c47c;border-radius:8px;padding:3px 9px;font-size:11px;font-weight:700}
+  </style></head><body><div class="nav"><b>NDS</b><span>Master</span><span>AP</span><span>Bank</span><span>Cash</span><span>Accounting</span></div>
+  <div class="w"><div class="card"><div class="hd">${esc(title)}</div>${body.replace(/<table>/g, '<div class="tw"><table>').replace(/<\/table>/g, '</table></div>')}</div></div><span class="ver">MOCKUP v${ver.v}</span></body></html>`;
+}
+
+/* =========================================================================
+   PANEL MOCKUP
+   ========================================================================= */
+let mkP = null, mkV = null;
+function flowHtml(p, cur) {
+  const s = (key, icon, title, st, extra) => `<span class="stp${cur === key ? ' cur' : ''}"><i class="fas fa-${icon}"></i><b>${title}</b>${chip(st, ST[st].label + (extra || ''))}</span>`;
+  return s('mockup', 'pencil-ruler', 'Mockup', mockSt(p), p.versions.length ? ' · v' + p.versions[0].v : '') + '<span class="arr"><i class="fas fa-chevron-right"></i></span>' +
+    s('erd', 'project-diagram', 'ERD', erdSt(p), p.erdData ? ' · v' + p.erdData.v : '') + '<span class="arr"><i class="fas fa-chevron-right"></i></span>' +
+    s('code', 'code', 'Coding', codeSt(p)) +
+    `<span class="gate"><i class="fas fa-${gateOpen(p) ? 'lock-open' : 'lock'}"></i>${gateOpen(p) ? 'Coding unlocked — Mockup and ERD approved' : 'Coding unlocks when Mockup and ERD are approved'}</span>`;
+}
+function openMockup(p) {
+  mkP = p; mkV = p.versions[0] || null;
+  $('#mkTitle').textContent = p.name + ' — Mockup';
+  $('#mkSub').innerHTML = `${p.module} · ${p.versions.length} version(s) · due ${esc(p.mockup.due)}`;
+  renderMockup();
+  $('#mkOv').classList.add('on');
+}
+function renderMockup() {
+  const p = mkP;
+  $('#mkFlow').innerHTML = flowHtml(p, 'mockup');
+  $('#mkVers').innerHTML = p.versions.length ? p.versions.map(v => `<div class="ver${v === mkV ? ' on' : ''}" data-v="${v.v}"><div class="top"><span class="v">v${v.v}</span>${chip(v.st)}</div><div class="by"><i class="far fa-clock"></i>${esc(v.date)}</div>${v.note ? `<div class="nt">${esc(v.note)}</div>` : ''}</div>`).join('')
+    : '<div class="empty" style="padding:20px"><i class="fas fa-layer-group"></i><b>No versions yet</b>Upload the first .html mockup.</div>';
+  const stage = $('#mkStage');
+  if (!mkV) {
+    $('#mkLbl').innerHTML = '<i class="fas fa-desktop"></i> Preview';
+    stage.innerHTML = `<div class="empty"><i class="fas fa-pencil-ruler"></i><b>No mockup yet</b>Due ${esc(p.mockup.due)}. Mockups are plain .html files — the same kind we already make, like mockup_cash_flow_daily.html.</div>`;
+  } else {
+    $('#mkLbl').innerHTML = `<i class="fas fa-desktop"></i> v${mkV.v} ${chip(mkV.st)}`;
+    stage.innerHTML = '<iframe sandbox="allow-scripts" title="Mockup preview"></iframe>';
+    const f = stage.querySelector('iframe');
+    f.srcdoc = mkV.html || mockHTML(p, mkV);
+    f.style.width = ($('#mkDev .on') || {}).dataset ? $('#mkDev .on').dataset.w : '100%';
+  }
+  const rv = mkV ? mkV.rv : [];
+  $('#mkRv').innerHTML = rv.length ? rv.map(r => `<div class="rv ${r.act}"><div class="bub"><div class="w">${chip(r.act)}<span>${esc(r.when)}</span></div>${esc(r.note)}</div></div>`).join('')
+    : '<div class="empty" style="padding:16px 20px"><i class="far fa-comments"></i><b>No notes yet</b>Notes are kept per version, so the history of every decision stays visible.</div>';
+  const can = mkV && mkV === p.versions[0] && mkV.st !== 'approved';
+  $('#mkApprove').disabled = !can; $('#mkChanges').disabled = !can;
+}
+$('#mkVers').addEventListener('click', e => { const c = e.target.closest('.ver'); if (!c) return; mkV = mkP.versions.find(v => v.v === +c.dataset.v); renderMockup(); });
+$('#mkDev').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; $('#mkDev .on').classList.remove('on'); b.classList.add('on'); const f = $('#mkStage iframe'); if (f) f.style.width = b.dataset.w; });
+$('#mkFull').addEventListener('click', () => { const f = $('#mkStage iframe'); if (f && f.requestFullscreen) f.requestFullscreen(); });
+$('#mkDl').addEventListener('click', () => { if (!mkV) return; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([mkV.html || mockHTML(mkP, mkV)], { type: 'text/html' })); a.download = 'mockup_' + mkP.name.toLowerCase().replace(/[^a-z0-9]+/g, '_') + '_v' + mkV.v + '.html'; a.click(); });
+$('#mkFile').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    const v = { v: (mkP.versions[0] ? mkP.versions[0].v : 0) + 1, st: 'review', date: '17 Nov 2026', note: f.name, html: String(r.result), rv: [] };
+    mkP.versions.unshift(v); mkV = v; renderMockup(); renderTeam(); studioRefresh(mkP); luccaRefresh();
+    toast(`v${v.v} uploaded and sent for review (mockup only — not saved)`, 'upload');
+  };
+  r.readAsText(f); e.target.value = '';
+});
+function review(act) {
+  const note = $('#mkNote').value.trim();
+  if (act === 'changes' && !note) { toast('Write what needs to change first', 'exclamation-circle'); $('#mkNote').focus(); return; }
+  mkV.rv.push({ act, note: note || 'Approved.', when: '17 Nov ' + new Date().toTimeString().substring(0, 5) });
+  mkV.st = act; $('#mkNote').value = '';
+  renderMockup(); renderTeam(); studioRefresh(mkP); luccaRefresh();
+  toast(act === 'approved' ? 'Mockup approved — the easel now carries the green stamp' : 'Changes requested — sticky notes added to the easel', act === 'approved' ? 'check' : 'undo');
+}
+$('#mkApprove').addEventListener('click', () => review('approved'));
+$('#mkChanges').addEventListener('click', () => review('changes'));
+document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => { $('#' + b.dataset.close).classList.remove('on'); if (b.dataset.close === 'erdOv') dataRefresh(); }));
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if ($('#dlgOv').classList.contains('on')) { $('#dlgOv').classList.remove('on'); return; }
+  if (relMode) { setRelMode(false); return; }
+  document.querySelectorAll('.ov.on').forEach(o => o.classList.remove('on'));
+});
+
+/* =========================================================================
+   EDITOR ERD (SVG)
+   ========================================================================= */
+const TW = 230, HH = 30, RH = 22;
+const SAMPLE_DB = [
+  { id: 'b_masterbank', cols: [['id','INT(11)','pk'],['bank_name','VARCHAR(100)'],['bank_account','VARCHAR(50)'],['curr','VARCHAR(10)'],['id_coa','VARCHAR(20)'],['fac_limit','DECIMAL(20,2)']] },
+  { id: 'mastersupplier', cols: [['id_supplier','INT(11)','pk'],['supplier','VARCHAR(150)'],['npwp','VARCHAR(30)'],['to_account_manual','TINYINT(1)']] },
+  { id: 'mastercoa_v2', cols: [['id','INT(11)','pk'],['no_coa','VARCHAR(20)'],['nama_coa','VARCHAR(150)'],['flag_bank','TINYINT(1)']] },
+  { id: 'ap_payment_plan', cols: [['id','INT(11)','pk'],['no_pv','VARCHAR(50)'],['plan_date','DATE'],['amount','DECIMAL(20,2)']] },
+  { id: 'ap_saldo_payment_voucher', cols: [['id','INT(11)','pk'],['no_pv','VARCHAR(50)'],['reff_doc','VARCHAR(50)'],['supplier','VARCHAR(150)'],['saldo','DECIMAL(20,2)']] },
+  { id: 'tbl_list_journal', cols: [['id','BIGINT(20)','pk'],['no_journal','VARCHAR(50)'],['tgl_journal','DATE'],['no_coa','VARCHAR(20)'],['debit','DECIMAL(20,2)'],['credit','DECIMAL(20,2)'],['supplier','VARCHAR(150)']] },
+  { id: 'ir_kontrabon_h', cols: [['id','INT(11)','pk'],['no_kbon','VARCHAR(50)'],['tgl_kbon','DATE'],['supplier','VARCHAR(150)'],['amount_add_pv','DECIMAL(20,2)']] },
+  { id: 'bankreport', cols: [['id','BIGINT(20)','pk'],['tanggal','DATE'],['akun','VARCHAR(150)'],['saldo','DECIMAL(20,2)']] }
+];
+const TYPES = ['INT(11)', 'BIGINT(20)', 'VARCHAR(20)', 'VARCHAR(50)', 'VARCHAR(100)', 'VARCHAR(150)', 'VARCHAR(255)', 'DECIMAL(20,2)', 'DECIMAL(20,4)', 'DATE', 'DATETIME', 'TINYINT(1)', 'TEXT'];
+let eP = null, E = null, sel = null, view = { x: 0, y: 0, k: 1 }, relMode = false, relFrom = null, hlTable = null;
+const svg = $('#erdSvg');
+
+function tH(t) { return HH + t.cols.length * RH + 6; }
+function tById(id) { return E.tables.find(t => t.id === id); }
+function openErd(p, focusTable) {
+  eP = p;
+  if (!p.erdData) p.erdData = { v: 1, status: 'draft', tables: [], rels: [] };
+  E = p.erdData; sel = focusTable || (E.tables.find(t => !t.old) || {}).id || null; hlTable = focusTable || null;
+  $('#erdTitle').textContent = p.name + ' — ERD';
+  $('#erdSub').innerHTML = `${p.module} · v${E.v} · due ${esc(p.erd.due)}`;
+  $('#erdOv').classList.add('on');
+  setRelMode(false);
+  erdAll(); requestAnimationFrame(erdFit);
+}
+function erdAll() { $('#erdFlow').innerHTML = flowHtml(eP, 'erd'); erdList(); erdDraw(); erdInsp(); $('#erdEmpty').hidden = E.tables.length > 0; }
+function erdList() {
+  const q = $('#erdFind').value.trim().toLowerCase();
+  const nNew = E.tables.filter(t => !t.old).length;
+  $('#erdCount').textContent = `${nNew} new · ${E.tables.length - nNew} existing`;
+  $('#erdList').innerHTML = E.tables.filter(t => !q || t.id.includes(q)).map(t => `<button data-t="${t.id}" class="${t.id === sel ? 'on' : ''}"><span class="sq" style="background:${t.old ? '#64748b' : '#0b1d4a'};${t.old ? '' : 'outline:1.5px solid #e4c47c'}"></span>${esc(t.id)}<span class="cnt">${t.cols.length}</span></button>`).join('');
+}
+$('#erdFind').addEventListener('input', erdList);
+$('#erdList').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; sel = b.dataset.t; const t = tById(sel); const r = svg.getBoundingClientRect(); view.x = r.width / 2 - (t.x + TW / 2) * view.k; view.y = r.height / 2 - (t.y + tH(t) / 2) * view.k; erdList(); erdDraw(); erdInsp(); });
+
+function anchor(t, colName, side) {
+  const i = Math.max(0, t.cols.findIndex(c => c[0] === colName));
+  return { x: side > 0 ? t.x + TW : t.x, y: t.y + HH + i * RH + RH / 2 };
+}
+function relPath(r) {
+  const a = tById(r[0]), b = tById(r[2]); if (!a || !b) return '';
+  const s = (b.x + TW / 2) >= (a.x + TW / 2) ? 1 : -1;
+  let p1 = anchor(a, r[1], s), p2 = anchor(b, r[3], -s);
+  // dua tabel bertumpuk vertikal: keluar & masuk dari sisi yang sama
+  if (Math.abs(a.x - b.x) < TW * 0.6) { p1 = anchor(a, r[1], -1); p2 = anchor(b, r[3], -1); const d = 46; const ft = `M${p1.x},${p1.y} H${p1.x - 14} M${p1.x - 14},${p1.y} L${p1.x},${p1.y - 7} M${p1.x - 14},${p1.y} L${p1.x},${p1.y + 7}`; return `<path class="relp${hl(r)}" d="M${p1.x},${p1.y} C${p1.x - d},${p1.y} ${p2.x - d},${p2.y} ${p2.x},${p2.y} ${ft} M${p2.x - 9},${p2.y - 7} V${p2.y + 7}"/>`; }
+  const dx = Math.max(40, Math.abs(p2.x - p1.x) / 2);
+  const foot = `M${p1.x + s * 14},${p1.y} L${p1.x},${p1.y - 7} M${p1.x + s * 14},${p1.y} L${p1.x},${p1.y + 7}`;
+  const one = `M${p2.x - s * 9},${p2.y - 7} V${p2.y + 7}`;
+  return `<path class="relp${hl(r)}" d="M${p1.x},${p1.y} C${p1.x + s * dx},${p1.y} ${p2.x - s * dx},${p2.y} ${p2.x},${p2.y} ${foot} ${one}"/>`;
+}
+function hl(r) { return sel && (r[0] === sel || r[2] === sel) ? ' hl' : ''; }
+function erdDraw() {
+  const ICON = { pk: '', fk: '', uq: '' };
+  const tables = E.tables.map(t => `<g class="t ${t.old ? 'old' : 'new'}${t.id === sel ? ' sel' : ''}" data-id="${t.id}" transform="translate(${t.x},${t.y})">
+      <rect class="card2" width="${TW}" height="${tH(t)}" rx="10" filter="url(#sh)"/>
+      <path class="hd" d="M0,${HH} V10 Q0,0 10,0 H${TW - 10} Q${TW},0 ${TW},10 V${HH} Z"/>
+      <text class="hn" x="12" y="19.5">${esc(t.id)}</text>
+      <text class="bdg" x="${TW - 10}" y="19" text-anchor="end">${t.old ? 'EXISTING' : 'NEW'}</text>
+      ${t.cols.map((c, i) => `<g class="col${relFrom && relFrom.t === t.id && relFrom.c === c[0] ? ' pick' : ''}" data-col="${esc(c[0])}" transform="translate(0,${HH + i * RH})"><rect class="rowbg" width="${TW}" height="${RH}"/>${c[2] ? `<text class="ico ${c[2]}" x="12" y="15">${ICON[c[2]]}</text>` : ''}<text class="cn" x="28" y="15">${esc(c[0])}</text><text class="ct" x="${TW - 10}" y="15" text-anchor="end">${esc(c[1])}</text></g>`).join('')}
+    </g>`).join('');
+  svg.innerHTML = `<defs><filter id="sh" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#0f172a" flood-opacity=".12"/></filter></defs>
+    <g transform="translate(${view.x},${view.y}) scale(${view.k})"><g>${E.rels.map(relPath).join('')}</g><g>${tables}</g></g>`;
+}
+function erdFit() {
+  const r = svg.getBoundingClientRect(); if (!E.tables.length || !r.width) { view = { x: 40, y: 40, k: 1 }; erdDraw(); return; }
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  E.tables.forEach(t => { x0 = Math.min(x0, t.x); y0 = Math.min(y0, t.y); x1 = Math.max(x1, t.x + TW); y1 = Math.max(y1, t.y + tH(t)); });
+  const k = clamp(Math.min((r.width - 80) / (x1 - x0), (r.height - 90) / (y1 - y0)), .35, 1.25);
+  view = { k, x: (r.width - (x1 - x0) * k) / 2 - x0 * k, y: (r.height - 40 - (y1 - y0) * k) / 2 - y0 * k };
+  erdDraw();
+}
+function zoomAt(f, cx, cy) { const k = clamp(view.k * f, .3, 2.2); view.x = cx - (cx - view.x) * (k / view.k); view.y = cy - (cy - view.y) * (k / view.k); view.k = k; erdDraw(); }
+$('#zIn').addEventListener('click', () => { const r = svg.getBoundingClientRect(); zoomAt(1.2, r.width / 2, r.height / 2); });
+$('#zOut').addEventListener('click', () => { const r = svg.getBoundingClientRect(); zoomAt(1 / 1.2, r.width / 2, r.height / 2); });
+$('#zFit').addEventListener('click', erdFit);
+svg.addEventListener('wheel', e => { e.preventDefault(); const r = svg.getBoundingClientRect(); zoomAt(e.deltaY < 0 ? 1.1 : 1 / 1.1, e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+
+let drag = null;
+svg.addEventListener('pointerdown', e => {
+  const g = e.target.closest('.t'), col = e.target.closest('.col');
+  if (relMode && g && col) { pickRel(g.dataset.id, col.dataset.col); return; }
+  svg.setPointerCapture(e.pointerId);
+  if (g) {
+    const t = tById(g.dataset.id); sel = t.id;
+    drag = { t, sx: e.clientX, sy: e.clientY, ox: t.x, oy: t.y, moved: false };
+    erdList(); erdInsp();
+  } else { drag = { pan: true, sx: e.clientX, sy: e.clientY, ox: view.x, oy: view.y }; svg.classList.add('panning'); }
+});
+svg.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+  if (drag.pan) { view.x = drag.ox + dx; view.y = drag.oy + dy; }
+  else { drag.t.x = Math.round((drag.ox + dx / view.k) / 10) * 10; drag.t.y = Math.round((drag.oy + dy / view.k) / 10) * 10; drag.moved = true; }
+  erdDraw();
+});
+svg.addEventListener('pointerup', () => { if (drag && !drag.pan && !drag.moved) erdDraw(); drag = null; svg.classList.remove('panning'); });
+
+function setRelMode(on) {
+  relMode = on; relFrom = null;
+  $('#erdRel').classList.toggle('pri', on);
+  $('#erdHint').classList.toggle('on', on);
+  $('#erdHint').textContent = 'Click the FK column (the "many" side), then the column it points to. Esc to cancel.';
+  if (E) erdDraw();
+}
+function pickRel(tid, cname) {
+  if (!relFrom) { relFrom = { t: tid, c: cname }; $('#erdHint').textContent = `${tid}.${cname} → now click the column it points to`; erdDraw(); return; }
+  if (relFrom.t === tid) { toast('Pick a column in another table', 'exclamation-circle'); return; }
+  E.rels.push([relFrom.t, relFrom.c, tid, cname]);
+  const t = tById(relFrom.t), c = t.cols.find(x => x[0] === relFrom.c); if (c && !c[2]) c[2] = 'fk';
+  toast(`Relation added: ${relFrom.t}.${relFrom.c} → ${tid}.${cname}`, 'link');
+  setRelMode(false); erdAll();
+}
+$('#erdRel').addEventListener('click', () => setRelMode(!relMode));
+
+function erdInsp() {
+  const box = $('#erdInsp'), t = sel && tById(sel);
+  if (!t) { box.innerHTML = '<div class="empty" style="padding:20px 6px"><i class="fas fa-mouse-pointer"></i><b>Select a table</b>Click a table on the canvas to see or edit its columns.</div>'; return; }
+  const rels = E.rels.filter(r => r[0] === t.id || r[2] === t.id);
+  const relHtml = rels.length ? `<label>Relations</label>${rels.map(r => `<div class="relro">${esc(r[0])}.${esc(r[1])}<span>→ ${esc(r[2])}.${esc(r[3])}</span></div>`).join('')}` : '';
+  if (t.old) {
+    box.innerHTML = `<label>Table</label><div style="font-weight:600;font-size:13px">${esc(t.id)}</div>
+      <div class="ro"><i class="fas fa-lock"></i><span>Pulled from the live database (<b>signalbit_erp</b>). Read only — this ERD only shows how the new tables connect to it.</span></div>
+      <label>Columns (${t.cols.length})</label>${t.cols.map(c => `<div class="colro"><span>${c[2] ? `<b>${c[2].toUpperCase()}</b> ` : ''}${esc(c[0])}</span><span>${esc(c[1])}</span></div>`).join('')}${relHtml}
+      <div style="margin-top:12px"><button class="btn sm no" id="tRm"><i class="fas fa-trash"></i>Remove from ERD</button></div>`;
+  } else {
+    box.innerHTML = `<label>Table name</label><input type="text" id="tName" value="${esc(t.id)}">
+      <label>Columns</label><div id="tCols">${t.cols.map((c, i) => `<div class="colrow" data-i="${i}"><input type="text" value="${esc(c[0])}" data-f="0"><select data-f="1">${[...new Set([c[1], ...TYPES])].map(x =>`<option${x === c[1] ? ' selected' : ''}>${x}</option>`).join('')}</select><select data-f="2"><option value="">—</option>${['pk', 'fk', 'uq'].map(x => `<option value="${x}"${x === c[2] ? ' selected' : ''}>${x.toUpperCase()}</option>`).join('')}</select><button class="rm" title="Remove column"><i class="fas fa-times"></i></button></div>`).join('')}</div>
+      <button class="btn sm" id="tAddCol" style="margin-top:4px"><i class="fas fa-plus"></i>Add column</button>${relHtml}
+      <div style="margin-top:14px"><button class="btn sm no" id="tRm"><i class="fas fa-trash"></i>Delete table</button></div>`;
+    $('#tName').addEventListener('change', e => { const v = e.target.value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_'); if (!v || tById(v)) { e.target.value = t.id; return; } E.rels.forEach(r => { if (r[0] === t.id) r[0] = v; if (r[2] === t.id) r[2] = v; }); t.id = v; sel = v; erdAll(); });
+    $('#tCols').addEventListener('change', e => { const row = e.target.closest('.colrow'); const c = t.cols[+row.dataset.i]; c[+e.target.dataset.f] = e.target.value; erdDraw(); });
+    $('#tCols').addEventListener('click', e => { if (!e.target.closest('.rm')) return; const i = +e.target.closest('.colrow').dataset.i; const nm = t.cols[i][0]; t.cols.splice(i, 1); E.rels = E.rels.filter(r => !((r[0] === t.id && r[1] === nm) || (r[2] === t.id && r[3] === nm))); erdAll(); });
+    $('#tAddCol').addEventListener('click', () => { t.cols.push(['new_column', 'VARCHAR(100)']); erdAll(); });
+  }
+  $('#tRm').addEventListener('click', () => { E.tables = E.tables.filter(x => x !== t); E.rels = E.rels.filter(r => r[0] !== t.id && r[2] !== t.id); sel = null; erdAll(); });
+}
+$('#erdAdd').addEventListener('click', () => {
+  let n = 1; while (tById('new_table_' + n)) n++;
+  const r = svg.getBoundingClientRect();
+  const t = { id: 'new_table_' + n, x: Math.round(((r.width / 2 - view.x) / view.k - TW / 2) / 10) * 10, y: Math.round(((r.height / 2 - view.y) / view.k - 60) / 10) * 10, cols: [['id', 'INT(11)', 'pk'], ['create_by', 'VARCHAR(100)'], ['create_date', 'DATETIME']] };
+  E.tables.push(t); sel = t.id; erdAll(); setTimeout(() => { const i = $('#tName'); if (i) { i.focus(); i.select(); } }, 30);
+});
+
+/* dialog serbaguna */
+function dialog(head, body, foot) { $('#dlgH').innerHTML = head + '<button class="x" id="dlgX"><i class="fas fa-times"></i></button>'; $('#dlgB').innerHTML = body; $('#dlgF').innerHTML = foot; $('#dlgOv').classList.add('on'); $('#dlgX').onclick = () => $('#dlgOv').classList.remove('on'); }
+function openPull() {
+  dialog('<i class="fas fa-database" style="color:#2563eb"></i> Pull tables from database <small>· signalbit_erp (read only)</small>',
+    `<div class="search" style="margin:0 0 8px"><i class="fas fa-search"></i><input type="text" id="pullQ" placeholder="Search table name..."></div><div id="pullL"></div>
+     <div class="ro" style="margin-top:10px"><i class="fas fa-info-circle"></i><span>Columns are read from INFORMATION_SCHEMA, so the ERD always matches the real table. Nothing is written to the database.</span></div>`,
+    '<button class="btn" id="pullCancel">Cancel</button><button class="btn pri" id="pullOk"><i class="fas fa-plus"></i>Add selected</button>');
+  const draw = () => { const q = $('#pullQ').value.trim().toLowerCase(); $('#pullL').innerHTML = SAMPLE_DB.filter(t => !q || t.id.includes(q)).map(t => { const has = !!tById(t.id); return `<label class="pull-row${has ? ' dis' : ''}"><input type="checkbox" value="${t.id}" ${has ? 'disabled checked' : ''}><i class="fas fa-table" style="color:#64748b"></i>${t.id}<small>${has ? 'already in ERD' : t.cols.length + ' columns'}</small></label>`; }).join(''); };
+  draw(); $('#pullQ').addEventListener('input', draw);
+  $('#pullCancel').onclick = () => $('#dlgOv').classList.remove('on');
+  $('#pullOk').onclick = () => {
+    const ids = [...document.querySelectorAll('#pullL input:checked:not(:disabled)')].map(i => i.value);
+    let y = 40 + Math.max(0, ...E.tables.map(t => t.y + tH(t)));
+    if (!E.tables.length) y = 40;
+    ids.forEach((id, i) => { const s = SAMPLE_DB.find(t => t.id === id); E.tables.push({ id, old: true, x: 40 + (i % 3) * 300, y: y + Math.floor(i / 3) * 220, cols: structuredClone(s.cols) }); });
+    $('#dlgOv').classList.remove('on'); if (ids.length) { sel = ids[0]; erdAll(); erdFit(); toast(ids.length + ' table(s) added from the database', 'database'); }
+  };
+}
+$('#erdPull').addEventListener('click', openPull);
+$('#erdStart').addEventListener('click', openPull);
+function erdSQL() {
+  const slug = eP.name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  const nw = E.tables.filter(t => !t.old);
+  let s = `/* ============================================================================\n   db_migrate_LIVE_20261117_${slug}.sql\n   Generated from ERD v${E.v} (${eP.name}) - NEW tables only.\n   SAFE TO RE-RUN: CREATE TABLE IF NOT EXISTS.\n   ============================================================================ */\n\n`;
+  if (!nw.length) return s + '-- No new tables in this ERD.\n';
+  nw.forEach(t => {
+    const w = Math.max(...t.cols.map(c => c[0].length)) + 3;
+    const lines = t.cols.map(c => '  ' + ('`' + c[0] + '`').padEnd(w) + ' ' + c[1].padEnd(14) + (c[2] === 'pk' ? 'NOT NULL AUTO_INCREMENT' : 'DEFAULT NULL'));
+    const pk = t.cols.find(c => c[2] === 'pk'); if (pk) lines.push('  PRIMARY KEY (`' + pk[0] + '`)');
+    t.cols.filter(c => c[2] === 'uq').forEach(c => lines.push('  UNIQUE KEY `uq_' + c[0] + '` (`' + c[0] + '`)'));
+    t.cols.filter(c => c[2] === 'fk').forEach(c => lines.push('  KEY `idx_' + c[0] + '` (`' + c[0] + '`)'));
+    const refs = E.rels.filter(r => r[0] === t.id).map(r => `   ${r[1]} -> ${r[2]}.${r[3]}`);
+    s += (refs.length ? `/* relations (index only, no FOREIGN KEY constraint):\n${refs.join('\n')} */\n` : '') + 'CREATE TABLE IF NOT EXISTS `' + t.id + '` (\n' + lines.join(',\n') + '\n) ENGINE=InnoDB DEFAULT CHARSET=latin1;\n\n';
+  });
+  return s;
+}
+$('#erdSql').addEventListener('click', () => {
+  dialog('<i class="fas fa-file-code" style="color:#16a34a"></i> Migration SQL <small>· new tables only, ready for the production checklist</small>', `<pre class="sql">${esc(erdSQL())}</pre>`,
+    '<button class="btn" id="sqlCopy"><i class="far fa-copy"></i>Copy</button><button class="btn pri" id="sqlDl"><i class="fas fa-download"></i>Download .sql</button>');
+  $('#sqlCopy').onclick = () => { navigator.clipboard && navigator.clipboard.writeText(erdSQL()); toast('SQL copied', 'copy'); };
+  $('#sqlDl').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([erdSQL()], { type: 'text/plain' })); a.download = 'db_migrate_LIVE_20261117_' + eP.name.toLowerCase().replace(/[^a-z0-9]+/g, '_') + '.sql'; a.click(); };
+});
+$('#erdPng').addEventListener('click', () => toast('PNG export — in the real page this saves the diagram as an image', 'image'));
+$('#erdSubmit').addEventListener('click', () => {
+  if (E.status === 'approved') { toast('This ERD is already approved', 'check'); return; }
+  E.status = 'review'; erdAll(); renderTeam(); dataRefresh(); luccaRefresh();
+  toast('ERD sent for review (mockup only — not saved)', 'paper-plane');
+});
+
+/* =========================================================================
+   3D
+   ========================================================================= */
+function rng(seed) { let s = (seed >>> 0) || 1; return () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296; }
+function shade(hex, f) { const c = new THREE.Color(hex); c.multiplyScalar(f); return '#' + c.getHexString(); }
+function rr(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+function canvasTex(w, h, draw, color = true) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c);
+  if (color) t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  return t;
+}
+// peta relief dari tekstur warna yang sama (permukaan tidak lagi rata)
+function bumpOf(t) { const b = t.clone(); b.colorSpace = THREE.NoColorSpace; b.needsUpdate = true; return b; }
+function repeat(t, x, y) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(x, y); return t; }
+
+function plankTex(base) {
+  return canvasTex(1024, 1024, (g, w, h) => {
+    const r = rng(7), rows = 8, rh = h / rows;
+    for (let i = 0; i < rows; i++) {
+      let x = -r() * 300;
+      while (x < w) {
+        const len = 260 + r() * 300, l = .78 + r() * .32;
+        g.fillStyle = shade(base, l); g.fillRect(x, i * rh, len, rh);
+        g.globalAlpha = .2;
+        for (let k = 0; k < 16; k++) { g.strokeStyle = shade(base, l * .62); g.lineWidth = .8 + r() * 1.6; g.beginPath(); const y = i * rh + r() * rh; g.moveTo(x, y); g.bezierCurveTo(x + len * .3, y + (r() - .5) * 7, x + len * .6, y + (r() - .5) * 7, x + len, y + (r() - .5) * 5); g.stroke(); }
+        g.globalAlpha = 1; g.fillStyle = 'rgba(0,0,0,.45)'; g.fillRect(x, i * rh, 2, rh);
+        x += len;
+      }
+      g.fillStyle = 'rgba(0,0,0,.5)'; g.fillRect(0, i * rh, w, 2);
+    }
+  });
+}
+function brickTex() {
+  // bata ekspos merah-cokelat (cukup gelap supaya judul di atasnya tetap terbaca)
+  return canvasTex(1024, 1024, (g, w, h) => {
+    g.fillStyle = '#4a3a32'; g.fillRect(0, 0, w, h);
+    const r = rng(11), bh = 46, bw = 124, tone = ['#7d3f2a', '#8a4a33', '#6e3626', '#93573d', '#5f3124'];
+    for (let y = 0, row = 0; y < h; y += bh, row++) {
+      for (let x = (row % 2 ? -bw / 2 : 0); x < w; x += bw) {
+        g.fillStyle = shade(tone[Math.floor(r() * tone.length)], .8 + r() * .25); g.fillRect(x + 3, y + 3, bw - 6, bh - 6);
+        g.globalAlpha = .16; for (let k = 0; k < 30; k++) { g.fillStyle = r() < .5 ? '#000' : '#d9a07a'; g.fillRect(x + 3 + r() * (bw - 9), y + 3 + r() * (bh - 9), 1 + r() * 3, 1 + r() * 3); } g.globalAlpha = 1;
+        g.fillStyle = 'rgba(255,255,255,.06)'; g.fillRect(x + 3, y + 3, bw - 6, 3);
+      }
+    }
+  });
+}
+function navyPanelTex() {
+  return canvasTex(512, 512, (g, w, h) => {
+    g.fillStyle = '#14234a'; g.fillRect(0, 0, w, h);
+    const r = rng(3); for (let i = 0; i < 2000; i++) { g.fillStyle = `rgba(255,255,255,${r() * .025})`; g.fillRect(r() * w, r() * h, 2, 2); }
+    [[24, 24, w - 48, h * .58 - 30], [24, h * .58 + 6, w - 48, h * .42 - 30]].forEach(p => {
+      g.strokeStyle = 'rgba(228,196,124,.55)'; g.lineWidth = 3; g.strokeRect(p[0], p[1], p[2], p[3]);
+      g.strokeStyle = 'rgba(0,0,0,.4)'; g.lineWidth = 6; g.strokeRect(p[0] + 8, p[1] + 8, p[2] - 16, p[3] - 16);
+    });
+  });
+}
+function tileTex() {
+  return canvasTex(512, 512, (g, w, h) => {
+    const r = rng(5), n = 4, s = w / n;
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { g.fillStyle = shade((i + j) % 2 ? '#2b3446' : '#323c50', .85 + r() * .2); g.fillRect(i * s, j * s, s, s); }
+    g.strokeStyle = '#151b27'; g.lineWidth = 5; for (let i = 0; i <= n; i++) { g.beginPath(); g.moveTo(i * s, 0); g.lineTo(i * s, h); g.stroke(); g.beginPath(); g.moveTo(0, i * s); g.lineTo(w, i * s); g.stroke(); }
+  });
+}
+function skyTex(seed, moon) {
+  // langit malam: bintang, bulan (satu jendela saja), gedung dgn jendela menyala
+  return canvasTex(256, 512, (g, w, h) => {
+    const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#040817'); gr.addColorStop(.62, '#0d1b42'); gr.addColorStop(1, '#27346a'); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    const r = rng(seed);
+    for (let i = 0; i < 110; i++) { g.fillStyle = `rgba(255,255,255,${.25 + r() * .7})`; const s = r() < .12 ? 2 : 1; g.fillRect(r() * w, r() * h * .62, s, s); }
+    if (moon) { const mg = g.createRadialGradient(w * .66, 78, 4, w * .66, 78, 60); mg.addColorStop(0, 'rgba(255,240,205,.5)'); mg.addColorStop(1, 'rgba(255,240,205,0)'); g.fillStyle = mg; g.fillRect(0, 0, w, 200); g.fillStyle = '#fff3d6'; g.beginPath(); g.arc(w * .66, 78, 17, 0, 7); g.fill(); }
+    let x = 0; while (x < w) { const bw = 18 + r() * 34, bh = 50 + r() * 120; g.fillStyle = '#070d22'; g.fillRect(x, h - bh, bw, bh); for (let yy = h - bh + 6; yy < h - 4; yy += 9) for (let xx = x + 3; xx < x + bw - 4; xx += 7) if (r() < .32) { g.fillStyle = r() < .8 ? '#ffd27a' : '#9cc6ff'; g.fillRect(xx, yy, 3, 4); } x += bw + 2; }
+  });
+}
+function blueprintTex(w = 1024, h = 640) {
+  return canvasTex(w, h, (g) => {
+    g.fillStyle = '#0d3b7d'; g.fillRect(0, 0, w, h);
+    g.strokeStyle = 'rgba(160,210,255,.16)'; g.lineWidth = 1; for (let x = 0; x < w; x += 16) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke(); } for (let y = 0; y < h; y += 16) { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); }
+    g.strokeStyle = 'rgba(160,210,255,.32)'; g.lineWidth = 1.5; for (let x = 0; x < w; x += 128) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke(); } for (let y = 0; y < h; y += 128) { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); }
+    g.strokeStyle = 'rgba(200,230,255,.6)'; g.lineWidth = 4; g.strokeRect(10, 10, w - 20, h - 20);
+  });
+}
+function corkTex() {
+  return canvasTex(512, 320, (g, w, h) => {
+    g.fillStyle = '#b08355'; g.fillRect(0, 0, w, h);
+    const r = rng(21); for (let i = 0; i < 4000; i++) { g.fillStyle = r() < .5 ? 'rgba(60,35,15,.25)' : 'rgba(255,230,190,.18)'; g.fillRect(r() * w, r() * h, 2, 2); }
+    const sw = ['#0b1d4a', '#1e3a8a', '#2563eb', '#e5a913', '#10b981', '#ef4444', '#f8fafc'];
+    sw.forEach((c, i) => { g.save(); g.translate(40 + i * 64, 60 + (i % 2) * 14); g.rotate((r() - .5) * .2); g.fillStyle = '#fff'; g.fillRect(-4, -4, 52, 70); g.fillStyle = c; g.fillRect(0, 0, 44, 44); g.fillStyle = '#334155'; g.font = '600 10px "PJ Poppins",sans-serif'; g.fillText(c.toUpperCase(), 0, 58); g.restore(); });
+    for (let i = 0; i < 4; i++) { g.save(); g.translate(60 + i * 110, 200 + (i % 2) * 18); g.rotate((r() - .5) * .25); g.fillStyle = i % 2 ? '#fff7c2' : '#fff'; g.fillRect(0, 0, 90, 80); g.strokeStyle = '#94a3b8'; g.lineWidth = 2; for (let k = 0; k < 4; k++) { g.beginPath(); g.moveTo(10, 18 + k * 15); g.lineTo(80 - r() * 30, 18 + k * 15); g.stroke(); } g.restore(); }
+    for (let i = 0; i < 11; i++) { g.fillStyle = ['#ef4444', '#2563eb', '#e5a913'][i % 3]; g.beginPath(); g.arc(30 + r() * (w - 60), 20 + r() * (h - 40), 5, 0, 7); g.fill(); }
+  });
+}
+function textPlate(lines, opt = {}) {
+  const w = opt.w || 512, h = opt.h || 128;
+  return canvasTex(w, h, (g) => {
+    if (opt.bg) { g.fillStyle = opt.bg; g.fillRect(0, 0, w, h); }
+    if (opt.border) { g.strokeStyle = opt.border; g.lineWidth = 6; g.strokeRect(6, 6, w - 12, h - 12); }
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    lines.forEach(l => { g.font = l.font; g.fillStyle = l.col; let s = l.text; let sz = parseFloat(l.font.match(/(\d+)px/)[1]); while (g.measureText(s).width > w - 30 && sz > 10) { sz--; g.font = l.font.replace(/\d+px/, sz + 'px'); } g.fillText(s, w / 2, l.y * h); });
+  });
+}
+
+/* gambar kecil mockup di papan easel: pensil (Draft) atau warna */
+function drawMock(g, W, H, p, ver, sketch) {
+  const r = rng(p.id * 97 + (ver ? ver.v : 0));
+  const ink = 'rgba(51,65,85,.85)';
+  g.fillStyle = sketch ? '#fbfaf4' : '#eef2f7'; g.fillRect(0, 0, W, H);
+  const box = (x, y, w, h, fill, o = {}) => {
+    if (sketch) {
+      g.save(); g.strokeStyle = ink; g.lineWidth = o.thin ? 1.2 : 2;
+      const j = () => (r() - .5) * 2.2; g.beginPath(); g.moveTo(x + j(), y + j()); g.lineTo(x + w + j(), y + j()); g.lineTo(x + w + j(), y + h + j()); g.lineTo(x + j(), y + h + j()); g.closePath(); g.stroke();
+      if (o.solid) { g.beginPath(); g.rect(x, y, w, h); g.clip(); g.lineWidth = 1.2; g.globalAlpha = .5; g.beginPath(); for (let k = -h; k < w; k += 8) { g.moveTo(x + k, y + h); g.lineTo(x + k + h, y); } g.stroke(); }
+      g.restore();
+    } else { g.fillStyle = fill; rr(g, x, y, w, h, o.rad == null ? 5 : o.rad); g.fill(); if (o.stroke) { g.strokeStyle = o.stroke; g.lineWidth = 1.5; g.stroke(); } }
+  };
+  const txt = (x, y, s, size, col, weight = 500) => { g.font = sketch ? `${size + 1}px "Segoe Print","Comic Sans MS",cursive` : `${weight} ${size}px "PJ Poppins","Segoe UI",sans-serif`; g.fillStyle = sketch ? ink : col; g.textBaseline = 'middle'; g.textAlign = 'left'; g.fillText(s, x, y); };
+  box(0, 0, W, 34, '#0b1d4a', { rad: 0, solid: true });
+  if (!sketch) { g.fillStyle = '#e5a913'; g.fillRect(0, 32, W, 3); }
+  txt(16, 17, 'NDS', 15, '#fff', 700); ['Master', 'AP', 'Bank', 'Cash', 'Accounting'].forEach((m, i) => txt(80 + i * 74, 17, m, 12, 'rgba(255,255,255,.8)'));
+  const P = 20; let y = 52;
+  box(P, y, W - 2 * P, H - y - 18, '#fff', { rad: 10 });
+  box(P, y, W - 2 * P, 38, '#1e3a8a', { rad: 10, solid: true });
+  txt(P + 16, y + 19, p.id === 6 ? 'Supplier Portal — Register' : TITLES[p.kind], 15, '#fff', 600);
+  y += 50;
+  const fields = (n, wide) => { for (let i = 0; i < n; i++) { const fx = P + 16 + i * ((W - 2 * P - 150) / n); txt(fx, y, ['Profit Center', 'Bank', 'Type', 'From', 'To'][i] || 'Field', 10, '#64748b', 600); box(fx, y + 10, (W - 2 * P - 150) / n - 14, 26, '#fff', { stroke: '#cbd5e1', thin: true }); } box(W - P - 120, y + 10, 50, 26, '#2563eb', { solid: true }); box(W - P - 64, y + 10, 50, 26, '#16a34a', { solid: true }); y += 52; };
+  const table = (cols, rows, status) => {
+    const tx = P + 14, tw = W - 2 * P - 28, cw = tw / cols;
+    box(tx, y, tw, 24, '#eef2f9', { rad: 3 }); for (let c = 0; c < cols; c++) txt(tx + 8 + c * cw, y + 12, ['Date', 'Opening', 'In', 'Out', 'Plan', 'Closing', 'Status'][c] || 'Col', 10, '#1e3a8a', 600);
+    y += 28;
+    for (let i = 0; i < rows && y < H - 34; i++) {
+      for (let c = 0; c < cols; c++) {
+        if (status && c === cols - 1) { const bad = i % 4 === 3; box(tx + 8 + c * cw, y + 4, 56, 15, bad ? '#fee2e2' : '#d1fae5', { rad: 7 }); continue; }
+        const lw = (c === 0 ? .55 : .4 + r() * .3) * (cw - 16); if (sketch) { g.strokeStyle = ink; g.lineWidth = 1.2; g.beginPath(); g.moveTo(tx + 8 + c * cw, y + 12); g.lineTo(tx + 8 + c * cw + lw, y + 12 + (r() - .5) * 2); g.stroke(); } else { g.fillStyle = c === 0 ? '#475569' : '#94a3b8'; g.fillRect(tx + 8 + c * cw, y + 9, lw, 6); }
+      }
+      g.fillStyle = sketch ? 'rgba(51,65,85,.25)' : '#e3e9f2'; g.fillRect(tx, y + 22, tw, 1); y += 24;
+    }
+  };
+  if (p.kind === 'report') { fields(5); table(6, 9); }
+  else if (p.kind === 'table' || p.kind === 'table2') { fields(3); table(5, 9, p.kind === 'table2'); }
+  else if (p.kind === 'form') {
+    for (let i = 0; i < 4; i++) { const fx = P + 16 + (i % 2) * ((W - 2 * P) / 2), fy = y + Math.floor(i / 2) * 44; txt(fx, fy, ['Doc Number', 'Plan Date', 'Supplier', 'Notes'][i], 10, '#64748b', 600); box(fx, fy + 10, (W - 2 * P) / 2 - 34, 24, '#fff', { stroke: '#cbd5e1', thin: true }); }
+    y += 96; table(5, 5); box(W - P - 150, H - 58, 62, 26, '#e2e8f0', {}); box(W - P - 80, H - 58, 62, 26, '#16a34a', { solid: true });
+  } else {
+    for (let i = 0; i < 4; i++) { const cw = (W - 2 * P - 40) / 4; box(P + 16 + i * (cw + 3), y, cw - 8, 56, '#fff', { stroke: '#e2e8f0' }); txt(P + 26 + i * (cw + 3), y + 16, ['Total AR', 'Current', '> 30 days', '> 90 days'][i], 10, '#64748b'); txt(P + 26 + i * (cw + 3), y + 38, ['18.4 B', '11.0 B', '4.3 B', '1.1 B'][i], 16, i > 1 ? '#dc2626' : '#0f172a', 700); }
+    y += 74; [62, 48, 30, 22, 12, 8].forEach((hh, i) => { box(P + 40 + i * 92, H - 40 - hh * 2.4, 56, hh * 2.4, '#2563eb', { rad: 4, solid: true }); });
+  }
+  // stempel APPROVED
+  if (ver && ver.st === 'approved') {
+    g.save(); g.translate(W - 140, H - 76); g.rotate(-.18);
+    g.strokeStyle = 'rgba(5,150,105,.85)'; g.lineWidth = 5; rr(g, -92, -28, 184, 56, 10); g.stroke();
+    g.fillStyle = 'rgba(5,150,105,.85)'; g.font = '700 28px "PJ Poppins",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('APPROVED', 0, 2);
+    g.restore();
+  }
+}
+function emptyBoard(g, W, H, p) {
+  g.fillStyle = '#fbfaf4'; g.fillRect(0, 0, W, H);
+  g.setLineDash([14, 10]); g.strokeStyle = '#cbd5e1'; g.lineWidth = 4; g.strokeRect(24, 24, W - 48, H - 48); g.setLineDash([]);
+  g.textAlign = 'center'; g.fillStyle = '#94a3b8'; g.font = '600 26px "PJ Poppins",sans-serif'; g.fillText('No mockup yet', W / 2, H / 2 - 10);
+  g.font = '18px "PJ Poppins",sans-serif'; g.fillText('due ' + p.mockup.due, W / 2, H / 2 + 26);
+}
+
+function makeEnv(renderer) {
+  const pm = new THREE.PMREMGenerator(renderer), s = new THREE.Scene();
+  s.add(new THREE.Mesh(new THREE.BoxGeometry(20, 10, 20), new THREE.MeshBasicMaterial({ color: 0x2a241d, side: THREE.BackSide })));
+  const lp = (x, y, z, w, h, col) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: col, side: THREE.DoubleSide })); m.position.set(x, y, z); m.lookAt(0, 0, 0); s.add(m); };
+  // pantulan lingkungan versi malam (redup)
+  lp(0, 4.9, 0, 10, 10, new THREE.Color('#ffe2b8').multiplyScalar(.9));
+  lp(-9.9, 2, 0, 6, 4, new THREE.Color('#8fa8ff').multiplyScalar(.5));
+  lp(9.9, 2, 3, 5, 3, new THREE.Color('#ffd9a0').multiplyScalar(.5));
+  const t = pm.fromScene(s, .04).texture; pm.dispose(); return t;
+}
+
+/* bahan */
+const M = {};
+function mats() {
+  const wood = repeat(plankTex('#6b4226'), 1, 1);
+  M.wood = new THREE.MeshStandardMaterial({ map: wood, roughness: .55, metalness: 0, bumpMap: bumpOf(wood), bumpScale: .5 });
+  M.darkWood = new THREE.MeshStandardMaterial({ color: '#3b2416', roughness: .6 });
+  M.brass = new THREE.MeshStandardMaterial({ color: '#c9a45c', roughness: .28, metalness: .9 });
+  M.black = new THREE.MeshStandardMaterial({ color: '#1c1f26', roughness: .45, metalness: .6 });
+  M.white = new THREE.MeshStandardMaterial({ color: '#f5f2ea', roughness: .8 });
+  M.paper = new THREE.MeshStandardMaterial({ color: '#f4f1e8', roughness: .9 });
+  M.pot = new THREE.MeshStandardMaterial({ color: '#b5562c', roughness: .8 });
+  M.leaf = new THREE.MeshStandardMaterial({ color: '#2f7d3a', roughness: .7 });
+  M.skin = new THREE.MeshStandardMaterial({ color: '#d6a27c', roughness: .65 });
+  M.hair = new THREE.MeshStandardMaterial({ color: '#1b1410', roughness: .9 });
+  M.pants = new THREE.MeshStandardMaterial({ color: '#1f2937', roughness: .9 });
+}
+function mesh(geo, mat, x = 0, y = 0, z = 0, shadow = true) { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); if (shadow) { m.castShadow = true; m.receiveShadow = true; } return m; }
+function beam(a, b, t, mat) {
+  const d = new THREE.Vector3().subVectors(b, a), len = d.length();
+  const m = mesh(new THREE.BoxGeometry(t, len, t), mat);
+  m.position.copy(a).addScaledVector(d, .5);
+  m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize());
+  return m;
+}
+function facing(o, x, z) { o.rotation.y = Math.atan2(x - o.position.x, z - o.position.z); }
+
+function roomShell(o) {
+  // lantai + 3 dinding tebal (gaya diorama seperti perpustakaan)
+  const G = new THREE.Group(), W = o.W, D = o.D, H = o.H, T = .22;
+  const fl = mesh(new THREE.BoxGeometry(W + T * 2, .3, D + T), o.floor, 0, -.15, T / 2); fl.receiveShadow = true; G.add(fl);
+  const wb = mesh(new THREE.BoxGeometry(W + T * 2, H, T), o.wallBack, 0, H / 2, -D / 2 - T / 2); G.add(wb);
+  const wl = mesh(new THREE.BoxGeometry(T, H, D), o.wallSide, -W / 2 - T / 2, H / 2, 0); G.add(wl);
+  const wr = mesh(new THREE.BoxGeometry(T, H, D), o.wallSide, W / 2 + T / 2, H / 2, 0); G.add(wr);
+  // plint & lis atas
+  const trim = o.trim || M.darkWood;
+  G.add(mesh(new THREE.BoxGeometry(W, .18, .05), trim, 0, .09, -D / 2 + .025));
+  G.add(mesh(new THREE.BoxGeometry(.05, .18, D), trim, -W / 2 + .025, .09, 0));
+  G.add(mesh(new THREE.BoxGeometry(.05, .18, D), trim, W / 2 - .025, .09, 0));
+  G.add(mesh(new THREE.BoxGeometry(W + T * 2 + .1, .12, T + .1), trim, 0, H + .06, -D / 2 - T / 2));
+  G.add(mesh(new THREE.BoxGeometry(T + .1, .12, D), trim, -W / 2 - T / 2, H + .06, 0));
+  G.add(mesh(new THREE.BoxGeometry(T + .1, .12, D), trim, W / 2 + T / 2, H + .06, 0));
+  return G;
+}
+function door(label, to, side, z, W) {
+  // pintu di dinding kiri/kanan; papan nama kuningan di atasnya
+  const g = new THREE.Group(), x = side * (W / 2 - .03);
+  g.position.set(x, 0, z); g.rotation.y = -side * Math.PI / 2;
+  g.add(mesh(new THREE.BoxGeometry(1.5, 2.55, .08), M.darkWood, 0, 1.27, 0));
+  const inner = new THREE.Mesh(new THREE.PlaneGeometry(1.02, 2.1), new THREE.MeshStandardMaterial({ color: '#0b0f1c', emissive: '#203a7a', emissiveIntensity: .35 }));
+  inner.position.set(0, 1.18, .042); g.add(inner);
+  [[-.61, 1.18], [.61, 1.18]].forEach(p => g.add(mesh(new THREE.BoxGeometry(.06, 2.35, .1), M.wood, p[0], p[1], .05)));
+  g.add(mesh(new THREE.BoxGeometry(1.34, .08, .1), M.wood, 0, 2.38, .05));
+  const plate = new THREE.Mesh(new THREE.BoxGeometry(1.3, .3, .04), [M.brass, M.brass, M.brass, M.brass, new THREE.MeshStandardMaterial({ map: textPlate([{ text: label + '  ›', font: '700 54px "PJ Poppins",sans-serif', col: '#3a2a0c', y: .52 }], { w: 512, h: 118, bg: '#d9bc78', border: '#8a6a2a' }), roughness: .35, metalness: .55 }), M.brass]);
+  plate.position.set(0, 2.78, .06); g.add(plate);
+  inner.userData = { kind: 'door', to, label, glowMat: inner.material }; plate.userData = inner.userData;
+  return { g, hits: [inner, plate], glow: [inner.material] };
+}
+function plant(x, z, s = 1) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.scale.setScalar(s);
+  g.add(mesh(new THREE.CylinderGeometry(.24, .18, .42, 18), M.pot, 0, .21, 0));
+  const r = rng(Math.round(x * 100 + z * 10));
+  for (let i = 0; i < 14; i++) { const l = mesh(new THREE.ConeGeometry(.07, .7 + r() * .4, 6), M.leaf, 0, .7, 0); l.rotation.set((r() - .5) * 1.4, r() * 6, (r() - .5) * 1.4); l.position.y = .55 + r() * .25; g.add(l); }
+  return g;
+}
+/* Lucca: asisten project (hologram). Warnanya = keadaan:
+   biru = tenang, kuning = ada yang menunggu persetujuan, merah = ada yang lewat tenggat */
+const LUCCA_COL = { calm: '#5ee7ff', watch: '#ffc35a', alert: '#ff5d73' };
+function buildLucca(scene, hits, x, y, z) {
+  const col = new THREE.Color(LUCCA_COL.calm);
+  const g = new THREE.Group(); g.position.set(x, y, z);
+  const core = new THREE.Mesh(new THREE.SphereGeometry(.12, 32, 24), new THREE.MeshStandardMaterial({ color: '#000', emissive: col.clone(), emissiveIntensity: 2.6 }));
+  const shell = new THREE.Mesh(new THREE.SphereGeometry(.25, 32, 24), new THREE.MeshBasicMaterial({ color: col.clone(), transparent: true, opacity: .13, blending: THREE.AdditiveBlending, depthWrite: false }));
+  const ringM = new THREE.MeshBasicMaterial({ color: col.clone(), transparent: true, opacity: .8 });
+  const r1 = new THREE.Mesh(new THREE.TorusGeometry(.33, .007, 8, 80), ringM), r2 = new THREE.Mesh(new THREE.TorusGeometry(.41, .005, 8, 80), ringM);
+  r1.rotation.x = Math.PI / 2.4; r2.rotation.y = Math.PI / 3;
+  const light = new THREE.PointLight(col.clone(), 3, 4, 2);
+  g.add(core, shell, r1, r2, light); scene.add(g);
+  shell.userData = { kind: 'lucca' }; hits.push(shell);
+  return { g, r1, r2, y, cols: [core.material.emissive, shell.material.color, ringM.color, light.color] };
+}
+function shaft(x, z, rotY) {
+  // berkas cahaya bulan dari jendela (dingin & tipis)
+  const t = canvasTex(64, 256, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, 'rgba(190,210,255,.9)'); gr.addColorStop(1, 'rgba(190,210,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, w, h); });
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 5.6), new THREE.MeshBasicMaterial({ map: t, transparent: true, opacity: .07, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+  m.position.set(x, 2.1, z); m.rotation.set(-.62, rotY || 0, 0); return m;
+}
+
+/* ---------------- DESIGN STUDIO ---------------- */
+let studio, data;
+function buildStudio() {
+  const scene = new THREE.Scene(), hits = [], easels = {};
+  const W = 16, D = 11, H = 5.2;
+  const floorT = repeat(plankTex('#8a5a34'), 3, 2.2);
+  const brick = repeat(brickTex(), 4, 1.5), brickS = repeat(brickTex(), 2.8, 1.5);
+  const shell = roomShell({ W, D, H,
+    floor: new THREE.MeshStandardMaterial({ map: floorT, bumpMap: bumpOf(floorT), bumpScale: .7, roughness: .5 }),
+    wallBack: new THREE.MeshStandardMaterial({ map: brick, bumpMap: bumpOf(brick), bumpScale: 2, roughness: .95 }),
+    wallSide: new THREE.MeshStandardMaterial({ map: brickS, bumpMap: bumpOf(brickS), bumpScale: 2, roughness: .95 }) });
+  scene.add(shell);
+
+  // jendela besar gaya studio - malam hari
+  [-4.8, 0, 4.8].forEach((x, i) => {
+    const wz = -D / 2 + .005;
+    const sky = new THREE.MeshStandardMaterial({ color: '#000', emissive: '#ffffff', emissiveMap: skyTex(9 + i * 13, i === 2), emissiveIntensity: 1 });
+    scene.add(mesh(new THREE.PlaneGeometry(2.7, 3.3), sky, x, 3.05, wz, false));
+    for (let i = 0; i <= 3; i++) scene.add(mesh(new THREE.BoxGeometry(.05, 3.3, .07), M.black, x - 1.35 + i * .9, 3.05, wz + .03));
+    for (let i = 0; i <= 4; i++) scene.add(mesh(new THREE.BoxGeometry(2.75, .05, .07), M.black, x, 1.4 + i * .825, wz + .03));
+    scene.add(mesh(new THREE.BoxGeometry(2.9, .08, .3), M.white, x, 1.36, wz + .12));
+    scene.add(shaft(x, -3.1, 0));
+  });
+
+  // easel: satu per project
+  const N = PROJECTS.length;
+  PROJECTS.forEach((p, i) => {
+    const a = -0.56 + (i / (N - 1)) * 1.12, R = 9.8;
+    const e = new THREE.Group(); e.position.set(R * Math.sin(a), 0, 6.4 - R * Math.cos(a)); facing(e, 0, 7.5);
+    e.add(beam(new THREE.Vector3(-.62, 0, .14), new THREE.Vector3(-.1, 2.45, -.02), .06, M.wood));
+    e.add(beam(new THREE.Vector3(.62, 0, .14), new THREE.Vector3(.1, 2.45, -.02), .06, M.wood));
+    e.add(beam(new THREE.Vector3(0, 0, -.8), new THREE.Vector3(0, 2.3, -.07), .055, M.wood));
+    e.add(mesh(new THREE.BoxGeometry(1.62, .05, .16), M.wood, 0, .98, .1));
+    e.add(mesh(new THREE.BoxGeometry(1.62, .05, .05), M.wood, 0, 1.03, .17));
+    const holder = new THREE.Group(); holder.position.set(0, 1.56, .08); holder.rotation.x = -.1; e.add(holder);
+    const board = { p, holder, e, extras: new THREE.Group() };
+    holder.add(board.extras);
+    const plateMat = new THREE.MeshStandardMaterial({ roughness: .35, metalness: .55 });
+    const plate = new THREE.Mesh(new THREE.BoxGeometry(.98, .15, .025), [M.brass, M.brass, M.brass, M.brass, plateMat, M.brass]);
+    plate.position.set(0, .9, .19); e.add(plate);
+    board.plateMat = plateMat;
+    scene.add(e);
+    easels[p.id] = board;
+    paintEasel(board);
+    hits.push(plate); plate.userData = { kind: 'easel', pid: p.id };
+  });
+
+  // meja gambar + lampu
+  const desk = new THREE.Group(); desk.position.set(5.9, 0, .9); facing(desk, 0, -1);
+  [[-.55, -.3], [.55, -.3], [-.55, .3], [.55, .3]].forEach(q => desk.add(mesh(new THREE.BoxGeometry(.06, .9, .06), M.black, q[0], .45, q[1])));
+  const top = mesh(new THREE.BoxGeometry(1.3, .04, .8), M.wood, 0, 1.0, 0); top.rotation.x = -.35; desk.add(top);
+  const sheet = mesh(new THREE.PlaneGeometry(.9, .6), M.paper, 0, 1.025, .01, false); sheet.rotation.x = -Math.PI / 2 - .35; desk.add(sheet);
+  desk.add(mesh(new THREE.CylinderGeometry(.015, .015, .7, 8), M.black, .55, 1.35, -.3));
+  const shade1 = mesh(new THREE.ConeGeometry(.14, .18, 18, 1, true), M.black, .45, 1.68, -.15); shade1.rotation.z = .7; desk.add(shade1);
+  const bulbD = mesh(new THREE.SphereGeometry(.05, 12, 10), new THREE.MeshStandardMaterial({ emissive: '#ffd9a0', emissiveIntensity: 3, color: '#000' }), .42, 1.62, -.13, false); desk.add(bulbD);
+  scene.add(desk);
+  const dl = new THREE.PointLight('#ffcf8a', 5, 3.5, 2); dl.position.set(5.7, 1.6, .8); scene.add(dl);
+
+  // papan inspirasi di dinding kiri
+  scene.add(mesh(new THREE.BoxGeometry(.06, 1.7, 2.7), [new THREE.MeshStandardMaterial({ map: corkTex(), roughness: .95 }), M.wood, M.wood, M.wood, M.wood, M.wood], -W / 2 + .05, 2.4, -1.6));
+
+  // lampu gantung industrial: di malam hari inilah sumber cahaya utama (menyorot easel)
+  [-3.2, 0, 3.2].forEach((x, i) => {
+    scene.add(mesh(new THREE.CylinderGeometry(.008, .008, 1.1, 6), M.black, x, H - .55, -.6, false));
+    const sh = mesh(new THREE.CylinderGeometry(.12, .42, .32, 24, 1, true), M.black, x, H - 1.2, -.6); scene.add(sh);
+    scene.add(mesh(new THREE.SphereGeometry(.09, 12, 10), new THREE.MeshStandardMaterial({ color: '#000', emissive: '#ffe2b0', emissiveIntensity: 5 }), x, H - 1.32, -.6, false));
+    const sp = new THREE.SpotLight('#ffcf8f', 34, 11, .78, .6, 1.3); sp.position.set(x, H - 1.4, -.6); sp.target.position.set(x * 1.4, .9, -2.7);
+    if (i === 1) { sp.castShadow = true; sp.shadow.mapSize.set(1024, 1024); sp.shadow.bias = -.0005; sp.shadow.normalBias = .02; }
+    scene.add(sp, sp.target);
+    const pl = new THREE.PointLight('#ffd7a3', 2.5, 6, 2); pl.position.set(x, H - 1.45, -.6); scene.add(pl);
+  });
+  scene.add(plant(-6.9, -4.6, 1.2), plant(7.0, -4.5, 1.05), plant(-6.9, 3.6, .9));
+  // bangku kecil
+  const stool = new THREE.Group(); stool.position.set(5.3, 0, 1.7);
+  stool.add(mesh(new THREE.CylinderGeometry(.2, .2, .05, 20), M.wood, 0, .66, 0));
+  [0, 2.1, 4.2].forEach(a => { const l = mesh(new THREE.CylinderGeometry(.02, .025, .66, 8), M.black, Math.sin(a) * .14, .33, Math.cos(a) * .14); l.rotation.set(Math.cos(a) * .15, 0, -Math.sin(a) * .15); stool.add(l); });
+  scene.add(stool);
+
+  // pintu
+  const dL = door('LIBRARY', 'library', -1, 3.0, W), dR = door('DATA ROOM', 'data', 1, 3.0, W);
+  scene.add(dL.g, dR.g); hits.push(...dL.hits, ...dR.hits);
+
+  const lucca = buildLucca(scene, hits, -4.4, 2.3, .6);
+
+  // cahaya malam: langit redup + bulan dingin dari jendela
+  scene.add(new THREE.HemisphereLight('#33426e', '#120c08', .3));
+  const moon = new THREE.DirectionalLight('#9db4ff', .55); moon.position.set(-3, 9, -9); moon.target.position.set(1, 0, 2);
+  moon.castShadow = true; moon.shadow.mapSize.set(2048, 2048); Object.assign(moon.shadow.camera, { left: -10, right: 10, top: 10, bottom: -10, near: 1, far: 30 }); moon.shadow.bias = -.0004; moon.shadow.normalBias = .02;
+  scene.add(moon, moon.target);
+  const key = new THREE.DirectionalLight('#9fb4ff', .18); key.position.set(6, 7, 12); scene.add(key);
+  scene.environment = env;
+
+  return { scene, hits, easels, lucca, home: { theta: .2, phi: 1.3, r: 10.6, tx: .2, ty: 1.45, tz: -1.2 }, lim: { t: [-.75, .75], p: [.98, 1.45], r: [5, 14] } };
+}
+function paintEasel(b) {
+  const p = b.p, v = p.versions[0];
+  b.holder.children.filter(c => c.userData && c.userData.board).forEach(c => b.holder.remove(c));
+  while (b.extras.children.length) b.extras.remove(b.extras.children[0]);
+  const sketch = !v || v.st === 'draft';
+  const tex = canvasTex(800, 500, (g, w, h) => { if (v) drawMock(g, w, h, p, v, sketch); else emptyBoard(g, w, h, p); });
+  const face = new THREE.MeshStandardMaterial({ map: tex, roughness: .82, emissive: '#ffffff', emissiveMap: tex, emissiveIntensity: .2 });
+  const board = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.0, .04), [M.paper, M.paper, M.paper, M.paper, face, M.paper]);
+  board.castShadow = true; board.userData = { kind: 'easel', pid: p.id, board: true };
+  b.holder.add(board); b.board = board; b.face = face;
+  // tanda status
+  if (v && v.st === 'review') { // jepit kuning = sedang direview
+    b.extras.add(mesh(new THREE.BoxGeometry(.2, .1, .06), new THREE.MeshStandardMaterial({ color: '#f59e0b', roughness: .4, metalness: .2 }), 0, .5, .04));
+    b.extras.add(mesh(new THREE.TorusGeometry(.05, .008, 6, 16, Math.PI), M.brass, 0, .56, .04));
+  }
+  if (v && v.st === 'changes') { // catatan tempel merah/kuning
+    const r = rng(p.id * 7); const notes = 1 + (v.rv.filter(x => x.act === 'changes').length || 1) + 1;
+    for (let i = 0; i < Math.min(3, notes); i++) {
+      const t = canvasTex(128, 128, (g) => { g.fillStyle = i % 2 ? '#fecaca' : '#fde68a'; g.fillRect(0, 0, 128, 128); g.strokeStyle = '#7c2d12'; g.lineWidth = 4; for (let k = 0; k < 4; k++) { g.beginPath(); g.moveTo(14, 30 + k * 22); g.lineTo(110 - r() * 40, 30 + k * 22); g.stroke(); } });
+      const n = mesh(new THREE.PlaneGeometry(.2, .2), new THREE.MeshStandardMaterial({ map: t, roughness: .9 }), -.55 + i * .42 + r() * .1, .25 - r() * .4, .025, false);
+      n.rotation.z = (r() - .5) * .4; b.extras.add(n);
+    }
+  }
+  if (sketch && v) { // pensil di langkan
+    const pen = mesh(new THREE.CylinderGeometry(.012, .012, .32, 6), new THREE.MeshStandardMaterial({ color: '#f2c94c', roughness: .6 }), .35, -.51, .12); pen.rotation.z = Math.PI / 2 - .1; b.extras.add(pen);
+  }
+  // pelat nama
+  const st = v ? v.st : 'todo';
+  b.plateMat.map = textPlate([{ text: p.name, font: '700 40px "PJ Poppins",sans-serif', col: '#2a1d05', y: .4 }, { text: v ? `v${v.v} · ${ST[st].label}` : 'No mockup yet', font: '600 28px "PJ Poppins",sans-serif', col: st === 'changes' ? '#991b1b' : st === 'approved' ? '#065f46' : '#5b4412', y: .78 }], { w: 640, h: 98, bg: '#dcc184' });
+  b.plateMat.needsUpdate = true;
+  if (studio) { studio.hits = studio.hits.filter(h => !(h.userData.board && h.userData.pid === p.id)); studio.hits.push(board); }
+}
+function studioRefresh(p) { if (studio && studio.easels[p.id]) paintEasel(studio.easels[p.id]); }
+
+/* ---------------- DATA ROOM ---------------- */
+function buildData() {
+  const scene = new THREE.Scene(), hits = [], drawers = {};
+  const W = 16, D = 11, H = 5.2;
+  const ft = repeat(tileTex(), 5, 3.4);
+  const pn = repeat(navyPanelTex(), 7, 1), pnS = repeat(navyPanelTex(), 5, 1);
+  scene.add(roomShell({ W, D, H, trim: M.brass,
+    floor: new THREE.MeshStandardMaterial({ map: ft, bumpMap: bumpOf(ft), bumpScale: .8, roughness: .32, metalness: .1 }),
+    wallBack: new THREE.MeshStandardMaterial({ map: pn, bumpMap: bumpOf(pn), bumpScale: 1.5, roughness: .7 }),
+    wallSide: new THREE.MeshStandardMaterial({ map: pnS, bumpMap: bumpOf(pnS), bumpScale: 1.5, roughness: .7 }) }));
+
+  // meja peta di tengah, atasnya cetak biru yang menyala
+  const tbl = new THREE.Group(); tbl.position.set(0, 0, -.4); scene.add(tbl);
+  [[-2.2, -1.25], [2.2, -1.25], [-2.2, 1.25], [2.2, 1.25]].forEach(q => tbl.add(mesh(new THREE.BoxGeometry(.16, .86, .16), M.darkWood, q[0], .43, q[1])));
+  tbl.add(mesh(new THREE.BoxGeometry(4.8, .1, 2.9), M.darkWood, 0, .9, 0));
+  tbl.add(mesh(new THREE.BoxGeometry(4.9, .04, 3.0), M.brass, 0, .87, 0));
+  const bp = blueprintTex();
+  const bpm = mesh(new THREE.PlaneGeometry(4.5, 2.6), new THREE.MeshStandardMaterial({ map: bp, emissive: '#ffffff', emissiveMap: bp, emissiveIntensity: .55, roughness: .6 }), 0, .953, 0, false);
+  bpm.rotation.x = -Math.PI / 2; bpm.receiveShadow = true; tbl.add(bpm);
+  const erdG = new THREE.Group(); erdG.position.y = .96; tbl.add(erdG);
+
+  // lemari laci peta: satu laci per project
+  const chest = new THREE.Group(); chest.position.set(-.6, 0, -D / 2 + .5); scene.add(chest);
+  chest.add(mesh(new THREE.BoxGeometry(5.0, 1.15, .9), M.darkWood, 0, .575, 0));
+  chest.add(mesh(new THREE.BoxGeometry(5.1, .05, 1.0), M.brass, 0, 1.17, 0));
+  PROJECTS.forEach((p, i) => {
+    const col = i % 3, row = Math.floor(i / 3);
+    const dg = new THREE.Group(); dg.position.set(-1.62 + col * 1.62, .82 - row * .5, .45); chest.add(dg);
+    const pm = new THREE.MeshStandardMaterial({ roughness: .4, metalness: .5 });
+    const front = mesh(new THREE.BoxGeometry(1.52, .44, .05), M.wood, 0, 0, 0);
+    const plate = new THREE.Mesh(new THREE.BoxGeometry(1.1, .2, .02), [M.brass, M.brass, M.brass, M.brass, pm, M.brass]); plate.position.set(0, .04, .035);
+    const handle = mesh(new THREE.BoxGeometry(.36, .035, .05), M.brass, 0, -.14, .05);
+    const body = mesh(new THREE.BoxGeometry(1.46, .38, .8), M.darkWood, 0, 0, -.42);
+    const rolls = new THREE.Group(); rolls.position.set(0, .14, -.42);
+    for (let k = 0; k < 3; k++) { const rl = mesh(new THREE.CylinderGeometry(.06, .06, 1.2, 14), new THREE.MeshStandardMaterial({ color: '#cfe3ff', emissive: '#3b82f6', emissiveIntensity: .25 }), 0, 0, -.25 + k * .17); rl.rotation.z = Math.PI / 2; rolls.add(rl); }
+    rolls.visible = false; body.add(rolls); rolls.position.set(0, .14, 0);
+    dg.add(body, front, plate, handle);
+    front.userData = plate.userData = { kind: 'drawer', pid: p.id };
+    hits.push(front, plate);
+    drawers[p.id] = { g: dg, pm, rolls, front, out: 0, goal: 0 };
+    paintDrawer(drawers[p.id], p);
+  });
+
+  // rak server: lampunya = jumlah tabel di ERD yang terbuka
+  const rack = new THREE.Group(); rack.position.set(6.7, 0, -4.4); rack.rotation.y = -.5; scene.add(rack);
+  rack.add(mesh(new THREE.BoxGeometry(.9, 2.3, .8), M.black, 0, 1.15, 0));
+  const ledC = document.createElement('canvas'); ledC.width = 128; ledC.height = 256;
+  const ledT = new THREE.CanvasTexture(ledC); ledT.colorSpace = THREE.SRGBColorSpace;
+  const ledM = new THREE.MeshStandardMaterial({ color: '#000', emissive: '#ffffff', emissiveMap: ledT, emissiveIntensity: 1.4, map: ledT });
+  const ledP = mesh(new THREE.PlaneGeometry(.78, 2.1), ledM, 0, 1.15, .405, false); rack.add(ledP);
+  ledP.userData = { kind: 'rack' }; hits.push(ledP);
+
+  // peta skema besar di dinding kiri (hiasan)
+  const mapT = canvasTex(1024, 640, (g, w, h) => {
+    g.fillStyle = '#0a2a5c'; g.fillRect(0, 0, w, h); const r = rng(77);
+    g.strokeStyle = 'rgba(120,190,255,.35)'; g.lineWidth = 2; const pts = [];
+    for (let i = 0; i < 60; i++) pts.push([30 + r() * (w - 90), 30 + r() * (h - 70)]);
+    for (let i = 0; i < 70; i++) { const a = pts[Math.floor(r() * 60)], b = pts[Math.floor(r() * 60)]; g.beginPath(); g.moveTo(a[0] + 30, a[1] + 15); g.lineTo(b[0] + 30, b[1] + 15); g.stroke(); }
+    pts.forEach(p => { g.fillStyle = r() < .2 ? '#e4c47c' : '#9cc6ff'; g.fillRect(p[0], p[1], 60, 30); g.fillStyle = '#0a2a5c'; g.fillRect(p[0] + 3, p[1] + 9, 54, 18); });
+    g.fillStyle = '#e4c47c'; g.font = '700 30px "PJ Poppins",sans-serif'; g.fillText('SIGNALBIT ERP · SCHEMA', 30, h - 18);
+  });
+  const frame = mesh(new THREE.BoxGeometry(.08, 1.9, 3.0), [M.brass, new THREE.MeshStandardMaterial({ map: mapT, emissive: '#ffffff', emissiveMap: mapT, emissiveIntensity: .45 }), M.brass, M.brass, M.brass, M.brass], -W / 2 + .06, 2.6, -1.4);
+  frame.rotation.y = Math.PI; scene.add(frame);
+
+  // lampu dinding kuningan
+  [-4.2, 3.6].forEach(x => {
+    scene.add(mesh(new THREE.CylinderGeometry(.09, .14, .26, 16), M.brass, x, 3.0, -D / 2 + .16));
+    scene.add(mesh(new THREE.SphereGeometry(.07, 12, 10), new THREE.MeshStandardMaterial({ color: '#000', emissive: '#ffd59a', emissiveIntensity: 4 }), x, 3.18, -D / 2 + .16, false));
+    const l = new THREE.PointLight('#ffcf8a', 4, 6, 2); l.position.set(x, 3.2, -D / 2 + .5); scene.add(l);
+  });
+  scene.add(plant(-6.9, -4.6, 1.1), plant(-6.9, 3.8, .9));
+  const dS = door('DESIGN STUDIO', 'studio', -1, 2.4, W), dLb = door('LIBRARY', 'library', 1, 2.6, W);
+  scene.add(dS.g, dLb.g); hits.push(...dS.hits, ...dLb.hits);
+
+  const lucca = buildLucca(scene, hits, -3.1, 2.1, -1.0);
+
+  scene.add(new THREE.HemisphereLight('#7f98e0', '#120e0a', .24));
+  const top = new THREE.SpotLight('#eaf2ff', 40, 14, .62, .5, 1.6); top.position.set(.5, 8, 2.5); top.target.position.set(0, .9, -.4);
+  top.castShadow = true; top.shadow.mapSize.set(2048, 2048); top.shadow.bias = -.0004; top.shadow.normalBias = .02; scene.add(top, top.target);
+  const glow = new THREE.PointLight('#5aa8ff', 5, 6, 2); glow.position.set(0, 2.0, -.4); scene.add(glow);
+  const key = new THREE.DirectionalLight('#c9d8ff', .35); key.position.set(5, 8, 12); scene.add(key);
+  scene.environment = env;
+
+  return { scene, hits, drawers, erdG, ledC, ledT, lucca, cur: null, home: { theta: -.2, phi: 1.1, r: 8.9, tx: .4, ty: .95, tz: -1.4 }, lim: { t: [-.75, .75], p: [.9, 1.42], r: [5, 14] } };
+}
+function paintDrawer(d, p) {
+  const st = erdSt(p), e = p.erdData;
+  d.pm.map = textPlate([{ text: p.name, font: '700 38px "PJ Poppins",sans-serif', col: '#2a1d05', y: .38 }, { text: e ? `ERD v${e.v} · ${ST[st].label}` : 'No ERD yet · due ' + p.erd.due, font: '600 27px "PJ Poppins",sans-serif', col: st === 'approved' ? '#065f46' : st === 'review' ? '#92400e' : '#5b4412', y: .76 }], { w: 640, h: 116, bg: '#d9bc78' });
+  d.pm.needsUpdate = true;
+}
+function dataRefresh() { if (!data) return; PROJECTS.forEach(p => paintDrawer(data.drawers[p.id], p)); if (data.cur) loadTable(data.cur, true); }
+
+// ERD project terpilih -> balok-balok tabel di atas meja + busur relasi
+function tileTexFor(t) {
+  const W = 256, h = 40 + t.cols.length * 22;
+  return { tex: canvasTex(W, h, (g) => {
+    // tabel baru = kertas krem berbingkai emas, tabel lama = abu-abu
+    g.fillStyle = t.old ? '#cbd5e1' : '#fff4d6'; g.fillRect(0, 0, W, h);
+    if (!t.old) { g.strokeStyle = '#c9971f'; g.lineWidth = 8; g.strokeRect(4, 4, W - 8, h - 8); }
+    g.fillStyle = t.old ? '#475569' : '#0b1d4a'; g.fillRect(0, 0, W, 36);
+    if (!t.old) { g.fillStyle = '#e5a913'; g.fillRect(0, 33, W, 4); }
+    g.fillStyle = '#fff'; g.font = '600 16px "PJ Poppins",sans-serif'; g.textBaseline = 'middle'; g.fillText(t.id, 10, 18, W - 20);
+    t.cols.forEach((c, i) => { const y = 40 + i * 22 + 8; g.fillStyle = c[2] === 'pk' ? '#b7791f' : c[2] === 'fk' ? '#2563eb' : '#94a3b8'; g.fillRect(10, y - 4, 7, 7); g.fillStyle = '#1e293b'; g.font = '13px "PJ Poppins",sans-serif'; g.fillText(c[0], 24, y, W - 34); });
+  }), ratio: h / W };
+}
+function loadTable(pid, instant) {
+  const p = PROJECTS.find(x => x.id === pid); data.cur = pid;
+  Object.keys(data.drawers).forEach(k => { data.drawers[k].goal = +k === pid ? .42 : 0; data.drawers[k].rolls.visible = +k === pid; });
+  const G = data.erdG; while (G.children.length) G.remove(G.children[0]);
+  data.pulses = [];
+  const e = p.erdData;
+  if (!e || !e.tables.length) { drawLeds(0, 0); return; }
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  e.tables.forEach(t => { x0 = Math.min(x0, t.x); y0 = Math.min(y0, t.y); x1 = Math.max(x1, t.x + TW); y1 = Math.max(y1, t.y + tH(t)); });
+  const s = Math.min(4.1 / (x1 - x0), 2.3 / (y1 - y0)), cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+  const P = (x, y) => new THREE.Vector3((x - cx) * s, 0, (y - cy) * s);
+  const pos = {};
+  e.tables.forEach((t, i) => {
+    const w = TW * s, d = tH(t) * s, tt = tileTexFor(t);
+    const side = new THREE.MeshStandardMaterial({ color: t.old ? '#475569' : '#e4b440', roughness: .35, metalness: t.old ? .2 : .75, emissive: t.old ? '#000' : '#8a6410', emissiveIntensity: .45 });
+    const topM = new THREE.MeshStandardMaterial({ map: tt.tex, roughness: .6, emissive: '#ffffff', emissiveMap: tt.tex, emissiveIntensity: .12 });
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, .08, d), [side, side, topM, side, side, side]);
+    const c = P(t.x + TW / 2, t.y + tH(t) / 2); m.position.copy(c); m.castShadow = true;
+    // naik dari dalam meja satu per satu (berdasarkan waktu, bukan jumlah frame)
+    m.userData = { kind: 'tile', pid, tid: t.id, old: !!t.old, t0: performance.now() / 1000 + (instant ? -9 : i * .1) };
+    m.position.y = instant ? .025 : -.2; G.add(m); pos[t.id] = t;
+    data.hits = data.hits.filter(h => h.userData.kind !== 'tile');
+  });
+  data.hits.push(...G.children.filter(c => c.userData.kind === 'tile'));
+  const cyan = new THREE.MeshBasicMaterial({ color: '#7fe3ff', transparent: true, opacity: .9 });
+  e.rels.forEach((r, i) => {
+    const a = pos[r[0]], b = pos[r[2]]; if (!a || !b) return;
+    const sgn = (b.x + TW / 2) >= (a.x + TW / 2) ? 1 : -1;
+    const pa = anchor(a, r[1], sgn), pb = anchor(b, r[3], -sgn);
+    const A = P(pa.x, pa.y), B = P(pb.x, pb.y); A.y = B.y = .09;
+    const mid = A.clone().lerp(B, .5); mid.y = .18 + A.distanceTo(B) * .12;
+    const curve = new THREE.QuadraticBezierCurve3(A, mid, B);
+    const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 32, .008, 6), cyan); G.add(tube);
+    [A, B].forEach(q => { const d = new THREE.Mesh(new THREE.SphereGeometry(.022, 10, 8), cyan); d.position.copy(q); G.add(d); });
+    const pulse = new THREE.Mesh(new THREE.SphereGeometry(.03, 10, 8), new THREE.MeshBasicMaterial({ color: '#ffffff' })); G.add(pulse);
+    data.pulses.push({ curve, m: pulse, off: i * .37 });
+  });
+  const nNew = e.tables.filter(t => !t.old).length;
+  drawLeds(nNew, e.tables.length - nNew);
+}
+let ledState = { n: 0, o: 0 };
+function drawLeds(n, o) { ledState = { n, o }; ledTick(0); }
+function ledTick(t) {
+  if (!data) return;
+  const g = data.ledC.getContext('2d'), w = 128, h = 256; g.fillStyle = '#0b0d12'; g.fillRect(0, 0, w, h);
+  const r = rng(Math.floor(t * 3) + 1);
+  for (let u = 0; u < 9; u++) {
+    const y = 10 + u * 27; g.fillStyle = '#1b1f2a'; g.fillRect(6, y, w - 12, 22); g.fillStyle = '#2a3142'; g.fillRect(10, y + 4, 60, 3);
+    if (u < ledState.n + ledState.o) { const old = u >= ledState.n; g.fillStyle = r() < .85 ? (old ? '#94a3b8' : '#ffd479') : '#3a2f12'; g.fillRect(w - 30, y + 7, 8, 8); g.fillStyle = r() < .7 ? '#34d399' : '#064e3b'; g.fillRect(w - 18, y + 7, 8, 8); }
+    else { g.fillStyle = '#2a3142'; g.fillRect(w - 30, y + 7, 8, 8); g.fillRect(w - 18, y + 7, 8, 8); }
+  }
+  data.ledT.needsUpdate = true;
+}
+
+/* ---------------- kamera, klik, putaran ---------------- */
+const host = $('#scene');
+let renderer, camera, env, room = 'studio';
+const cam = { theta: 0, phi: 1.2, r: 12, tx: 0, ty: 1.4, tz: 0, goal: null };
+const R = () => room === 'studio' ? studio : data;
+
+function legendHtml() {
+  if (room === 'studio') return `<div class="room"><i class="fas fa-pencil-ruler"></i>Design Studio</div><div class="cap">1 easel = 1 project · the board shows its latest mockup</div>
+    <div class="items"><span class="it"><span class="sw" style="background:repeating-linear-gradient(45deg,#cbd5e1 0 2px,#f8fafc 2px 5px)"></span>Draft (pencil sketch)</span><span class="it"><span class="sw" style="background:#f59e0b"></span>In review (yellow clip)</span><span class="it"><span class="sw" style="background:#ef4444"></span>Changes requested (sticky notes)</span><span class="it"><span class="sw" style="background:#10b981"></span>Approved (green stamp)</span></div>
+    <div class="note">Empty easel = no mockup yet · Lucca (the floating light) reports what needs your approval</div>`;
+  return `<div class="room"><i class="fas fa-database"></i>Data Room</div><div class="cap">1 drawer = 1 project ERD · the open drawer is laid out on the table</div>
+    <div class="items"><span class="it"><span class="sw" style="background:#e4c47c"></span>New table (needs migration SQL)</span><span class="it"><span class="sw" style="background:#64748b"></span>Existing table</span><span class="it"><span class="sw" style="background:#7fe3ff"></span>Relation</span></div>
+    <div class="note">Server lights = tables in the open ERD (gold = new, grey = existing)</div>`;
+}
+function ctrlHtml() {
+  return `<span class="hint">Drag to look around · Ctrl + scroll to zoom · ${room === 'studio' ? 'click an easel' : 'click a drawer or a table tile'}</span>
+    <button type="button" id="cLucca" class="lu-btn" style="--lc:${LUCCA_COL[luccaMood()]}"><span class="lu-eye"></span>Lucca</button>
+    <button type="button" id="cTeam" title="Project workflow"><i class="fas fa-tasks"></i><span class="lbl">Project workflow</span></button>
+    <button type="button" id="cMain" class="gold"><i class="fas fa-${room === 'studio' ? 'upload' : 'project-diagram'}"></i>${room === 'studio' ? 'Open a mockup' : 'Open ERD editor'}</button>`;
+}
+const greeted = {};
+function setRoom(to, instant) {
+  if (to === 'library') { toast('Library is the existing bookshelf view — unchanged. The two new rooms sit next to it.', 'book'); return; }
+  if (to === room && !instant) return;
+  const go = () => {
+    room = to; const h = R().home; Object.assign(cam, h); cam.goal = { ...h };
+    $('#legend').innerHTML = legendHtml(); $('#ctrl').innerHTML = ctrlHtml(); $('#pop').classList.remove('on');
+    $('#heroSub').textContent = room === 'studio' ? 'Every screen is drawn and agreed here first — versioned, reviewed, then handed to the programmer.' : 'Every new table is designed here as an ERD and reviewed before any migration SQL runs on production.';
+    document.querySelectorAll('#roomSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.room === room ? 'true' : 'false'));
+    $('#cTeam').onclick = () => $('#team').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('#cMain').onclick = () => openPop();
+    $('#cLucca').onclick = () => luccaToggle();
+    if (room === 'data' && !data.cur) loadTable(1);
+    // Lucca menyapa sekali tiap masuk ruangan; kalau panelnya sedang terbuka, isinya ikut ruangan baru
+    if (!$('#lucca').hidden) luccaRender();
+    else if (!greeted[room]) { greeted[room] = 1; const r = room; setTimeout(() => { if (room === r) luccaToggle(true); }, 1400); }
+  };
+  if (instant) { go(); return; }
+  $('#fade').classList.add('on'); setTimeout(() => { go(); $('#fade').classList.remove('on'); }, 360);
+}
+function openPop() {
+  const pop = $('#pop'); if (pop.classList.toggle('on') === false) return;
+  pop.innerHTML = `<div class="h">${room === 'studio' ? 'Open mockup of' : 'Open ERD of'}</div>` + PROJECTS.map(p => { const st = room === 'studio' ? mockSt(p) : erdSt(p); return `<button data-pid="${p.id}">${trackIc(room === 'studio' ? 'mockup' : 'erd', st)}<span>${esc(p.name)}<small>${ST[st].label}${room === 'studio' && p.versions[0] ? ' · v' + p.versions[0].v : ''}${room === 'data' && p.erdData ? ' · v' + p.erdData.v : ''}</small></span></button>`; }).join('');
+  pop.onclick = e => { const b = e.target.closest('button'); if (!b) return; pop.classList.remove('on'); const p = PROJECTS.find(x => x.id === +b.dataset.pid); room === 'studio' ? openMockup(p) : openErd(p); };
+}
+$('#roomSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setRoom(b.dataset.room); });
+
+function resize() {
+  const w = host.clientWidth, h = host.clientHeight; if (!w || !h) return;
+  renderer.setSize(w, h, false); camera.aspect = w / h;
+  if (w >= 768) camera.setViewOffset(w, h, -w * .1, -h * .07, w, h); else camera.clearViewOffset();
+  camera.updateProjectionMatrix();
+}
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+function pick(e) {
+  const r = renderer.domElement.getBoundingClientRect();
+  ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const h = ray.intersectObjects(R().hits, false)[0]; return h ? h.object : null;
+}
+let hot = null;
+// bahan yang disorot saat kursor di atas benda (hanya bahan milik benda itu sendiri,
+// bukan bahan bersama seperti kuningan)
+function glowOf(o) {
+  const u = o.userData;
+  if (u.kind === 'easel') return [studio.easels[u.pid].face];
+  if (u.kind === 'drawer') return [data.drawers[u.pid].pm];
+  if (u.kind === 'tile') return [o.material[2]];
+  if (u.kind === 'door') return [u.glowMat];
+  if (u.kind === 'rack') return [o.material];
+  return [];
+}
+function glowSet(m, on) {
+  if (on) {
+    m.userData.prevE = m.emissive.clone(); m.userData.prevI = m.emissiveIntensity;
+    if (m.emissiveMap) m.emissiveIntensity = m.userData.prevI + .35; else { m.emissive.set('#4a4a4a'); m.emissiveIntensity = 1; }
+  } else if (m.userData.prevE) { m.emissive.copy(m.userData.prevE); m.emissiveIntensity = m.userData.prevI; }
+}
+function setHot(o) {
+  if (hot === o) return;
+  if (hot) glowOf(hot).forEach(m => glowSet(m, false));
+  hot = o;
+  if (hot) glowOf(hot).forEach(m => glowSet(m, true));
+  renderer.domElement.classList.toggle('hot', !!hot);
+}
+function tipHtml(u) {
+  const dot = st => `<span class="st"><span class="dot" style="background:${ST[st].col}"></span>${ST[st].label}</span>`;
+  if (u.kind === 'easel') { const p = PROJECTS.find(x => x.id === u.pid), v = p.versions[0]; return `<b>${esc(p.name)}</b>${v ? `Mockup v${v.v} · ` : ''}${dot(mockSt(p))}<br>Due ${esc(p.mockup.due)}<div class="go">Click to open the mockup</div>`; }
+  if (u.kind === 'drawer') { const p = PROJECTS.find(x => x.id === u.pid), e = p.erdData; return `<b>${esc(p.name)}</b>${e ? `ERD v${e.v} · ${e.tables.length} tables · ` : ''}${dot(erdSt(p))}<br>Due ${esc(p.erd.due)}<div class="go">${data.cur === p.id ? 'On the table — click again to open the editor' : 'Click to lay it out on the table'}</div>`; }
+  if (u.kind === 'tile') { const p = PROJECTS.find(x => x.id === u.pid), t = p.erdData.tables.find(x => x.id === u.tid); return `<b>${esc(u.tid)}</b>${u.old ? 'Existing table' : '<span style="color:#e4c47c">New table — needs migration</span>'} · ${t ? t.cols.length : 0} columns<div class="go">Click to edit in the ERD editor</div>`; }
+  if (u.kind === 'door') return `<b>${esc(u.label)}</b>Walk to the ${esc(u.label.toLowerCase())}<div class="go">Click to go</div>`;
+  if (u.kind === 'lucca') { const w = luccaItems('all').filter(i => i.lv === 'watch').length; return `<b>Lucca · asisten project</b>${w ? `${w} hal menunggu persetujuan Anda` : 'Semua aman, tidak ada yang menunggu'}<div class="go">Klik untuk mendengar laporan Lucca</div>`; }
+  if (u.kind === 'rack') return `<b>Database server</b>${ledState.n} new + ${ledState.o} existing tables in the ERD on the table`;
+  return '';
+}
+function moveTip(e, o) {
+  const tip = $('#tip');
+  if (!o) { tip.classList.remove('on'); return; }
+  tip.innerHTML = tipHtml(o.userData); tip.classList.add('on');
+  const r = host.getBoundingClientRect();
+  tip.style.left = clamp(e.clientX - r.left + 16, 8, r.width - 300) + 'px';
+  tip.style.top = clamp(e.clientY - r.top + 16, 8, r.height - 130) + 'px';
+}
+function focusOn(obj, then) {
+  const wp = new THREE.Vector3(); obj.getWorldPosition(wp);
+  cam.goal = { ...cam.goal, tx: wp.x * .7, ty: 1.3, tz: wp.z * .7 - .2, r: Math.max(R().lim.r[0] + .5, cam.goal.r * .62) };
+  setTimeout(then, 520);
+}
+function clickObj(o) {
+  const u = o.userData;
+  if (u.kind === 'easel') focusOn(o, () => openMockup(PROJECTS.find(x => x.id === u.pid)));
+  else if (u.kind === 'drawer') { if (data.cur === u.pid) openErd(PROJECTS.find(x => x.id === u.pid)); else loadTable(u.pid); }
+  else if (u.kind === 'tile') openErd(PROJECTS.find(x => x.id === u.pid), u.tid);
+  else if (u.kind === 'door') setRoom(u.to);
+  else if (u.kind === 'lucca') luccaToggle();
+  else if (u.kind === 'rack') toast(`${ledState.n} new + ${ledState.o} existing tables in this ERD`, 'server');
+}
+
+async function start3d() {
+  try { await Promise.race([Promise.all([document.fonts.load('600 20px "PJ Poppins"'), document.fonts.load('700 20px "PJ Poppins"'), document.fonts.load('900 12px "Font Awesome 5 Free"')]), new Promise(r => setTimeout(r, 2000))]); } catch (e) {}
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
+  renderer.setClearColor(0x000000, 0);
+  host.prepend(renderer.domElement);
+  camera = new THREE.PerspectiveCamera(40, 1, .1, 120);
+  env = makeEnv(renderer); mats();
+  studio = buildStudio(); data = buildData();
+  Object.values(studio.easels).forEach(b => studio.hits.push(b.board));
+  luccaRefresh();
+  $('#loading').remove();
+  resize(); new ResizeObserver(resize).observe(host);
+  setRoom('studio', true);
+
+  const cv = renderer.domElement; let drag = null;
+  cv.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, t: cam.goal.theta, p: cam.goal.phi, moved: false }; });
+  cv.addEventListener('pointermove', e => {
+    if (drag) {
+      const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      if (!drag.moved && Math.abs(dx) + Math.abs(dy) > 5) { drag.moved = true; cv.classList.add('drag'); try { cv.setPointerCapture(e.pointerId); } catch (x) {} moveTip(e, null); setHot(null); }
+      if (drag.moved) { const L = R().lim; cam.goal.theta = clamp(drag.t - dx * .005, L.t[0], L.t[1]); cam.goal.phi = clamp(drag.p - dy * .004, L.p[0], L.p[1]); }
+      return;
+    }
+    const o = pick(e); setHot(o); moveTip(e, o);
+  });
+  cv.addEventListener('pointerup', e => { if (drag && !drag.moved) { const o = pick(e); if (o) clickObj(o); } drag = null; cv.classList.remove('drag'); });
+  cv.addEventListener('pointercancel', () => { drag = null; cv.classList.remove('drag'); });
+  cv.addEventListener('pointerleave', e => { if (!drag) { setHot(null); moveTip(e, null); } });
+  cv.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); const L = R().lim; cam.goal.r = clamp(cam.goal.r * (e.deltaY > 0 ? 1.08 : 1 / 1.08), L.r[0], L.r[1]); }, { passive: false });
+  cv.addEventListener('dblclick', () => { cam.goal = { ...R().home }; });
+
+  let visible = true; new IntersectionObserver(en => { visible = en[0].isIntersecting; }).observe(host);
+  const clock = new THREE.Clock(); let lastLed = 0;
+  const loop = () => {
+    requestAnimationFrame(loop);
+    if (!visible || document.hidden) return;
+    const t = clock.getElapsedTime(), k = .08;
+    ['theta', 'phi', 'r', 'tx', 'ty', 'tz'].forEach(n => { cam[n] += (cam.goal[n] - cam[n]) * k; });
+    camera.position.set(cam.tx + cam.r * Math.sin(cam.phi) * Math.sin(cam.theta), cam.ty + cam.r * Math.cos(cam.phi), cam.tz + cam.r * Math.sin(cam.phi) * Math.cos(cam.theta));
+    camera.lookAt(cam.tx, cam.ty, cam.tz);
+    const L = R().lucca; L.g.position.y = L.y + Math.sin(t * 1.4) * .08; L.r1.rotation.z = t * .9; L.r2.rotation.x = t * .6;
+    if (room === 'data') {
+      Object.values(data.drawers).forEach(d => { d.out += (d.goal - d.out) * .1; d.g.position.z = .45 + d.out; });
+      const now = performance.now() / 1000;
+      data.erdG.children.forEach(m => { const u = m.userData; if (u.kind !== 'tile') return; const q = clamp((now - u.t0) / .55, 0, 1); m.position.y = -.2 + (1 - Math.pow(1 - q, 3)) * .24; });
+      (data.pulses || []).forEach(p => { p.m.position.copy(p.curve.getPoint((t * .35 + p.off) % 1)); });
+      if (t - lastLed > .4) { lastLed = t; ledTick(t); }
+    }
+    renderer.render(R().scene, camera);
+  };
+  loop();
+}
+
+renderTeam();
+start3d().catch(err => { $('#loading').innerHTML = '<i class="fas fa-exclamation-triangle"></i>&nbsp; 3D could not start on this device: ' + esc(err.message); console.error(err); });
+</script>
+</body>
+</html>

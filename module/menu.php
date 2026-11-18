@@ -994,6 +994,40 @@ echo'</ul>
         $menu2 = isset($rs2['menu']) ? $rs2['menu'] :0;
         $id2 = isset($rs2['id']) ? $rs2['id'] :0;
 
+        /* Hak tiga butir Projection DIBACA DI SINI, sebelum menu digambar -
+           dipakai memutuskan apakah pembungkus "Report" perlu muncul. Dulu
+           query ini ada di bawah, waktu Projection masih sejajar dgn Report. */
+        $qProj  = mysqli_query($conn2,"select menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Bank Projection Other'");
+        $rsProj = mysqli_fetch_array($qProj);
+        $idProj = isset($rsProj['id']) ? $rsProj['id'] : 0;
+
+        /* Hak Update Payment Date PV Biaya (menurole 150) TERPISAH dari butir
+           Other - ada pemakai yang hanya boleh melihat proyeksinya, bukan
+           menggeser tanggal bayar. */
+        $qProj2  = mysqli_query($conn2,"select menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Bank Projection Payment Date'");
+        $rsProj2 = mysqli_fetch_array($qProj2);
+        $idProj2 = isset($rsProj2['id']) ? $rsProj2['id'] : 0;
+
+        /* Hak Cash Flow Report (menurole 151) juga TERPISAH - laporan ini
+           membuka saldo seluruh rekening. */
+        $qProj3  = mysqli_query($conn2,"select menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Bank Projection Cash Flow'");
+        $rsProj3 = mysqli_fetch_array($qProj3);
+        $idProj3 = isset($rsProj3['id']) ? $rsProj3['id'] : 0;
+
+        /* Update Payment Date (150) TIDAK ikut di sini: menunya berdiri
+           sendiri di bawah, sejajar dgn "Payment Plan" di menu AP. Kalau ikut,
+           pemakai yang cuma punya hak itu akan melihat Report > Projection
+           yang isinya kosong. */
+        /* Butir keempat: History Projection (17 Nov 2026, menurole 152) -
+           layar untuk MEMBACA potret yang disimpan Save History. Haknya
+           TERPISAH dari laporannya: yang boleh melihat potret lama belum
+           tentu yang boleh menjalankan proyeksinya. */
+        $qProj4  = mysqli_query($conn2,"select menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Bank Projection History'");
+        $rsProj4 = mysqli_fetch_array($qProj4);
+        $idProj4 = isset($rsProj4['id']) ? $rsProj4['id'] : 0;
+
+        $adaProj = ($idProj == '148' || $idProj3 == '151' || $idProj4 == '152');
+
         if($id == '36'){
           echo '
           <a href="../AP/bank-in.php" class="dropdown-item bg-dark text-white">
@@ -1007,21 +1041,108 @@ echo'</ul>
           <a href="../AP/payment-voucher.php" class="dropdown-item bg-dark text-white">
           <span class="fa fa-money fa-fw mr-3"></span>
           <span class="menu-collapsed">Payment Voucher</span>
+          </a>';
+      }
+
+      /* ------------------------------------------------------------------
+         Bank > Payment Plan > Update Payment Date (PV Biaya).
+
+         Submenu SENDIRI, sejajar dgn Report - bukan di dalamnya (permintaan
+         pemakai 17 Nov 2026). Bentuknya meniru "Payment Plan" di menu AP:
+         isinya daftar dokumennya saja, formulirnya dibuka lewat tombol Create
+         di layar itu. Haknya sendiri (menurole 150) - yang mengatur jadwal
+         bayar belum tentu orang yang melihat proyeksinya.
+         ------------------------------------------------------------------ */
+      if($idProj2 == '150'){
+          echo '
+          <li class="dropdown-submenu ">
+          <a class="dropdown-item bg-dark text-white" href="#">
+          <span class="fa fa-calendar-check-o fa-fw mr-3"></span>
+          <span class="menu-collapsed">Payment Plan</span>
           </a>
+          <ul class="dropdown-menu bg-dark text-white" role="menu">
+          <a href="../AP/pvbiaya-payment-date.php" class="dropdown-item bg-dark text-white">
+          <span class="fa fa-calendar fa-fw"></span>
+          <span class="menu-collapsed">Update Payment Date</span>
+          </a>
+          </ul>
+          </li>';
+      }
+
+      /* ------------------------------------------------------------------
+         Bank > Report > (laporan datar) + Projection > (dua butir).
+
+         Susunannya disamakan dgn menu AP (permintaan pemakai 17 Nov 2026):
+         Projection BUKAN lagi submenu sejajar dgn Report, tapi BERSARANG di
+         dalamnya - isinya Other & Cash Flow Report.
+
+         PEMBUNGKUS "Report" DIGAMBAR KALAU PUNYA HAK 'Bank' ATAU SALAH SATU
+         BUTIR PROJECTION. Dulu seluruh blok Report ikut if($id == '36') saja;
+         kalau syarat itu dibiarkan, pemakai yang cuma diberi hak Projection
+         akan kehilangan menunya sama sekali begitu Projection dipindah ke
+         dalam Report - dan hilangnya tidak kentara, karena menu lain tetap
+         muncul.
+         ------------------------------------------------------------------ */
+      if($id == '36' || $adaProj){
+          echo '
           <li class="dropdown-submenu ">
           <a class="dropdown-item bg-dark text-white" href="#">
           <span class="fa fa-file-excel-o fa-fw mr-3"></span>
           <span class="menu-collapsed">Report</span>
           </a>
-          <ul class="dropdown-menu bg-dark text-white" role="menu">
-          <a href="../AP/bankreport.php" class="dropdown-item bg-dark text-white">
-          <span class="fa fa-file-excel-o fa-fw mr-3"></span>
-          <span class="menu-collapsed">Report Bank</span>
-          </a>
-          <a href="../AP/report-cashflow-realisation.php" class="dropdown-item bg-dark text-white">
-          <span class="fa fa-line-chart fa-fw mr-3"></span>
-          <span class="menu-collapsed">Report Cash Flow Realisation</span>
-          </a>
+          <ul class="dropdown-menu bg-dark text-white" role="menu">';
+
+          if($id == '36'){
+              echo '
+              <a href="../AP/bankreport.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-file-excel-o fa-fw mr-3"></span>
+              <span class="menu-collapsed">Report Bank</span>
+              </a>
+              <a href="../AP/report-cashflow-realisation.php" class="dropdown-item bg-dark text-white">
+              <span class="fa fa-line-chart fa-fw mr-3"></span>
+              <span class="menu-collapsed">Report Cash Flow Realisation</span>
+              </a>';
+          }
+
+          if($adaProj){
+              echo '
+              <li class="dropdown-submenu ">
+              <a class="dropdown-item bg-dark text-white" href="#">
+              <span class="fa fa-line-chart fa-fw"></span>
+              <span class="menu-collapsed">Projection</span>
+              </a>
+              <ul class="dropdown-menu bg-dark text-white" role="menu">';
+
+              if($idProj == '148'){
+                  echo '
+                  <a href="../AP/cash-projection.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-exchange fa-fw"></span>
+                  <span class="menu-collapsed">Other</span>
+                  </a>';
+              }
+
+              if($idProj3 == '151'){
+                  echo '
+                  <a href="../AP/cash_flow_projection.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-area-chart fa-fw"></span>
+                  <span class="menu-collapsed">Projection Report</span>
+                  </a>';
+              }
+
+              if($idProj4 == '152'){
+                  echo '
+                  <a href="../AP/cf_history_projection.php" class="dropdown-item bg-dark text-white">
+                  <span class="fa fa-history fa-fw"></span>
+                  <span class="menu-collapsed">History Projection</span>
+                  </a>';
+              }
+
+              echo '
+              </ul>
+              </li>';
+          }
+
+          echo '
           </ul>
           </li>';
       }
@@ -1055,29 +1176,9 @@ echo'</ul>
           </a>';
       }
 
-      /* Submenu "Projection" - isinya satu butir "Other". Hak aksesnya
-         sendiri (menurole 148), bukan ikut 'Bank'. Dipindah dari menu Cash
-         ke sini 13 Nov 2026 atas permintaan pemakai; yang berubah hanya
-         letaknya, syarat tampilnya tetap sama persis. */
-      $qProj  = mysqli_query($conn2,"select menurole.id as id from useraccess inner join menurole on menurole.menu = useraccess.menu where username = '$user' and useraccess.menu = 'Bank Projection Other'");
-      $rsProj = mysqli_fetch_array($qProj);
-      $idProj = isset($rsProj['id']) ? $rsProj['id'] : 0;
-
-      if($idProj == '148'){
-          echo '
-          <li class="dropdown-submenu ">
-          <a class="dropdown-item bg-dark text-white" href="#">
-          <span class="fa fa-line-chart fa-fw"></span>
-          <span class="menu-collapsed">Projection</span>
-          </a>
-          <ul class="dropdown-menu bg-dark text-white" role="menu">
-          <a href="../AP/cash-projection.php" class="dropdown-item bg-dark text-white">
-          <span class="fa fa-exchange fa-fw"></span>
-          <span class="menu-collapsed">Other</span>
-          </a>
-          </ul>
-          </li>';
-      }
+      /* Projection sudah pindah KE DALAM submenu Report di atas
+         (17 Nov 2026) - blok yang dulu di sini sengaja tidak disisakan
+         supaya tidak ada dua tempat yang menggambar menu yang sama. */
 
       ?>
       <?php

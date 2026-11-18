@@ -17,8 +17,28 @@ try {
     // Sama seperti report-cashflow-realisation.php - filter kolom akun yang
     // diekspor, kosong berarti semua akun.
     $selectedAccounts = isset($_GET['accounts']) ? (array) $_GET['accounts'] : [];
+    // Potret proyeksi pengisi kolom PROJECTION & VARIANCE - sama seperti di
+    // layar; kosong berarti kedua kolom itu dibiarkan kosong seperti dulu.
+    $cfrDoc = isset($_GET['doc_number']) ? trim((string) $_GET['doc_number']) : '';
+
+    require_once __DIR__ . '/cf_real_proj_lib.php';
+    // DIPANGGIL DARI LAPORAN YANG BERBASIS POTRET: periode & daftar akunnya
+    // diambil dari potretnya juga, persis seperti layarnya - makanya tombol
+    // Excel di sana cukup membawa nomor potret. Layar dan berkas jadi mustahil
+    // beda isinya, walau alamat ekspornya disimpan lalu dibuka lagi nanti.
+    $cfrHdr = ($cfrDoc === '') ? null : cfrp_header($conn2, $cfrDoc);
+    if ($cfrHdr) {
+        $start_date = $cfrHdr['periode_dari'];
+        $end_date   = $cfrHdr['periode_sampai'];
+        include_once __DIR__ . '/cf_akun_lib.php';
+        $selectedAccounts = cf_akun_realisasi($conn2, $cfrHdr['profit_center'], $cfrHdr['bank']);
+    }
 
     extract(cfrComputeReportData($conn2, $start_date, $end_date, $selectedAccounts));
+
+    $cfrAkunTampil = [];
+    foreach ($accounts as $acc) { $cfrAkunTampil[] = $acc['account']; }
+    $cfrProj = cf_proyeksi_realisasi($conn2, $cfrDoc, $start_date, $end_date, $cfrAkunTampil);
 
     $GREEN = '90EE90';
     $BLUE = '0070C0';
@@ -55,7 +75,12 @@ try {
     $sheet->setCellValue('A1', 'PT NIRWANA ALABARE GARMENT');
     $sheet->setCellValue('A2', 'CASH FLOW REALISATION');
     $sheet->setCellValue('A3', 'FOR PERIOD ' . strtoupper(date('d M Y', strtotime($start_date))) . ' - ' . strtoupper(date('d M Y', strtotime($end_date))));
-    $sheet->getStyle('A1:A3')->getFont()->setBold(true);
+    // Baris 4 memang kosong di tata letak lama - dipakai menulis dasar kolom
+    // Projection-nya (atau alasan kolom itu kosong), jadi berkas yang sudah
+    // beredar tetap bisa dipertanggungjawabkan tanpa membuka aplikasi.
+    $judul4 = trim($cfrProj['info'] . ($cfrProj['catatan'] !== '' ? '  ' . $cfrProj['catatan'] : ''));
+    if ($judul4 !== '') { $sheet->setCellValue('A4', $judul4); }
+    $sheet->getStyle('A1:A4')->getFont()->setBold(true);
 
     // ================= HEADER TABEL =================
     $headerRow1 = 5;
@@ -91,8 +116,15 @@ try {
 
     // Tulis angka Projection(kosong)/Realisation/Variance(kosong) + 1 angka per akun
     // di baris $atRow - dipakai oleh semua jenis baris (plain/detail/subtotal).
-    $writeNumbers = function ($atRow, $realisation, array $perAccount) use ($sheet, $accounts, $NUMFMT, $realColLetter, $lastColLetter, $projColLetter, $COL_ACC_START) {
+    $writeNumbers = function ($atRow, $realisation, array $perAccount, $projKey = null) use ($sheet, $accounts, $NUMFMT, $realColLetter, $lastColLetter, $projColLetter, $varColLetter, $COL_ACC_START, $cfrProj) {
         $sheet->setCellValue($realColLetter . $atRow, round((float) $realisation, 2));
+        // Tanpa kunci (atau tanpa potret) selnya TIDAK ditulis sama sekali -
+        // formatnya menampilkan "-", sama seperti versi sebelumnya.
+        $p = ($projKey === null) ? null : cfrp_nilai($cfrProj, $projKey);
+        if ($p !== null) {
+            $sheet->setCellValue($projColLetter . $atRow, round($p, 2));
+            $sheet->setCellValue($varColLetter . $atRow, round($p - (float) $realisation, 2));
+        }
         $colIdx = $COL_ACC_START;
         foreach ($accounts as $acc) {
             $col = Coordinate::stringFromColumnIndex($colIdx);
@@ -106,9 +138,9 @@ try {
     // Baris label POLOS (tanpa nomor) - dipakai untuk SALDO AWAL/AKHIR, TOTAL ... .
     // Labelnya ditulis di kolom A saja (tanpa split), boleh overflow visual ke B/C
     // karena tidak ada border grid yang memotongnya.
-    $writePlainRow = function ($label, $realisation, array $perAccount, $bold = false) use ($sheet, &$row, $colA, $lastColLetter, $writeNumbers) {
+    $writePlainRow = function ($label, $realisation, array $perAccount, $bold = false, $projKey = null) use ($sheet, &$row, $colA, $lastColLetter, $writeNumbers) {
         $sheet->setCellValue($colA . $row, $label);
-        $writeNumbers($row, $realisation, $perAccount);
+        $writeNumbers($row, $realisation, $perAccount, $projKey);
         if ($bold) {
             $sheet->getStyle($colA . $row . ':' . $lastColLetter . $row)->getFont()->setBold(true);
         }
@@ -118,12 +150,12 @@ try {
     };
 
     // Baris ITEM DETAIL - nomornya di kolom B, teksnya di kolom C.
-    $writeDetailRow = function ($num, $text, $realisation, array $perAccount) use ($sheet, &$row, $colB, $colC, $writeNumbers) {
+    $writeDetailRow = function ($num, $text, $realisation, array $perAccount, $projKey = null) use ($sheet, &$row, $colB, $colC, $writeNumbers) {
         if ($num !== '') {
             $sheet->setCellValue($colB . $row, $num);
         }
         $sheet->setCellValue($colC . $row, $text);
-        $writeNumbers($row, $realisation, $perAccount);
+        $writeNumbers($row, $realisation, $perAccount, $projKey);
         $r = $row;
         $row++;
         return $r;
@@ -161,7 +193,7 @@ try {
     };
 
     // ================= SALDO AWAL =================
-    $writePlainRow('SALDO AWAL KAS DAN BANK', $totalBegin, $beginBalance, true);
+    $writePlainRow('SALDO AWAL KAS DAN BANK', $totalBegin, $beginBalance, true, 'OPEN');
     $row++; // baris kosong
 
     // ================= CASH RECEIPTS =================
@@ -185,10 +217,12 @@ try {
                 $perAccount[$acc['account']] = $v;
                 $accTotals[$acc['account']] += $v;
             }
-            $writeDetailRow($catRow['display_seq'], $catRow['nama_subcategory'], $total, $perAccount);
+            $writeDetailRow($catRow['display_seq'], $catRow['nama_subcategory'], $total, $perAccount,
+                            'IN|' . cfrp_kunci($act) . '|' . cfrp_kunci($catRow['nama_subcategory']));
         }
         $row++;
-        $tr = $writePlainRow('TOTAL CASH RECEIPT FROM ' . $act, $actTotal, $accTotals, true);
+        $tr = $writePlainRow('TOTAL CASH RECEIPT FROM ' . $act, $actTotal, $accTotals, true,
+                             'TOT|IN|' . cfrp_kunci($act));
         $totalRuleUnder($tr);
         $row++;
         $subtotalReceiptByAct[$act] = $actTotal;
@@ -205,7 +239,7 @@ try {
         }
         $grandReceiptByAcc[$acc['account']] = $t;
     }
-    $tr = $writePlainRow('TOTAL CASH RECEIPTS', $grandReceiptTotal, $grandReceiptByAcc, true);
+    $tr = $writePlainRow('TOTAL CASH RECEIPTS', $grandReceiptTotal, $grandReceiptByAcc, true, 'TOT2|IN');
     $sheet->getStyle($colA . $tr)->getFont()->getColor()->setRGB($BLUE);
     $row++;
 
@@ -230,10 +264,12 @@ try {
                 $perAccount[$acc['account']] = $v;
                 $accTotals[$acc['account']] += $v;
             }
-            $writeDetailRow($catRow['display_seq'], $catRow['nama_subcategory'], $total, $perAccount);
+            $writeDetailRow($catRow['display_seq'], $catRow['nama_subcategory'], $total, $perAccount,
+                            'OUT|' . cfrp_kunci($act) . '|' . cfrp_kunci($catRow['nama_subcategory']));
         }
         $row++;
-        $tr2 = $writePlainRow('TOTAL CASH DISBURSEMENT FROM ' . $act, $actTotal, $accTotals, true);
+        $tr2 = $writePlainRow('TOTAL CASH DISBURSEMENT FROM ' . $act, $actTotal, $accTotals, true,
+                              'TOT|OUT|' . cfrp_kunci($act));
         $totalRuleUnder($tr2);
         $row++;
         $subtotalDisbByAct[$act] = $actTotal;
@@ -250,7 +286,7 @@ try {
         }
         $grandDisbByAcc[$acc['account']] = $t;
     }
-    $tr2 = $writePlainRow('TOTAL CASH DISBURSEMENT', $grandDisbTotal, $grandDisbByAcc, true);
+    $tr2 = $writePlainRow('TOTAL CASH DISBURSEMENT', $grandDisbTotal, $grandDisbByAcc, true, 'TOT2|OUT');
     $sheet->getStyle($colA . $tr2)->getFont()->getColor()->setRGB($RED);
     $row++;
 
@@ -269,18 +305,18 @@ try {
             }
             $perAccount[$acc['account']] = $t;
         }
-        $writeDetailRow('', $act, $subTotal, $perAccount);
+        $writeDetailRow('', $act, $subTotal, $perAccount, 'NET|' . cfrp_kunci($act));
     }
     $row++;
 
     // ================= SALDO AKHIR =================
-    $writePlainRow('SALDO AKHIR KAS DAN BANK', $totalEnd, $endBalance, true);
+    $writePlainRow('SALDO AKHIR KAS DAN BANK', $totalEnd, $endBalance, true, 'CLOSE');
     $row++; // baris kosong
 
     // ================= PINJAMAN BANK =================
     // Sama persis dengan section "PINJAMAN BANK" di report-cashflow-realisation.php -
     // khusus akun 1979/1982 (satu-satunya akun bank_loan='Yes'), akun lain otomatis 0.
-    // PROJECTION & VARIANCE masih "-" (belum ada sumber data proyeksi).
+    // PROJECTION & VARIANCE diisi dari potret History Projection (kunci 'LOAN|...').
     $loanBegin = [];
     $loanAdd = [];
     $loanPay = [];
@@ -329,16 +365,16 @@ try {
     }
 
     $sectionTitle('PINJAMAN BANK', null, false);
-    $tr3 = $writePlainRow('SALDO AWAL PINJAMAN BANK', $totalLoanBegin, $loanBegin, true);
+    $tr3 = $writePlainRow('SALDO AWAL PINJAMAN BANK', $totalLoanBegin, $loanBegin, true, 'LOAN|SALDO AWAL PINJAMAN BANK');
     $row++;
-    $writeDetailRow('', 'PENAMBAHAN PINJAMAN', $totalLoanAdd, $loanAdd);
-    $writeDetailRow('', 'PELUNASAN PINJAMAN', $totalLoanPay, $loanPay);
-    $writeDetailRow('', 'PENGAKUAN LABA / (RUGI) SELISIH KURS', $totalLoanFx, $loanFx);
+    $writeDetailRow('', 'PENAMBAHAN PINJAMAN', $totalLoanAdd, $loanAdd, 'LOAN|PENAMBAHAN PINJAMAN');
+    $writeDetailRow('', 'PELUNASAN PINJAMAN', $totalLoanPay, $loanPay, 'LOAN|PELUNASAN PINJAMAN');
+    $writeDetailRow('', 'PENGAKUAN LABA / (RUGI) SELISIH KURS', $totalLoanFx, $loanFx, 'LOAN|PENGAKUAN LABA / (RUGI) SELISIH KURS');
     $row++;
-    $tr4 = $writePlainRow('SALDO AKHIR PINJAMAN BANK', $totalLoanEnd, $loanEnd, true);
+    $tr4 = $writePlainRow('SALDO AKHIR PINJAMAN BANK', $totalLoanEnd, $loanEnd, true, 'LOAN|SALDO AKHIR PINJAMAN BANK');
     $totalRuleUnder($tr4);
-    $writeDetailRow('', 'LIMIT', $totalLoanLimit, $loanLimit);
-    $tr5 = $writePlainRow('SISA / (KELEBIHAN) LIMIT', $totalLoanRemain, $loanRemain, true);
+    $writeDetailRow('', 'LIMIT', $totalLoanLimit, $loanLimit, 'LOAN|LIMIT');
+    $tr5 = $writePlainRow('SISA / (KELEBIHAN) LIMIT', $totalLoanRemain, $loanRemain, true, 'LOAN|SISA / (KELEBIHAN) LIMIT');
     $totalRuleUnder($tr5);
 
     $lastRow = $row - 1;

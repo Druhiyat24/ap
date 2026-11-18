@@ -123,8 +123,15 @@ function aprvSelTgl($lembar, $kol, $brs, $iso)
 {
     $alamat = $kol . $brs;
     if (empty($iso)) { $lembar->setCellValue($alamat, null); return; }
-    $lembar->setCellValue($alamat,
-        \PhpOffice\PhpSpreadsheet\Shared\Date::PHPToExcel(strtotime($iso)));
+    /* JANGAN PHPToExcel(strtotime(...)): cap waktu tengah malam menurut zona
+       waktu PHP dibaca sbg UTC, jadi tanggalnya MUNDUR SATU HARI (server ini
+       Europe/Berlin - 2026-11-01 jadi 31 Oct 23:00, dan Excel menampilkan
+       31 Oct). Ketahuan 17 Nov 2026 waktu ekspor potret Cash Flow dibuat.
+       formattedPHPToExcel menerima tahun-bulan-tanggal apa adanya. */
+    $b = explode('-', substr((string) $iso, 0, 10));
+    if (count($b) !== 3) { $lembar->setCellValue($alamat, null); return; }
+    $lembar->setCellValue($alamat, \PhpOffice\PhpSpreadsheet\Shared\Date::formattedPHPToExcel(
+        (int) $b[0], (int) $b[1], (int) $b[2]));
     $lembar->getStyle($alamat)->getNumberFormat()->setFormatCode(APRV_TGL);
 }
 

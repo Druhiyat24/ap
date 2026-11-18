@@ -230,6 +230,20 @@
     .toggle-switch input:checked + .toggle-slider { background-color: #1E3A8A; }
     .toggle-switch input:checked + .toggle-slider:before { transform: translateX(17px); }
     .toggle-switch input:focus + .toggle-slider { box-shadow: 0 0 0 3px rgba(30, 58, 138, .25); }
+
+    /* ===== kepala potret =====
+       Dipakai HANYA kalau laporan dibuka dari History Projection. Menggantikan
+       baris saringan - jadi tingginya kira-kira sama dan halamannya tidak
+       melompat. Dibungkus flex-wrap supaya di tablet/HP melipat sendiri,
+       tombolnya ikut turun, dan halamannya tidak perlu digeser ke samping. */
+    .cfr-dok { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px; }
+    .cfr-dok-ruas { display: flex; flex-direction: column; gap: 1px; }
+    .cfr-dok-label { font-size: 10px; font-weight: 700; letter-spacing: .5px;
+                     text-transform: uppercase; color: #94a3b8; }
+    .cfr-dok-nilai { font-size: 13px; font-weight: 700; color: #0f172a; }
+    .cfr-dok-no { font-size: 16px; font-weight: 800; color: #0f172a;
+                  font-variant-numeric: tabular-nums; }
+    .cfr-dok-aksi { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
 </style>
 
 <?php
@@ -248,6 +262,28 @@ $doSearch   = true;
 // buka halaman) berarti tampilkan SEMUA akun - lihat cfrComputeReportData().
 $cfrAllAccounts = cfrGetAllAccounts($conn2);
 $cfrSelectedAccounts = isset($_POST['accounts']) ? (array) $_POST['accounts'] : [];
+
+// Potret proyeksi yang mengisi kolom PROJECTION & VARIANCE - nomornya dikirim
+// tombol Realization di daftar History Projection lewat ?doc_number=. KOSONG
+// (dibuka dari menunya sendiri, Bank > Report) berarti kedua kolom itu tetap
+// "-" dan saringannya tetap lengkap persis seperti sebelumnya - jadi yang
+// memakai laporan ini seperti biasa tidak kena dampak apa pun.
+$cfrDoc = isset($_GET['doc_number']) ? trim((string) $_GET['doc_number']) : '';
+
+require_once __DIR__ . '/cf_real_proj_lib.php';
+$cfrHdr = ($cfrDoc === '') ? null : cfrp_header($conn2, $cfrDoc);
+
+/* DIBUKA DARI POTRET: periode & daftar akunnya DIAMBIL DARI POTRETNYA, bukan
+   dari saringan di layar - itu sebabnya saringannya tidak ditampilkan lagi
+   (permintaan pemakai 18 Nov 2026: "sudah base on projection"). Dgn begitu
+   yang dibandingkan pasti potret itu sendiri, bukan rentang lain yang mirip,
+   dan kolom Projection mustahil kosong gara-gara periodenya tergeser. */
+if ($cfrHdr) {
+    $start_date = $cfrHdr['periode_dari'];
+    $end_date   = $cfrHdr['periode_sampai'];
+    include_once __DIR__ . '/cf_akun_lib.php';
+    $cfrSelectedAccounts = cf_akun_realisasi($conn2, $cfrHdr['profit_center'], $cfrHdr['bank']);
+}
 ?>
 
 <!-- MAIN -->
@@ -257,6 +293,54 @@ $cfrSelectedAccounts = isset($_POST['accounts']) ? (array) $_POST['accounts'] : 
             <h5 class="mb-0"><i class="fa fa-line-chart" aria-hidden="true"></i> REPORT CASH FLOW REALISATION</h5>
         </div>
         <div class="card-body p-3">
+            <?php if ($cfrDoc !== '') { ?>
+            <!-- DIBUKA DARI HISTORY PROJECTION. Tidak ada saringan tanggal/akun
+                 sama sekali: keduanya sudah ditentukan potretnya (lihat blok
+                 PHP di atas), jadi menampilkannya cuma mengundang laporan ini
+                 diubah jadi bukan lagi pasangan potret itu. Tombolnya tinggal
+                 Excel & Back - sama seperti ap_realization_report.php. -->
+            <div class="cfr-dok">
+                <?php if ($cfrHdr) { ?>
+                    <div class="cfr-dok-ruas">
+                        <span class="cfr-dok-label">Projection Document</span>
+                        <span class="cfr-dok-no"><?= htmlspecialchars($cfrHdr['doc_number']); ?></span>
+                    </div>
+                    <div class="cfr-dok-ruas">
+                        <span class="cfr-dok-label">Period</span>
+                        <span class="cfr-dok-nilai">
+                            <?= strtoupper(date('d M Y', strtotime($cfrHdr['periode_dari']))); ?>
+                            &ndash; <?= strtoupper(date('d M Y', strtotime($cfrHdr['periode_sampai']))); ?>
+                        </span>
+                    </div>
+                    <div class="cfr-dok-ruas">
+                        <span class="cfr-dok-label">Type</span>
+                        <span class="cfr-dok-nilai"><?= htmlspecialchars(ucfirst(strtolower($cfrHdr['type']))); ?></span>
+                    </div>
+                    <div class="cfr-dok-ruas">
+                        <span class="cfr-dok-label">Profit Center</span>
+                        <span class="cfr-dok-nilai"><?= htmlspecialchars($cfrHdr['profit_center']); ?></span>
+                    </div>
+                    <div class="cfr-dok-ruas">
+                        <span class="cfr-dok-label">Bank</span>
+                        <span class="cfr-dok-nilai"><?= htmlspecialchars($cfrHdr['bank']); ?></span>
+                    </div>
+                <?php } else { ?>
+                    <div class="cfr-dok-ruas">
+                        <span class="cfr-dok-label">Projection Document</span>
+                        <span class="cfr-dok-no"><?= htmlspecialchars($cfrDoc); ?></span>
+                        <span class="text-danger">This snapshot no longer exists.</span>
+                    </div>
+                <?php } ?>
+                <div class="cfr-dok-aksi">
+                    <button type="button" id="btnExportExcel" class="btn btn-success btn-sm">
+                        <i class="fa fa-file-excel-o" aria-hidden="true"></i> Excel
+                    </button>
+                    <button type="button" id="btnBackHistory" class="btn btn-danger btn-sm">
+                        <i class="fa fa-arrow-left" aria-hidden="true"></i> Back
+                    </button>
+                </div>
+            </div>
+            <?php } else { ?>
             <form id="form-data" method="post">
                 <div class="row g-3">
                     <div class="col-md-2">
@@ -312,6 +396,7 @@ $cfrSelectedAccounts = isset($_POST['accounts']) ? (array) $_POST['accounts'] : 
                     </div>
                 </div>
             </form>
+            <?php } ?>
         </div>
     </div>
 
@@ -326,6 +411,16 @@ $cfrSelectedAccounts = isset($_POST['accounts']) ? (array) $_POST['accounts'] : 
             // realisasi, penerimaan/pelunasan pinjaman bank dedicated)
             // =========================
             extract(cfrComputeReportData($conn2, $start_date, $end_date, $cfrSelectedAccounts));
+
+            // Kolom PROJECTION diambil dari kolom TOTAL potret - cuma kalau
+            // periodenya sama (lihat cf_real_proj_lib.php). Dibuka dari tombol
+            // Realization periodenya memang selalu sama, karena diambil dari
+            // potret yang sama; penjaganya dipertahankan utk alamat yang
+            // diketik/disimpan sendiri. $accounts dikirim supaya ketidaksamaan
+            // saringan akun bisa diberitahukan, bukan didiamkan.
+            $cfrAkunTampil = [];
+            foreach ($accounts as $acc) { $cfrAkunTampil[] = $acc['account']; }
+            $cfrProj = cf_proyeksi_realisasi($conn2, $cfrDoc, $start_date, $end_date, $cfrAkunTampil);
             ?>
 
             <!-- Judul laporan (nama PT/periode) sengaja DILUAR
@@ -336,6 +431,12 @@ $cfrSelectedAccounts = isset($_POST['accounts']) ? (array) $_POST['accounts'] : 
                 <div><b>PT NIRWANA ALABARE GARMENT</b></div>
                 <div><b>CASH FLOW REALISATION</b></div>
                 <div>FOR PERIOD <?= strtoupper(date('d M Y', strtotime($start_date))); ?> - <?= strtoupper(date('d M Y', strtotime($end_date))); ?></div>
+                <?php if ($cfrProj['info'] !== '') { ?>
+                    <div><b><?= htmlspecialchars($cfrProj['info']); ?></b></div>
+                <?php } ?>
+                <?php if ($cfrProj['catatan'] !== '') { ?>
+                    <div class="text-danger"><?= htmlspecialchars($cfrProj['catatan']); ?></div>
+                <?php } ?>
             </div>
 
             <div class="table-responsive" id="cfr-table-wrapper">
@@ -357,11 +458,12 @@ $cfrSelectedAccounts = isset($_POST['accounts']) ? (array) $_POST['accounts'] : 
                              <tbody> biasa yang "dipaksa" ikut sticky) - lebih stabil karena
                              perilaku sticky untuk baris thead jauh lebih konsisten di semua
                              browser dibanding baris tbody yang top-nya dihitung manual lewat JS. -->
+                        <?php $pv = cfrp_sel($cfrProj, 'OPEN', $totalBegin); ?>
                         <tr class="grand-row" id="cfr-saldo-awal-row">
                             <td>SALDO AWAL KAS DAN BANK</td>
-                            <td class="num">-</td>
+                            <td class="num"><?= $pv[0]; ?></td>
                             <td class="num"><?= cfrFmt($totalBegin); ?></td>
-                            <td class="num">-</td>
+                            <td class="num"><?= $pv[1]; ?></td>
                             <?php foreach ($accounts as $acc) { ?>
                                 <td class="num"><?= cfrFmt($beginBalance[$acc['account']]); ?></td>
                             <?php } ?>
@@ -383,15 +485,17 @@ $cfrSelectedAccounts = isset($_POST['accounts']) ? (array) $_POST['accounts'] : 
                             foreach ($rows as $row) {
                                 $total = cfrRowTotal($realisasi, $row['id'], true);
                                 $actTotal += $total;
+                                $pv = cfrp_sel($cfrProj, 'IN|' . cfrp_kunci($act) . '|' . cfrp_kunci($row['nama_subcategory']), $total);
                                 echo '<tr><td style="padding-left:30px;">' . $row['display_seq'] . ' ' . htmlspecialchars($row['nama_subcategory']) . '</td>';
-                                echo '<td class="num">-</td><td class="num">' . cfrFmt($total) . '</td><td class="num">-</td>';
+                                echo '<td class="num">' . $pv[0] . '</td><td class="num">' . cfrFmt($total) . '</td><td class="num">' . $pv[1] . '</td>';
                                 foreach ($accounts as $acc) {
                                     echo '<td class="num">' . cfrFmt(cfrRowValue($realisasi, $row['id'], $acc['account'], true)) . '</td>';
                                 }
                                 echo '</tr>';
                             }
+                            $pv = cfrp_sel($cfrProj, 'TOT|IN|' . cfrp_kunci($act), $actTotal);
                             echo '<tr class="total-row"><td>TOTAL CASH RECEIPT FROM ' . $act . '</td>';
-                            echo '<td class="num">-</td><td class="num">' . cfrFmt($actTotal) . '</td><td class="num">-</td>';
+                            echo '<td class="num">' . $pv[0] . '</td><td class="num">' . cfrFmt($actTotal) . '</td><td class="num">' . $pv[1] . '</td>';
                             foreach ($accounts as $acc) {
                                 $accTotal = 0;
                                 foreach ($rows as $row) {
@@ -405,9 +509,10 @@ $cfrSelectedAccounts = isset($_POST['accounts']) ? (array) $_POST['accounts'] : 
                         }
                         ?>
 
+                        <?php $pv = cfrp_sel($cfrProj, 'TOT2|IN', $grandReceiptTotal); ?>
                         <tr class="total-row">
                             <td>TOTAL CASH RECEIPTS</td>
-                            <td class="num">-</td><td class="num"><?= cfrFmt($grandReceiptTotal); ?></td><td class="num">-</td>
+                            <td class="num"><?= $pv[0]; ?></td><td class="num"><?= cfrFmt($grandReceiptTotal); ?></td><td class="num"><?= $pv[1]; ?></td>
                             <?php foreach ($accounts as $acc) {
                                 $accTotal = 0;
                                 foreach ($categories['Cash In'] as $rows) {
@@ -433,15 +538,17 @@ $cfrSelectedAccounts = isset($_POST['accounts']) ? (array) $_POST['accounts'] : 
                             foreach ($rows as $row) {
                                 $total = cfrRowTotal($realisasi, $row['id'], false);
                                 $actTotal += $total;
+                                $pv = cfrp_sel($cfrProj, 'OUT|' . cfrp_kunci($act) . '|' . cfrp_kunci($row['nama_subcategory']), $total);
                                 echo '<tr><td style="padding-left:30px;">' . $row['display_seq'] . ' ' . htmlspecialchars($row['nama_subcategory']) . '</td>';
-                                echo '<td class="num">-</td><td class="num">' . cfrFmt($total) . '</td><td class="num">-</td>';
+                                echo '<td class="num">' . $pv[0] . '</td><td class="num">' . cfrFmt($total) . '</td><td class="num">' . $pv[1] . '</td>';
                                 foreach ($accounts as $acc) {
                                     echo '<td class="num">' . cfrFmt(cfrRowValue($realisasi, $row['id'], $acc['account'], false)) . '</td>';
                                 }
                                 echo '</tr>';
                             }
+                            $pv = cfrp_sel($cfrProj, 'TOT|OUT|' . cfrp_kunci($act), $actTotal);
                             echo '<tr class="total-row"><td>TOTAL CASH DISBURSEMENT FROM ' . $act . '</td>';
-                            echo '<td class="num">-</td><td class="num">' . cfrFmt($actTotal) . '</td><td class="num">-</td>';
+                            echo '<td class="num">' . $pv[0] . '</td><td class="num">' . cfrFmt($actTotal) . '</td><td class="num">' . $pv[1] . '</td>';
                             foreach ($accounts as $acc) {
                                 $accTotal = 0;
                                 foreach ($rows as $row) {
@@ -455,9 +562,10 @@ $cfrSelectedAccounts = isset($_POST['accounts']) ? (array) $_POST['accounts'] : 
                         }
                         ?>
 
+                        <?php $pv = cfrp_sel($cfrProj, 'TOT2|OUT', $grandDisbTotal); ?>
                         <tr class="total-row">
                             <td>TOTAL CASH DISBURSEMENT</td>
-                            <td class="num">-</td><td class="num"><?= cfrFmt($grandDisbTotal); ?></td><td class="num">-</td>
+                            <td class="num"><?= $pv[0]; ?></td><td class="num"><?= cfrFmt($grandDisbTotal); ?></td><td class="num"><?= $pv[1]; ?></td>
                             <?php foreach ($accounts as $acc) {
                                 $accTotal = 0;
                                 foreach ($categories['Cash Out'] as $rows) {
@@ -473,8 +581,9 @@ $cfrSelectedAccounts = isset($_POST['accounts']) ? (array) $_POST['accounts'] : 
                         <tr class="section-title"><td colspan="<?= 4 + $colspanAccounts; ?>">SUBTOTAL ACTIVITIES</td></tr>
                         <?php foreach (['OPERATING ACTIVITIES', 'INVESTING ACTIVITIES', 'FINANCING ACTIVITIES'] as $act) {
                             $subTotal = ($subtotalReceiptByAct[$act] ?? 0) + ($subtotalDisbByAct[$act] ?? 0);
+                            $pv = cfrp_sel($cfrProj, 'NET|' . cfrp_kunci($act), $subTotal);
                             echo '<tr><td style="padding-left:20px;">' . strtoupper($act) . '</td>';
-                            echo '<td class="num">-</td><td class="num">' . cfrFmt($subTotal) . '</td><td class="num">-</td>';
+                            echo '<td class="num">' . $pv[0] . '</td><td class="num">' . cfrFmt($subTotal) . '</td><td class="num">' . $pv[1] . '</td>';
                             foreach ($accounts as $acc) {
                                 $accTotal = 0;
                                 foreach (($categories['Cash In'][$act] ?? []) as $row) {
@@ -489,11 +598,12 @@ $cfrSelectedAccounts = isset($_POST['accounts']) ? (array) $_POST['accounts'] : 
                         } ?>
                         <tr><td colspan="<?= 4 + $colspanAccounts; ?>">&nbsp;</td></tr>
 
+                        <?php $pv = cfrp_sel($cfrProj, 'CLOSE', $totalEnd); ?>
                         <tr class="grand-row">
                             <td>SALDO AKHIR KAS DAN BANK</td>
-                            <td class="num">-</td>
+                            <td class="num"><?= $pv[0]; ?></td>
                             <td class="num"><?= cfrFmt($totalEnd); ?></td>
-                            <td class="num">-</td>
+                            <td class="num"><?= $pv[1]; ?></td>
                             <?php foreach ($accounts as $acc) { ?>
                                 <td class="num"><?= cfrFmt($endBalance[$acc['account']]); ?></td>
                             <?php } ?>
@@ -567,9 +677,10 @@ $cfrSelectedAccounts = isset($_POST['accounts']) ? (array) $_POST['accounts'] : 
                         <tr class="section-title"><td colspan="<?= 4 + $colspanAccounts; ?>">PINJAMAN BANK</td></tr>
                         <tr class="grand-row">
                             <td>SALDO AWAL PINJAMAN BANK</td>
-                            <td class="num">-</td>
+                            <?php $pv = cfrp_sel($cfrProj, 'LOAN|SALDO AWAL PINJAMAN BANK', $totalLoanBegin); ?>
+                            <td class="num"><?= $pv[0]; ?></td>
                             <td class="num"><?= cfrFmt($totalLoanBegin); ?></td>
-                            <td class="num">-</td>
+                            <td class="num"><?= $pv[1]; ?></td>
                             <?php foreach ($accounts as $acc) { ?>
                                 <td class="num"><?= cfrFmt($loanBegin[$acc['account']]); ?></td>
                             <?php } ?>
@@ -577,27 +688,30 @@ $cfrSelectedAccounts = isset($_POST['accounts']) ? (array) $_POST['accounts'] : 
                         <tr><td colspan="<?= 4 + $colspanAccounts; ?>">&nbsp;</td></tr>
                         <tr>
                             <td>PENAMBAHAN PINJAMAN</td>
-                            <td class="num">-</td>
+                            <?php $pv = cfrp_sel($cfrProj, 'LOAN|PENAMBAHAN PINJAMAN', $totalLoanAdd); ?>
+                            <td class="num"><?= $pv[0]; ?></td>
                             <td class="num"><?= cfrFmt($totalLoanAdd); ?></td>
-                            <td class="num">-</td>
+                            <td class="num"><?= $pv[1]; ?></td>
                             <?php foreach ($accounts as $acc) { ?>
                                 <td class="num"><?= cfrFmt($loanAdd[$acc['account']]); ?></td>
                             <?php } ?>
                         </tr>
                         <tr>
                             <td>PELUNASAN PINJAMAN</td>
-                            <td class="num">-</td>
+                            <?php $pv = cfrp_sel($cfrProj, 'LOAN|PELUNASAN PINJAMAN', $totalLoanPay); ?>
+                            <td class="num"><?= $pv[0]; ?></td>
                             <td class="num"><?= cfrFmt($totalLoanPay); ?></td>
-                            <td class="num">-</td>
+                            <td class="num"><?= $pv[1]; ?></td>
                             <?php foreach ($accounts as $acc) { ?>
                                 <td class="num"><?= cfrFmt($loanPay[$acc['account']]); ?></td>
                             <?php } ?>
                         </tr>
                         <tr>
                             <td>PENGAKUAN LABA / (RUGI) SELISIH KURS</td>
-                            <td class="num">-</td>
+                            <?php $pv = cfrp_sel($cfrProj, 'LOAN|PENGAKUAN LABA / (RUGI) SELISIH KURS', $totalLoanFx); ?>
+                            <td class="num"><?= $pv[0]; ?></td>
                             <td class="num"><?= cfrFmt($totalLoanFx); ?></td>
-                            <td class="num">-</td>
+                            <td class="num"><?= $pv[1]; ?></td>
                             <?php foreach ($accounts as $acc) { ?>
                                 <td class="num"><?= cfrFmt($loanFx[$acc['account']]); ?></td>
                             <?php } ?>
@@ -605,27 +719,30 @@ $cfrSelectedAccounts = isset($_POST['accounts']) ? (array) $_POST['accounts'] : 
                         <tr><td colspan="<?= 4 + $colspanAccounts; ?>">&nbsp;</td></tr>
                         <tr class="grand-row">
                             <td>SALDO AKHIR PINJAMAN BANK</td>
-                            <td class="num">-</td>
+                            <?php $pv = cfrp_sel($cfrProj, 'LOAN|SALDO AKHIR PINJAMAN BANK', $totalLoanEnd); ?>
+                            <td class="num"><?= $pv[0]; ?></td>
                             <td class="num"><?= cfrFmt($totalLoanEnd); ?></td>
-                            <td class="num">-</td>
+                            <td class="num"><?= $pv[1]; ?></td>
                             <?php foreach ($accounts as $acc) { ?>
                                 <td class="num"><?= cfrFmt($loanEnd[$acc['account']]); ?></td>
                             <?php } ?>
                         </tr>
                         <tr>
                             <td>LIMIT</td>
-                            <td class="num">-</td>
+                            <?php $pv = cfrp_sel($cfrProj, 'LOAN|LIMIT', $totalLoanLimit); ?>
+                            <td class="num"><?= $pv[0]; ?></td>
                             <td class="num"><?= cfrFmt($totalLoanLimit); ?></td>
-                            <td class="num">-</td>
+                            <td class="num"><?= $pv[1]; ?></td>
                             <?php foreach ($accounts as $acc) { ?>
                                 <td class="num"><?= cfrFmt($loanLimit[$acc['account']]); ?></td>
                             <?php } ?>
                         </tr>
                         <tr class="grand-row">
                             <td>SISA / (KELEBIHAN) LIMIT</td>
-                            <td class="num">-</td>
+                            <?php $pv = cfrp_sel($cfrProj, 'LOAN|SISA / (KELEBIHAN) LIMIT', $totalLoanRemain); ?>
+                            <td class="num"><?= $pv[0]; ?></td>
                             <td class="num"><?= cfrFmt($totalLoanRemain); ?></td>
-                            <td class="num">-</td>
+                            <td class="num"><?= $pv[1]; ?></td>
                             <?php foreach ($accounts as $acc) { ?>
                                 <td class="num"><?= cfrFmt($loanRemain[$acc['account']]); ?></td>
                             <?php } ?>
@@ -713,10 +830,11 @@ $cfrSelectedAccounts = isset($_POST['accounts']) ? (array) $_POST['accounts'] : 
         return Array.prototype.slice.call(document.querySelectorAll('.cfr-acc-item:checked')).map(function (cb) { return cb.value; });
     }
 
-    document.getElementById('btnExportExcel').addEventListener('click', function () {
-        let sd = cfrToYmd(document.getElementById('start_date').value);
-        let ed = cfrToYmd(document.getElementById('end_date').value);
+    // Nomor potretnya ditanam dari PHP - satu-satunya saringan yang dipakai
+    // kalau laporan ini dibuka dari History Projection.
+    var CFR_DOC = <?= json_encode($cfrDoc); ?>;
 
+    document.getElementById('btnExportExcel').addEventListener('click', function () {
         Swal.fire({
             title: 'Sedang export...',
             text: 'Mohon tunggu, jangan tutup halaman ini.',
@@ -725,8 +843,18 @@ $cfrSelectedAccounts = isset($_POST['accounts']) ? (array) $_POST['accounts'] : 
             didOpen: () => { Swal.showLoading(); }
         });
 
-        let params = new URLSearchParams({ start_date: sd, end_date: ed });
-        cfrSelectedAccounts().forEach(function (a) { params.append('accounts[]', a); });
+        let params;
+        if (CFR_DOC) {
+            // Periode & akunnya diambil dari potret itu juga di sisi ekspor,
+            // jadi cukup nomornya - layar dan berkas mustahil beda isinya.
+            params = new URLSearchParams({ doc_number: CFR_DOC });
+        } else {
+            params = new URLSearchParams({
+                start_date: cfrToYmd(document.getElementById('start_date').value),
+                end_date:   cfrToYmd(document.getElementById('end_date').value)
+            });
+            cfrSelectedAccounts().forEach(function (a) { params.append('accounts[]', a); });
+        }
 
         fetch(`ekspor_cashflow_realisation.php?${params.toString()}`)
             .then(async (res) => {
@@ -751,6 +879,15 @@ $cfrSelectedAccounts = isset($_POST['accounts']) ? (array) $_POST['accounts'] : 
                 Swal.fire({ icon: 'error', title: 'Error', text: 'Export gagal, coba lagi.' });
             });
     });
+
+    // Back: kembali ke daftar potretnya. Tombolnya cuma ada kalau laporan ini
+    // dibuka dari sana, jadi dijaga dulu adanya.
+    var cfrBtnBack = document.getElementById('btnBackHistory');
+    if (cfrBtnBack) {
+        cfrBtnBack.addEventListener('click', function () {
+            window.location = 'cf_history_projection.php';
+        });
+    }
 
     $(document).ready(function () {
         $('.tanggal').datepicker({

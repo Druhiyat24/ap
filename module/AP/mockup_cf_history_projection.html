@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup - History Projection (Cash Flow)</title>
+
+<!-- ============================================================================
+     MOCKUP layar "History Projection" (Cash Flow), 17 Nov 2026.
+     Project tracker id 107.
+
+     Dibuat SESUDAH menunya jadi, sebagai catatan bentuk layar yang disetujui.
+     Bentuknya disalin dari halaman aslinya:
+       - cf_history_projection.php : daftar potret (Saved From/To, Status,
+         tabel dokumen, tombol View / Cancel)
+       - cf_history_detail.php     : isi satu potret di halaman sendiri
+         (Back to list, Excel, tabel matriks gaya app-cf-matrix.css)
+     Berkas CSS yang ditaut sama dgn halaman aslinya.
+
+     ANGKA DI POTRET TIDAK DIHITUNG ULANG - dibaca dari ap_cf_history_det,
+     jadi tetap sama walau kurs, rencana bayar, atau saldo awal berubah
+     sesudah Save History ditekan di layar Projection Report.
+
+     Datanya CONTOH: tiga potret dari database lokal (CF-PPR/1126/00001-3).
+     Panel abu di pojok kanan bawah tidak ikut ke halaman asli.
+     ============================================================================ -->
+
+<link href="../css/4.1.1/main.css" rel="stylesheet">
+<link href="../css/4.1.1/bootstrap.min.css" rel="stylesheet">
+<link href="../fontawesome5/css/all.min.css" rel="stylesheet">
+<link href="../fontawesome5/css/v4-shims.min.css" rel="stylesheet">
+
+<link rel="stylesheet" href="../css/app-skin-form.css">
+<link rel="stylesheet" href="../css/app-loading.css">
+<link rel="stylesheet" href="../css/app-ftr-list.css">
+<link rel="stylesheet" href="../css/app-cf-matrix.css">
+<link rel="stylesheet" href="../css/app-tema.css">
+
+<style>
+  body { background: #f4f6fb; }
+
+  /* --- sama dgn <style> di cf_history_projection.php --- */
+  .cfh-tbl { width:100%; font-size:12px; }
+  .cfh-tbl th { background:#1E3A8A !important; color:#fff !important;
+      font-size:10.5px; letter-spacing:.3px; text-transform:uppercase;
+      padding:7px 9px; white-space:nowrap; }
+  .cfh-tbl td { padding:6px 9px; border-bottom:1px solid #eef2f7; white-space:nowrap; }
+  .cfh-tbl tbody tr:hover td { background:#f5f9ff; }
+  .cfh-num { text-align:right; font-variant-numeric:tabular-nums; }
+  .cfh-doc { color:#1d4ed8; font-weight:600; cursor:pointer; }
+  .cfh-doc:hover { text-decoration:underline; }
+  .cfh-lencana { display:inline-block; padding:2px 9px; border-radius:999px;
+      font-size:10.5px; font-weight:700; letter-spacing:.3px; }
+  .cfh-aktif { background:#dcfce7; color:#166534; }
+  .cfh-batal { background:#fee2e2; color:#991b1b; }
+  .cfh-kosong { padding:24px; text-align:center; color:#94a3b8; }
+  .cfh-aksi { display:inline-flex; gap:6px; }
+
+  .layar[hidden] { display:none !important; }
+
+  /* dialog konfirmasi sederhana (halaman asli memakai SweetAlert2) */
+  .mk-ov { position:fixed; inset:0; z-index:60; background:rgba(15,23,42,.45);
+           display:flex; align-items:center; justify-content:center; padding:16px; }
+  .mk-ov[hidden] { display:none; }
+  .mk-dlg { background:#fff; border-radius:14px; width:420px; max-width:100%; padding:26px 24px 20px;
+            text-align:center; box-shadow:0 30px 60px -20px rgba(15,23,42,.5); }
+  .mk-dlg .ic { width:64px; height:64px; margin:0 auto 12px; border-radius:50%; border:3px solid #87adbd;
+                color:#87adbd; font-size:30px; line-height:58px; font-weight:700; }
+  .mk-dlg h3 { font-size:22px; margin:0 0 8px; color:#334155; }
+  .mk-dlg p { font-size:14px; color:#475569; margin:0 0 18px; }
+  .mk-dlg .bt { display:flex; gap:8px; justify-content:center; }
+  .mk-dlg button { border:0; border-radius:6px; padding:9px 18px; font-weight:600; color:#fff; }
+  .mk-dlg .ya { background:#7066e0; } .mk-dlg .tdk { background:#6e7881; }
+
+  /* panel mockup - tidak ikut ke halaman asli */
+  .uji {
+    position: fixed; right: 16px; bottom: 16px; z-index: 50; width: 258px;
+    padding: 13px 15px 11px; font-size: 12.5px; background: rgba(255,255,255,.96);
+    border: 1px solid #cdd9f0; border-radius: 13px;
+    box-shadow: 0 16px 30px -16px rgba(30,58,138,.5);
+  }
+  .uji h6 { margin: 0 0 2px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #64748b; }
+  .uji p { margin: 0 0 9px; font-size: 11px; line-height: 1.45; color: #94a3b8; }
+  .uji button { width: 100%; height: 31px; margin-top: 7px; font-size: 12px; font-weight: 700;
+                color: #fff; background: #1e3a8a; border: 0; border-radius: 8px; cursor: pointer; }
+  .uji button:hover { background: #2f62dc; }
+  .uji button.on { background: #0f766e; }
+  @media (max-width: 991.98px) { .uji { position: static; width: auto; margin: 12px; } }
+</style>
+</head>
+<body>
+
+<!-- ======================= LAYAR 1: DAFTAR POTRET ======================= -->
+<div class="layar" id="layar-daftar">
+<div class="container-fluid mt-3 p-3">
+    <div class="ftl-card">
+        <div class="ftl-head">
+            <span class="ftl-head-icon"><i class="fa fa-history" aria-hidden="true"></i></span>
+            <div>
+                <h1>History Projection</h1>
+                <span class="ftl-crumb">Bank &rsaquo; Report &rsaquo; Projection &rsaquo; History Projection</span>
+            </div>
+        </div>
+        <div class="ftl-body">
+            <form onsubmit="return false;">
+                <div class="row">
+                    <div class="col-12 col-sm-6 col-xl-3 mb-2">
+                        <label for="cfh-dari" class="form-label"><b>Saved From</b></label>
+                        <input type="text" class="form-control" id="cfh-dari" value="01-11-2026" autocomplete="off">
+                    </div>
+                    <div class="col-12 col-sm-6 col-xl-3 mb-2">
+                        <label for="cfh-sampai" class="form-label"><b>Saved To</b></label>
+                        <input type="text" class="form-control" id="cfh-sampai" value="30-11-2026" autocomplete="off">
+                    </div>
+                    <div class="col-12 col-sm-6 col-xl-2 mb-2">
+                        <label for="cfh-status" class="form-label"><b>Status</b></label>
+                        <select class="form-control" id="cfh-status">
+                            <option value="ALL" selected="selected">All</option>
+                            <option value="ACTIVE">Active</option>
+                            <option value="CANCEL">Cancel</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-xl-4 mb-2 ftl-actions">
+                        <button type="button" class="app-btn app-btn-primary app-btn-ctl app-btn-sm" id="cfh-cari">
+                            <i class="fa fa-search" aria-hidden="true"></i> Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="ftl-card" style="margin-top:16px;">
+        <div class="ftl-body" style="overflow:auto;">
+            <table class="cfh-tbl" id="cfh-daftar">
+                <thead>
+                    <tr>
+                        <th>Document No</th>
+                        <th>Period</th>
+                        <th>Type</th>
+                        <th>Profit Center</th>
+                        <th>Bank</th>
+                        <th class="cfh-num">Rate</th>
+                        <th class="cfh-num">Rows</th>
+                        <th>Created By</th>
+                        <th>Created Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- ======================= LAYAR 2: ISI SATU POTRET ======================= -->
+<div class="layar" id="layar-isi" hidden>
+<div class="container-fluid mt-3 p-3">
+    <div class="ftl-card">
+        <div class="ftl-head">
+            <span class="ftl-head-icon"><i class="fa fa-history" aria-hidden="true"></i></span>
+            <div>
+                <h1>History Projection &mdash; <span id="cfv-doc"></span></h1>
+                <span class="ftl-crumb">Bank &rsaquo; Report &rsaquo; Projection &rsaquo; History Projection &rsaquo; Detail</span>
+            </div>
+        </div>
+        <div class="ftl-body">
+            <div class="ftl-actions" style="justify-content:flex-start;">
+                <button type="button" class="app-btn app-btn-danger app-btn-ctl app-btn-sm" id="cfv-kembali">
+                    <i class="fa fa-arrow-left" aria-hidden="true"></i> Back to list
+                </button>
+                <button type="button" class="app-btn app-btn-success app-btn-ctl app-btn-sm" id="cfv-xls">
+                    <i class="fa fa-file-excel-o" aria-hidden="true"></i> Excel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="cfd-wrap">
+        <div class="cfd-cap">
+            <b id="cfv-judul"></b>
+            <span class="cfd-cap-kanan"><span id="cfv-sub"></span></span>
+        </div>
+        <div class="cfd-scroll">
+            <table class="cfd" id="cfv-tbl">
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- dialog Cancel (halaman asli: SweetAlert2 dgn teks yang sama) -->
+<div class="mk-ov" id="mk-ov" hidden>
+  <div class="mk-dlg" role="dialog" aria-modal="true">
+    <div class="ic">?</div>
+    <h3>Cancel this snapshot?</h3>
+    <p>Document <b id="mk-doc"></b> will be marked as cancelled.<br>Its figures are kept and can still be opened.</p>
+    <div class="bt"><button type="button" class="ya" id="mk-ya">Yes, cancel it</button><button type="button" class="tdk" id="mk-tdk">Cancel</button></div>
+  </div>
+</div>
+
+<!-- ================= panel mockup, tidak ikut ke halaman asli ================= -->
+<div class="uji">
+  <h6>Mockup</h6>
+  <p>Dua layar: daftar potret yang tersimpan, dan isi satu potret (dibuka dgn View atau klik nomor dokumen). Angkanya dibaca dari potret, tidak dihitung ulang.</p>
+  <button type="button" data-ke="daftar" class="on">Layar daftar</button>
+  <button type="button" data-ke="CF-PPR/1126/00003">Isi potret - Daily</button>
+  <button type="button" data-ke="CF-PPR/1126/00002">Isi potret - Weekly</button>
+</div>
+
+<script>
+/* Data contoh: keluaran ajx_cf_history_list.php & ajx_cf_history_detail.php
+   dari database lokal, disalin apa adanya. */
+var DAFTAR = [{"doc_number":"CF-PPR/1126/00003","periode":"01-Nov-2026 s/d 30-Nov-2026","pc":"All PC","bank":"All Banks","type":"Daily","rate":18135,"jml_baris":644,"status":"ACTIVE","created_by":"indro","created":"17-Nov-2026 11:49","cancel_by":"","cancel":""},{"doc_number":"CF-PPR/1126/00002","periode":"01-Nov-2026 s/d 30-Nov-2026","pc":"All PC","bank":"All Banks","type":"Weekly","rate":18135,"jml_baris":195,"status":"ACTIVE","created_by":"indro","created":"17-Nov-2026 11:34","cancel_by":"","cancel":""},{"doc_number":"CF-PPR/1126/00001","periode":"01-Nov-2026 s/d 30-Nov-2026","pc":"All PC","bank":"All Banks","type":"Daily","rate":18135,"jml_baris":644,"status":"CANCEL","created_by":"indro","created":"17-Nov-2026 11:34","cancel_by":"indro","cancel":"17-Nov-2026 11:34"}];
+var ISI = { 'CF-PPR/1126/00003': {"status":"success","mode":"tanggal","kolom":[{"judul":"01-Nov","hari":"Sun","tgl":"2026-11-01","akhir_pekan":1},{"judul":"02-Nov","hari":"Mon","tgl":"2026-11-02","akhir_pekan":0},{"judul":"03-Nov","hari":"Tue","tgl":"2026-11-03","akhir_pekan":0},{"judul":"04-Nov","hari":"Wed","tgl":"2026-11-04","akhir_pekan":0},{"judul":"05-Nov","hari":"Thu","tgl":"2026-11-05","akhir_pekan":0},{"judul":"06-Nov","hari":"Fri","tgl":"2026-11-06","akhir_pekan":0},{"judul":"07-Nov","hari":"Sat","tgl":"2026-11-07","akhir_pekan":1},{"judul":"08-Nov","hari":"Sun","tgl":"2026-11-08","akhir_pekan":1},{"judul":"09-Nov","hari":"Mon","tgl":"2026-11-09","akhir_pekan":0},{"judul":"10-Nov","hari":"Tue","tgl":"2026-11-10","akhir_pekan":0},{"judul":"11-Nov","hari":"Wed","tgl":"2026-11-11","akhir_pekan":0},{"judul":"12-Nov","hari":"Thu","tgl":"2026-11-12","akhir_pekan":0},{"judul":"13-Nov","hari":"Fri","tgl":"2026-11-13","akhir_pekan":0},{"judul":"14-Nov","hari":"Sat","tgl":"2026-11-14","akhir_pekan":1},{"judul":"15-Nov","hari":"Sun","tgl":"2026-11-15","akhir_pekan":1},{"judul":"16-Nov","hari":"Mon","tgl":"2026-11-16","akhir_pekan":0},{"judul":"17-Nov","hari":"Tue","tgl":"2026-11-17","akhir_pekan":0},{"judul":"18-Nov","hari":"Wed","tgl":"2026-11-18","akhir_pekan":0},{"judul":"19-Nov","hari":"Thu","tgl":"2026-11-19","akhir_pekan":0},{"judul":"20-Nov","hari":"Fri","tgl":"2026-11-20","akhir_pekan":0},{"judul":"21-Nov","hari":"Sat","tgl":"2026-11-21","akhir_pekan":1},{"judul":"22-Nov","hari":"Sun","tgl":"2026-11-22","akhir_pekan":1},{"judul":"23-Nov","hari":"Mon","tgl":"2026-11-23","akhir_pekan":0},{"judul":"24-Nov","hari":"Tue","tgl":"2026-11-24","akhir_pekan":0},{"judul":"25-Nov","hari":"Wed","tgl":"2026-11-25","akhir_pekan":0},{"judul":"26-Nov","hari":"Thu","tgl":"2026-11-26","akhir_pekan":0},{"judul":"27-Nov","hari":"Fri","tgl":"2026-11-27","akhir_pekan":0},{"judul":"28-Nov","hari":"Sat","tgl":"2026-11-28","akhir_pekan":1},{"judul":"29-Nov","hari":"Sun","tgl":"2026-11-29","akhir_pekan":1},{"judul":"30-Nov","hari":"Mon","tgl":"2026-11-30","akhir_pekan":0}],"baris":[{"tipe":"sal","no":"","label":"OPENING CASH & BANK BALANCE","v":[3246105860.05,3246105860.05,3246105860.05,3246105860.05,3246105860.05,3246105860.05,3246105860.05,3246105860.05,3246105860.05,3246105860.05,3246105860.05,6492475860.05,6463297851.45,7370047851.45,7370047851.45,7370047851.45,7370047851.45,7370047851.45,7370047851.45,7370047851.45,6916672851.45,6916672851.45,6916672851.45,6916672851.45,6916672851.45,6916672851.45,6916672851.45,6916672851.45,6916672851.45,6916672851.45],"tot":3246105860.05},{"tipe":"blok","no":"","label":"CASH INFLOWS:","v":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"tot":null},{"tipe":"grup","no":"1","label":"OPERATING ACTIVITIES:","v":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"tot":null},{"tipe":"item","no":"1","label":"Penerimaan Piutang Usaha (Existing)","v":[18135000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":18135000},{"tipe":"item","no":"2","label":"Penerimaan Piutang Usaha (Planning)","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"3","label":"Penerimaan Piutang Lain-lain","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"4","label":"Penerimaan Uang Muka Penjualan","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"5","label":"Penerimaan Pendapatan Bunga Giro","v":[0,0,0,0,0,0,0,0,0,0,0,577000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":577000},{"tipe":"item","no":"97","label":"Pengakuan Keuntungan Selisih Kurs","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"98","label":"Penerimaan Antar Bank (Dalam Satu PT)","v":[0,0,0,0,6000000,0,0,0,0,0,10774870294.6,2014249968.7,906750000,0,0,0,0,0,0,453375000,0,0,0,0,5000000,0,0,0,0,0],"tot":14160245263.3},{"tipe":"item","no":"99","label":"Penerimaan Lain-lain","v":[0,0,0,0,0,0,0,0,0,0,0,54405000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":54405000},{"tipe":"tot","no":"","label":"TOTAL CASH INFLOWS FROM OPERATING ACTIVITIES","v":[18135000,0,0,0,6000000,0,0,0,0,0,10774870294.6,2069231968.7,906750000,0,0,0,0,0,0,453375000,0,0,0,0,5000000,0,0,0,0,0],"tot":14233362263.3},{"tipe":"grup","no":"2","label":"INVESTING ACTIVITIES:","v":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"tot":null},{"tipe":"item","no":"1","label":"Setoran Modal","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"tot","no":"","label":"TOTAL CASH INFLOWS FROM INVESTING ACTIVITIES","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"grup","no":"3","label":"FINANCING ACTIVITIES:","v":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"tot":null},{"tipe":"item","no":"1","label":"Penerimaan Pinjaman Bank","v":[0,25925532,0,0,122801200,0,0,0,0,0,9251370000,2474607407.5,907750000,0,0,0,0,0,105103380,0,0,0,0,0,0,81265500,0,0,0,0],"tot":12968823019.5},{"tipe":"item","no":"2","label":"Penerimaan Pinjaman Group","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"3","label":"Penerimaan Pinjaman Shareholder","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"4","label":"Penerimaan Pinjaman Antar Divisi","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"tot","no":"","label":"TOTAL CASH INFLOWS FROM FINANCING ACTIVITIES","v":[0,25925532,0,0,122801200,0,0,0,0,0,9251370000,2474607407.5,907750000,0,0,0,0,0,105103380,0,0,0,0,0,0,81265500,0,0,0,0],"tot":12968823019.5},{"tipe":"tot2","no":"","label":"TOTAL CASH INFLOWS","v":[18135000,25925532,0,0,128801200,0,0,0,0,0,20026240294.6,4543839376.2,1814500000,0,0,0,0,0,105103380,453375000,0,0,0,0,5000000,81265500,0,0,0,0],"tot":27202185282.8},{"tipe":"blok","no":"","label":"CASH OUTFLOWS:","v":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"tot":null},{"tipe":"grup","no":"1","label":"OPERATING ACTIVITIES:","v":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"tot":null},{"tipe":"item","no":"1","label":"Pengeluaran Pembayaran Utang Usaha","v":[0,-25925532,0,0,-122801200,0,0,0,0,0,0,-498362407.5,-1000000,0,0,0,0,0,-105103380,0,0,0,0,0,0,-81265500,0,0,0,0],"tot":-834458019.5},{"tipe":"item","no":"2","label":"Pengeluaran Pembayaran Uang Muka Supplier","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"3","label":"Pengeluaran Pembayaran PPh","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"4","label":"Pengeluaran Pembayaran PPN","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"5","label":"Pengeluaran Pembayaran Biaya Gaji Operator","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"6","label":"Pengeluaran Pembayaran Biaya Gaji Staff","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"7","label":"Pengeluaran Pembayaran Biaya THR","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"8","label":"Pengeluaran Pembayaran Biaya BPJS TK","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"9","label":"Pengeluaran Pembayaran Biaya BPJS KS","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"10","label":"Pengeluaran Pembayaran Biaya Listrik","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"11","label":"Pengeluaran Pembayaran Biaya Telepon","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"12","label":"Pengeluaran Pembayaran Biaya Internet","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"13","label":"Pengeluaran Pembayaran Biaya Keperluan Pabrik","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"14","label":"Pengeluaran Pembayaran Biaya Perjalanan Dinas","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"15","label":"Pengeluaran Pembayaran Biaya Pemeliharaan Gedung","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"16","label":"Pengeluaran Pembayaran Biaya Pemeliharaan Mesin","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"17","label":"Pengeluaran Pembayaran Biaya Pemeliharaan Kendaraan","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"18","label":"Pengeluaran Pembayaran Biaya Pemeliharaan Peralatan","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"19","label":"Pengeluaran Pembayaran Biaya Sewa Tanah & Bangunan","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"20","label":"Pengeluaran Pembayaran Biaya Transportasi","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"21","label":"Pengeluaran Pembayaran Biaya ATK","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"22","label":"Pengeluaran Pembayaran Biaya Export & Import","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"23","label":"Pengeluaran Pembayaran Biaya Jasa Profesional","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"24","label":"Pengeluaran Pembayaran Biaya Administrasi Bank","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"25","label":"Pengeluaran Pembayaran Biaya Provisi Bank","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"97","label":"Pengakuan Kerugian Selisih Kurs","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"98","label":"Pengeluaran Antar Bank (Pemindahbukuan Internal)","v":[0,0,0,0,-6000000,0,0,0,0,0,-10774870000,-2014250000,-906750000,0,0,0,0,0,0,-453375000,0,0,0,0,-5000000,0,0,0,0,0],"tot":-14160245000},{"tipe":"item","no":"99","label":"Pengeluaran Lain-lain","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"tot","no":"","label":"TOTAL CASH OUTFLOWS FROM OPERATING ACTIVITIES","v":[0,-25925532,0,0,-128801200,0,0,0,0,0,-10774870000,-2512612407.5,-907750000,0,0,0,0,0,-105103380,-453375000,0,0,0,0,-5000000,-81265500,0,0,0,0],"tot":-14994703019.5},{"tipe":"grup","no":"2","label":"INVESTING ACTIVITIES:","v":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"tot":null},{"tipe":"item","no":"1","label":"Pembelian Tanah","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"2","label":"Pembelian Bangunan","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"3","label":"Pembelian Instalasi Pabrik","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"4","label":"Pembelian Mesin","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"5","label":"Pembelian Peralatan","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"6","label":"Pembelian Kendaraan","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"7","label":"Pembelian Perangkat Lunak","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"tot","no":"","label":"TOTAL CASH OUTFLOWS FROM INVESTING ACTIVITIES","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"grup","no":"3","label":"FINANCING ACTIVITIES:","v":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"tot":null},{"tipe":"item","no":"1","label":"Pelunasan Pinjaman Bank","v":[-18135000,0,0,0,0,0,0,0,0,0,-6005000294.6,-2060404977.3,0,0,0,0,0,0,0,-453375000,0,0,0,0,0,0,0,0,0,0],"tot":-8536915271.9},{"tipe":"item","no":"2","label":"Pelunasan Pinjaman Non Bank","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"3","label":"Pelunasan Pinjaman Group","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"4","label":"Pelunasan Pinjaman Shareholder","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"98","label":"Pelunasan Pinjaman Antar Divisi","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"5","label":"Pembayaran Bunga Pinjaman Bank","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"6","label":"Pembayaran Bunga Pinjaman Group","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"7","label":"Pembayaran Bunga Pinjaman Shareholder","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"tot","no":"","label":"TOTAL CASH OUTFLOWS FROM FINANCING ACTIVITIES","v":[-18135000,0,0,0,0,0,0,0,0,0,-6005000294.6,-2060404977.3,0,0,0,0,0,0,0,-453375000,0,0,0,0,0,0,0,0,0,0],"tot":-8536915271.9},{"tipe":"tot2","no":"","label":"TOTAL CASH OUTFLOWS","v":[-18135000,-25925532,0,0,-128801200,0,0,0,0,0,-16779870294.6,-4573017384.8,-907750000,0,0,0,0,0,-105103380,-906750000,0,0,0,0,-5000000,-81265500,0,0,0,0],"tot":-23531618291.4},{"tipe":"blok","no":"","label":"NET CASH FLOW BY ACTIVITY","v":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"tot":null},{"tipe":"net","no":"","label":"OPERATING ACTIVITIES","v":[18135000,-25925532,0,0,-122801200,0,0,0,0,0,294.6,-443380438.8,-1000000,0,0,0,0,0,-105103380,0,0,0,0,0,0,-81265500,0,0,0,0],"tot":-761340756.2},{"tipe":"net","no":"","label":"INVESTING ACTIVITIES","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"net","no":"","label":"FINANCING ACTIVITIES","v":[-18135000,25925532,0,0,122801200,0,0,0,0,0,3246369705.4,414202430.2,907750000,0,0,0,0,0,105103380,-453375000,0,0,0,0,0,81265500,0,0,0,0],"tot":4431907747.6},{"tipe":"sal","no":"","label":"CLOSING CASH & BANK BALANCE","v":[3246105860.05,3246105860.05,3246105860.05,3246105860.05,3246105860.05,3246105860.05,3246105860.05,3246105860.05,3246105860.05,3246105860.05,6492475860.05,6463297851.45,7370047851.45,7370047851.45,7370047851.45,7370047851.45,7370047851.45,7370047851.45,7370047851.45,6916672851.45,6916672851.45,6916672851.45,6916672851.45,6916672851.45,6916672851.45,6916672851.45,6916672851.45,6916672851.45,6916672851.45,6916672851.45],"tot":6916672851.45}],"pinjaman":[{"tipe":"pinj","no":"","label":"SALDO AWAL PINJAMAN BANK IDR","v":[-41692392840.75,-41692392840.75,-41718318372.75,-41718318372.75,-41718318372.75,-41718318372.75,-41718318372.75,-41718318372.75,-41718318372.75,-41718318372.75,-41718318372.75,-46213318372.75,-48209818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75],"tot":-41692392840.75},{"tipe":"pinj","no":"","label":"PENAMBAHAN PINJAMAN IDR","v":[0,-25925532,0,0,0,0,0,0,0,0,-4500000000,-2002500000,-1000000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":-6529425532},{"tipe":"pinj","no":"","label":"PELUNASAN PINJAMAN IDR","v":[0,0,0,0,0,0,0,0,0,0,5000000,6000000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":11000000},{"tipe":"pinj","no":"","label":"SALDO AKHIR PINJAMAN BANK IDR","v":[-41692392840.75,-41718318372.75,-41718318372.75,-41718318372.75,-41718318372.75,-41718318372.75,-41718318372.75,-41718318372.75,-41718318372.75,-41718318372.75,-46213318372.75,-48209818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75,-48210818372.75],"tot":-48210818372.75},{"tipe":"pinj","no":"","label":"LIMIT","v":[50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000,50000000000],"tot":50000000000},{"tipe":"pinj","no":"","label":"SISA / (KELEBIHAN) LIMIT","v":[8307607159.25,8281681627.25,8281681627.25,8281681627.25,8281681627.25,8281681627.25,8281681627.25,8281681627.25,8281681627.25,8281681627.25,3786681627.25,1790181627.25,1789181627.25,1789181627.25,1789181627.25,1789181627.25,1789181627.25,1789181627.25,1789181627.25,1789181627.25,1789181627.25,1789181627.25,1789181627.25,1789181627.25,1789181627.25,1789181627.25,1789181627.25,1789181627.25,1789181627.25,1789181627.25],"tot":1789181627.25},{"tipe":"pinj","no":"","label":"SALDO AWAL PINJAMAN BANK USD","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"sub","no":"","label":"- Dalam Mata Uang USD","v":[-463890.65,-462890.65,-462890.65,-462890.65,-462890.65,-469662.15,-469662.15,-469662.15,-469662.15,-469662.15,-469662.15,-400810.19,-313559.15,-363559.15,-363559.15,-363559.15,-363559.15,-363559.15,-363559.15,-369354.76,-344354.76,-344354.76,-344354.76,-344354.76,-344354.76,-344354.76,-348835.91,-348835.91,-348835.91,-348835.91],"tot":-463890.65},{"tipe":"sub","no":"","label":"- Dalam Mata Uang Rupiah","v":[-8412656937.75,-8394521937.75,-8394521937.75,-8394521937.75,-8394521937.75,-8517323137.75,-8517323137.75,-8517323137.75,-8517323137.75,-8517323137.75,-8517323137.75,-7268692843.15,-5686395273.35,-6593145273.35,-6593145273.35,-6593145273.35,-6593145273.35,-6593145273.35,-6593145273.35,-6698248653.35,-6244873653.35,-6244873653.35,-6244873653.35,-6244873653.35,-6244873653.35,-6244873653.35,-6326139153.35,-6326139153.35,-6326139153.35,-6326139153.35],"tot":-8412656937.75},{"tipe":"pinj","no":"","label":"PENAMBAHAN PINJAMAN USD","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"sub","no":"","label":"- Dalam Mata Uang USD","v":[0,0,0,0,-6771.5,0,0,0,0,0,-262000,-26032.94,-50000,0,0,0,0,0,-5795.61,0,0,0,0,0,0,-4481.14,0,0,0,0],"tot":-355081.2},{"tipe":"sub","no":"","label":"- Dalam Mata Uang Rupiah","v":[0,0,0,0,-122801200,0,0,0,0,0,-4751370000,-472107407.5,-906750000,0,0,0,0,0,-105103380,0,0,0,0,0,0,-81265500,0,0,0,0],"tot":-6439397487.5},{"tipe":"pinj","no":"","label":"PELUNASAN PINJAMAN USD","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"sub","no":"","label":"- Dalam Mata Uang USD","v":[1000,0,0,0,0,0,0,0,0,0,330851.96,113283.98,0,0,0,0,0,0,0,25000,0,0,0,0,0,0,0,0,0,0],"tot":470135.94},{"tipe":"sub","no":"","label":"- Dalam Mata Uang Rupiah","v":[18135000,0,0,0,0,0,0,0,0,0,6000000294.6,2054404977.3,0,0,0,0,0,0,0,453375000,0,0,0,0,0,0,0,0,0,0],"tot":8525915271.9},{"tipe":"pinj","no":"","label":"SALDO AKHIR PINJAMAN BANK USD","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"sub","no":"","label":"- Dalam Mata Uang USD","v":[-462890.65,-462890.65,-462890.65,-462890.65,-469662.15,-469662.15,-469662.15,-469662.15,-469662.15,-469662.15,-400810.19,-313559.15,-363559.15,-363559.15,-363559.15,-363559.15,-363559.15,-363559.15,-369354.76,-344354.76,-344354.76,-344354.76,-344354.76,-344354.76,-344354.76,-348835.91,-348835.91,-348835.91,-348835.91,-348835.91],"tot":-348835.91},{"tipe":"sub","no":"","label":"- Dalam Mata Uang Rupiah","v":[-8394521937.75,-8394521937.75,-8394521937.75,-8394521937.75,-8517323137.75,-8517323137.75,-8517323137.75,-8517323137.75,-8517323137.75,-8517323137.75,-7268692843.15,-5686395273.35,-6593145273.35,-6593145273.35,-6593145273.35,-6593145273.35,-6593145273.35,-6593145273.35,-6698248653.35,-6244873653.35,-6244873653.35,-6244873653.35,-6244873653.35,-6244873653.35,-6244873653.35,-6326139153.35,-6326139153.35,-6326139153.35,-6326139153.35,-6326139153.35],"tot":-6326139153.35},{"tipe":"pinj","no":"","label":"LIMIT","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"sub","no":"","label":"- Dalam Mata Uang USD","v":[500000,500000,500000,500000,500000,500000,500000,500000,500000,500000,500000,500000,500000,500000,500000,500000,500000,500000,500000,500000,500000,500000,500000,500000,500000,500000,500000,500000,500000,500000],"tot":500000},{"tipe":"sub","no":"","label":"- Dalam Mata Uang Rupiah","v":[9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000,9067500000],"tot":9067500000},{"tipe":"pinj","no":"","label":"SISA / (KELEBIHAN) LIMIT","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"sub","no":"","label":"- Dalam Mata Uang USD","v":[37109.35,37109.35,37109.35,37109.35,30337.85,30337.85,30337.85,30337.85,30337.85,30337.85,99189.81,186440.85,136440.85,136440.85,136440.85,136440.85,136440.85,136440.85,130645.24,155645.24,155645.24,155645.24,155645.24,155645.24,155645.24,151164.09,151164.09,151164.09,151164.09,151164.09],"tot":151164.09},{"tipe":"sub","no":"","label":"- Dalam Mata Uang Rupiah","v":[672978062.25,672978062.25,672978062.25,672978062.25,550176862.25,550176862.25,550176862.25,550176862.25,550176862.25,550176862.25,1798807156.85,3381104726.65,2474354726.65,2474354726.65,2474354726.65,2474354726.65,2474354726.65,2474354726.65,2369251346.65,2822626346.65,2822626346.65,2822626346.65,2822626346.65,2822626346.65,2822626346.65,2741360846.65,2741360846.65,2741360846.65,2741360846.65,2741360846.65],"tot":2741360846.65}],"info":{"doc_number":"CF-PPR/1126/00003","periode":"1 Nov 2026 - 30 Nov 2026","pc":"All PC","bank":"All Banks","type":"Daily","rate":18135,"status":"ACTIVE","created_by":"indro","created":"17-Nov-2026 11:49"}}, 'CF-PPR/1126/00002': {"status":"success","mode":"akun","kolom":[{"judul":"Bank Central Asia - 008-997-1979","hari":"","tgl":"","akhir_pekan":0},{"judul":"Bank Central Asia - 008-998-1982","hari":"","tgl":"","akhir_pekan":0},{"judul":"Bank Negara Indonesia - 442-244-2000","hari":"","tgl":"","akhir_pekan":0},{"judul":"Bank CIMB Niaga - 800-17781-4600","hari":"","tgl":"","akhir_pekan":0},{"judul":"bank Mandiri - 130-0002077777","hari":"","tgl":"","akhir_pekan":0},{"judul":"Bank Central Asia - 008-759-5858","hari":"","tgl":"","akhir_pekan":0},{"judul":"Bank Central Asia - 008-751-5757","hari":"","tgl":"","akhir_pekan":0},{"judul":"BANK RAKYAT INDONESIA - 013201001623307","hari":"","tgl":"","akhir_pekan":0},{"judul":"1.01.01 KAS KECIL GARMENT","hari":"","tgl":"","akhir_pekan":0},{"judul":"1.01.02 KAS KECIL KANTOR 1","hari":"","tgl":"","akhir_pekan":0},{"judul":"1.01.04 KAS KECIL KANTOR 2","hari":"","tgl":"","akhir_pekan":0},{"judul":"1.01.05 KAS KECIL KANTOR 3","hari":"","tgl":"","akhir_pekan":0},{"judul":"1.01.11 KAS KECIL KNITTING","hari":"","tgl":"","akhir_pekan":0},{"judul":"(unassigned account)","hari":"","tgl":"","akhir_pekan":0}],"baris":[{"tipe":"sal","no":"","label":"OPENING CASH BALANCE","v":[0,0,75568412,4320678.61,10443147.4,19322631.74,203452575.3,10750000,8376115,2907773300,2616300,0,3482700,0],"tot":3246105860.05},{"tipe":"blok","no":"","label":"CASH INFLOWS:","v":[null,null,null,null,null,null,null,null,null,null,null,null,null,null],"tot":null},{"tipe":"grup","no":"1","label":"OPERATING ACTIVITIES:","v":[null,null,null,null,null,null,null,null,null,null,null,null,null,null],"tot":null},{"tipe":"item","no":"1","label":"Penerimaan Piutang Usaha (Existing)","v":[0,18135000,0,0,0,0,0,0,0,0,0,0,0,0],"tot":18135000},{"tipe":"item","no":"2","label":"Penerimaan Piutang Usaha (Planning)","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"3","label":"Penerimaan Piutang Lain-lain","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"4","label":"Penerimaan Uang Muka Penjualan","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"5","label":"Penerimaan Pendapatan Bunga Giro","v":[0,0,500000,77000,0,0,0,0,0,0,0,0,0,0],"tot":577000},{"tipe":"item","no":"97","label":"Pengakuan Keuntungan Selisih Kurs","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"98","label":"Penerimaan Antar Bank (Dalam Satu PT)","v":[11000000,8453375271.9,4556750000,0,0,2500000,909499991.4,2000000,7000000,0,0,0,218120000,0],"tot":14160245263.3},{"tipe":"item","no":"99","label":"Penerimaan Lain-lain","v":[0,54405000,0,0,0,0,0,0,0,0,0,0,0,0],"tot":54405000},{"tipe":"tot","no":"","label":"TOTAL CASH INFLOWS FROM OPERATING ACTIVITIES","v":[11000000,8525915271.9,4557250000,77000,0,2500000,909499991.4,2000000,7000000,0,0,0,218120000,0],"tot":14233362263.3},{"tipe":"grup","no":"2","label":"INVESTING ACTIVITIES:","v":[null,null,null,null,null,null,null,null,null,null,null,null,null,null],"tot":null},{"tipe":"item","no":"1","label":"Setoran Modal","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"tot","no":"","label":"TOTAL CASH INFLOWS FROM INVESTING ACTIVITIES","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"grup","no":"3","label":"FINANCING ACTIVITIES:","v":[null,null,null,null,null,null,null,null,null,null,null,null,null,null],"tot":null},{"tipe":"item","no":"1","label":"Penerimaan Pinjaman Bank","v":[6529425532,6439397487.5,0,0,0,0,0,0,0,0,0,0,0,0],"tot":12968823019.5},{"tipe":"item","no":"2","label":"Penerimaan Pinjaman Group","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"3","label":"Penerimaan Pinjaman Shareholder","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"4","label":"Penerimaan Pinjaman Antar Divisi","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"tot","no":"","label":"TOTAL CASH INFLOWS FROM FINANCING ACTIVITIES","v":[6529425532,6439397487.5,0,0,0,0,0,0,0,0,0,0,0,0],"tot":12968823019.5},{"tipe":"tot2","no":"","label":"TOTAL CASH INFLOWS","v":[6540425532,14965312759.4,4557250000,77000,0,2500000,909499991.4,2000000,7000000,0,0,0,218120000,0],"tot":27202185282.8},{"tipe":"blok","no":"","label":"CASH OUTFLOWS:","v":[null,null,null,null,null,null,null,null,null,null,null,null,null,null],"tot":null},{"tipe":"grup","no":"1","label":"OPERATING ACTIVITIES:","v":[null,null,null,null,null,null,null,null,null,null,null,null,null,null],"tot":null},{"tipe":"item","no":"1","label":"Pengeluaran Pembayaran Utang Usaha","v":[-26925532,-781277487.5,0,0,0,0,0,0,0,0,0,0,0,-26255000],"tot":-834458019.5},{"tipe":"item","no":"2","label":"Pengeluaran Pembayaran Uang Muka Supplier","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"3","label":"Pengeluaran Pembayaran PPh","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"4","label":"Pengeluaran Pembayaran PPN","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"5","label":"Pengeluaran Pembayaran Biaya Gaji Operator","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"6","label":"Pengeluaran Pembayaran Biaya Gaji Staff","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"7","label":"Pengeluaran Pembayaran Biaya THR","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"8","label":"Pengeluaran Pembayaran Biaya BPJS TK","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"9","label":"Pengeluaran Pembayaran Biaya BPJS KS","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"10","label":"Pengeluaran Pembayaran Biaya Listrik","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"11","label":"Pengeluaran Pembayaran Biaya Telepon","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"12","label":"Pengeluaran Pembayaran Biaya Internet","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"13","label":"Pengeluaran Pembayaran Biaya Keperluan Pabrik","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"14","label":"Pengeluaran Pembayaran Biaya Perjalanan Dinas","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"15","label":"Pengeluaran Pembayaran Biaya Pemeliharaan Gedung","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"16","label":"Pengeluaran Pembayaran Biaya Pemeliharaan Mesin","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"17","label":"Pengeluaran Pembayaran Biaya Pemeliharaan Kendaraan","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"18","label":"Pengeluaran Pembayaran Biaya Pemeliharaan Peralatan","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"19","label":"Pengeluaran Pembayaran Biaya Sewa Tanah & Bangunan","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"20","label":"Pengeluaran Pembayaran Biaya Transportasi","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"21","label":"Pengeluaran Pembayaran Biaya ATK","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"22","label":"Pengeluaran Pembayaran Biaya Export & Import","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"23","label":"Pengeluaran Pembayaran Biaya Jasa Profesional","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"24","label":"Pengeluaran Pembayaran Biaya Administrasi Bank","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"25","label":"Pengeluaran Pembayaran Biaya Provisi Bank","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"97","label":"Pengakuan Kerugian Selisih Kurs","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"98","label":"Pengeluaran Antar Bank (Pemindahbukuan Internal)","v":[-6502500000,-5658120000,-10000000,0,0,0,-453375000,0,-1533250000,0,0,-250000,-2750000,0],"tot":-14160245000},{"tipe":"item","no":"99","label":"Pengeluaran Lain-lain","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"tot","no":"","label":"TOTAL CASH OUTFLOWS FROM OPERATING ACTIVITIES","v":[-6529425532,-6439397487.5,-10000000,0,0,0,-453375000,0,-1533250000,0,0,-250000,-2750000,-26255000],"tot":-14994703019.5},{"tipe":"grup","no":"2","label":"INVESTING ACTIVITIES:","v":[null,null,null,null,null,null,null,null,null,null,null,null,null,null],"tot":null},{"tipe":"item","no":"1","label":"Pembelian Tanah","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"2","label":"Pembelian Bangunan","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"3","label":"Pembelian Instalasi Pabrik","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"4","label":"Pembelian Mesin","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"5","label":"Pembelian Peralatan","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"6","label":"Pembelian Kendaraan","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"7","label":"Pembelian Perangkat Lunak","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"tot","no":"","label":"TOTAL CASH OUTFLOWS FROM INVESTING ACTIVITIES","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"grup","no":"3","label":"FINANCING ACTIVITIES:","v":[null,null,null,null,null,null,null,null,null,null,null,null,null,null],"tot":null},{"tipe":"item","no":"1","label":"Pelunasan Pinjaman Bank","v":[-11000000,-8525915271.9,0,0,0,0,0,0,0,0,0,0,0,0],"tot":-8536915271.9},{"tipe":"item","no":"2","label":"Pelunasan Pinjaman Non Bank","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"3","label":"Pelunasan Pinjaman Group","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"4","label":"Pelunasan Pinjaman Shareholder","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"98","label":"Pelunasan Pinjaman Antar Divisi","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"5","label":"Pembayaran Bunga Pinjaman Bank","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"6","label":"Pembayaran Bunga Pinjaman Group","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"item","no":"7","label":"Pembayaran Bunga Pinjaman Shareholder","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"tot","no":"","label":"TOTAL CASH OUTFLOWS FROM FINANCING ACTIVITIES","v":[-11000000,-8525915271.9,0,0,0,0,0,0,0,0,0,0,0,0],"tot":-8536915271.9},{"tipe":"tot2","no":"","label":"TOTAL CASH OUTFLOWS","v":[-6540425532,-14965312759.4,-10000000,0,0,0,-453375000,0,-1533250000,0,0,-250000,-2750000,-26255000],"tot":-23531618291.4},{"tipe":"blok","no":"","label":"NET CASH FLOW BY ACTIVITY","v":[null,null,null,null,null,null,null,null,null,null,null,null,null,null],"tot":null},{"tipe":"net","no":"","label":"OPERATING ACTIVITIES","v":[-6518425532,2086517784.4,4547250000,77000,0,2500000,456124991.4,2000000,-1526250000,0,0,-250000,215370000,-26255000],"tot":-761340756.2},{"tipe":"net","no":"","label":"INVESTING ACTIVITIES","v":[0,0,0,0,0,0,0,0,0,0,0,0,0,0],"tot":0},{"tipe":"net","no":"","label":"FINANCING ACTIVITIES","v":[6518425532,-2086517784.4,0,0,0,0,0,0,0,0,0,0,0,0],"tot":4431907747.6},{"tipe":"sal","no":"","label":"CLOSING CASH BALANCE","v":[0,0,4622818412,4397678.61,10443147.4,21822631.74,659577566.7,12750000,-1517873885,2907773300,2616300,-250000,218852700,-26255000],"tot":6916672851.45}],"pinjaman":[{"tipe":"pinj","no":"","label":"SALDO AWAL PINJAMAN BANK","v":[-41692392840.75,-8412656937.75,0,0,0,0,0,0,0,0,0,0,0,0],"tot":-50105049778.5},{"tipe":"pinj","no":"","label":"PENAMBAHAN PINJAMAN","v":[-6529425532,-6439397487.5,0,0,0,0,0,0,0,0,0,0,0,0],"tot":-12968823019.5},{"tipe":"pinj","no":"","label":"PELUNASAN PINJAMAN","v":[11000000,8525915271.9,0,0,0,0,0,0,0,0,0,0,0,0],"tot":8536915271.9},{"tipe":"pinj","no":"","label":"SALDO AKHIR PINJAMAN BANK","v":[-48210818372.75,-6326139153.35,0,0,0,0,0,0,0,0,0,0,0,0],"tot":-54536957526.1},{"tipe":"pinj","no":"","label":"LIMIT","v":[50000000000,9067500000,0,0,0,0,0,0,0,0,0,0,0,0],"tot":59067500000},{"tipe":"pinj","no":"","label":"SISA / (KELEBIHAN) LIMIT","v":[1789181627.25,2741360846.65,0,0,0,0,0,0,0,0,0,0,0,0],"tot":4530542473.9}],"info":{"doc_number":"CF-PPR/1126/00002","periode":"1 Nov 2026 - 30 Nov 2026","pc":"All PC","bank":"All Banks","type":"Weekly","rate":18135,"status":"ACTIVE","created_by":"indro","created":"17-Nov-2026 11:34"}} };
+ISI['CF-PPR/1126/00001'] = JSON.parse(JSON.stringify(ISI['CF-PPR/1126/00003']));
+ISI['CF-PPR/1126/00001'].info.doc_number = 'CF-PPR/1126/00001';
+ISI['CF-PPR/1126/00001'].info.created = '17-Nov-2026 11:34';
+ISI['CF-PPR/1126/00001'].info.status = 'CANCEL';
+
+function cfhAman(t) {
+    return String(t === null || t === undefined ? '' : t)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/* ---------- layar daftar (sama dgn cfhDaftar() di halaman asli) ---------- */
+function cfhDaftar() {
+    var st = document.getElementById('cfh-status').value;
+    var data = DAFTAR.filter(function (d) { return st === 'ALL' || d.status === st; });
+    var tb = document.querySelector('#cfh-daftar tbody');
+    if (!data.length) { tb.innerHTML = '<tr><td colspan="11" class="cfh-kosong">No saved projection in this period.</td></tr>'; return; }
+    var h = '';
+    data.forEach(function (d) {
+        var batal = (d.status === 'CANCEL');
+        h += '<tr>'
+           + '<td><span class="cfh-doc" data-doc="' + cfhAman(d.doc_number) + '">' + cfhAman(d.doc_number) + '</span></td>'
+           + '<td>' + cfhAman(d.periode) + '</td>'
+           + '<td>' + cfhAman(d.type) + '</td>'
+           + '<td>' + cfhAman(d.pc) + '</td>'
+           + '<td>' + cfhAman(d.bank) + '</td>'
+           + '<td class="cfh-num">' + Number(d.rate).toLocaleString('en-US') + '</td>'
+           + '<td class="cfh-num">' + Number(d.jml_baris).toLocaleString('en-US') + '</td>'
+           + '<td>' + cfhAman(d.created_by) + '</td>'
+           + '<td>' + cfhAman(d.created) + '</td>'
+           + '<td><span class="cfh-lencana ' + (batal ? 'cfh-batal' : 'cfh-aktif') + '">' + (batal ? 'Cancel' : 'Active') + '</span></td>'
+           + '<td><span class="cfh-aksi">'
+           + '<button type="button" class="app-btn app-btn-primary app-btn-sm cfh-lihat" data-doc="' + cfhAman(d.doc_number) + '"><i class="fa fa-eye" aria-hidden="true"></i> View</button>'
+           + (batal ? '' : '<button type="button" class="app-btn app-btn-danger app-btn-sm cfh-cancel" data-doc="' + cfhAman(d.doc_number) + '"><i class="fa fa-ban" aria-hidden="true"></i> Cancel</button>')
+           + '</span></td></tr>';
+    });
+    tb.innerHTML = h;
+}
+
+/* ---------- layar isi (sama dgn cf_history_detail.php) ---------- */
+function cfvAngka(v) {
+    if (v === null || v === undefined || v === '') { return ''; }
+    var n = Math.round(Number(v));
+    if (!n) { return '<span class="cfd-nol">0</span>'; }
+    var s = Math.abs(n).toLocaleString('en-US');
+    return n < 0 ? '<span class="cfd-min">(' + s + ')</span>' : s;
+}
+function cfvKepala(kolom) {
+    var h = '<tr><th>Descriptions</th><th class="cfd-num">Total</th>';
+    kolom.forEach(function (k) {
+        h += '<th class="cfd-num' + (k.akhir_pekan ? ' cfd-wknd' : '') + '">'
+           + (k.hari ? '<span class="cfd-dow">' + cfhAman(k.hari) + '</span>' : '') + cfhAman(k.judul) + '</th>';
+    });
+    return h + '</tr>';
+}
+function cfvIsi(baris, kolom) {
+    var h = '';
+    baris.forEach(function (b) {
+        var label = (b.no ? '<span class="cfd-no">' + cfhAman(b.no) + '</span>' : '') + cfhAman(b.label);
+        h += '<tr class="r-' + cfhAman(b.tipe) + '"><th class="cfd-desc">' + label + '</th>'
+           + '<td class="cfd-num cfd-tot">' + cfvAngka(b.tot) + '</td>';
+        kolom.forEach(function (k, j) { h += '<td class="cfd-num' + (k.akhir_pekan ? ' cfd-wknd' : '') + '">' + cfvAngka(b.v[j]) + '</td>'; });
+        h += '</tr>';
+    });
+    return h;
+}
+function bukaIsi(doc) {
+    var res = ISI[doc]; if (!res) { return; }
+    var i = res.info;
+    var d = DAFTAR.filter(function (x) { return x.doc_number === doc; })[0];
+    if (d) { i.status = d.status; }
+    document.getElementById('cfv-doc').textContent = doc;
+    document.getElementById('cfv-judul').textContent = i.doc_number + '  —  ' + i.type;
+    document.getElementById('cfv-sub').textContent = i.periode + '  ·  Rate ' + Number(i.rate).toLocaleString('en-US')
+        + '  ·  ' + i.pc + '  ·  ' + i.bank + '  ·  saved by ' + i.created_by + ' ' + i.created
+        + (i.status === 'CANCEL' ? '  ·  CANCELLED' : '');
+    var isi = cfvIsi(res.baris, res.kolom);
+    if (res.pinjaman && res.pinjaman.length) {
+        isi += '<tr class="r-spasi"><td colspan="' + (res.kolom.length + 2) + '"></td></tr>' + cfvIsi(res.pinjaman, res.kolom);
+    }
+    document.querySelector('#cfv-tbl thead').innerHTML = cfvKepala(res.kolom);
+    document.querySelector('#cfv-tbl tbody').innerHTML = isi;
+    tampil('isi', doc);
+}
+function tampil(layar, doc) {
+    document.getElementById('layar-daftar').hidden = layar !== 'daftar';
+    document.getElementById('layar-isi').hidden = layar !== 'isi';
+    document.querySelectorAll('.uji button').forEach(function (b) {
+        b.classList.toggle('on', layar === 'daftar' ? b.dataset.ke === 'daftar' : b.dataset.ke === doc);
+    });
+    window.scrollTo(0, 0);
+}
+
+/* ---------- tombol ---------- */
+var calonBatal = '';
+document.getElementById('cfh-cari').addEventListener('click', cfhDaftar);
+document.getElementById('cfh-daftar').addEventListener('click', function (e) {
+    var t = e.target.closest('.cfh-doc, .cfh-lihat, .cfh-cancel'); if (!t) { return; }
+    if (t.classList.contains('cfh-cancel')) {
+        calonBatal = t.dataset.doc;
+        document.getElementById('mk-doc').textContent = calonBatal;
+        document.getElementById('mk-ov').hidden = false;
+        return;
+    }
+    bukaIsi(t.dataset.doc);
+});
+document.getElementById('mk-tdk').addEventListener('click', function () { document.getElementById('mk-ov').hidden = true; });
+document.getElementById('mk-ya').addEventListener('click', function () {
+    DAFTAR.forEach(function (d) { if (d.doc_number === calonBatal) { d.status = 'CANCEL'; } });
+    document.getElementById('mk-ov').hidden = true;
+    cfhDaftar();
+});
+document.getElementById('cfv-kembali').addEventListener('click', function () { tampil('daftar'); });
+document.getElementById('cfv-xls').addEventListener('click', function () {
+    alert('Excel downloads this snapshot as it was saved (ekspor_cf_history.php) - mockup only.');
+});
+document.querySelectorAll('.uji button').forEach(function (b) {
+    b.addEventListener('click', function () { if (b.dataset.ke === 'daftar') { tampil('daftar'); } else { bukaIsi(b.dataset.ke); } });
+});
+cfhDaftar();
+</script>
+</body>
+</html>

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup - Update Payment Date PV Biaya</title>
+
+<!-- ============================================================================
+     MOCKUP layar "Update Payment Date - PV Biaya".  Revisi 2, 16 Nov 2026.
+
+     Bentuknya SENGAJA disalin dari create-payment-plan.php (Update Payment
+     Plan milik AP) - kartu .pco-, bagian Header / Find / hasil, tabel abu
+     bergaris, warna baris menurut Supplier Priority, tombol .app-btn. Berkas
+     CSS yang ditaut sama persis dgn halaman itu.
+
+     PERUBAHAN DARI REVISI 1 (permintaan pemakai):
+       1. Kolom "Cash Flow Category" jadi TEKS MATI (opsi 1 pilihan pemakai):
+          boleh dilihat, tidak bisa diubah. Kategori itu milik dokumen PV
+          (diisi di Create/Edit Payment Voucher -> tbl_pv_h.id_cash_flow) dan
+          dipakai juga Bank Out & Cash Flow Realisation. Kalau bisa diubah
+          dari layar ini, satu salah klik bisa memindahkan nominal ke baris
+          laporan yang salah tanpa jejak. Yang kosong cukup DITANDAI
+          "not set"; tidak ada kalimat perintah apa pun di layar.
+       2. Description per baris MULAI KOSONG. Isi Description di kepala
+          dokumen mengalir ke setiap baris yang dicentang - persis perilaku
+          Update Payment Plan AP.
+       3. Baris diwarnai menurut Supplier Priority (mastersupplier.payment_rating:
+          GREEN / YELLOW / RED / belum disetel), sama dgn versi AP.
+       4. Menunya nanti di Bank > Projection, bukan di AP.
+
+     Datanya CONTOH, diambil dari PV asli di produksi (termasuk payment_rating
+     supplier-nya) supaya panjang teks & besaran angkanya realistis. Panel abu
+     di pojok kanan bawah tidak akan ikut ke halaman asli.
+     Project tracker id 106.
+     ============================================================================ -->
+
+<link href="../css/4.1.1/main.css" rel="stylesheet">
+<link href="../css/4.1.1/bootstrap.min.css" rel="stylesheet">
+<link href="../css/4.1.1/select2.min.css" rel="stylesheet">
+<link href="../fontawesome5/css/all.min.css" rel="stylesheet">
+<link href="../fontawesome5/css/v4-shims.min.css" rel="stylesheet">
+
+<link rel="stylesheet" href="../css/app-skin-form.css">
+<link rel="stylesheet" href="../css/app-pco-form.css">
+<link rel="stylesheet" href="../css/app-loading.css">
+<link rel="stylesheet" href="../css/app-tema.css">
+
+<style>
+  body { background: #f4f6fb; }
+
+  .pv-scroll { overflow-x: auto; }
+  #table-pv { width: 100%; font-size: 12.5px; }
+  #table-pv thead th {
+    white-space: nowrap; font-size: 11.5px; letter-spacing: .02em;
+    text-transform: uppercase; vertical-align: middle;
+  }
+  #table-pv tbody td { vertical-align: middle; white-space: nowrap; }
+  #table-pv tbody td.wrap { white-space: normal; min-width: 190px; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .doc { font-weight: 600; color: #1e3a8a; }
+  #table-pv .in-tgl { width: 120px; }
+
+  /* ---------- Cash Flow Category: TEKS MATI, bukan isian ----------
+     Boleh dilihat supaya ketahuan PV mana yang datanya belum lengkap,
+     TAPI tidak bisa diubah dari sini: kolom aslinya (tbl_pv_h.id_cash_flow)
+     dipakai juga Bank Out & Cash Flow Realisation, jadi satu salah klik
+     bisa memindahkan nominal ke baris laporan yang salah tanpa jejak.
+     Diisinya di Create/Edit Payment Voucher. Yang kosong hanya DITANDAI
+     "not set" - tanpa kalimat perintah apa pun di layar. */
+  #table-pv td.ktg { white-space: normal; min-width: 240px; max-width: 300px;
+                     color: #475569; font-size: 12px; line-height: 1.35; }
+  .ktg-kosong {
+    display: inline-block; padding: 1px 8px; border-radius: 999px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: .02em;
+    color: #8a5a00; background: #ffeec2; cursor: help;
+  }
+  #table-pv .in-ket { min-width: 230px; }
+
+  /* ---------- Supplier Priority: warna baris, disalin dari create-payment-plan.php
+     Garis tebal di tepi kiri, bukan latar penuh - supaya tulisannya tetap
+     gampang dibaca dan baris tercentang tetap kelihatan bedanya. ---------- */
+  #table-pv tbody tr                { --flx-bg: #ffffff; --flx-hov: #eef4ff; --flx-bar: transparent; }
+  #table-pv tbody tr.app-flx-green  { --flx-bg: #f1faf4; --flx-hov: #e2f3e8; --flx-bar: #34a853; }
+  #table-pv tbody tr.app-flx-yellow { --flx-bg: #fffdf2; --flx-hov: #fdf5e0; --flx-bar: #e0a800; }
+  #table-pv tbody tr.app-flx-red    { --flx-bg: #fdeeec; --flx-hov: #fadbd7; --flx-bar: #ea4335; }
+  #table-pv tbody tr > td       { background: var(--flx-bg); }
+  #table-pv tbody tr:hover > td { background: var(--flx-hov); }
+  #table-pv tbody tr > td:first-child { box-shadow: inset 4px 0 0 var(--flx-bar); }
+  #table-pv tbody tr.dipilih > td:first-child { box-shadow: inset 4px 0 0 var(--flx-bar), inset 7px 0 0 #2563eb; }
+
+  .app-flx-ket { float: right; font-size: 11px; font-weight: 500; color: #64748b;
+                 text-transform: none; letter-spacing: 0; }
+  .app-flx-ket > span { margin-left: 13px; white-space: nowrap; }
+  .app-flx-dot { display: inline-block; width: 12px; height: 12px; border-radius: 3px;
+                 margin-right: 5px; vertical-align: -2px; border: 1px solid #e2e8f0; }
+  .app-flx-dot.is-green  { background: #f1faf4; box-shadow: inset 4px 0 0 #34a853; }
+  .app-flx-dot.is-yellow { background: #fffdf2; box-shadow: inset 4px 0 0 #e0a800; }
+  .app-flx-dot.is-red    { background: #fdeeec; box-shadow: inset 4px 0 0 #ea4335; }
+  .app-flx-dot.is-kosong { background: #ffffff; }
+
+  /* Lewat tanggal: tetap tampil supaya bisa digeser, ditandai supaya kelihatan. */
+  .telat { color: #b91c1c; font-weight: 600; }
+
+  /* panel mockup - tidak ikut ke halaman asli */
+  .uji {
+    position: fixed; right: 16px; bottom: 16px; z-index: 50; width: 258px;
+    padding: 13px 15px 11px; font-size: 12.5px; background: rgba(255,255,255,.96);
+    border: 1px solid #cdd9f0; border-radius: 13px;
+    box-shadow: 0 16px 30px -16px rgba(30,58,138,.5);
+  }
+  .uji h6 { margin: 0 0 2px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #64748b; }
+  .uji p { margin: 0 0 9px; font-size: 11px; line-height: 1.45; color: #94a3b8; }
+  .uji button { width: 100%; height: 31px; margin-top: 7px; font-size: 12px; font-weight: 700;
+                color: #fff; background: #1e3a8a; border: 0; border-radius: 8px; cursor: pointer; }
+  .uji button:hover { background: #2f62dc; }
+  @media (max-width: 991.98px) { .uji { position: static; width: auto; margin: 12px; } }
+</style>
+</head>
+<body>
+
+<!-- MAIN -->
+<div class="container-fluid mt-3 p-3">
+  <div class="pco-card">
+
+    <div class="pco-head">
+      <span class="pco-head-icon"><i class="fas fa-calendar-plus"></i></span>
+      <div>
+        <h1>Form Update Payment Date</h1>
+        <span class="pco-crumb">Bank &rsaquo; Projection &rsaquo; Update Payment Date PV Biaya &rsaquo; Create</span>
+      </div>
+    </div><!-- /.pco-head -->
+
+    <div class="pco-body">
+
+      <!-- ---------------- kepala dokumen ---------------- -->
+      <div class="pco-sec"><i class="fa fa-file-text-o" aria-hidden="true"></i> Header</div>
+      <div class="form-row">
+        <div class="col-12 col-sm-6 col-xl-2 mb-2">
+          <label for="plan_date" class="form-label"><b>Payment Plan Date</b></label>
+          <input type="text" class="form-control form-control-sm" id="plan_date" value="16 Nov 2026" autocomplete="off">
+        </div>
+        <div class="col-12 col-sm-8 col-xl-6 mb-2">
+          <label for="keterangan" class="form-label"><b>Description</b></label>
+          <!-- Isi di sini mengalir ke tiap baris yang DICENTANG, termasuk baris
+               yang baru dicentang sesudahnya - sama dgn Update Payment Plan AP. -->
+          <input type="text" class="form-control form-control-sm" id="keterangan" maxlength="255"
+                 placeholder="Optional - ticked rows follow this text">
+        </div>
+      </div>
+
+      <!-- ---------------- saringan voucher ---------------- -->
+      <div class="pco-sec"><i class="fa fa-search" aria-hidden="true"></i> Find payment vouchers</div>
+      <div class="form-row">
+        <div class="col-12 col-sm-6 col-xl-2 mb-2">
+          <label for="dasar" class="form-label"><b>Date Basis</b></label>
+          <select class="form-control form-control-sm" id="dasar">
+            <option>Due Date</option>
+            <option>PV Date</option>
+          </select>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-2 mb-2">
+          <label for="start_date" class="form-label"><b>From</b></label>
+          <input type="text" class="form-control form-control-sm" id="start_date" value="01 Jul 2026" autocomplete="off">
+        </div>
+        <div class="col-12 col-sm-6 col-xl-2 mb-2">
+          <label for="end_date" class="form-label"><b>To</b></label>
+          <input type="text" class="form-control form-control-sm" id="end_date" value="30 Nov 2026" autocomplete="off">
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3 mb-2">
+          <label for="supplier" class="form-label"><b>Supplier</b></label>
+          <select class="form-control form-control-sm" id="supplier">
+            <option selected>All Suppliers</option>
+            <option>PT. NIRWANA ALABARE GARMENT</option>
+            <option>BPJS KESEHATAN</option>
+            <option>BPJS TENAGA KERJA</option>
+            <option>IWAN SANTOSO</option>
+          </select>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3 mb-2 pco-actions align-items-end">
+          <button type="button" class="app-btn app-btn-primary app-btn-ctl app-btn-sm">
+            <i class="fa fa-search" aria-hidden="true"></i> Search
+          </button>
+        </div>
+      </div><!-- /.form-row -->
+
+      <!-- ---------------- hasil ---------------- -->
+      <div class="pco-sec"><i class="fa fa-list" aria-hidden="true"></i> Payment vouchers
+        <span class="text-muted ml-2" style="text-transform:none;letter-spacing:0;font-weight:500;">
+          8 vouchers found &middot; cash flow category is read-only
+        </span>
+        <span class="app-flx-ket">Supplier priority
+          <span><i class="app-flx-dot is-green"></i>Green</span>
+          <span><i class="app-flx-dot is-yellow"></i>Yellow</span>
+          <span><i class="app-flx-dot is-red"></i>Red</span>
+          <span><i class="app-flx-dot is-kosong"></i>Not set</span>
+        </span>
+      </div>
+
+      <div class="pv-scroll">
+        <table id="table-pv" class="table table-striped table-bordered table-hover table-sm">
+          <thead class="table-gradient">
+            <tr>
+              <th style="text-align:center;"><input type="checkbox" id="pilih-semua" title="Tick every row on this page"></th>
+              <th style="text-align:center;">Payment Voucher No</th>
+              <th style="text-align:center;">PV Date</th>
+              <th style="text-align:center;">Supplier</th>
+              <th style="text-align:center;">Due Date</th>
+              <th style="text-align:center;">Payment Plan</th>
+              <th style="text-align:center;">Cash Flow Category</th>
+              <th style="text-align:center;">Bank</th>
+              <th style="text-align:center;">PC</th>
+              <th style="text-align:center;">Curr</th>
+              <th style="text-align:center;">Outstanding</th>
+              <th style="text-align:center;">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <!-- dua baris pertama = PV yang BENAR-BENAR outstanding saat ini -->
+            <tr class="dipilih">
+              <td style="text-align:center;"><input type="checkbox" class="pilih" checked></td>
+              <td class="doc">PV/NAG/0726/01270</td>
+              <td>24-Jul-2026</td>
+              <td class="wrap">PT. NIRWANA ALABARE GARMENT</td>
+              <td class="telat">24-Jul-2026</td>
+              <td><input type="text" class="form-control form-control-sm in-tgl" value="20 Nov 2026"></td>
+              <td class="ktg"><span class="ktg-kosong">not set</span></td>
+              <td>BCA - 008-759-5858</td>
+              <td>NAK</td>
+              <td>IDR</td>
+              <td class="num">9.246.119,20</td>
+              <td class="wrap"><input type="text" class="form-control form-control-sm in-ket" placeholder="follows header"></td>
+            </tr>
+
+            <tr class="dipilih">
+              <td style="text-align:center;"><input type="checkbox" class="pilih" checked></td>
+              <td class="doc">PV/NAG/0826/01433</td>
+              <td>28-Aug-2026</td>
+              <td class="wrap">PT. NIRWANA ALABARE GARMENT</td>
+              <td class="telat">28-Aug-2026</td>
+              <td><input type="text" class="form-control form-control-sm in-tgl" value="20 Nov 2026"></td>
+              <td class="ktg">Pengeluaran Antar Bank (Pemindahbukuan Internal)</td>
+              <td>BCA - 008-759-5858</td>
+              <td>NAK</td>
+              <td>IDR</td>
+              <td class="num">2.500.000.000,00</td>
+              <td class="wrap"><input type="text" class="form-control form-control-sm in-ket" placeholder="follows header"></td>
+            </tr>
+
+            <!-- sisanya contoh, supaya bentuk tabelnya kelihatan waktu ramai -->
+            <tr>
+              <td style="text-align:center;"><input type="checkbox" class="pilih"></td>
+              <td class="doc">PV/NAG/1026/00150</td>
+              <td>30-Oct-2026</td>
+              <td class="wrap">PT. NIRWANA ALABARE GARMENT</td>
+              <td>01-Nov-2026</td>
+              <td><input type="text" class="form-control form-control-sm in-tgl" value="01 Nov 2026"></td>
+              <td class="ktg">Pengeluaran Pembayaran Biaya Gaji Operator</td>
+              <td>BNI - 442-244-2000</td>
+              <td>NAG</td>
+              <td>IDR</td>
+              <td class="num">10.738.322.800,00</td>
+              <td class="wrap"><input type="text" class="form-control form-control-sm in-ket" placeholder="follows header"></td>
+            </tr>
+
+            <tr>
+              <td style="text-align:center;"><input type="checkbox" class="pilih"></td>
+              <td class="doc">PV/NAG/1026/00153</td>
+              <td>30-Oct-2026</td>
+              <td class="wrap">PT. NIRWANA ALABARE GARMENT</td>
+              <td>01-Nov-2026</td>
+              <td><input type="text" class="form-control form-control-sm in-tgl" value="01 Nov 2026"></td>
+              <td class="ktg">Pengeluaran Pembayaran Biaya Gaji Operator</td>
+              <td>BNI - 442-244-2000</td>
+              <td>NAG</td>
+              <td>IDR</td>
+              <td class="num">635.159.500,00</td>
+              <td class="wrap"><input type="text" class="form-control form-control-sm in-ket" placeholder="follows header"></td>
+            </tr>
+
+            <tr class="app-flx-yellow">
+              <td style="text-align:center;"><input type="checkbox" class="pilih"></td>
+              <td class="doc">PV/NAG/1126/00039</td>
+              <td>12-Nov-2026</td>
+              <td class="wrap">BPJS TENAGA KERJA</td>
+              <td>14-Nov-2026</td>
+              <td><input type="text" class="form-control form-control-sm in-tgl" value="14 Nov 2026"></td>
+              <td class="ktg">Pengeluaran Pembayaran Biaya BPJS TK</td>
+              <td>BCA - 008-997-1979</td>
+              <td>NAG</td>
+              <td>IDR</td>
+              <td class="num">1.317.207.217,00</td>
+              <td class="wrap"><input type="text" class="form-control form-control-sm in-ket" placeholder="follows header"></td>
+            </tr>
+
+            <tr class="app-flx-yellow">
+              <td style="text-align:center;"><input type="checkbox" class="pilih"></td>
+              <td class="doc">PV/NAG/1126/00038</td>
+              <td>06-Nov-2026</td>
+              <td class="wrap">BPJS KESEHATAN</td>
+              <td>08-Nov-2026</td>
+              <td><input type="text" class="form-control form-control-sm in-tgl" value="08 Nov 2026"></td>
+              <td class="ktg">Pengeluaran Pembayaran Biaya BPJS KS</td>
+              <td>BCA - 008-997-1979</td>
+              <td>NAG</td>
+              <td>IDR</td>
+              <td class="num">712.176.015,00</td>
+              <td class="wrap"><input type="text" class="form-control form-control-sm in-ket" placeholder="follows header"></td>
+            </tr>
+
+            <tr class="app-flx-yellow">
+              <td style="text-align:center;"><input type="checkbox" class="pilih"></td>
+              <td class="doc">PV/NAG/1026/00095</td>
+              <td>08-Nov-2026</td>
+              <td class="wrap">IWAN SANTOSO</td>
+              <td>10-Nov-2026</td>
+              <td><input type="text" class="form-control form-control-sm in-tgl" value="10 Nov 2026"></td>
+              <td class="ktg">Pengeluaran Pembayaran Biaya Sewa Tanah &amp; Bangunan</td>
+              <td>BCA - 008-997-1979</td>
+              <td>NAG</td>
+              <td>IDR</td>
+              <td class="num">505.000.000,00</td>
+              <td class="wrap"><input type="text" class="form-control form-control-sm in-ket" placeholder="follows header"></td>
+            </tr>
+
+            <!-- contoh supplier ber-prioritas RED & GREEN, supaya ketiga warnanya terlihat -->
+            <tr class="app-flx-red">
+              <td style="text-align:center;"><input type="checkbox" class="pilih"></td>
+              <td class="doc">PV/NAG/1126/00029</td>
+              <td>04-Nov-2026</td>
+              <td class="wrap">CONTOH SUPPLIER PRIORITAS RED</td>
+              <td>04-Nov-2026</td>
+              <td><input type="text" class="form-control form-control-sm in-tgl" value="18 Nov 2026"></td>
+              <td class="ktg"><span class="ktg-kosong">not set</span></td>
+              <td>BCA - 008-759-5858</td>
+              <td>NAK</td>
+              <td>IDR</td>
+              <td class="num">300.000.000,00</td>
+              <td class="wrap"><input type="text" class="form-control form-control-sm in-ket" placeholder="follows header"></td>
+            </tr>
+
+            <tr class="app-flx-green">
+              <td style="text-align:center;"><input type="checkbox" class="pilih"></td>
+              <td class="doc">PV/NAG/1126/00044</td>
+              <td>10-Nov-2026</td>
+              <td class="wrap">CONTOH SUPPLIER PRIORITAS GREEN</td>
+              <td>17-Nov-2026</td>
+              <td><input type="text" class="form-control form-control-sm in-tgl" value="17 Nov 2026"></td>
+              <td class="ktg">Pengeluaran Pembayaran Biaya Jasa Profesional</td>
+              <td>BCA - 008-997-1979</td>
+              <td>NAG</td>
+              <td>IDR</td>
+              <td class="num">48.750.000,00</td>
+              <td class="wrap"><input type="text" class="form-control form-control-sm in-ket" placeholder="follows header"></td>
+            </tr>
+
+          </tbody>
+          <tfoot>
+            <tr>
+              <th colspan="10" style="text-align:right;">Total ticked</th>
+              <th class="num" id="total-dipilih">2.509.246.119,20</th>
+              <th></th>
+            </tr>
+          </tfoot>
+        </table>
+      </div><!-- /.pv-scroll -->
+
+      <div class="pco-actions mt-3">
+        <button type="button" class="app-btn app-btn-success app-btn-sm">
+          <i class="fa fa-save" aria-hidden="true"></i> Save
+        </button>
+        <a href="#" class="app-btn app-btn-danger app-btn-sm">
+          <i class="fa fa-times" aria-hidden="true"></i> Cancel
+        </a>
+      </div>
+
+    </div><!-- /.pco-body -->
+  </div><!-- /.pco-card -->
+</div><!-- /.container-fluid -->
+
+<!-- ================= panel mockup, tidak ikut ke halaman asli ================= -->
+<div class="uji">
+  <h6>Mockup</h6>
+  <p>Ketik sesuatu di Description atas, lalu tekan tombol ini - isinya mengalir ke baris yang tercentang.</p>
+  <button type="button" id="u_coba">Coba alirkan Description</button>
+</div>
+
+<script>
+/* Peniruan perilaku Update Payment Plan AP: isi Description di kepala dokumen
+   mengalir ke tiap baris yang DICENTANG - termasuk baris yang baru dicentang
+   sesudahnya. Baris yang tidak dicentang dibiarkan kosong. */
+function alirkanDeskripsi() {
+  var teks = document.getElementById('keterangan').value;
+  document.querySelectorAll('#table-pv tbody tr').forEach(function (tr) {
+    var c = tr.querySelector('.pilih');
+    var k = tr.querySelector('.in-ket');
+    if (c && k && c.checked) { k.value = teks; }
+  });
+}
+document.getElementById('keterangan').addEventListener('input', alirkanDeskripsi);
+document.getElementById('u_coba').addEventListener('click', alirkanDeskripsi);
+
+document.querySelectorAll('#table-pv tbody .pilih').forEach(function (c) {
+  c.addEventListener('change', function () {
+    var tr = this.closest('tr');
+    tr.classList.toggle('dipilih', this.checked);
+    var k = tr.querySelector('.in-ket');
+    if (k) { k.value = this.checked ? document.getElementById('keterangan').value : ''; }
+  });
+});
+
+document.getElementById('pilih-semua').addEventListener('change', function () {
+  var c = this.checked;
+  document.querySelectorAll('#table-pv tbody .pilih').forEach(function (x) {
+    if (x.checked !== c) { x.checked = c; x.dispatchEvent(new Event('change')); }
+  });
+});
+</script>
+
+</body>
+</html>

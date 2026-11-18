@@ -41,7 +41,9 @@
  * selesai bulan ini), tanaman (layu kalau ada yang overdue), cuaca di
  * jendela (hujan/badai kalau ada yang overdue), kabar langsung dari rekan
  * (buku terbang ke rak), perayaan saat ada yang Done/Live (pita emas sehari).
- * Penghuni: programmer, pustakawan & kucing. Bisa juga jalan-jalan (WASD).
+ * Penghuni: programmer & kucing (pustakawan dihapus 17 Nov 2026). Bisa juga
+ * jalan-jalan (WASD). Di ujung kanan ada sudut Design Studio (mockup & ERD,
+ * ../js/studio3d.js) kalau project.php memberikannya lewat opts.wing.
  *
  * Dimuat dari index.php lewat import() dinamis begitu tombol 3D dipilih -
  * mode Normal tidak pernah mengunduh berkas ini maupun Three.js.
@@ -67,7 +69,8 @@ var STATUS_ORDER = { 'Live': 0, 'Done': 1, 'On Progress': 2, 'Planned': 3 };
 var ST_COLOR = { live: '#8b5cf6', done: '#10b981', prog: '#3b82f6', over: '#ef4444', plan: '#9cc6ff' };
 var ST_TAG = { live: 'LIVE', done: 'DONE', prog: 'WIP', over: 'LATE' };
 var GOLD = '#e4c47c', GOLD_DIM = '#5e4818';
-var DESK = 999;             // "nomor rak" sudut pustakawan (fokus kamera, buku di meja/troli)
+var DESK = 999;             // "nomor rak" sudut meja depan (fokus kamera, buku di meja/troli)
+var STUDIO = 998;           // "nomor rak" sudut Design Studio (fokus kamera; ada kalau opts.wing diberikan)
 var WALL_W = 3.5;           // lebar dinding sudut pustakawan
 // Warna Lucca (sistem perpustakaan) menurut kondisi: tenang / ada tenggat dekat / ada yang terlambat
 var LUCCA_COL = { calm: 0x5ee7ff, watch: 0xffc35a, alert: 0xff5d73, gold: 0xffd479 };
@@ -90,7 +93,7 @@ function phaseOf(h) {
 }
 var TOUR_MS = 7500;
 // benda yang punya keterangan / bisa diklik (selain buku & rak)
-var THING_KINDS = { catalog: 1, bell: 1, newbook: 1, table: 1, globe: 1, clock: 1, screen: 1, dev: 1, duck: 1, pc: 1, calendar: 1, fire: 1, plant: 1, window: 1, cat: 1, librarian: 1, lucca: 1 };         // lama tiap perhentian tur presentasi
+var THING_KINDS = { catalog: 1, bell: 1, newbook: 1, table: 1, globe: 1, clock: 1, screen: 1, dev: 1, duck: 1, pc: 1, calendar: 1, fire: 1, plant: 1, window: 1, cat: 1, lucca: 1 };         // lama tiap perhentian tur presentasi
 // Idul Fitri (perkiraan 1 Syawal) - untuk hiasan ketupat
 var IDUL_FITRI = ['2025-03-31', '2026-03-20', '2027-03-10', '2028-02-27', '2029-02-15', '2030-02-05', '2031-01-25', '2032-01-14'];
 var SEASON_GREET = { merdeka: 'Dirgahayu Republik Indonesia!', lebaran: 'Selamat Hari Raya Idul Fitri', yearend: 'Happy holidays & a happy new year' };
@@ -1368,6 +1371,12 @@ function createSound() {
  */
 export function createLibrary(host, opts) {
   opts = opts || {};
+  // Sudut tambahan di ujung kanan rak (Design Studio: easel mockup + meja ERD,
+  // ../js/studio3d.js). Boleh kosong - perpustakaan tetap jalan tanpanya.
+  // Kaitnya: wing.width() lebar dinding tambahan, wing.build(ctx) membangun
+  // isinya, wing.tip/click/hover/update untuk kursor & animasi, wing.lucca()
+  // ringkasan untuk briefing Lucca.
+  var wing = opts.wing || null;
   var reduced = !!opts.reducedMotion;
   var coarse = window.matchMedia && matchMedia('(pointer: coarse)').matches;
   var fmt = function (d) { return opts.fmtDate ? opts.fmtDate(d, { day: '2-digit', month: 'short' }) : d; };
@@ -1450,15 +1459,16 @@ export function createLibrary(host, opts) {
   newsEl.className = 'c3-news';
   newsEl.hidden = true;
   newsEl.setAttribute('role', 'status');
-  newsEl.innerHTML = '<div class="c3-news-h"><span class="c3-lucca-eye" aria-hidden="true"></span>Lucca &middot; just now in the library</div><div class="c3-news-list"></div>';
+  newsEl.innerHTML = '<div class="c3-news-h"><span class="c3-lucca-eye" aria-hidden="true"></span>Lucca &middot; baru saja di perpustakaan</div><div class="c3-news-list"></div>';
   host.appendChild(newsEl);
-  // Lucca: sapaan & laporan singkat sistem perpustakaan
+  // Lucca: sapaan & laporan singkat sistem perpustakaan.
+  // Lucca asisten pemilik project -> SELALU bicara bahasa Indonesia (teks UI lain tetap Inggris).
   var luccaEl = document.createElement('div');
   luccaEl.className = 'c3-lucca';
   luccaEl.hidden = true;
   luccaEl.setAttribute('role', 'status');
-  luccaEl.innerHTML = '<div class="c3-lucca-h"><span class="c3-lucca-eye" aria-hidden="true"></span><b>Lucca</b><small>Library system</small>' +
-    '<button type="button" class="c3-lucca-x" data-lu="close" aria-label="Close" title="Close">' + ICONS.close + '</button></div>' +
+  luccaEl.innerHTML = '<div class="c3-lucca-h"><span class="c3-lucca-eye" aria-hidden="true"></span><b>Lucca</b><small>Asisten perpustakaan</small>' +
+    '<button type="button" class="c3-lucca-x" data-lu="close" aria-label="Tutup" title="Tutup">' + ICONS.close + '</button></div>' +
     '<div class="c3-lucca-t"></div><div class="c3-lucca-a"></div>';
   host.appendChild(luccaEl);
   var walkEl = document.createElement('div');
@@ -1728,7 +1738,8 @@ export function createLibrary(host, opts) {
   var luccaPos = null, luccaGreetAt = 0;
   try { perfLock = localStorage.getItem('lib3dQuality') === 'high'; } catch (e) { /* abaikan */ }
   // rak ke-i, atau sudut pustakawan (DESK)
-  function stopAt(i) { return i === DESK ? corner : i >= 0 ? cases[i] || null : null; }
+  var studioStop = null;   // titik tuju kamera sudut Design Studio (diisi build)
+  function stopAt(i) { return i === DESK ? corner : i === STUDIO ? studioStop : i >= 0 ? cases[i] || null : null; }
   applyTime(currentPhase());
 
   function track(o) { trash.push(o); return o; }
@@ -1744,7 +1755,7 @@ export function createLibrary(host, opts) {
   function disposeLib() {
     if (lib) scene.remove(lib);
     trash.forEach(function (o) { o.dispose(); });
-    trash = []; cases = []; books = []; pickables = []; labels = []; allCorners = [];
+    trash = []; cases = []; books = []; pickables = []; labels = []; allCorners = []; studioStop = null;
     labelsEl.innerHTML = '';
     lib = null;
     hovered = null; hoveredCase = -1; taken = null;
@@ -2521,16 +2532,9 @@ export function createLibrary(host, opts) {
         addBook(b, mesh, g, 'desk', DESK, col, (built ? 0.5 : 1) * (420 + k * 80));
       });
 
-      // Pustakawan di balik meja: menulis di buku besar, ikut mengecap saat
-      // status distempel, bertepuk tangan saat ada yang selesai.
-      var lbP = makePerson({ top: cardiganMat, bottom: skirtMat, shoes: eyeMat, skin: skin2Mat, hair: hair2Mat, bun: true, glasses: true, smile: true });
-      lbP.root.position.set(-0.13, 0, 0.4);
-      lbP.root.rotation.y = Math.PI;
-      var stool = new THREE.Mesh(track(new THREE.CylinderGeometry(0.17, 0.19, 0.5, 16)), woodMat);
-      stool.position.set(-0.13, 0.25, 0.42);
-      cg.add(lbP.root, stool);
-      [lbP.torso, lbP.headMesh, lbP.hair].forEach(function (m) { m.userData = { kind: 'librarian', ci: DESK }; pickables.push(m); });
-      co.lib = lbP;
+      // (17 Nov 2026) Sosok pustakawan di balik meja DIHAPUS atas permintaan
+      // user. Semua kode yang memakainya sudah memeriksa corner.lib dulu, jadi
+      // cukup tidak dibuat; perintah Lucca kini hanya ke programmer.
 
       // Troli buku yang baru dikembalikan (selesai 7 hari terakhir)
       var TW = 1.0, TD = 0.42;
@@ -2637,6 +2641,24 @@ export function createLibrary(host, opts) {
     });
     buildRoom({ Ht: Ht, rx: rug.position.x, rz: rug.position.z, rugW: rugW, progP: progP, st: st });
 
+    // Sudut Design Studio di ujung kanan (dinding lanjutannya sudah dibuat buildShell).
+    // Titik-titiknya ikut kamera pandangan umum, supaya sudut ini ikut terlihat.
+    if (wing) {
+      try {
+        var wb = wing.build({
+          lib: lib, pickables: pickables, track: track, addObs: addObs,
+          R: ARC_R, aStart: cases[cases.length - 1].angle + (CW / 2 + GAP) / ARC_R, wallR: ARC_R + CD / 2 + 0.07, Ht: Ht,
+          mats: { wood: woodMat, brass: brassMat, dark: wheelMat },
+          focusStudio: function () { if (studioStop) setFocus(focus === STUDIO ? -1 : STUDIO); }
+        });
+        if (wb && wb.corners) {
+          allCorners = allCorners.concat(wb.corners);
+          // sudut ini jadi titik tuju kamera juga (klik plakatnya / panah kanan paling ujung)
+          studioStop = { corners: wb.corners, target: new THREE.Vector3(), theta: wb.theta || 0, phi: FOCUS_PHI, fit: 10, hover: 0 };
+        }
+      } catch (e) { if (window.console) console.warn('Design Studio corner:', e); }
+    }
+
     // Lampu baca kuningan di atas tiap rak (seperti di perpustakaan lama):
     // kap hijau, bilah cahaya di bawahnya, dan sapuan cahaya hangat di muka
     // rak. Dua lampu sungguhan di depan dua rak terdekat.
@@ -2680,7 +2702,7 @@ export function createLibrary(host, opts) {
       addLabel('case', '<b>' + esc(c.lane.name) + '</b><small>' + subTxt + '</small>', new THREE.Vector3(0, Ht + 0.1, CD / 2), ci, c.count ? '' : 'empty');
     });
     var attn = st.overdue + st.dueSoon;
-    addLabel('case', '<b>Librarian</b><small>' + (attn ? attn + ' need attention' : 'all calm') + '</small>', new THREE.Vector3(0, Hw + 0.14, 0), DESK, attn ? 'warn' : '');
+    addLabel('case', '<b>Front desk</b><small>' + (attn ? attn + ' need attention' : 'all calm') + '</small>', new THREE.Vector3(0, Hw + 0.14, 0), DESK, attn ? 'warn' : '');
 
     dust.scale.set(span + 2, Ht + 1.6, 5);
     dust.position.set(center.x, 0, box.max.z + 1.4);
@@ -2696,7 +2718,8 @@ export function createLibrary(host, opts) {
 
     var first = !built;
     if (first) luccaGreetAt = clock + (opts.intro && !reduced ? 4800 : 1800);   // sapaan Lucca (sekali sehari)
-    if (focus !== DESK && focus >= cases.length) focus = -1;
+    if (focus !== DESK && focus !== STUDIO && focus >= cases.length) focus = -1;
+    if (focus === STUDIO && !studioStop) focus = -1;
     refit();
     applyFocus(first);
     buildAt = clock + (first && opts.intro && !reduced ? 2300 : first ? 250 : 0);
@@ -2767,7 +2790,7 @@ export function createLibrary(host, opts) {
     fitCam.updateProjectionMatrix();
     homeTarget.copy(new THREE.Box3().setFromPoints(allCorners).getCenter(tmpV));
     view.fit = fitView(allCorners, homeTarget, HOME.theta, HOME.phi, shareFor(false));
-    cases.concat(corner ? [corner] : []).forEach(function (c) {
+    cases.concat(corner ? [corner] : [], studioStop ? [studioStop] : []).forEach(function (c) {
       c.target.copy(new THREE.Box3().setFromPoints(c.corners).getCenter(tmpV));
       c.fit = fitView(c.corners, c.target, c.theta, c.phi || FOCUS_PHI, shareFor(true));
     });
@@ -3004,6 +3027,7 @@ export function createLibrary(host, opts) {
     if (!hit) return null;
     var u = hit.object.userData;
     if (u.kind === 'book') return { book: hit.object };
+    if (u.kind === 'wing') return { thing: 'wing', ci: -1, uv: null, wu: u };   // benda sudut Design Studio
     if (THING_KINDS[u.kind]) return { thing: u.kind, ci: u.ci != null ? u.ci : DESK, uv: hit.uv ? hit.uv.clone() : null };
     return { ci: u.ci, part: u.part || '' };
   }
@@ -3041,10 +3065,11 @@ export function createLibrary(host, opts) {
     if (part === 'trolley') {
       return tipHead('#10b981', 'Returns trolley', corner.returns ? corner.returns + (corner.returns === 1 ? ' project' : ' projects') + ' finished in the last 7 days' : 'Nothing finished in the last 7 days') + go;
     }
-    return tipHead('#ef4444', 'Librarian&rsquo;s desk', att ? att + (att === 1 ? ' book needs' : ' books need') + ' attention' : 'Nothing needs attention') +
+    return tipHead('#ef4444', 'Front desk', att ? att + (att === 1 ? ' book needs' : ' books need') + ' attention' : 'Nothing needs attention') +
       '<div class="c3-tip-meta">' + s.overdue + ' overdue &middot; ' + s.dueSoon + ' due within 7 days</div>' + go;
   }
   function thingTip(t, hit) {
+    if (t === 'wing') return wing && hit && hit.wu ? wing.tip(hit.wu) : '';
     if (t === 'calendar') return calTip(hit && hit.uv);
     if (t === 'window') {
       var ovw = corner ? corner.st.overdue : 0;
@@ -3064,12 +3089,8 @@ export function createLibrary(host, opts) {
     if (t === 'cat') return tipHead('#d98a3d', 'Library cat', 'Mochi is fast asleep') + '<div class="c3-tip-go">Click to pet</div>';
     if (t === 'lucca') {
       var lu = room && room.lucca, ls = lu ? lu.st : null, lc = '#' + ('00000' + LUCCA_COL[lu ? lu.mood : 'calm'].toString(16)).slice(-6);
-      return tipHead(lc, 'Lucca · library system', !ls ? 'Watching the shelves' : ls.overdue ? ls.overdue + ' overdue — on it' : ls.dueSoon ? ls.dueSoon + ' due within 7 days' : 'All calm') +
-        '<div class="c3-tip-sub">Watches every shelf, scans the books that need attention and keeps the team on schedule.</div><div class="c3-tip-go">Click for a briefing</div>';
-    }
-    if (t === 'librarian') {
-      var la = corner ? corner.st.overdue + corner.st.dueSoon : 0;
-      return tipHead('#7a2e3a', 'Librarian', la ? 'Keeping an eye on ' + la + (la === 1 ? ' book' : ' books') + ' that need attention' : 'All calm at the desk') + '<div class="c3-tip-go">Click to say hi</div>';
+      return tipHead(lc, 'Lucca · asisten perpustakaan', !ls ? 'Sedang mengawasi rak' : ls.overdue ? ls.overdue + ' terlambat — sedang ditangani' : ls.dueSoon ? ls.dueSoon + ' jatuh tempo dalam 7 hari' : 'Semua aman') +
+        '<div class="c3-tip-sub">Mengawasi semua rak, memindai buku yang perlu perhatian, dan menjaga semuanya tetap sesuai jadwal.</div><div class="c3-tip-go">Klik untuk laporan Lucca</div>';
     }
     if (t === 'catalog') return tipHead('#e4c47c', 'Card catalog', 'Find any book') + '<div class="c3-tip-go">Click to search</div>';
     if (t === 'newbook') return tipHead('#e4c47c', 'Blank book', 'Write a new project') + '<div class="c3-tip-go">Click to start a new project</div>';
@@ -3107,8 +3128,9 @@ export function createLibrary(host, opts) {
       ci = hit.ci;
       part = hit.part || '';
     }
-    var k = book ? 'b' + book.id : thing ? 't' + thing + (thing === 'calendar' ? calDay(hit.uv) : '') : ci !== -1 ? 'c' + ci + part : '';
+    var k = book ? 'b' + book.id : thing ? 't' + thing + (thing === 'calendar' ? calDay(hit.uv) : thing === 'wing' ? hit.wu.key : '') : ci !== -1 ? 'c' + ci + part : '';
     if (k !== hoverKey) {
+      if (wing && wing.hover) wing.hover(thing === 'wing' ? hit.wu : null);
       if (hovered) hovered.userData.lift = 0;
       var oc = stopAt(hoveredCase);
       if (oc) oc.hover = 0;
@@ -3116,7 +3138,7 @@ export function createLibrary(host, opts) {
       hoveredCase = ci;
       hoverThing = thing;
       hoverKey = k;
-      hoverHit = !k ? null : book ? { book: book } : thing ? { thing: thing, ci: hit.ci, uv: hit.uv } : { ci: ci, part: part };
+      hoverHit = !k ? null : book ? { book: book } : thing ? { thing: thing, ci: hit.ci, uv: hit.uv, wu: hit.wu } : { ci: ci, part: part };
       if (book) { book.userData.lift = 1; tipEl.innerHTML = bookTip(book.userData); }
       else if (thing) tipEl.innerHTML = thingTip(thing, hit);
       else if (ci !== -1) { stopAt(ci).hover = 1; tipEl.innerHTML = ci === DESK ? cornerTip(part) : caseTip(cases[ci]); }
@@ -3180,7 +3202,7 @@ export function createLibrary(host, opts) {
     if (walk) {
       if (!click) return;
       var wh = !touch && hoverHit ? hoverHit : pick(e.clientX, e.clientY);
-      pendingAct = !wh ? null : wh.book ? { open: wh.book } : wh.thing ? { thing: wh.thing, uv: wh.uv } : null;
+      pendingAct = !wh ? null : wh.book ? { open: wh.book } : wh.thing ? { thing: wh.thing, uv: wh.uv, wu: wh.wu } : null;
       return;
     }
     if (!click) {
@@ -3202,7 +3224,7 @@ export function createLibrary(host, opts) {
       // terlalu kecil untuk diketuk tepat.
       pendingAct = touch && focus !== ci ? { focus: ci } : { open: hit.book };
     } else if (hit.thing === 'catalog') pendingAct = { thing: 'catalog' };
-    else if (hit.thing) pendingAct = touch && hit.ci === DESK && focus !== DESK ? { focus: DESK } : { thing: hit.thing, uv: hit.uv };
+    else if (hit.thing) pendingAct = touch && hit.ci === DESK && focus !== DESK ? { focus: DESK } : { thing: hit.thing, uv: hit.uv, wu: hit.wu };
     else pendingAct = hit.ci !== focus ? { focus: hit.ci } : null;
   }
   // Aksi baru dijalankan pada event click, BUKAN pointerup: di layar sentuh
@@ -3233,7 +3255,7 @@ export function createLibrary(host, opts) {
     }
     else if (a.thing === 'cat') { if (room && room.cat && room.cat.petT == null) { room.cat.petT = clock; sound.play('purr'); } }
     else if (a.thing === 'lucca') luccaBrief();
-    else if (a.thing === 'librarian') { if (corner && corner.lib && corner.lib.waveT == null) { corner.lib.waveT = clock; sound.play('tick'); } }
+    else if (a.thing === 'wing') { if (wing) { sound.play('slide'); wing.click(a.wu); } }
     else setFocus(a.focus);
   }
 
@@ -3490,9 +3512,10 @@ export function createLibrary(host, opts) {
   function announceStop(i) {
     var c = stopAt(i);
     if (!c) { announce('All bookcases.'); return; }
+    if (i === STUDIO) { announce('Design Studio. Mockups on the easels, ERDs as blueprint rolls and on the table.'); return; }
     if (i === DESK) {
       var s = c.st, att = s.overdue + s.dueSoon;
-      announce('Librarian’s desk. ' + (att ? att + (att === 1 ? ' book needs' : ' books need') + ' attention.' : 'Nothing needs attention.') + ' Press down to browse the books here.');
+      announce('Front desk. ' + (att ? att + (att === 1 ? ' book needs' : ' books need') + ' attention.' : 'Nothing needs attention.') + ' Press down to browse the books here.');
       return;
     }
     announce('Bookcase ' + c.lane.name + ', ' + c.count + (c.count === 1 ? ' project' : ' projects') + '. Press down to browse the books.');
@@ -3646,7 +3669,7 @@ export function createLibrary(host, opts) {
         'On time ' + pct + ' · done this month ' + s.doneMonth + (corner.returns ? ' · ' + corner.returns + ' finished in the last 7 days' : '')];
       if (corner.botm) lines.push('Book of the month: ' + corner.botm.project_name);
       if (corner.cal) lines.push(corner.cal.dueCount + (corner.cal.dueCount === 1 ? ' deadline' : ' deadlines') + ' this month on the wall calendar');
-      steps.push({ stop: DESK, title: 'Librarian’s desk', lines: lines, lift: deskBooks.concat(books.filter(function (m) { return m.userData.where === 'botm'; })) });
+      steps.push({ stop: DESK, title: 'Front desk', lines: lines, lift: deskBooks.concat(books.filter(function (m) { return m.userData.where === 'botm'; })) });
     }
     cases.forEach(function (c, ci) {
       if (!c.count) return;
@@ -3754,7 +3777,7 @@ export function createLibrary(host, opts) {
   // ---- navigasi keyboard di panggung ----------------------------------------
   // Kiri/kanan = pindah rak (sudut pustakawan paling kiri), bawah/atas = pilih
   // buku di rak itu, Enter = buka, Esc = mundur selangkah, Home = semua rak.
-  function stopOrder() { return [DESK].concat(cases.map(function (c, i) { return i; })); }
+  function stopOrder() { return [DESK].concat(cases.map(function (c, i) { return i; }), studioStop ? [STUDIO] : []); }
   function booksAt(ci) {
     return books.filter(function (m) { return m.userData.ci === ci && m.userData.g.visible; }).sort(function (a, b) {
       var ua = a.userData, ub = b.userData;
@@ -4103,7 +4126,7 @@ export function createLibrary(host, opts) {
   function buildShell(o) {
     var Ht = o.Ht, CEIL = o.ceil, T = 0.2, rad = ARC_R + CD / 2 + 0.07, i;
     var aL = corner ? corner.angle - (WALL_W / 2 + 1.3) / ARC_R : cases[0].angle - (CW / 2 + 1.2) / ARC_R;
-    var aR = cases[cases.length - 1].angle + (CW / 2 + 1.8) / ARC_R;
+    var aR = cases[cases.length - 1].angle + (CW / 2 + 1.8 + (wing ? wing.width() : 0)) / ARC_R;   // + sudut Design Studio
     var xL = rad * Math.sin(aL), xR = rad * Math.sin(aR);
     var zF = Math.max(o.rz + o.rugW * 0.29, o.rz + 2.1) + 3.4;
     var hF = 1.15, s0 = 1.4;   // dinding samping: utuh 1,4 m dari belakang, lalu turun miring sampai 1,15 m di depan
@@ -4353,8 +4376,13 @@ export function createLibrary(host, opts) {
     var td = parseDay(p.target_date), left = td ? daysFrom(today0(), td) : -1;
     return left >= 0 && left <= 7;
   }
+  // warna Lucca: kondisi rak + sudut Design Studio (mockup/ERD yang menunggu persetujuan)
+  function luccaMoodOf(st) {
+    var sm = wing && wing.lucca ? wing.lucca().mood : 'calm';
+    return st.overdue || sm === 'alert' ? 'alert' : st.dueSoon || sm === 'watch' ? 'watch' : 'calm';
+  }
   function buildLucca(o) {
-    var st = o.st, mood = st.overdue ? 'alert' : st.dueSoon ? 'watch' : 'calm', base = new THREE.Color(LUCCA_COL[mood]);
+    var st = o.st, mood = luccaMoodOf(st), base = new THREE.Color(LUCCA_COL[mood]);
     function addMat(extra) {
       var p = { color: base.clone(), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending };
       for (var k in extra) p[k] = extra[k];
@@ -4568,33 +4596,34 @@ export function createLibrary(host, opts) {
   function luccaText(L) {
     var s = L.st, T0 = today0(), nm = String(opts.userName || '').trim().split(/\s+/)[0] || '';
     var hr = todHour != null ? todHour : new Date().getHours(), ov = s.overdue, ds = s.dueSoon;
-    function n(k, one, many) { return k + ' ' + (k === 1 ? one : many); }
-    var greet = (hr >= 4 && hr < 11 ? 'Good morning' : hr >= 11 && hr < 18 ? 'Good afternoon' : 'Good evening') + (nm ? ', ' + nm : '') + '.';
-    var status = ov ? n(ov, 'book is', 'books are') + ' overdue' + (ds ? ' and ' + ds + ' due within 7 days.' : '.')
-      : ds ? 'Nothing is overdue. ' + n(ds, 'book is', 'books are') + ' due within 7 days.'
-      : s.prog > 1 ? 'All ' + s.prog + ' books in progress are on schedule.' : s.prog ? 'The one book in progress is on schedule.' : 'Nothing is in progress. The shelves are quiet.';
+    // bahasa Indonesia: tidak ada bentuk jamak, jadi angka langsung diikuti kata bendanya
+    var greet = (hr >= 4 && hr < 11 ? 'Selamat pagi' : hr >= 11 && hr < 15 ? 'Selamat siang' : hr >= 15 && hr < 18 ? 'Selamat sore' : 'Selamat malam') + (nm ? ', ' + nm : '') + '.';
+    var status = ov ? ov + ' buku terlambat' + (ds ? ' dan ' + ds + ' jatuh tempo dalam 7 hari.' : '.')
+      : ds ? 'Tidak ada yang terlambat. ' + ds + ' buku jatuh tempo dalam 7 hari.'
+      : s.prog > 1 ? s.prog + ' buku yang sedang dikerjakan semuanya masih sesuai jadwal.' : s.prog ? 'Satu buku yang sedang dikerjakan masih sesuai jadwal.' : 'Tidak ada yang sedang dikerjakan. Rak sedang tenang.';
     var top = s.attn && s.attn[0], topPlain = '', topHtml = '';
     if (top) {
       var td = parseDay(top.target_date), name = String(top.project_name || ''), pic = top.pic ? ' · ' + top.pic : '', when;
       if (+top.is_overdue === 1) {
         var late = td ? daysFrom(td, T0) : 0;
-        when = late > 0 ? n(late, 'day', 'days') + ' late' : 'past due';
-        topPlain = 'Most urgent: ' + name + ', ' + when + '.';
-        topHtml = 'Most urgent: <b>' + esc(name) + '</b> &middot; ' + when + esc(pic);
+        when = late > 0 ? 'terlambat ' + late + ' hari' : 'lewat tenggat';
+        topPlain = 'Paling mendesak: ' + name + ', ' + when + '.';
+        topHtml = 'Paling mendesak: <b>' + esc(name) + '</b> &middot; ' + when + esc(pic);
       } else {
         var left = td ? daysFrom(T0, td) : 0;
-        when = left <= 0 ? 'due today' : left === 1 ? 'due tomorrow' : 'due in ' + left + ' days';
-        topPlain = 'Next deadline: ' + name + ', ' + when + '.';
-        topHtml = 'Next deadline: <b>' + esc(name) + '</b> &middot; ' + when + esc(pic);
+        when = left <= 0 ? 'jatuh tempo hari ini' : left === 1 ? 'jatuh tempo besok' : 'jatuh tempo ' + left + ' hari lagi';
+        topPlain = 'Tenggat berikutnya: ' + name + ', ' + when + '.';
+        topHtml = 'Tenggat berikutnya: <b>' + esc(name) + '</b> &middot; ' + when + esc(pic);
       }
     }
     var pct = s.measured ? Math.round(s.onTime / s.measured * 100) : null;
-    var deliv = n(s.doneMonth, 'project', 'projects') + ' delivered this month' + (pct != null ? ', ' + pct + '% on time overall.' : '.');
-    var cmd = top ? (ov ? 'I have asked the librarian to flag it and pinged the developer.' : 'I have reminded the librarian and the developer.') : 'Everyone is on track. I will keep watching.';
-    var statusShort = ov ? '<b>' + ov + '</b> overdue' + (ds ? ' &middot; <b>' + ds + '</b> due within 7 days' : '') : ds ? 'Nothing overdue &middot; <b>' + ds + '</b> due within 7 days' : esc(status);
-    var delivShort = '<b>' + s.doneMonth + '</b> delivered this month' + (pct != null ? ' &middot; <b>' + pct + '%</b> on time overall' : '');
-    var cmdShort = top ? (ov ? 'Librarian asked to flag it &middot; developer pinged' : 'Librarian &amp; developer reminded') : 'Everyone is on track &middot; still watching';
-    return { greet: greet, status: status, top: top, topPlain: topPlain, topHtml: topHtml, deliv: deliv, cmd: cmd, statusShort: statusShort, delivShort: delivShort, cmdShort: cmdShort };
+    var deliv = s.doneMonth + ' project selesai bulan ini' + (pct != null ? ', ' + pct + '% tepat waktu secara keseluruhan.' : '.');
+    var cmd = top ? (ov ? 'Saya sudah menandainya di meja depan dan memberi tahu programmer.' : 'Saya sudah mengingatkan programmer.') : 'Semua sesuai jadwal. Saya akan terus mengawasi.';
+    var statusShort = ov ? '<b>' + ov + '</b> terlambat' + (ds ? ' &middot; <b>' + ds + '</b> jatuh tempo dalam 7 hari' : '') : ds ? 'Tidak ada yang terlambat &middot; <b>' + ds + '</b> jatuh tempo dalam 7 hari' : esc(status);
+    var delivShort = '<b>' + s.doneMonth + '</b> selesai bulan ini' + (pct != null ? ' &middot; <b>' + pct + '%</b> tepat waktu' : '');
+    var cmdShort = top ? (ov ? 'Sudah ditandai di meja depan &middot; programmer sudah diberi tahu' : 'Programmer sudah diingatkan') : 'Semua sesuai jadwal &middot; terus diawasi';
+    var studio = wing && wing.lucca ? wing.lucca() : null;   // mockup & ERD di sudut Design Studio
+    return { greet: greet, status: status, top: top, topPlain: topPlain, topHtml: topHtml, deliv: deliv, cmd: cmd, statusShort: statusShort, delivShort: delivShort, cmdShort: cmdShort, studio: studio };
   }
   var luccaTimer = 0;
   function showLucca(lines, acts, mood, ms, say) {
@@ -4623,11 +4652,13 @@ export function createLibrary(host, opts) {
     if (!L) return;
     var r = luccaText(L), lines = [esc(r.greet), r.statusShort];
     if (r.topHtml) lines.push(r.topHtml);
+    if (r.studio && r.studio.line) lines.push(r.studio.line);
     lines.push(r.delivShort, '<em>' + r.cmdShort + '</em>');
-    var say = [r.greet, r.status, r.topPlain, r.deliv, r.cmd].join(' ').replace(/\s+/g, ' ');
+    var say = [r.greet, r.status, r.topPlain, r.studio ? r.studio.say : '', r.deliv, r.cmd].join(' ').replace(/\s+/g, ' ');
     var acts = [];
-    if (r.top) acts.push(['show', 'Show me', r.top.id]);
-    if (window.speechSynthesis && window.SpeechSynthesisUtterance) acts.push(['speak', 'Read aloud']);
+    if (r.top) acts.push(['show', 'Tunjukkan', r.top.id]);
+    if (r.studio && r.studio.go) acts.push(['studio', r.studio.label]);
+    if (window.speechSynthesis && window.SpeechSynthesisUtterance) acts.push(['speak', 'Bacakan']);
     showLucca(lines, acts, L.mood, 45000, say);
     L.talkUntil = clock + Math.min(9000, say.length * 55);
     L.spin = Math.max(L.spin, 1.5);
@@ -4644,9 +4675,12 @@ export function createLibrary(host, opts) {
       if (localStorage.getItem('lib3dLuccaDay') === day) return;
       localStorage.setItem('lib3dLuccaDay', day);
     } catch (e) { /* abaikan */ }
-    var r = luccaText(L), acts = [['brief', 'Full briefing']];
-    if (r.top) acts.push(['show', 'Show me', r.top.id]);
-    showLucca([esc(r.greet) + ' I&rsquo;m <em>Lucca</em>, I keep this library running.', r.statusShort], acts, L.mood, 14000, r.greet + ' ' + r.status);
+    var r = luccaText(L), acts = [['brief', 'Laporan lengkap']];
+    if (r.top) acts.push(['show', 'Tunjukkan', r.top.id]);
+    if (r.studio && r.studio.go) acts.push(['studio', r.studio.label]);
+    var gl = [esc(r.greet) + ' Saya <em>Lucca</em>, asisten yang menjaga perpustakaan ini.', r.statusShort];
+    if (r.studio && r.studio.mood !== 'calm') gl.push(r.studio.line);
+    showLucca(gl, acts, L.mood, 14000, r.greet + ' ' + r.status + (r.studio && r.studio.say ? ' ' + r.studio.say : ''));
     L.talkUntil = clock + 2600;
     sound.play('lucca');
     announce('Lucca: ' + r.greet + ' ' + r.status);
@@ -4657,11 +4691,12 @@ export function createLibrary(host, opts) {
     if (!ss || !window.SpeechSynthesisUtterance || !text) return;
     try {
       ss.cancel();
-      var u = new SpeechSynthesisUtterance(text), vs = ss.getVoices().filter(function (v) { return /^en[-_]/i.test(v.lang); });
-      u.lang = 'en-US';
-      u.rate = 1.02;
-      u.pitch = 0.92;
-      var pref = vs.filter(function (v) { return /aria|jenny|zira|samantha|google us english/i.test(v.name); })[0] || vs[0];
+      // suara bahasa Indonesia (Windows: Andika/Gadis; Chrome: Google Bahasa Indonesia)
+      var u = new SpeechSynthesisUtterance(text), vs = ss.getVoices().filter(function (v) { return /^id[-_]/i.test(v.lang); });
+      u.lang = 'id-ID';
+      u.rate = 1.0;
+      u.pitch = 0.95;
+      var pref = vs.filter(function (v) { return /gadis|andika|damayanti|google bahasa indonesia/i.test(v.name); })[0] || vs[0];
       if (pref) u.voice = pref;
       var L = room && room.lucca;
       if (L) L.talkUntil = clock + 60000;
@@ -4679,6 +4714,7 @@ export function createLibrary(host, opts) {
     if (act === 'close') hideLucca(true);
     else if (act === 'brief') luccaBrief();
     else if (act === 'speak') speak(luccaSay);
+    else if (act === 'studio') { hideLucca(); var sl = wing && wing.lucca ? wing.lucca() : null; if (sl && sl.go) sl.go(); }
     else if (act === 'show') {
       var id = b.getAttribute('data-id');
       hideLucca();
@@ -5506,6 +5542,8 @@ export function createLibrary(host, opts) {
       placeCam(camera, target, view.radius, view.theta, view.phi);
     }
 
+    if (wing && wing.update) wing.update();   // sudut Design Studio: tabel ERD naik, denyut relasi
+
     // buku meluncur masuk ke rak (sekali per pembangunan ulang); yang
     // disorot ditarik sedikit keluar dan judulnya lebih terang; buku yang
     // dicari lewat katalog berdenyut terang
@@ -5652,11 +5690,15 @@ export function createLibrary(host, opts) {
 
     // Label HTML mengikuti titik 3D-nya, ditahan di dalam panggung.
     // Label bulan di kanan rak terdekat; saat mendekati satu rak, di sisi
-    // kirinya (di kanannya ada rak tetangga). Di sudut pustakawan tidak ada.
+    // kirinya (di kanannya ada rak tetangga). Di meja depan tidak ada.
+    // Ada sudut Design Studio di ujung kanan: di tampilan keseluruhan label bulan
+    // DISEMBUNYIKAN - di kanan rak terakhir menutupi easel, di kiri rak pertama menutupi
+    // sudut meja (user 17 Nov: "label bulan agak mengganggu"). Muncul lagi saat mendekati rak.
+    var homeOff = focus < 0 && !!studioStop;
     var showCases = (layout === 'center' || (layout === 'full' && size.w < 992)) && focus < 0, leftSide = focus >= 0 && focus !== DESK;
     if (showCases !== casesLabelsOn) { casesLabelsOn = showCases; labelsEl.classList.toggle('show-cases', showCases); }
     if (leftSide !== labelsLeft) { labelsLeft = leftSide; labelsEl.classList.toggle('left', leftSide); labels.forEach(function (l) { l.w = 0; }); }
-    var ref = !cases.length || focus === DESK ? null : cases[focus >= 0 ? focus : cases.length - 1];
+    var ref = !cases.length || focus === DESK || focus === STUDIO || homeOff ? null : cases[focus >= 0 ? focus : cases.length - 1];
     for (i = 0; i < labels.length; i++) {
       var l = labels[i], cc = l.kind === 'shelf' ? ref : stopAt(l.ci);
       if (!cc) { l.el.style.visibility = 'hidden'; continue; }
@@ -5710,6 +5752,14 @@ export function createLibrary(host, opts) {
     celebrate: celebrate,
     librarianStamp: function () { if (corner && corner.lib) corner.lib.stampT = clock; },
     lucca: luccaBrief,
+    // data mockup/ERD berubah (approve, upload, ERD disimpan): sudut studio
+    // dicat ulang (dibangun ulang kalau daftar projectnya berubah) & warna Lucca ikut
+    studioChanged: function () {
+      if (!wing) return;
+      if (wing.needsRebuild && wing.needsRebuild()) rebuild(); else if (wing.refresh) wing.refresh();
+      var L = room && room.lucca;
+      if (L) { L.mood = luccaMoodOf(L.st); L.base.set(LUCCA_COL[L.mood]); }
+    },
     setSpot: setSpot,
     // hiasan musiman tiruan untuk mencoba ('merdeka' | 'lebaran' | 'yearend' | '' = tanpa, null = ikut tanggal)
     setSeason: function (name) { seasonOverride = name === undefined ? null : name; rebuild(); },
