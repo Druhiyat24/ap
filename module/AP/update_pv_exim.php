@@ -9,6 +9,7 @@ error_reporting(E_ALL & ~E_NOTICE);
 ini_set('display_errors', 0);
 include '../../conn/conn.php';
 require_once __DIR__ . '/cc_pc_guard.php';
+require_once __DIR__ . '/pv_exim_cash_flow.php';
 ini_set('date.timezone', 'Asia/Jakarta');
 
 header('Content-Type: application/json');
@@ -100,6 +101,11 @@ try {
         throw new Exception('Gagal arsip detail lama: ' . mysqli_error($conn2));
     }
 
+    // Ikut diisi saat edit, bukan cuma saat create: PV EXIM lama yang
+    // id_cash_flow-nya masih NULL jadi ikut terbetulkan begitu disentuh,
+    // dan nilainya tidak bisa kembali NULL.
+    $id_cash_flow = pv_exim_cash_flow($conn2);
+
     $query = "UPDATE tbl_pv_h SET
         pv_date = '$pv_date',
         nama_supp = '$nama_supp',
@@ -109,6 +115,7 @@ try {
         pay_meth = '$pay_mth',
         curr = '$curr',
         for_pay = '$forpay',
+        id_cash_flow = $id_cash_flow,
         pv_tax_type = '$pv_tax_type',
         frm_akun = '$frcc',
         to_akun = '$tocc',

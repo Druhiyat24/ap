@@ -141,5 +141,10 @@ echo json_encode(array(
         'status'     => $h['status'],
         'created_by' => $h['created_by'],
         'created'    => $h['created_date'] ? date('d-M-Y H:i', strtotime($h['created_date'])) : '',
+        /* Nomor potret AR yang dipakai potret ini. DIBEKUKAN di kepala waktu
+           Save History, jadi tetap menunjuk dokumen yang benar walau AR
+           menyimpan potret baru sesudahnya. Kosong = tidak ada potret AR yang
+           melingkupi periode ini, dan baris piutangnya memang nol. */
+        'ar_doc'     => isset($h['ar_doc']) ? (string) $h['ar_doc'] : '',
     ),
 ), JSON_INVALID_UTF8_SUBSTITUTE);

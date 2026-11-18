@@ -76,6 +76,17 @@ $kolom  = isset($jawab['kolom']) ? $jawab['kolom'] : array();
 $baris  = isset($jawab['baris']) ? $jawab['baris'] : array();
 $pinjam = isset($jawab['pinjaman']) ? $jawab['pinjaman'] : array();
 
+/* NOMOR POTRET AR DICETAK (permintaan pemakai 18 Nov 2026). Tanpa itu lembar
+   AR Existing tidak bisa ditelusuri: pembacanya tidak tahu angkanya berasal
+   dari potret AR yang mana, padahal AR menyimpan potret baru tiap pekan.
+   Nomornya dibaca dari kepala potret (ar_doc), bukan dicari ulang - mencari
+   ulang bisa menemukan potret AR yang LEBIH BARU daripada yang dipakai waktu
+   angka ini dibekukan. */
+$cfhxArDoc = trim((string) cfhxAmbil($info, 'ar_doc'));
+$lembarSumber['AR_EXISTING']['catatan'] = ($cfhxArDoc !== '')
+    ? 'From saved AR collection projection ' . $cfhxArDoc . ' - amounts are net of withholding tax.'
+    : 'No saved AR projection covered this period, so the receivable lines are zero.';
+
 /* ------------------------------------------------------------------ gaya */
 const CFHX_NAVY  = 'FF1E3A8A';
 const CFHX_BLOK  = 'FF1F2937';
@@ -181,6 +192,7 @@ $meta = array(
     array('Type',              cfhxAmbil($info, 'type')),
     array('Profit Center',     cfhxAmbil($info, 'pc')),
     array('Bank Filter',       cfhxAmbil($info, 'bank')),
+    array('AR Source',         ($cfhxArDoc !== '') ? $cfhxArDoc : '(no AR projection)'),
     array('Rate',              (float) cfhxAmbil($info, 'rate', 0)),
 );
 $r = 4;
@@ -469,7 +481,11 @@ for ($i = 0; $i < $nk; $i++) { $l2->getColumnDimension(cfhxKol(5 + $i))->setWidt
    tidak bisa bergeser sendiri.
    ====================================================================== */
 foreach ($lembarSumber as $kode => $def) {
-    if (empty($sumber[$kode])) { continue; }
+    /* LEMBAR AR EXISTING SELALU DICETAK, walau tidak ada barisnya - pemakai
+       perlu melihat potret AR mana yang dipakai, atau alasan kenapa baris
+       piutangnya nol. Lembar yang hilang tanpa penjelasan membuat orang
+       mengira laporannya rusak. Lembar lain tetap dilewati kalau kosong. */
+    if (empty($sumber[$kode]) && $kode !== 'AR_EXISTING') { continue; }
     $ls = $sp->createSheet();
     $ls->setTitle($def['judul']);
     $ls->getTabColor()->setRGB($def['warna']);

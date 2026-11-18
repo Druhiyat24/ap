@@ -12,6 +12,7 @@ session_start();
 error_reporting(E_ALL & ~E_NOTICE);
 ini_set('display_errors', 0);
 include '../../conn/conn.php';
+require_once __DIR__ . '/pv_exim_cash_flow.php';
 ini_set('date.timezone', 'Asia/Jakarta');
 
 header('Content-Type: application/json');
@@ -72,9 +73,13 @@ try {
     // pv_form_type = 'EXIM' - menandai dokumen ini dibuat dari
     // create-paymentvoucher-exim.php, dipakai nanti supaya halaman edit
     // tahu template mana yang harus dipakai.
-    $query = "INSERT INTO tbl_pv_h (no_pv,pv_date,nama_supp,supp_doc,ctb,pay_date,pay_meth,curr,for_pay,pv_tax_type,pv_form_type, frm_akun,to_akun,ke,dari,no_cek, cek_date,deskripsi,subtotal,adjust,pph,ppn,total,outstanding,per_ppn,per_pph,rate,create_by,create_date,status)
+    // Kategori arus kas PV EXIM selalu "Export & Import" - lihat
+    // pv_exim_cash_flow.php. Sebelum 18 Nov 2026 kolom ini tidak diisi.
+    $id_cash_flow = pv_exim_cash_flow($conn2);
+
+    $query = "INSERT INTO tbl_pv_h (no_pv,pv_date,nama_supp,supp_doc,ctb,pay_date,pay_meth,curr,for_pay,id_cash_flow,pv_tax_type,pv_form_type, frm_akun,to_akun,ke,dari,no_cek, cek_date,deskripsi,subtotal,adjust,pph,ppn,total,outstanding,per_ppn,per_pph,rate,create_by,create_date,status)
     VALUES
-        ('$no_pv', '$pv_date', '$nama_supp', '$sup_doc', '$ctb', '$pay_date', '$pay_mth', '$curr', '$forpay', '$pv_tax_type', 'EXIM', '$frcc', '$tocc', '$ke', '$dari', '$no_cek', '$cek_date', '$pesan', '$subtotal', '$adjust', '$pph_h', '$ppn_h', '$total', '$total', '$pilih_ppn', '$pilih_pph', '$rat_pv', '$create_user', '$create_date', '$status')";
+        ('$no_pv', '$pv_date', '$nama_supp', '$sup_doc', '$ctb', '$pay_date', '$pay_mth', '$curr', '$forpay', $id_cash_flow, '$pv_tax_type', 'EXIM', '$frcc', '$tocc', '$ke', '$dari', '$no_cek', '$cek_date', '$pesan', '$subtotal', '$adjust', '$pph_h', '$ppn_h', '$total', '$total', '$pilih_ppn', '$pilih_pph', '$rat_pv', '$create_user', '$create_date', '$status')";
 
     if (!mysqli_query($conn2, $query)) {
         throw new Exception('Gagal insert header PV: ' . mysqli_error($conn2));
