@@ -1062,7 +1062,7 @@ echo'</ul>
           </a>
           <ul class="dropdown-menu bg-dark text-white" role="menu">
           <a href="../AP/pvbiaya-payment-date.php" class="dropdown-item bg-dark text-white">
-          <span class="fa fa-calendar fa-fw"></span>
+          <span class="fa fa-calendar fa-fw mr-3"></span>
           <span class="menu-collapsed">Update Payment Date</span>
           </a>
           </ul>
@@ -1108,7 +1108,7 @@ echo'</ul>
               echo '
               <li class="dropdown-submenu ">
               <a class="dropdown-item bg-dark text-white" href="#">
-              <span class="fa fa-line-chart fa-fw"></span>
+              <span class="fa fa-line-chart fa-fw mr-3"></span>
               <span class="menu-collapsed">Projection</span>
               </a>
               <ul class="dropdown-menu bg-dark text-white" role="menu">';
@@ -1116,7 +1116,7 @@ echo'</ul>
               if($idProj == '148'){
                   echo '
                   <a href="../AP/cash-projection.php" class="dropdown-item bg-dark text-white">
-                  <span class="fa fa-exchange fa-fw"></span>
+                  <span class="fa fa-exchange fa-fw mr-3"></span>
                   <span class="menu-collapsed">Other</span>
                   </a>';
               }
@@ -1124,7 +1124,7 @@ echo'</ul>
               if($idProj3 == '151'){
                   echo '
                   <a href="../AP/cash_flow_projection.php" class="dropdown-item bg-dark text-white">
-                  <span class="fa fa-area-chart fa-fw"></span>
+                  <span class="fa fa-area-chart fa-fw mr-3"></span>
                   <span class="menu-collapsed">Projection Report</span>
                   </a>';
               }
@@ -1132,7 +1132,7 @@ echo'</ul>
               if($idProj4 == '152'){
                   echo '
                   <a href="../AP/cf_history_projection.php" class="dropdown-item bg-dark text-white">
-                  <span class="fa fa-history fa-fw"></span>
+                  <span class="fa fa-history fa-fw mr-3"></span>
                   <span class="menu-collapsed">History Projection</span>
                   </a>';
               }
@@ -1214,7 +1214,7 @@ echo'</ul>
       echo '
       <li class="dropdown-submenu ">
       <a class="dropdown-item bg-dark text-white" href="#">
-      <span class="fa fa-thumbs-up fa-fw"></span>
+      <span class="fa fa-thumbs-up fa-fw mr-3"></span>
       <span class="menu-collapsed">Approval</span>
       </a>
       <ul class="dropdown-menu bg-dark text-white" role="menu">';
@@ -1225,11 +1225,11 @@ echo'</ul>
           41 => array('approve-pv.php',       'Payment Voucher'),
           42 => array('approve-inbank.php',   'Incoming Bank'),
           43 => array('approve_bank_out.php', 'Outgoing bank'),
-      ), '          ', 'fa fa-thumbs-up fa-fw ');
+      ), '          ', 'fa fa-thumbs-up fa-fw mr-3');
 
           if(strpos($id_app, '117') !== false){
               echo '<a href="../AP/approve-payment-list-first.php" class="dropdown-item bg-dark text-white">
-              <span class="fa fa-ticket fa-fw "></span>
+              <span class="fa fa-ticket fa-fw mr-3"></span>
               <span class="menu-collapsed">Payment List - First</span>
               '.$notifpl1.'
               </a>';
@@ -1237,7 +1237,7 @@ echo'</ul>
 
           if(strpos($id_app, '118') !== false){
               echo '<a href="../AP/approve-payment-list-second.php" class="dropdown-item bg-dark text-white">
-              <span class="fa fa-ticket fa-fw "></span>
+              <span class="fa fa-ticket fa-fw mr-3"></span>
               <span class="menu-collapsed">Payment List - Second</span>
               '.$notifpl2.'
               </a>';
