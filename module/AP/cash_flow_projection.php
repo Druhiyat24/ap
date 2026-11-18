@@ -559,10 +559,11 @@ $(function () {
                     return;
                 }
                 cfoBerubah = true;
-                $('#modal-opening').modal('hide');   /* handler hidden yang menjalankan laporannya */
-                Swal.fire({ icon: 'success', title: 'Saved',
-                            text: res.diubah + ' changed, ' + res.direset + ' back to system, '
-                                + res.dilewati + ' unchanged.' });
+                /* Tidak ada kotak "Saved" (permintaan pemakai 18 Nov 2026):
+                   modalnya tutup, lalu handler hidden-nya menjalankan
+                   laporannya - tanda jadinya ya tulisan Loading... itu
+                   sendiri, tanpa perlu ditekan OK dulu. */
+                $('#modal-opening').modal('hide');
             })
             .fail(function (x) {
                 Swal.fire({ icon: 'error', title: 'Request failed', text: (x.responseText || '').slice(0, 300) });
