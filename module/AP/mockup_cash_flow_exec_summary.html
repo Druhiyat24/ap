@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>History Projection - Executive Summary</title>
+<link rel="stylesheet" href="../fontawesome5/css/all.min.css">
+<style>
+:root{--navy:#1E3A8A;--navy2:#2f5bbf;--garis:#e2e8f0;--teks:#1e293b;--redup:#94a3b8;}
+*{box-sizing:border-box;}
+body{margin:0;background:#f1f5f9;color:var(--teks);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:13px;}
+.wrap{padding:16px;}
+.head{background:linear-gradient(90deg,var(--navy),var(--navy2));color:#fff;border-radius:12px 12px 0 0;padding:14px 18px;display:flex;align-items:center;gap:14px;}
+.head .ic{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:17px;}
+.head h1{margin:0;font-size:17px;font-weight:700;}
+.head .crumb{font-size:11.5px;opacity:.85;margin-top:2px;}
+.bar{background:#fff;border:1px solid var(--garis);border-top:0;border-radius:0 0 12px 12px;padding:12px 18px;display:flex;gap:9px;align-items:center;flex-wrap:wrap;box-shadow:0 1px 3px rgba(15,23,42,.05);}
+.btn{border:0;border-radius:8px;padding:8px 15px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;min-height:34px;display:inline-flex;align-items:center;gap:7px;}
+.btn-back{background:linear-gradient(180deg,#f4635f,#e13c37);}
+.btn-xls{background:linear-gradient(180deg,#22c07f,#10b981);}
+
+/* ---- TAB: dua tab di atas kartu, bukan dua halaman ---- */
+.tabs{display:flex;gap:4px;margin:16px 0 0;flex-wrap:wrap;}
+.tab{background:#e2e8f0;color:#475569;border:1px solid var(--garis);border-bottom:0;border-radius:10px 10px 0 0;padding:9px 18px;font-size:12.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
+.tab.on{background:#fff;color:var(--navy);box-shadow:0 -2px 0 var(--navy) inset;}
+.card{background:#fff;border:1px solid var(--garis);border-radius:0 12px 12px 12px;box-shadow:0 2px 10px rgba(0,0,0,.05);overflow:hidden;}
+.cap{padding:11px 16px;border-bottom:1px solid var(--garis);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.cap b{font-size:14px;}
+.cap span{font-size:12px;color:var(--redup);}
+
+/* ---- kartu angka ---- */
+.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:16px;}
+.k{border:1px solid var(--garis);border-radius:10px;padding:12px 14px;background:#fbfdff;}
+.k .lbl{font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#64748b;}
+.k .val{font-size:19px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums;}
+.k .sub{font-size:11px;color:var(--redup);margin-top:3px;}
+.k .aman{color:#15803d;font-size:16px;}
+
+.sec{padding:4px 16px 0;font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--navy);}
+.dua{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:10px 16px 16px;}
+
+table.t{border-collapse:separate;border-spacing:0;font-size:12px;width:100%;}
+table.t th,table.t td{padding:6px 10px;border-bottom:1px solid #eef2f7;white-space:nowrap;}
+table.t thead th{background:var(--navy);color:#fff;font-size:10.5px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;text-align:right;}
+table.t thead th:first-child{text-align:left;}
+/* Nama baris di kolom kiri rata KIRI - <th> bawaannya rata tengah. */
+table.t tbody th{text-align:left;font-weight:600;}
+.num{text-align:right;font-variant-numeric:tabular-nums;}
+.min{color:#b91c1c;}
+.nol{color:#cbd5e1;}
+.tebal td,.tebal th{font-weight:700;background:#f8fbff;}
+.tgl{color:#475569;}
+.scroll{overflow:auto;}
+tbody tr:hover td{background:#f5f9ff;}
+.rk th{text-align:left;font-weight:500;white-space:normal;}
+.rk .no{display:inline-block;width:18px;color:var(--redup);font-size:11px;}
+
+@media (max-width:1100px){ .kpi{grid-template-columns:repeat(2,1fr);} .dua{grid-template-columns:1fr;} }
+@media (max-width:640px){ .kpi{grid-template-columns:1fr;} .wrap{padding:10px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="head"><div class="ic"><i class="fas fa-history"></i></div><div><h1>History Projection &mdash; CF-PPR/1126/00003</h1><div class="crumb">Bank &rsaquo; Report &rsaquo; Projection &rsaquo; History Projection &rsaquo; Detail</div></div></div>
+<div class="bar"><button class="btn btn-back"><i class="fas fa-arrow-left"></i> Back to list</button><button class="btn btn-xls"><i class="far fa-file-excel"></i> Excel</button></div>
+<div class="tabs"><div class="tab"><i class="fas fa-table"></i> Projection</div><div class="tab on"><i class="fas fa-chart-line"></i> Executive Summary</div></div>
+<div class="card">
+<div class="cap"><b>CF-PPR/1126/00003 &mdash; Daily</b><span>1 Nov 2026 - 30 Nov 2026 &middot; Rate 18,135 &middot; All PC &middot; All Banks &middot; saved by indro 17-Nov-2026 11:49</span></div>
+<div class="kpi">
+<div class="k"><div class="lbl">Opening Cash Balance</div><div class="val">3,246,105,860</div><div class="sub">First day of the period</div></div>
+<div class="k"><div class="lbl">Closing Cash Balance</div><div class="val">6,916,672,851</div><div class="sub">Last day of the period</div></div>
+<div class="k"><div class="lbl">Minimum Cash Balance</div><div class="val">3,246,105,860</div><div class="sub">Lowest daily closing balance</div></div>
+<div class="k"><div class="lbl">First Shortfall Date</div><div class="val"><span class="aman">No Shortfall Found</span></div><div class="sub">First day the closing balance goes negative</div></div>
+<div class="k"><div class="lbl">Date of Minimum Balance</div><div class="val">01 Nov 2026</div><div class="sub">Day of the lowest closing balance</div></div>
+<div class="k"><div class="lbl">Cash Shortfall Days</div><div class="val">0</div><div class="sub">Days with a negative closing balance</div></div>
+<div class="k"><div class="lbl">Undrawn Credit Facilities</div><div class="val">4,530,542,474</div><div class="sub">IDR 1,789,181,627 + USD 2,741,360,847</div></div>
+<div class="k"><div class="lbl">Projected Month-End Liquidity</div><div class="val">11,447,215,325</div><div class="sub">Closing balance + undrawn facilities</div></div>
+<div class="k"><div class="lbl">Net Operating Cash Flow</div><div class="val"><span class="min">(761,340,756)</span></div><div class="sub">Operating inflows + operating outflows</div></div>
+</div>
+<div class="sec">Cash Flow Drivers</div>
+<div class="dua">
+<div class="scroll"><table class="t"><thead><tr><th>Top Cash Inflows</th><th>Amount</th></tr></thead><tbody>
+<tr class="rk"><th><span class="no">1</span>Penerimaan Antar Bank (Dalam Satu PT)</th><td class="num">14,160,245,263</td></tr>
+<tr class="rk"><th><span class="no">2</span>Penerimaan Pinjaman Bank</th><td class="num">12,968,823,020</td></tr>
+<tr class="rk"><th><span class="no">3</span>Penerimaan Lain-lain</th><td class="num">54,405,000</td></tr>
+<tr class="rk"><th><span class="no">4</span>Penerimaan Piutang Usaha (Existing)</th><td class="num">18,135,000</td></tr>
+<tr class="rk"><th><span class="no">5</span>Penerimaan Pendapatan Bunga Giro</th><td class="num">577,000</td></tr>
+</tbody></table></div>
+<div class="scroll"><table class="t"><thead><tr><th>Top Cash Outflows</th><th>Amount</th></tr></thead><tbody>
+<tr class="rk"><th><span class="no">1</span>Pengeluaran Antar Bank (Pemindahbukuan Internal)</th><td class="num"><span class="min">(14,160,245,000)</span></td></tr>
+<tr class="rk"><th><span class="no">2</span>Pelunasan Pinjaman Bank</th><td class="num"><span class="min">(8,536,915,272)</span></td></tr>
+<tr class="rk"><th><span class="no">3</span>Pengeluaran Pembayaran Utang Usaha</th><td class="num"><span class="min">(834,458,019)</span></td></tr>
+</tbody></table></div>
+</div>
+<div class="sec">Weekly Liquidity Outlook</div>
+<div class="scroll" style="padding:10px 16px 18px;"><table class="t"><thead><tr><th>Week</th>
+<th>#1</th>
+<th>#2</th>
+<th>#3</th>
+<th>#4</th>
+<th>#5</th>
+</tr></thead><tbody>
+<tr class="tgl"><th>Start Date</th><td class="num tgl">01 Nov 2026</td><td class="num tgl">08 Nov 2026</td><td class="num tgl">15 Nov 2026</td><td class="num tgl">22 Nov 2026</td><td class="num tgl">29 Nov 2026</td></tr>
+<tr class="tgl"><th>End Date</th><td class="num tgl">07 Nov 2026</td><td class="num tgl">14 Nov 2026</td><td class="num tgl">21 Nov 2026</td><td class="num tgl">28 Nov 2026</td><td class="num tgl">30 Nov 2026</td></tr>
+<tr class=""><th>Opening Balance</th><td class="num ">3,246,105,860</td><td class="num ">3,246,105,860</td><td class="num ">7,370,047,851</td><td class="num ">6,916,672,851</td><td class="num ">6,916,672,851</td></tr>
+<tr class=""><th>Cash Inflows</th><td class="num ">172,861,732</td><td class="num ">26,384,579,671</td><td class="num ">558,478,380</td><td class="num ">86,265,500</td><td class="num "><span class="nol">0</span></td></tr>
+<tr class=""><th>Cash Outflows</th><td class="num "><span class="min">(172,861,732)</span></td><td class="num "><span class="min">(22,260,637,680)</span></td><td class="num "><span class="min">(1,011,853,380)</span></td><td class="num "><span class="min">(86,265,500)</span></td><td class="num "><span class="nol">0</span></td></tr>
+<tr class="tebal"><th>Closing Balance</th><td class="num ">3,246,105,860</td><td class="num ">7,370,047,851</td><td class="num ">6,916,672,851</td><td class="num ">6,916,672,851</td><td class="num ">6,916,672,851</td></tr>
+<tr class=""><th>Lowest Balance</th><td class="num ">3,246,105,860</td><td class="num ">3,246,105,860</td><td class="num ">6,916,672,851</td><td class="num ">6,916,672,851</td><td class="num ">6,916,672,851</td></tr>
+<tr><th colspan="6" style="background:#f1f5f9;font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:#475569;">Undrawn Credit Facility</th></tr>
+<tr class=""><th>&ndash; IDR</th><td class="num">8,281,681,627</td><td class="num">1,789,181,627</td><td class="num">1,789,181,627</td><td class="num">1,789,181,627</td><td class="num">1,789,181,627</td></tr>
+<tr class=""><th>&ndash; USD (in IDR)</th><td class="num">550,176,862</td><td class="num">2,474,354,727</td><td class="num">2,822,626,347</td><td class="num">2,741,360,847</td><td class="num">2,741,360,847</td></tr>
+<tr class="tebal"><th>Total Facility</th><td class="num">8,831,858,489</td><td class="num">4,263,536,354</td><td class="num">4,611,807,974</td><td class="num">4,530,542,474</td><td class="num">4,530,542,474</td></tr>
+</tbody></table></div>
+</div></div></body></html>

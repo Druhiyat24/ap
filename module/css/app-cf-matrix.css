@@ -1,0 +1,70 @@
+/* ============================================================================
+   MATRIKS CASH FLOW - dipakai BERSAMA oleh layar proyeksinya
+   (cash_flow_projection.php) dan layar riwayatnya (cf_history_projection.php).
+
+   Satu berkas, bukan salinan di tiap halaman: dua tabel itu HARUS terlihat
+   sama persis - yang satu angka berjalan, yang satu potretnya - dan kalau
+   gayanya disalin, cepat atau lambat keduanya berbeda tanpa ada yang sadar.
+
+   Prefiks .cfd- (Cash Flow Daily, nama aslinya; sekarang dipakai juga oleh
+   tata letak Weekly/Monthly yang berkolom rekening).
+   ============================================================================ */
+
+.cfd-wrap { background:#fff; border:1px solid #e2e8f0; border-radius:12px;
+            box-shadow:0 2px 10px rgba(0,0,0,.05); overflow:hidden; margin-top:16px; }
+.cfd-cap { padding:11px 16px; border-bottom:1px solid #e2e8f0; display:flex;
+           justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+.cfd-cap b { font-size:14px; } .cfd-cap span { font-size:12px; color:#94a3b8; }
+.cfd-scroll { overflow:auto; max-height:76vh; scrollbar-width:thin; scrollbar-color:#c7d2e0 transparent; }
+.cfd-scroll::-webkit-scrollbar { width:10px; height:10px; }
+.cfd-scroll::-webkit-scrollbar-thumb { background:#c7d2e0; border-radius:8px; border:2px solid #fff; }
+
+table.cfd { border-collapse:separate; border-spacing:0; font-size:12px; width:max-content; min-width:100%; margin:0; }
+table.cfd th, table.cfd td { padding:5px 9px; white-space:nowrap; border-bottom:1px solid #eef2f7; }
+/* !important WAJIB: app-ftr-list.css mengunci warna .ftl-tbl thead th dgn
+   !important, dan tabel ini ikut memakai kartu yang sama. */
+table.cfd thead th { position:sticky; top:0; z-index:3;
+    background:#1E3A8A !important; color:#fff !important;
+    font-size:10.5px; font-weight:600; letter-spacing:.4px; text-transform:uppercase;
+    border-bottom:2px solid #16306e !important; padding:7px 9px; text-align:right; }
+table.cfd thead th:first-child { left:0; z-index:5; text-align:left; min-width:330px; }
+table.cfd thead th:nth-child(2) { left:330px; z-index:5; }
+.cfd-dow { display:block; font-size:9px; opacity:.7; font-weight:500; }
+.cfd-desc { position:sticky; left:0; z-index:2; background:#fff; text-align:left; font-weight:500; min-width:330px; }
+.cfd-num { text-align:right; font-variant-numeric:tabular-nums; }
+.cfd-tot { position:sticky; left:330px; z-index:2; background:#f8fafc; font-weight:700;
+           border-right:2px solid #dbe4f3; min-width:135px; }
+.cfd-wknd { background:#fbfcfe; }
+.cfd-nol { color:#cbd5e1; } .cfd-min { color:#dc2626; }
+.cfd-no { display:inline-block; min-width:26px; color:#94a3b8; font-size:11px; }
+
+tr.r-sal > th, tr.r-sal > td   { background:#eef3fb; font-weight:700; color:#1E3A8A;
+                                 border-top:1px solid #c9d8f0; border-bottom:1px solid #c9d8f0; }
+tr.r-blok > th, tr.r-blok > td { background:#1e293b; color:#fff; font-weight:700; letter-spacing:.4px; }
+tr.r-grup > th, tr.r-grup > td { background:#f1f5f9; font-weight:700; color:#334155; }
+tr.r-tot > th,  tr.r-tot > td,
+tr.r-tot2 > th, tr.r-tot2 > td { background:#f8fafc; font-weight:700; border-top:1px solid #cbd5e1; }
+tr.r-net > th,  tr.r-net > td  { background:#fff; font-weight:600; }
+tr.r-pinj > th, tr.r-pinj > td { background:#fff7ed; font-weight:700; color:#9a3412; }
+tr.r-sub > th,  tr.r-sub > td  { background:#fffbf5; }
+tr.r-item:hover > th, tr.r-item:hover > td { background:#f5f9ff; }
+tr.r-sal > .cfd-tot  { background:#e4ecfa; } tr.r-blok > .cfd-tot { background:#1e293b; }
+tr.r-grup > .cfd-tot { background:#e9eef5; }
+tr.r-tot > .cfd-tot, tr.r-tot2 > .cfd-tot { background:#f1f5f9; }
+tr.r-pinj > .cfd-tot { background:#ffedd5; } tr.r-sub > .cfd-tot { background:#fff4e6; }
+tr.r-item > th, tr.r-sub > th { padding-left:16px; }
+
+/* Blok pinjaman menyambung di TABEL YANG SAMA. Dulu ini tabel kedua di
+   kartu terpisah; akibatnya ada DUA scrollbar mendatar yang tidak sejalan,
+   jadi kolom tanggal kiri-kanan bisa tidak sebaris.
+
+   DI LAYAR pemisahnya cuma SATU BARIS BERGARIS, bukan baris kepala lagi:
+   karena tabelnya satu dan digulir bersama, kolom tanggal blok ini sudah
+   pasti sama dgn kepala di atas - mengulangnya hanya memakan tempat.
+   Di EXCEL kepalanya TETAP diulang (lihat ekspor_cash_flow_projection.php):
+   di sana barisnya bisa tercetak di halaman lain, jadi kepalanya perlu. */
+tr.r-spasi > td { background:#fff; height:16px; padding:0;
+    border-top:0; border-bottom:2px solid #1E3A8A; }
+
+.cfd-kosong { padding:28px; text-align:center; color:#94a3b8; }
+

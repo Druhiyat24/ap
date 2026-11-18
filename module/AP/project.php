@@ -1960,6 +1960,47 @@ if ($hq) {
   .bk-card-t th:first-child, .bk-card-t td:first-child { width: 46%; border-right: 1px solid rgba(200,80,80,.5); }
   .bk-ink { display: inline-block; font: 700 .92em "Courier New", Courier, monospace; letter-spacing: .05em; color: #5b3fa0; opacity: .85; transform: rotate(var(--r, -2deg)); }
   .bk-hand { font-family: "Segoe Script", "Brush Script MT", "Lucida Handwriting", cursive; font-weight: 400; color: #23324f; }
+  /* Bab IV Mockup & bab V ERD - dari Design Studio (../js/project-studio.js).
+     Hanya muncul di buku project yang punya mockup / ERD. Yang ditampilkan
+     versi APPROVED terakhir; kalau belum ada, versi terakhir. */
+  .bk-dz-meta { display: flex; flex-wrap: wrap; align-items: center; gap: .3em .8em; margin-bottom: .75em; font: 600 .62em Arial, sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #8d7b60; }
+  .bk-dz-st { padding: .15em .6em; border: 1.5px solid var(--sc); border-radius: 3px; color: var(--sc); }
+  .bk-dz-body { overflow-x: hidden; padding-right: .5em; }   /* scrollbar HP menumpang di atas isi */
+  .bk-photo { position: relative; margin: .55em 1em 0 .95em; padding: .45em .45em .2em; background: #fffdf8; cursor: zoom-in;
+    box-shadow: 0 7px 16px -9px rgba(60,40,10,.6), 0 0 0 1px rgba(120,90,40,.14); transform: rotate(-1deg); }
+  .bk-photo::before, .bk-photo::after { content: ''; position: absolute; top: -.45em; width: 3.4em; height: 1.1em; background: rgba(236,224,190,.78); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+  .bk-photo::before { left: -.7em; transform: rotate(-32deg); }
+  .bk-photo::after { right: -.7em; transform: rotate(30deg); }
+  .bk-shot { position: relative; width: 100%; aspect-ratio: 16 / 10; overflow: hidden; background: #eef2f8; border: 1px solid #d9dfe9; }
+  .bk-shot iframe { position: absolute; left: 0; top: 0; width: 1366px; height: 854px; border: 0; transform-origin: 0 0; pointer-events: none; background: #fff; }
+  .bk-shot-ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 1em; text-align: center; font: italic .75em Georgia, serif; color: #8d9ab0; }
+  .bk-photo figcaption { padding: .45em .2em .3em; font-size: .74em; font-style: italic; line-height: 1.35; color: #6e5a3c; }
+  .bk-dz-ink { position: absolute; z-index: 2; right: .3em; top: .35em; padding: .25em .55em; border: 2px solid var(--sc); border-radius: 3px; color: var(--sc);
+    background: rgba(255,253,248,.82); font: 700 .66em "Courier New", Courier, monospace; letter-spacing: .12em; text-align: center; line-height: 1.25; text-transform: uppercase; transform: rotate(-7deg); opacity: .92; }
+  .bk-dz-next { margin: .7em 0 0; font-size: .78em; font-style: italic; color: #a5631a; }
+  .bk-dz-btn { display: inline-flex; align-items: center; margin-top: .85em; padding: .5em 1.05em; border: 1px solid #b58a3c; border-radius: 4px; background: #fbf5e6; color: #6b4a17;
+    font: 600 .62em Arial, sans-serif; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
+  .bk-dz-btn:hover, .bk-dz-btn:focus-visible { background: #f3e6c4; outline: none; }
+  .bk-bp { position: relative; margin: .1em 0 .55em; padding: .35em; cursor: zoom-in; border: 1px solid #0b1d4a; border-radius: 3px;
+    background-color: #12306b; background-image: linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px);
+    background-size: 1.1em 1.1em; box-shadow: 0 7px 16px -9px rgba(10,20,50,.7); }
+  .bk-bp svg { display: block; width: 100%; height: auto; max-height: 11em; }
+  .bk-bp .t rect { fill: rgba(255,255,255,.05); stroke: #9ec0f5; stroke-width: 2; }
+  .bk-bp .t.new rect { stroke: #e4c47c; stroke-width: 3; }
+  .bk-bp .t .hd { fill: rgba(158,192,245,.28); stroke: none; }
+  .bk-bp .t.new .hd { fill: rgba(228,196,124,.32); }
+  .bk-bp .t line { stroke: rgba(158,192,245,.35); stroke-width: 1.5; }
+  .bk-bp .t text { fill: #fff; font: 600 15px Arial, sans-serif; }
+  .bk-bp path { fill: none; stroke: #8fb4ff; stroke-width: 2.5; opacity: .75; }
+  .bk-dz-facts { font-size: .78em; color: #4a3a22; }
+  .bk-dz-warn { color: #b45309; font-style: italic; }
+  .bk-dz-ok { color: #15803d; font-style: italic; }
+  .bk-tl-h { margin: .8em 0 .25em; font: 600 .6em Arial, sans-serif; letter-spacing: .16em; text-transform: uppercase; color: #a27838; }
+  .bk-tl { columns: 2; column-gap: 1.3em; margin: 0; padding: 0; list-style: none; font-size: .72em; }
+  .bk-tl li { display: flex; justify-content: space-between; gap: .5em; padding: .12em 0; border-bottom: 1px dotted #d8c9a6; break-inside: avoid; overflow-wrap: anywhere; }
+  .bk-tl li i { flex: none; font-style: normal; color: #a08a66; }
+  .bk-tl.new li span::before { content: ''; display: inline-block; width: .55em; height: .55em; margin-right: .35em; border-radius: 1px; background: #d4a54a; vertical-align: .05em; }
+  .bk-reader.single .bk-tl { columns: 1; }
   .bk-pocket {
     position: relative; z-index: 2; margin-top: -3.1em; padding: .85em 1em .8em; text-align: center; color: #5b4320;
     border-radius: 0 0 4px 4px; background: #d9c08c linear-gradient(rgba(255,255,255,.1), rgba(0,0,0,.06));
@@ -2127,6 +2168,8 @@ if ($hq) {
 
 
 </style>
+<!-- Design Studio & Data Room (mode 3D) - gaya di berkas sendiri, kelas berawalan ps- -->
+<link rel="stylesheet" href="../css/project-studio.css?v=<?php echo @filemtime(__DIR__ . '/../css/project-studio.css'); ?>">
 
 <div class="proj-page" id="proj-page-root">
 <script>
@@ -2179,7 +2222,8 @@ if ($hq) {
       </div>
     </div>
     <!-- Panggung mode 3D. Kosong & tersembunyi di mode Normal; isinya dipasang
-         ../js/library3d.js begitu tombol 3D dipilih. -->
+         ../js/library3d.js begitu tombol 3D dipilih (termasuk sudut Design
+         Studio di ujung kanan, dari ../js/studio3d.js). -->
     <div class="scene3d" id="scene3d"></div>
   </header>
 
@@ -2198,6 +2242,9 @@ if ($hq) {
       <div class="kpi"><div class="kpi-label">Loading&hellip;</div><div class="kpi-value">&mdash;</div></div>
     </div>
   </section>
+
+  <!-- Project Workflow: Mockup -> ERD -> Coding (mode 3D saja; isinya dari ../js/project-studio.js) -->
+  <section class="ps-flow-card" id="ps-flow-card" aria-label="Project workflow"></section>
 
   <!-- Current selection -->
   <div class="section-bar">
@@ -2488,6 +2535,8 @@ if ($hq) {
 <script src="../vendor/jquery/jquery.min.js"></script>
 <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="../css/4.1.1/sweetalert2@11.js"></script>
+<!-- Design Studio & Data Room: panel mockup, editor ERD, kartu workflow, laporan Lucca -->
+<script src="../js/project-studio.js?v=<?php echo @filemtime(__DIR__ . '/../js/project-studio.js'); ?>"></script>
 <!-- SheetJS: dipakai tombol "Export List". header.php tidak memuat pustaka JS
      apa pun, jadi tiap halaman memuat sendiri yang dibutuhkannya. -->
 <script src="../css/4.1.1/xlsx.full.min.js"></script>
@@ -2708,6 +2757,7 @@ if ($hq) {
     updatePicList();
     updateMonthList();
     renderActive();
+    if (window.ProjectStudio) ProjectStudio.projectsChanged();   // kartu workflow & ruangan ikut daftar project
   }
 
   // Animates a stat number from its previous value to a new one (eased count-up).
@@ -2969,7 +3019,7 @@ if ($hq) {
   // dari rak dibuka seperti buku sungguhan (lihat "Buku project" di bawah).
   // Kartu board juga ikut miring mengikuti kursor. Pilihannya diingat per
   // browser.
-  var LIB3D_URL = '../js/library3d.js';
+  var LIB3D_URL = '../js/library3d.js?v=<?php echo @filemtime(__DIR__ . '/../js/library3d.js'); ?>';   // versi = tanggal ubah berkas, supaya browser tidak memakai salinan lama
   var lib3d = null, lib3dLoading = false;
   // import() ditulis lewat Function: browser lama yang belum mengenal sintaks
   // itu tetap bisa membaca seluruh skrip ini (mode Normal tetap jalan) -
@@ -3001,11 +3051,21 @@ if ($hq) {
   }
 
   function start3d(intro) {
+    if (window.ProjectStudio) ProjectStudio.load();   // data mockup & ERD (kartu workflow + sudut studio)
     if (lib3d) { refresh3d(); return; }
     if (lib3dLoading) return;
     lib3dLoading = true;
     $('#scene3d').addClass('loading');
+    // Sudut Design Studio (../js/studio3d.js) ikut dimuat; kalau gagal,
+    // perpustakaan tetap tampil tanpa sudut itu.
+    var studioMod = importModule(new URL(STUDIO_URL, document.baseURI).href).catch(function (e) {
+      if (window.console) console.warn('Design Studio corner unavailable:', e);
+      return null;
+    });
     importModule(new URL(LIB3D_URL, document.baseURI).href).then(function (mod) {
+      return studioMod.then(function (sm) { return { mod: mod, sm: sm }; });
+    }).then(function (m) {
+      var mod = m.mod, sm = m.sm;
       lib3dLoading = false;
       $('#scene3d').removeClass('loading');
       if (!isMode3d()) return;           // sudah kembali ke Normal selagi memuat
@@ -3016,7 +3076,8 @@ if ($hq) {
         userName: <?= json_encode((string)$full_name, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>,   // sapaan Lucca
         fmtDate: fmtDate,
         reducedMotion: prefersReducedMotion(),
-        intro: !!intro
+        intro: !!intro,
+        wing: sm && window.ProjectStudio ? sm.createWing(studioApi()) : null
       });
       refresh3d();
       liveStart();
@@ -3050,13 +3111,14 @@ if ($hq) {
         r.data.forEach(function (p) {
           var o = old[p.id], who = p.updated_by || p.created_by || '';
           if (!o) {
-            items.push({ id: p.id, title: p.project_name, text: 'New book on the ' + (p.category || 'General') + ' shelf' + (who ? ' \u00b7 by ' + who : '') });
+            // kabar ini diumumkan Lucca -> bahasa Indonesia
+            items.push({ id: p.id, title: p.project_name, text: 'Buku baru di rak ' + (p.category || 'General') + (who ? ' \u00b7 oleh ' + who : '') });
           } else if (o.status !== p.status) {
-            items.push({ id: p.id, title: p.project_name, text: o.status + ' \u2192 ' + p.status + (who ? ' \u00b7 by ' + who : '') });
+            items.push({ id: p.id, title: p.project_name, text: o.status + ' \u2192 ' + p.status + (who ? ' \u00b7 oleh ' + who : '') });
             if (doneId == null && isDoneStatus(p.status) && !isDoneStatus(o.status)) doneId = p.id;
           } else if (String(o.progress) !== String(p.progress) || (o.updated_date || '') !== (p.updated_date || '')) {
             var moved = String(o.progress) !== String(p.progress);
-            items.push({ id: p.id, title: p.project_name, text: 'Updated' + (moved ? ' \u00b7 ' + (parseInt(p.progress) || 0) + '% done' : '') + (who ? ' \u00b7 by ' + who : '') });
+            items.push({ id: p.id, title: p.project_name, text: 'Diperbarui' + (moved ? ' \u00b7 ' + (parseInt(p.progress) || 0) + '% selesai' : '') + (who ? ' \u00b7 oleh ' + who : '') });
           }
         });
         if (!items.length && r.data.length === allProjects.length) return;
@@ -3073,6 +3135,23 @@ if ($hq) {
     liveStop();
     closeBook(true);
     if (lib3d) { lib3d.destroy(); lib3d = null; }
+  }
+
+  // ===== Sudut Design Studio di dalam perpustakaan (mode 3D) =====
+  // User minta semuanya dalam SATU ruangan: easel mockup & meja ERD dipasang
+  // di ujung kanan rak oleh ../js/studio3d.js (lewat opts.wing library3d.js).
+  // Data & panelnya (mockup, ERD, kartu Project Workflow, laporan Lucca) ada di
+  // ../js/project-studio.js; tabelnya dari db_migrate_LIVE_20261117_project_studio.sql.
+  var STUDIO_URL = '../js/studio3d.js?v=<?php echo @filemtime(__DIR__ . '/../js/studio3d.js'); ?>';
+  function studioApi() {
+    var PS = window.ProjectStudio;
+    return { list: PS.list, ready: PS.ready, luccaItems: PS.luccaItems, go: PS.go, openMockup: PS.openMockup, openErd: PS.openErd, erdData: PS.erdData };
+  }
+  function psInit() {
+    if (!window.ProjectStudio) return;
+    ProjectStudio.init({ getProjects: function () { return allProjects; } });
+    // data mockup/ERD berubah -> sudut studio dicat ulang & warna Lucca ikut
+    ProjectStudio.onChange(function () { if (lib3d && lib3d.studioChanged) lib3d.studioChanged(); });
   }
 
   // Data perpustakaan = filter yang sedang dipakai, KECUALI filter bulan:
@@ -3156,6 +3235,8 @@ if ($hq) {
     $(el).on('click', '[data-stamp]', function () { bookSetStatus(this.getAttribute('data-stamp')); });
     // Tugas di bab II dicentang langsung di buku (tanpa ikut membalik halaman)
     $(el).on('click', '.bk-tasks li[data-mid]', function (e) { e.stopPropagation(); bookToggleTask(this); });
+    // Bab Mockup / ERD: buka panelnya di Design Studio (tanpa ikut membalik halaman)
+    $(el).on('click', '[data-bk-open]', function (e) { e.stopPropagation(); bookOpenStudio(this.getAttribute('data-bk-open')); });
     $(el).on('click', '[data-bk]', function () {
       var a = this.getAttribute('data-bk');
       if (a === 'close') closeBook();
@@ -3187,7 +3268,7 @@ if ($hq) {
       else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); bookGo(-1); }
       else if (e.key === 'Tab') {
         // fokus berputar di tugas & tombol buku saja, tidak lari ke halaman di belakang
-        var btns = [].slice.call(el.querySelectorAll('.bk-page [data-mid], .bk-bar button')).filter(function (b) { return !b.disabled && b.offsetParent !== null; });
+        var btns = [].slice.call(el.querySelectorAll('.bk-page [data-mid], .bk-page button[data-bk-open], .bk-bar button')).filter(function (b) { return !b.disabled && b.offsetParent !== null; });
         if (btns.length) {
           e.preventDefault();
           var at = btns.indexOf(document.activeElement);
@@ -3197,7 +3278,7 @@ if ($hq) {
       }
       e.stopPropagation();
     }, true);
-    window.addEventListener('resize', function () { if (book && !book.busy) bookLayout(true); });
+    window.addEventListener('resize', function () { if (book && !book.busy) { bookLayout(true); bookShots(); } });
     return el;
   }
 
@@ -3246,9 +3327,12 @@ if ($hq) {
     ['.bk-left', '.bk-right', '.bk-cover'].forEach(function (s) { el.querySelector(s).style.width = g.P + 'px'; });
     el.querySelector('.bk-right').style.left = el.querySelector('.bk-cover').style.left = (g.single ? 0 : g.P) + 'px';
     el.querySelector('.bk-bar').style.top = (g.top + g.H + 20) + 'px';
+    // project yang punya mockup/ERD: bab IV Mockup & bab V ERD sebelum kartu peminjaman
+    var dz = !!book.design;
     var spreads = g.single
-      ? [['', 'title'], ['', 'summary'], ['', 'tasks'], ['', 'history'], ['', 'card']]
-      : [['endpaper', 'title'], ['summary', 'tasks'], ['history', 'card']];
+      ? [['', 'title'], ['', 'summary'], ['', 'tasks'], ['', 'history']].concat(dz ? [['', 'mockup'], ['', 'erd']] : [], [['', 'card']])
+      : dz ? [['endpaper', 'title'], ['summary', 'tasks'], ['history', 'mockup'], ['erd', 'card']]
+           : [['endpaper', 'title'], ['summary', 'tasks'], ['history', 'card']];
     if (keep && book.spreads && book.spreads.length !== spreads.length) { book.spreads = spreads; book.spread = 0; bookShow(0); }
     book.spreads = spreads;
     if (keep) bk.style.transform = bookT(0, 0, 0, 1, 0);
@@ -3268,6 +3352,24 @@ if ($hq) {
     el.querySelector('.bk-dots').innerHTML = book.spreads.map(function (x, i) { return '<span' + (i === n ? ' class="on"' : '') + '></span>'; }).join('');
     el.querySelector('.bk-nav[data-bk="prev"]').disabled = n === 0;
     el.querySelector('.bk-nav[data-bk="next"]').disabled = n === book.spreads.length - 1;
+    bookShots();
+  }
+  // Foto mockup = iframe mockup aslinya, diperkecil. Hanya dipasang di halaman
+  // yang sedang terbuka (bukan di lembar yang sedang dibalik).
+  function bookShots() {
+    if (!book) return;
+    $(book.el).find('.bk-left .bk-shot[data-src], .bk-right .bk-shot[data-src]').each(function () {
+      var f = this.querySelector('iframe');
+      if (!f) {
+        f = document.createElement('iframe');
+        f.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+        f.setAttribute('tabindex', '-1');
+        f.setAttribute('aria-hidden', 'true');
+        f.src = this.getAttribute('data-src');
+        this.appendChild(f);
+      }
+      f.style.transform = 'scale(' + (this.clientWidth / 1366).toFixed(4) + ')';
+    });
   }
   function bookFill(k, html) {
     // tugas yang sedang difokus (keyboard) tetap difokus sesudah daftarnya diganti
@@ -3275,6 +3377,7 @@ if ($hq) {
     book.fill[k] = html;
     $(book.el).find('[data-bk-fill="' + k + '"]').html(html);
     if (mid) { var nx = book.el.querySelector('.bk-page [data-mid="' + mid + '"]'); if (nx) nx.focus(); }
+    bookShots();
   }
 
   function bookTiming(p) {
@@ -3322,6 +3425,10 @@ if ($hq) {
         '<div class="bk-body" data-bk-fill="tasks"><p class="bk-muted">Turning to the task list&hellip;</p></div>' + num(3) + '</div>',
       history: '<div class="bk-pg">' + run + '<div class="bk-ch">Chapter III</div><h3 class="bk-h">History</h3>' +
         '<div class="bk-body" data-bk-fill="history"><p class="bk-muted">Reading the history&hellip;</p></div>' + num(4) + '</div>',
+      mockup: '<div class="bk-pg">' + run + '<div class="bk-ch">Chapter IV</div><h3 class="bk-h">Mockup</h3>' +
+        '<div class="bk-body bk-dz-body" data-bk-fill="mockup"><p class="bk-muted">Finding the mockup&hellip;</p></div>' + num(5) + '</div>',
+      erd: '<div class="bk-pg">' + run + '<div class="bk-ch">Chapter V</div><h3 class="bk-h">Database design</h3>' +
+        '<div class="bk-body bk-dz-body" data-bk-fill="erd"><p class="bk-muted">Unrolling the blueprint&hellip;</p></div>' + num(6) + '</div>',
       // kartu peminjaman dalam saku di sampul belakang
       card: '<div class="bk-pg bk-endpaper bk-cardpg" style="--mc:' + mc + ';"><div class="bk-slip">' +
         '<div class="bk-card">' +
@@ -3395,6 +3502,130 @@ if ($hq) {
       success: function (r) { if (book === b) { bookFill('history', bookHistory(r.data || [])); bookFill('card', bookCardRows(r.data || [])); } },
       error: function () { if (book === b) bookFill('history', '<p class="bk-muted">The history could not be loaded.</p>'); }
     });
+    if (b.design) bookLoadDesign(b);
+  }
+
+  // ---- Bab IV Mockup & bab V ERD (data Design Studio, ajax_project_studio.php) ----
+  // Punya mockup atau ERD? (ringkasan sudah dimuat ProjectStudio saat mode 3D dibuka)
+  function bookDesign(p) {
+    var PS = window.ProjectStudio, v = PS && PS.ready() ? PS.find(p.id) : null;
+    return v && (v.mock.n > 0 || v.erd.n > 0) ? v : null;
+  }
+  // versi yang dipajang: approved terakhir; kalau belum ada, versi terakhir (daftar urut versi turun)
+  function bookPick(vers) {
+    for (var i = 0; i < vers.length; i++) if (vers[i].status === 'approved') return vers[i];
+    return vers[0] || null;
+  }
+  function bookApprovedOn(reviews, ref) {
+    var d = '';
+    (reviews || []).forEach(function (r) { if (+r.ref_id === +ref && r.action === 'approved') d = r.created_date; });
+    return d;
+  }
+  function bookSt(st) {
+    var PS = window.ProjectStudio || {};
+    return { t: (PS.ST && PS.ST[st]) || st, c: { approved: '#15803d', review: '#b45309', changes: '#b91c1c' }[st] || '#64748b' };
+  }
+  function bookDzMeta(x, date) {
+    var s = bookSt(x.status), d = date ? fmtDate(String(date).substring(0, 10)) : '';
+    return '<div class="bk-dz-meta"><span>Version ' + (+x.version) + '</span><span class="bk-dz-st" style="--sc:' + s.c + ';">' + escHtml(s.t) + '</span>' + (d ? '<span>' + d + '</span>' : '') + '</div>';
+  }
+  function bookDzNext(top, shown) {
+    return top && shown && +top.id !== +shown.id ? '<p class="bk-dz-next">Version ' + (+top.version) + ' is ' + escHtml(bookSt(top.status).t.toLowerCase()) + '.</p>' : '';
+  }
+  function bookDzInk(st, date) {
+    var s = bookSt(st);
+    return '<span class="bk-dz-ink" style="--sc:' + s.c + ';">' + escHtml(s.t) + (date ? '<br>' + bookStamp(date) : '') + '</span>';
+  }
+  function bookLoadDesign(b) {
+    var U = 'ajax_project_studio.php', pid = b.id;
+    function bad(k, what) { if (book === b) bookFill(k, '<p class="bk-muted">The ' + what + ' could not be loaded.</p>'); }
+    $.ajax({
+      url: U, method: 'POST', data: { action: 'mockup_list', project_id: pid }, dataType: 'json',
+      success: function (r) { if (book !== b) return; if (!r || r.status !== 'success') return bad('mockup', 'mockup'); bookFill('mockup', bookMockup(b, r)); },
+      error: function () { bad('mockup', 'mockup'); }
+    });
+    $.ajax({
+      url: U, method: 'POST', data: { action: 'erd_get', project_id: pid }, dataType: 'json',
+      success: function (r) {
+        if (book !== b) return;
+        if (!r || r.status !== 'success') return bad('erd', 'ERD');
+        var vers = r.versions || [], pick = bookPick(vers);
+        if (pick && r.erd && +r.erd.id !== +pick.id) {   // versi terakhir masih draft/review: ambil yang approved
+          $.ajax({
+            url: U, method: 'POST', data: { action: 'erd_get', project_id: pid, id: pick.id }, dataType: 'json',
+            success: function (r2) { if (book === b) bookFill('erd', r2 && r2.status === 'success' ? bookErd(b, r2, vers) : '<p class="bk-muted">The ERD could not be loaded.</p>'); },
+            error: function () { bad('erd', 'ERD'); }
+          });
+        } else bookFill('erd', bookErd(b, r, vers));
+      },
+      error: function () { bad('erd', 'ERD'); }
+    });
+  }
+  function bookMockup(b, r) {
+    var vers = r.versions || [], m = bookPick(vers);
+    if (!m) return '<p class="bk-muted">' + (b.design.mock.st === 'skip' ? 'This project does not need a mockup.' : 'No mockup has been made for this project yet.') + '</p>';
+    var okOn = m.status === 'approved' ? bookApprovedOn(r.reviews, m.id) : '';
+    return bookDzMeta(m, okOn || m.created_date) +
+      '<figure class="bk-photo" data-bk-open="mockup" title="Open the mockup">' + (m.status === 'review' || m.status === 'approved' || m.status === 'changes' ? bookDzInk(m.status, okOn) : '') +
+        '<div class="bk-shot" data-src="ajax_project_studio.php?action=mockup_raw&amp;id=' + (+m.id) + '"><span class="bk-shot-ph">' + escHtml(m.file_name || 'Mockup v' + m.version) + '</span></div>' +
+        (m.note ? '<figcaption>' + escHtml(m.note) + '</figcaption>' : '') +
+      '</figure>' + bookDzNext(vers[0], m) +
+      '<button type="button" class="bk-dz-btn" data-bk-open="mockup">Open the mockup</button>';
+  }
+  function bookErd(b, r, vers) {
+    var e = r.erd;
+    if (!e) return '<p class="bk-muted">' + (b.design.erd.st === 'skip' ? 'This project does not need an ERD.' : 'No ERD has been drawn for this project yet.') + '</p>';
+    var d = e.data || {}, ts = (d.tables || []).filter(function (t) { return t && Array.isArray(t.cols); }), rels = d.rels || [];
+    var neu = ts.filter(function (t) { return !t.old; }), old = ts.filter(function (t) { return t.old; });
+    var okOn = e.status === 'approved' ? bookApprovedOn(r.reviews, e.id) : '';
+    var cur = vers.filter(function (x) { return +x.id === +e.id; })[0] || e;
+    function list(arr, cls) {
+      return '<ul class="bk-tl' + cls + '">' + arr.map(function (t) { return '<li><span>' + escHtml(t.id) + '</span><i>' + t.cols.length + '</i></li>'; }).join('') + '</ul>';
+    }
+    return bookDzMeta(e, okOn || cur.updated_date || cur.created_date) +
+      (ts.length ? '<div class="bk-bp" data-bk-open="erd" title="Open the ERD">' + bookErdSvg(ts, rels) + (e.status !== 'draft' ? bookDzInk(e.status, okOn) : '') + '</div>' : '') +
+      '<div class="bk-dz-facts">' + neu.length + ' new &middot; ' + old.length + ' existing &middot; ' + rels.length + (rels.length === 1 ? ' relation' : ' relations') +
+        (neu.length ? '<br>' + (e.sql_run_date ? '<span class="bk-dz-ok">Migration run on production ' + fmtDate(String(e.sql_run_date).substring(0, 10)) + '</span>'
+                                               : '<span class="bk-dz-warn">Migration not run on production yet</span>') : '') + '</div>' +
+      (neu.length ? '<div class="bk-tl-h">New tables &middot; columns</div>' + list(neu, ' new') : '') +
+      (old.length ? '<div class="bk-tl-h">Existing tables used &middot; columns</div>' + list(old, '') : '') +
+      bookDzNext(vers[0], e) +
+      '<button type="button" class="bk-dz-btn" data-bk-open="erd">Open the ERD</button>';
+  }
+  // ERD mini: kotak tabel (emas = tabel baru) + garis relasi, ukuran sama dgn editor ERD
+  function bookErdSvg(ts, rels) {
+    var TW = 230, HH = 30, RH = 22, by = {}, x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    function th(t) { return HH + t.cols.length * RH + 6; }
+    ts.forEach(function (t) { by[t.id] = t; x0 = Math.min(x0, t.x); y0 = Math.min(y0, t.y); x1 = Math.max(x1, t.x + TW); y1 = Math.max(y1, t.y + th(t)); });
+    var pad = 24, w = x1 - x0 + pad * 2, named = w < 1300;
+    function anchor(t, col, side) {
+      var i = Math.max(0, t.cols.findIndex(function (c) { return c[0] === col; }));
+      return { x: side > 0 ? t.x + TW : t.x, y: t.y + HH + i * RH + RH / 2 };
+    }
+    var lines = rels.map(function (r) {
+      var a = by[r[0]], b = by[r[2]];
+      if (!a || !b) return '';
+      var s = (b.x + TW / 2) >= (a.x + TW / 2) ? 1 : -1;
+      if (Math.abs(a.x - b.x) < TW * 0.6) s = -1;
+      var p1 = anchor(a, r[1], s), p2 = anchor(b, r[3], Math.abs(a.x - b.x) < TW * 0.6 ? -1 : -s), dx = Math.max(40, Math.abs(p2.x - p1.x) / 2);
+      var c1 = p1.x + s * dx, c2 = Math.abs(a.x - b.x) < TW * 0.6 ? p2.x - dx : p2.x - s * dx;
+      return '<path d="M' + p1.x + ',' + p1.y + ' C' + c1 + ',' + p1.y + ' ' + c2 + ',' + p2.y + ' ' + p2.x + ',' + p2.y + '"/>';
+    }).join('');
+    var boxes = ts.map(function (t) {
+      var h = th(t), rows = '';
+      for (var i = 1; i < t.cols.length; i++) rows += '<line x1="' + t.x + '" x2="' + (t.x + TW) + '" y1="' + (t.y + HH + i * RH) + '" y2="' + (t.y + HH + i * RH) + '"/>';
+      return '<g class="t' + (t.old ? '' : ' new') + '"><rect x="' + t.x + '" y="' + t.y + '" width="' + TW + '" height="' + h + '" rx="6"/>' +
+        '<rect class="hd" x="' + t.x + '" y="' + t.y + '" width="' + TW + '" height="' + HH + '" rx="6"/>' + rows +
+        (named ? '<text x="' + (t.x + 10) + '" y="' + (t.y + 20) + '">' + escHtml(t.id) + '</text>' : '') + '</g>';
+    }).join('');
+    return '<svg viewBox="' + (x0 - pad) + ' ' + (y0 - pad) + ' ' + w + ' ' + (y1 - y0 + pad * 2) + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' + lines + boxes + '</svg>';
+  }
+  // panel mockup/ERD ada di Design Studio (di bawah buku), jadi bukunya dikembalikan dulu
+  function bookOpenStudio(kind) {
+    if (!book || !window.ProjectStudio) return;
+    var id = book.id;
+    closeBook(true);
+    if (kind === 'erd') ProjectStudio.openErd(id); else ProjectStudio.openMockup(id);
   }
 
   function bookLock(on) {
@@ -3415,7 +3646,7 @@ if ($hq) {
     if (book) closeBook(true);
     info = info || {};
     var el = ensureReader(), key = info.key || 'plan';
-    var b = book = { id: p.id, p: p, key: key, el: el, spread: 0, busy: true, fill: {}, pages: bookPages(p, key), prevFocus: document.activeElement };
+    var b = book = { id: p.id, p: p, key: key, el: el, spread: 0, busy: true, fill: {}, pages: bookPages(p, key), design: bookDesign(p), prevFocus: document.activeElement };
     bookLayout(false);
     var bk = el.querySelector('.bk-book'), cover = el.querySelector('.bk-cover'), left = el.querySelector('.bk-left');
     el.style.setProperty('--cv', info.cover || '#3a2418');
@@ -3727,7 +3958,7 @@ if ($hq) {
     pr.className = 'bk-print';
     pr.innerHTML = '<section class="bk-pp bk-pp-cover' + (plan ? ' blueprint' : '') + '"' + (plan ? '' : ' style="--cv:' + cv + ';"') + '>' +
       '<div class="bk-cover-front">' + bookCover(b.p, b.key) + '</div></section>' +
-      ['title', 'summary', 'tasks', 'history', 'card'].map(function (k) { return '<section class="bk-pp">' + b.pages[k] + '</section>'; }).join('');
+      ['title', 'summary', 'tasks', 'history'].concat(b.design ? ['mockup', 'erd'] : [], ['card']).map(function (k) { return '<section class="bk-pp">' + b.pages[k] + '</section>'; }).join('');
     $(pr).find('[data-bk-fill]').each(function () {
       var k = this.getAttribute('data-bk-fill');
       if (b.fill[k] != null) this.innerHTML = b.fill[k];
@@ -5357,7 +5588,7 @@ if ($hq) {
     $('#drawer-activity').html(html);
   }
 
-  $(function () { syncPerfToggle(); syncModeSwitch(); if (isMode3d()) start3d(false); followBookLink(); loadProjects(); });
+  $(function () { syncPerfToggle(); syncModeSwitch(); psInit(); if (isMode3d()) start3d(false); followBookLink(); loadProjects(); });
 </script>
 
 </body>
