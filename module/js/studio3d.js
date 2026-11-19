@@ -286,6 +286,7 @@ export function createWing(api) {
     tplate.position.set(0, .8, td / 2 + .07); tplate.userData = top.userData; c.pickables.push(tplate); tb.add(tplate);
     W.tilesG = new THREE.Group(); W.tilesG.position.y = .93; tb.add(W.tilesG);
     W.tw = tw - .12; W.td = td - .12;
+    W.tb = tb; W.twFull = tw + .16; W.tdFull = td + .16;   // ukuran luar meja (utk jalur programmer)
     c.addObs(tb, 0, 0, Math.max(tw, td) / 2 + .3);
     corners.push(tb.localToWorld(new THREE.Vector3(-tw / 2, 0, -td / 2)), tb.localToWorld(new THREE.Vector3(tw / 2, 1, td / 2)));
     const spot = new THREE.SpotLight('#ffe6bf', 16, 9, .75, .6, 1.4);
@@ -358,6 +359,26 @@ export function createWing(api) {
       else if (u.w === 'table') { if (W && W.cur) api.openErd(W.cur); else { const f = rows()[0]; if (f) api.openErd(f.id); } }
       else if (u.w === 'tile') api.openErd(u.pid, u.tid);
       else if (u.w === 'sign') { if (C && C.focusStudio) C.focusStudio(); }
+    },
+    // utk programmer yang berkeliling (library3d): titik berdiri di depan tiap easel &
+    // meja ERD (hot = menunggu persetujuan / sedang direvisi), plus bentuk persegi meja
+    // supaya jalurnya tidak menembus meja. Koordinat dunia.
+    nav() {
+      if (!W) return { spots: [], rects: [] };
+      const busy = s => s === 'review' || s === 'changes', spots = [];
+      Object.values(W.easels).forEach(b => {
+        const v = b.v; if (!v) return;
+        spots.push({ w: 'easel', pid: v.id, name: v.name, hot: busy(v.mock.st) || busy(v.erd.st),
+          stand: b.e.localToWorld(new THREE.Vector3(0, 0, 1.15)), look: b.e.localToWorld(new THREE.Vector3(0, 1.5, .1)) });
+      });
+      const tb = W.tb, rects = [];
+      if (tb) {
+        const cur = W.cur ? api.list().find(x => x.id === W.cur) : null, c = tb.localToWorld(new THREE.Vector3());
+        spots.push({ w: 'table', pid: cur ? cur.id : null, name: cur ? cur.name : '', hot: !!cur && busy(cur.erd.st),
+          stand: tb.localToWorld(new THREE.Vector3(0, 0, W.tdFull / 2 + .45)), look: tb.localToWorld(new THREE.Vector3(0, .93, 0)) });
+        rects.push({ x: c.x, z: c.z, rot: tb.rotation.y, hw: W.twFull / 2, hd: W.tdFull / 2 });
+      }
+      return { spots, rects };
     },
     // ringkasan untuk briefing Lucca perpustakaan (bahasa Indonesia)
     lucca() {

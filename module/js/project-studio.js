@@ -142,9 +142,18 @@
      KARTU PROJECT WORKFLOW (di bawah Delivery Performance, mode 3D saja)
      ====================================================================== */
   const ICON = { mockup: 'pencil-ruler', erd: 'project-diagram', code: 'code' };
+  // Kartu bisa dilipat (Show/Hide). Bawaan TERLIPAT (user 19 Nov 2026: "jangan langsung
+  // terlihat"); pilihan diingat per browser. Terlipat: judul + ringkasan + jumlah yang menunggu.
+  let flowOpen = false;
+  try { flowOpen = localStorage.getItem('projFlowOpen') === '1'; } catch (e) { /* abaikan */ }
   function renderCard() {
     const box = document.getElementById('ps-flow-card'); if (!box) return;
     const rows = list(), w = waitingCount();
+    const nMock = rows.filter(v => okSt(v.mock.st)).length, nErd = rows.filter(v => okSt(v.erd.st)).length;
+    const nCode = rows.filter(v => v.code === 'done').length, nSql = rows.filter(v => v.erd.st === 'approved' && v.erd.nNew > 0 && !v.erd.sqlRun).length;
+    const mini = `<span><b>${rows.length}</b> active project${rows.length === 1 ? '' : 's'}</span><span>Mockup <b>${nMock}/${rows.length}</b> approved</span>`
+      + `<span>ERD <b>${nErd}/${rows.length}</b> approved</span><span>Coding <b>${nCode}</b> done</span>${nSql ? `<span><b>${nSql}</b> SQL not run yet</span>` : ''}`;
+    box.classList.toggle('ps-closed', !flowOpen);
     const cell = (v, track) => {
       const t = track === 'mockup' ? v.mock : track === 'erd' ? v.erd : null;
       const st = t ? t.st : v.code;
@@ -155,17 +164,26 @@
       return `<div class="ps-trk${track === 'code' ? ' lock' : ''}" data-open="${track}" data-pid="${v.id}"><span class="ps-tic" style="color:${ST_COL[st]}"><i class="fas fa-${ICON[track]}"></i></span><div class="ps-meta">${chip(st, label)}${sub}</div></div>`;
     };
     box.innerHTML = `<div class="ps-fc-h"><span class="ps-ic"><i class="fas fa-tasks"></i></span><div><b>Project Workflow</b><div class="ps-sub">Every active project goes through three steps — Mockup, ERD, Coding. Coding follows the project status.</div></div>
-        <span class="ps-wait${w ? '' : ' ok'}"><i class="fas fa-${w ? 'hourglass-half' : 'check-circle'}"></i><b>${w}</b> waiting for your approval</span></div>
+        <div class="ps-fc-mini">${mini}</div>
+        <span class="ps-wait${w ? '' : ' ok'}"><i class="fas fa-${w ? 'hourglass-half' : 'check-circle'}"></i><b>${w}</b> waiting for your approval</span>
+        <button type="button" class="ps-fc-toggle" aria-expanded="${flowOpen}" aria-controls="ps-fc-body" title="${flowOpen ? 'Hide' : 'Show'} the project workflow"><span>${flowOpen ? 'Hide' : 'Show'}</span></button></div>
       ${S.ready === false ? '<div class="ps-notready"><i class="fas fa-database"></i><span>The Design Studio tables are not on the production database yet. Run <b>db_migrate_LIVE_20261117_project_studio.sql</b> first — until then nothing can be saved.</span></div>' : ''}
-      <div class="ps-tb-wrap"><table class="ps-tb"><thead><tr><th>Project</th><th><i class="fas fa-pencil-ruler"></i> Mockup</th><th><i class="fas fa-project-diagram"></i> ERD</th><th><i class="fas fa-code"></i> Coding</th><th>Progress</th></tr></thead><tbody>
+      <div class="ps-fc-body" id="ps-fc-body"><div class="ps-tb-wrap"><table class="ps-tb"><thead><tr><th>Project</th><th><i class="fas fa-pencil-ruler"></i> Mockup</th><th><i class="fas fa-project-diagram"></i> ERD</th><th><i class="fas fa-code"></i> Coding</th><th>Progress</th></tr></thead><tbody>
       ${rows.length ? rows.map(v => `<tr><td><span class="ps-pn">${esc(v.name)}</span><span class="ps-mod">${esc(v.module)}</span><span class="ps-pst">${esc(v.status)}${v.target ? ' · target ' + fmtD(v.target) : ''}${v.overdue ? ' · <b style="color:#dc2626">overdue</b>' : ''}</span></td>
         <td data-l="Mockup">${cell(v, 'mockup')}</td><td data-l="ERD">${cell(v, 'erd')}</td><td data-l="Coding">${cell(v, 'code')}</td>
         <td data-l="Progress"><div class="ps-bar"><span style="width:${pct(v)}%"></span></div><div class="ps-pct">${pct(v)}%</div></td></tr>`).join('')
         : '<tr><td colspan="5" class="ps-empty-row">No active project. Planned and On Progress projects appear here.</td></tr>'}
       </tbody></table></div>
-      <div class="ps-rule"><i class="fas fa-lock"></i><span>Coding is ready to start once the Mockup and the ERD are <b>Approved</b> (or marked <b>Not needed</b>). Click a Mockup or ERD cell to open it.</span></div>`;
+      <div class="ps-rule"><i class="fas fa-lock"></i><span>Coding is ready to start once the Mockup and the ERD are <b>Approved</b> (or marked <b>Not needed</b>). Click a Mockup or ERD cell to open it.</span></div></div>`;
   }
   document.addEventListener('click', e => {
+    if (e.target.closest('#ps-flow-card .ps-fc-toggle')) {
+      flowOpen = !flowOpen;
+      try { localStorage.setItem('projFlowOpen', flowOpen ? '1' : '0'); } catch (er) { /* abaikan */ }
+      renderCard();
+      const b = document.querySelector('#ps-flow-card .ps-fc-toggle'); if (b) b.focus();   // fokus keyboard tetap di tombol
+      return;
+    }
     const t = e.target.closest('#ps-flow-card .ps-trk[data-open]');
     if (!t || t.classList.contains('lock')) return;
     if (t.dataset.open === 'mockup') openMockup(+t.dataset.pid); else openErd(+t.dataset.pid);

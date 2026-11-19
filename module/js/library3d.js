@@ -41,7 +41,9 @@
  * selesai bulan ini), tanaman (layu kalau ada yang overdue), cuaca di
  * jendela (hujan/badai kalau ada yang overdue), kabar langsung dari rekan
  * (buku terbang ke rak), perayaan saat ada yang Done/Live (pita emas sehari).
- * Penghuni: programmer & kucing (pustakawan dihapus 17 Nov 2026). Bisa juga
+ * Penghuni: programmer & kucing (pustakawan dihapus 17 Nov 2026). Programmer
+ * sesekali berdiri & berkeliling memeriksa rak, easel mockup & meja ERD
+ * (devMaybeGo, sejak 18 Nov 2026); Lucca tetap berpatroli. Bisa juga
  * jalan-jalan (WASD). Di ujung kanan ada sudut Design Studio (mockup & ERD,
  * ../js/studio3d.js) kalau project.php memberikannya lewat opts.wing.
  *
@@ -60,6 +62,7 @@ var BT = 0.05;              // tebal papan
 var CROWN = 0.5;            // mahkota rak (tempat papan nama)
 var GAP = 0.3;              // celah antar rak
 var ARC_R = 16;             // jari-jari lengkung deretan rak
+var PERSON_STAND = 0.3;     // badan programmer naik segini saat berdiri (panjang paha)
 var MAX_MONTHS = 6;         // baris bulan paling banyak; yang lebih lama tidak digambar
 var SPINE_W = 64, SPINE_H = 256, ATLAS_COLS = 32;
 var HOME = { theta: 0.5, phi: 1.4 };   // sudut kamera awal: serong dari kanan
@@ -3105,6 +3108,8 @@ export function createLibrary(host, opts) {
         (sp.target_date ? ' &middot; due ' + esc(fmt(sp.target_date)) : '') + '</div><div class="c3-tip-go">Click to open the book</div>' : tipHead('#3b82f6', 'Monitors', 'All caught up');
     }
     if (t === 'dev') {
+      var dtr = room && room.dev && room.dev.trip;
+      if (dtr) return tipHead('#3b82f6', 'Developer on a round', esc(devTripLabel(dtr))) + '<div class="c3-tip-go">Click to say hi</div>';
       var dp = featured();
       return tipHead('#3b82f6', 'Developer at work', dp ? 'Busy coding ' + esc(dp.project_name) : 'On a coffee break') + '<div class="c3-tip-go">Click to say hi</div>';
     }
@@ -4500,8 +4505,9 @@ export function createLibrary(host, opts) {
     luccaGo(L, wp, m);
     L.spin = Math.max(L.spin, 2);
   }
-  // arahan ke pustakawan & programmer: garis data + paket, lalu mereka bereaksi
-  function luccaCommand(L, attn) {
+  // arahan ke pustakawan & programmer: garis data + paket, lalu mereka bereaksi.
+  // topId = buku paling mendesak: programmer lalu berjalan mengecek bukunya di rak.
+  function luccaCommand(L, attn, topId) {
     var tg = [];
     if (corner && corner.lib) {
       tg.push({ obj: corner.lib.head, react: function () {
@@ -4510,7 +4516,12 @@ export function createLibrary(host, opts) {
         if (attn) { lb.stampT = clock; sound.play('stamp'); } else lb.waveT = clock;
       } });
     }
-    if (room.dev && room.dev.head) tg.push({ obj: room.dev.head, react: function () { if (room && room.dev && room.dev.waveT == null) room.dev.waveT = clock; } });
+    if (room.dev && room.dev.head) tg.push({ obj: room.dev.head, react: function () {
+      var dv = room && room.dev;
+      if (!dv) return;
+      if (dv.waveT == null) dv.waveT = clock;
+      if (topId != null && !reduced) dv.queue = { id: topId };
+    } });
     L.cmd = { t0: clock, tg: tg };
   }
   function updateLucca(dt) {
@@ -4618,10 +4629,10 @@ export function createLibrary(host, opts) {
     }
     var pct = s.measured ? Math.round(s.onTime / s.measured * 100) : null;
     var deliv = s.doneMonth + ' project selesai bulan ini' + (pct != null ? ', ' + pct + '% tepat waktu secara keseluruhan.' : '.');
-    var cmd = top ? (ov ? 'Saya sudah menandainya di meja depan dan memberi tahu programmer.' : 'Saya sudah mengingatkan programmer.') : 'Semua sesuai jadwal. Saya akan terus mengawasi.';
+    var cmd = top ? (ov ? 'Saya sudah menandainya di meja depan dan memberi tahu programmer, dia akan mengecek bukunya di rak.' : 'Saya sudah mengingatkan programmer, dia akan mengecek bukunya di rak.') : 'Semua sesuai jadwal. Saya akan terus mengawasi.';
     var statusShort = ov ? '<b>' + ov + '</b> terlambat' + (ds ? ' &middot; <b>' + ds + '</b> jatuh tempo dalam 7 hari' : '') : ds ? 'Tidak ada yang terlambat &middot; <b>' + ds + '</b> jatuh tempo dalam 7 hari' : esc(status);
     var delivShort = '<b>' + s.doneMonth + '</b> selesai bulan ini' + (pct != null ? ' &middot; <b>' + pct + '%</b> tepat waktu' : '');
-    var cmdShort = top ? (ov ? 'Sudah ditandai di meja depan &middot; programmer sudah diberi tahu' : 'Programmer sudah diingatkan') : 'Semua sesuai jadwal &middot; terus diawasi';
+    var cmdShort = top ? (ov ? 'Sudah ditandai di meja depan &middot; programmer mengeceknya ke rak' : 'Programmer sudah diingatkan &middot; dia mengeceknya ke rak') : 'Semua sesuai jadwal &middot; terus diawasi';
     var studio = wing && wing.lucca ? wing.lucca() : null;   // mockup & ERD di sudut Design Studio
     return { greet: greet, status: status, top: top, topPlain: topPlain, topHtml: topHtml, deliv: deliv, cmd: cmd, statusShort: statusShort, delivShort: delivShort, cmdShort: cmdShort, studio: studio };
   }
@@ -4663,7 +4674,7 @@ export function createLibrary(host, opts) {
     L.talkUntil = clock + Math.min(9000, say.length * 55);
     L.spin = Math.max(L.spin, 1.5);
     sound.play('lucca');
-    luccaCommand(L, !!r.top);
+    luccaCommand(L, !!r.top, r.top ? r.top.id : null);
     if (sound.isOn()) speak(say);
     announce('Lucca: ' + say);
   }
@@ -4997,7 +5008,22 @@ export function createLibrary(host, opts) {
     dv.torso = pp.torso;
     dv.head = pp.head;
     dv.shL = pp.shL; dv.shR = pp.shR; dv.elL = pp.elL; dv.elR = pp.elR;
+    dv.lift = pp.lift; dv.hipL = pp.hipL; dv.hipR = pp.hipR; dv.kneeL = pp.kneeL; dv.kneeR = pp.kneeR;
     [pp.torso, pp.headMesh, pp.hair].forEach(function (m) { m.userData = { kind: 'dev', ci: -1 }; pickables.push(m); });
+    // berkeliling memeriksa rak, easel mockup & meja ERD (lihat devMaybeGo)
+    dv.ws = ws;
+    dv.chair = ch;
+    dv.trip = null;
+    dv.queue = null;
+    dv.round = -1;
+    dv.nextTrip = clock + 15000 + Math.random() * 10000;
+    dv.bubble = new THREE.Sprite(track(new THREE.SpriteMaterial({ transparent: true, depthWrite: false, opacity: 0 })));
+    dv.bubble.scale.set(0.26, 0.26, 1);
+    dv.bubble.visible = false;
+    dv.bubbleT = null;
+    dv.okTex = track(bubbleTex('✓', '#10b981'));
+    dv.warnTex = track(bubbleTex('!', '#f59e0b'));
+    ws.add(dv.bubble);
     addObs(ws, 0, 0, 1.15);
     addObs(ws, -0.1, 0.62, 0.45);
 
@@ -5019,33 +5045,45 @@ export function createLibrary(host, opts) {
   function featured() { var dv = room && room.dev; return dv ? dv.list[dv.idx] : null; }
   function updateDev(dv, dt, now) {
     var ts = clock / 1000;
+    // berkeliling (berdiri, berjalan, memeriksa) - tangan & kepala diatur devTrip
+    if (dv.trip) devTrip(dv, dt);
+    else if (dv.queue || clock > dv.nextTrip) devMaybeGo(dv);
+    var away = !!dv.trip, a0 = away ? 0 : 0.6, a1 = away ? 0 : 0.22, e0 = away ? 0.3 : 1.0;   // pose dasar tangan: berjalan / mengetik
     // mengetik / melambai
     if (dv.cheerT != null) {
       // bersorak: dua tangan ke atas, badan melompat kecil
       var c2 = (clock - dv.cheerT) / 1000, cu = Math.min(1, c2 * 4) * Math.min(1, Math.max(0, (2.6 - c2) * 3));
-      dv.shR.rotation.set(0.6 * (1 - cu), 0.22 * (1 - cu), 2.6 * cu, 'YXZ');
-      dv.shL.rotation.set(0.6 * (1 - cu), -0.22 * (1 - cu), -2.6 * cu, 'YXZ');
-      dv.elR.rotation.x = dv.elL.rotation.x = 1.0 * (1 - cu) + cu * (0.25 + 0.2 * Math.sin(c2 * 14));
+      dv.shR.rotation.set(a0 * (1 - cu), a1 * (1 - cu), 2.6 * cu, 'YXZ');
+      dv.shL.rotation.set(a0 * (1 - cu), -a1 * (1 - cu), -2.6 * cu, 'YXZ');
+      dv.elR.rotation.x = dv.elL.rotation.x = e0 * (1 - cu) + cu * (0.25 + 0.2 * Math.sin(c2 * 14));
       dv.body.position.y = 0.05 * Math.abs(Math.sin(c2 * 9)) * cu;
       if (c2 > 2.6) {
         dv.cheerT = null;
-        dv.shR.rotation.set(0.6, 0.22, 0, 'YXZ');
-        dv.shL.rotation.set(0.6, -0.22, 0, 'YXZ');
+        dv.shR.rotation.set(a0, a1, 0, 'YXZ');
+        dv.shL.rotation.set(a0, -a1, 0, 'YXZ');
         dv.body.position.y = 0;
       }
     } else if (dv.waveT != null) {
       var wt = (clock - dv.waveT) / 1000, up = Math.min(1, wt * 4) * Math.min(1, Math.max(0, (1.9 - wt) * 4));
-      dv.shR.rotation.set(0.6 * (1 - up), 0.22 * (1 - up), 2.5 * up, 'YXZ');
-      dv.elR.rotation.x = 1.0 * (1 - up) + up * (0.35 + 0.4 * Math.sin(wt * 12));
-      dv.elL.rotation.x = 1.0;
+      dv.shR.rotation.set(a0 * (1 - up), a1 * (1 - up), 2.5 * up, 'YXZ');
+      dv.elR.rotation.x = e0 * (1 - up) + up * (0.35 + 0.4 * Math.sin(wt * 12));
+      if (!away) dv.elL.rotation.x = 1.0;
       dv.head.rotation.y = -1.0 * up;
-      if (wt > 1.9) { dv.waveT = null; dv.shR.rotation.set(0.6, 0.22, 0, 'YXZ'); }
-    } else {
+      if (wt > 1.9) { dv.waveT = null; dv.shR.rotation.set(a0, a1, 0, 'YXZ'); }
+    } else if (!away) {
       dv.elL.rotation.x = 1.0 + 0.07 * Math.max(0, Math.sin(ts * 17));
       dv.elR.rotation.x = 1.0 + 0.07 * Math.max(0, Math.sin(ts * 17 + 2.1));
       dv.head.rotation.y = (Math.sin(ts * 0.13) > 0.55 ? 0.32 : 0) * Math.min(1, Math.abs(Math.sin(ts * 0.13)) * 2);
     }
-    dv.head.rotation.x = 0.04 * Math.sin(ts * 0.8);
+    if (!away) dv.head.rotation.x = 0.04 * Math.sin(ts * 0.8);
+    // gelembung hasil periksa di atas kepala (centang hijau / tanda seru kuning)
+    if (dv.bubbleT != null) {
+      var bt = (clock - dv.bubbleT) / 1800;
+      dv.bubble.visible = bt < 1;
+      dv.bubble.position.set(dv.body.position.x, 1.95 + bt * 0.15, dv.body.position.z);
+      dv.bubble.material.opacity = Math.min(1, bt * 6) * Math.min(1, (1 - bt) * 4);
+      if (bt >= 1) dv.bubbleT = null;
+    }
     dv.torso.scale.y = 1 + 0.012 * Math.sin(ts * 1.6);
     // uap kopi
     for (var k = 0; k < dv.steam.length; k++) {
@@ -5066,6 +5104,7 @@ export function createLibrary(host, opts) {
     if (now - dv.tick > step) {
       dv.tick = now;
       dv.blink = !dv.blink;
+      if (away) { drawCode(dv, dv.blink); return; }   // sedang berkeliling: ketikan berhenti
       if (dv.typed < dv.total) {
         dv.typed = Math.min(dv.total, dv.typed + 3 + Math.floor(Math.random() * 6));
         if (dv.cheerT == null) sound.play('key');   // ketikan pelan (kalau suara nyala)
@@ -5076,22 +5115,297 @@ export function createLibrary(host, opts) {
     }
   }
 
+  // ---- programmer berkeliling ----------------------------------------------
+  // Sesekali (dan sesudah diberi arahan Lucca) programmer berdiri, memutari
+  // mejanya, lalu berjalan memeriksa bergiliran: rak project, easel mockup,
+  // meja ERD. Yang perlu perhatian (terlambat / menunggu persetujuan) lebih
+  // sering dipilih. Lucca tetap berpatroli sendiri seperti biasa.
+  // Jalurnya: grid lantai 25 cm, cari jalan (BFS) yang menjauhi rintangan,
+  // lalu diluruskan supaya jalannya tidak zig-zag.
+  var NAV_GAP = 0.28;   // jarak badan dari rintangan
+  function angDiff(a, b) {   // selisih sudut terpendek dari a ke b
+    var d = (b - a) % (Math.PI * 2);
+    if (d > Math.PI) d -= Math.PI * 2;
+    if (d < -Math.PI) d += Math.PI * 2;
+    return d;
+  }
+  function bubbleTex(ch, col) {
+    var c = document.createElement('canvas');
+    c.width = c.height = 128;
+    var g = c.getContext('2d');
+    g.fillStyle = col;
+    g.beginPath(); g.arc(64, 64, 54, 0, Math.PI * 2); g.fill();
+    g.lineWidth = 8; g.strokeStyle = '#ffffff'; g.stroke();
+    g.fillStyle = '#ffffff'; g.font = '700 74px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(ch, 64, 70);
+    var t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    return t;
+  }
+  // rintangan utk pencari jalan: lingkaran mode jalan-jalan + persegi meja ERD + kaki tangga
+  function navWorld() {
+    var nav = wing && wing.nav ? wing.nav() : null, rects = nav ? nav.rects : [];
+    var circ = walkObs.filter(function (o) {   // lingkaran meja ERD diganti bentuk persegi aslinya
+      return !rects.some(function (r) { return Math.abs(o.x - r.x) < 0.05 && Math.abs(o.z - r.z) < 0.05; });
+    });
+    var lc = cases[cases.length - 1];
+    if (lc) {
+      var lv = lc.group.localToWorld(new THREE.Vector3(CW / 2 - 0.42, 0, CD / 2 + 0.8));
+      circ.push({ x: lv.x, z: lv.z, r: 0.45 });
+    }
+    return { rects: rects, circ: circ, spots: nav ? nav.spots : [] };
+  }
+  function navFree(N, x, z) {
+    if (Math.hypot(x, z - ARC_R) > ARC_R - CD / 2 - 0.5) return false;   // terlalu dekat rak / dinding lengkung
+    if (x < walkLim.x0 || x > walkLim.x1 || z > walkLim.z1) return false;
+    for (var i = 0; i < N.circ.length; i++) {
+      var o = N.circ[i];
+      if (Math.hypot(x - o.x, z - o.z) < o.r + NAV_GAP) return false;
+    }
+    for (i = 0; i < N.rects.length; i++) {
+      var r = N.rects[i], ux = x - r.x, uz = z - r.z, c = Math.cos(r.rot), s = Math.sin(r.rot);
+      if (Math.abs(c * ux - s * uz) < r.hw + NAV_GAP && Math.abs(s * ux + c * uz) < r.hd + NAV_GAP) return false;
+    }
+    return true;
+  }
+  // jalur dari a ke b (koordinat dunia, y diabaikan) -> [{x,z}, ...] atau null
+  function navPath(N, a, b) {
+    var S = 0.25, x0 = Math.max(walkLim.x0, -40), x1 = Math.min(walkLim.x1, 40), z0 = 0.3, z1 = Math.min(walkLim.z1, 30);
+    var nx = Math.floor((x1 - x0) / S) + 1, nz = Math.floor((z1 - z0) / S) + 1, n = nx * nz, i, j, k;
+    if (nx < 2 || nz < 2) return null;
+    var ok = new Uint8Array(n);
+    for (j = 0; j < nz; j++) for (i = 0; i < nx; i++) ok[j * nx + i] = navFree(N, x0 + i * S, z0 + j * S) ? 1 : 0;
+    function cellOf(p) { return { x: x0 + (p % nx) * S, z: z0 + Math.floor(p / nx) * S }; }
+    function near(p) {   // sel bebas terdekat (titik awal/akhir boleh sedikit di dalam rintangan)
+      var best = -1, bd = 9;
+      for (var q = 0; q < n; q++) {
+        if (!ok[q]) continue;
+        var cq = cellOf(q), d = (cq.x - p.x) * (cq.x - p.x) + (cq.z - p.z) * (cq.z - p.z);
+        if (d < bd) { bd = d; best = q; }
+      }
+      return best;
+    }
+    var s0 = near(a), g0 = near(b);
+    if (s0 < 0 || g0 < 0) return null;
+    var prev = new Int32Array(n).fill(-1), queue = [s0], h = 0;
+    prev[s0] = s0;
+    while (h < queue.length && prev[g0] < 0) {
+      k = queue[h++];
+      var ci = k % nx, cj = (k - ci) / nx;
+      for (var dj = -1; dj <= 1; dj++) {
+        for (var di = -1; di <= 1; di++) {
+          var ii = ci + di, jj = cj + dj, m = jj * nx + ii;
+          if ((!di && !dj) || ii < 0 || jj < 0 || ii >= nx || jj >= nz || !ok[m] || prev[m] >= 0) continue;
+          if (di && dj && (!ok[cj * nx + ii] || !ok[jj * nx + ci])) continue;   // jangan memotong sudut rintangan
+          prev[m] = k;
+          queue.push(m);
+        }
+      }
+    }
+    if (prev[g0] < 0) return null;
+    var cells = [];
+    for (k = g0; ; k = prev[k]) { cells.push(cellOf(k)); if (k === s0) break; }
+    cells.reverse();
+    // diluruskan: dari tiap titik lompat ke titik terjauh yang masih bisa dicapai lurus
+    function okAt(x, z) {
+      var ix = Math.round((x - x0) / S), iz = Math.round((z - z0) / S);
+      return ix >= 0 && iz >= 0 && ix < nx && iz < nz && ok[iz * nx + ix] === 1;
+    }
+    function lurus(p, r) {
+      var st = Math.ceil(Math.hypot(r.x - p.x, r.z - p.z) / 0.1);
+      for (var t = 1; t < st; t++) if (!okAt(p.x + (r.x - p.x) * t / st, p.z + (r.z - p.z) * t / st)) return false;
+      return true;
+    }
+    var out = [{ x: a.x, z: a.z }, cells[0]], cur = 0;
+    while (cur < cells.length - 1) {
+      var far = cur + 1;
+      for (var t2 = cells.length - 1; t2 > cur + 1; t2--) if (lurus(cells[cur], cells[t2])) { far = t2; break; }
+      out.push(cells[far]);
+      cur = far;
+    }
+    out.push({ x: b.x, z: b.z });
+    return out.filter(function (p, q) { return q === 0 || Math.hypot(p.x - out[q - 1].x, p.z - out[q - 1].z) > 0.05; });
+  }
+  // yang bisa diperiksa: tiap rak + titik dari sudut Design Studio (easel & meja ERD)
+  function devTargets(N) {
+    var out = [];
+    cases.forEach(function (c, ci) {
+      var bs = books.filter(function (m) { return m.userData.ci === ci; }), hot = bs.filter(luccaHot);
+      out.push({ w: 'shelf', ci: ci, name: c.lane.name, hot: hot.length > 0, books: hot.length ? hot : bs,
+        stand: c.group.localToWorld(new THREE.Vector3(0, 0, CD / 2 + 0.95)), look: c.group.localToWorld(new THREE.Vector3(0, 1.3, CD / 2)) });
+    });
+    return out.concat(N.spots || []);
+  }
+  // bergiliran rak -> easel -> meja ERD; yang perlu perhatian lebih sering dipilih
+  function devPick(dv, all) {
+    if (!all.length) return null;
+    var kinds = all.some(function (t) { return t.w !== 'shelf'; }) ? ['shelf', 'easel', 'table'] : ['shelf'];
+    dv.round = (dv.round + 1) % kinds.length;
+    var pool = all.filter(function (t) { return t.w === kinds[dv.round]; });
+    if (!pool.length) pool = all;
+    var hot = pool.filter(function (t) { return t.hot; }), list = hot.length && Math.random() < 0.65 ? hot : pool;
+    return list[Math.floor(Math.random() * list.length)];
+  }
+  function devMaybeGo(dv) {
+    if (walk || tour || intro || !built || dv.cheerT != null || dv.waveT != null) return;
+    dv.nextTrip = clock + 35000 + Math.random() * 35000;
+    var N = navWorld(), all = devTargets(N), t = null, fast = false;
+    if (dv.queue) {   // arahan Lucca: periksa buku yang paling mendesak di raknya
+      var id = String(dv.queue.id);
+      dv.queue = null;
+      var bm = books.filter(function (b) { return String(b.userData.p.id) === id && b.userData.ci >= 0 && b.userData.ci < cases.length; })[0];
+      var st = bm ? all.filter(function (x) { return x.w === 'shelf' && x.ci === bm.userData.ci; })[0] : null;
+      if (st) { t = Object.assign({}, st, { books: [bm], hot: true }); fast = true; }
+    }
+    if (!t) t = devPick(dv, all);
+    if (t) devGo(dv, t, N, fast);
+  }
+  function devGo(dv, t, N, fast) {
+    var ws = dv.ws;
+    ws.updateMatrixWorld(true);
+    t = Object.assign({}, t);
+    if (t.w === 'shelf' && t.books && t.books.length) {   // berdiri tepat di depan bukunya
+      t.book = t.books[Math.floor(Math.random() * t.books.length)];
+      var bw = t.book.getWorldPosition(new THREE.Vector3()), cg = cases[t.ci].group, bl = cg.worldToLocal(bw.clone());
+      t.stand = cg.localToWorld(new THREE.Vector3(clamp(bl.x, -CW / 2 + 0.35, CW / 2 - 0.35), 0, CD / 2 + 0.95));
+      t.look = bw;
+    }
+    var side = ws.worldToLocal(t.stand.clone()).x >= 0 ? 1 : -1;
+    var rise = new THREE.Vector3(-0.1, 0, 0.8), exit = new THREE.Vector3(-0.1 + side * 0.75, 0, 0.95);   // keluar di samping kursi
+    var pw = navPath(N, ws.localToWorld(exit.clone()), t.stand);
+    if (!pw) return false;
+    var path = [rise, exit].concat(pw.slice(1).map(function (p) { var v = ws.worldToLocal(new THREE.Vector3(p.x, 0, p.z)); v.y = 0; return v; }));
+    dv.trip = { t: t, stage: 'up', t0: clock, path: path, speed: fast ? 1.35 : 1.0, yaw: 0, ph: 0, lookL: ws.worldToLocal(t.look.clone()), bub: false };
+    devMeasure(dv.trip);
+    return true;
+  }
+  function devMeasure(tr) {
+    tr.len = [0];
+    for (var k = 1; k < tr.path.length; k++) tr.len.push(tr.len[k - 1] + tr.path[k].distanceTo(tr.path[k - 1]));
+    tr.s = 0;
+  }
+  // kaki & tangan: amp 0 = berdiri diam, 1 = melangkah
+  function devLegs(dv, ph, amp) {
+    var s = Math.sin(ph), c = Math.cos(ph);
+    dv.lift.position.y = PERSON_STAND - 0.02 * amp * Math.abs(s);
+    dv.hipL.rotation.x = 0.42 * s * amp;
+    dv.hipR.rotation.x = -0.42 * s * amp;
+    dv.kneeL.rotation.x = -0.75 * Math.max(0, c) * amp;   // lutut menekuk saat kaki diayun ke depan
+    dv.kneeR.rotation.x = -0.75 * Math.max(0, -c) * amp;
+    dv.shL.rotation.set(-0.36 * s * amp, 0, -0.07, 'YXZ');
+    dv.shR.rotation.set(0.36 * s * amp, 0, 0.07, 'YXZ');
+    dv.elL.rotation.x = dv.elR.rotation.x = 0.3;
+  }
+  function devTrip(dv, dt) {
+    var tr = dv.trip, root = dv.body, ts = clock / 1000, k, e;
+    // berdiri dari kursi / duduk kembali
+    if (tr.stage === 'up' || tr.stage === 'down') {
+      k = clamp((clock - tr.t0) / 900, 0, 1);
+      if (tr.stage === 'down') tr.yaw += angDiff(tr.yaw, 0) * Math.min(1, dt * 9);   // menghadap meja lagi
+      e = easeInOutCubic(tr.stage === 'up' ? k : 1 - k);   // 0 = duduk, 1 = berdiri
+      dv.lift.position.y = PERSON_STAND * e;
+      dv.hipL.rotation.x = dv.hipR.rotation.x = Math.PI / 2 * (1 - e);
+      dv.kneeL.rotation.x = dv.kneeR.rotation.x = -Math.PI / 2 * (1 - e);
+      dv.shL.rotation.set(0.6 * (1 - e), -0.22 * (1 - e), -0.07 * e, 'YXZ');
+      dv.shR.rotation.set(0.6 * (1 - e), 0.22 * (1 - e), 0.07 * e, 'YXZ');
+      dv.elL.rotation.x = dv.elR.rotation.x = 1.0 * (1 - e) + 0.3 * e;
+      dv.head.rotation.set(0.04 * Math.sin(ts * 0.8), 0, 0);
+      root.position.set(-0.1, 0, 0.62 + 0.18 * e);   // mundur dari meja
+      dv.chair.position.z = 0.62 + 0.43 * e;          // kursinya terdorong ke belakang
+      root.rotation.y = tr.yaw;
+      if (k >= 1) {
+        if (tr.stage === 'up') tr.stage = 'go';
+        else {
+          dv.trip = null;
+          root.rotation.y = 0;
+          dv.nextTrip = Math.max(dv.nextTrip, clock + 30000 + Math.random() * 30000);
+        }
+      }
+      return;
+    }
+    // berjalan menyusuri jalur (pergi / pulang)
+    if (tr.stage === 'go' || tr.stage === 'back') {
+      var tot = tr.len[tr.len.length - 1];
+      tr.s = Math.min(tot, tr.s + tr.speed * dt);
+      var seg = 1;
+      while (seg < tr.len.length - 1 && tr.len[seg] < tr.s) seg++;
+      var A = tr.path[seg - 1], B = tr.path[seg], sl = tr.len[seg] - tr.len[seg - 1], f = sl > 1e-4 ? (tr.s - tr.len[seg - 1]) / sl : 1;
+      root.position.set(A.x + (B.x - A.x) * f, 0, A.z + (B.z - A.z) * f);
+      if (sl > 1e-4) tr.yaw += angDiff(tr.yaw, Math.atan2(-(B.x - A.x), -(B.z - A.z))) * Math.min(1, dt * 7);
+      root.rotation.y = tr.yaw;
+      tr.ph += tr.speed * dt * Math.PI * 2 / 1.25;
+      devLegs(dv, tr.ph, clamp(Math.min(tr.s, tot - tr.s) / 0.35, 0.3, 1));
+      dv.head.rotation.set(-0.06, 0, 0);
+      if (tr.s >= tot - 1e-4) {
+        tr.t0 = clock;
+        if (tr.stage === 'go') tr.stage = 'look';
+        else tr.stage = 'down';
+      }
+      return;
+    }
+    // memeriksa: menghadap sasaran, kepala menyapu, tangan menunjuk, lalu gelembung hasil
+    var lt = (clock - tr.t0) / 1000, L = tr.lookL, px = root.position.x, pz = root.position.z;
+    tr.yaw += angDiff(tr.yaw, Math.atan2(-(L.x - px), -(L.z - pz))) * Math.min(1, dt * 5);
+    root.rotation.y = tr.yaw;
+    devLegs(dv, 0, 0);
+    dv.head.rotation.set(clamp(Math.atan2(L.y - 1.55, Math.hypot(L.x - px, L.z - pz)), -0.45, 0.55), 0.3 * Math.sin(lt * 1.5) * Math.min(1, lt), 0, 'YXZ');
+    var pt = clamp(Math.min((lt - 1.0) * 4, (2.8 - lt) * 4), 0, 1);
+    dv.shR.rotation.set(1.25 * pt, 0, 0.07 + 0.1 * pt, 'YXZ');
+    dv.elR.rotation.x = 0.3 - 0.22 * pt;
+    var bm = tr.t.book;
+    if (bm && lt < 4) bm.userData.lift = Math.max(bm.userData.lift || 0, 0.6);   // bukunya sedikit ditarik keluar
+    if (lt > 3 && !tr.bub) {
+      tr.bub = true;
+      dv.bubble.material.map = tr.t.hot ? dv.warnTex : dv.okTex;
+      dv.bubble.material.needsUpdate = true;
+      dv.bubbleT = clock;
+      sound.play('tick');
+    }
+    if (lt >= 4.6) {
+      if (bm && bm !== hovered && (!found || found.mesh !== bm)) bm.userData.lift = 0;
+      tr.stage = 'back';
+      tr.path = tr.path.slice().reverse();
+      devMeasure(tr);
+    }
+  }
+  // teks tooltip saat programmer sedang berkeliling
+  function devTripLabel(tr) {
+    var t = tr.t, what = t.w === 'easel' ? 'the mockup of ' + t.name : t.w === 'table' ? (t.name ? 'the ERD of ' + t.name : 'the ERD table')
+      : t.book ? t.book.userData.p.project_name + ' (' + t.name + ' shelf)' : 'the ' + t.name + ' shelf';
+    return tr.stage === 'up' ? 'Getting up to check ' + what : tr.stage === 'go' ? 'Walking to ' + what : tr.stage === 'look' ? 'Checking ' + what : 'Heading back to the desk';
+  }
+
   // ---- figur orang sederhana (duduk, menghadap -z) ---------------------------
-  // Dipakai programmer & pustakawan. cfg: bahan (top/bottom/shoes/skin/hair)
-  // & ciri (hood, bun, glasses, smile, headphones). Kembalian: bagian yang
-  // dianimasikan (bahu/siku kiri-kanan, kepala, badan).
+  // Dipakai programmer. cfg: bahan (top/bottom/shoes/skin/hair) & ciri (hood,
+  // bun, glasses, smile, headphones). Kembalian: bagian yang dianimasikan
+  // (bahu/siku, pinggul/lutut kiri-kanan, kepala, badan, `lift`).
+  // Pose awal = duduk. Berdiri: lift.y = PERSON_STAND, pinggul & lutut = 0.
   function makePerson(cfg) {
-    var P = {}, pe = new THREE.Group();
+    var P = {}, pe = new THREE.Group(), body = new THREE.Group();
     function mk(geo, mat, x, y, z) { var m = new THREE.Mesh(geo, mat); m.position.set(x || 0, y || 0, z || 0); return m; }
     function box(w, h, d, mat, x, y, z) { var m = mk(unitBox, mat, x, y, z); m.scale.set(w, h, d); return m; }
     function cap(r, len) { return track(new THREE.CapsuleGeometry(r, len, 4, 12)); }
     P.root = pe;
-    pe.add(box(0.34, 0.14, 0.3, cfg.bottom, 0, 0.57, 0.04));
-    [-1, 1].forEach(function (sx) {
-      var th = mk(cap(0.068, 0.26), cfg.bottom, sx * 0.095, 0.6, -0.14);
-      th.rotation.x = Math.PI / 2;
-      pe.add(th, mk(cap(0.055, 0.3), cfg.bottom, sx * 0.095, 0.34, -0.32), box(0.1, 0.07, 0.22, cfg.shoes, sx * 0.095, 0.035, -0.38));
-    });
+    P.lift = body;
+    pe.add(body);
+    body.add(box(0.34, 0.14, 0.3, cfg.bottom, 0, 0.57, 0.04));
+    // kaki bersendi: pinggul (paha) -> lutut (betis + sepatu)
+    function leg(sx) {
+      var hip = new THREE.Group();
+      hip.position.set(sx * 0.095, 0.6, 0);
+      hip.rotation.x = Math.PI / 2;   // duduk: paha ke depan
+      body.add(hip);
+      hip.add(mk(cap(0.068, 0.26), cfg.bottom, 0, -0.14, 0));
+      var knee = new THREE.Group();
+      knee.position.y = -0.3;
+      knee.rotation.x = -Math.PI / 2;   // duduk: betis tegak ke bawah
+      hip.add(knee);
+      knee.add(mk(cap(0.055, 0.3), cfg.bottom, 0, -0.26, -0.02), box(0.1, 0.07, 0.22, cfg.shoes, 0, -0.565, -0.08));
+      return { hip: hip, knee: knee };
+    }
+    var lgL = leg(-1), lgR = leg(1);
+    P.hipL = lgL.hip; P.hipR = lgR.hip; P.kneeL = lgL.knee; P.kneeR = lgR.knee;
+    pe = body;   // bagian atas badan ikut naik saat berdiri
     var torso = mk(cap(0.15, 0.26), cfg.top, 0, 0.83, 0.07);
     torso.scale.set(1.25, 1, 0.8);
     torso.rotation.x = -0.1;
