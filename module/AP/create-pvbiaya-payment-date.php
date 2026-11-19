@@ -222,6 +222,7 @@ if ($qSup) { while ($r = mysqli_fetch_assoc($qSup)) { $supplierList[] = $r['nama
 
 <script src="../vendor/jquery/jquery.min.js"></script>
 <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
 <script language="JavaScript" src="../css/4.1.1/select2.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
@@ -256,10 +257,27 @@ function lolos(t) {
 var hariIni = '<?php echo date("Y-m-d"); ?>';
 
 /* ---------------------------------------------------------------------------
-   Mencari. Barisnya digambar ulang seluruhnya tiap kali - tidak ada
-   DataTables di sini, jadi tidak ada baris yang tersembunyi di halaman lain
-   dan tombol Save selalu melihat SEMUA baris yang tercentang.
+   TABELNYA DIPAGING 10 BARIS (permintaan pemakai 19 Nov 2026), dan itu
+   membawa satu bahaya yang harus dijaga: DataTables MENCABUT baris halaman
+   lain dari halaman web. Kalau tombol Save membaca $('#isi-tabel tr') spt
+   dulu, yang terbaca cuma 10 baris yang sedang terlihat - centang dan isian
+   di halaman lain HILANG tanpa pesan apa pun.
+
+   Penangkalnya satu alat bantu: semuaBaris(). DataTables menyimpan SELURUH
+   elemen barisnya (rows().nodes()), termasuk yang sedang tidak ditampilkan,
+   dan isian <input> di dalamnya tetap memegang nilainya. Jadi setiap
+   pekerjaan yang menyangkut SEMUA baris - menghitung total, centang semua,
+   mengalirkan Description, dan menyimpan - WAJIB lewat semuaBaris(), bukan
+   lewat pencarian di dalam #isi-tabel.
    --------------------------------------------------------------------------- */
+var pvbTabel = null;
+
+function semuaBaris() {
+  /* Sebelum tabelnya dibangun (atau waktu hasilnya kosong), jatuh ke isi
+     halaman apa adanya - jadi alat ini aman dipanggil kapan saja. */
+  return pvbTabel ? $(pvbTabel.rows().nodes()) : $('#isi-tabel tr');
+}
+
 $('#btn-cari').on('click', function () {
   var $w = $('#pvbLoad').addClass('is-loading');
   $('#app-info').text('Searching...');
@@ -292,6 +310,9 @@ $('#btn-cari').on('click', function () {
 });
 
 function gambar(data) {
+  /* DataTables lama DIBONGKAR dulu - kalau tidak, ia masih memegang elemen
+     baris pencarian sebelumnya dan barisnya akan tercampur. */
+  if (pvbTabel) { pvbTabel.destroy(); pvbTabel = null; }
   var $b = $('#isi-tabel').empty();
   if (!data.length) {
     $b.append('<tr><td colspan="12" class="text-center text-muted" style="padding:18px;">No outstanding payment voucher in that period.</td></tr>');
@@ -336,8 +357,23 @@ function gambar(data) {
   });
 
   /* Datepicker dipasang SESUDAH barisnya ada - isian yang belum lahir tidak
-     bisa diikat. */
+     bisa diikat. Dipasang SEBELUM DataTables, selagi seluruh baris masih di
+     halaman; sesudah dipaging, baris halaman lain tidak bisa dicari lagi
+     lewat $('#isi-tabel ...'). Ikatannya menempel pada elemennya, jadi tetap
+     hidup waktu barisnya dipasang kembali di halaman berikutnya. */
   $('#isi-tabel .tanggal').datepicker({ format: 'dd M yyyy', autoclose: true, todayHighlight: true });
+
+  pvbTabel = $('#table-pv').DataTable({
+    pageLength: 10,
+    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']],
+    /* Urutannya dari server (jatuh tempo lalu nomor) dan itu yang diharapkan
+       pemakai, jadi pengurutan kolom dimatikan - sekalian supaya kepala
+       kolomnya tidak bergeser. */
+    ordering: false,
+    autoWidth: false,
+    language: { emptyTable: 'No outstanding payment voucher in that period.' }
+  });
+
   $('#pilih-semua').prop('checked', false);
   hitung();
 }
@@ -346,7 +382,7 @@ function gambar(data) {
    baru dicentang sesudahnya. Yang centangnya dilepas dikosongkan lagi. */
 function alirkanDeskripsi($tr) {
   var teks = $('#keterangan').val();
-  var sasaran = $tr ? $tr : $('#isi-tabel tr');
+  var sasaran = $tr ? $tr : semuaBaris();
   sasaran.each(function () {
     var $t = $(this);
     if ($t.find('.pilih').prop('checked')) { $t.find('.in-ket').val(teks); }
@@ -364,14 +400,28 @@ $('#isi-tabel').on('change', '.pilih', function () {
 
 $('#pilih-semua').on('change', function () {
   var c = this.checked;
-  $('#isi-tabel .pilih').each(function () {
-    if (this.checked !== c) { this.checked = c; $(this).trigger('change'); }
+  /* SEMUA baris, bukan cuma yang terlihat - tulisannya memang "Tick every
+     row", dan yang di halaman lain ikut tersimpan.
+
+     PEKERJAANNYA DILAKUKAN LANGSUNG, bukan dgn trigger('change'). Penangan
+     .pilih di atas dipasang sbg DELEGASI pada #isi-tabel, sedangkan baris
+     halaman lain sedang TIDAK berada di dalam #isi-tabel - jadi penangan itu
+     tidak akan pernah kebagian. Gejalanya halus dan sempat kejadian: 55 baris
+     tercentang dan totalnya benar, tetapi Description cuma mengalir ke 10
+     baris yang kebetulan terlihat. */
+  semuaBaris().each(function () {
+    var $t = $(this), cb = $t.find('.pilih')[0];
+    if (!cb || cb.checked === c) { return; }
+    cb.checked = c;
+    $t.toggleClass('dipilih', c);
+    if (c) { alirkanDeskripsi($t); } else { $t.find('.in-ket').val(''); }
   });
+  hitung();
 });
 
 function hitung() {
   var t = 0, n = 0;
-  $('#isi-tabel tr').each(function () {
+  semuaBaris().each(function () {
     if ($(this).find('.pilih').prop('checked')) { t += parseFloat($(this).data('sisa')) || 0; n++; }
   });
   $('#total-dipilih').text(uang(t));
@@ -385,7 +435,8 @@ $('#plan_date').on('change input', hitung);
    --------------------------------------------------------------------------- */
 $('#btn-simpan').on('click', function () {
   var baris = [];
-  $('#isi-tabel tr').each(function () {
+  /* semuaBaris(): yang tercentang di halaman mana pun ikut tersimpan. */
+  semuaBaris().each(function () {
     var $t = $(this);
     if (!$t.find('.pilih').prop('checked')) { return; }
     baris.push({
