@@ -147,7 +147,7 @@ include '../header.php';
             <div class="app-loading">
                 <div class="app-loading-box">
                     <div class="app-spinner"></div>
-                    <div class="app-loading-text">Building the projection...</div>
+                    <div class="app-loading-text" id="cfdLoadText">Building the projection...</div>
                 </div>
             </div>
 
@@ -305,6 +305,19 @@ function cfdIsiBank(pilih) {
         });
 }
 
+/* Satu pintu untuk tirai "sedang diproses". Dipanggil dgn teks untuk
+   menyalakan, dgn false untuk mematikan - jadi tidak ada lagi addClass di
+   satu tempat dan removeClass yang kelupaan di tempat lain.
+
+   PENTING: laporan ini bisa memakan PULUHAN DETIK kalau periodenya belum
+   punya potret AR, karena mesin AR dijalankan ulang di server. Tanpa tirai
+   ini layarnya terlihat diam dan pemakai menekan tombolnya berkali-kali. */
+function cfdSibuk(teks) {
+    if (teks === false) { $('#cfdLoad').removeClass('is-loading'); return; }
+    $('#cfdLoadText').text(teks || 'Please wait...');
+    $('#cfdLoad').addClass('is-loading');
+}
+
 function cfdSaring() {
     return {
         start_date: $('#cfd-dari').val(),
@@ -328,10 +341,10 @@ function cfdCari() {
        lama dikosongkan - kalau dibiarkan, yang terbaca keterangan hasil yang
        SEBELUMNYA, padahal angkanya sedang diganti. */
     $('#cfd-sub').text('');
-    $('#cfdLoad').addClass('is-loading');
+    cfdSibuk('Building the projection...');
     $.post('ajx_cash_flow_projection.php', kirim, null, 'json')
         .done(function (res) {
-            $('#cfdLoad').removeClass('is-loading');
+            cfdSibuk(false);
             if (!res || res.error) {
                 $('#cfd-sub').text('');
                 Swal.fire({ icon: 'warning', title: 'Cannot build the report', text: (res && res.error) ? res.error : 'Unknown error' });
@@ -364,7 +377,7 @@ function cfdCari() {
             cfdPasangBank(res.bank, $('#cfd-bank').val());
         })
         .fail(function (x) {
-            $('#cfdLoad').removeClass('is-loading');
+            cfdSibuk(false);
             $('#cfd-sub').text('');
             Swal.fire({ icon: 'error', title: 'Request failed', text: (x.responseText || '').slice(0, 300) });
         });
@@ -409,6 +422,11 @@ $(function () {
             confirmButtonText: 'Save'
         }).then(function (p) {
             if (!p.isConfirmed) { return; }
+            /* Spinner yang sama dipakai waktu menyimpan. Dulu hanya tombolnya
+               yang dimatikan - padahal menyimpan bisa memakan puluhan detik
+               kalau periode ini belum punya potret AR (mesin AR dijalankan
+               lagi di server), dan selama itu layarnya terlihat DIAM. */
+            cfdSibuk('Saving the snapshot...');
             var $t = $('#cfd-simpan').prop('disabled', true);
             $.post('simpan_cf_history.php', s, null, 'json')
                 .done(function (res) {
@@ -421,7 +439,7 @@ $(function () {
                 .fail(function (x) {
                     Swal.fire({ icon: 'error', title: 'Request failed', text: (x.responseText || '').slice(0, 300) });
                 })
-                .always(function () { $t.prop('disabled', false); });
+                .always(function () { cfdSibuk(false); $t.prop('disabled', false); });
         });
     });
 

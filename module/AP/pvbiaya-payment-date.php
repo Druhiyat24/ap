@@ -224,7 +224,12 @@ $('#mytable').on('click', '.btn-lihat', function () {
       var h = '';
       $.each(r.data, function (i, d) {
         h += '<tr>'
-           + '<td>' + d.no_pv + '</td>'
+           /* Penanda DP/CBD menempel di bawah nomornya, bukan kolom baru -
+              sama spt di layar pencariannya. */
+           + '<td>' + d.no_pv
+             + ((d.jenis && d.jenis !== 'Biaya')
+                ? '<br><small style="font-size:10px;color:#64748b;border:1px solid #cbd5e1;border-radius:3px;padding:0 4px;">' + d.jenis + '</small>'
+                : '') + '</td>'
            + '<td style="text-align:center;">' + d.profit_center + '</td>'
            + '<td style="text-align:center;">' + d.plan_date + '</td>'
            + '<td style="text-align:center;">' + d.curr + '</td>'

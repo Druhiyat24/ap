@@ -34,6 +34,14 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
+/* KELUARAN BERKAS BINER - pesan PHP apa pun yang tercetak akan MASUK KE
+   DALAM berkasnya dan membuat Excel menolak membukanya. Jadi tampilannya
+   dimatikan di sini; kesalahannya tetap tercatat di log Apache. Pernah
+   kejadian 19 Nov 2026: satu Notice "Undefined index: AR_EXISTING" membuat
+   seluruh berkas unduhan rusak. */
+error_reporting(E_ALL & ~E_NOTICE);
+ini_set('display_errors', 0);
+
 session_start();
 define('CFH_PUSTAKA', 1);
 $_POST['doc_number'] = isset($_REQUEST['doc_number']) ? $_REQUEST['doc_number'] : '';
@@ -83,9 +91,20 @@ $pinjam = isset($jawab['pinjaman']) ? $jawab['pinjaman'] : array();
    ulang bisa menemukan potret AR yang LEBIH BARU daripada yang dipakai waktu
    angka ini dibekukan. */
 $cfhxArDoc = trim((string) cfhxAmbil($info, 'ar_doc'));
+/* Lembar PV AP TIDAK punya kolom Source Doc - susunannya meniru acuan, dan
+   acuan tidak punya kolom itu. Nomornya ditulis di baris catatan. */
+$cfhxApDoc = trim((string) cfhxAmbil($info, 'ap_doc'));
+$lembarSumber['PV_AP']['catatan'] = ($cfhxApDoc !== '')
+    ? 'From saved AP payment projection ' . $cfhxApDoc . '.'
+    : 'No saved AP projection covered this period, so the figures were recalculated (not saved).';
+
 $lembarSumber['AR_EXISTING']['catatan'] = ($cfhxArDoc !== '')
     ? 'From saved AR collection projection ' . $cfhxArDoc . ' - amounts are net of withholding tax.'
-    : 'No saved AR projection covered this period, so the receivable lines are zero.';
+    /* Sejak 18 Nov 2026 periode tanpa potret DIHITUNG ULANG, jadi kalimat
+       lamanya ("receivable lines are zero") sudah tidak benar - lembarnya
+       kosong hanya kalau hitung ulang itu memang tidak menemukan piutang
+       jatuh tempo. */
+    : 'No saved AR projection covered this period, so the figures were recalculated (not saved).';
 
 /* ------------------------------------------------------------------ gaya */
 const CFHX_NAVY  = 'FF1E3A8A';
@@ -481,11 +500,28 @@ for ($i = 0; $i < $nk; $i++) { $l2->getColumnDimension(cfhxKol(5 + $i))->setWidt
    tidak bisa bergeser sendiri.
    ====================================================================== */
 foreach ($lembarSumber as $kode => $def) {
-    /* LEMBAR AR EXISTING SELALU DICETAK, walau tidak ada barisnya - pemakai
-       perlu melihat potret AR mana yang dipakai, atau alasan kenapa baris
-       piutangnya nol. Lembar yang hilang tanpa penjelasan membuat orang
-       mengira laporannya rusak. Lembar lain tetap dilewati kalau kosong. */
-    if (empty($sumber[$kode]) && $kode !== 'AR_EXISTING') { continue; }
+    /* SELURUH LEMBAR SELALU DICETAK, walau tidak ada barisnya (19 Nov 2026,
+       dilaporkan pemakai: "kenapa cuma ada sheet ini saja"). Dulu hanya AR
+       Existing yang dikecualikan, dan akibatnya potret Desember - yang
+       memang tidak punya Book Transfer / Other Inflow / rencana bayar -
+       keluar cuma 4 lembar, seolah ekspornya gagal separuh. Lembar yang
+       hilang tanpa penjelasan tidak bisa dibedakan dari laporan yang rusak;
+       lembar kosong yang menerangkan dirinya sendiri bisa. */
+    /* Barisnya diambil DULU: catatan lembarnya bergantung pada ada-tidaknya
+       isi, dan kolom tanggal lembar PV AP baru ketahuan sesudah barisnya ada.
+
+       isset() WAJIB di sini: lembar yang tidak punya baris sama sekali tidak
+       punya kunci di $sumber. Tanpa penjaga ini PHP menulis Notice + Warning
+       ke keluaran - dan karena keluarannya BERKAS XLSX, berkasnya rusak sejak
+       byte pertama dan Excel menolak membukanya. */
+    $barisLembar = isset($sumber[$kode]) ? $sumber[$kode] : array();
+    if (!$barisLembar) {
+        /* Ditambahkan ke catatannya, bukan menggantikan - keterangan sumber
+           lembar itu justru tetap berguna waktu isinya kosong. */
+        $def['catatan'] = rtrim((string) $def['catatan'])
+                        . '  |  No rows fall in this period.';
+    }
+
     $ls = $sp->createSheet();
     $ls->setTitle($def['judul']);
     $ls->getTabColor()->setRGB($def['warna']);
@@ -494,14 +530,14 @@ foreach ($lembarSumber as $kode => $def) {
     $ls->setCellValue('A2', $def['catatan']);
     $ls->getStyle('A2')->getFont()->setItalic(true)->setSize(9)->getColor()->setARGB('FF64748B');
 
-    $kol = $def['kolom'];
+    $kol = cf_sumber_kolom($def, $barisLembar);
     $nKol = count($kol);
     $r = 4;
     for ($i = 0; $i < $nKol; $i++) { $ls->setCellValue(cfhxKol($i + 1) . $r, $kol[$i][0]); }
     cfhxKepala($ls, 'A' . $r . ':' . cfhxKol($nKol) . $r);
     $r++;
 
-    foreach ($sumber[$kode] as $brs) {
+    foreach ($barisLembar as $brs) {
         for ($i = 0; $i < $nKol; $i++) {
             $nama = $kol[$i][1];
             $jenis = $kol[$i][2];

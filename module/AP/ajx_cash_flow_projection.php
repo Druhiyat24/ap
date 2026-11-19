@@ -77,10 +77,25 @@ $cfpSebelum = date('Y-m-d', strtotime($cfpMulai . ' -1 day'));
 $cfpPesan   = array();
 
 /* ---------------------------------------------------------------------------
-   1. PROYEKSI AP - dipanggil dari mesinnya sendiri, BUKAN disalin, supaya
-   angka utang usaha di sini tidak bisa berbeda dari AP Payment Projection
-   Report. Sekalian berkas itu yang membawa koneksi.
+   1. PROYEKSI AP - POTRET DULU, baru hitung ulang.
+
+   Aturannya ditegaskan pemakai 18 Nov 2026: selama ada potret AP yang
+   periodenya MENYELIMUTI rentang laporan ini, angkanya dibaca dari potret
+   itu. Baru kalau tidak ada, mesinnya dipanggil - dan hasilnya TIDAK
+   disimpan ke mana pun.
+
+   Mesinnya dipanggil dgn include, BUKAN disalin, supaya angka utang usaha di
+   sini tidak bisa berbeda dari AP Payment Projection Report. Sekalian berkas
+   itu yang membawa koneksi.
    --------------------------------------------------------------------------- */
+/* MESINNYA TETAP DIPANGGIL LEBIH DULU, walau nanti hasilnya mungkin tidak
+   dipakai - karena BERKAS ITU yang membawa koneksi ($conn2), dan koneksi itu
+   yang dibutuhkan untuk mencari potretnya. Membuka koneksi sendiri di sini
+   tidak bisa: conn.php meng-include parser-php-version.php tanpa _once, jadi
+   dua kali include berujung "Cannot redeclare is_mysqli_or_resource()".
+   Harganya satu panggilan mesin AP yang terbuang kalau potretnya ada -
+   murah, dan jauh lebih aman daripada mengutak-atik berkas koneksi yang
+   dipakai seluruh aplikasi. */
 $cfpPostAsli = $_POST;
 $_POST = array('start_date' => date('d-m-Y', strtotime($cfpMulai)),
                'end_date'   => date('d-m-Y', strtotime($cfpAkhir)),
@@ -94,6 +109,16 @@ $_POST     = $cfpPostAsli;
 $cfpAp = json_decode($cfpApJson, true);
 $cfpApBaris = (is_array($cfpAp) && isset($cfpAp['data'])) ? $cfpAp['data'] : array();
 if (is_array($cfpAp) && isset($cfpAp['error'])) { $cfpPesan[] = 'AP projection: ' . $cfpAp['error']; }
+
+/* POTRET MENANG kalau ada yang menyelimuti periode ini (ditegaskan pemakai
+   18 Nov 2026). Hasil mesin di atas dibuang, bukan dicampur. */
+require_once __DIR__ . '/cf_sumber_potret.php';
+$cfpApDoc    = '';
+$cfpApPotret = cf_potret_ap($conn2, $cfpMulai, $cfpAkhir);
+if ($cfpApPotret) {
+    $cfpApDoc   = $cfpApPotret['doc'];
+    $cfpApBaris = $cfpApPotret['baris'];
+}
 
 /* KURS USD TIDAK LAGI DIISI DI LAYAR (permintaan pemakai 16 Nov 2026):
    diambil sendiri dari kurs PAJAK terakhir yang tanggalnya <= tanggal To -
@@ -251,6 +276,13 @@ $cfpQ = mysqli_query($conn2, "select doc_number, created_at from tbl_history_pro
                               order by id desc limit 1");
 if ($cfpQ && ($cfpR = mysqli_fetch_assoc($cfpQ))) { $cfpArDoc = $cfpR['doc_number']; $cfpArTgl = $cfpR['created_at']; }
 
+/* Barisnya dikumpulkan dulu ke satu bentuk - tgl, doc_type, bank_acc, nilai -
+   apa pun sumbernya, baru ditaruh. Dgn begitu aturan penempatannya (akun,
+   kategori Invoice/Debit Note, akun USD) ditulis SATU KALI saja; kalau
+   dipisah per sumber, dua jalur itu cepat atau lambat akan berbeda. */
+$cfpArBaris = array();   /* untuk lembar Excel, hanya terisi kalau dihitung ulang */
+$cfpArRinci = array();
+
 if ($cfpArDoc !== '') {
     $e = mysqli_real_escape_string($conn2, $cfpArDoc);
     $cfpQ = mysqli_query($conn2, "
@@ -262,16 +294,42 @@ if ($cfpArDoc !== '') {
          where doc_number = '$e'
            and coalesce(duedate_update, duedate) between '$cfpMulai' and '$cfpAkhir'
          group by 1,2,3");
-    while ($cfpQ && ($cfpR = mysqli_fetch_assoc($cfpQ))) {
-        $k = cfpKunci($cfpR['bank_acc']);
-        if (!isset($cfpAkun[$k])) { $cfpTakAkun[] = 'AR ' . $cfpR['bank_acc']; $k = '(none)'; }
-        $id = (stripos($cfpR['doc_type'], 'debit') !== false) ? $cfpIdDn : $cfpIdInv;
-        /* Nilainya sudah rupiah; akun USD disimpan dalam USD-nya sendiri. */
-        $n = (float) $cfpR['nilai'];
-        $cfpTaruh($cfpR['tgl'], $k, $id, ($cfpAkun[$k]['curr'] === 'USD') ? $n / $cfpRate : $n);
-    }
+    while ($cfpQ && ($cfpR = mysqli_fetch_assoc($cfpQ))) { $cfpArRinci[] = $cfpR; }
 } else {
-    $cfpPesan[] = 'No saved AR projection covers this period, so the receivable lines are zero.';
+    /* TIDAK ADA POTRET -> dihitung ulang dgn mesin AR, dan TIDAK DISIMPAN.
+       Rumus nilainya sama persis dgn yang dipakai di atas, cuma dijumlahkan
+       di PHP karena barisnya sudah berupa array. */
+    $cfpArBaris = cf_ar_hitung($conn2, $cfpMulai, $cfpAkhir, $cfpType);
+    $cfpKumpul = array();
+    foreach ($cfpArBaris as $cfpB) {
+        $tgl = (string) (isset($cfpB['duedate_update']) && $cfpB['duedate_update']
+                         ? $cfpB['duedate_update'] : (isset($cfpB['duedate']) ? $cfpB['duedate'] : ''));
+        if ($tgl === '' || $tgl < $cfpMulai || $tgl > $cfpAkhir) { continue; }
+        $ti  = isset($cfpB['total_invoice']) ? (float) $cfpB['total_invoice'] : 0;
+        $ai  = isset($cfpB['amount_idr']) ? (float) $cfpB['amount_idr'] : 0;
+        $col = isset($cfpB['collection_amount']) ? (float) $cfpB['collection_amount'] : 0;
+        $n   = ($ti != 0) ? ($ai * $col / $ti) : $ai;
+        $dt  = isset($cfpB['doc_type']) ? (string) $cfpB['doc_type'] : 'Invoice';
+        $ba  = isset($cfpB['bank_acc']) ? (string) $cfpB['bank_acc'] : '';
+        $kk  = $tgl . '|' . $dt . '|' . $ba;
+        if (!isset($cfpKumpul[$kk])) {
+            $cfpKumpul[$kk] = array('tgl' => $tgl, 'doc_type' => $dt, 'bank_acc' => $ba, 'nilai' => 0);
+        }
+        $cfpKumpul[$kk]['nilai'] += $n;
+    }
+    $cfpArRinci = array_values($cfpKumpul);
+    $cfpPesan[] = $cfpArRinci
+        ? 'No saved AR projection covers this period, so the receivable lines were recalculated (not saved).'
+        : 'No saved AR projection covers this period, and recalculating found no receivable falling due.';
+}
+
+foreach ($cfpArRinci as $cfpR) {
+    $k = cfpKunci($cfpR['bank_acc']);
+    if (!isset($cfpAkun[$k])) { $cfpTakAkun[] = 'AR ' . $cfpR['bank_acc']; $k = '(none)'; }
+    $id = (stripos($cfpR['doc_type'], 'debit') !== false) ? $cfpIdDn : $cfpIdInv;
+    /* Nilainya sudah rupiah; akun USD disimpan dalam USD-nya sendiri. */
+    $n = (float) $cfpR['nilai'];
+    $cfpTaruh($cfpR['tgl'], $k, $id, ($cfpAkun[$k]['curr'] === 'USD') ? $n / $cfpRate : $n);
 }
 
 /* 5b. UTANG USAHA (AP) - dari mesin proyeksi AP yang dipanggil di atas.
@@ -290,7 +348,11 @@ if ($cfpApBaris) {
         $cfpQ = mysqli_query($conn2, "
             select x.no_kbon,
                    coalesce(k.from_account, i.from_account, s.from_account, si.from_account)     from_account,
-                   coalesce(k.profit_center, i.profit_center, s.profit_center, si.profit_center) profit_center
+                   coalesce(k.profit_center, i.profit_center, s.profit_center, si.profit_center) profit_center,
+                   /* Kolom Creator di lembar PV AP - ikut diambil di sini,
+                      bukan lewat query sendiri: dokumen induknya sudah di-join
+                      untuk rekening & profit center. */
+                   coalesce(k.create_user, i.create_user, s.create_user, si.create_user)         create_user
               from (select distinct no_kbon,
                            case when no_kbon like '% - %' then substring_index(no_kbon,' - ',1)
                                 else no_kbon end induk
@@ -325,18 +387,23 @@ if ($cfpApBaris) {
     }
 }
 
-/* 5c. PV BIAYA - rencana bayar dari menu Update Payment Date PV Biaya,
-   kategorinya dari tbl_pv_h.id_cash_flow. PV yang kategorinya belum diisi
-   jatuh ke "Pengeluaran Lain-lain" supaya uangnya TIDAK hilang dari
-   laporan; jumlahnya dilaporkan di bagian info. */
+/* 5c. PV BIAYA + DP + CBD - rencana bayar dari menu Update Payment Date.
+   Rekening pembayar & kategorinya letaknya beda-beda menurut jenis dokumen,
+   jadi potongan SQL-nya diambil dari pvb_dpcbd_lib.php - satu tempat yang
+   sama dgn lembar sumber Excel, supaya dua-duanya mustahil berbeda. Dokumen
+   yang kategorinya belum diisi jatuh ke "Pengeluaran Lain-lain" supaya
+   uangnya TIDAK hilang dari laporan; jumlahnya dilaporkan di bagian info. */
 $cfpPvTanpaKtg = 0;
 $cfpQ = mysqli_query($conn2, "show tables like 'ap_pvbiaya_plan_det'");
 if ($cfpQ && mysqli_num_rows($cfpQ)) {
+    require_once __DIR__ . '/pvb_dpcbd_lib.php';
+    $cfpSrc = pvb_plan_sumber($conn2);
     $cfpQ = mysqli_query($conn2, "
-        select d.plan_date tgl, d.curr, d.amount, p.frm_akun, p.id_cash_flow
+        select d.plan_date tgl, d.curr, d.amount,
+               {$cfpSrc['akun']} frm_akun, {$cfpSrc['ktg']} id_cash_flow
           from ap_pvbiaya_plan_det d
           inner join ap_pvbiaya_plan_h h on h.doc_number = d.doc_number and h.status <> 'CANCEL'
-          left  join tbl_pv_h p on p.no_pv = d.no_pv
+          {$cfpSrc['join']}
          where d.status = 'Y' and d.plan_date between '$cfpMulai' and '$cfpAkhir'");
     while ($cfpQ && ($cfpR = mysqli_fetch_assoc($cfpQ))) {
         $k = cfpKunci($cfpR['frm_akun']);
@@ -402,6 +469,8 @@ if (defined('CFP_SUMBER')) {
         'ap_baris' => $cfpApBaris,
         'ap_peta'  => isset($cfpPetaKbon) ? $cfpPetaKbon : array(),
         'ar_doc'   => $cfpArDoc,
+        'ar_baris' => $cfpArBaris,
+        'ap_doc'   => $cfpApDoc,
     ));
 }
 
@@ -837,6 +906,7 @@ echo json_encode(array(
                         : (isset($cfpAkun[$cfpKunciBank]) ? $cfpAkun[$cfpKunciBank]['label'] : $cfpBank),
         'type'       => $cfpType,
         'ar_doc'     => $cfpArDoc,
+        'ap_doc'     => $cfpApDoc,
         'ar_tanggal' => $cfpArTgl ? date('j M Y H:i', strtotime($cfpArTgl)) : '',
         'peringatan' => $cfpPesan,
     ),

@@ -24,7 +24,15 @@ if ($doc === '') {
 }
 $doc_esc = mysqli_real_escape_string($conn2, $doc);
 
-$q = mysqli_query($conn2, "SELECT no_pv, profit_center, plan_date, curr, amount, keterangan, status
+/* Kolom 'jenis' baru ada sejak DP/CBD ikut dijadwalkan (18 Nov 2026).
+   Ditanyakan dulu, tidak diasumsikan - dokumen lama tetap terbuka walau
+   produksi belum dimigrasi. */
+$adaJenis = false;
+$cek = mysqli_query($conn2, "SHOW COLUMNS FROM `ap_pvbiaya_plan_det` LIKE 'jenis'");
+if ($cek && mysqli_num_rows($cek)) { $adaJenis = true; }
+$kolJenis = $adaJenis ? 'jenis' : "'Biaya' jenis";
+
+$q = mysqli_query($conn2, "SELECT no_pv, $kolJenis, profit_center, plan_date, curr, amount, keterangan, status
         FROM ap_pvbiaya_plan_det WHERE doc_number = '$doc_esc' ORDER BY id ASC");
 if (!$q) {
     echo json_encode(array('status' => 'error', 'message' => mysqli_error($conn2)));
@@ -35,6 +43,7 @@ $data = array();
 while ($r = mysqli_fetch_assoc($q)) {
     $data[] = array(
         'no_pv'         => htmlspecialchars($r['no_pv'], ENT_QUOTES),
+        'jenis'         => htmlspecialchars((string) $r['jenis'], ENT_QUOTES),
         'profit_center' => htmlspecialchars((string) $r['profit_center'], ENT_QUOTES),
         'plan_date'     => $r['plan_date'] ? date('d-M-Y', strtotime($r['plan_date'])) : '-',
         'curr'          => htmlspecialchars((string) $r['curr'], ENT_QUOTES),

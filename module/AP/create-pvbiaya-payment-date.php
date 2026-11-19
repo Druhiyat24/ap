@@ -43,6 +43,13 @@ if ($qSup) { while ($r = mysqli_fetch_assoc($qSup)) { $supplierList[] = $r['nama
 }
 #table-pv tbody td { vertical-align: middle; white-space: nowrap; }
 #table-pv tbody td.wrap { white-space: normal; min-width: 190px; }
+/* Penanda DP/CBD di bawah nomor dokumen - sengaja redup, tidak ikut menarik
+   perhatian dari nomornya sendiri. */
+#table-pv tbody td.doc small.jenis {
+  display: inline-block; font-size: 10px; letter-spacing: .04em;
+  color: #64748b; border: 1px solid #cbd5e1; border-radius: 3px;
+  padding: 0 4px; margin-top: 2px;
+}
 #table-pv .num { text-align: right; font-variant-numeric: tabular-nums; }
 #table-pv .doc { font-weight: 600; color: #1e3a8a; }
 #table-pv .in-tgl { width: 120px; }
@@ -307,9 +314,14 @@ function gambar(data) {
     $b.append(
       '<tr class="' + (warna[d.prioritas] || '') + '"' +
         ' data-nopv="' + lolos(d.no_pv) + '" data-pc="' + lolos(d.profit_center) + '"' +
+        ' data-jenis="' + lolos(d.jenis || 'Biaya') + '"' +
         ' data-sisa="' + d.sisa + '">' +
         '<td style="text-align:center;"><input type="checkbox" class="pilih"></td>' +
-        '<td class="doc">' + lolos(d.no_pv) + '</td>' +
+        /* Jenisnya ditulis KECIL di bawah nomornya, bukan jadi kolom sendiri -
+           kolom baru akan menggeser lebar yang sudah disetel pemakai, dan
+           nomornya sendiri sudah setengah menjelaskan (PV-AP/CBD/...). */
+        '<td class="doc">' + lolos(d.no_pv) +
+          ((d.jenis && d.jenis !== 'Biaya') ? '<br><small class="jenis">' + lolos(d.jenis) + '</small>' : '') + '</td>' +
         '<td>' + tglTampil(d.pv_date) + '</td>' +
         '<td class="wrap">' + lolos(d.supplier) + '</td>' +
         '<td' + telat + '>' + tglTampil(d.due_date) + '</td>' +
@@ -378,6 +390,7 @@ $('#btn-simpan').on('click', function () {
     if (!$t.find('.pilih').prop('checked')) { return; }
     baris.push({
       no_pv: $t.data('nopv'),
+      jenis: $t.data('jenis') || 'Biaya',
       profit_center: $t.data('pc'),
       plan_date: $t.find('.in-tgl').val(),
       keterangan: $t.find('.in-ket').val()

@@ -29,6 +29,12 @@
    'plan_sekarang' supaya layar bisa mengisinya lebih dulu, dan nomor
    dokumennya di 'plan_doc' supaya kelihatan dari mana asalnya.
 
+   DP & CBD IKUT DIMUAT (18 Nov 2026, permintaan pemakai) - lihat
+   pvb_dpcbd_lib.php. Barisnya bentuknya sama persis dgn baris Biaya, cuma
+   'jenis'-nya beda, supaya layar & penyimpanannya tidak perlu tahu bedanya.
+   Kategori arus kasnya TETAP (Uang Muka Supplier), karena dokumen DP/CBD
+   tidak punya kolom kategori sendiri.
+
    KATEGORI ARUS KAS hanya DIBACA (tbl_pv_h.id_cash_flow). Layar ini tidak
    boleh mengubahnya - kolom itu dipakai juga Bank Out & Cash Flow
    Realisation, jadi satu salah klik bisa memindahkan nominal ke baris
@@ -36,6 +42,7 @@
    ============================================================================ */
 session_start();
 include '../../conn/conn.php';
+require_once __DIR__ . '/pvb_dpcbd_lib.php';
 header('Content-Type: application/json');
 
 $user = isset($_SESSION['username']) ? $_SESSION['username'] : '';
@@ -162,6 +169,7 @@ while ($row = mysqli_fetch_assoc($q)) {
     $rate  = isset($prioritas[$row['nama_supp']]) ? $prioritas[$row['nama_supp']] : '';
 
     $baris[] = array(
+        'jenis'         => 'Biaya',
         'no_pv'         => $row['no_pv'],
         'pv_date'       => $row['pv_date'],
         'due_date'      => $row['due_date'],
@@ -175,6 +183,71 @@ while ($row = mysqli_fetch_assoc($q)) {
         'kategori'      => ($idcf > 0 && isset($kategori[$idcf])) ? $kategori[$idcf] : '',
         'prioritas'     => in_array($rate, array('GREEN', 'YELLOW', 'RED'), true) ? $rate : '',
         'deskripsi'     => (string) $row['deskripsi'],
+        'plan_sekarang' => $pl ? $pl['plan_date'] : '',
+        'plan_doc'      => $pl ? $pl['doc_number'] : '',
+        'plan_ket'      => $pl && $pl['keterangan'] !== null ? $pl['keterangan'] : '',
+    );
+}
+
+/* ---------------------------------------------------------------------------
+   DP & CBD. Saringannya sama dgn di atas (dasar tanggal, periode, supplier),
+   dan hasilnya dibentuk persis spt baris Biaya - jadi layar tidak perlu tahu
+   bedanya kecuali untuk menampilkan jenisnya.
+   --------------------------------------------------------------------------- */
+$idKtgDpCbd  = pvb_dpcbd_kategori($conn2);
+$namaKtgDpCbd = isset($kategori[$idKtgDpCbd]) ? $kategori[$idKtgDpCbd] : '';
+
+foreach (pvb_dpcbd_daftar($conn2, $dasar, $start_date, $end_date, $supplier) as $row) {
+    $kunci = $row['no_pv'] . '|' . $row['profit_center'];
+    $pl    = isset($rencana[$kunci]) ? $rencana[$kunci] : null;
+    $rate  = isset($prioritas[$row['nama_supp']]) ? $prioritas[$row['nama_supp']] : '';
+
+    $baris[] = array(
+        'jenis'         => $row['jenis'],
+        'no_pv'         => $row['no_pv'],
+        'pv_date'       => $row['pv_date'],
+        'due_date'      => $row['due_date'],
+        'supplier'      => $row['nama_supp'],
+        'profit_center' => $row['profit_center'],
+        'curr'          => $row['curr'] !== null && $row['curr'] !== '' ? $row['curr'] : 'IDR',
+        'sisa'          => (float) $row['sisa'],
+        'akun'          => $row['frm_akun'],
+        'bank'          => isset($bank[$row['frm_akun']]) ? $bank[$row['frm_akun']] : $row['frm_akun'],
+        'kategori'      => $namaKtgDpCbd,
+        'prioritas'     => in_array($rate, array('GREEN', 'YELLOW', 'RED'), true) ? $rate : '',
+        'deskripsi'     => '',
+        'plan_sekarang' => $pl ? $pl['plan_date'] : '',
+        'plan_doc'      => $pl ? $pl['doc_number'] : '',
+        'plan_ket'      => $pl && $pl['keterangan'] !== null ? $pl['keterangan'] : '',
+    );
+}
+
+/* ---------------------------------------------------------------------------
+   FTR CBD/DP bercara bayar CASH - tidak pernah jadi PV, jadi dijadwalkan
+   pakai nomor FTR-nya sendiri. Kategorinya SAMA dgn jalur kontrabon:
+   Pengeluaran Pembayaran Uang Muka Supplier.
+   --------------------------------------------------------------------------- */
+foreach (pvb_ftrcash_daftar($conn2, $dasar, $start_date, $end_date, $supplier) as $row) {
+    $kunci = $row['no_pv'] . '|' . $row['profit_center'];
+    $pl    = isset($rencana[$kunci]) ? $rencana[$kunci] : null;
+    $rate  = isset($prioritas[$row['nama_supp']]) ? $prioritas[$row['nama_supp']] : '';
+
+    $baris[] = array(
+        'jenis'         => $row['jenis'],
+        'no_pv'         => $row['no_pv'],
+        'pv_date'       => $row['pv_date'],
+        'due_date'      => $row['due_date'],
+        'supplier'      => $row['nama_supp'],
+        'profit_center' => $row['profit_center'],
+        'curr'          => $row['curr'] !== null && $row['curr'] !== '' ? $row['curr'] : 'IDR',
+        'sisa'          => (float) $row['sisa'],
+        'akun'          => $row['frm_akun'],
+        /* Kas kecil tidak ada di b_masterbank, jadi yang tampil nomor COA-nya
+           sendiri - itu memang yang dikenali pemakai (1.01.01 KAS KECIL). */
+        'bank'          => isset($bank[$row['frm_akun']]) ? $bank[$row['frm_akun']] : $row['frm_akun'],
+        'kategori'      => $namaKtgDpCbd,
+        'prioritas'     => in_array($rate, array('GREEN', 'YELLOW', 'RED'), true) ? $rate : '',
+        'deskripsi'     => '',
         'plan_sekarang' => $pl ? $pl['plan_date'] : '',
         'plan_doc'      => $pl ? $pl['doc_number'] : '',
         'plan_ket'      => $pl && $pl['keterangan'] !== null ? $pl['keterangan'] : '',

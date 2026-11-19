@@ -33,6 +33,7 @@
    ============================================================================ */
 session_start();
 include '../../conn/conn.php';
+require_once __DIR__ . '/pvb_dpcbd_lib.php';
 header('Content-Type: application/json');
 
 /* Awalan nomor dokumen. SATU-SATUNYA tempat awalan ini ditulis - pencari
@@ -99,7 +100,26 @@ if (!$sahQ) {
 }
 $sah = array();
 while ($r = mysqli_fetch_assoc($sahQ)) {
-    $sah[$r['no_pv'] . '|' . $r['profit_center']] = $r;
+    $sah['Biaya|' . $r['no_pv'] . '|' . $r['profit_center']] = $r;
+}
+
+/* DP & CBD - dibaca ulang dari pustaka yang SAMA dgn pencariannya, jadi apa
+   yang boleh disimpan tidak pernah lebih longgar daripada apa yang boleh
+   dicari. Kuncinya memuat jenis: nomor DP dan CBD memang beda, tapi kunci
+   yang memuat jenis membuat kiriman layar tidak bisa menukar keduanya. */
+foreach (pvb_dpcbd_daftar($conn2) as $r) {
+    $sah[$r['jenis'] . '|' . $r['no_pv'] . '|' . $r['profit_center']] = array(
+        'no_pv' => $r['no_pv'], 'profit_center' => $r['profit_center'],
+        'curr'  => $r['curr'],  'sisa' => $r['sisa'],
+    );
+}
+
+/* FTR Cash - jalur yang tidak pernah lewat PV. */
+foreach (pvb_ftrcash_daftar($conn2) as $r) {
+    $sah[$r['jenis'] . '|' . $r['no_pv'] . '|' . $r['profit_center']] = array(
+        'no_pv' => $r['no_pv'], 'profit_center' => $r['profit_center'],
+        'curr'  => $r['curr'],  'sisa' => $r['sisa'],
+    );
 }
 
 /* ---------------------------------------------------------------------------
@@ -151,9 +171,11 @@ $digantikan = array();
 foreach ($baris as $b) {
     $no_pv = trim(isset($b['no_pv']) ? (string) $b['no_pv'] : '');
     $pc    = trim(isset($b['profit_center']) ? (string) $b['profit_center'] : '');
+    $jenis = trim(isset($b['jenis']) ? (string) $b['jenis'] : 'Biaya');
+    if (!in_array($jenis, array('Biaya', 'DP', 'CBD', 'FTR-CBD', 'FTR-DP'), true)) { $jenis = 'Biaya'; }
     if ($no_pv === '') { continue; }
 
-    $kunci = $no_pv . '|' . $pc;
+    $kunci = $jenis . '|' . $no_pv . '|' . $pc;
     if (!isset($sah[$kunci])) {
         /* Sudah dibayar orang lain sesudah Search, atau nomornya karangan. */
         $ditolak[] = $no_pv . ($pc !== '' ? ' (' . $pc . ')' : '') . ' - no longer outstanding';
@@ -161,8 +183,9 @@ foreach ($baris as $b) {
     }
     $v = $sah[$kunci];
 
-    $no_esc = mysqli_real_escape_string($conn2, $no_pv);
-    $pc_esc = mysqli_real_escape_string($conn2, $pc);
+    $no_esc  = mysqli_real_escape_string($conn2, $no_pv);
+    $pc_esc  = mysqli_real_escape_string($conn2, $pc);
+    $jns_esc = mysqli_real_escape_string($conn2, $jenis);
 
     /* Rencana lama dipadamkan. Berjalan DI DALAM transaksi dan selama
        GET_LOCK masih dipegang, jadi penyimpan kedua baru melihat keadaan
@@ -193,8 +216,8 @@ foreach ($baris as $b) {
     $ketb_sql = ($ketb === '') ? 'NULL' : "'" . mysqli_real_escape_string($conn2, $ketb) . "'";
 
     $ok = mysqli_query($conn2, "INSERT INTO ap_pvbiaya_plan_det
-            (doc_number, no_pv, profit_center, plan_date, curr, amount, keterangan, status)
-            VALUES ('$doc_esc', '$no_esc', '$pc_esc', '$planb_esc', '$curr_esc', $amount, $ketb_sql, 'Y')");
+            (doc_number, no_pv, jenis, profit_center, plan_date, curr, amount, keterangan, status)
+            VALUES ('$doc_esc', '$no_esc', '$jns_esc', '$pc_esc', '$planb_esc', '$curr_esc', $amount, $ketb_sql, 'Y')");
     if (!$ok) { $gagal(mysqli_error($conn2)); }
     $tersimpan++;
 }
