@@ -455,21 +455,62 @@ $(function () {
         return n < 0 ? '(' + s + ')' : s;
     }
 
+    /* Angka dari kotak isian. Pemisah ribuan dan spasi dibuang dgn cara yang
+       SAMA PERSIS dgn server (simpan_cf_opening.php), supaya yang terbaca di
+       layar dan yang tersimpan tidak pernah berbeda. Bukan angka -> null. */
+    function cfoAngka(t) {
+        t = String(t === null || t === undefined ? '' : t).replace(/[, ]/g, '');
+        t = $.trim(t);
+        if (t === '' || isNaN(t)) { return null; }
+        return parseFloat(t);
+    }
+
+    /* TOTAL IN IDR kolom manual dihitung ULANG tiap ketikan (dilaporkan
+       pemakai 19 Nov 2026: angkanya tidak berubah waktu diisi). Yang
+       dijumlahkan NILAI YANG BERLAKU per rekening: angka manual kalau
+       kotaknya terisi sah, selain itu saldo sistemnya - sama dgn arti
+       'pakai' yang dikirim server waktu modal dibuka. */
+    function cfoHitungTotal() {
+        var t = 0;
+        $('#cfo-tbl tbody .cfo-nilai').each(function () {
+            var m = cfoAngka(this.value);
+            var sis = parseFloat($(this).attr('data-sistem'));
+            if (isNaN(sis)) { sis = 0; }
+            t += (m === null) ? sis : m;
+        });
+        $('#cfo-jum-pakai').text(cfoRupiah(t));
+    }
+
     /* Siapa & kapan mengubah TIDAK lagi jadi kolom sendiri - riwayat
        lengkapnya sudah ada di tabel bawah, jadi kolom itu cuma mengulang. */
     function cfoBaris(a) {
         var terisi = (a.manual !== null && a.manual !== undefined);
+        /* ISIAN BAWAANNYA = SALDO SISTEM (permintaan pemakai 19 Nov 2026),
+           bukan kotak kosong - supaya yang mau mengubah satu rekening tidak
+           perlu mengetik ulang angka yang sudah benar.
+
+           Yang TIDAK berubah: artinya. Kotak yang isinya masih sama persis
+           dgn saldo sistem TIDAK dianggap angka manual - waktu Save dikirim
+           sbg kosong, jadi tidak ada baris ap_cf_opening yang lahir dan
+           riwayatnya tidak penuh oleh rekening yang sebenarnya tidak
+           disentuh. Lihat penjaganya di tombol Save. */
+        var bawaan = Number(a.sistem).toFixed(2);
         return '<tr>'
              + '<td>' + cfdAman(a.label) + '</td>'
              + '<td>' + cfdAman(a.curr) + '</td>'
              + '<td class="cfo-num">' + cfoRupiah(a.sistem) + '</td>'
              /* data-semula = nilai yang DILIHAT pemakai waktu modal dibuka.
                 Dikirim balik saat Save supaya server bisa menolak kalau
-                orang lain sudah mengubahnya - lihat simpan_cf_opening.php. */
+                orang lain sudah mengubahnya - lihat simpan_cf_opening.php.
+                SENGAJA tetap kosong kalau belum ada angka manual: isian
+                bawaan di atas cuma bantuan mengetik, bukan angka tersimpan.
+                data-sistem dipakai menghitung total & menandai baris yang
+                benar-benar diubah. */
              + '<td><input type="text" class="cfo-nilai' + (terisi ? ' cfo-isi' : '') + '"'
              + ' data-akun="' + cfdAman(a.kunci) + '"'
+             + ' data-sistem="' + bawaan + '"'
              + ' data-semula="' + (terisi ? Number(a.manual).toFixed(2) : '') + '"'
-             + ' value="' + (terisi ? Number(a.manual).toFixed(2) : '') + '"></td>'
+             + ' value="' + (terisi ? Number(a.manual).toFixed(2) : bawaan) + '"></td>'
              + '<td><input type="text" class="cfo-ket" maxlength="200" value="'
              + cfdAman(a.keterangan || '') + '"></td>'
              + '</tr>';
@@ -523,9 +564,10 @@ $(function () {
                 for (var i = 0; i < res.akun.length; i++) { isi += cfoBaris(res.akun[i]); }
                 isi += '<tr class="cfo-jum"><td colspan="2">TOTAL IN IDR</td>'
                      + '<td class="cfo-num">' + cfoRupiah(res.jumlah.sistem) + '</td>'
-                     + '<td class="cfo-num">' + cfoRupiah(res.jumlah.pakai) + '</td>'
+                     + '<td class="cfo-num" id="cfo-jum-pakai">' + cfoRupiah(res.jumlah.pakai) + '</td>'
                      + '<td></td></tr>';
                 $('#cfo-tbl tbody').html(isi);
+                cfoHitungTotal();
 
                 var log = '';
                 for (var j = 0; j < res.log.length; j++) { log += cfoLogBaris(res.log[j]); }
@@ -557,7 +599,13 @@ $(function () {
     });
 
     $('#cfo-tbl').on('input', '.cfo-nilai', function () {
-        $(this).toggleClass('cfo-isi', $.trim(this.value) !== '');
+        /* Penanda biru = BERBEDA dari saldo sistem, bukan sekadar "ada
+           isinya" - sejak kotaknya terisi bawaan, "ada isinya" tidak lagi
+           membedakan apa pun. */
+        var m = cfoAngka(this.value);
+        var sis = parseFloat($(this).attr('data-sistem'));
+        $(this).toggleClass('cfo-isi', m !== null && !isNaN(sis) && Math.abs(m - sis) >= 0.005);
+        cfoHitungTotal();
     });
 
     $('#cfo-simpan').on('click', function () {
@@ -565,9 +613,24 @@ $(function () {
         $('#cfo-tbl tbody tr').each(function () {
             var $n = $(this).find('.cfo-nilai');
             if (!$n.length) { return; }
+
+            /* Kotak yang isinya masih sama dgn saldo sistem DAN belum pernah
+               punya angka manual dikirim sbg KOSONG - artinya "ikut hitungan
+               sistem". Tanpa penjaga ini, isian bawaan yang baru ditambahkan
+               akan membuat SETIAP rekening tersimpan sbg angka manual setiap
+               kali tombol Save ditekan, dan riwayat perubahannya penuh oleh
+               rekening yang sebenarnya tidak disentuh siapa pun. */
+            var nilai  = $.trim($n.val());
+            var semula = String($n.attr('data-semula') || '');
+            var m      = cfoAngka(nilai);
+            var sis    = parseFloat($n.attr('data-sistem'));
+            if (semula === '' && m !== null && !isNaN(sis) && Math.abs(m - sis) < 0.005) {
+                nilai = '';
+            }
+
             baris.push({ akun: $n.data('akun'),
-                         manual: $.trim($n.val()),
-                         semula: String($n.attr('data-semula') || ''),
+                         manual: nilai,
+                         semula: semula,
                          keterangan: $.trim($(this).find('.cfo-ket').val() || '') });
         });
         if (!baris.length) { return; }
