@@ -68,3 +68,56 @@ tr.r-spasi > td { background:#fff; height:16px; padding:0;
 
 .cfd-kosong { padding:28px; text-align:center; color:#94a3b8; }
 
+
+/* ---- pita tab "Report by Date" / "Report by Bank" ----
+   Dipakai laporan hidupnya (cash_flow_projection.php) DAN layar potretnya
+   (cf_history_detail.php) - ditaruh di sini supaya keduanya mustahil
+   terlihat berbeda. Bentuknya mengikuti pita tab Create Cash Projection
+   (.tablinks di app-cfp.css); kelasnya diberi awalan cfd- supaya tidak
+   bertabrakan kalau suatu saat kedua berkas CSS dimuat di satu halaman. */
+.cfd-tab-bar {
+  display:flex; flex-wrap:wrap; gap:6px; padding:8px;
+  background:#f4f6f9; border:1px solid #e2e8f0; border-radius:10px; margin-bottom:12px;
+}
+.cfd-tab {
+  display:inline-flex; align-items:center; gap:7px;
+  border:0; background:#fff; color:#555;
+  padding:8px 14px; font-size:12.5px; font-weight:600;
+  border-radius:8px; cursor:pointer; transition:all .2s ease;
+  box-shadow:0 1px 3px rgba(15,23,42,.08);
+}
+.cfd-tab:hover { background:#2f6bdd; color:#fff; transform:translateY(-1px); }
+.cfd-tab.active {
+  background:linear-gradient(135deg, #2f6bdd, #1d4ed8); color:#fff;
+  box-shadow:0 4px 10px rgba(47,107,221,.35);
+}
+
+
+/* ---- status alur persetujuan di layar potret ----
+   Bentuknya dipilih pemakai dari mockup_cf_appr_status.html (pilihan 2):
+   status di depan, jejak "oleh siapa & kapan" di belakangnya, SEBARIS dgn
+   tombol - jadi tidak menambah tinggi kartu.
+
+   TANPA kotak, garis tepi, maupun latar: bentuk seperti itu membuatnya
+   tampak bisa ditekan, padahal ia cuma keterangan - dan sesuatu yang tampak
+   bisa ditekan tapi tidak menanggapi apa pun terbaca sbg aplikasi rusak.
+
+   Warnanya menegaskan, BUKAN menggantikan tulisannya: statusnya tetap
+   terbaca lengkap, jadi yang tidak hafal arti warna tidak kehilangan apa pun. */
+.cfv-appr { display:inline-flex; align-items:baseline; gap:9px; margin-left:12px; }
+.cfv-appr-tt {
+  display:inline-flex; align-items:center; gap:7px;
+  font-size:13px; font-weight:700; color:#475569; white-space:nowrap;
+}
+.cfv-appr-tt i { font-size:12px; }
+.cfv-appr-jj { font-size:11.5px; color:#94a3b8; }
+.cfv-appr-jj b { font-weight:600; color:#64748b; }
+
+.cfv-appr.is-draft   .cfv-appr-tt { color:#64748b; }
+.cfv-appr.is-tunggu  .cfv-appr-tt { color:#1d4ed8; }
+.cfv-appr.is-selesai .cfv-appr-tt { color:#047857; }
+
+/* Di layar sempit keterangannya turun sendiri daripada mendorong tombol. */
+@media (max-width: 767.98px) {
+  .cfv-appr { margin-left:0; flex-wrap:wrap; gap:4px 9px; }
+}

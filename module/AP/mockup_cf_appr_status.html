@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Mockup - status approval History Projection</title>
+<link rel="stylesheet" href="../css/4.1.1/bootstrap.min.css">
+<link rel="stylesheet" href="../fontawesome5/css/all.min.css">
+<link rel="stylesheet" href="../fontawesome5/css/v4-shims.min.css">
+<link rel="stylesheet" href="../css/app-skin-form.css">
+<link rel="stylesheet" href="../css/app-ftr-list.css">
+<style>
+  body { background:#f4f6fb; font-family:Arial, Helvetica, sans-serif; }
+  .kotak { max-width:1180px; margin:18px auto; }
+  .judul-var { font-size:12px; font-weight:700; letter-spacing:.4px; text-transform:uppercase;
+               color:#64748b; margin:22px 0 8px 4px; }
+  .ket-var { font-size:12px; color:#64748b; margin:6px 0 0 4px; }
+  .ftl-card { background:#fff; border:1px solid #e6ebf3; border-radius:16px;
+              box-shadow:0 10px 26px rgba(15,23,42,.06); overflow:hidden; }
+  .ftl-body { padding:14px 18px; }
+  .ftl-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .app-btn { display:inline-flex; align-items:center; gap:6px; border:0; border-radius:8px;
+             padding:7px 14px; font-size:12.5px; font-weight:600; color:#fff; cursor:pointer; }
+  .app-btn-danger { background:#ef4444; } .app-btn-success { background:#10b981; }
+  .app-btn-primary { background:#2563eb; }
+
+/* ======================= PILIHAN 1 - jejak langkah ======================= */
+  .cfa1 { display:inline-flex; align-items:center; gap:0; margin-left:14px; }
+  .cfa1 .lgk { display:inline-flex; align-items:center; gap:7px; padding:0 2px; }
+  .cfa1 .bul { width:16px; height:16px; border-radius:50%; flex:0 0 auto;
+               border:2px solid #cbd5e1; background:#fff; display:inline-flex;
+               align-items:center; justify-content:center; font-size:9px; color:#fff; }
+  .cfa1 .nm  { font-size:12px; color:#94a3b8; font-weight:600; white-space:nowrap; }
+  .cfa1 .grs { width:26px; height:2px; background:#e2e8f0; margin:0 8px; flex:0 0 auto; }
+  .cfa1 .selesai .bul { background:#10b981; border-color:#10b981; }
+  .cfa1 .selesai .nm  { color:#475569; }
+  .cfa1 .selesai + .grs { background:#10b981; }
+  .cfa1 .kini .bul { border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.16); }
+  .cfa1 .kini .nm  { color:#1d4ed8; font-weight:700; }
+
+/* ======================= PILIHAN 2 - satu baris =========================== */
+  .cfa2 { display:inline-flex; align-items:baseline; gap:8px; margin-left:14px; }
+  .cfa2 .tt { display:inline-flex; align-items:center; gap:7px;
+              font-size:13px; font-weight:700; color:#1d4ed8; }
+  .cfa2 .tt i { font-size:12px; }
+  .cfa2 .jj { font-size:11.5px; color:#94a3b8; }
+  .cfa2 .jj b { font-weight:600; color:#64748b; }
+
+/* ======================= PILIHAN 3 - panel keterangan ===================== */
+  .cfa3 { margin-top:12px; border-left:3px solid #2563eb; background:#f8fafc;
+          border-radius:0 10px 10px 0; padding:10px 14px; }
+  .cfa3 .brs { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .cfa3 .lbl { font-size:10.5px; font-weight:700; letter-spacing:.4px;
+               text-transform:uppercase; color:#94a3b8; }
+  .cfa3 .st  { font-size:13.5px; font-weight:700; color:#1e293b; }
+  .cfa3 .jj  { font-size:11.5px; color:#94a3b8; margin-top:4px; }
+  .cfa3 .jj span { margin-right:14px; }
+  .cfa3 .jj b { font-weight:600; color:#64748b; }
+</style>
+</head>
+<body>
+<div class="kotak">
+
+  <div class="judul-var">Pilihan 1 &mdash; jejak langkah (stepper)</div>
+  <div class="ftl-card"><div class="ftl-body"><div class="ftl-actions">
+    <button class="app-btn app-btn-danger"><i class="fa fa-arrow-left"></i> Back to list</button>
+    <button class="app-btn app-btn-success"><i class="fa fa-file-excel-o"></i> Excel</button>
+    <button class="app-btn app-btn-primary"><i class="fa fa-check"></i> First Approval</button>
+    <span class="cfa1">
+      <span class="lgk selesai"><span class="bul"><i class="fa fa-check"></i></span><span class="nm">Posted</span></span>
+      <span class="grs"></span>
+      <span class="lgk kini"><span class="bul"></span><span class="nm">First Approval</span></span>
+      <span class="grs"></span>
+      <span class="lgk"><span class="bul"></span><span class="nm">Second Approval</span></span>
+    </span>
+  </div></div></div>
+  <div class="ket-var">Sekali lihat ketahuan sudah sampai mana dan masih berapa langkah lagi. Paling memakan tempat.</div>
+
+  <div class="judul-var">Pilihan 2 &mdash; satu baris, berikut jejaknya</div>
+  <div class="ftl-card"><div class="ftl-body"><div class="ftl-actions">
+    <button class="app-btn app-btn-danger"><i class="fa fa-arrow-left"></i> Back to list</button>
+    <button class="app-btn app-btn-success"><i class="fa fa-file-excel-o"></i> Excel</button>
+    <button class="app-btn app-btn-primary"><i class="fa fa-check"></i> First Approval</button>
+    <span class="cfa2">
+      <span class="tt"><i class="fa fa-clock-o"></i> Waiting for First Approval</span>
+      <span class="jj">posted by <b>willy</b> &middot; 20 Nov 2026 10:33</span>
+    </span>
+  </div></div></div>
+  <div class="ket-var">Ringkas, muat sebaris dgn tombol, dan tetap menjawab &ldquo;siapa yang sudah menyentuhnya&rdquo;.</div>
+
+  <div class="judul-var">Pilihan 3 &mdash; panel keterangan di bawah tombol</div>
+  <div class="ftl-card"><div class="ftl-body">
+    <div class="ftl-actions">
+      <button class="app-btn app-btn-danger"><i class="fa fa-arrow-left"></i> Back to list</button>
+      <button class="app-btn app-btn-success"><i class="fa fa-file-excel-o"></i> Excel</button>
+      <button class="app-btn app-btn-primary"><i class="fa fa-check"></i> First Approval</button>
+    </div>
+    <div class="cfa3">
+      <div class="brs">
+        <span class="lbl">Approval status</span>
+        <span class="st">Waiting for First Approval</span>
+      </div>
+      <div class="jj">
+        <span>Posted by <b>willy</b>, 20 Nov 2026 10:33</span>
+        <span>First approval <b>&mdash;</b></span>
+        <span>Second approval <b>&mdash;</b></span>
+      </div>
+    </div>
+  </div></div>
+  <div class="ket-var">Paling lengkap: ketiga jejaknya terbaca sekaligus, termasuk yang belum terisi.</div>
+
+  <div class="judul-var">Bandingkan: keadaan lain pada Pilihan 2</div>
+  <div class="ftl-card"><div class="ftl-body">
+    <div class="ftl-actions" style="margin-bottom:10px;">
+      <button class="app-btn app-btn-danger"><i class="fa fa-arrow-left"></i> Back to list</button>
+      <button class="app-btn app-btn-success"><i class="fa fa-file-excel-o"></i> Excel</button>
+      <button class="app-btn app-btn-primary"><i class="fa fa-check"></i> Post</button>
+      <span class="cfa2">
+        <span class="tt" style="color:#64748b;"><i class="fa fa-pencil-square-o"></i> Draft &ndash; Waiting to post</span>
+        <span class="jj">saved by <b>willy</b> &middot; 20 Nov 2026 09:29</span>
+      </span>
+    </div>
+    <div class="ftl-actions" style="margin-bottom:10px;">
+      <button class="app-btn app-btn-danger"><i class="fa fa-arrow-left"></i> Back to list</button>
+      <button class="app-btn app-btn-success"><i class="fa fa-file-excel-o"></i> Excel</button>
+      <span class="cfa2">
+        <span class="tt" style="color:#64748b;"><i class="fa fa-clock-o"></i> Waiting for Second Approval</span>
+        <span class="jj">first approval by <b>indro</b> &middot; 20 Nov 2026 11:02</span>
+      </span>
+    </div>
+    <div class="ftl-actions">
+      <button class="app-btn app-btn-danger"><i class="fa fa-arrow-left"></i> Back to list</button>
+      <button class="app-btn app-btn-success"><i class="fa fa-file-excel-o"></i> Excel</button>
+      <span class="cfa2">
+        <span class="tt" style="color:#047857;"><i class="fa fa-check-circle"></i> Second Approval</span>
+        <span class="jj">second approval by <b>pak willy</b> &middot; 20 Nov 2026 13:40</span>
+      </span>
+    </div>
+  </div></div>
+  <div class="ket-var">Tanpa hak akses tombolnya hilang, keterangannya tetap &mdash; itu baris ketiga di atas.</div>
+
+</div>
+</body>
+</html>

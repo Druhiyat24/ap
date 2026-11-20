@@ -17,6 +17,28 @@ include '../header.php';
 
 $cfdDoc = isset($_GET['doc_number']) ? trim((string) $_GET['doc_number']) : '';
 
+/* ---------------------------------------------------------------------------
+   ALUR POST & DUA TINGKAT APPROVAL (permintaan pemakai 20 Nov 2026).
+
+   Statusnya SELALU ditampilkan sbg teks; tombolnya hanya muncul untuk yang
+   punya haknya - "kalau tidak ada role maka munculkan teks saja status-nya".
+   Keadaan ini dihitung DI SERVER, bukan di layar: tombol yang digambar
+   berdasarkan tebakan JS tetap bisa ditekan orang yang tidak berhak.
+   Syaratnya diperiksa SEKALI LAGI di simpan_cf_history_appr.php - layar
+   boleh dilewati, server tidak.
+   --------------------------------------------------------------------------- */
+require_once __DIR__ . '/cf_history_appr_lib.php';
+
+$cfaUser = isset($_SESSION['username']) ? $_SESSION['username'] : '';
+$cfaKeadaan = array('status' => 'DRAFT', 'teks' => 'Draft', 'aksi' => '', 'tombol' => '', 'batal' => 0);
+if ($cfdDoc !== '') {
+    $cfaEsc = mysqli_real_escape_string($conn2, $cfdDoc);
+    $cfaH = mysqli_fetch_assoc(mysqli_query($conn2,
+        "select status, appr_status, created_by, created_date,
+                post_by, post_date, appr1_by, appr1_date, appr2_by, appr2_date
+           from ap_cf_history_h where doc_number = '$cfaEsc' limit 1"));
+    if ($cfaH) { $cfaKeadaan = cfa_keadaan($conn2, $cfaH, $cfaUser); }
+}
 ?>
 
 <link rel="stylesheet" href="../css/app-skin-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-skin-form.css'); ?>">
@@ -48,6 +70,37 @@ $cfdDoc = isset($_GET['doc_number']) ? trim((string) $_GET['doc_number']) : '';
                 <button type="button" class="app-btn app-btn-success app-btn-ctl app-btn-sm" id="cfv-xls">
                     <i class="fa fa-file-excel-o" aria-hidden="true"></i> Excel
                 </button>
+
+                <?php if ($cfaKeadaan['aksi'] !== '') { ?>
+                <!-- Satu tombol saja: yang muncul HANYA langkah berikutnya.
+                     Menampilkan ketiganya sekaligus lalu menolak dua di
+                     antaranya cuma mengajak orang menekan tombol yang mustahil
+                     berhasil. -->
+                <button type="button" class="app-btn app-btn-primary app-btn-ctl app-btn-sm"
+                        id="cfv-aksi" data-aksi="<?php echo htmlspecialchars($cfaKeadaan['aksi'], ENT_QUOTES); ?>">
+                    <i class="fa fa-check" aria-hidden="true"></i> <?php echo htmlspecialchars($cfaKeadaan['tombol'], ENT_QUOTES); ?>
+                </button>
+                <?php } ?>
+
+                <!-- Statusnya selalu terbaca, dgn atau tanpa hak akses.
+                     Bentuknya KETERANGAN, bukan tombol (permintaan pemakai
+                     20 Nov 2026): sesuatu yang terlihat bisa ditekan tapi
+                     tidak menanggapi apa pun terbaca sbg aplikasi rusak.
+                     Susunannya dipilih pemakai dari mockup_cf_appr_status.html
+                     (pilihan 2): status + jejak siapa & kapan, sebaris dgn
+                     tombolnya supaya tidak menambah tinggi kartu. -->
+                <span class="cfv-appr is-<?php echo htmlspecialchars($cfaKeadaan['nada'], ENT_QUOTES); ?>">
+                    <span class="cfv-appr-tt">
+                        <i class="fa <?php echo htmlspecialchars($cfaKeadaan['ikon'], ENT_QUOTES); ?>" aria-hidden="true"></i>
+                        <span id="cfv-appr-teks"><?php
+                            echo htmlspecialchars($cfaKeadaan['teks'], ENT_QUOTES);
+                            if ($cfaKeadaan['batal']) { echo ' (cancelled)'; }
+                        ?></span>
+                    </span>
+                    <?php if ($cfaKeadaan['jejak'] !== '') { ?>
+                    <span class="cfv-appr-jj"><?php echo $cfaKeadaan['jejak']; ?></span>
+                    <?php } ?>
+                </span>
             </div>
         </div>
     </div>
@@ -65,6 +118,19 @@ $cfdDoc = isset($_GET['doc_number']) ? trim((string) $_GET['doc_number']) : '';
             <b id="cfv-judul">Loading...</b>
             <span id="cfv-sub"></span>
         </div>
+        <!-- Dua susunan dari POTRET YANG SAMA (permintaan pemakai 20 Nov
+             2026). Potret lama cuma menyimpan satu susunan - tombol yang
+             tidak ada isinya disembunyikan, bukan ditampilkan lalu memberi
+             tabel kosong. -->
+        <div class="cfd-tab-bar" id="cfv-tab-bar" style="display:none;">
+            <button type="button" class="cfd-tab" data-tata="tgl">
+                <i class="fa fa-calendar" aria-hidden="true"></i> Report by Date
+            </button>
+            <button type="button" class="cfd-tab" data-tata="akun">
+                <i class="fa fa-university" aria-hidden="true"></i> Report by Bank
+            </button>
+        </div>
+
         <div class="cfd-scroll">
             <table class="cfd" id="cfv-tbl">
                 <thead></thead>
@@ -130,6 +196,41 @@ function cfvIsi(baris, kolom) {
         h += '</tr>';
     }
     return h;
+}
+
+/* Menggambar tabel potret dari jawaban yang SUDAH ADA - berpindah tab tidak
+   memanggil server lagi, dan angkanya pasti dari potret yang sama. */
+var CFV_HASIL = null;
+var CFV_TATA  = 'tgl';
+
+function cfvGambar() {
+    var res = CFV_HASIL;
+    if (!res) { return; }
+    var akun  = (CFV_TATA === 'akun');
+    var kolom = akun ? res.kolom_akun : res.kolom_tgl;
+    var baris = akun ? res.baris_akun : res.baris_tgl;
+    var pinj  = akun ? res.pinjaman_akun : res.pinjaman_tgl;
+    /* Jawaban lama belum punya kunci terpisah - dipakai apa adanya supaya
+       layar ini tidak kosong tanpa sebab. */
+    if (!kolom) { kolom = res.kolom; baris = res.baris; pinj = res.pinjaman; }
+
+    var isi = cfvIsi(baris, kolom);
+    if (pinj && pinj.length) {
+        isi += '<tr class="r-spasi"><td colspan="' + (kolom.length + 2) + '"></td></tr>'
+             + cfvIsi(pinj, kolom);
+    }
+    $('#cfv-tbl thead').html(cfvKepala(kolom));
+    $('#cfv-tbl tbody').html(isi);
+
+    /* Tombol tata letak yang tidak tersimpan di potret ini disembunyikan;
+       kalau tinggal satu, pita tabnya sekalian tidak perlu muncul. */
+    var ada = { tgl: (res.ada_tgl !== 0), akun: (res.ada_akun !== 0) };
+    $('#cfv-tab-bar .cfd-tab').each(function () {
+        var t = $(this).data('tata');
+        $(this).toggle(!!ada[t]).toggleClass('active', t === CFV_TATA);
+    });
+    $('#cfv-tab-bar').toggle(!!(ada.tgl && ada.akun));
+    $('#cfv-panel-proj .cfd-scroll').scrollLeft(0);
 }
 
 /* ---- Executive Summary ---------------------------------------------------
@@ -275,6 +376,36 @@ $(function () {
     /* Nomor dokumen memuat garis miring (CF-PPR/1126/00001); tanpa
        encodeURIComponent potongan sesudah garis miring pertama akan dibaca
        sbg bagian alamat, bukan nilai. */
+    /* Tombol alurnya: satu permintaan, lalu halaman dimuat ulang - tombol
+       berikutnya ditentukan server, bukan ditebak di sini. */
+    $('#cfv-aksi').on('click', function () {
+        var $t = $(this), aksi = $t.data('aksi'), judul = $.trim($t.text());
+        Swal.fire({ icon: 'question', title: judul + '?',
+                    text: 'Document ' + CFV_DOC + ' will be moved to the next step.',
+                    showCancelButton: true, confirmButtonText: 'Yes, ' + judul.toLowerCase() })
+            .then(function (p) {
+                if (!p.isConfirmed) { return; }
+                $t.prop('disabled', true);
+                $.post('simpan_cf_history_appr.php', { doc_number: CFV_DOC, aksi: aksi }, null, 'json')
+                    .done(function (res) {
+                        if (!res || res.status !== 'success') {
+                            $t.prop('disabled', false);
+                            Swal.fire({ icon: 'warning', title: 'Not done',
+                                        text: (res && res.message) ? res.message : 'Unknown error' });
+                            if (res && res.teks) { $('#cfv-appr-teks').text(res.teks); }
+                            return;
+                        }
+                        Swal.fire({ icon: 'success', title: 'Done', text: res.teks })
+                            .then(function () { location.reload(); });
+                    })
+                    .fail(function (x) {
+                        $t.prop('disabled', false);
+                        Swal.fire({ icon: 'error', title: 'Request failed',
+                                    text: (x.responseText || '').slice(0, 300) });
+                    });
+            });
+    });
+
     $('#cfv-xls').on('click', function () {
         if (!CFV_DOC) { return; }
         window.location = 'ekspor_cf_history.php?doc_number=' + encodeURIComponent(CFV_DOC);
@@ -285,6 +416,13 @@ $(function () {
         $('#cfv-tbl tbody').html('<tr><td class="cfd-kosong">No document number was given.</td></tr>');
         return;
     }
+
+    $('#cfv-tab-bar').on('click', '.cfd-tab', function () {
+        var t = $(this).data('tata');
+        if (t === CFV_TATA) { return; }
+        CFV_TATA = t;
+        cfvGambar();
+    });
 
     $.post('ajx_cf_history_detail.php', { doc_number: CFV_DOC }, null, 'json')
         .done(function (res) {
@@ -302,13 +440,13 @@ $(function () {
                                + '  ·  saved by ' + i.created_by + ' ' + i.created
                                + (i.status === 'CANCEL' ? '  ·  CANCELLED' : ''));
 
-            var isi = cfvIsi(res.baris, res.kolom);
-            if (res.pinjaman && res.pinjaman.length) {
-                isi += '<tr class="r-spasi"><td colspan="' + (res.kolom.length + 2) + '"></td></tr>'
-                     + cfvIsi(res.pinjaman, res.kolom);
-            }
-            $('#cfv-tbl thead').html(cfvKepala(res.kolom));
-            $('#cfv-tbl tbody').html(isi);
+            CFV_HASIL = res;
+            /* Tab yang terbuka duluan ikut type potretnya; kalau susunan itu
+               tidak tersimpan (potret lama), dipakai yang ada. */
+            CFV_TATA = (res.mode === 'akun') ? 'akun' : 'tgl';
+            if (CFV_TATA === 'akun' && !res.ada_akun) { CFV_TATA = 'tgl'; }
+            if (CFV_TATA === 'tgl'  && !res.ada_tgl)  { CFV_TATA = 'akun'; }
+            cfvGambar();
         })
         .fail(function (x) {
             $('#cfv-sub').text('');

@@ -65,6 +65,17 @@ $cfpRate  = (float) str_replace(',', '', (string) (isset($_POST['rate']) ? $_POS
 $cfpNamaPc = array('ALL' => 'All PC', '' => 'All PC',
                    'NAG' => 'Garment (NAG)', 'NAK' => 'Knitting (NAK)');
 
+/* Nama rekening terpilih untuk kepala laporan. Kunci yang tidak dikenali
+   (mis. rekening yang sudah dinonaktifkan sesudah potret dibuat) dikembalikan
+   apa adanya - lebih baik terbaca mentah daripada hilang tanpa jejak. */
+function cfpLabelBank($akun, $kunci, $mentah)
+{
+    if (!$kunci) { return 'All Banks'; }
+    $nama = array();
+    foreach ($kunci as $k) { $nama[] = isset($akun[$k]) ? $akun[$k]['label'] : $k; }
+    return $nama ? implode('; ', $nama) : (string) $mentah;
+}
+
 if ($cfpMulai === '' || $cfpAkhir === '') { if (cfpKeluar('Please fill in both the period From and To dates.')) { return; } }
 if ($cfpMulai > $cfpAkhir)                { if (cfpKeluar('The From date must not be later than the To date.')) { return; } }
 
@@ -163,7 +174,9 @@ if ($cfpQ && mysqli_num_rows($cfpQ)) {
     while ($cfpR = mysqli_fetch_assoc($cfpQ)) { $cfpTangan[cfpKunci($cfpR['akun'])] = $cfpR; }
 }
 
-$cfpKunciBank = ($cfpBank === '' || strtoupper($cfpBank) === 'ALL') ? '' : cfpKunci($cfpBank);
+/* LARIK kunci rekening, kosong = semua (saringan Bank bisa dicentang
+   beberapa sejak 19 Nov 2026 - lihat cfpDaftarKunciBank di cf_akun_lib.php). */
+$cfpKunciBank = cfpDaftarKunciBank($cfpBank);
 
 /* ---------------------------------------------------------------------------
    3. SALDO AWAL per akun, per H-1 dari tanggal From.
@@ -394,9 +407,21 @@ if ($cfpApBaris) {
    yang kategorinya belum diisi jatuh ke "Pengeluaran Lain-lain" supaya
    uangnya TIDAK hilang dari laporan; jumlahnya dilaporkan di bagian info. */
 $cfpPvTanpaKtg = 0;
+require_once __DIR__ . '/pvb_dpcbd_lib.php';
+
+/* Satu pintu, dipakai dua sumber di bawah - rencana yang sudah ada maupun
+   dokumen yang belum dijadwalkan masuk lewat jalur yang sama. */
+$cfpPasangPv = function ($tgl, $akun, $idKtg, $nilai) use (&$cfpAkun, &$cfpKtg, &$cfpTakAkun,
+                                                           &$cfpPvTanpaKtg, $cfpIdLain, $cfpTaruh) {
+    $k = cfpKunci($akun);
+    if ($k === '' || !isset($cfpAkun[$k])) { $cfpTakAkun[] = 'PV ' . $akun; $k = '(none)'; }
+    $id = (int) $idKtg;
+    if (!isset($cfpKtg[$id])) { $id = $cfpIdLain; $cfpPvTanpaKtg++; }
+    $cfpTaruh($tgl, $k, $id, -(float) $nilai);
+};
+
 $cfpQ = mysqli_query($conn2, "show tables like 'ap_pvbiaya_plan_det'");
 if ($cfpQ && mysqli_num_rows($cfpQ)) {
-    require_once __DIR__ . '/pvb_dpcbd_lib.php';
     $cfpSrc = pvb_plan_sumber($conn2);
     $cfpQ = mysqli_query($conn2, "
         select d.plan_date tgl, d.curr, d.amount,
@@ -406,22 +431,44 @@ if ($cfpQ && mysqli_num_rows($cfpQ)) {
           {$cfpSrc['join']}
          where d.status = 'Y' and d.plan_date between '$cfpMulai' and '$cfpAkhir'");
     while ($cfpQ && ($cfpR = mysqli_fetch_assoc($cfpQ))) {
-        $k = cfpKunci($cfpR['frm_akun']);
-        if ($k === '' || !isset($cfpAkun[$k])) { $cfpTakAkun[] = 'PV ' . $cfpR['frm_akun']; $k = '(none)'; }
-        $id = (int) $cfpR['id_cash_flow'];
-        if (!isset($cfpKtg[$id])) { $id = $cfpIdLain; $cfpPvTanpaKtg++; }
-        $cfpTaruh($cfpR['tgl'], $k, $id, -(float) $cfpR['amount']);
+        $cfpPasangPv($cfpR['tgl'], $cfpR['frm_akun'], $cfpR['id_cash_flow'], $cfpR['amount']);
     }
 } else {
     $cfpPesan[] = 'Table ap_pvbiaya_plan_det does not exist yet, so planned expense payments are zero.';
 }
 
+/* 5c-2. YANG BELUM DIJADWALKAN SAMA SEKALI (permintaan pemakai 20 Nov 2026:
+   "yang belum diupdate pun bisa ditarik ... harus di-set dulu ke Kamis
+   terdekat seperti yang PV AP"). Sebelum ini laporan HANYA memuat dokumen
+   yang sudah diberi tanggal di menu Update Payment Date - dan di produksi
+   tidak satu pun PV biaya outstanding punya tanggal itu, jadi seluruh baris
+   pengeluarannya nol tanpa ada yang salah di laporannya sendiri.
+
+   Tanggalnya Kamis di minggu jatuh tempo, rumus yang sama persis dgn PV AP.
+   Rencana yang sudah disetel orang TETAP MENANG - nomor yang sudah punya
+   rencana dikecualikan di dalam pvb_tanpa_rencana(), jadi tidak ada yang
+   terhitung dua kali. Dokumen yang sudah lewat tempo jatuh di Kamis yang
+   sudah lewat dan karena itu tidak muncul di periode depan - sama dgn AP,
+   dan memang begitu seharusnya: menaruhnya di hari pertama periode sama
+   saja dgn mengarang tanggal bayar yang tidak pernah diputuskan siapa pun. */
+foreach (pvb_tanpa_rencana($conn2, $cfpMulai, $cfpAkhir) as $cfpR) {
+    $cfpPasangPv($cfpR['tgl'], $cfpR['frm_akun'], $cfpR['id_cash_flow'], $cfpR['amount']);
+}
+
 /* 5d. CASH PROJECTION OTHER - Book Transfer, Other Inflow, PV Expense.
-   Kategorinya tersimpan sebagai NAMA di ap_cf_projection.kategori. */
+   Kategorinya tersimpan sebagai NAMA di ap_cf_projection.kategori.
+
+   HANYA ENTRI YANG JENISNYA SAMA DGN TYPE LAPORAN INI (permintaan pemakai
+   20 Nov 2026) - lihat cfp_saring_type_report(). Untuk Daily hasilnya
+   kosong, karena inputan Daily-nya memang belum ada. */
+require_once __DIR__ . '/cash_projection/cfp_lib.php';
+$cfpSaringOther = cfp_saring_type_report($conn2, $cfpType);
 $cfpQ = mysqli_query($conn2, "select jenis, tanggal, akun_source, akun_tujuan, kategori,
                                      amount, amount_tujuan
                                 from ap_cf_projection
-                               where status <> 'Cancel' and tanggal between '$cfpMulai' and '$cfpAkhir'");
+                               where status <> 'Cancel'
+                                 and tanggal between '$cfpMulai' and '$cfpAkhir'
+                                     $cfpSaringOther");
 while ($cfpQ && ($cfpR = mysqli_fetch_assoc($cfpQ))) {
     $jenis = strtolower(trim($cfpR['jenis']));
     $id = isset($cfpKtgNama[strtoupper(trim($cfpR['kategori']))])
@@ -471,6 +518,9 @@ if (defined('CFP_SUMBER')) {
         'ar_doc'   => $cfpArDoc,
         'ar_baris' => $cfpArBaris,
         'ap_doc'   => $cfpApDoc,
+        /* Type-nya ikut: lembar sumber menyaring entri Projection Other
+           dgn aturan yang sama persis dgn mesin ini. */
+        'type'     => $cfpType,
     ));
 }
 
@@ -525,11 +575,26 @@ foreach ($cfpTanggal as $t) {
     $cfpNilai[$cfpIdLunas][$t]  = $lunas;
 }
 
-/* saldo kas & bank: hanya rekening NON pinjaman */
+/* ---------------------------------------------------------------------------
+   SALDO AWAL KAS & BANK per rekening.
+
+   Rekening pinjaman: saldo SISTEM-nya tidak pernah ikut - angka itu besarnya
+   pinjaman yang masih berjalan, bukan uang yang bisa dipakai. TAPI angka yang
+   DIKETIK TANGAN ikut (permintaan pemakai 19 Nov 2026: &quot;kalau user isi,
+   totalnya nambah&quot;): kalau seseorang sengaja menuliskan saldo awal rekening
+   itu, yang ditulisnya memang saldo rekening - dan kotak yang nilainya diketik
+   lalu tidak mengubah apa pun jauh lebih membingungkan daripada aturan ini.
+   --------------------------------------------------------------------------- */
+function cfpAwalKas($a, $saldo, $rate)
+{
+    if ($a['loan'] && $saldo['manual'] === null) { return 0; }
+    return cfpIdr($a, $saldo['pakai'], $rate);
+}
+
 $cfpKasAwal = 0;
 foreach ($cfpAkun as $cfpK => $cfpA) {
-    if ($cfpA['loan'] || !cfpIkut($cfpA, $cfpPc, $cfpKunciBank)) { continue; }
-    $cfpKasAwal += cfpIdr($cfpA, $cfpSaldo[$cfpK]['pakai'], $cfpRate);
+    if (!cfpIkut($cfpA, $cfpPc, $cfpKunciBank)) { continue; }
+    $cfpKasAwal += cfpAwalKas($cfpA, $cfpSaldo[$cfpK], $cfpRate);
 }
 
 /* ---------------------------------------------------------------------------
@@ -685,10 +750,24 @@ foreach (array('IDR', 'USD') as $cfpMata) {
    atas: sumbernya sama ($cfpGerak), jadi dua tata letak itu mustahil
    berbeda isi.
    --------------------------------------------------------------------------- */
+/* $cfpModeAkun TIDAK LAGI memilih tata letak - dua-duanya selalu dibangun
+   (lihat di bawah). Yang ditentukannya cuma TAB MANA YANG TERBUKA DULUAN. */
 $cfpModeAkun = ($cfpType === 'weekly' || $cfpType === 'monthly');
 $cfpKolom = array();
 
-if ($cfpModeAkun) {
+/* Tata letak per TANGGAL yang baru selesai disusun disimpan dulu: blok di
+   bawah memakai $cfpBarisLap & $cfpBarisPinj yang sama dan akan menimpanya. */
+$cfpBarisTgl = $cfpBarisLap;
+$cfpPinjTgl  = $cfpBarisPinj;
+
+/* DUA TATA LETAK SELALU DIBANGUN DUA-DUANYA (permintaan pemakai 20 Nov 2026:
+   &quot;di setiap type harusnya ada 2 tab report, by date dan by bank&quot;).
+   Dulu blok ini hanya jalan untuk Weekly/Monthly, jadi susunan per rekening
+   tidak bisa dilihat sama sekali di Daily - dan susunan per tanggal tidak
+   bisa dilihat, apalagi disimpan, di Weekly/Monthly. Kurung di bawah ini
+   cuma pengelompok supaya isinya tetap satu kesatuan yang gampang dibaca;
+   PHP tidak punya lingkup peubah di dalamnya. */
+{
     foreach ($cfpAkun as $cfpK => $cfpA) {
         if (!cfpIkut($cfpA, $cfpPc, $cfpKunciBank)) { continue; }
         $cfpKolom[] = array(
@@ -751,8 +830,8 @@ if ($cfpModeAkun) {
     }
     foreach ($cfpKolom as $cfpI => $cfpKol) {
         $cfpKk = $cfpKol['kunci'];
-        $cfpAwalK = (!empty($cfpKol['loan']) || !isset($cfpSaldo[$cfpKk]))
-                  ? 0 : cfpIdr($cfpAkun[$cfpKk], $cfpSaldo[$cfpKk]['pakai'], $cfpRate);
+        $cfpAwalK = !isset($cfpSaldo[$cfpKk]) ? 0
+                  : cfpAwalKas($cfpAkun[$cfpKk], $cfpSaldo[$cfpKk], $cfpRate);
         $cfpBukaK[$cfpI]  = $cfpAwalK;
         $cfpTutupK[$cfpI] = $cfpAwalK + $cfpMasukK[$cfpI] + $cfpKeluarK[$cfpI];
     }
@@ -837,6 +916,13 @@ if ($cfpModeAkun) {
     }
 }
 
+$cfpBarisAkun = $cfpBarisLap;
+$cfpPinjAkun  = $cfpBarisPinj;
+
+/* 'baris' & 'pinjaman' tetap memuat tata letak BAWAAN type-nya - itu yang
+   dibaca pemanggil lama (ekspor, potret) sebelum semuanya ikut dua-duanya. */
+if (!$cfpModeAkun) { $cfpBarisLap = $cfpBarisTgl; $cfpBarisPinj = $cfpPinjTgl; }
+
 /* ---------------------------------------------------------------------------
    10. KELUARAN
    --------------------------------------------------------------------------- */
@@ -888,11 +974,18 @@ echo json_encode(array(
     /* mode 'tanggal' = kolomnya tanggal (Daily); mode 'akun' = kolomnya
        rekening (Weekly/Monthly). Layar & ekspor memilih kepala tabel dari
        sini, bukan menebak dari type. */
+    /* mode = tab mana yang TERBUKA DULUAN, bukan satu-satunya yang ada.
+       baris/pinjaman = isi tab itu, dipertahankan untuk pemanggil lama;
+       baris_tgl/baris_akun = dua-duanya, selalu terisi. */
     'mode'     => $cfpModeAkun ? 'akun' : 'tanggal',
     'kolom'    => $cfpKolom,
-    'tgl'      => $cfpModeAkun ? array() : $cfpTanggal,
+    'tgl'      => $cfpTanggal,
     'baris'    => $cfpBarisLap,
     'pinjaman' => $cfpBarisPinj,
+    'baris_tgl'     => $cfpBarisTgl,
+    'pinjaman_tgl'  => $cfpPinjTgl,
+    'baris_akun'    => $cfpBarisAkun,
+    'pinjaman_akun' => $cfpPinjAkun,
     'bank'     => $cfpDaftarBank,
     'info'     => array(
         'periode'    => date('j M Y', strtotime($cfpMulai)) . ' - ' . date('j M Y', strtotime($cfpAkhir)),
@@ -902,8 +995,11 @@ echo json_encode(array(
            perusahaan: laporan ini melayani Garment maupun Knitting. */
         'pc'         => ($cfpPc === 'ALL' || $cfpPc === '') ? 'All PC' : $cfpPc,
         'pc_label'   => isset($cfpNamaPc[$cfpPc]) ? $cfpNamaPc[$cfpPc] : 'All PC',
-        'bank'       => ($cfpKunciBank === '') ? 'All Banks'
-                        : (isset($cfpAkun[$cfpKunciBank]) ? $cfpAkun[$cfpKunciBank]['label'] : $cfpBank),
+        /* NAMA rekeningnya yang disimpan, bukan kuncinya - nilai ini ikut
+           dibekukan ke potret (ap_cf_history_h.bank) dan dibaca manusia di
+           kepala laporan & Excel. Beberapa rekening digabung dgn '; ', dan
+           cfpDaftarKunciBank() tahu cara memecahnya kembali. */
+        'bank'       => cfpLabelBank($cfpAkun, $cfpKunciBank, $cfpBank),
         'type'       => $cfpType,
         'ar_doc'     => $cfpArDoc,
         'ap_doc'     => $cfpApDoc,

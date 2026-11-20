@@ -70,7 +70,9 @@ $cfoEsc     = mysqli_real_escape_string($conn2, $cfoTanggal);
    dikerjakan di sini karena bank[] sengaja memuat seluruh rekening PC itu
    (dipakai juga untuk mengisi dropdown).
    --------------------------------------------------------------------------- */
-$cfoKunciBank = ($cfoBank === '' || strtoupper($cfoBank) === 'ALL') ? '' : (string) cfpKunci($cfoBank);
+/* LARIK kunci rekening, kosong = semua - saringan Bank di layar bisa
+   dicentang beberapa sejak 19 Nov 2026. */
+$cfoKunciBank = cfpDaftarKunciBank($cfoBank);
 /* SELURUH ANGKA DI MODAL INI DALAM RUPIAH (permintaan pemakai 17 Nov 2026).
    Di basis data saldonya disimpan dalam MATA UANG REKENINGNYA sendiri -
    itu yang dipakai mesin dan yang dibekukan ke dokumen history - jadi
@@ -81,21 +83,36 @@ $cfoAkun = array();
 $cfoJumSistem = 0;
 $cfoJumPakai  = 0;
 $cfoRate = (float) $cfoHasil['info']['rate'];
-$cfoPinjamanDipilih = false;
+/* REKENING PINJAMAN IKUT TAMPIL (permintaan pemakai 19 Nov 2026 - BCA
+   008-997-1979 & 008-998-1982). Dulu dibuang dari daftar ini karena saldo
+   awalnya bukan bagian dari baris OPENING CASH & BANK BALANCE melainkan
+   milik blok pinjaman; akibatnya pemakai tidak punya satu pun tempat untuk
+   melihat, apalagi menyetel, saldo awal kedua rekening itu.
+
+   SALDO SISTEMNYA tidak ikut dijumlahkan - angka itu besarnya pinjaman yang
+   masih berjalan, bukan uang yang bisa dipakai - TAPI ANGKA YANG DIKETIK
+   TANGAN IKUT (permintaan pemakai 19 Nov 2026: &quot;kalau user isi, totalnya
+   nambah&quot;). Aturan yang sama persis dipakai mesin laporan di
+   cfpAwalKas(), jadi TOTAL IN IDR di modal ini dan baris OPENING di laporan
+   tidak bisa berbeda. */
 foreach ($cfoHasil['bank'] as $b) {
-    if ($cfoKunciBank !== '' && (string) $b['kunci'] !== $cfoKunciBank) { continue; }
-    if (!empty($b['loan'])) { $cfoPinjamanDipilih = true; continue; }
+    if ($cfoKunciBank && !in_array((string) $b['kunci'], $cfoKunciBank, true)) { continue; }
+    $pinjaman = !empty($b['loan']);
     $kurs = (strtoupper($b['curr']) === 'USD') ? $cfoRate : 1;
     $cfoAkun[] = array(
         'kunci'  => $b['kunci'],
         'label'  => $b['label'],
         'curr'   => $b['curr'],
         'pc'     => $b['pc'],
+        'loan'   => $pinjaman ? 1 : 0,
         'sistem' => (float) $b['saldo_tarik'] * $kurs,
         /* manual sudah RUPIAH apa adanya - tidak dikalikan lagi */
         'manual' => (isset($b['manual']) && $b['manual'] !== null) ? (float) $b['manual'] : null,
     );
-    $cfoJumSistem += (float) $b['saldo_tarik'] * $kurs;
+    /* Rekening pinjaman tanpa angka tangan menyumbang 0 ke dua-duanya. */
+    $adaManual = (isset($b['manual']) && $b['manual'] !== null);
+    if ($pinjaman && !$adaManual) { continue; }
+    if (!$pinjaman) { $cfoJumSistem += (float) $b['saldo_tarik'] * $kurs; }
     $cfoJumPakai  += (float) $b['saldo_pakai'] * $kurs;
 }
 
@@ -140,16 +157,8 @@ if ($q) {
 $cfoAdaManual = 0;
 foreach ($cfoAkun as $a) { if ($a['manual'] !== null) { $cfoAdaManual++; } }
 
-/* Rekening pinjaman memang punya saldo awal, tapi tempatnya di blok
-   pinjaman - bukan di baris OPENING CASH & BANK BALANCE - jadi tidak bisa
-   disetel dari sini. Dikatakan terus terang, bukan dibiarkan kosong tanpa
-   sebab. */
 $cfoPesan = '';
-if (!$cfoAkun) {
-    $cfoPesan = $cfoPinjamanDipilih
-        ? 'The selected account is a loan account. Its opening balance belongs to the loan block, not to the cash & bank opening balance.'
-        : 'No cash or bank account matches the current filter.';
-}
+if (!$cfoAkun) { $cfoPesan = 'No cash or bank account matches the current filter.'; }
 
 echo json_encode(array(
     'status'      => 'success',

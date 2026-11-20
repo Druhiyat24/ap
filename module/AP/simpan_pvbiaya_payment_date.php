@@ -74,26 +74,9 @@ if (!is_array($baris) || count($baris) === 0) {
    persis dgn ajx_cari-pv-biaya.php - termasuk ambang >= 1 - supaya apa yang
    boleh disimpan tidak pernah lebih longgar dari apa yang boleh dicari.
    --------------------------------------------------------------------------- */
-$sahQ = mysqli_query($conn2, "
-with total_pv as (
-  select b.profit_center, a.no_pv, a.curr,
-         (SUM(b.amount - b.ded_add)
-          + SUM((b.amount * b.ppn/100) - (b.ded_add * b.ppn/100))
-          - SUM((b.amount * b.pph/100) - (b.ded_add * b.pph/100))) total
-    from tbl_pv_h a
-    inner join tbl_pv b on b.no_pv = a.no_pv
-   where a.status = 'Approved'
-   group by a.no_pv, b.profit_center),
-total_bk as (
-  select a.profit_center, a.no_reff, sum(a.total) total_pv
-    from b_bankout_det a
-   inner join b_bankout_h b on b.no_bankout = a.no_bankout
-   where b.status <> 'Cancel' and a.type_pv = 'Biaya'
-   group by a.no_reff, a.profit_center)
-select a.no_pv, a.profit_center, a.curr, (a.total - COALESCE(b.total_pv,0)) sisa
-  from total_pv a
-  left join total_bk b on b.no_reff = a.no_pv and b.profit_center = a.profit_center
- where (a.total - COALESCE(b.total_pv,0)) >= 1");
+/* Query yang SAMA dgn pencariannya (pvb_biaya_sql) - apa yang boleh
+   disimpan tidak pernah lebih longgar daripada apa yang boleh dicari. */
+$sahQ = mysqli_query($conn2, pvb_biaya_sql("(a.total - COALESCE(b.total_pv,0)) >= 1"));
 if (!$sahQ) {
     echo json_encode(array('status' => 'error', 'message' => mysqli_error($conn2)));
     exit;

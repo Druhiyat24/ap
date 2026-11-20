@@ -323,9 +323,13 @@ function gambar(data) {
 
   $.each(data, function (i, d) {
     /* Tanggal rencana diisi lebih dulu dgn rencana yang BERLAKU kalau ada;
-       kalau belum pernah dijadwalkan, dipakai due date-nya sendiri - itu
-       tebakan yang paling masuk akal dan tetap bisa diganti. */
-    var plan = d.plan_sekarang ? d.plan_sekarang : d.due_date;
+       kalau belum pernah dijadwalkan, dipakai KAMIS di minggu jatuh temponya -
+       bukan due date-nya sendiri (diperbaiki 20 Nov 2026). Alasannya: Kamis
+       itulah yang SUDAH dipakai laporan proyeksi untuk dokumen yang belum
+       dijadwalkan, jadi kalau layar ini menyarankan tanggal lain, pemakai
+       melihat dua tanggal untuk satu dokumen dan tidak ada yang memberitahu
+       mana yang berlaku. Tetap bisa diganti. */
+    var plan = d.plan_sekarang ? d.plan_sekarang : (d.plan_auto || d.due_date);
     var telat = (d.due_date && d.due_date < hariIni) ? ' class="telat"' : '';
     var ktg = d.kategori
             ? lolos(d.kategori)

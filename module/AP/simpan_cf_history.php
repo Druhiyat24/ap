@@ -45,8 +45,13 @@ $cfsMode  = isset($cfsHasil['mode']) ? $cfsHasil['mode'] : 'tanggal';
 $cfsKolom = isset($cfsHasil['kolom']) ? $cfsHasil['kolom'] : array();
 $cfsTgl   = $cfsHasil['tgl'];
 $cfsInfo  = $cfsHasil['info'];
-$cfsBaris = $cfsHasil['baris'];
-$cfsPinj  = $cfsHasil['pinjaman'];
+/* DUA TATA LETAK SEKALIGUS (permintaan pemakai 20 Nov 2026: &quot;baik weekly
+   maupun monthly format pertanggal juga tersimpan&quot;). Mesin selalu
+   mengirim dua-duanya; yang lama cuma punya 'baris', jadi tetap dijaga. */
+$cfsBarisTgl  = isset($cfsHasil['baris_tgl'])     ? $cfsHasil['baris_tgl']     : $cfsHasil['baris'];
+$cfsPinjTgl   = isset($cfsHasil['pinjaman_tgl'])  ? $cfsHasil['pinjaman_tgl']  : $cfsHasil['pinjaman'];
+$cfsBarisAkun = isset($cfsHasil['baris_akun'])    ? $cfsHasil['baris_akun']    : array();
+$cfsPinjAkun  = isset($cfsHasil['pinjaman_akun']) ? $cfsHasil['pinjaman_akun'] : array();
 $cfsBank  = isset($cfsHasil['bank']) ? $cfsHasil['bank'] : array();
 
 /* Weekly/Monthly tidak berkolom tanggal, jadi periodenya diambil dari
@@ -102,7 +107,24 @@ $cfsKirim = function () use (&$cfsAntri, $conn2, &$cfsGagal) {
     $cfsAntri = array();
 };
 
-foreach (array('report' => $cfsBaris, 'loan' => $cfsPinj) as $cfsBlok => $cfsDaftar) {
+/* Empat blok: dua tata letak x (laporan, pinjaman).
+     report    / loan      -> berkolom TANGGAL
+     rep_bank  / loan_bank -> berkolom REKENING
+   Nama bloknya sengaja pendek: kolom `blok` varchar(10), dan menambah lebar
+   kolom berarti satu migrasi lagi yang harus dijalankan di produksi.
+
+   POTRET LAMA tidak punya rep_bank sama sekali - ADA/TIDAKNYA blok itu yang
+   dipakai pembacanya untuk membedakan potret lama dari potret baru, jadi
+   tidak perlu kolom penanda baru. Di potret lama, blok `report` berisi tata
+   letak bawaan type-nya (tanggal untuk Daily, rekening untuk Weekly). */
+$cfsSemuaBlok = array(
+    'report'    => array($cfsBarisTgl,  false),
+    'loan'      => array($cfsPinjTgl,   false),
+    'rep_bank'  => array($cfsBarisAkun, true),
+    'loan_bank' => array($cfsPinjAkun,  true),
+);
+foreach ($cfsSemuaBlok as $cfsBlok => $cfsPasang) {
+    list($cfsDaftar, $cfsPakaiKolom) = $cfsPasang;
     foreach ($cfsDaftar as $cfsUrut => $cfsB) {
         $dep = "'" . cfsEsc($conn2, $cfsDoc) . "','" . $cfsBlok . "'," . (int) $cfsUrut . ",'"
              . cfsEsc($conn2, $cfsB['tipe']) . "','" . cfsEsc($conn2, $cfsB['no']) . "','"
@@ -120,7 +142,7 @@ foreach (array('report' => $cfsBaris, 'loan' => $cfsPinj) as $cfsBlok => $cfsDaf
         /* kolom_urut = urutan kolom saat disimpan. Tanpa itu, potret mode akun
            tidak bisa disusun ulang urut kolomnya waktu dibaca lagi - nama
            rekening saja tidak memberi urutan. */
-        if ($cfsMode === 'akun') {
+        if ($cfsPakaiKolom) {
             foreach ($cfsKolom as $i => $k) {
                 $v = isset($cfsB['v'][$i]) ? $cfsB['v'][$i] : null;
                 if ($v === null || round((float) $v) == 0) { continue; }

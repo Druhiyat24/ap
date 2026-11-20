@@ -93,31 +93,12 @@ if ($supplier !== '') {
 }
 $where = implode(' AND ', $saring);
 
-$sql = "
-with total_pv as (
-  select b.profit_center,
-         a.nama_supp, a.no_pv, a.pv_date, max(b.due_date) due_date, a.curr,
-         a.frm_akun, a.id_cash_flow, a.deskripsi,
-         (SUM(b.amount - b.ded_add)
-          + SUM((b.amount * b.ppn/100) - (b.ded_add * b.ppn/100))
-          - SUM((b.amount * b.pph/100) - (b.ded_add * b.pph/100))) total
-    from tbl_pv_h a
-    inner join tbl_pv b on b.no_pv = a.no_pv
-   where a.status = 'Approved'
-   group by a.no_pv, b.profit_center),
-total_bk as (
-  select a.profit_center, a.no_reff, sum(a.total) total_pv
-    from b_bankout_det a
-   inner join b_bankout_h b on b.no_bankout = a.no_bankout
-   where b.status <> 'Cancel' and a.type_pv = 'Biaya'
-   group by a.no_reff, a.profit_center)
-select a.no_pv, a.pv_date, a.due_date, a.nama_supp, a.curr, a.profit_center,
-       a.frm_akun, a.id_cash_flow, a.deskripsi,
-       (a.total - COALESCE(b.total_pv,0)) sisa
-  from total_pv a
-  left join total_bk b on b.no_reff = a.no_pv and b.profit_center = a.profit_center
- where $where
- order by a.due_date asc, a.no_pv asc";
+/* Query-nya PINDAH ke pvb_dpcbd_lib.php (20 Nov 2026) supaya layar ini dan
+   mesin proyeksi memakai hitungan sisa yang SAMA PERSIS - dua salinan query
+   seperti itu cepat atau lambat berbeda, dan bedanya berupa uang. Di sana
+   juga diperbaiki potongan pembayarannya: type_pv boleh NULL, karena kolom
+   itu baru diisi sejak 1 Juli 2026. */
+$sql = pvb_biaya_sql($where);
 
 $q = mysqli_query($conn2, $sql);
 if (!$q) {
@@ -184,6 +165,13 @@ while ($row = mysqli_fetch_assoc($q)) {
         'prioritas'     => in_array($rate, array('GREEN', 'YELLOW', 'RED'), true) ? $rate : '',
         'deskripsi'     => (string) $row['deskripsi'],
         'plan_sekarang' => $pl ? $pl['plan_date'] : '',
+        /* Tanggal yang SUDAH DIPAKAI laporan proyeksi selama dokumen ini
+           belum dijadwalkan: Kamis di minggu jatuh temponya, rumus yang
+           sama persis dgn pvb_tanpa_rencana(). Dikirim supaya kotak
+           rencana di layar menyarankan tanggal yang SAMA - kalau layar
+           menyarankan tanggal lain, pemakai melihat dua tanggal untuk
+           satu dokumen tanpa ada yang memberitahu mana yang berlaku. */
+        'plan_auto'     => pvb_kamis($row['due_date']),
         'plan_doc'      => $pl ? $pl['doc_number'] : '',
         'plan_ket'      => $pl && $pl['keterangan'] !== null ? $pl['keterangan'] : '',
     );
@@ -217,6 +205,13 @@ foreach (pvb_dpcbd_daftar($conn2, $dasar, $start_date, $end_date, $supplier) as 
         'prioritas'     => in_array($rate, array('GREEN', 'YELLOW', 'RED'), true) ? $rate : '',
         'deskripsi'     => '',
         'plan_sekarang' => $pl ? $pl['plan_date'] : '',
+        /* Tanggal yang SUDAH DIPAKAI laporan proyeksi selama dokumen ini
+           belum dijadwalkan: Kamis di minggu jatuh temponya, rumus yang
+           sama persis dgn pvb_tanpa_rencana(). Dikirim supaya kotak
+           rencana di layar menyarankan tanggal yang SAMA - kalau layar
+           menyarankan tanggal lain, pemakai melihat dua tanggal untuk
+           satu dokumen tanpa ada yang memberitahu mana yang berlaku. */
+        'plan_auto'     => pvb_kamis($row['due_date']),
         'plan_doc'      => $pl ? $pl['doc_number'] : '',
         'plan_ket'      => $pl && $pl['keterangan'] !== null ? $pl['keterangan'] : '',
     );
@@ -249,6 +244,13 @@ foreach (pvb_ftrcash_daftar($conn2, $dasar, $start_date, $end_date, $supplier) a
         'prioritas'     => in_array($rate, array('GREEN', 'YELLOW', 'RED'), true) ? $rate : '',
         'deskripsi'     => '',
         'plan_sekarang' => $pl ? $pl['plan_date'] : '',
+        /* Tanggal yang SUDAH DIPAKAI laporan proyeksi selama dokumen ini
+           belum dijadwalkan: Kamis di minggu jatuh temponya, rumus yang
+           sama persis dgn pvb_tanpa_rencana(). Dikirim supaya kotak
+           rencana di layar menyarankan tanggal yang SAMA - kalau layar
+           menyarankan tanggal lain, pemakai melihat dua tanggal untuk
+           satu dokumen tanpa ada yang memberitahu mana yang berlaku. */
+        'plan_auto'     => pvb_kamis($row['due_date']),
         'plan_doc'      => $pl ? $pl['doc_number'] : '',
         'plan_ket'      => $pl && $pl['keterangan'] !== null ? $pl['keterangan'] : '',
     );

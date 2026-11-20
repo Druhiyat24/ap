@@ -84,8 +84,10 @@ function cf_sumber_lembar()
                 array('PC Source', 'pc_source', 't'),
                 array('PC Destination', 'pc_tujuan', 't'),
                 array('Status', 'intra_inter', 't'),
-                array('Stored Rate', 'rate_simpan', 'n'),
-                array('Stored IDR', 'idr_simpan', 'n'),
+                /* Stored Rate & Stored IDR dibuang 20 Nov 2026, alasannya sama
+                   dgn lembar PV EXP: jejak teknis yang tidak dipakai membaca
+                   angkanya. Datanya tetap dihitung & disimpan - mengembalikannya
+                   cukup menulis lagi dua baris ini. */
             ),
         ),
         'OTHER_INFLOW' => array(
@@ -103,13 +105,15 @@ function cf_sumber_lembar()
                 array('Received Date', 'tanggal', 'd'),
                 array('PC', 'pc', 't'),
                 array('Bank', 'akun', 't'),
-                array('Stored Rate', 'rate_simpan', 'n'),
-                array('Stored IDR', 'idr_simpan', 'n'),
+                /* Stored Rate & Stored IDR dibuang 20 Nov 2026, alasannya sama
+                   dgn lembar PV EXP: jejak teknis yang tidak dipakai membaca
+                   angkanya. Datanya tetap dihitung & disimpan - mengembalikannya
+                   cukup menulis lagi dua baris ini. */
             ),
         ),
         'PV_EXP' => array(
             'judul' => 'PV EXP', 'warna' => 'C00000',
-            'catatan' => 'Planned expense payments (Update Payment Date PV Biaya) plus PV Expense lines from Cash Flow Projection (Other).',
+            'catatan' => 'Expense payments: scheduled ones from Update Payment Date, unscheduled ones placed on the Thursday of their due week, plus PV Expense lines from Cash Flow Projection (Other).',
             'kolom' => array(
                 array('Payment Voucher No', 'no_pv', 't'),
                 array('Supplier Name', 'supplier', 't'),
@@ -121,9 +125,14 @@ function cf_sumber_lembar()
                 array('Due Date', 'tanggal', 'd'),
                 array('PC', 'pc', 't'),
                 array('Bank', 'akun', 't'),
-                array('Source', 'sumber', 't'),
-                array('Stored Rate', 'rate_simpan', 'n'),
-                array('Stored IDR', 'idr_simpan', 'n'),
+                /* Source, Stored Rate & Stored IDR DIBUANG dari lembar ini
+                   (permintaan pemakai 20 Nov 2026). Tiga kolom itu jejak
+                   teknis - dari mana barisnya datang dan kurs/rupiah yang
+                   dibekukan - dan di lembar PV EXP isinya tidak pernah
+                   dipakai membaca angkanya. Kolomnya MASIH ADA di lembar
+                   lain yang memang memakainya; yang dibuang cuma di sini.
+                   Datanya tetap dihitung & disimpan, jadi memunculkannya
+                   lagi cukup mengembalikan tiga baris ini. */
             ),
         ),
         'PV_AP' => array(
@@ -360,10 +369,22 @@ function cf_kumpul_sumber($conn, $cfg)
         }
     }
 
+    /* Bank & Profit Center yang kosong dilengkapi dari invoice-nya -
+       lihat cfs_lengkapi_ar(). Dikerjakan SEKALI di sini, sesudah kedua
+       jalur (potret & hitung ulang) selesai, supaya tidak ada satu jalur
+       yang ketinggalan. */
+    $hasil['AR_EXISTING'] = cfs_lengkapi_ar($conn, $hasil['AR_EXISTING']);
+
     /* ------------------------------- Book Transfer / Other Inflow / PV EXP
        Satu tabel, tiga jenis - dipisah ke lembarnya masing-masing. */
+    /* Saringan yang SAMA PERSIS dgn mesin laporannya - kalau berbeda,
+       lembar rinciannya akan menyalahkan angka di laporannya sendiri. */
+    require_once __DIR__ . '/cash_projection/cfp_lib.php';
+    $saringOther = cfp_saring_type_report($conn, isset($cfg['type']) ? $cfg['type'] : '');
     $q = mysqli_query($conn, "select * from ap_cf_projection
-                               where status <> 'Cancel' and tanggal between '$mulai' and '$akhir'
+                               where status <> 'Cancel'
+                                 and tanggal between '$mulai' and '$akhir'
+                                     $saringOther
                                order by tanggal asc, id asc");
     while ($q && ($r = mysqli_fetch_assoc($q))) {
         $jenis = strtoupper(trim($r['jenis']));
@@ -456,6 +477,39 @@ function cf_kumpul_sumber($conn, $cfg)
         }
     }
 
+    /* ---- Dokumen yang BELUM dijadwalkan - lembar PV EXP yang sama ----
+       Sejak 20 Nov 2026 mesin proyeksi ikut menarik PV biaya / DP / CBD /
+       FTR yang outstanding tapi belum pernah diberi tanggal, dgn tanggal
+       Kamis di minggu jatuh temponya. Baris itu HARUS ikut didaftar di sini:
+       kalau tidak, lembar rinciannya menampilkan satu baris sementara
+       laporannya memuat belasan - dan pembacanya menyimpulkan laporannya
+       yang salah. Dibaca lewat fungsi yang SAMA dgn mesinnya
+       (pvb_tanpa_rencana), jadi dua-duanya mustahil berbeda isi. */
+    /* Di-require DI SINI juga: yang di atas ada di dalam syarat 'tabel rencana ada',
+       sedangkan dokumen yang belum dijadwalkan tetap harus terdaftar walau tabel
+       rencananya belum pernah dibuat. */
+    require_once __DIR__ . '/pvb_dpcbd_lib.php';
+    {
+        $ktgNama2 = array();
+        foreach ($cfg['ktg'] as $id => $k) { $ktgNama2[(int) $id] = $k['nama']; }
+        foreach (pvb_tanpa_rencana($conn, $mulai, $akhir) as $r) {
+            $id = (int) $r['id_cash_flow'];
+            $kurs = cfs_kurs($cfg['akun'], (string) $r['frm_akun'], $rate);
+            $hasil['PV_EXP'][] = array(
+                'no_pv' => $r['no_pv'], 'supplier' => (string) $r['nama_supp'],
+                'kategori' => isset($ktgNama2[$id]) ? $ktgNama2[$id] : '(no cash flow category)',
+                'curr' => $r['curr'], 'amount' => (float) $r['amount'], 'rate' => $kurs,
+                'amount_idr' => abs((float) $r['amount']) * $kurs,
+                'tanggal' => cfs_tgl($r['tgl']),
+                'pc' => (string) $r['profit_center'], 'akun' => (string) $r['frm_akun'],
+                /* Sumbernya ditulis BEDA dari yang sudah dijadwalkan - supaya
+                   pembacanya tahu tanggal ini hitungan, bukan keputusan. */
+                'sumber' => 'Not scheduled yet (due-date Thursday) - ' . (string) $r['jenis'],
+                'rate_simpan' => null, 'idr_simpan' => null,
+            );
+        }
+    }
+
     /* ----------------------------------------------------------- PV AP
        Barisnya TIDAK diambil ulang dari basis data: dipakai keluaran mesin
        proyeksi AP yang sudah dipanggil, jadi lembar ini pasti sejalan dgn
@@ -530,4 +584,151 @@ function cf_kumpul_sumber($conn, $cfg)
     }
 
     return $hasil;
+}
+
+
+/* ============================================================================
+   AR EXISTING - BANK & PROFIT CENTER DIAMBIL DARI INVOICE-NYA.
+
+   Dilaporkan pemakai 20 Nov 2026: dua kolom itu kosong, padahal isinya ada di
+   invoice. Sebabnya: potret AR (tbl_history_projection_det) MEMANG tidak
+   memuatnya - `profit_center` tidak ada sebagai kolom sama sekali, dan
+   `bank_acc` ada tapi 3.074 dari 3.656 barisnya NULL. Jadi tidak ada yang
+   bisa dibaca dari potret itu; harus dicari ke dokumen aslinya.
+
+   DIISI HANYA KALAU KOSONG. Nilai yang memang tersimpan di potret menang -
+   itu yang dibekukan saat potret dibuat, dan potret tidak boleh berubah isi
+   hanya karena master-nya berubah sesudahnya.
+
+   Sumber rekeningnya berbeda-beda per jenis dokumen - itu keadaan datanya,
+   bukan pilihan di sini. Tiga tabel yang sama dgn yang dipakai mesin AR
+   (peta_bank_invoice di cf_ar_engine.php), ditambah profit_center yang di
+   mesin itu memang tidak ikut dibaca:
+     tbl_book_invoice.id_bank -> masterbank.id      (invoice booking)
+     tbl_invoice_nb.bank      -> masterbank.id      (invoice manual)
+     tbl_debitnote_h.akun     -> masterbank.no_rek  (debit note)
+   ============================================================================ */
+
+/** Nama bank yang dipendekkan - "BANK CENTRAL ASIA" jadi "BCA".
+ *
+ *  SALINAN dari singkat_bank() di cf_ar_engine.php, dan disalin karena
+ *  berkas itu dihasilkan ulang dari model ar_dev (lihat peringatan di
+ *  kepalanya) - menambal di sana akan hilang waktu dibuat ulang. Bentuk
+ *  keluarannya HARUS sama: satu kolom yang isinya campur "BCA - ..." dan
+ *  "BANK CENTRAL ASIA - ..." terbaca seperti dua bank yang berbeda. */
+function cfs_singkat_bank($nama)
+{
+    $nama = trim((string) $nama);
+    if ($nama === '') { return ''; }
+
+    $besar = strtoupper($nama);
+    $baku = array(
+        'CENTRAL ASIA' => 'BCA',   'NEGARA INDONESIA' => 'BNI',
+        'RAKYAT INDONESIA' => 'BRI', 'TABUNGAN NEGARA' => 'BTN',
+        'SYARIAH INDONESIA' => 'BSI', 'CIMB' => 'CIMB', 'MANDIRI' => 'MANDIRI',
+        'PERMATA' => 'PERMATA', 'DANAMON' => 'DANAMON', 'MAYBANK' => 'MAYBANK',
+        'BUKOPIN' => 'BUKOPIN', 'OCBC' => 'OCBC', 'PANIN' => 'PANIN',
+        'HSBC' => 'HSBC', 'DBS' => 'DBS', 'UOB' => 'UOB',
+    );
+    foreach ($baku as $kunci => $singkat) {
+        if (strpos($besar, $kunci) !== false) { return $singkat; }
+    }
+
+    $buang = array('PT', 'TBK', '(PERSERO)', 'PERSERO');
+    $kata = array();
+    foreach (preg_split('/[\s,.]+/', $besar) as $k) {
+        $k = trim($k);
+        if ($k === '' || in_array($k, $buang, true)) { continue; }
+        if (preg_match('/^[0-9\-]+$/', $k)) { continue; }
+        $kata[] = $k;
+    }
+    if (!$kata) { return $besar; }
+    if (count($kata) === 1) { return $kata[0]; }
+
+    $singkat = '';
+    foreach ($kata as $k) { $singkat .= substr($k, 0, 1); }
+    return $singkat;
+}
+
+/** Peta nomor invoice -> array(doc_type, bank_acc, profit_center). */
+function cfs_peta_invoice($conn, $nomor)
+{
+    $nomor = array_values(array_unique(array_filter(array_map('trim', $nomor), 'strlen')));
+    if (!$nomor) { return array(); }
+
+    $in = array();
+    foreach ($nomor as $n) { $in[] = "'" . mysqli_real_escape_string($conn, $n) . "'"; }
+    $in = implode(',', $in);
+
+    /* urut_sumber menentukan siapa yang menang kalau satu nomor kebetulan ada
+       di dua tabel - bukan urutan baris hasil, yang tidak dijamin MySQL. */
+    $sql = "
+        select bi.no_invoice nomor, 'Invoice' doc_type, 1 urut,
+               mb.nama_bank, mb.no_rek, bi.profit_center
+          from tbl_book_invoice bi
+          left join masterbank mb on mb.id = bi.id_bank
+         where bi.no_invoice in ($in)
+        union all
+        select nb.no_inv, 'Invoice', 2, mb.nama_bank, mb.no_rek, nb.profit_center
+          from tbl_invoice_nb nb
+          left join masterbank mb on mb.id = nb.bank
+         where nb.no_inv in ($in)
+        union all
+        select dn.no_dn, 'Debit Note', 3, mb.nama_bank, mb.no_rek, dn.profit_center
+          from tbl_debitnote_h dn
+          left join masterbank mb on mb.no_rek = dn.akun
+         where dn.no_dn in ($in)";
+
+    $peta = array();
+    $q = mysqli_query($conn, $sql);
+    while ($q && ($r = mysqli_fetch_assoc($q))) {
+        $no = trim((string) $r['nomor']);
+        $urut = (int) $r['urut'];
+        if (isset($peta[$no]) && $peta[$no]['_urut'] <= $urut) { continue; }
+
+        $bank = '';
+        if (trim((string) $r['nama_bank']) !== '') {
+            $bank = cfs_singkat_bank($r['nama_bank']);
+            if (trim((string) $r['no_rek']) !== '') { $bank .= ' - ' . trim($r['no_rek']); }
+        }
+        $peta[$no] = array(
+            'doc_type'      => (string) $r['doc_type'],
+            'bank_acc'      => $bank,
+            'profit_center' => trim((string) $r['profit_center']),
+            '_urut'         => $urut,
+        );
+    }
+    return $peta;
+}
+
+/** Mengisi yang kosong saja; yang sudah ada di potret dibiarkan. */
+function cfs_lengkapi_ar($conn, $baris)
+{
+    if (!$baris) { return $baris; }
+
+    $perlu = array();
+    foreach ($baris as $b) {
+        $kosong = (trim((string) $b['bank_acc']) === '' || trim((string) $b['bank_acc']) === '-')
+               || (trim((string) $b['profit_center']) === '');
+        if ($kosong && trim((string) $b['no_invoice']) !== '') { $perlu[] = $b['no_invoice']; }
+    }
+    if (!$perlu) { return $baris; }
+
+    $peta = cfs_peta_invoice($conn, $perlu);
+    if (!$peta) { return $baris; }
+
+    foreach ($baris as $i => $b) {
+        $no = trim((string) $b['no_invoice']);
+        if ($no === '' || !isset($peta[$no])) { continue; }
+        if (trim((string) $b['bank_acc']) === '' || trim((string) $b['bank_acc']) === '-') {
+            if ($peta[$no]['bank_acc'] !== '') { $baris[$i]['bank_acc'] = $peta[$no]['bank_acc']; }
+        }
+        if (trim((string) $b['profit_center']) === '' && $peta[$no]['profit_center'] !== '') {
+            $baris[$i]['profit_center'] = $peta[$no]['profit_center'];
+        }
+        if (trim((string) $b['doc_type']) === '' && $peta[$no]['doc_type'] !== '') {
+            $baris[$i]['doc_type'] = $peta[$no]['doc_type'];
+        }
+    }
+    return $baris;
 }

@@ -271,3 +271,36 @@ function cfp_type_report($v)
 {
     return (strtoupper(trim((string) $v)) === 'MONTHLY') ? 'MONTHLY' : 'WEEKLY';
 }
+
+
+/* ----------------------------------------------------------------------
+   POTONGAN SQL: entri Projection Other yang BOLEH ikut sebuah laporan.
+
+   Permintaan pemakai 20 Nov 2026: laporan proyeksi cash flow hanya mengambil
+   entri yang jenisnya SAMA dgn type laporannya - Weekly mengambil Weekly,
+   Monthly mengambil Monthly. DAILY BELUM PUNYA INPUTAN sama sekali (tombol
+   Create-nya sengaja belum dibuat), jadi untuk Daily hasilnya KOSONG - bukan
+   diam-diam memakai entri Weekly, yang akan membuat angka Daily terlihat
+   benar padahal isinya rencana minggu lain.
+
+   Dipakai mesin laporan DAN pengumpul lembar sumber Excel, supaya angka di
+   tabel dan rincian di Excel mustahil berbeda.
+
+   KOLOMNYA DITANYAKAN DULU: migrasi type_report dijalankan terpisah di
+   produksi, dan menyaring kolom yang belum ada membuat SELURUH laporan mati.
+   Selama kolomnya belum ada, perilakunya persis seperti sebelum pemisahan
+   ini - semua entri ikut, apa pun type-nya.
+   ---------------------------------------------------------------------- */
+function cfp_saring_type_report($conn, $type, $alias = '')
+{
+    $q = mysqli_query($conn, "show columns from `ap_cf_projection` like 'type_report'");
+    if (!$q || !mysqli_num_rows($q)) { return ''; }
+
+    $p = ($alias === '') ? '' : $alias . '.';
+    $t = strtoupper(trim((string) $type));
+    if ($t !== 'WEEKLY' && $t !== 'MONTHLY') {
+        /* Daily - dan apa pun yang belum dikenal - tidak mengambil apa-apa. */
+        return ' and 1 = 0';
+    }
+    return " and {$p}type_report = '" . mysqli_real_escape_string($conn, $t) . "'";
+}

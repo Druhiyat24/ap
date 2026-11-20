@@ -29,13 +29,45 @@ if (!function_exists('cfpKunci')) {
     }
 }
 
+/* Saringan Bank di layar -> LARIK kunci rekening. Larik kosong = semua
+   rekening. Sejak 19 Nov 2026 saringannya bisa memilih BEBERAPA rekening
+   sekaligus, jadi nilainya dikirim sbg daftar dipisah titik koma.
+
+   Dipakai juga untuk membaca NAMA rekening yang dibekukan di potret
+   (ap_cf_history_h.bank), yang isinya label lengkap dipisah '; ' -
+   cfpKunci() mengambil angkanya saja, jadi label maupun kunci sama-sama
+   jatuh ke kunci yang benar tanpa perlu dua jalur. */
+if (!function_exists('cfpDaftarKunciBank')) {
+    function cfpDaftarKunciBank($v)
+    {
+        if (is_array($v)) { $v = implode(';', $v); }
+        $v = trim((string) $v);
+        if ($v === '' || strtoupper($v) === 'ALL' || strcasecmp($v, 'All Banks') === 0) { return array(); }
+        $keluar = array();
+        foreach (preg_split('/[;,]/', $v) as $bagian) {
+            $bagian = trim($bagian);
+            if ($bagian === '' || strtoupper($bagian) === 'ALL') { continue; }
+            $k = (string) cfpKunci($bagian);
+            if ($k !== '' && !in_array($k, $keluar, true)) { $keluar[] = $k; }
+        }
+        return $keluar;
+    }
+}
+
 /* Ikut tidaknya satu akun menurut saringan Profit Center & Bank di layar. */
 if (!function_exists('cfpIkut')) {
     function cfpIkut($a, $pcPil, $kunciBank)
     {
-        /* dibandingkan sbg TEKS - kunci rekening yang isinya angka murni
-           gampang berubah jadi integer waktu dipakai sbg kunci array */
-        if ($kunciBank !== '' && (string) $a['kunci'] !== (string) $kunciBank) { return false; }
+        /* $kunciBank boleh LARIK (beberapa rekening, sejak 19 Nov 2026) atau
+           TEKS (satu rekening, bentuk lama). Dua-duanya diterima supaya
+           pemanggil lama tidak ikut rusak diam-diam.
+           Dibandingkan sbg TEKS - kunci rekening yang isinya angka murni
+           gampang berubah jadi integer waktu dipakai sbg kunci array. */
+        if (is_array($kunciBank)) {
+            if ($kunciBank && !in_array((string) $a['kunci'], $kunciBank, true)) { return false; }
+        } elseif ($kunciBank !== '' && (string) $a['kunci'] !== (string) $kunciBank) {
+            return false;
+        }
         if ($pcPil !== 'ALL' && $pcPil !== '' && strtoupper($a['pc']) !== $pcPil) { return false; }
         return true;
     }
@@ -132,13 +164,13 @@ function cf_akun_realisasi($conn, $pcPotret, $bankPotret)
     $pc   = strtoupper(trim((string) $pcPotret));
     $bank = trim((string) $bankPotret);
     $pcPil = ($pc === '' || $pc === 'ALL' || $pc === 'ALL PC') ? 'ALL' : $pc;
-    $bankSemua = ($bank === '' || strtoupper($bank) === 'ALL' || strcasecmp($bank, 'All Banks') === 0);
+    $kunciBank = cfpDaftarKunciBank($bank);       /* kosong = semua rekening */
+    $bankSemua = !$kunciBank;
 
     if ($pcPil === 'ALL' && $bankSemua) { return array(); }
 
     include_once __DIR__ . '/cfr_functions.php';
     $peta = cf_daftar_akun($conn);
-    $kunciBank = $bankSemua ? '' : cfpKunci($bank);
 
     $akun = array();
     foreach (cfrGetAllAccounts($conn) as $a) {

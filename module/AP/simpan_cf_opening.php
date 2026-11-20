@@ -92,8 +92,13 @@ $tglEsc = mysqli_real_escape_string($conn2, $cfsTanggal);
    sehingga angka yang dibaca kembali beda puluhan rupiah dari yang diketik. */
 $cfsRate = (float) $cfsHasil['info']['rate'];
 $cfsSah = array();
+/* REKENING PINJAMAN IKUT SAH (permintaan pemakai 19 Nov 2026). Dulu
+   dilewati di sini - dan karena baris yang rekeningnya tidak dikenali
+   memang DIABAIKAN DIAM-DIAM di bawah, angka yang diketik untuk rekening
+   pinjaman akan hilang tanpa satu pun pesan. Selama modalnya tidak pernah
+   menampilkannya hal itu tak terlihat; begitu ditampilkan, penjaga ini
+   WAJIB ikut dibuka. */
 foreach ($cfsHasil['bank'] as $b) {
-    if (!empty($b['loan'])) { continue; }
     $kurs = (strtoupper($b['curr']) === 'USD' && $cfsRate > 0) ? $cfsRate : 1;
     $cfsSah[$b['kunci']] = array('label' => $b['label'], 'curr' => $b['curr'],
                                  'sistem' => (float) $b['saldo_tarik'] * $kurs);   /* rupiah */

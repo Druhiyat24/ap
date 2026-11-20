@@ -300,3 +300,188 @@ if (!function_exists('pvb_ftrcash_daftar')) {
         return $hasil;
     }
 }
+
+
+/* ============================================================================
+   PV BIAYA - SISA yang belum dibayar.
+
+   Dipindah ke sini dari ajx_cari-pv-biaya.php supaya layar Update Payment
+   Date dan mesin proyeksi memakai HITUNGAN YANG SAMA PERSIS. Dua salinan
+   query seperti ini cepat atau lambat berbeda, dan bedanya berupa uang.
+
+   PERBAIKAN 20 Nov 2026 - type_pv BOLEH NULL:
+   Potongannya dulu `a.type_pv = 'Biaya'` saja. Kolom type_pv baru mulai diisi
+   1 Juli 2026; SELURUH pembayaran sebelum tanggal itu NULL (1.163 baris di
+   2026 saja, ditambah 2022-2025) sehingga tidak pernah ikut terpotong.
+   Akibatnya di produksi 29 PV senilai Rp 22,07 M tampil masih outstanding
+   padahal bank out-nya ada dan Approved - mis. PV/NAG/0426/00781 Rp 9,75 M.
+   Sesudah NULL ikut dipotong: 51 PV / Rp 25,02 M turun jadi 22 PV / Rp 2,95 M.
+
+   Aman karena no_reff sudah menentukan dokumennya: di seluruh b_bankout_det,
+   baris ber-no_reff 'PV/%' HANYA punya type_pv 'Biaya' atau NULL - tidak ada
+   jenis lain yang memakai penomoran itu.
+   ============================================================================ */
+if (!function_exists('pvb_biaya_sql')) {
+    /** Subquery pembayaran PV biaya. */
+    function pvb_biaya_bayar()
+    {
+        return "
+            select a.profit_center, a.no_reff, sum(a.total) total_pv
+              from b_bankout_det a
+             inner join b_bankout_h b on b.no_bankout = a.no_bankout
+             where b.status <> 'Cancel'
+               and a.no_reff like 'PV/%'
+               and (a.type_pv = 'Biaya' or a.type_pv is null)
+             group by a.no_reff, a.profit_center";
+    }
+
+    /**
+     * Query sisa PV biaya. $where dipasang pemanggilnya - kolom yang boleh
+     * dipakai: a.no_pv, a.pv_date, a.due_date, a.nama_supp, dan
+     * (a.total - COALESCE(b.total_pv,0)) untuk sisanya.
+     */
+    function pvb_biaya_sql($where)
+    {
+        $bayar = pvb_biaya_bayar();
+        return "
+with total_pv as (
+  select b.profit_center,
+         a.nama_supp, a.no_pv, a.pv_date, max(b.due_date) due_date, a.curr,
+         a.frm_akun, a.id_cash_flow, a.deskripsi,
+         (SUM(b.amount - b.ded_add)
+          + SUM((b.amount * b.ppn/100) - (b.ded_add * b.ppn/100))
+          - SUM((b.amount * b.pph/100) - (b.ded_add * b.pph/100))) total
+    from tbl_pv_h a
+    inner join tbl_pv b on b.no_pv = a.no_pv
+   where a.status = 'Approved'
+   group by a.no_pv, b.profit_center),
+total_bk as ($bayar)
+select a.no_pv, a.pv_date, a.due_date, a.nama_supp, a.curr, a.profit_center,
+       a.frm_akun, a.id_cash_flow, a.deskripsi,
+       (a.total - COALESCE(b.total_pv,0)) sisa
+  from total_pv a
+  left join total_bk b on b.no_reff = a.no_pv and b.profit_center = a.profit_center
+ where $where
+ order by a.due_date asc, a.no_pv asc";
+    }
+}
+
+/* ============================================================================
+   KAMIS - hari bayar (aturan tim AP).
+
+   Yang dipakai Kamis DI MINGGU YANG SAMA (Minggu-Sabtu) dgn jatuh temponya,
+   BUKAN Kamis berikutnya: rumusnya disalin dari ajx_ap_projection_report.php
+   supaya PV biaya dan PV AP mustahil memberi tanggal berbeda untuk minggu
+   yang sama. Untuk Jumat & Sabtu hasilnya MUNDUR, dan memang begitu maunya.
+
+   DAYOFWEEK MySQL: Minggu=1 .. Sabtu=7, Kamis=5, jadi selisihnya 5-DAYOFWEEK.
+   date('w') PHP: Minggu=0 .. Sabtu=6, jadi selisih yang sama = 4 - w.
+   ============================================================================ */
+if (!function_exists('pvb_kamis')) {
+    function pvb_kamis($tgl)
+    {
+        $t = strtotime((string) $tgl);
+        if ($t === false) { return ''; }
+        $geser = 4 - (int) date('w', $t);
+        return date('Y-m-d', strtotime(($geser >= 0 ? '+' : '') . $geser . ' day', $t));
+    }
+}
+
+/* ============================================================================
+   DOKUMEN YANG BELUM PUNYA RENCANA BAYAR.
+
+   Diminta pemakai 20 Nov 2026: "yang belum diupdate pun bisa ditarik ...
+   harusnya ikut ter-set dulu ke Kamis terdekat seperti yang PV AP". Sebelum
+   ini, laporan proyeksi HANYA memuat dokumen yang sudah diberi tanggal di
+   menu Update Payment Date - dan di produksi tidak satu pun dari 22 PV biaya
+   yang outstanding punya tanggal itu, jadi barisnya memang kosong melompong.
+
+   Aturannya disamakan dgn PV AP: rencana yang disetel orang MENANG; yang
+   belum punya memakai Kamis di minggu jatuh temponya. Dokumen yang sudah
+   LEWAT tempo karena itu jatuh di Kamis yang sudah lewat, jadi TIDAK muncul
+   di periode depan - sama persis dgn perilaku AP, dan memang begitu
+   seharusnya: menaruhnya di hari pertama periode sama saja dgn mengarang
+   tanggal bayar yang tidak pernah diputuskan siapa pun.
+   ============================================================================ */
+if (!function_exists('pvb_tanpa_rencana')) {
+    function pvb_tanpa_rencana($conn, $mulai, $akhir)
+    {
+        $mulai = (string) $mulai;
+        $akhir = (string) $akhir;
+        if ($mulai === '' || $akhir === '') { return array(); }
+
+        /* Yang SUDAH punya rencana - dikecualikan supaya tidak terhitung dua
+           kali. KUNCINYA NOMOR + PROFIT CENTER, bukan nomor saja: satu PV bisa
+           memuat baris dua profit center dgn nilai sendiri-sendiri (mis.
+           PV/NAG/0926/00040 = NAG 1.235.350.803 + NAK 4.643.784), dan layar
+           Update Payment Date memang menjadwalkannya sbg dua baris terpisah.
+           Kalau dikunci nomornya saja, menjadwalkan sisi NAG saja akan ikut
+           MENGHILANGKAN sisi NAK dari laporan - diam-diam, tanpa jejak.
+           Tabelnya boleh belum ada (produksi belum dimigrasi). */
+        $sudah = array();
+        $q = mysqli_query($conn, "show tables like 'ap_pvbiaya_plan_det'");
+        if ($q && mysqli_num_rows($q)) {
+            $q = mysqli_query($conn, "select distinct d.no_pv, d.profit_center
+                                        from ap_pvbiaya_plan_det d
+                                       inner join ap_pvbiaya_plan_h h
+                                          on h.doc_number = d.doc_number and h.status <> 'CANCEL'
+                                       where d.status = 'Y'");
+            while ($q && ($r = mysqli_fetch_assoc($q))) {
+                $sudah[(string) $r['no_pv'] . '|' . (string) $r['profit_center']] = 1;
+            }
+        }
+
+        $idKtg = (int) pvb_dpcbd_kategori($conn);
+        $hasil = array();
+
+        /* ---- PV Biaya: kategorinya ikut dokumennya ---- */
+        $q = mysqli_query($conn, pvb_biaya_sql("(a.total - COALESCE(b.total_pv,0)) >= 1"));
+        while ($q && ($r = mysqli_fetch_assoc($q))) {
+            $r['jenis'] = 'Biaya';
+            $r['id_cash_flow'] = (int) $r['id_cash_flow'];
+            $hasil[] = $r;
+        }
+
+        /* ---- DP, CBD, FTR cash: kategorinya tetap Uang Muka Supplier ---- */
+        foreach (array_merge(pvb_dpcbd_daftar($conn), pvb_ftrcash_daftar($conn)) as $r) {
+            $r['id_cash_flow'] = $idKtg;
+            $hasil[] = $r;
+        }
+
+        $keluar = array();
+        foreach ($hasil as $r) {
+            $kunci = (string) $r['no_pv'] . '|'
+                   . (isset($r['profit_center']) ? (string) $r['profit_center'] : '');
+            if (isset($sudah[$kunci])) { continue; }
+            /* TANGGALNYA SELALU KAMIS DI MINGGU JATUH TEMPONYA, tanpa kecuali -
+               termasuk dokumen yang jatuh temponya sudah lewat jauh (keputusan
+               pemakai 20 Nov 2026: "set saja Kamis sesuai tanggal temponya,
+               samakan saja walaupun batas temponya sudah lewat jauh").
+               Akibatnya yang sudah lewat tempo jatuh di Kamis yang sudah lewat
+               dan tidak muncul di periode depan - itu memang konsekuensinya,
+               dan sengaja TIDAK ditutupi dgn menggeser tanggalnya: menggeser
+               berarti mengarang tanggal bayar yang tidak pernah diputuskan
+               siapa pun. Yang perlu dibayar lebih cepat dijadwalkan lewat
+               menu Update Payment Date. */
+            $tgl = pvb_kamis($r['due_date']);
+            if ($tgl === '' || $tgl < $mulai || $tgl > $akhir) { continue; }
+            $keluar[] = array(
+                'tgl'          => $tgl,
+                'no_pv'        => $r['no_pv'],
+                'jenis'        => $r['jenis'],
+                'curr'         => $r['curr'],
+                'amount'       => (float) $r['sisa'],
+                'frm_akun'     => isset($r['frm_akun']) ? $r['frm_akun'] : '',
+                'id_cash_flow' => (int) $r['id_cash_flow'],
+                /* Nama supplier & profit center TIDAK dipakai mesin proyeksi,
+                   tapi WAJIB ada untuk lembar sumber Excel: lembar itu harus
+                   mendaftar baris yang sama persis dgn yang dihitung, kalau
+                   tidak ia menyalahkan angka di laporannya sendiri. */
+                'nama_supp'      => isset($r['nama_supp']) ? (string) $r['nama_supp'] : '',
+                'profit_center'  => isset($r['profit_center']) ? (string) $r['profit_center'] : '',
+                'due_date'       => isset($r['due_date']) ? (string) $r['due_date'] : '',
+            );
+        }
+        return $keluar;
+    }
+}

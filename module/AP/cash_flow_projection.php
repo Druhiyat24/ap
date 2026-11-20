@@ -29,6 +29,55 @@ include '../header.php';
    pertama tabel di bawahnya. */
 .cfd-cap-kanan { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
 
+/* DISEMBUNYIKAN 19 Nov 2026 (permintaan pemakai): modal saldo awal sudah
+   muncul sendiri waktu Search ditekan, jadi tombolnya mubazir. Yang
+   disembunyikan HANYA tampilannya - markup & seluruh kodenya sengaja
+   dibiarkan utuh, supaya memunculkannya lagi cukup menghapus satu baris di
+   bawah ini. Catatan: selama tersembunyi, modalnya hanya bisa dibuka lewat
+   Search PERTAMA untuk sebuah tanggal From (lihat cfoPernah di bawah). */
+#cfd-opening { display:none; }
+
+/* Saringan Bank bercentang. DISALIN dari filter Account di
+   report-cashflow-realisation.php (permintaan pemakai: &quot;persis seperti menu
+   realisasi&quot;) - kalau di sana diubah, ubah juga di sini. Gaya toggle
+   switch-nya sendiri aslinya dari panel Manage Role di userrole.php. */
+/* Kartu saringan TIDAK boleh memotong isinya: daftar rekeningnya
+   menggantung KELUAR dari kartu, sedangkan .ftl-card bawaannya
+   overflow:hidden - dan itulah yang membulatkan kepala birunya. Jadi
+   pemotongnya dimatikan DI KARTU INI SAJA, lalu kepala birunya dibulatkan
+   sendiri; tanpa baris kedua, sudut atas kartunya kembali siku. 15px, bukan
+   16px: itu radius di DALAM garis tepi 1px, persis seperti yang dipotong
+   overflow:hidden dulu. */
+.cfd-kartu-saring { overflow:visible; }
+.cfd-kartu-saring .ftl-head { border-radius:15px 15px 0 0; }
+
+#cfd-bank-menu { min-width:320px; max-height:320px; overflow-y:auto; }
+.cfd-bank-btn { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.cfd-acc-panel { display:grid; grid-template-columns:1fr; gap:8px; }
+.cfd-acc-all-row { border-bottom:1px solid #e2e8f0; margin-bottom:8px; padding-bottom:8px; }
+.cfd-acc-row { display:flex; align-items:center; justify-content:space-between; gap:8px;
+    padding:8px 10px; font-size:12.5px; background:#fff; border:1px solid #e2e8f0;
+    border-radius:8px; transition:box-shadow .15s ease, border-color .15s ease; }
+.cfd-acc-row:hover { border-color:#93c5fd; box-shadow:0 2px 6px rgba(37,99,235,.15); }
+.cfd-acc-label { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cfd-acc-all-row .cfd-acc-label { font-weight:700; }
+
+.toggle-switch { position:relative; display:inline-block; width:38px; height:21px; flex-shrink:0; }
+.toggle-switch input { opacity:0; width:0; height:0; }
+.toggle-slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0;
+    background-color:#cbd5e1; transition:background-color .2s ease; border-radius:21px; }
+.toggle-slider:before { position:absolute; content:""; height:15px; width:15px; left:3px; bottom:3px;
+    background-color:#fff; transition:transform .2s ease; border-radius:50%;
+    box-shadow:0 1px 3px rgba(0,0,0,.35); }
+.toggle-switch input:checked + .toggle-slider { background-color:#1E3A8A; }
+.toggle-switch input:checked + .toggle-slider:before { transform:translateX(17px); }
+.toggle-switch input:focus + .toggle-slider { box-shadow:0 0 0 3px rgba(30,58,138,.25); }
+
+/* Kotak To yang dikunci (Weekly/Monthly): terlihat BERBEDA, bukan cuma
+   tidak bisa diklik - kotak yang tampak biasa tapi tidak menanggapi
+   terbaca sbg aplikasi rusak. */
+#cfd-sampai.cfd-kunci { background:#f1f5f9; color:#475569; cursor:not-allowed; }
+
 #modal-opening .cfo-tbl { width:100%; font-size:12px; }
 #modal-opening .cfo-tbl th { background:#1E3A8A !important; color:#fff !important;
     font-size:10.5px; letter-spacing:.3px; text-transform:uppercase; padding:7px 9px; }
@@ -51,7 +100,9 @@ include '../header.php';
 <!-- MAIN -->
 <div class="container-fluid mt-3 p-3">
 
-    <div class="ftl-card">
+    <!-- cfd-kartu-saring: kartu ini TIDAK boleh memotong isinya, lihat
+         keterangannya di blok style di atas. -->
+    <div class="ftl-card cfd-kartu-saring">
         <div class="ftl-head">
             <span class="ftl-head-icon"><i class="fa fa-line-chart" aria-hidden="true"></i></span>
             <div>
@@ -73,11 +124,28 @@ include '../header.php';
                         </select>
                     </div>
 
+                    <!-- BANK BISA DICENTANG BEBERAPA (permintaan pemakai 19 Nov
+                         2026: &quot;persis seperti menu realisasi&quot;). Bentuknya
+                         ditiru dari filter Account di report-cashflow-realisation.php:
+                         dropdown berisi kartu toggle switch, baris ALL di atas,
+                         dan minimal satu rekening harus tetap menyala. Isinya
+                         diisi JS dari daftar rekening yang sama dgn laporannya. -->
                     <div class="col-12 col-sm-6 col-xl-2 mb-2">
-                        <label for="cfd-bank" class="form-label"><b>Bank</b></label>
-                        <select class="form-control app-select2" id="cfd-bank">
-                            <option value="ALL" selected="selected">All Banks</option>
-                        </select>
+                        <label class="form-label"><b>Bank</b></label>
+                        <div class="dropdown">
+                            <button type="button" class="form-control form-control-sm text-left dropdown-toggle cfd-bank-btn"
+                                    id="cfd-bank-btn" data-toggle="dropdown" aria-expanded="false">All Banks</button>
+                            <div class="dropdown-menu p-2" id="cfd-bank-menu">
+                                <div class="cfd-acc-row cfd-acc-all-row">
+                                    <span class="cfd-acc-label">ALL BANKS</span>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="cfd-acc-all" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="cfd-acc-panel" id="cfd-acc-panel"></div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Type: Daily dulu. Weekly & Monthly memakai TEMPLATE
@@ -149,6 +217,20 @@ include '../header.php';
                     <div class="app-spinner"></div>
                     <div class="app-loading-text" id="cfdLoadText">Building the projection...</div>
                 </div>
+            </div>
+
+            <!-- DUA TAB untuk SEMUA type (permintaan pemakai 20 Nov 2026).
+                 Isinya dua tata letak dari SATU jawaban yang sama, jadi
+                 berpindah tab tidak memanggil server lagi. Disembunyikan
+                 sampai ada hasilnya - pita tab di atas tabel kosong cuma
+                 bikin bingung. -->
+            <div class="cfd-tab-bar" id="cfd-tab-bar" style="display:none;">
+                <button type="button" class="cfd-tab" data-tata="tgl">
+                    <i class="fa fa-calendar" aria-hidden="true"></i> Report by Date
+                </button>
+                <button type="button" class="cfd-tab" data-tata="akun">
+                    <i class="fa fa-university" aria-hidden="true"></i> Report by Bank
+                </button>
             </div>
 
             <div class="cfd-scroll">
@@ -232,14 +314,16 @@ function cfdAman(t) {
 /* Kepala kolom tanggal; Sabtu & Minggu diberi latar beda tipis.
    kelas diisi saat kepala ini dipakai DI DALAM tbody (awal blok pinjaman) -
    di sana dua sel kirinya harus ikut menempel seperti baris biasa. */
-/* Dua tata letak: Daily berkolom TANGGAL, Weekly/Monthly berkolom REKENING.
-   Yang menentukan res.mode dari mesin, bukan tebakan dari dropdown Type -
-   supaya kepala tabel tidak pernah berbeda dari isi datanya. */
+/* DUA TATA LETAK, dua-duanya selalu ada: 'tgl' berkolom TANGGAL, 'akun'
+   berkolom REKENING. Jawaban mesin disimpan utuh supaya berpindah tab tidak
+   memanggil server lagi - angkanya pun dijamin dari hitungan yang sama. */
 var CFD_KOLOM = [];     /* kepala kolom yang sedang dipakai */
+var CFD_HASIL = null;   /* jawaban terakhir dari mesin */
+var CFD_TATA  = 'tgl';  /* tab yang sedang terbuka: 'tgl' | 'akun' */
 
 function cfdSiapkanKolom(res) {
     CFD_KOLOM = [];
-    if (res.mode === 'akun') {
+    if (CFD_TATA === 'akun') {
         for (var i = 0; i < res.kolom.length; i++) {
             CFD_KOLOM.push({ judul: cfdAman(res.kolom[i].label), kelas: '' });
         }
@@ -288,13 +372,57 @@ function cfdIsi(baris) {
    kesalahannya cuma kelihatan di console. */
 function cfdPasangBank(daftar, pilih) {
     if (!daftar) { return; }
-    var opt = '<option value="ALL">All Banks</option>';
+    /* pilih = larik kunci yang sebelumnya menyala. Yang sudah tidak ada di
+       daftar baru (mis. sesudah Profit Center diganti) hilang sendiri;
+       kalau tidak ada satu pun yang tersisa, semuanya dinyalakan - daftar
+       kosong berarti laporan kosong tanpa sebab yang terlihat. */
+    var dipilih = $.isArray(pilih) ? pilih : [];
+    var punya = [];
+    for (var i = 0; i < daftar.length; i++) { punya.push(String(daftar[i].kunci)); }
+    dipilih = $.grep(dipilih, function (k) { return $.inArray(String(k), punya) >= 0; });
+    var semua = (dipilih.length === 0);
+
+    var h = '';
     for (var b = 0; b < daftar.length; b++) {
-        opt += '<option value="' + cfdAman(daftar[b].kunci) + '">' + cfdAman(daftar[b].label) + '</option>';
+        var k = String(daftar[b].kunci);
+        var nyala = semua || ($.inArray(k, dipilih) >= 0);
+        h += '<div class="cfd-acc-row">'
+           + '<span class="cfd-acc-label" title="' + cfdAman(daftar[b].label) + '">'
+           + cfdAman(daftar[b].label) + '</span>'
+           + '<label class="toggle-switch">'
+           + '<input type="checkbox" class="cfd-acc-item" value="' + cfdAman(k) + '"'
+           + (nyala ? ' checked' : '') + '>'
+           + '<span class="toggle-slider"></span></label>'
+           + '</div>';
     }
-    $('#cfd-bank').html(opt).val(pilih || 'ALL');
-    if (!$('#cfd-bank').val()) { $('#cfd-bank').val('ALL'); }
-    $('#cfd-bank').trigger('change.select2');
+    $('#cfd-acc-panel').html(h);
+    cfdBankSegarkan();
+}
+
+/* Kunci rekening yang menyala. SEMUA menyala -> larik kosong, artinya
+   "semua rekening" - sama dgn yang dimengerti server. */
+function cfdBankTerpilih() {
+    var $item = $('.cfd-acc-item');
+    var $on = $item.filter(':checked');
+    if (!$item.length || $on.length === $item.length) { return []; }
+    return $on.map(function () { return String(this.value); }).get();
+}
+
+/* Tulisan tombol + keadaan saklar ALL disamakan dgn isi daftarnya. */
+function cfdBankSegarkan() {
+    var $item = $('.cfd-acc-item');
+    var $on = $item.filter(':checked');
+    var tulisan;
+    if (!$item.length || $on.length === $item.length) { tulisan = 'All Banks'; }
+    else if ($on.length === 1) { tulisan = $on.first().closest('.cfd-acc-row').find('.cfd-acc-label').text(); }
+    else { tulisan = $on.length + ' Banks Selected'; }
+    $('#cfd-bank-btn').text(tulisan).attr('title', tulisan);
+
+    var all = document.getElementById('cfd-acc-all');
+    if (all) {
+        all.checked = ($item.length > 0 && $on.length === $item.length);
+        all.indeterminate = ($on.length > 0 && $on.length < $item.length);
+    }
 }
 
 function cfdIsiBank(pilih) {
@@ -318,12 +446,45 @@ function cfdSibuk(teks) {
     $('#cfdLoad').addClass('is-loading');
 }
 
+/* Menggambar tabel dari jawaban yang SUDAH ADA - tidak memanggil server.
+   Dipanggil sesudah pencarian dan tiap kali tab dipindah. */
+function cfdGambar() {
+    var res = CFD_HASIL;
+    if (!res) { return; }
+    var baris = (CFD_TATA === 'akun') ? res.baris_akun : res.baris_tgl;
+    var pinj  = (CFD_TATA === 'akun') ? res.pinjaman_akun : res.pinjaman_tgl;
+    /* Jawaban lama (mis. dari potret) cuma punya 'baris' - dipakai apa
+       adanya supaya layar ini tidak kosong tanpa sebab. */
+    if (!baris) { baris = res.baris; pinj = res.pinjaman; }
+
+    cfdSiapkanKolom(res);
+    var isi = cfdIsi(baris);
+    if (pinj && pinj.length) {
+        /* Satu tabel, bukan dua: blok pinjaman menyambung di bawah,
+           dipisah SATU baris bergaris saja - kepalanya tidak diulang
+           karena kolomnya sudah pasti sama dgn kepala di atas. */
+        isi += '<tr class="r-spasi"><td colspan="' + (CFD_KOLOM.length + 2) + '"></td></tr>'
+             + cfdIsi(pinj);
+    }
+    $('#cfd-tbl thead').html(cfdKepala());
+    $('#cfd-tbl tbody').html(isi);
+
+    $('#cfd-tab-bar').show().find('.cfd-tab')
+        .removeClass('active').filter('[data-tata="' + CFD_TATA + '"]').addClass('active');
+    /* Guliran dikembalikan ke kiri: dua tata letak itu lebarnya jauh
+       berbeda, dan tabel yang tiba-tiba tergulir di tengah terbaca seperti
+       data yang hilang. */
+    $('.cfd-scroll').scrollLeft(0);
+}
+
 function cfdSaring() {
     return {
         start_date: $('#cfd-dari').val(),
         end_date:   $('#cfd-sampai').val(),
         pc:         $('#cfd-pc').val(),
-        bank:       $('#cfd-bank').val(),
+        /* Beberapa rekening digabung dgn titik koma; kosong = semua. Server
+           memecahnya lagi lewat cfpDaftarKunciBank(). */
+        bank:       cfdBankTerpilih().join(';') || 'ALL',
         type:       $('#cfd-type').val()
     };
 }
@@ -350,17 +511,11 @@ function cfdCari() {
                 Swal.fire({ icon: 'warning', title: 'Cannot build the report', text: (res && res.error) ? res.error : 'Unknown error' });
                 return;
             }
-            cfdSiapkanKolom(res);
-            var isi = cfdIsi(res.baris);
-            if (res.pinjaman && res.pinjaman.length) {
-                /* Satu tabel, bukan dua: blok pinjaman menyambung di bawah,
-                   dipisah SATU baris bergaris saja - kepalanya tidak diulang
-                   karena kolomnya sudah pasti sama dgn kepala di atas. */
-                isi += '<tr class="r-spasi"><td colspan="' + (CFD_KOLOM.length + 2) + '"></td></tr>'
-                     + cfdIsi(res.pinjaman);
-            }
-            $('#cfd-tbl thead').html(cfdKepala());
-            $('#cfd-tbl tbody').html(isi);
+            CFD_HASIL = res;
+            /* Tab yang terbuka duluan ikut type-nya (res.mode), tapi
+               keduanya sama-sama tersedia. */
+            CFD_TATA = (res.mode === 'akun') ? 'akun' : 'tgl';
+            cfdGambar();
 
             var i = res.info;
             $('#cfd-sub').text(i.periode + '  \u00b7  Rate ' + Number(i.rate).toLocaleString('en-US')
@@ -374,7 +529,7 @@ function cfdCari() {
             /* Daftarnya disegarkan dari jawaban laporan juga - isinya sama
                (pustaka yang sama), ini sekadar menjaga kalau master berubah
                selagi halaman terbuka. Pilihan pemakai dipertahankan. */
-            cfdPasangBank(res.bank, $('#cfd-bank').val());
+            cfdPasangBank(res.bank, cfdBankTerpilih());
         })
         .fail(function (x) {
             cfdSibuk(false);
@@ -383,11 +538,104 @@ function cfdCari() {
         });
 }
 
+/* ----------------------------------------------------------------------
+   PEMBATASAN RENTANG MENURUT TYPE (permintaan pemakai 19 Nov 2026):
+       Weekly  -> From hari MINGGU, To hari SABTU
+       Monthly -> From TANGGAL 1, To AKHIR BULAN
+       Daily   -> bebas
+   Satu minggu yang dimulai hari Rabu atau satu bulan yang dimulai tanggal
+   7 tetap tampil rapi - tidak ada yang kelihatan salah - padahal kolomnya
+   lalu tidak bisa dibandingkan dgn periode mana pun.
+
+   DUA LAPIS, karena satu lapis saja selalu bisa dilewati:
+   1. kalendernya dibatasi (hari yang tidak sah dimatikan; Monthly cuma
+      memilih bulan), jadi yang MEMILIH tidak bisa salah;
+   2. tanggalnya dirapikan sendiri sebelum dipakai, karena kotaknya bisa
+      DIKETIK TANGAN dan isinya juga tertinggal dari type sebelumnya.
+   ---------------------------------------------------------------------- */
+function cfdKeTgl(t) {
+    var b = String(t || '').split('-');
+    if (b.length !== 3) { return null; }
+    var d = new Date(Number(b[2]), Number(b[1]) - 1, Number(b[0]));
+    return isNaN(d.getTime()) ? null : d;
+}
+
+function cfdTeksTgl(d) {
+    function dua(n) { return (n < 10 ? '0' : '') + n; }
+    return dua(d.getDate()) + '-' + dua(d.getMonth() + 1) + '-' + d.getFullYear();
+}
+
+/* WEEKLY = TEPAT SATU MINGGU (7 hari, Minggu s/d Sabtu) dan MONTHLY = TEPAT
+   SATU BULAN (tanggal 1 s/d akhir bulan) - permintaan pemakai 19 Nov 2026.
+
+   Pada kedua type itu To BUKAN pilihan: ia turunan dari From, jadi kotaknya
+   dikunci (lihat cfdPasangKalender). Kotak yang nilainya ditentukan kode
+   TAPI tetap bisa diketik adalah undangan masalah: yang diketik hilang lagi
+   tanpa sebab yang terlihat. Dikunci, maksudnya langsung terbaca. */
+function cfdRapikanTanggal() {
+    var t = $('#cfd-type').val();
+    var a = cfdKeTgl($('#cfd-dari').val());
+    if (!a) { return; }
+    var b;
+    if (t === 'weekly') {
+        a.setDate(a.getDate() - a.getDay());                  /* mundur ke Minggu */
+        b = new Date(a.getFullYear(), a.getMonth(), a.getDate() + 6);
+    } else if (t === 'monthly') {
+        a.setDate(1);
+        b = new Date(a.getFullYear(), a.getMonth() + 1, 0);   /* hari 0 = akhir bulan sebelumnya */
+    } else {
+        return;
+    }
+    $('#cfd-dari').val(cfdTeksTgl(a));
+    $('#cfd-sampai').val(cfdTeksTgl(b));
+}
+
+/* Kalender dipasang ULANG tiap ganti type: pilihan daysOfWeekDisabled &
+   minViewMode hanya terbaca waktu dipasang, jadi mengubahnya di tempat
+   tidak berpengaruh. */
+function cfdPasangKalender() {
+    var t = $('#cfd-type').val();
+    var kunciTo = (t === 'weekly' || t === 'monthly');
+
+    $('#cfd-dari, #cfd-sampai').each(function () {
+        var $i = $(this);
+        var sisiTo = ($i.attr('id') === 'cfd-sampai');
+        /* 'remove', BUKAN 'destroy': di bootstrap-datepicker versi yang
+           dipakai aplikasi ini 'destroy' bukan perintah yang dikenal, jadi
+           ia diam saja - lalu pemasangan berikutnya dianggap pemasangan
+           ULANG pada widget lama dan SELURUH pilihan barunya diabaikan.
+           Tidak ada pesan galat sama sekali; kalendernya cuma tidak pernah
+           berubah. */
+        if ($i.data('datepicker')) { $i.datepicker('remove'); }
+        /* To yang dikunci TIDAK dipasangi kalender sama sekali: readonly
+           saja tidak cukup, kalendernya tetap terbuka waktu kotaknya diklik
+           dan tanggal yang dipilih di situ tidak akan ke mana-mana. */
+        if (sisiTo && kunciTo) { return; }
+        var s = { format: 'dd-mm-yyyy', autoclose: true };
+        if (t === 'monthly') { s.minViewMode = 'months'; }
+        if (t === 'weekly' && !sisiTo) { s.daysOfWeekDisabled = [1, 2, 3, 4, 5, 6]; }
+        $i.datepicker(s);
+    });
+
+    $('#cfd-sampai').prop('readonly', kunciTo).toggleClass('cfd-kunci', kunciTo)
+        .attr('title', kunciTo
+            ? (t === 'weekly' ? 'One week: Sunday to Saturday. Pick the From date.'
+                              : 'One month: the 1st to the end of the month. Pick the From date.')
+            : '');
+}
+
 $(function () {
-    $('.tanggal').datepicker({ format: 'dd-mm-yyyy', autoclose: true });
+    cfdPasangKalender();
     $('.app-select2').select2({ width: '100%' });
 
+    $('#cfd-type').on('change', function () { cfdPasangKalender(); cfdRapikanTanggal(); });
+    /* Diketik tangan pun ikut dirapikan - begitu kotaknya ditinggalkan. To
+       tidak perlu pemasang sendiri: pada type yang mengunci ia readonly,
+       pada Daily ia memang bebas. */
+    $('#cfd-dari').on('change', function () { cfdRapikanTanggal(); });
+
     $('#cfd-cari').on('click', function () {
+        cfdRapikanTanggal();   /* lapis terakhir, sebelum apa pun dikirim */
         var s = cfdSaring();
         if (!s.start_date || !s.end_date) {
             Swal.fire({ icon: 'warning', title: 'Period required', text: 'Fill in both the From and To dates first.' });
@@ -400,8 +648,39 @@ $(function () {
        (permintaan pemakai 17 Nov 2026). Dipanggil lewat endpoint ringan yang
        cuma membaca master - menjalankan seluruh proyeksi hanya untuk mengisi
        dropdown berarti menunggu beberapa detik tiap kali PC disentuh. */
-    $('#cfd-pc').on('change', function () { cfdIsiBank('ALL'); });
-    cfdIsiBank('ALL');
+    /* Ganti Profit Center = daftar rekeningnya ikut berganti, jadi
+       centangnya dimulai dari semua lagi. */
+    $('#cfd-pc').on('change', function () { cfdIsiBank([]); });
+    cfdIsiBank([]);
+
+    /* Saklar ALL menyalakan/mematikan semuanya. Mematikan semua tidak
+       diizinkan - laporan tanpa satu pun rekening kosong tanpa sebab yang
+       terlihat - jadi satu rekening ditinggalkan menyala. */
+    $('#cfd-acc-all').on('change', function () {
+        var $item = $('.cfd-acc-item');
+        $item.prop('checked', this.checked);
+        if (!this.checked && $item.length) { $item.first().prop('checked', true); }
+        cfdBankSegarkan();
+    });
+
+    /* Dipasang di WADAHNYA, bukan di tiap kotak: isinya digambar ulang tiap
+       kali daftar rekening berganti, jadi pemasang yang menempel di kotak
+       ikut terbuang diam-diam. */
+    $('#cfd-acc-panel').on('change', '.cfd-acc-item', function () {
+        if (!$('.cfd-acc-item:checked').length) { this.checked = true; return; }
+        cfdBankSegarkan();
+    });
+
+    /* Klik di dalam dropdown tidak boleh menutupnya - kalau tertutup tiap
+       klik, mencentang beberapa rekening jadi menyiksa. */
+    $('#cfd-bank-menu').on('click', function (e) { e.stopPropagation(); });
+
+    $('#cfd-tab-bar').on('click', '.cfd-tab', function () {
+        var t = $(this).data('tata');
+        if (t === CFD_TATA) { return; }
+        CFD_TATA = t;
+        cfdGambar();
+    });
 
     $('#cfd-xls').on('click', function () {
         var s = cfdSaring(), q = [];
@@ -474,6 +753,12 @@ $(function () {
         var t = 0;
         $('#cfo-tbl tbody .cfo-nilai').each(function () {
             var m = cfoAngka(this.value);
+            /* REKENING PINJAMAN: yang dihitung HANYA angka yang diketik.
+               Saldo sistemnya besarnya pinjaman yang masih berjalan, bukan
+               uang yang bisa dipakai, jadi kotak kosong berarti 0 - bukan
+               "ikut sistem" seperti rekening biasa. Aturan yang sama persis
+               ada di cfpAwalKas() di mesin laporan. */
+            if ($(this).attr('data-loan') === '1') { t += (m === null) ? 0 : m; return; }
             var sis = parseFloat($(this).attr('data-sistem'));
             if (isNaN(sis)) { sis = 0; }
             t += (m === null) ? sis : m;
@@ -494,7 +779,20 @@ $(function () {
            sbg kosong, jadi tidak ada baris ap_cf_opening yang lahir dan
            riwayatnya tidak penuh oleh rekening yang sebenarnya tidak
            disentuh. Lihat penjaganya di tombol Save. */
+        /* REKENING PINJAMAN: isian bawaannya 0, BUKAN saldo sistem
+           (permintaan pemakai 19 Nov 2026). Saldo sistemnya minus sebesar
+           pinjaman yang masih berjalan, dan angka itu bukan uang yang bisa
+           dipakai - dipakai sbg saldo awal, laporannya mulai dari minus.
+           Saldo sistemnya tetap DITAMPILKAN di kolom sebelahnya, jadi yang
+           mau memakainya tinggal mengetik ulang. */
+        var pinjaman = (a.loan == 1);
         var bawaan = Number(a.sistem).toFixed(2);
+        /* Isian bawaan rekening pinjaman 0, dan 0 itu SENGAJA dianggap angka
+           manual beneran: data-sistem tetap saldo sistem yg minus, jadi
+           penjaga "sama dgn sistem -> jangan simpan" di tombol Save tidak
+           menelannya. Kalau data-sistem ikut dibuat 0, nilainya cuma hiasan -
+           tersimpan tidak, dan diketik 0 pun tetap tidak tersimpan. */
+        var isiBawaan = pinjaman ? '0.00' : bawaan;
         return '<tr>'
              + '<td>' + cfdAman(a.label) + '</td>'
              + '<td>' + cfdAman(a.curr) + '</td>'
@@ -506,11 +804,15 @@ $(function () {
                 bawaan di atas cuma bantuan mengetik, bukan angka tersimpan.
                 data-sistem dipakai menghitung total & menandai baris yang
                 benar-benar diubah. */
-             + '<td><input type="text" class="cfo-nilai' + (terisi ? ' cfo-isi' : '') + '"'
+             /* Penanda biru juga untuk rekening pinjaman yang belum pernah
+                disimpan: isian bawaannya 0 memang BERBEDA dari saldo sistem,
+                dan penanda itu artinya persis "berbeda dari sistem". */
+             + '<td><input type="text" class="cfo-nilai' + ((terisi || pinjaman) ? ' cfo-isi' : '') + '"'
              + ' data-akun="' + cfdAman(a.kunci) + '"'
+             + ' data-loan="' + (pinjaman ? 1 : 0) + '"'
              + ' data-sistem="' + bawaan + '"'
              + ' data-semula="' + (terisi ? Number(a.manual).toFixed(2) : '') + '"'
-             + ' value="' + (terisi ? Number(a.manual).toFixed(2) : bawaan) + '"></td>'
+             + ' value="' + (terisi ? Number(a.manual).toFixed(2) : isiBawaan) + '"></td>'
              + '<td><input type="text" class="cfo-ket" maxlength="200" value="'
              + cfdAman(a.keterangan || '') + '"></td>'
              + '</tr>';
