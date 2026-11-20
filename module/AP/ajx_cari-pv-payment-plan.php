@@ -65,9 +65,23 @@ $dasar      = (isset($_POST['dasar']) && $_POST['dasar'] === 'kbon') ? 'kbon' : 
    tanda bahwa voucher itu sudah punya rencana. */
 $hanya_blm  = !(isset($_POST['hanya_belum']) && $_POST['hanya_belum'] === '0');
 
-/* Voucher yang sudah disetujui saja. Ejaan statusnya beragam di produksi
-   ('Approved', 'FIRST APPROVED', 'SECOND APPROVED'), jadi didaftar tegas -
-   bukan lewat LIKE '%APPROVE%' yang ikut menangkap kata lain. */
+/* Status yang boleh dijadwalkan. Ejaannya beragam di produksi, jadi didaftar
+   tegas - bukan lewat LIKE '%APPROVE%' yang ikut menangkap kata lain.
+
+   'Updated' & 'draft' IKUT sejak 20 Nov 2026 (permintaan pemakai). Sebelumnya
+   keduanya ditolak di sini, padahal laporan Proyeksi AP memuatnya - satu-satunya
+   syarat di sana 'bukan Cancel'. Akibatnya 26 kontrabon senilai Rp 2,22 M
+   (draft 10 = Rp 1,15 M, Updated 16 = Rp 1,07 M) terhitung sbg kewajiban di
+   proyeksi tapi TIDAK BISA diberi rencana bayar sama sekali - uangnya cuma
+   duduk di tanggal jatuh temponya. Rencana hanyalah tanggal, tidak membayar
+   apa pun, jadi melonggarkan sisi ini lebih aman daripada menyempitkan
+   laporannya. Pola yang sama dgn PV biaya, yang status_pl-nya juga sengaja
+   tidak dibaca.
+
+
+   CATATAN TEMUAN: 10 kontrabon berstatus 'draft' itu SUDAH punya jurnal -
+   itulah sebabnya mereka muncul di proyeksi. Draft yang sudah menjurnal
+   adalah soal datanya sendiri, bukan soal laporan ini. */
 /* Tanggal voucher. TIDAK semua baris berasal dari kontrabon_h (lihat
    keterangan panjang di bawah), jadi dibaca berurutan dari tiga
    sumbernya - sama dgn laporan Proyeksi AP. */
@@ -76,7 +90,7 @@ $eTglKbon = 'COALESCE(k.tgl_kbon, sa.tgl_kbon, ki.tgl_kbon)';
 /* Status hanya dimiliki baris kontrabon_h. Baris cicilan & saldo awal
    tidak punya kolom itu, dan sudah lolos saringan "masih outstanding"
    milik AP Report - itu patokan yang sebenarnya. */
-$where = array("(k.no_kbon IS NULL OR k.status IN ('Approved','FIRST APPROVED','SECOND APPROVED'))");
+$where = array("(k.no_kbon IS NULL OR k.status IN ('Approved','FIRST APPROVED','SECOND APPROVED','Updated','draft'))");
 
 if ($start_date !== '' && $end_date !== '') {
     $kolom = ($dasar === 'kbon') ? $eTglKbon : 'x.duedate';

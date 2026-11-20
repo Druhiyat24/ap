@@ -139,10 +139,10 @@ foreach ($baris as $b) {
             FROM (SELECT '$no_esc' AS no_kbon) z
             LEFT JOIN kontrabon_h k
                    ON k.no_kbon = z.no_kbon
-                  AND k.status IN ('Approved','FIRST APPROVED','SECOND APPROVED')
+                  AND k.status IN ('Approved','FIRST APPROVED','SECOND APPROVED','Updated','draft')
             LEFT JOIN (SELECT no_kbon, MAX(curr) AS curr, MAX(total) AS total
                        FROM ap_saldo_payment_voucher
-                       WHERE status IN ('Approved','FIRST APPROVED','SECOND APPROVED')
+                       WHERE status IN ('Approved','FIRST APPROVED','SECOND APPROVED','Updated','draft')
                        GROUP BY no_kbon) sa
                    ON sa.no_kbon = z.no_kbon
             LEFT JOIN (SELECT no_kbon_det, MAX(no_kbon) AS induk, SUM(total) AS total
