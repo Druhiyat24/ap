@@ -1578,8 +1578,8 @@ $(document).on('change', '.chk_pv', function(){
         // punya Cash Flow Category sendiri (id_cash_flow) - simpan di baris
         // supaya bisa dicek ulang tiap ada perubahan centang (lihat
         // updateCashFlowFromPv()). Type lain (Regular/Installment/DP/CBD/
-        // SaldoAwal, dari sistem kontrabon) tidak punya id_cash_flow sama
-        // sekali.
+        // SaldoAwal, dari sistem kontrabon) tidak punya id_cash_flow -
+        // kategorinya ditentukan dari type-nya (CF_BY_TYPE).
         tr.data('idcashflow', data.id_cash_flow || '');
         updateCashFlowFromPv();
 
@@ -1622,19 +1622,28 @@ $(document).on('change', '.chk_pv', function(){
 
 });
 
-// Cash Flow Category cuma di-auto-isi kalau SEMUA PV Biaya yang sedang
-// dicentang punya id_cash_flow yang SAMA (tidak ambigu). Kalau ada PV yang
-// belum punya id_cash_flow (data lama) atau kategori PV yang dicentang
-// beda-beda, field dikosongkan lagi supaya diisi manual - tidak
-// menebak-nebak salah satu.
+// Kategori cash flow PV dari sistem kontrabon (user 20 Nov 2026):
+// PV AP (Regular/Installment/Saldo Awal) = UTANG USAHA, PV DP/CBD = UANG MUKA PEMBELIAN.
+// Dicari dari TEKS pilihan dropdown (bukan id) supaya tetap benar walau id master beda.
+var CF_BY_TYPE = { Regular: 'UTANG USAHA', Installment: 'UTANG USAHA', SaldoAwal: 'UTANG USAHA', DP: 'UANG MUKA PEMBELIAN', CBD: 'UANG MUKA PEMBELIAN' };
+function cfIdByName(nama) {
+  let id = '';
+  $('#cash_flow2 option').each(function () {
+    if ($.trim($(this).text()).toUpperCase() === nama) { id = $(this).val(); return false; }
+  });
+  return id;
+}
+
+// Cash Flow Category cuma di-auto-isi kalau SEMUA PV yang sedang dicentang
+// menghasilkan kategori yang SAMA (tidak ambigu): PV Biaya pakai id_cash_flow
+// miliknya, PV kontrabon pakai CF_BY_TYPE. Kalau kategorinya beda-beda
+// (mis. PV Regular + PV DP dicentang bersama), field dikosongkan lagi supaya
+// diisi manual - tidak menebak-nebak salah satu.
 function updateCashFlowFromPv() {
   let values = [];
   $('.chk_pv:checked').each(function () {
-    let tr = $(this).closest('tr');
-    if (tr.find('.no_pv').data('typepv') !== 'Biaya') {
-      return;
-    }
-    let v = tr.data('idcashflow');
+    let tr = $(this).closest('tr'), type = tr.find('.no_pv').data('typepv');
+    let v = type === 'Biaya' ? tr.data('idcashflow') : (CF_BY_TYPE[type] ? cfIdByName(CF_BY_TYPE[type]) : '');
     if (v) {
       values.push(String(v));
     }
