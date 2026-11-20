@@ -43,9 +43,15 @@
 
    Urutan kerja per dokumen: tulis harga baru ke `bpb` -> balik jurnal lama ->
    bangun ulang jurnalnya. Satu pengajuan = satu transaksi.
+
+   TANGGAL JURNAL ikut CLOSING PERIODE (menu closing-periode.php, user 20 Nov 2026):
+   periode tanggal aslinya sudah closing -> jurnal balik & jurnal baru bertanggal
+   HARI APPROVE. Periode masih Open -> tetap tanggal aslinya. Kurs tidak berubah.
    ============================================================================ */
 include '../../conn/conn.php';
+require_once __DIR__ . '/closing_periode_guard.php';
 header('Content-Type: application/json');
+$hariIni = date('Y-m-d');   // tanggal approve
 
 $action           = isset($_POST['action']) ? $_POST['action'] : '';
 $list             = isset($_POST['no_pengajuan']) ? $_POST['no_pengajuan'] : array();
@@ -58,6 +64,10 @@ if (!is_array($list) || empty($list)) {
 }
 if (!in_array($action, array('approve', 'cancel'))) {
     echo json_encode(array('success' => false, 'message' => 'Unknown action'));
+    exit;
+}
+if ($action === 'approve' && closing_error($conn2, $hariIni) !== '') {
+    echo json_encode(array('success' => false, 'message' => closing_error($conn2, $hariIni)));
     exit;
 }
 
@@ -128,13 +138,17 @@ foreach ($list as $no_pengajuan) {
                 }
             }
 
-            /* ---- 4. jurnal lama dibalik, lalu ditandai 'Updated' ---- */
+            /* ---- 4. jurnal lama dibalik, lalu ditandai 'Updated' ----
+               Tanggal jurnal lamanya sudah closing -> jurnal balik pakai tanggal approve. */
+            $tglLama = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT MAX(tgl_journal) t FROM tbl_list_journal
+                WHERE no_journal = '$no_bpb_esc' AND status IN ('Approved','POST')"));
+            $tglBalikSql = ($tglLama && $tglLama['t'] && closing_error($conn2, $tglLama['t']) !== '') ? "'$hariIni'" : 'tgl_journal';
             $reverseSql = "INSERT INTO tbl_list_journal
                 (id, no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter,
                  reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr,
                  status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date,
                  created_at, updated_at, profit_center, supplier)
-                SELECT '', no_journal, tgl_journal, CONCAT('Reverse ', type_journal) type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, credit, debit, credit_idr, debit_idr, 'Updated' status, keterangan, create_by, create_date, '$approve_user_esc' approve_by, CURRENT_TIMESTAMP() approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center, supplier
+                SELECT '', no_journal, $tglBalikSql tgl_journal, CONCAT('Reverse ', type_journal) type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, credit, debit, credit_idr, debit_idr, 'Updated' status, keterangan, create_by, create_date, '$approve_user_esc' approve_by, CURRENT_TIMESTAMP() approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center, supplier
                 FROM tbl_list_journal WHERE no_journal = '$no_bpb_esc' AND status != 'Updated'";
             if (!mysqli_query($conn2, $reverseSql)) {
                 $gagalFatal = true;
@@ -244,6 +258,20 @@ WHERE EXISTS (
                 $gagalFatal = true;
                 $journalWarnings[] = "$no_bpb: jurnal baru TIDAK terbentuk - cek pemetaan ap_mapping_coa_jurnal";
                 continue;
+            }
+
+            /* ---- 5b. tanggal jurnal baru ----
+               SQL di atas memberi tanggal BPB. Kalau periodenya sudah closing,
+               dipindah ke tanggal approve (kursnya tetap kurs tanggal BPB). */
+            $tglBaru = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT MAX(tgl_journal) t FROM tbl_list_journal
+                WHERE no_journal = '$no_bpb_esc' AND status = 'APPROVED'"));
+            if ($tglBaru && $tglBaru['t'] && closing_error($conn2, $tglBaru['t']) !== '') {
+                if (!mysqli_query($conn2, "UPDATE tbl_list_journal SET tgl_journal = '$hariIni'
+                                           WHERE no_journal = '$no_bpb_esc' AND status = 'APPROVED'")) {
+                    $gagalFatal = true;
+                    $journalWarnings[] = "$no_bpb: gagal memindah tanggal jurnal baru ke tanggal approve";
+                    continue;
+                }
             }
 
             /* ---- 6. nomor revisi ditempelkan ke keterangan jurnal baru ----

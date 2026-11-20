@@ -13,10 +13,16 @@
    (0% dari 35.820 dokumen, diperiksa 8 Okt 2026), jadi cara ini memadai.
    Bandingkan dgn versi General yang HARUS memakai SQL per grup karena 2%
    dokumennya berkategori campur.
+
+   TANGGAL JURNAL ikut CLOSING PERIODE (menu closing-periode.php, user 20 Nov 2026):
+   periode tanggal aslinya sudah closing -> jurnal balik & jurnal baru bertanggal
+   HARI APPROVE. Periode masih Open -> tetap tanggal aslinya. Kurs tidak berubah.
    ============================================================================ */
 include '../../conn/conn.php';
+require_once __DIR__ . '/closing_periode_guard.php';
 /* Berkas ini khusus Accessories - tidak ada parameter di tautan. */
 header('Content-Type: application/json');
+$hariIni = date('Y-m-d');   // tanggal approve
 
 $action = $_POST['action'] ?? '';
 $list = $_POST['no_pengajuan'] ?? [];
@@ -30,6 +36,10 @@ if (!is_array($list) || empty($list)) {
 
 if (!in_array($action, ['approve', 'cancel'])) {
     echo json_encode(['success' => false, 'message' => 'Invalid action']);
+    exit;
+}
+if ($action === 'approve' && closing_error($conn2, $hariIni) !== '') {
+    echo json_encode(['success' => false, 'message' => closing_error($conn2, $hariIni)]);
     exit;
 }
 
@@ -97,12 +107,16 @@ foreach ($list as $no_pengajuan) {
                 continue;
             }
 
+            // Tanggal jurnal lamanya sudah closing -> jurnal balik pakai tanggal approve.
+            $tglLama = mysqli_fetch_assoc(mysqli_query($conn2, "SELECT MAX(tgl_journal) t FROM tbl_list_journal
+                WHERE no_journal = '$no_bpb_esc' AND status IN ('Approved','POST')"));
+            $tglBalikSql = ($tglLama && $tglLama['t'] && closing_error($conn2, $tglLama['t']) !== '') ? "'$hariIni'" : 'tgl_journal';
             $reverseSql = "INSERT INTO tbl_list_journal
                 (id, no_journal, tgl_journal, type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter,
                  reff_doc, reff_date, buyer, no_ws, curr, rate, debit, credit, debit_idr, credit_idr,
                  status, keterangan, create_by, create_date, approve_by, approve_date, cancel_by, cancel_date,
                  created_at, updated_at, profit_center, supplier)
-                SELECT '', no_journal, tgl_journal, CONCAT('Reverse ', type_journal) type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, credit, debit, credit_idr, debit_idr, 'Updated' status, keterangan, create_by, create_date, '$approve_user_esc' approve_by, CURRENT_TIMESTAMP() approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center, supplier
+                SELECT '', no_journal, $tglBalikSql tgl_journal, CONCAT('Reverse ', type_journal) type_journal, no_coa, nama_coa, no_costcenter, nama_costcenter, reff_doc, reff_date, buyer, no_ws, curr, rate, credit, debit, credit_idr, debit_idr, 'Updated' status, keterangan, create_by, create_date, '$approve_user_esc' approve_by, CURRENT_TIMESTAMP() approve_date, cancel_by, cancel_date, created_at, updated_at, profit_center, supplier
                 FROM tbl_list_journal WHERE no_journal = '$no_bpb_esc' AND status != 'Updated'";
 
             if (mysqli_query($conn2, $reverseSql)) {
@@ -263,7 +277,10 @@ foreach ($list as $no_pengajuan) {
                 if (!$coaDeb) { $journalWarnings[] = "$no_bpb: COA debit tidak ketemu di mastercoa_v2"; }
 
                 $journalTimestamp     = date('Y-m-d H:i:s');
-                $tgl_bpb_journal_esc  = mysqli_real_escape_string($conn2, $tgl_bpb_journal);
+                // Tanggal jurnal baru: periode tanggal BPB sudah closing -> tanggal approve
+                // (kursnya tetap kurs tanggal BPB, sudah diambil di atas).
+                $tgl_jurnal_baru      = closing_error($conn2, $tgl_bpb_journal) !== '' ? $hariIni : $tgl_bpb_journal;
+                $tgl_bpb_journal_esc  = mysqli_real_escape_string($conn2, $tgl_jurnal_baru);
                 $curr_esc             = mysqli_real_escape_string($conn2, $curr);
                 $username_esc         = mysqli_real_escape_string($conn2, $username);
                 $dateinput_esc        = mysqli_real_escape_string($conn2, $dateinput_);
