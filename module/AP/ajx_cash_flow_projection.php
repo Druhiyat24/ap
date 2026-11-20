@@ -568,7 +568,15 @@ if ($cfpMintaSumber) {
 $cfpPinjam = array();
 foreach ($cfpAkun as $cfpK => $cfpA) {
     if (!$cfpA['loan'] || !cfpIkut($cfpA, $cfpPc, $cfpKunciBank)) { continue; }
-    $jalan = $cfpSaldo[$cfpK]['pakai'];
+    /* SALDO SISTEM, BUKAN angka manual (ditegaskan pemakai 20 Nov 2026:
+       "opening balance ngga ngaruh ke situ, itu hanya ngaruh untuk
+       perhitungan yang atas saja"). Menu Opening Balance menyetel saldo awal
+       KAS & BANK; blok pinjaman punya arti sendiri - besarnya pinjaman yang
+       masih berjalan - dan itu tidak boleh ikut berubah hanya karena ada
+       yang menekan Save di modal saldo awal. Kejadiannya nyata: kotak
+       rekening pinjaman terisi bawaan 0, lalu satu kali Save membuat SALDO
+       AWAL PINJAMAN BANK jatuh dari -49,6 M jadi 0. */
+    $jalan = $cfpSaldo[$cfpK]['tarik'];
     $cfpPinjam[$cfpK] = array();
     foreach ($cfpTanggal as $t) {
         $keluar = 0; $masuk = 0;
