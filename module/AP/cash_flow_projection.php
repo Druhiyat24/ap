@@ -234,6 +234,12 @@ include '../header.php';
             </div>
 
             <div class="cfd-scroll">
+                <!-- Tabel lembar sumber: bentuknya kisi biasa, bukan matriks,
+                     jadi tabelnya sendiri - kolom pertama matriks digayakan
+                     sbg keterangan dan akan salah tempat di sini. -->
+                <table class="cfd cfd-src" id="cfd-src" style="display:none;">
+                    <thead></thead><tbody></tbody>
+                </table>
                 <table class="cfd" id="cfd-tbl">
                     <thead><tr><th>Descriptions</th><th class="cfd-num">Total</th></tr></thead>
                     <tbody><tr><td colspan="2" class="cfd-kosong">Pick a type and a period, then click Search.</td></tr></tbody>
@@ -448,9 +454,72 @@ function cfdSibuk(teks) {
 
 /* Menggambar tabel dari jawaban yang SUDAH ADA - tidak memanggil server.
    Dipanggil sesudah pencarian dan tiap kali tab dipindah. */
+/* Urutan tab lembar sumber - sama dgn urutan lembar di Excel. */
+var CFD_SRC = ['AR_EXISTING', 'BOOK_TRANSFER', 'OTHER_INFLOW', 'PV_EXP', 'PV_AP'];
+
+/* Satu sel lembar sumber menurut jenis kolomnya. */
+function cfdSelSrc(nilai, jenis) {
+    if (nilai === null || nilai === undefined || nilai === '') { return ''; }
+    if (jenis === 'n') { return cfdAngka(nilai); }
+    if (jenis === 'd') {
+        var b = String(nilai).slice(0, 10).split('-');
+        if (b.length !== 3) { return cfdAman(nilai); }
+        var nama = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return b[2] + ' ' + nama[parseInt(b[1], 10) - 1] + ' ' + b[0];
+    }
+    return cfdAman(nilai);
+}
+
+/* Lembar sumber digambar APA ADANYA dari jawaban mesin - tidak ada hitungan
+   di sini. Itu memang gunanya: yang terlihat di layar ini sama persis dgn
+   yang akan tersimpan waktu Save History ditekan. */
+function cfdGambarSrc(kode) {
+    var res = CFD_HASIL;
+    var def = (res.sumber_def || {})[kode];
+    var baris = (res.sumber || {})[kode] || [];
+    if (!def) { return; }
+
+    var h = '<tr>';
+    for (var i = 0; i < def.kolom.length; i++) {
+        h += '<th class="' + (def.kolom[i][2] === 'n' ? 'cfd-num' : '') + '">'
+           + cfdAman(def.kolom[i][0]) + '</th>';
+    }
+    $('#cfd-src thead').html(h + '</tr>');
+
+    var isi = '';
+    for (var r = 0; r < baris.length; r++) {
+        isi += '<tr>';
+        for (var c = 0; c < def.kolom.length; c++) {
+            var k = def.kolom[c];
+            isi += '<td class="' + (k[2] === 'n' ? 'cfd-num' : '') + '">'
+                 + cfdSelSrc(baris[r][k[1]], k[2]) + '</td>';
+        }
+        isi += '</tr>';
+    }
+    if (!baris.length) {
+        isi = '<tr><td colspan="' + def.kolom.length + '" class="cfd-kosong">'
+            + 'No rows for this period.</td></tr>';
+    }
+    $('#cfd-src tbody').html(isi);
+}
+
 function cfdGambar() {
     var res = CFD_HASIL;
     if (!res) { return; }
+
+    /* Tab lembar sumber: tabel lain, bukan matriksnya. */
+    if ($.inArray(CFD_TATA, CFD_SRC) >= 0) {
+        cfdGambarSrc(CFD_TATA);
+        $('#cfd-tbl').hide();
+        $('#cfd-src').show();
+        $('#cfd-tab-bar').show().find('.cfd-tab')
+            .removeClass('active').filter('[data-tata="' + CFD_TATA + '"]').addClass('active');
+        $('.cfd-scroll').scrollLeft(0);
+        return;
+    }
+    $('#cfd-src').hide();
+    $('#cfd-tbl').show();
+
     var baris = (CFD_TATA === 'akun') ? res.baris_akun : res.baris_tgl;
     var pinj  = (CFD_TATA === 'akun') ? res.pinjaman_akun : res.pinjaman_tgl;
     /* Jawaban lama (mis. dari potret) cuma punya 'baris' - dipakai apa
@@ -477,6 +546,24 @@ function cfdGambar() {
     $('.cfd-scroll').scrollLeft(0);
 }
 
+/* Tombol tab lembar sumber dibuat dari jawaban mesin, bukan ditulis mati:
+   kalau suatu saat ada lembar baru, ia muncul sendiri di sini. Jumlah
+   barisnya ikut dicetak supaya lembar kosong tidak terlihat seperti gagal
+   memuat. */
+function cfdPasangTabSrc(res) {
+    $('#cfd-tab-bar .cfd-tab-src').remove();
+    var def = res.sumber_def || {};
+    var h = '';
+    for (var i = 0; i < CFD_SRC.length; i++) {
+        var k = CFD_SRC[i];
+        if (!def[k]) { continue; }
+        h += '<button type="button" class="cfd-tab cfd-tab-src" data-tata="' + k + '">'
+           + '<i class="fa fa-list-ul" aria-hidden="true"></i> ' + cfdAman(def[k].judul)
+           + ' <span class="cfd-tab-jml">' + def[k].jml + '</span></button>';
+    }
+    $('#cfd-tab-bar').append(h);
+}
+
 function cfdSaring() {
     return {
         start_date: $('#cfd-dari').val(),
@@ -485,7 +572,10 @@ function cfdSaring() {
         /* Beberapa rekening digabung dgn titik koma; kosong = semua. Server
            memecahnya lagi lewat cfpDaftarKunciBank(). */
         bank:       cfdBankTerpilih().join(';') || 'ALL',
-        type:       $('#cfd-type').val()
+        type:       $('#cfd-type').val(),
+        /* Lembar sumbernya ikut diminta supaya pemakai bisa melihat data
+           yang akan ikut tersimpan waktu Save History ditekan. */
+        sumber:     '1'
     };
 }
 
@@ -512,6 +602,7 @@ function cfdCari() {
                 return;
             }
             CFD_HASIL = res;
+            cfdPasangTabSrc(res);
             /* Tab yang terbuka duluan ikut type-nya (res.mode), tapi
                keduanya sama-sama tersedia. */
             CFD_TATA = (res.mode === 'akun') ? 'akun' : 'tgl';

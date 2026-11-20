@@ -121,3 +121,41 @@ tr.r-spasi > td { background:#fff; height:16px; padding:0;
 @media (max-width: 767.98px) {
   .cfv-appr { margin-left:0; flex-wrap:wrap; gap:4px 9px; }
 }
+
+
+/* ---- tab lembar sumber & tabelnya ----
+   Jumlah baris dicetak di tombolnya: lembar yang memang kosong jadi
+   terbaca sbg "kosong", bukan sbg gagal memuat. */
+.cfd-tab-jml {
+  display:inline-block; min-width:18px; padding:0 6px; margin-left:4px;
+  font-size:10.5px; font-weight:700; line-height:16px; text-align:center;
+  color:#475569; background:#e2e8f0; border-radius:9px;
+}
+.cfd-tab.active .cfd-tab-jml { color:#1d4ed8; background:#fff; }
+
+/* Kisi biasa: tiap kolom berdiri sendiri, tidak ada kolom keterangan yang
+   dibekukan seperti di matriks. */
+table.cfd.cfd-src { table-layout:auto; width:100%; }
+table.cfd.cfd-src thead th {
+  position:sticky; top:0; z-index:2;
+  background:#1E3A8A; color:#fff; font-size:11px; font-weight:700;
+  white-space:nowrap; padding:8px 10px; text-align:left;
+}
+table.cfd.cfd-src thead th.cfd-num { text-align:right; }
+table.cfd.cfd-src tbody td {
+  padding:6px 10px; font-size:12px; white-space:nowrap;
+  border-bottom:1px solid #eef2f7;
+}
+table.cfd.cfd-src tbody tr:nth-child(even) td { background:#f8fafc; }
+.cfd-src tbody td { text-align:left; }
+table.cfd.cfd-src tbody td.cfd-num { text-align:right; font-variant-numeric:tabular-nums; }
+
+/* Kolom pertama matriks sengaja lebar 330px dan dibekukan; di kisi biasa
+   aturan itu membuat kolom pertama melar tanpa sebab - isinya bisa cuma
+   satu strip. Dibatalkan khusus untuk tabel ini. */
+table.cfd.cfd-src thead th:first-child,
+table.cfd.cfd-src tbody td:first-child { position:static; min-width:0; left:auto; }
+
+/* Kolom kedua matriks juga dibekukan di 330px - ikut dibatalkan di sini. */
+table.cfd.cfd-src thead th:nth-child(2),
+table.cfd.cfd-src tbody td:nth-child(2) { position:static; left:auto; min-width:0; }

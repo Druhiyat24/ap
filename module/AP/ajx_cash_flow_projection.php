@@ -122,10 +122,18 @@ $cfpApBaris = (is_array($cfpAp) && isset($cfpAp['data'])) ? $cfpAp['data'] : arr
 if (is_array($cfpAp) && isset($cfpAp['error'])) { $cfpPesan[] = 'AP projection: ' . $cfpAp['error']; }
 
 /* POTRET MENANG kalau ada yang menyelimuti periode ini (ditegaskan pemakai
-   18 Nov 2026). Hasil mesin di atas dibuang, bukan dicampur. */
+   18 Nov 2026). Hasil mesin di atas dibuang, bukan dicampur.
+
+   KECUALI DAILY (permintaan pemakai 20 Nov 2026): proyeksi harian SELALU
+   menarik AR & AP ulang, tidak pernah memakai potret. Potret AR/AP dibuat
+   per pekan atau per bulan - angkanya dibekukan pada satu saat tertentu -
+   sedangkan laporan harian dipakai untuk melihat keadaan HARI INI. Memakai
+   potret di situ berarti menampilkan keadaan beberapa hari lalu di layar
+   yang justru dibuka untuk mengetahui keadaan sekarang. */
 require_once __DIR__ . '/cf_sumber_potret.php';
+$cfpPakaiPotret = ($cfpType !== 'daily');
 $cfpApDoc    = '';
-$cfpApPotret = cf_potret_ap($conn2, $cfpMulai, $cfpAkhir);
+$cfpApPotret = $cfpPakaiPotret ? cf_potret_ap($conn2, $cfpMulai, $cfpAkhir) : null;
 if ($cfpApPotret) {
     $cfpApDoc   = $cfpApPotret['doc'];
     $cfpApBaris = $cfpApPotret['baris'];
@@ -283,11 +291,16 @@ $cfpTaruh = function ($tgl, $kunci, $idKtg, $nilai) use (&$cfpGerak, $cfpAkun, $
    porsi collection_amount/total_invoice, yaitu nilai SETELAH dipotong
    PPh 23 - PPh bukan arus kas. Diuji utk Nov 2026: sama persis dgn Excel
    (Invoice 28.045.045.530, Debit Note 6.446.039.260). */
+/* Potretnya TIDAK DICARI SAMA SEKALI untuk Daily - lihat keterangan di
+   bagian AP di atas. Dibiarkan kosong, jadi jalur di bawah menghitung ulang
+   seperti ketika memang tidak ada potret yang menyelimuti periodenya. */
 $cfpArDoc = ''; $cfpArTgl = '';
-$cfpQ = mysqli_query($conn2, "select doc_number, created_at from tbl_history_projection_h
-                              where periode_dari <= '$cfpMulai' and periode_sampai >= '$cfpAkhir'
-                              order by id desc limit 1");
-if ($cfpQ && ($cfpR = mysqli_fetch_assoc($cfpQ))) { $cfpArDoc = $cfpR['doc_number']; $cfpArTgl = $cfpR['created_at']; }
+if ($cfpPakaiPotret) {
+    $cfpQ = mysqli_query($conn2, "select doc_number, created_at from tbl_history_projection_h
+                                  where periode_dari <= '$cfpMulai' and periode_sampai >= '$cfpAkhir'
+                                  order by id desc limit 1");
+    if ($cfpQ && ($cfpR = mysqli_fetch_assoc($cfpQ))) { $cfpArDoc = $cfpR['doc_number']; $cfpArTgl = $cfpR['created_at']; }
+}
 
 /* Barisnya dikumpulkan dulu ke satu bentuk - tgl, doc_type, bank_acc, nilai -
    apa pun sumbernya, baru ditaruh. Dgn begitu aturan penempatannya (akun,
@@ -492,18 +505,25 @@ while ($cfpQ && ($cfpR = mysqli_fetch_assoc($cfpQ))) {
 /* ---------------------------------------------------------------------------
    5e. DATA SUMBER untuk lembar pendukung di Excel - HANYA kalau diminta.
 
-   Save History yang memintanya (define CFP_SUMBER), layar tidak: barisnya
-   bisa ratusan dan layar sama sekali tidak memerlukannya. Dikumpulkan DI
-   SINI, di tengah perhitungan, supaya memakai dokumen AR, baris AP, dan
-   saldo yang SAMA PERSIS dgn yang dipakai angka laporannya - bukan hasil
-   query ulang yang bisa sudah berubah.
+   DUA PEMINTA: Save History (define CFP_SUMBER) dan LAYAR, sejak 20 Nov 2026
+   (permintaan pemakai: "biar user juga tahu yang di-save history itu datanya
+   apa saja"). Layar memintanya lewat POST sumber=1 - tidak otomatis, karena
+   barisnya bisa ratusan dan tidak semua pemanggil memerlukannya; modal saldo
+   awal, misalnya, ikut menjalankan mesin ini juga.
 
-   Hasilnya TIDAK ikut ke JSON keluaran; Save History membacanya langsung
-   dari peubah ini, karena berkas itu meng-include mesin ini ke lingkup yang
-   sama. Lihat cf_sumber_lib.php.
+   Dikumpulkan DI SINI, di tengah perhitungan, supaya memakai dokumen AR,
+   baris AP, dan saldo yang SAMA PERSIS dgn yang dipakai angka laporannya -
+   bukan hasil query ulang yang bisa sudah berubah.
+
+   Save History membaca $cfpSumber langsung dari peubah ini (berkas itu
+   meng-include mesin ini ke lingkup yang sama); layar membacanya dari JSON.
+   Dua-duanya isi yang sama - lihat cf_sumber_lib.php.
    --------------------------------------------------------------------------- */
 $cfpSumber = array();
-if (defined('CFP_SUMBER')) {
+$cfpSumberDef = array();
+$cfpMintaSumber = defined('CFP_SUMBER')
+               || (isset($_POST['sumber']) && (string) $_POST['sumber'] === '1');
+if ($cfpMintaSumber) {
     include_once __DIR__ . '/cf_sumber_lib.php';
     $cfpSumber = cf_kumpul_sumber($conn2, array(
         'mulai'    => $cfpMulai,
@@ -522,6 +542,21 @@ if (defined('CFP_SUMBER')) {
            dgn aturan yang sama persis dgn mesin ini. */
         'type'     => $cfpType,
     ));
+
+    /* Susunan kolomnya ikut dikirim supaya layar tidak perlu menyalin
+       daftarnya - satu-satunya daftar tetap di cf_sumber_lembar(), jadi
+       layar, Excel potret, dan Excel laporan mustahil berbeda kolomnya.
+       cf_sumber_kolom() dipanggil di sini karena lembar PV AP kolomnya baru
+       ketahuan sesudah barisnya ada (satu kolom per tanggal proyeksi). */
+    foreach (cf_sumber_lembar() as $cfpKode => $cfpDef) {
+        $cfpBarisLbr = isset($cfpSumber[$cfpKode]) ? $cfpSumber[$cfpKode] : array();
+        $cfpSumberDef[$cfpKode] = array(
+            'judul'   => $cfpDef['judul'],
+            'catatan' => $cfpDef['catatan'],
+            'kolom'   => cf_sumber_kolom($cfpDef, $cfpBarisLbr),
+            'jml'     => count($cfpBarisLbr),
+        );
+    }
 }
 
 /* ---------------------------------------------------------------------------
@@ -986,6 +1021,9 @@ echo json_encode(array(
     'pinjaman_tgl'  => $cfpPinjTgl,
     'baris_akun'    => $cfpBarisAkun,
     'pinjaman_akun' => $cfpPinjAkun,
+    /* Isinya kosong kalau tidak diminta - layar yang memutuskan. */
+    'sumber'        => $cfpSumber,
+    'sumber_def'    => $cfpSumberDef,
     'bank'     => $cfpDaftarBank,
     'info'     => array(
         'periode'    => date('j M Y', strtotime($cfpMulai)) . ' - ' . date('j M Y', strtotime($cfpAkhir)),
