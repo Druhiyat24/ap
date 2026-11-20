@@ -258,9 +258,10 @@ function cfp_intra_inter($pc_source, $pc_tujuan)
    JENIS LAPORAN entri Projection Other: WEEKLY atau MONTHLY.
 
    Dibedakan sejak 20 Nov 2026 (permintaan pemakai): Weekly dan Monthly
-   punya tombol Create sendiri-sendiri, formulirnya sama. DAILY SENGAJA
-   BELUM ADA - masih dibicarakan - jadi apa pun yang bukan MONTHLY jatuh ke
-   WEEKLY, bukan ke nilai ketiga yang artinya belum disepakati.
+   punya pilihannya sendiri-sendiri, formulirnya sama. DAILY menyusul
+   20 Nov 2026, jadi sekarang ada TIGA; apa pun yang di luar ketiganya jatuh
+   ke WEEKLY - itu nilai bawaan kolomnya, dan dokumen tidak boleh lahir
+   tanpa jenis.
 
    Satu pintu untuk SEMUA pembacanya (layar Create, ketiga penyimpan,
    ketiga pengubah, dan daftar) supaya tidak ada yang menuliskan ejaan
@@ -269,7 +270,8 @@ function cfp_intra_inter($pc_source, $pc_tujuan)
    ---------------------------------------------------------------------- */
 function cfp_type_report($v)
 {
-    return (strtoupper(trim((string) $v)) === 'MONTHLY') ? 'MONTHLY' : 'WEEKLY';
+    $v = strtoupper(trim((string) $v));
+    return in_array($v, array('WEEKLY', 'MONTHLY', 'DAILY'), true) ? $v : 'WEEKLY';
 }
 
 
@@ -278,10 +280,10 @@ function cfp_type_report($v)
 
    Permintaan pemakai 20 Nov 2026: laporan proyeksi cash flow hanya mengambil
    entri yang jenisnya SAMA dgn type laporannya - Weekly mengambil Weekly,
-   Monthly mengambil Monthly. DAILY BELUM PUNYA INPUTAN sama sekali (tombol
-   Create-nya sengaja belum dibuat), jadi untuk Daily hasilnya KOSONG - bukan
-   diam-diam memakai entri Weekly, yang akan membuat angka Daily terlihat
-   benar padahal isinya rencana minggu lain.
+   Monthly mengambil Monthly, Daily mengambil Daily. Type yang di luar ketiganya
+   tidak mengambil apa pun: lebih baik kosong daripada diam-diam memakai entri
+   jenis lain, yang akan membuat angkanya terlihat benar padahal isinya rencana
+   periode yang berbeda.
 
    Dipakai mesin laporan DAN pengumpul lembar sumber Excel, supaya angka di
    tabel dan rincian di Excel mustahil berbeda.
@@ -298,8 +300,8 @@ function cfp_saring_type_report($conn, $type, $alias = '')
 
     $p = ($alias === '') ? '' : $alias . '.';
     $t = strtoupper(trim((string) $type));
-    if ($t !== 'WEEKLY' && $t !== 'MONTHLY') {
-        /* Daily - dan apa pun yang belum dikenal - tidak mengambil apa-apa. */
+    if (!in_array($t, array('WEEKLY', 'MONTHLY', 'DAILY'), true)) {
+        /* Type yang tidak dikenal tidak mengambil apa-apa. */
         return ' and 1 = 0';
     }
     return " and {$p}type_report = '" . mysqli_real_escape_string($conn, $t) . "'";

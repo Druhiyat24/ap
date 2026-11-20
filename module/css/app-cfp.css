@@ -273,3 +273,18 @@
    tidak terlihat; begitu digulir, 15px itulah yang memunculkan batang geser
    padahal tabelnya sendiri sudah muat. */
 .cfp-tblwrap .dataTables_wrapper > .row { margin-left: 0; margin-right: 0; }
+
+
+/* ---- kotak pilihan jenis laporan (Swal tombol Create) ----
+   Tiga pilihan ditumpuk ke bawah, bukan berjajar: namanya pendek tapi
+   keterangannya tidak, dan tombol berjajar membuat keterangannya terpotong
+   justru di bagian yang membedakan ketiganya. */
+.cfp-pilih { display:flex; flex-direction:column; gap:10px; margin-top:6px; }
+.cfp-pilih-btn {
+  display:flex; flex-direction:column; align-items:flex-start; gap:2px;
+  width:100%; padding:11px 16px; text-align:left; border:0; border-radius:10px;
+  color:#fff; cursor:pointer; transition:transform .12s ease, box-shadow .12s ease;
+}
+.cfp-pilih-btn:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(15,23,42,.18); }
+.cfp-pilih-btn .nm { font-size:14px; font-weight:700; letter-spacing:.2px; }
+.cfp-pilih-btn .kt { font-size:11.5px; font-weight:400; opacity:.85; }

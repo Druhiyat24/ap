@@ -84,18 +84,16 @@ function cfp_isi($v)     { $v = trim((string) $v); return $v === '' ? '-' : html
             <button type="submit" class="app-btn app-btn-primary app-btn-sm">
               <i class="fa fa-search" aria-hidden="true"></i> Search
             </button>
-            <!-- DUA TOMBOL CREATE (permintaan pemakai 20 Nov 2026): entri
-                 Projection Other dibedakan per jenis laporan. Formulirnya
-                 SAMA PERSIS - yang berbeda cuma nilai type_report yang ikut
-                 tersimpan. Create Daily BELUM ADA, masih dibicarakan, jadi
-                 sengaja tidak dibuatkan tombol yang artinya belum disepakati. -->
-            <button type="button" id="btncreate" data-report="weekly"
-                    class="app-btn app-btn-success app-btn-sm js-cfp-create">
-              <i class="fa fa-plus-circle" aria-hidden="true"></i> Create Weekly
-            </button>
-            <button type="button" data-report="monthly"
-                    class="app-btn app-btn-primary app-btn-sm js-cfp-create">
-              <i class="fa fa-plus-circle" aria-hidden="true"></i> Create Monthly
+            <!-- SATU TOMBOL, jenisnya dipilih di kotak sesudahnya (permintaan
+                 pemakai 20 Nov 2026: "biar rapi satu button saja, nanti ada
+                 swal pilihannya"). Sejak Daily ikut ada, tiga tombol
+                 berjajar membuat baris saringan ini penuh dan yang dicari
+                 pemakai - Search - tenggelam di antaranya. Formulirnya SAMA
+                 PERSIS untuk ketiganya; yang berbeda cuma nilai type_report
+                 yang ikut tersimpan. -->
+            <button type="button" id="btncreate"
+                    class="app-btn app-btn-success app-btn-sm">
+              <i class="fa fa-plus-circle" aria-hidden="true"></i> Create
             </button>
             <a target="_blank" href="<?php echo htmlspecialchars($taut_excel, ENT_QUOTES); ?>"
                class="app-btn app-btn-excel app-btn-sm">
@@ -293,10 +291,40 @@ function SidebarCollapse () {
     });
   });
 
-  /* Kedua tombol memakai satu penangan - jenis laporannya dibawa di
-     data-report, jadi menambah jenis ketiga nanti cukup menambah tombol. */
-  $(document).on('click', '.js-cfp-create', function () {
-    location.href = 'create-cash-projection.php?report=' + encodeURIComponent($(this).data('report'));
+  /* Jenis laporannya dipilih di kotak Swal, bukan lewat tombol berjajar.
+     Daftarnya ditulis sekali di sini - menambah jenis keempat nanti cukup
+     menambah satu baris, tanpa menyentuh tata letak baris saringan. */
+  var CFP_JENIS = [
+    { kode: 'weekly',  nama: 'Weekly',  ket: 'Entries for the weekly projection',  warna: 'app-btn-success' },
+    { kode: 'monthly', nama: 'Monthly', ket: 'Entries for the monthly projection',   warna: 'app-btn-primary' },
+    { kode: 'daily',   nama: 'Daily',   ket: 'Entries for the daily projection',    warna: 'app-btn-dark' }
+  ];
+
+  $('#btncreate').on('click', function () {
+    var h = '<div class="cfp-pilih">';
+    for (var i = 0; i < CFP_JENIS.length; i++) {
+      var j = CFP_JENIS[i];
+      h += '<button type="button" class="app-btn ' + j.warna + ' cfp-pilih-btn" data-report="'
+         + j.kode + '"><span class="nm">' + j.nama + '</span>'
+         + '<span class="kt">' + j.ket + '</span></button>';
+    }
+    h += '</div>';
+
+    Swal.fire({
+      title: 'Create Projection Other',
+      html: h,
+      /* Tombol OK sengaja tidak ada: ketiga pilihan DI DALAM kotaknya sudah
+         sekaligus keputusan dan tindakan, jadi tombol OK tidak punya arti. */
+      showConfirmButton: false,
+      showCancelButton: true,
+      cancelButtonText: 'Cancel',
+      didOpen: function (el) {
+        $(el).find('.cfp-pilih-btn').on('click', function () {
+          location.href = 'create-cash-projection.php?report='
+                        + encodeURIComponent($(this).data('report'));
+        });
+      }
+    });
   });
 </script>
 
