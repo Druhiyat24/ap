@@ -4,13 +4,18 @@
    Dipanggil create-pvbiaya-payment-date.php lewat AJAX, balasannya JSON.
 
    SUMBER BARISNYA = cabang 'Biaya' milik Bank Out (bank-out/get_pv_ajax.php),
-   bukan kontrabon/LP. Cara menghitung nilainya sama, tapi SATU SYARAT SENGAJA
-   DILONGGARKAN (permintaan pemakai 18 Nov 2026):
-     - tbl_pv_h.status = 'Approved' SAJA. status_pl TIDAK dibaca, jadi PV yang
-       belum SECOND APPROVED pun sudah boleh dijadwalkan - rencana bayar memang
-       disusun sebelum approval terakhir selesai. Akibatnya daftar di sini BISA
-       LEBIH PANJANG daripada yang sudah bisa dibayar lewat Bank Out; itu yang
-       dikehendaki. Rencana hanyalah tanggal, tidak membayar apa pun.
+   bukan kontrabon/LP. Cara menghitung nilainya sama, tapi SYARAT STATUSNYA
+   SENGAJA DILONGGARKAN - YANG DITOLAK HANYA CANCEL (pemakai 20 Nov 2026:
+   "kalau update payment plan diubah saja, status draft masuk"):
+     - status_pl TIDAK dibaca, dan Draft pun sudah boleh dijadwalkan - rencana
+       bayar memang disusun sebelum approval selesai. Akibatnya daftar di sini
+       BISA LEBIH PANJANG daripada yang sudah bisa dibayar lewat Bank Out; itu
+       yang dikehendaki. Rencana hanyalah tanggal, tidak membayar apa pun.
+     - SECOND APPROVED ikut masuk, dan itu memperbaiki cacat yang lebih besar
+       daripada Draft: syarat lama `= 'Approved'` membuat PV yang sudah LULUS
+       approval terakhir HILANG dari layar ini.
+     - BANK OUT TIDAK DISENTUH (diminta pemakai) - syarat di sana tetap apa
+       adanya; yang dilonggarkan cuma penjadwalan & proyeksi.
      - nilainya dihitung dari baris tbl_pv: (amount - ded_add) + ppn - pph
      - dikurangi yang sudah terbayar di b_bankout_det (type_pv 'Biaya',
        dokumen bank out yang belum dibatalkan)

@@ -320,6 +320,32 @@ if (!function_exists('pvb_ftrcash_daftar')) {
    Aman karena no_reff sudah menentukan dokumennya: di seluruh b_bankout_det,
    baris ber-no_reff 'PV/%' HANYA punya type_pv 'Biaya' atau NULL - tidak ada
    jenis lain yang memakai penomoran itu.
+
+   PERBAIKAN 20 Nov 2026 - STATUS: yang ditolak hanya Cancel.
+   Dulu syaratnya `a.status = 'Approved'` saja, dan itu menolak DUA arah:
+     - Draft belum boleh masuk - padahal rencana bayar justru disusun sebelum
+       approval selesai (permintaan pemakai: "supaya yang masih draft juga
+       muncul, jadi tidak sama dengan cancel saja");
+     - SECOND APPROVED pun tertolak - jadi PV yang sudah LULUS approval
+       terakhir malah HILANG dari daftar. Alurnya Draft -> Approved ->
+       SECOND APPROVED, dan syarat lama cuma menangkap yang di tengah.
+
+   PERBAIKAN 20 Nov 2026 - JOIN PROFIT CENTER TAHAN NULL (`<=>`).
+   Potongannya dijoin per nomor + profit center, dan di SQL `NULL = NULL`
+   TIDAK PERNAH benar. Kolom profit_center baru mulai diisi belakangan, jadi
+   seluruh PV lama (pc NULL di kedua sisi) tidak pernah terpotong walaupun
+   bank out-nya ada: begitu Cancel saja yang ditolak, 4.695 PV senilai
+   Rp 721 M tampil outstanding - 4.574 di antaranya (Rp 653 M) HANYA karena
+   NULL ini. Dgn `<=>` sisanya 121 PV / Rp 68 M. Angka status Approved &
+   Draft TIDAK berubah sedikit pun oleh perbaikan ini (diukur di produksi),
+   jadi yang terlihat hari ini tetap sama.
+
+   SISA YANG BELUM DIBERESKAN (dilaporkan, belum diubah): dari 121 itu, 59 PV
+   (Rp 65,7 M) sebetulnya sudah lunas - bank out-nya tercatat di profit center
+   LAIN, sehingga potongan per-PC tidak menemukannya. Yang benar-benar belum
+   dibayar 62 PV / Rp 2,4 M. Menutupnya butuh penjaga tingkat dokumen, dan itu
+   ikut menyembunyikan 1 baris Approved (Rp 245 juta) yang sekarang tampil -
+   karena itu diputuskan terpisah, tidak diselipkan di sini.
    ============================================================================ */
 if (!function_exists('pvb_biaya_sql')) {
     /** Subquery pembayaran PV biaya. */
@@ -353,14 +379,14 @@ with total_pv as (
           - SUM((b.amount * b.pph/100) - (b.ded_add * b.pph/100))) total
     from tbl_pv_h a
     inner join tbl_pv b on b.no_pv = a.no_pv
-   where a.status = 'Approved'
+   where a.status <> 'Cancel'
    group by a.no_pv, b.profit_center),
 total_bk as ($bayar)
 select a.no_pv, a.pv_date, a.due_date, a.nama_supp, a.curr, a.profit_center,
        a.frm_akun, a.id_cash_flow, a.deskripsi,
        (a.total - COALESCE(b.total_pv,0)) sisa
   from total_pv a
-  left join total_bk b on b.no_reff = a.no_pv and b.profit_center = a.profit_center
+  left join total_bk b on b.no_reff = a.no_pv and b.profit_center <=> a.profit_center
  where $where
  order by a.due_date asc, a.no_pv asc";
     }
