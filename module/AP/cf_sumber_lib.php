@@ -190,6 +190,21 @@ function cfs_kurs($akun, $namaAkun, $rate)
     return (strtoupper($akun[$k]['curr']) === 'USD' && $rate > 0) ? (float) $rate : 1.0;
 }
 
+/** Nilai pertama yang benar-benar terisi.
+ *
+ *  ADA SEBABNYA: baris PV Expense & Other Inflow di ap_cf_projection
+ *  menyimpan rekening dan profit center-nya di kolom *_tujuan, sedangkan
+ *  *_source-nya NULL. Pemeriksaan lama ditulis `$a !== ''` - dan NULL
+ *  memang bukan '', jadi NULL-nya yang terpakai dan kolom PC & Bank di
+ *  lembar PV EXP kosong melompong padahal datanya ada. Ketahuan 20 Nov 2026
+ *  waktu query pembanding lembar itu ditulis. */
+function cfs_pertama($a, $b)
+{
+    $a = ($a === null) ? '' : trim((string) $a);
+    if ($a !== '') { return $a; }
+    return ($b === null) ? '' : trim((string) $b);
+}
+
 /** Angka berformat dari mesin AP ("1,234.00") kembali jadi angka. */
 function cfs_angka($v)
 {
@@ -408,19 +423,19 @@ function cf_kumpul_sumber($conn, $cfg)
                 'rate_simpan' => (float) $r['rate'], 'idr_simpan' => (float) $r['amount_idr'],
             );
         } elseif ($jenis === 'OTHER INFLOW') {
-            $akunIni = ($r['akun_tujuan'] !== '' ? $r['akun_tujuan'] : $r['akun_source']);
+            $akunIni = cfs_pertama($r['akun_tujuan'], $r['akun_source']);
             $kurs = cfs_kurs($cfg['akun'], $akunIni, $rate);
             $hasil['OTHER_INFLOW'][] = array(
                 'sumber_doc' => (string) $r['no_doc'],
                 'nama_supplier' => $r['nama_supplier'], 'kategori' => $r['kategori'],
                 'curr' => $r['curr'], 'amount' => (float) $r['amount'], 'rate' => $kurs,
                 'amount_idr' => abs((float) $r['amount']) * $kurs, 'tanggal' => cfs_tgl($r['tanggal']),
-                'pc' => ($r['pc_tujuan'] !== '' ? $r['pc_tujuan'] : $r['pc_source']),
+                'pc' => cfs_pertama($r['pc_tujuan'], $r['pc_source']),
                 'akun' => $akunIni,
                 'rate_simpan' => (float) $r['rate'], 'idr_simpan' => (float) $r['amount_idr'],
             );
         } else {
-            $akunIni = ($r['akun_source'] !== '' ? $r['akun_source'] : $r['akun_tujuan']);
+            $akunIni = cfs_pertama($r['akun_source'], $r['akun_tujuan']);
             $kurs = cfs_kurs($cfg['akun'], $akunIni, $rate);
             /* TIDAK pakai kolom baru di lembar ini (permintaan pemakai 19 Nov
                2026: "untuk PV Expense simpan saja di nomor PV"). Baris dari
@@ -432,7 +447,7 @@ function cf_kumpul_sumber($conn, $cfg)
                 'supplier' => $r['nama_supplier'], 'kategori' => $r['kategori'],
                 'curr' => $r['curr'], 'amount' => (float) $r['amount'], 'rate' => $kurs,
                 'amount_idr' => abs((float) $r['amount']) * $kurs, 'tanggal' => cfs_tgl($r['tanggal']),
-                'pc' => ($r['pc_source'] !== '' ? $r['pc_source'] : $r['pc_tujuan']),
+                'pc' => cfs_pertama($r['pc_source'], $r['pc_tujuan']),
                 'akun' => $akunIni,
                 'sumber' => 'Cash Flow Projection (Other)',
                 'rate_simpan' => (float) $r['rate'], 'idr_simpan' => (float) $r['amount_idr'],
