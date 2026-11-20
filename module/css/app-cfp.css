@@ -53,9 +53,11 @@
 
 
 /* ---- lebar kolom daftar ----
-   Delapan kolom tetap, jadi lebarnya dipatok persen biar rata di layar
-   lebar maupun sempit. table-layout:fixed supaya isi yang panjang tidak
-   menarik kolomnya jadi melebar sendiri. */
+   SEMBILAN kolom tetap (kolom Report menyusul 20 Nov 2026), lebarnya
+   dipatok persen biar rata di layar lebar maupun sempit dan jumlahnya PAS
+   100% - itu yang membuat tabelnya muat tanpa geser mendatar.
+   table-layout:fixed supaya isi yang panjang tidak menarik kolomnya jadi
+   melebar sendiri. */
 .cfp-tbl { table-layout: fixed; width: 100%; }
 
 /* app-ftr-list.css MENOLKAN lebar kolom pertama - di halaman lain kolom
@@ -69,17 +71,21 @@
 
 /* thead/tbody ditulis lengkap supaya spesifisitasnya menang atas aturan
    kolom pertama di app-ftr-list.css di atas. */
-.cfp-tbl thead th:nth-child(1), .cfp-tbl tbody td:nth-child(1) { width: 15%; }   /* No Doc       */
-.cfp-tbl thead th:nth-child(2), .cfp-tbl tbody td:nth-child(2) { width: 16%; }   /* Date         */
-.cfp-tbl thead th:nth-child(3), .cfp-tbl tbody td:nth-child(3) { width: 12%; }   /* Type         */
-.cfp-tbl thead th:nth-child(4), .cfp-tbl tbody td:nth-child(4) { width: 14%; }   /* Total Amount */
-.cfp-tbl thead th:nth-child(5), .cfp-tbl tbody td:nth-child(5) { width:  8%; }   /* Status       */
-.cfp-tbl thead th:nth-child(6), .cfp-tbl tbody td:nth-child(6) { width: 11%; }   /* Created By   */
-.cfp-tbl thead th:nth-child(7), .cfp-tbl tbody td:nth-child(7) { width: 13%; }   /* Created Date */
-.cfp-tbl thead th:nth-child(8), .cfp-tbl tbody td:nth-child(8) { width: 11%; }   /* Action       */
+.cfp-tbl thead th:nth-child(1), .cfp-tbl tbody td:nth-child(1) { width: 14%; }   /* No Doc       */
+.cfp-tbl thead th:nth-child(2), .cfp-tbl tbody td:nth-child(2) { width: 15%; }   /* Date         */
+.cfp-tbl thead th:nth-child(3), .cfp-tbl tbody td:nth-child(3) { width: 11%; }   /* Type         */
+.cfp-tbl thead th:nth-child(4), .cfp-tbl tbody td:nth-child(4) { width:  8%; }   /* Report       */
+.cfp-tbl thead th:nth-child(5), .cfp-tbl tbody td:nth-child(5) { width: 13%; }   /* Total Amount */
+.cfp-tbl thead th:nth-child(6), .cfp-tbl tbody td:nth-child(6) { width:  7%; }   /* Status       */
+.cfp-tbl thead th:nth-child(7), .cfp-tbl tbody td:nth-child(7) { width:  9%; }   /* Created By   */
+.cfp-tbl thead th:nth-child(8), .cfp-tbl tbody td:nth-child(8) { width: 11%; }   /* Created Date */
+.cfp-tbl thead th:nth-child(9), .cfp-tbl tbody td:nth-child(9) { width: 12%; }   /* Action       */
 
-/* No Doc & Created By boleh patah ke baris kedua daripada terpotong */
-.cfp-tbl tbody td:nth-child(1), .cfp-tbl tbody td:nth-child(6) { white-space: normal; }
+/* No Doc & Created By boleh patah ke baris kedua daripada terpotong.
+   NOMOR KOLOMNYA IKUT BERGESER waktu Report disisipkan - Created By yang
+   dulu ke-6 sekarang ke-7. Aturan yang nomornya ketinggalan tidak memberi
+   pesan apa pun, ia cuma mengatur kolom yang salah. */
+.cfp-tbl tbody td:nth-child(1), .cfp-tbl tbody td:nth-child(7) { white-space: normal; }
 
 /* di layar sempit tabelnya digeser ke samping, lebarnya kembali ikut isi */
 @media (max-width: 991.98px) {
@@ -168,3 +174,102 @@
   display: flex; justify-content: flex-end; gap: 8px;
   padding: 10px 16px; background: #fff; border-top: 1px solid #e6ebf3;
 }
+
+/* ---------------------------------------------------------------------------
+   BAR UNGGAH di Form Projection Other - strip mendatar, area drop di kiri,
+   tombol di kanan. Bentuknya MENIRU bar unggah Memorial Journal (permintaan
+   pemakai 19 Nov 2026) supaya dua layar yang pekerjaannya sama terlihat sama.
+
+   Kelasnya diberi awalan cfpu- sendiri, BUKAN memakai .mju-* milik Memorial
+   Journal: dua layar itu memuat berkas CSS yang berbeda, dan meminjam kelas
+   dari layar lain membuat perubahan di sana diam-diam mengubah yang di sini.
+
+   flex-wrap SELALU menyala, tidak cuma di layar sempit - bar ini duduk di
+   kolom yang lebarnya sepertiga halaman, jadi tombolnya memang turun ke baris
+   berikutnya pada lebar normal sekalipun.
+   --------------------------------------------------------------------------- */
+/* Wadah dua baris isian pertama. Bar unggah ditempel di ruang kosong sebelah
+   kanannya, SETINGGI kedua baris itu (permintaan pemakai 19 Nov 2026:
+   "tingginya sampai Equivalent IDR-USD").
+
+   KENAPA DITEMPEL, BUKAN JADI KOLOM BIASA: kalau barnya ikut jadi kolom di
+   dalam salah satu baris, tinggi baris itu mengikuti isi tertingginya - jadi
+   barisnya mengembang dan isian di kirinya terlihat berjarak. Dgn ditempel,
+   kedua baris itu tetap setinggi semula dan lebar kolomnya tidak berubah
+   sedikit pun. */
+.cfpu-wrap { position: relative; }
+
+.cfpu-bar {
+    display: flex; align-items: center; gap: 10px; flex-wrap: nowrap;
+    border: 1.5px dashed #bcd7f5; border-radius: 8px;
+    background: linear-gradient(180deg, #fbfdff, #f5f9ff); padding: 8px 12px;
+    transition: border-color .15s ease, background .15s ease;
+}
+
+/* Di layar lebar saja. Di bawah 992px barnya kembali mengalir biasa - satu
+   lajur penuh di bawah isiannya - supaya tablet & ponsel tidak kebagian kotak
+   yang menumpuk di atas isian lain. */
+@media (min-width: 992px) {
+    .cfpu-kol {
+        position: absolute; top: 0; right: 0; bottom: 0;
+        width: 33.3333%; padding: 0 15px;
+    }
+    /* Tinggi barnya = sisa wadah sesudah labelnya, jadi ujung bawahnya
+       sejajar dgn ujung bawah baris kedua - berapa pun tinggi barisnya. */
+    .cfpu-kol .cfpu-bar { height: calc(100% - 34px); }
+}
+@media (max-width: 991.98px) {
+    .cfpu-kol { margin-bottom: .5rem; }
+    .cfpu-kol .cfpu-bar { height: auto; }
+}
+.cfpu-bar:hover, .cfpu-bar.is-drag {
+    border-color: var(--app-accent, #17a2b8); background: #f3fbfd;
+}
+/* min-width:0 WAJIB pada flex item yang isinya teks: tanpa itu lebar
+   minimumnya mengikuti teks terpanjang, jadi ia menolak menyusut dan
+   tombol-tombol di kanannya menimpa tulisannya sendiri. Sejak tombol
+   Clear ditambahkan, ruangnya memang tinggal sedikit. */
+.cfpu-drop {
+    flex: 1 1 auto; display: flex; align-items: center; gap: 10px;
+    cursor: pointer; margin-bottom: 0; min-width: 0;
+}
+.cfpu-drop > i { font-size: 22px; color: var(--app-accent, #17a2b8); }
+/* Barnya tinggi, jadi teksnya boleh MELIPAT daripada tertimpa tombol. */
+.cfpu-txt  { font-size: 12.5px; font-weight: 600; line-height: 1.25; color: #334155; }
+/* Nama berkas menyambung di kanan teksnya; yang kepanjangan dipotong elipsis
+   supaya tidak pernah mendorong tombol Upload keluar bar. */
+.cfpu-file { font-size: 11px; color: #94a3b8; margin-left: 6px;
+             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+/* Selagi belum ada berkas, tulisan "No file selected" DISEMBUNYIKAN - di bar
+   sepanjang ini ia cuma terpotong jadi "No file sel..." dan tidak memberi
+   keterangan apa pun. Begitu ada berkas, namanya muncul dan dapat seluruh
+   sisa ruangnya. */
+.cfpu-file { display: none; }
+.cfpu-file.has-file { display: inline; color: var(--app-accent-dark, #0e7c8f); font-weight: 700; }
+.cfpu-act { flex: 0 0 auto; display: flex; gap: 6px; }
+.cfpu-act .app-btn { padding: 1px 8px; font-size: 11.5px; line-height: 1.6; }
+
+
+/* ---- penanda jenis laporan di daftar (Weekly / Monthly) ----
+   Sengaja TULISAN, bukan warna saja: pembacanya harus bisa membedakannya
+   tanpa menghafal arti warna. */
+.cfp-rep {
+  display: inline-block; padding: 2px 8px; border-radius: 6px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .3px;
+  color: #334155; background: #eef2f7; border: 1px solid #dbe3ee;
+}
+
+
+/* Sejak kolom Report ditambahkan, tabelnya lebih lebar daripada kartunya di
+   layar 14-15 inci - dan .ftl-tblwrap bawaannya overflow-x:hidden, jadi
+   kolom Action TERPOTONG dan tombol Cancel tidak bisa diraih sama sekali.
+   Digulir mendatar DI HALAMAN INI SAJA; kelas bersamanya tidak disentuh
+   supaya daftar lain tidak ikut berubah perilakunya. */
+.cfp-tblwrap { overflow-x: auto; }
+
+/* Baris bawaan DataTables (panjang halaman, kotak cari, info, pagination)
+   adalah .row Bootstrap - margin kirinya -15px, jadi ia MENJOROK KELUAR dari
+   wadah yang tidak berpadding. Selama wadahnya overflow-x:hidden hal itu
+   tidak terlihat; begitu digulir, 15px itulah yang memunculkan batang geser
+   padahal tabelnya sendiri sudah muat. */
+.cfp-tblwrap .dataTables_wrapper > .row { margin-left: 0; margin-right: 0; }

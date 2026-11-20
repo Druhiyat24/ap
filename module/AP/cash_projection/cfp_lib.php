@@ -252,3 +252,22 @@ function cfp_intra_inter($pc_source, $pc_tujuan)
 {
     return ($pc_source != '' && $pc_source == $pc_tujuan) ? 'Intra PC' : 'Inter PC';
 }
+
+
+/* ----------------------------------------------------------------------
+   JENIS LAPORAN entri Projection Other: WEEKLY atau MONTHLY.
+
+   Dibedakan sejak 20 Nov 2026 (permintaan pemakai): Weekly dan Monthly
+   punya tombol Create sendiri-sendiri, formulirnya sama. DAILY SENGAJA
+   BELUM ADA - masih dibicarakan - jadi apa pun yang bukan MONTHLY jatuh ke
+   WEEKLY, bukan ke nilai ketiga yang artinya belum disepakati.
+
+   Satu pintu untuk SEMUA pembacanya (layar Create, ketiga penyimpan,
+   ketiga pengubah, dan daftar) supaya tidak ada yang menuliskan ejaan
+   sendiri - 'Weekly' vs 'WEEKLY' cukup untuk membuat saringan luput tanpa
+   satu pun pesan galat.
+   ---------------------------------------------------------------------- */
+function cfp_type_report($v)
+{
+    return (strtoupper(trim((string) $v)) === 'MONTHLY') ? 'MONTHLY' : 'WEEKLY';
+}

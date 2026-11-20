@@ -31,7 +31,7 @@ $doc = mysqli_real_escape_string($conn2, $no_doc);
 
 // dokumennya harus ada dan belum di-cancel
 $lama = mysqli_fetch_assoc(mysqli_query($conn2,
-    "select jenis, status, created_by, created_date
+    "select jenis, type_report, status, created_by, created_date
      from ap_cf_projection where no_doc = '$doc' order by id limit 1"));
 
 if (!$lama) {
@@ -96,12 +96,16 @@ foreach ($baris as $b) {
     $intra_inter = cfp_intra_inter($akun[$source]['kode_pc'], $akun[$tujuan]['kode_pc']);
 
     $sql = "insert into ap_cf_projection
-            (no_doc, jenis, tanggal, akun_source, akun_tujuan, pc_source, pc_tujuan,
+            (no_doc, jenis, type_report, tanggal, akun_source, akun_tujuan, pc_source, pc_tujuan,
              intra_inter, deskripsi, curr, amount, rate, amount_idr, amount_usd,
              curr_tujuan, amount_tujuan,
              status, created_by, created_date, update_by, update_date)
             values ('" . $doc . "',
                     '" . mysqli_real_escape_string($conn2, $lama['jenis']) . "',
+                    /* Jenis laporannya IKUT DOKUMEN LAMA, tidak dibaca dari
+                       layar: mengubah isi dokumen tidak boleh diam-diam
+                       memindahkannya dari Weekly ke Monthly. */
+                    '" . mysqli_real_escape_string($conn2, cfp_type_report($lama['type_report'])) . "',
                     '" . mysqli_real_escape_string($conn2, $tanggal) . "',
                     '" . mysqli_real_escape_string($conn2, $source) . "',
                     '" . mysqli_real_escape_string($conn2, $tujuan) . "',

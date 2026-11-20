@@ -26,7 +26,18 @@ $bank     = cfp_daftar_bank($conn1);
 $kategori = cfp_daftar_kategori($conn1, 'Cash In');
 
 mysqli_autocommit($conn2, false);
-$no_doc = '';
+/* SATU TANGGAL = SATU NOMOR (permintaan pemakai 19 Nov 2026). Dulu satu
+   kali Save selalu satu nomor, berapa pun tanggalnya - dan sejak barisnya
+   bisa diunggah dari Excel, satu berkas gampang memuat banyak tanggal.
+   Dokumen bertanggal campur tidak bisa dibaca di laporan harian, jadi
+   nomornya dipecah per tanggal. Yang diketik tangan hampir selalu satu
+   tanggal, jadi perilakunya tidak berubah bagi mereka. */
+/* Jenis laporannya datang dari tombol Create yang dipakai - lihat
+   cfp_type_report(). Kiriman yang kosong jatuh ke WEEKLY, bukan
+   ditolak: yang penting barisnya tidak pernah lahir tanpa jenis. */
+$type_report = cfp_type_report(isset($_POST['type_report']) ? $_POST['type_report'] : '');
+
+$doc = array();   // tanggal => nomor dokumen
 $jml    = 0;
 $aman   = true;
 $pesan  = '';
@@ -79,16 +90,18 @@ foreach ($baris as $b) {
     $amount_idr = ($curr == 'IDR') ? $amount : $amount * $rate;
     $amount_usd = ($curr == 'IDR') ? 0 : $amount;
 
-    if ($no_doc == '') {
-        $no_doc = cfp_no_doc_berikut($conn2, 'OTHER INFLOW', $bank[$akun]['kode_pc'], $tanggal);
+    if (!isset($doc[$tanggal])) {
+        $doc[$tanggal] = cfp_no_doc_berikut($conn2, 'OTHER INFLOW', $bank[$akun]['kode_pc'], $tanggal);
     }
+    $no_doc = $doc[$tanggal];
 
     $sql = "insert into ap_cf_projection
-            (no_doc, jenis, tanggal, akun_tujuan, pc_tujuan, nama_supplier, id_supplier, kategori, deskripsi,
+            (no_doc, jenis, type_report, tanggal, akun_tujuan, pc_tujuan, nama_supplier, id_supplier, kategori, deskripsi,
              curr, amount, rate, amount_idr, amount_usd, curr_tujuan, amount_tujuan,
              status, created_by, created_date)
             values ('" . mysqli_real_escape_string($conn2, $no_doc) . "',
                     'OTHER INFLOW',
+                    '$type_report',
                     '" . mysqli_real_escape_string($conn2, $tanggal) . "',
                     '" . mysqli_real_escape_string($conn2, $akun) . "',
                     '" . mysqli_real_escape_string($conn2, $bank[$akun]['nama_pc']) . "',
@@ -113,7 +126,12 @@ foreach ($baris as $b) {
 
 if ($aman) {
     mysqli_commit($conn2);
-    echo json_encode(array('status' => 'ok', 'jml' => $jml, 'no_doc' => $no_doc));
+    /* no_doc tetap dikirim sbg SATU teks supaya layar lama tidak rusak;
+       no_doc_list dipakai layar baru untuk menampilkannya satu per satu. */
+    $daftar = array_values($doc);
+    echo json_encode(array('status' => 'ok', 'jml' => $jml,
+                           'no_doc' => implode(', ', $daftar),
+                           'no_doc_list' => $daftar));
 } else {
     mysqli_rollback($conn2);
     echo json_encode(array('status' => 'gagal', 'pesan' => $pesan));

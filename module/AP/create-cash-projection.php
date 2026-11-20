@@ -12,6 +12,14 @@ $kategori     = cfp_daftar_kategori($conn1, 'Cash In');    // Other Inflow
 $kategori_out = cfp_daftar_kategori($conn1, 'Cash Out');   // PV Expense
 $supplier     = cfp_daftar_supplier($conn1);               // PV Expense
 $customer     = cfp_daftar_customer($conn1);               // Other Inflow
+
+/* JENIS LAPORANNYA dibawa di alamat (?report=weekly|monthly) - datang dari
+   tombol Create mana yang ditekan di daftar. Formulirnya SAMA PERSIS untuk
+   keduanya (permintaan pemakai 20 Nov 2026), yang berbeda cuma label dan
+   nilai yang ikut tersimpan. Alamat tanpa ?report jatuh ke WEEKLY, jadi
+   tautan lama tetap berperilaku seperti sebelumnya. */
+$cfpReport = cfp_type_report(isset($_GET['report']) ? $_GET['report'] : '');
+$cfpReportLabel = ucfirst(strtolower($cfpReport));
 ?>
 <link rel="stylesheet" href="../css/app-skin-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-skin-form.css'); ?>">
 <link rel="stylesheet" href="../css/app-pco-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-pco-form.css'); ?>">
@@ -20,6 +28,9 @@ $customer     = cfp_daftar_customer($conn1);               // Other Inflow
 
 <!-- Pustaka dimuat DI ATAS isi halaman: berkas tab yang di-include
      (cash_projection/bt_form.php) punya skrip sendiri yang memakai jQuery. -->
+<!-- Dibaca ketiga berkas tab waktu menyimpan. Ditaruh di sini, sebelum
+     tabnya di-include, supaya nilainya sudah ada saat skrip tab dibaca. -->
+<script>var CFP_REPORT = '<?php echo $cfpReport; ?>';</script>
 <script src="../vendor/jquery/jquery.min.js"></script>
 <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/select2.full.min.js"></script>
@@ -31,8 +42,8 @@ $customer     = cfp_daftar_customer($conn1);               // Other Inflow
     <div class="pco-head">
       <span class="pco-head-icon"><i class="fa fa-plus-circle" aria-hidden="true"></i></span>
       <div>
-        <h1>Form Projection Other</h1>
-        <span class="pco-crumb">Bank &rsaquo; Projection &rsaquo; Other &rsaquo; Create</span>
+        <h1>Form Projection Other &mdash; <?php echo $cfpReportLabel; ?></h1>
+        <span class="pco-crumb">Bank &rsaquo; Projection &rsaquo; Other &rsaquo; Create <?php echo $cfpReportLabel; ?></span>
       </div>
     </div>
 

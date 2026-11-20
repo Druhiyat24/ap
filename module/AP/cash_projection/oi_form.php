@@ -19,6 +19,8 @@ $cfp_oi   = isset($cfp_oi)   ? $cfp_oi   : array();
 
 <!-- Semua baris memakai col-lg-3: empat kolom sama lebar, jadi isian di
      baris bawah lurus dgn isian di atasnya. -->
+<!-- Wadah baris 1 & 2 - lihat keterangan bar unggah di bawah. -->
+<div class="cfpu-wrap">
 <div class="row">
   <div class="col-lg-2 col-md-6 mb-2">
     <label for="oi_tanggal"><b>Received Date</b> <i>*</i></label>
@@ -86,6 +88,52 @@ $cfp_oi   = isset($cfp_oi)   ? $cfp_oi   : array();
     <input type="text" class="form-control text-right" id="oi_idr" value="0,00" readonly>
   </div>
 </div>
+  <!-- BAR UNGGAH. SENGAJA DI LUAR kedua baris isian, bukan di dalam
+       salah satunya: kalau di dalam, tinggi barisnya ikut mengembang
+       dan isian di kiri jadi berjarak. Di layar lebar ia ditempel di
+       ruang kosong kanan dgn tinggi mengikuti kedua baris itu; di
+       layar sempit ia kembali mengalir biasa. Lihat .cfpu-kol di
+       module/css/app-cfp.css. -->
+  <div class="cfpu-kol">
+    <!-- Label-nya ditulis SAMA PERSIS dgn isian tetangganya (<label><b>),
+         bukan .app-flabel - dua gaya label tingginya beda 5px dan barnya
+         jadi terlihat turun sendiri. -->
+    <label><b>Upload rows from Excel</b></label>
+    <div class="cfpu-bar" id="oi_drop">
+      <!-- Satu-satunya pembuka dialog berkas: <label for>. Input-nya
+           display:none dan TANPA atribut accept - accept membuat berkas
+           ter-filter/abu-abu di dialog sehingga malah tidak bisa dipilih
+           (pelajaran dari bar Memorial Journal). -->
+      <label for="oi_berkas" class="cfpu-drop">
+        <i class="fa fa-cloud-upload" aria-hidden="true"></i>
+        <!-- SATU BARIS, bukan dua: bar ini duduk sebaris dgn isian lain, dan
+             kalau lebih tinggi dari isian biasa seluruh barisnya ikut
+             merenggang (dilaporkan pemakai 19 Nov 2026). Nama berkasnya
+             menyambung di kanan teksnya, dipotong elipsis kalau kepanjangan. -->
+        <span class="cfpu-txt">Click or drag an Excel file here</span>
+        <span class="cfpu-file" id="oi_namafile">No file selected</span>
+      </label>
+      <div class="cfpu-act">
+        <button type="button" class="app-btn app-btn-success app-btn-sm" id="oi_unggah">
+          <i class="fa fa-upload"></i> Upload
+        </button>
+        <a class="app-btn app-btn-dark app-btn-sm" target="_blank"
+           href="cash_projection/cfp_template.php?jenis=oi">
+          <i class="fa fa-file-excel-o"></i> Template
+        </a>
+        <!-- Clear = membuang SELURUH isi daftar, bukan cuma hasil unggahan
+             terakhir: daftarnya satu, dan memilah mana yang diunggah vs
+             diketik akan menebak-nebak maksud pemakai. Kalimat konfirmasinya
+             menyebut jumlah barisnya supaya jelas apa yang hilang. -->
+        <button type="button" class="app-btn app-btn-danger app-btn-sm" id="oi_bersih">
+          <i class="fa fa-eraser"></i> Clear
+        </button>
+      </div>
+      <input type="file" id="oi_berkas" style="display:none;">
+    </div>
+  </div>
+</div>
+
 
 <div class="row">
   <div class="col-lg-2 col-md-6 mb-2">
@@ -115,6 +163,7 @@ $cfp_oi   = isset($cfp_oi)   ? $cfp_oi   : array();
       </button>
     </div>
   </div>
+
 </div>
 
 <div id="oi_pesan_kurs" class="mb-2" style="display:none; font-size:11.5px; color:#8a5a06;"></div>
@@ -376,6 +425,109 @@ $(function () {
 
   $('#oi_batal').on('click', oiModeTambah);
 
+  /* ---------------------------------------------------------------------
+     UNGGAH. Barisnya DISAMBUNG ke daftar yang sudah ada, bukan menggantikan -
+     "data nya turun ke bawah" (permintaan pemakai 19 Nov 2026). Jadi hasil
+     ketikan tangan dan hasil unggahan bisa bercampur dalam satu dokumen, dan
+     tombol Save-nya tidak perlu tahu bedanya: tetap SATU dokumen.
+
+     Kotak berkasnya dikosongkan tiap selesai supaya berkas yang SAMA bisa
+     diunggah lagi - tanpa itu, 'change' tidak pernah menyala untuk kedua
+     kalinya dan terlihat seperti tombolnya rusak. */
+  /* Memilih berkas HANYA menampilkan namanya - yang mengirim tombol Upload,
+     sama dgn bar Memorial Journal. Pemakai jadi sempat memastikan berkasnya
+     benar sebelum ratusan baris masuk ke daftar. */
+  $('#oi_berkas').on('change', function () {
+    var b = this.files && this.files[0];
+    $('#oi_namafile').text(b ? b.name : 'No file selected').toggleClass('has-file', !!b);
+  });
+
+  /* Seret-lepas: berkasnya dijatuhkan ke input-nya supaya jalur berikutnya
+     sama persis dgn memilih lewat dialog - tidak ada dua jalan berbeda. */
+  $('#oi_drop').on('dragover', function (e) { e.preventDefault(); $(this).addClass('is-drag'); })
+               .on('dragleave drop', function () { $(this).removeClass('is-drag'); })
+               .on('drop', function (e) {
+    e.preventDefault();
+    var f = e.originalEvent.dataTransfer && e.originalEvent.dataTransfer.files;
+    if (f && f.length) {
+      document.getElementById('oi_berkas').files = f;
+      $('#oi_berkas').trigger('change');
+    }
+  });
+
+  $('#oi_bersih').on('click', function () {
+    if (!oiBaris.length) {
+      Swal.fire({ icon: 'info', title: 'The list is already empty' });
+      return;
+    }
+    Swal.fire({
+      icon: 'warning', title: 'Clear the list?',
+      text: oiBaris.length + ' row(s) will be removed from the list. Nothing is deleted from the database.',
+      showCancelButton: true, confirmButtonText: 'Yes, clear it', cancelButtonText: 'Cancel'
+    }).then(function (h) {
+      if (!h.isConfirmed) { return; }
+      oiBaris.length = 0;      /* dikosongkan DI TEMPAT, bukan diganti array baru -
+                             supaya acuan lain ke daftar ini tidak tertinggal
+                             menunjuk array lama. */
+      oiModeTambah();
+    });
+  });
+
+  $('#oi_unggah').on('click', function () {
+    var inp = document.getElementById('oi_berkas');
+    var berkas = inp.files && inp.files[0];
+    if (!berkas) {
+      Swal.fire({ icon: 'warning', title: 'No file selected',
+                  text: 'Click the box on the left to choose the filled template.' });
+      return;
+    }
+
+    var data = new FormData();
+    data.append('jenis', 'oi');
+    data.append('berkas', berkas);
+
+    Swal.fire({ title: 'Reading the file...', allowOutsideClick: false,
+                didOpen: function () { Swal.showLoading(); } });
+
+    $.ajax({ url: 'cash_projection/cfp_unggah.php', type: 'POST', data: data,
+             processData: false, contentType: false, dataType: 'json' })
+      .done(function (r) {
+        if (!r || r.status !== 'success') {
+          Swal.fire({ icon: 'error', title: 'Upload failed',
+                      text: (r && r.message) ? r.message : 'The file could not be read.' });
+          return;
+        }
+        for (var i = 0; i < r.baris.length; i++) { oiBaris.push(r.baris[i]); }
+        oiGambar();
+
+        /* Kotak berkas dikosongkan SESUDAH berhasil, supaya berkas yang SAMA
+           bisa diunggah lagi - tanpa itu 'change' tidak menyala untuk kedua
+           kalinya dan tombolnya terlihat rusak. */
+        document.getElementById('oi_berkas').value = '';
+        $('#oi_namafile').text('No file selected').removeClass('has-file');
+
+        /* Baris yang ditolak ditampilkan APA ADANYA, satu per satu dgn nomor
+           barisnya - kalau cuma disebut jumlahnya, pemakai harus menebak mana
+           yang salah di antara ratusan baris. */
+        if (r.salah && r.salah.length) {
+          Swal.fire({ icon: 'warning', title: r.baris.length + ' row(s) added',
+                      html: '<div style="text-align:left;max-height:260px;overflow:auto;font-size:12px;">'
+                            + r.salah.length + ' row(s) were skipped:<br><br>'
+                            + r.salah.join('<br>') + '</div>' });
+        } else if (r.baris.length) {
+          Swal.fire({ icon: 'success', title: r.baris.length + ' row(s) added',
+                      text: 'Check the list below, then press Save.' });
+        } else {
+          Swal.fire({ icon: 'info', title: 'Nothing to add',
+                      text: 'No data row was found in that file.' });
+        }
+      })
+      .fail(function (x) {
+        Swal.fire({ icon: 'error', title: 'Upload failed',
+                    text: (x.responseText || '').slice(0, 300) });
+      });
+  });
+
   $('#oi_grid').on('click', '.oi-ubah', function () {
     oiIsiForm($(this).data('i'));
   });
@@ -403,17 +555,51 @@ $(function () {
     }
 
     var edit = (oiMode === 'edit');
-    var kirim = { baris: JSON.stringify(oiBaris) };
+
+    /* SATU TANGGAL = SATU NOMOR DOKUMEN. Kalau barisnya memuat lebih dari
+       satu tanggal - gampang terjadi sejak barisnya bisa diunggah - pemakai
+       diberi tahu DULU berapa nomor yang akan lahir, baru disimpan. Waktu
+       mengubah dokumen yang sudah ada, nomornya memang sudah tetap satu,
+       jadi pertanyaan ini dilewati. */
+    var tglUnik = [];
+    for (var i = 0; i < oiBaris.length; i++) {
+      if (tglUnik.indexOf(oiBaris[i].tanggal) < 0) { tglUnik.push(oiBaris[i].tanggal); }
+    }
+
+    if (!edit && tglUnik.length > 1) {
+      Swal.fire({
+        icon: 'question', title: tglUnik.length + ' document numbers will be created',
+        html: 'The rows cover <b>' + tglUnik.length + ' different dates</b>, and one date '
+              + 'becomes one document.<br><br>Continue?',
+        showCancelButton: true, confirmButtonText: 'Yes, save', cancelButtonText: 'Cancel'
+      }).then(function (h) { if (h.isConfirmed) { oiSimpan(edit); } });
+      return;
+    }
+    oiSimpan(edit);
+  });
+
+  /* Dipisah jadi fungsi sendiri supaya jalur "langsung simpan" dan jalur
+     "simpan sesudah dikonfirmasi" memakai kode yang SAMA - kalau disalin,
+     cepat atau lambat keduanya berbeda. */
+  function oiSimpan(edit) {
+    /* Jenis laporannya ikut dikirim - dipakai hanya saat MEMBUAT;
+       waktu mengubah, servernya memakai nilai dokumen lama. */
+    var kirim = { baris: JSON.stringify(oiBaris),
+                  type_report: (typeof CFP_REPORT !== 'undefined' ? CFP_REPORT : '') };
     if (edit) { kirim.no_doc = oiDoc; }
 
-    var tombol = $(this).prop('disabled', true);
+    var tombol = $('#btnsave').prop('disabled', true);
     $.post(edit ? 'cash_projection/update_other_inflow.php'
                 : 'cash_projection/save_other_inflow.php', kirim, function (d) {
       if (d && d.status === 'ok') {
+        var nomor = (d.no_doc_list && d.no_doc_list.length)
+                  ? d.no_doc_list : [d.no_doc];
         Swal.fire({
           icon: 'success',
           title: edit ? 'Updated' : 'Saved',
-          html: d.jml + ' row(s) saved.<br>Document No:<br><b>' + d.no_doc + '</b>'
+          html: d.jml + ' row(s) saved in ' + nomor.length + ' document'
+                + (nomor.length === 1 ? '' : 's') + '.<br>Document No:<br><b>'
+                + nomor.join('</b><br><b>') + '</b>'
         }).then(function () { location.href = 'cash-projection.php'; });
       } else {
         tombol.prop('disabled', false);
@@ -423,7 +609,7 @@ $(function () {
       tombol.prop('disabled', false);
       Swal.fire({ icon: 'error', title: 'Failed', text: xhr.responseText || 'Cannot reach the server' });
     });
-  });
+  }
 
   oiGambar();
   oiAmbilKurs();

@@ -84,8 +84,18 @@ function cfp_isi($v)     { $v = trim((string) $v); return $v === '' ? '-' : html
             <button type="submit" class="app-btn app-btn-primary app-btn-sm">
               <i class="fa fa-search" aria-hidden="true"></i> Search
             </button>
-            <button type="button" id="btncreate" class="app-btn app-btn-success app-btn-sm">
-              <i class="fa fa-plus-circle" aria-hidden="true"></i> Create
+            <!-- DUA TOMBOL CREATE (permintaan pemakai 20 Nov 2026): entri
+                 Projection Other dibedakan per jenis laporan. Formulirnya
+                 SAMA PERSIS - yang berbeda cuma nilai type_report yang ikut
+                 tersimpan. Create Daily BELUM ADA, masih dibicarakan, jadi
+                 sengaja tidak dibuatkan tombol yang artinya belum disepakati. -->
+            <button type="button" id="btncreate" data-report="weekly"
+                    class="app-btn app-btn-success app-btn-sm js-cfp-create">
+              <i class="fa fa-plus-circle" aria-hidden="true"></i> Create Weekly
+            </button>
+            <button type="button" data-report="monthly"
+                    class="app-btn app-btn-primary app-btn-sm js-cfp-create">
+              <i class="fa fa-plus-circle" aria-hidden="true"></i> Create Monthly
             </button>
             <a target="_blank" href="<?php echo htmlspecialchars($taut_excel, ENT_QUOTES); ?>"
                class="app-btn app-btn-excel app-btn-sm">
@@ -98,13 +108,14 @@ function cfp_isi($v)     { $v = trim((string) $v); return $v === '' ? '-' : html
 
     <div class="ftl-body">
       <form id="formdata2">
-        <div class="ftl-tblwrap">
+        <div class="ftl-tblwrap cfp-tblwrap">
           <table id="datatable" class="table ftl-tbl cfp-tbl" role="grid" cellspacing="0" style="width:100%;">
             <thead>
               <tr>
                 <th>No Doc</th>
                 <th>Date</th>
                 <th>Type</th>
+                <th>Report</th>
                 <th class="num">Total Amount (IDR)</th>
                 <th>Status</th>
                 <th>Created By</th>
@@ -121,6 +132,7 @@ function cfp_isi($v)     { $v = trim((string) $v); return $v === '' ? '-' : html
                tanggal cuma terjumlah sebagian dan totalnya jadi beda
                dgn isi modalnya. */
             $sql = mysqli_query($conn1, "select no_doc, jenis,
+                                                max(type_report) as type_report,
                                                 min(tanggal)   as tgl_awal,
                                                 max(tanggal)   as tgl_akhir,
                                                 count(*)       as jml_baris,
@@ -149,6 +161,7 @@ function cfp_isi($v)     { $v = trim((string) $v); return $v === '' ? '-' : html
                     . cfp_isi($row['no_doc']) . '</a></td>
                 <td>' . $tgl . '</td>
                 <td>' . cfp_pil_jenis($row['jenis']) . '</td>
+                <td><span class="cfp-rep">' . cfp_isi($row['type_report']) . '</span></td>
                 <td class="num">' . cfp_angka($row['total_idr']) . '</td>
                 <td><span class="ftl-st ' . ($batal ? 'is-cancel' : 'is-approved') . '">'
                     . cfp_isi($row['status']) . '</span></td>
@@ -273,14 +286,18 @@ function SidebarCollapse () {
       order: [],
       pageLength: 10,
       lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
-      columnDefs: [{ targets: [7], orderable: false }],
+      /* kolom terakhir = Action; nomornya naik satu sejak kolom Report
+         disisipkan. */
+      columnDefs: [{ targets: [8], orderable: false }],
       language: { searchPlaceholder: 'Search...', search: '' }
     });
   });
 
-  document.getElementById('btncreate').onclick = function () {
-    location.href = 'create-cash-projection.php';
-  };
+  /* Kedua tombol memakai satu penangan - jenis laporannya dibawa di
+     data-report, jadi menambah jenis ketiga nanti cukup menambah tombol. */
+  $(document).on('click', '.js-cfp-create', function () {
+    location.href = 'create-cash-projection.php?report=' + encodeURIComponent($(this).data('report'));
+  });
 </script>
 
 <script>
