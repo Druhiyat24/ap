@@ -272,6 +272,47 @@ function cfs_peta_bank($conn)
     return $peta;
 }
 
+/* ----------------------------------------------------------------------
+   NAMA PROFIT CENTER & REKENING YANG SERAGAM.
+
+   Diminta pemakai 20 Nov 2026: di lembar PV EXP, baris dari Projection Other
+   menulis "GARMENT" + "Bank Central Asia - 008-997-1979" sedangkan baris
+   rencana bayar menulis "NAG" + "008-997-1979" - satu lembar, dua gaya,
+   dan pembacanya harus menebak sendiri bahwa keduanya rekening yang sama.
+
+   Yang dipakai gaya lembar PV AP (dan berkas acuannya): GARMENT / KNITTING
+   dan "BCA - 0089971979".
+
+   Kedua fungsi ini TAHAN DUA BENTUK MASUKAN - kode maupun nama yang sudah
+   jadi - karena sumbernya memang menyimpannya berbeda-beda. Yang tidak
+   dikenali dikembalikan apa adanya: lebih baik terbaca mentah daripada
+   hilang. */
+function cfs_nama_pc($peta, $nilai)
+{
+    $v = strtoupper(trim((string) $nilai));
+    if ($v === '') { return ''; }
+    return isset($peta[$v]) ? $peta[$v] : $v;
+}
+
+function cfs_nama_bank($peta, $nilai)
+{
+    $v = trim((string) $nilai);
+    if ($v === '') { return ''; }
+    if (isset($peta[$v])) { return $peta[$v]; }
+
+    /* Cocokkan lewat ANGKANYA: sumber yang satu menulis "008-997-1979",
+       yang lain "Bank Central Asia - 008-997-1979". Akun kas ber-COA
+       (1.01.01 ...) tidak punya angka rekening dan memang tidak ada di
+       peta ini - dikembalikan apa adanya. */
+    $angka = preg_replace('/\D/', '', $v);
+    if ($angka !== '') {
+        foreach ($peta as $rek => $nama) {
+            if (preg_replace('/\D/', '', $rek) === $angka) { return $nama; }
+        }
+    }
+    return $v;
+}
+
 /**
  * Susunan kolom AKHIR sebuah lembar: sama dgn cf_sumber_lembar(), kecuali
  * penanda '@TANGGAL' yang dijabarkan jadi satu kolom per tanggal proyeksi
@@ -311,6 +352,12 @@ function cf_kumpul_sumber($conn, $cfg)
     $rate  = (float) $cfg['rate'];
     $hasil = array('AR_EXISTING' => array(), 'BOOK_TRANSFER' => array(), 'OTHER_INFLOW' => array(),
                    'PV_EXP' => array(), 'PV_AP' => array());
+
+    /* Dibuat SEKALI di sini, bukan di tiap bagian: lembar PV EXP & PV AP
+       sama-sama memakainya, dan dua peta yang dibangun terpisah cepat atau
+       lambat memberi nama berbeda untuk rekening yang sama. */
+    $petaPc   = cfs_peta_pc($conn);
+    $petaBank = cfs_peta_bank($conn);
 
     /* ---------------------------------------------------------- AR Existing
        DUA SUMBER, satu bentuk keluaran:
@@ -447,8 +494,8 @@ function cf_kumpul_sumber($conn, $cfg)
                 'supplier' => $r['nama_supplier'], 'kategori' => $r['kategori'],
                 'curr' => $r['curr'], 'amount' => (float) $r['amount'], 'rate' => $kurs,
                 'amount_idr' => abs((float) $r['amount']) * $kurs, 'tanggal' => cfs_tgl($r['tanggal']),
-                'pc' => cfs_pertama($r['pc_source'], $r['pc_tujuan']),
-                'akun' => $akunIni,
+                'pc' => cfs_nama_pc($petaPc, cfs_pertama($r['pc_source'], $r['pc_tujuan'])),
+                'akun' => cfs_nama_bank($petaBank, $akunIni),
                 'sumber' => 'Cash Flow Projection (Other)',
                 'rate_simpan' => (float) $r['rate'], 'idr_simpan' => (float) $r['amount_idr'],
             );
@@ -485,7 +532,8 @@ function cf_kumpul_sumber($conn, $cfg)
                 'curr' => $r['curr'], 'amount' => (float) $r['amount'], 'rate' => $kurs,
                 'amount_idr' => abs((float) $r['amount']) * $kurs,
                 'tanggal' => cfs_tgl($r['plan_date']),
-                'pc' => (string) $r['profit_center'], 'akun' => (string) $r['frm_akun'],
+                'pc' => cfs_nama_pc($petaPc, $r['profit_center']),
+                'akun' => cfs_nama_bank($petaBank, $r['frm_akun']),
                 'sumber' => 'Update Payment Date - ' . (string) $r['jenis'],
                 'rate_simpan' => null, 'idr_simpan' => null,
             );
@@ -516,7 +564,8 @@ function cf_kumpul_sumber($conn, $cfg)
                 'curr' => $r['curr'], 'amount' => (float) $r['amount'], 'rate' => $kurs,
                 'amount_idr' => abs((float) $r['amount']) * $kurs,
                 'tanggal' => cfs_tgl($r['tgl']),
-                'pc' => (string) $r['profit_center'], 'akun' => (string) $r['frm_akun'],
+                'pc' => cfs_nama_pc($petaPc, $r['profit_center']),
+                'akun' => cfs_nama_bank($petaBank, $r['frm_akun']),
                 /* Sumbernya ditulis BEDA dari yang sudah dijadwalkan - supaya
                    pembacanya tahu tanggal ini hitungan, bukan keputusan. */
                 'sumber' => 'Not scheduled yet (due-date Thursday) - ' . (string) $r['jenis'],
@@ -534,9 +583,6 @@ function cf_kumpul_sumber($conn, $cfg)
     /* Status Supplier = mastersupplier.payment_rating, sama dgn warna
        prioritas yang dipakai layar Payment Plan. Diambil SEKALI untuk seluruh
        hasil, bukan satu query per baris. */
-    $petaPc   = cfs_peta_pc($conn);
-    $petaBank = cfs_peta_bank($conn);
-
     $rating = array();
     $qr = mysqli_query($conn, "select Supplier, payment_rating from mastersupplier
                                 where payment_rating is not null and payment_rating <> ''");
