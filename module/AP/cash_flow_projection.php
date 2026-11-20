@@ -238,9 +238,15 @@ include '../header.php';
                 <!-- Tabel lembar sumber: bentuknya kisi biasa, bukan matriks,
                      jadi tabelnya sendiri - kolom pertama matriks digayakan
                      sbg keterangan dan akan salah tempat di sini. -->
-                <table class="cfd cfd-src" id="cfd-src" style="display:none;">
-                    <thead></thead><tbody></tbody>
-                </table>
+                <!-- Dibungkus wadah sendiri: DataTables menyisipkan kotak cari,
+                     keterangan, dan pagingnya SEBAGAI SAUDARA tabel ini. Kalau
+                     yang disembunyikan cuma tabelnya, ketiga bagian itu
+                     tertinggal di layar waktu pemakai kembali ke matriks. -->
+                <div id="cfd-src-wrap" style="display:none;">
+                    <table class="cfd cfd-src" id="cfd-src">
+                        <thead></thead><tbody></tbody>
+                    </table>
+                </div>
                 <table class="cfd" id="cfd-tbl">
                     <thead><tr><th>Descriptions</th><th class="cfd-num">Total</th></tr></thead>
                     <tbody><tr><td colspan="2" class="cfd-kosong">Pick a type and a period, then click Search.</td></tr></tbody>
@@ -484,6 +490,15 @@ function cfdGambarSrc(kode) {
     var baris = (res.sumber || {})[kode] || [];
     if (!def) { return; }
 
+    /* DIBONGKAR DULU, sebelum satu sel pun diganti. DataTables menyimpan
+       jumlah kolom waktu dipasang; mengganti <thead> dgn jumlah kolom yang
+       berbeda lalu memanggil destroy() membuatnya melempar galat - dan galat
+       itu menghentikan seluruh penangan klik, sehingga tab lain terlihat
+       "tidak bisa dibuka" padahal yang rusak cuma langkah ini. */
+    if ($.fn.dataTable.isDataTable('#cfd-src')) {
+        $('#cfd-src').DataTable().destroy();
+    }
+
     var h = '<tr>';
     for (var i = 0; i < def.kolom.length; i++) {
         h += '<th class="' + (def.kolom[i][2] === 'n' ? 'cfd-num' : '') + '">'
@@ -507,15 +522,10 @@ function cfdGambarSrc(kode) {
     }
     $('#cfd-src tbody').html(isi);
 
-    /* DataTables dipasang ULANG tiap lembar - kolomnya berbeda-beda, dan
-       DataTables mengunci jumlah kolom waktu dipasang. destroy() dulu, kalau
-       tidak ia melempar "Cannot reinitialise DataTable".
-
-       Pencarian & urutan ikut, karena yang dicari orang di lembar ini
-       biasanya satu nomor voucher di antara ratusan baris. */
-    if ($.fn.dataTable.isDataTable('#cfd-src')) {
-        $('#cfd-src').DataTable().destroy();
-    }
+    /* Pencarian & urutan ikut dipasang: yang dicari orang di lembar ini
+       biasanya satu nomor voucher di antara ratusan baris. Lembar kosong
+       tidak dipasangi - DataTables akan menimpa baris "No rows" dgn
+       kalimatnya sendiri. */
     if (baris.length) {
         $('#cfd-src').DataTable({
             autoWidth: false,
@@ -535,13 +545,13 @@ function cfdGambar() {
     if ($.inArray(CFD_TATA, CFD_SRC) >= 0) {
         cfdGambarSrc(CFD_TATA);
         $('#cfd-tbl').hide();
-        $('#cfd-src').show();
+        $('#cfd-src-wrap').show();
         $('#cfd-tab-bar').show().find('.cfd-tab')
             .removeClass('active').filter('[data-tata="' + CFD_TATA + '"]').addClass('active');
         $('.cfd-scroll').scrollLeft(0);
         return;
     }
-    $('#cfd-src').hide();
+    $('#cfd-src-wrap').hide();
     $('#cfd-tbl').show();
 
     var baris = (CFD_TATA === 'akun') ? res.baris_akun : res.baris_tgl;
