@@ -106,15 +106,20 @@
      $rows6 = mysqli_fetch_array($sql6);
      $saldoakhir = isset($rows6['saldo_akhir']) ? $rows6['saldo_akhir'] : $saldoswal;
 
-     $sql = mysqli_query($conn1," SELECT '',q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
+     $sql = mysqli_query($conn1," SELECT '',q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit,q1.id_cash_flow, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
 FROM
-   (select id, transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr from b_reportbank where akun = '$accountid' and transaksi_date between '$start_date' and '$end_date' and status != 'Cancel') AS q1 JOIN
+   (select id, transaksi_date as date, no_doc as doc_num,deskripsi,debit,credit,curr,id_cash_flow from b_reportbank where akun = '$accountid' and transaksi_date between '$start_date' and '$end_date' and status != 'Cancel') AS q1 JOIN
      (SELECT @runtot:= $saldoswal) runtot order by date, id asc");
 
+   // Category = kategori cash flow transaksinya (sama dgn layar bankreport.php)
+   $cfNama = array();
+   $qcf = mysqli_query($conn1, "select id, show_subcategory from master_cash_flow");
+   while ($qcf && ($rcf = mysqli_fetch_assoc($qcf))) { $cfNama[(int) $rcf['id']] = $rcf['show_subcategory']; }
 
    while($row = mysqli_fetch_array($sql)){
     $debit = $row['debit'];
     $credit = $row['credit'];
+    $kategori = htmlspecialchars(isset($cfNama[(int) $row['id_cash_flow']]) ? $cfNama[(int) $row['id_cash_flow']] : '');
 
     if($debit == '0'){
         $t_debit = '';
@@ -133,7 +138,7 @@ FROM
             <td style="text-align:left;" value="'.$row['date'].'">'.date("d-M-Y",strtotime($row['date'])).'</td>                            
             <td style="text-align:left;" value = "'.$row['doc_num'].'">'.$row['doc_num'].'</td>
             <td style="text-align:left;" colspan="3" value="'.$row['deskripsi'].'">'.$row['deskripsi'].'</td>
-            <td value=""></td> 
+            <td style="text-align:left;" value="'.$kategori.'">'.$kategori.'</td>
             <td style="text-align:right;" value = "'.$t_debit.'">'.$t_debit.'</td>
             <td style="text-align:right;" value = "'.$t_credit.'">'.$t_credit.'</td>         
             <td style="text-align:right;" value = "'.$row['saldo_akhir'].'">'.$row['saldo_akhir'].'</td>         

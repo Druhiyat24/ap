@@ -311,9 +311,9 @@ $saldo__ = $saldoawal * $rates;
      // lama), exclude via curr jadi ikut membuang transaksi asli itu;
      // no_doc "FX/..." cuma cocok dgn baris yang benar-benar dibuat auto
      // jurnal selisih kurs, jadi lebih aman.
-     $sql = mysqli_query($conn1," SELECT '',q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit,q1.orig_credit,q1.orig_debit, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
+     $sql = mysqli_query($conn1," SELECT '',q1.date,q1.doc_num,q1.curr,q1.deskripsi,q1.credit,q1.debit,q1.orig_credit,q1.orig_debit,q1.id_cash_flow, (@runtot :=@runtot + q1.debit - q1.credit) AS saldo_akhir
 FROM
-   (select id, transaksi_date as date, no_doc as doc_num,deskripsi,curr,
+   (select id, transaksi_date as date, no_doc as doc_num,deskripsi,curr,id_cash_flow,
            debit as orig_debit, credit as orig_credit,
            IF(no_doc like 'FX/%', 0, debit) as debit,
            IF(no_doc like 'FX/%', 0, credit) as credit
@@ -331,10 +331,19 @@ FROM
    // tanpa dikonversi lagi - ini yang "meng-crystallize" saldo buku jadi
    // saldo pasar (HARIAN) tiap kali selisih kurs sudah dijurnal.
    $runningBalanceIdr = $saldo__;
+
+   // Kolom Category = kategori cash flow transaksinya (b_reportbank.id_cash_flow ->
+   // master_cash_flow, master yang sama dgn pilihan "Cash Flow Category" di Bank In/Out).
+   // Terisi sejak Agustus 2026; transaksi sebelumnya memang belum punya kategori.
+   $cfNama = array();
+   $qcf = mysqli_query($conn1, "select id, show_subcategory from master_cash_flow");
+   while ($qcf && ($rcf = mysqli_fetch_assoc($qcf))) { $cfNama[(int) $rcf['id']] = $rcf['show_subcategory']; }
+
    while($row = mysqli_fetch_array($sql)){
     $debit = $row['debit'];
     $credit = $row['credit'];
     $isFxRow = (strpos($row['doc_num'], 'FX/') === 0);
+    $kategori = htmlspecialchars(isset($cfNama[(int) $row['id_cash_flow']]) ? $cfNama[(int) $row['id_cash_flow']] : '');
 
     if ($isFxRow) {
         $debitIdr = (float) $row['orig_debit'];
@@ -382,7 +391,7 @@ FROM
             <td value="'.$row['date'].'">'.date("d-M-Y",strtotime($row['date'])).'</td>
             <td value = "'.$row['doc_num'].'">'.$row['doc_num'].'</td>
             <td colspan="3" value="'.$row['deskripsi'].'">'.$row['deskripsi'].'</td>
-            <td value=""></td>
+            <td style="text-align:left;" value="'.$kategori.'">'.$kategori.'</td>
             <td style="text-align:right;" value = "'.$t_debit.'">'.$t_debit.'</td>
             <td style="text-align:right;" value = "'.$t_credit.'">'.$t_credit.'</td>
             <td style="text-align:right;" value = "'.$row['saldo_akhir'].'">'.number_format($row['saldo_akhir'],2).'</td>
@@ -393,7 +402,7 @@ FROM
             <td value="'.$row['date'].'">'.date("d-M-Y",strtotime($row['date'])).'</td>
             <td value = "'.$row['doc_num'].'">'.$row['doc_num'].'</td>
             <td colspan="3" value="'.$row['deskripsi'].'">'.$row['deskripsi'].'</td>
-            <td value=""></td>
+            <td style="text-align:left;" value="'.$kategori.'">'.$kategori.'</td>
             <td style="text-align:right;" value = "'.$t_debit.'">'.$t_debit.'</td>
             <td style="text-align:right;" value = "'.$t_credit.'">'.$t_credit.'</td>
             <td style="text-align:right;" value = "'.$row['saldo_akhir'].'">'.number_format($row['saldo_akhir'],2).'</td>
