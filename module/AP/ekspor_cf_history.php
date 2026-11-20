@@ -337,69 +337,12 @@ foreach ($cfhxLembar as $cfhxL) {
    tidak bisa bergeser sendiri.
    ====================================================================== */
 foreach ($lembarSumber as $kode => $def) {
-    /* SELURUH LEMBAR SELALU DICETAK, walau tidak ada barisnya (19 Nov 2026,
-       dilaporkan pemakai: "kenapa cuma ada sheet ini saja"). Dulu hanya AR
-       Existing yang dikecualikan, dan akibatnya potret Desember - yang
-       memang tidak punya Book Transfer / Other Inflow / rencana bayar -
-       keluar cuma 4 lembar, seolah ekspornya gagal separuh. Lembar yang
-       hilang tanpa penjelasan tidak bisa dibedakan dari laporan yang rusak;
-       lembar kosong yang menerangkan dirinya sendiri bisa. */
-    /* Barisnya diambil DULU: catatan lembarnya bergantung pada ada-tidaknya
-       isi, dan kolom tanggal lembar PV AP baru ketahuan sesudah barisnya ada.
-
-       isset() WAJIB di sini: lembar yang tidak punya baris sama sekali tidak
-       punya kunci di $sumber. Tanpa penjaga ini PHP menulis Notice + Warning
-       ke keluaran - dan karena keluarannya BERKAS XLSX, berkasnya rusak sejak
-       byte pertama dan Excel menolak membukanya. */
-    $barisLembar = isset($sumber[$kode]) ? $sumber[$kode] : array();
-    if (!$barisLembar) {
-        /* Ditambahkan ke catatannya, bukan menggantikan - keterangan sumber
-           lembar itu justru tetap berguna waktu isinya kosong. */
-        $def['catatan'] = rtrim((string) $def['catatan'])
-                        . '  |  No rows fall in this period.';
-    }
-
-    $ls = $sp->createSheet();
-    $ls->setTitle($def['judul']);
-    $ls->getTabColor()->setRGB($def['warna']);
-
-    cfhxJudul($ls, 1, $judulBerkas . '  -  ' . strtoupper($def['judul']), 12);
-    $ls->setCellValue('A2', $def['catatan']);
-    $ls->getStyle('A2')->getFont()->setItalic(true)->setSize(9)->getColor()->setARGB('FF64748B');
-
-    $kol = cf_sumber_kolom($def, $barisLembar);
-    $nKol = count($kol);
-    $r = 4;
-    for ($i = 0; $i < $nKol; $i++) { $ls->setCellValue(cfhxKol($i + 1) . $r, $kol[$i][0]); }
-    cfhxKepala($ls, 'A' . $r . ':' . cfhxKol($nKol) . $r);
-    $r++;
-
-    foreach ($barisLembar as $brs) {
-        for ($i = 0; $i < $nKol; $i++) {
-            $nama = $kol[$i][1];
-            $jenis = $kol[$i][2];
-            $v = isset($brs[$nama]) ? $brs[$nama] : null;
-            $alamat = cfhxKol($i + 1);
-            if ($jenis === 'd') {
-                cfhxSelTgl($ls, $alamat, $r, $v);
-            } elseif ($jenis === 'n') {
-                /* null DIBIARKAN KOSONG, bukan jadi nol: "tidak diisi
-                   tangan" dan "diisi tangan nol" dua hal yang berbeda. */
-                cfhxSel($ls, $alamat, $r, ($v === null || $v === '') ? null : (float) $v, CFHX_UANG);
-            } else {
-                cfhxSel($ls, $alamat, $r, ($v === null) ? '' : (string) $v);
-            }
-        }
-        $ls->getStyle('A' . $r . ':' . cfhxKol($nKol) . $r)->applyFromArray(
-            array('borders' => array('allBorders' => cfhxGarisTipis())));
-        $r++;
-    }
-
-    $ls->freezePane('A5');
-    $ls->setAutoFilter('A4:' . cfhxKol($nKol) . ($r - 1));
-    for ($i = 1; $i <= $nKol; $i++) {
-        $ls->getColumnDimension(cfhxKol($i))->setWidth(($i <= 3) ? 26 : 16);
-    }
+    /* Penulisnya pindah ke cf_xlsx_lib.php (20 Nov 2026) - ekspor laporan
+       yang sedang tampil memakai lembar yang sama, dan dua salinan penulis
+       cepat atau lambat berbeda kolomnya. */
+    cfhxLembarSumber($sp, $def,
+                     isset($sumber[$kode]) ? $sumber[$kode] : array(),
+                     $judulBerkas);
 }
 
 $sp->setActiveSheetIndex(0);

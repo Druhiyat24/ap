@@ -40,6 +40,11 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 define('CFP_PUSTAKA', 1);
+/* Lembar sumbernya ikut dicetak (permintaan pemakai 20 Nov 2026), jadi
+   mesinnya diminta mengumpulkan datanya. Mesin meng-include cf_sumber_lib
+   sendiri waktu penanda ini ada, dan hasilnya tinggal dibaca dari
+   $cfpSumber - berkas ini satu lingkup dgn mesinnya. */
+define('CFP_SUMBER', 1);
 
 $_POST['start_date'] = isset($_REQUEST['start_date']) ? $_REQUEST['start_date'] : '';
 $_POST['end_date']   = isset($_REQUEST['end_date'])   ? $_REQUEST['end_date']   : '';
@@ -95,6 +100,26 @@ $judulBerkas = 'CASH FLOW PROJECTION'
              . (isset($info['pc_label']) && $info['pc_label'] !== ''
                 ? ' - ' . strtoupper($info['pc_label']) : '');
 
+/* Lembar sumber: susunannya DARI SATU TEMPAT yang sama dgn ekspor potret
+   (cf_sumber_lembar + cfhxLembarSumber), jadi dua Excel itu mustahil berbeda
+   kolomnya. Catatan lembarnya disesuaikan dulu dgn keadaan laporan ini -
+   dihitung ulang atau memakai potret. */
+$lembarSumber = function_exists('cf_sumber_lembar') ? cf_sumber_lembar() : array();
+$sumber = isset($cfpSumber) ? $cfpSumber : array();
+
+$arDoc = trim((string) (isset($info['ar_doc']) ? $info['ar_doc'] : ''));
+$apDoc = trim((string) (isset($info['ap_doc']) ? $info['ap_doc'] : ''));
+if (isset($lembarSumber['AR_EXISTING'])) {
+    $lembarSumber['AR_EXISTING']['catatan'] = ($arDoc !== '')
+        ? 'From saved AR collection projection ' . $arDoc . ' - amounts are net of withholding tax.'
+        : 'No saved AR projection was used, so the figures were recalculated (not saved).';
+}
+if (isset($lembarSumber['PV_AP'])) {
+    $lembarSumber['PV_AP']['catatan'] = ($apDoc !== '')
+        ? 'From saved AP projection ' . $apDoc . '.'
+        : 'No saved AP projection was used, so the figures were recalculated (not saved).';
+}
+
 $sp = new Spreadsheet();
 
 /* Urutan lembarnya mengikuti type: susunan yang jadi tab bawaan di layar
@@ -116,6 +141,15 @@ foreach ($lembar as $l) {
    atas dibuat lewat createSheet(). Kalau tidak ada satu pun lembar isi
    (mustahil, tapi tetap dijaga) lembar bawaannya dibiarkan supaya berkasnya
    tetap sah. */
+/* Lembar sumbernya menyusul SESUDAH kedua lembar matriks - urutannya sama
+   dgn ekspor potret, dan sama dgn urutan tab di layar. */
+foreach ($lembarSumber as $kodeLbr => $defLbr) {
+    cfhxLembarSumber($sp, $defLbr,
+                     isset($sumber[$kodeLbr]) ? $sumber[$kodeLbr] : array(),
+                     $judulBerkas);
+    $dibuat++;
+}
+
 if ($dibuat > 0) { $sp->removeSheetByIndex(0); }
 $sp->setActiveSheetIndex(0);
 

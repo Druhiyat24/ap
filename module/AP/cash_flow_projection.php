@@ -17,6 +17,7 @@ include '../header.php';
 <link rel="stylesheet" href="../css/app-skin-form.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-skin-form.css'); ?>">
 <link rel="stylesheet" href="../css/app-loading.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-loading.css'); ?>">
 <link rel="stylesheet" href="../css/app-ftr-list.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-ftr-list.css'); ?>">
+<link rel="stylesheet" href="../css/4.1.1/datatables.min.css">
 <link rel="stylesheet" href="../css/app-cf-matrix.css?v=<?php echo @filemtime(__DIR__ . '/../css/app-cf-matrix.css'); ?>">
 
 <style>
@@ -298,6 +299,10 @@ include '../header.php';
 <script language="JavaScript" src="../css/4.1.1/bootstrap-datepicker.js"></script>
 <script language="JavaScript" src="../css/4.1.1/select2.min.js"></script>
 <script language="JavaScript" src="../css/4.1.1/sweetalert2@11.js"></script>
+<!-- DataTables HANYA untuk lembar sumber: tabel matriksnya sengaja bukan
+     DataTables (barisnya tetap 56 kategori, dan paging akan memotong blok
+     pinjaman di bawahnya). -->
+<script language="JavaScript" src="../css/4.1.1/datatables.min.js"></script>
 
 <script>
 var CFD_HARI = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -501,6 +506,25 @@ function cfdGambarSrc(kode) {
             + 'No rows for this period.</td></tr>';
     }
     $('#cfd-src tbody').html(isi);
+
+    /* DataTables dipasang ULANG tiap lembar - kolomnya berbeda-beda, dan
+       DataTables mengunci jumlah kolom waktu dipasang. destroy() dulu, kalau
+       tidak ia melempar "Cannot reinitialise DataTable".
+
+       Pencarian & urutan ikut, karena yang dicari orang di lembar ini
+       biasanya satu nomor voucher di antara ratusan baris. */
+    if ($.fn.dataTable.isDataTable('#cfd-src')) {
+        $('#cfd-src').DataTable().destroy();
+    }
+    if (baris.length) {
+        $('#cfd-src').DataTable({
+            autoWidth: false,
+            order: [],
+            pageLength: 10,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+            language: { searchPlaceholder: 'Search...', search: '' }
+        });
+    }
 }
 
 function cfdGambar() {

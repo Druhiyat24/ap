@@ -159,3 +159,25 @@ table.cfd.cfd-src tbody td:first-child { position:static; min-width:0; left:auto
 /* Kolom kedua matriks juga dibekukan di 330px - ikut dibatalkan di sini. */
 table.cfd.cfd-src thead th:nth-child(2),
 table.cfd.cfd-src tbody td:nth-child(2) { position:static; left:auto; min-width:0; }
+
+
+/* ---- pita tab: dirapikan 20 Nov 2026 ----
+   Cincin fokus bawaan peramban membuat tab yang BARU DIKLIK terlihat
+   berbingkai hitam tebal - gampang disangka rusak. Fokusnya tetap terlihat
+   untuk yang memakai papan ketik (:focus-visible), cuma tidak lagi muncul
+   sesudah klik tetikus. */
+.cfd-tab:focus { outline:none; }
+.cfd-tab:focus-visible { outline:2px solid #2563eb; outline-offset:2px; }
+.cfd-tab { line-height:1.2; }
+
+/* Angka jumlah baris: bulat penuh, lebarnya tetap supaya pita tabnya tidak
+   bergoyang waktu angkanya berubah 0 -> 580. */
+.cfd-tab-jml { min-width:22px; }
+
+/* Panel DataTables di dalam kartu laporan - rapat dgn tabelnya. */
+.cfd-scroll .dataTables_wrapper { padding:10px 12px 4px; }
+.cfd-scroll .dataTables_wrapper .row { margin-left:0; margin-right:0; }
+.cfd-scroll .dataTables_length select,
+.cfd-scroll .dataTables_filter input { height:30px; font-size:12px; }
+.cfd-scroll .dataTables_info,
+.cfd-scroll .dataTables_paginate { font-size:12px; padding-top:6px; }
