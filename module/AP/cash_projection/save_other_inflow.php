@@ -22,7 +22,7 @@ if (!is_array($baris) || count($baris) == 0) {
 }
 
 // bank & kategori dibaca ulang di server - jangan percaya kiriman layar
-$bank     = cfp_daftar_bank($conn1);
+$bank     = cfp_daftar_akun($conn1);
 $kategori = cfp_daftar_kategori($conn1, 'Cash In');
 
 mysqli_autocommit($conn2, false);
@@ -61,7 +61,7 @@ foreach ($baris as $b) {
     }
 
     if (!isset($bank[$akun])) {
-        $aman = false; $pesan = 'Unknown bank account: ' . $akun;
+        $aman = false; $pesan = 'Unknown bank or cash account: ' . $akun;
         break;
     }
     if ($nama == '') {

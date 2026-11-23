@@ -58,16 +58,16 @@ function cfp_daftar_akun($conn)
 }
 
 
-/* Daftar akun BANK saja - dipakai tab Other Inflow & PV Expense, yang di
-   Excel kolomnya memang "Bank". */
-function cfp_daftar_bank($conn)
-{
-    $bank = array();
-    foreach (cfp_daftar_akun($conn) as $label => $a) {
-        if (strpos($label, '1.01.') !== 0) { $bank[$label] = $a; }
-    }
-    return $bank;
-}
+/* DULU ADA cfp_daftar_bank() - daftar yang sama tapi lima akun kas dibuang,
+   dipakai tab Other Inflow & PV Expense. Dihapus 23 Nov 2026 atas permintaan
+   pemakai: "akun kas nya satukan dengan bank ya di dropdown". Uang yang
+   mendarat di kas tetap uang perusahaan, dan laporan proyeksinya memang
+   sudah menghitung akun kas - dropdown yang membuangnya membuat baris itu
+   tidak bisa dicatat sama sekali.
+
+   Dihapus, bukan dibiarkan mengembalikan daftar penuh: nama fungsinya akan
+   berbohong, dan dua fungsi yang isinya sama persis cepat atau lambat
+   dipakai bergantian tanpa ada yang sadar bedanya sudah hilang. */
 
 
 /* Daftar supplier untuk dropdown Supplier Name di tab PV Expense.

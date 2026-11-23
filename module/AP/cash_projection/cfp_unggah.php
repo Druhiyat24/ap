@@ -60,7 +60,7 @@ $l = $sp->getSheetByName('Data');
 if (!$l) { $l = $sp->getSheet(0); }
 
 $akun     = cfp_daftar_akun($conn1);
-$bank     = cfp_daftar_bank($conn1);
+$bank     = $akun;
 $kategori = cfp_daftar_kategori($conn1, $jenis === 'pv' ? 'Cash Out' : 'Cash In');
 $master   = ($jenis === 'pv') ? cfp_daftar_supplier($conn1) : cfp_daftar_customer($conn1);
 
@@ -148,7 +148,7 @@ for ($n = 2; $n <= $akhir; $n++) {
 
     if ($nama === '')  { $salah[] = 'Row ' . $n . ': the name is empty.'; continue; }
     if ($ktg === null) { $salah[] = 'Row ' . $n . ': category "' . $sel[3] . '" is not in the list.'; continue; }
-    if ($bnk === null) { $salah[] = 'Row ' . $n . ': bank account "' . $sel[4] . '" is not in the list.'; continue; }
+    if ($bnk === null) { $salah[] = 'Row ' . $n . ': bank or cash account "' . $sel[4] . '" is not in the list.'; continue; }
     if ($amt <= 0)     { $salah[] = 'Row ' . $n . ': amount must be greater than 0.'; continue; }
 
     /* Nama yang PERSIS ada di master dipakai beserta idnya; selain itu

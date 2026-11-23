@@ -6,8 +6,8 @@
 
 include 'cash_projection/cfp_lib.php';
 
-$akun     = cfp_daftar_akun($conn1);   // bank + kas, untuk Book Transfer
-$bank     = cfp_daftar_bank($conn1);   // bank saja, untuk Other Inflow
+$akun     = cfp_daftar_akun($conn1);   // bank + kas
+$bank     = $akun;                     // ketiga tab memakai daftar yang sama
 $kategori     = cfp_daftar_kategori($conn1, 'Cash In');    // Other Inflow
 $kategori_out = cfp_daftar_kategori($conn1, 'Cash Out');   // PV Expense
 $supplier     = cfp_daftar_supplier($conn1);               // PV Expense

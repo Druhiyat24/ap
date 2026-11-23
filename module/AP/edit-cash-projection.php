@@ -56,7 +56,7 @@ while ($row = mysqli_fetch_assoc($sql)) {
 }
 
 $akun         = cfp_daftar_akun($conn1);
-$bank         = cfp_daftar_bank($conn1);
+$bank         = $akun;
 $kategori     = cfp_daftar_kategori($conn1, 'Cash In');    // Other Inflow
 $kategori_out = cfp_daftar_kategori($conn1, 'Cash Out');   // PV Expense
 $supplier     = cfp_daftar_supplier($conn1);               // PV Expense

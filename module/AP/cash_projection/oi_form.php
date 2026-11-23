@@ -3,7 +3,7 @@
    Bentuknya mengikuti tab Book Transfer (bt_form.php), bedanya:
    cuma satu akun (Bank penerima), plus Customer Name & Income Category.
    Pemanggilnya menyiapkan:
-     $bank      - daftar akun bank (wajib)
+     $bank      - daftar akun bank & kas (wajib)
      $kategori  - daftar Income Category dari master (wajib)
      $customer  - daftar customer dari mastersupplier, id => nama (wajib)
      $cfp_mode  - 'create' (bawaan) atau 'edit'
@@ -48,7 +48,7 @@ $cfp_oi   = isset($cfp_oi)   ? $cfp_oi   : array();
   <div class="col-lg-3 col-md-6 mb-2">
     <label for="oi_bank"><b>Bank</b> <i>*</i></label>
     <select class="form-control app-select2" id="oi_bank">
-      <option value="">Select bank account</option>
+      <option value="">Select bank or cash account</option>
       <?php foreach ($bank as $a) { ?>
         <option value="<?php echo htmlspecialchars($a['label'], ENT_QUOTES); ?>"
                 data-curr="<?php echo htmlspecialchars($a['curr'], ENT_QUOTES); ?>"

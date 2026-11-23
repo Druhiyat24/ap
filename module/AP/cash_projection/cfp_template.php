@@ -27,7 +27,7 @@ $kolom = cfp_unggah_kolom($jenis);
 $judul = cfp_unggah_judul($jenis);
 
 $akun     = cfp_daftar_akun($conn1);
-$bank     = cfp_daftar_bank($conn1);
+$bank     = $akun;
 $ktgIn    = cfp_daftar_kategori($conn1, 'Cash In');
 $ktgOut   = cfp_daftar_kategori($conn1, 'Cash Out');
 $supplier = cfp_daftar_supplier($conn1);

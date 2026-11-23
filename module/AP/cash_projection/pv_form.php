@@ -9,7 +9,7 @@
    tidak perlu diketik lagi.
 
    Pemanggilnya menyiapkan:
-     $bank          - daftar akun bank (wajib)
+     $bank          - daftar akun bank & kas (wajib)
      $kategori_out  - daftar Cost Category dari master (wajib)
      $supplier      - daftar supplier dari mastersupplier, id => nama (wajib)
      $cfp_mode      - 'create' (bawaan) atau 'edit'
@@ -55,7 +55,7 @@ $cfp_pv   = isset($cfp_pv)   ? $cfp_pv   : array();
   <div class="col-lg-3 col-md-6 mb-2">
     <label for="pv_bank"><b>Bank</b> <i>*</i></label>
     <select class="form-control app-select2" id="pv_bank">
-      <option value="">Select bank account</option>
+      <option value="">Select bank or cash account</option>
       <?php foreach ($bank as $a) { ?>
         <option value="<?php echo htmlspecialchars($a['label'], ENT_QUOTES); ?>"
                 data-curr="<?php echo htmlspecialchars($a['curr'], ENT_QUOTES); ?>"
