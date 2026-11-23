@@ -24,13 +24,15 @@
    bisa berubah sesudah Save, sedangkan yang mau diukur justru janji yang
    dibuat saat itu.
 
-   SISI REALISASI dibaca dari tbl_list_journal, dgn EMPAT saluran pembayaran
-   yang sama persis dgn ap_report2/query_pv2.php:
+   SISI REALISASI dibaca dari tbl_list_journal, HANYA DUA saluran - bank dan
+   kas - yang polanya sama persis dgn ap_report2/query_pv2.php:
        BK  (bank)      type_journal '%Payment Voucher%'  + no_journal '%BK%'
        KKK (kas)       type_journal '%Payment Voucher%'  + no_journal '%KKK%'
-       PAY (non bank)  type_journal '%Payment Non Bank%' + no_journal '%PAY%'
-       GM  (reklas)    type_journal = 'ACCOUNT PAYABLE' + reff_doc SI/APR|PV-AP
-   semuanya pada baris ber-nama_coa '%UTANG USAHA%', DIKURANGI potongan PPh
+   Dua saluran query_pv2.php yang lain - PAY (non bank) dan GM (reklas) -
+   SENGAJA TIDAK dipakai di sini sejak 23 Nov 2026 atas permintaan user;
+   alasannya ditulis panjang di atas $saluran. Akibatnya angka terbayar
+   laporan ini memang berbeda dari AP Report, dan itu disengaja.
+   Keduanya pada baris ber-nama_coa '%UTANG USAHA%', DIKURANGI potongan PPh
    pada baris 2.52.xx di dokumen yang sama (lihat keterangan panjang di atas
    $sqlBayar - yang dilaporkan KAS yang keluar, bukan mutasi buku utang),
    dikelompokkan per reff_doc. Pola LIKE-nya DISALIN UTUH dari query_pv2.php
@@ -267,12 +269,43 @@ while ($p = mysqli_fetch_assoc($qd)) {
 $eDari   = mysqli_real_escape_string($conn2, $dari);
 $eSampai = mysqli_real_escape_string($conn2, $sampai);
 
+/* HANYA BANK & KAS - permintaan user 23 Nov 2026. query_pv2.php punya EMPAT
+   saluran; dua di antaranya SENGAJA tidak dipakai di sini karena tidak ada
+   uang yang keluar lewat keduanya.
+
+   PAY (non bank) - contoh yang disebut user, PAY/LP/NAG/1126/00007. Dokumen
+   ini memang melunasi utang, tetapi lawan baris Utang Usaha-nya bukan
+   bank/kas melainkan 1.49.x UANG MUKA PEMBELIAN LOKAL atau 5.97.x: utangnya
+   dihapuskan terhadap uang muka yang sudah dibayar jauh sebelumnya. Dari 109
+   dokumen PAY sepanjang 2026 (Rp 207.424.705,89), TIDAK SATU PUN lawannya
+   akun bank.
+
+   GM (reklas) - isinya memang bukan pembayaran sama sekali. Sepanjang 2026
+   cuma 2 dokumen, 4 baris, Rp 1.522.157,00: GM/NAG/0826/00110 memindahkan
+   potongan PPh 23 yang menggantung dari Utang Usaha ke utang pajak, dan
+   GM/NAG/0826/00127 mengoreksi kelebihan pembayaran ke beban lain-lain.
+
+   Laporan ini bernama Realization dan mengukur KAS YANG BENAR-BENAR KELUAR
+   terhadap yang dijanjikan, jadi pelunasan dan reklasifikasi semacam itu
+   bukan realisasi pembayaran.
+
+   AKIBAT YANG HARUS DISADARI: voucher yang lunasnya lewat PAY atau GM kini
+   terbaca BELUM DIBAYAR di laporan ini, lengkap dgn variance sebesar
+   nilainya. Itu memang yang diminta - bukan kelalaian. Diperiksa ke produksi
+   23 Nov 2026: sampai hari ini BELUM PERNAH terjadi - tidak ada satu pun
+   voucher yang ada di potret proyeksi lalu dilunasi lewat PAY/GM di dalam
+   periode potret itu, jadi yang hilang selama ini hanya baris Unplanned
+   Payment.
+
+   KONSEKUENSI KEDUA: angka "terbayar" di laporan ini TIDAK LAGI sama dgn
+   ap_report2/query_pv2.php, yang tetap menghitung PAY & GM sbg pelunasan -
+   dan memang harus begitu, karena query_pv2 menghitung SALDO UTANG (utangnya
+   nyata-nyata berkurang), bukan arus kas. Jangan menambahkan kedua saluran
+   itu kembali hanya karena kedua laporan terlihat beda. Dua pola LIKE yang
+   tersisa di bawah tetap SALINAN UTUH dari query_pv2.php dan jangan diubah. */
 $saluran = "(
        (j.type_journal LIKE '%Payment Voucher%'  AND j.no_journal LIKE '%BK%')
     OR (j.type_journal LIKE '%Payment Voucher%'  AND j.no_journal LIKE '%KKK%')
-    OR (j.type_journal LIKE '%Payment Non Bank%' AND j.no_journal LIKE '%PAY%')
-    OR (j.type_journal = 'ACCOUNT PAYABLE'
-        AND (j.reff_doc LIKE '%SI/APR%' OR j.reff_doc LIKE '%PV-AP/%'))
   )";
 
 /* PPh 23 DIKELUARKAN dari angka realisasi - sebabnya sama dgn di laporan
