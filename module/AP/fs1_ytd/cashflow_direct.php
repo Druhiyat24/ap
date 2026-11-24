@@ -1222,18 +1222,18 @@ CROSS JOIN
           (select c.id,c.ind_name, DATE_FORMAT(tgl_journal,'%Y-%m') periode,sum(ROUND(debit * rate,2)) debit from tbl_list_journal a INNER JOIN mastercoa_v2 b on b.no_coa = a.no_coa INNER JOIN tbl_master_cashflow c on c.id = b.id_direct_debit where tgl_journal BETWEEN (select tgl_awal from tbl_tgl_tb where bulan = '$bulan_awal' and tahun = '$tahun_awal') and (select tgl_akhir from tbl_tgl_tb where bulan = '$bulan_akhir' and tahun = '$tahun_akhir') AND (no_journal LIKE '%BM/%' OR no_journal LIKE '%BK/%' OR no_journal LIKE '%RCO/%' OR no_journal LIKE '%RCI/%' OR no_journal LIKE '%KKK/%' OR no_journal LIKE '%KKM/%') and a.no_coa not in ('1.10.02', '1.10.01') and a.profit_center = 'NAK' GROUP BY c.id, DATE_FORMAT(tgl_journal,'%Y-%m')) e on e.ind_name = a.nama_pilihan and e.periode = p.periode GROUP BY a.id, COALESCE(b.periode, c.periode, d.periode, e.periode)) a WHERE a.id = '14' ORDER BY a.id ASC),
 
 data_fix as (SELECT a.periode, 'Penerimaan Pinjaman' AS sub_kategori, 'Proceeds from loans' sub_kategori_eng,
-       (penerimaan_NAG + b.total_nag) AS total_nag,
-       (penerimaan_NAK + b.total_nak) AS total_nak,
-       (penerimaan_TOTAL + b.total_all) AS total_all
+       (penerimaan_NAG + COALESCE(b.total_nag,0)) AS total_nag,
+       (penerimaan_NAK + COALESCE(b.total_nak,0)) AS total_nak,
+       (penerimaan_TOTAL + COALESCE(b.total_all,0)) AS total_all
 FROM pivot a left join other_value b on b.id = a.id and b.periode = a.periode
 
 UNION ALL
 
 SELECT a.periode, 'Pembayaran Pinjaman', 'Payment of loans
 ',
-       - (pembayaran_NAG - b.total_nag) pembayaran_NAG,
-       - (pembayaran_NAK - b.total_nak) pembayaran_NAK,
-       - (pembayaran_TOTAL - b.total_all) pembayaran_TOTAL
+       - (pembayaran_NAG - COALESCE(b.total_nag,0)) pembayaran_NAG,
+       - (pembayaran_NAK - COALESCE(b.total_nak,0)) pembayaran_NAK,
+       - (pembayaran_TOTAL - COALESCE(b.total_all,0)) pembayaran_TOTAL
 FROM pivot a left join other_value b on b.id = a.id and b.periode = a.periode)
 
 select sub_kategori, sub_kategori_eng, sum(total_nag) total_nag, sum(total_nak) total_nak, sum(total_all) total_all from data_fix where sub_kategori = 'Penerimaan Pinjaman' AND periode BETWEEN DATE_FORMAT('$tanggal_awal','%Y-%m') AND DATE_FORMAT('$tanggal_akhir','%Y-%m')
@@ -1543,9 +1543,9 @@ UNION ALL
 
 SELECT a.periode, 'Pembayaran Pinjaman', 'Payment of loans
 ',
-       - (pembayaran_NAG - b.total_nag) pembayaran_NAG,
-       - (pembayaran_NAK - b.total_nak) pembayaran_NAK,
-       - (pembayaran_TOTAL - b.total_all) pembayaran_TOTAL
+       - (pembayaran_NAG - COALESCE(b.total_nag,0)) pembayaran_NAG,
+       - (pembayaran_NAK - COALESCE(b.total_nak,0)) pembayaran_NAK,
+       - (pembayaran_TOTAL - COALESCE(b.total_all,0)) pembayaran_TOTAL
 FROM pivot a left join other_value b on b.id = a.id and b.periode = a.periode)
 
 select sub_kategori, sub_kategori_eng, sum(total_nag) total_nag, sum(total_nak) total_nak, sum(total_all) total_all from data_fix where sub_kategori = 'Pembayaran Pinjaman' AND periode BETWEEN DATE_FORMAT('$tanggal_awal','%Y-%m') AND DATE_FORMAT('$tanggal_akhir','%Y-%m')
