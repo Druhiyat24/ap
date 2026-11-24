@@ -405,7 +405,8 @@ $ppnVat = $qVat ? mysqli_fetch_assoc($qVat) : null;
                 <div class="app-actions">
                     <button type="button" class="app-btn app-btn-primary" id="simpan_ppn"><i class="fa fa-floppy-o"></i> Save</button>
                     <button type="button" class="app-btn app-btn-danger" onclick="location.href='memorial-journal.php'"><i class="fa fa-angle-double-left"></i> Back</button>
-                    <button type="button" class="app-btn app-btn-warning" id="reset_ppn"><i class="fa fa-repeat"></i> Reset</button>
+                    <!-- data-app-tetap: tanpa ini tema NDS menyembunyikan tombol Reset di semua menu. -->
+                    <button type="button" class="app-btn app-btn-warning" id="reset_ppn" data-app-tetap><i class="fa fa-repeat"></i> Reset</button>
                 </div>
             </div>
         </div>

@@ -839,7 +839,8 @@ input.mju-tot-val.is-sub,
                              memakainya, dan id yang sama sudah ada di mj_input.php &
                              mj_from_hris.php pada halaman yang sama. -->
                         <button type="button" name="batal" id="batal" class="app-btn app-btn-danger" onclick="location.href='memorial-journal.php'"><i class="fa fa-angle-double-left"></i> Back</button>
-                        <button type="button" class="app-btn app-btn-warning" name="reset" id="reset"><i class="fa fa-repeat"></i> Reset</button>
+                        <!-- data-app-tetap: tanpa ini tema NDS menyembunyikan tombol Reset di semua menu. -->
+                        <button type="button" class="app-btn app-btn-warning" name="reset" id="reset" data-app-tetap><i class="fa fa-repeat"></i> Reset</button>
                     </div>
                 </div>
             </div>

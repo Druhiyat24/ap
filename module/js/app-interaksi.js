@@ -220,7 +220,12 @@
         for (var i = 0; i < semua.length; i++) {
             var b = semua[i];
             // tombol Reset tidak dipakai lagi di semua menu (permintaan user 13 Nov 2026) -> disembunyikan
-            if (/^reset$/i.test(labelTombol(b))) { b.classList.add('app-sembunyi'); continue; }
+            // KECUALI yang ditandai data-app-tetap. Dua layar unggah (Upload Journal & VAT In di
+            // Create Memorial Journal) memintanya kembali 24 Nov 2026: di sana Reset membuang data
+            // staging di server, bukan sekadar mengosongkan filter, jadi tidak ada gantinya.
+            // Penandanya dipasang di tombolnya, bukan daftar id di berkas ini, supaya layar lain
+            // bisa ikut tanpa menyentuh tema.
+            if (/^reset$/i.test(labelTombol(b)) && !b.hasAttribute('data-app-tetap')) { b.classList.add('app-sembunyi'); continue; }
             if (b.classList.contains('app-btn') || b.closest('.dataTables_wrapper tbody, .swal2-container')) { continue; }
             var kata = labelTombol(b).toLowerCase().split(' ')[0].replace(/[^a-z]/g, '');
             var k = b.className;

@@ -398,8 +398,10 @@ table.tbl-gaya-ppn tfoot th, table.tbl-gaya-ppn tfoot td {
 button[disabled][data-app-kunci] { opacity: .65; cursor: progress; }
 /* tombol Reset tidak dipakai lagi di semua menu: Reset lama (id="reset" / oranye inline) langsung lewat CSS
    supaya tidak sempat berkedip; Reset ber-class lain diberi .app-sembunyi oleh JS. Tombolnya tetap ada
-   di halaman (disembunyikan), jadi skrip halaman yang memasang onclick ke #reset tidak error. */
-.app-interaksi #reset, .app-interaksi button[style*="rgb(250, 69, 1)"], .app-sembunyi { display: none !important; }
+   di halaman (disembunyikan), jadi skrip halaman yang memasang onclick ke #reset tidak error.
+   data-app-tetap = pengecualian: tombol itu TIDAK disembunyikan (lihat app-interaksi.js). Dipakai tab
+   Upload Journal & VAT In, yang Reset-nya membuang staging di server. */
+.app-interaksi #reset:not([data-app-tetap]), .app-interaksi button[style*="rgb(250, 69, 1)"], .app-sembunyi { display: none !important; }
 
 /* ---------- layar loading saat form dikirim (app-interaksi.js) ---------- */
 .app-sibuk {
