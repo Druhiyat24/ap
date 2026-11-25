@@ -343,6 +343,14 @@ foreach ($lineDefs as $idCtg4 => $def) {
 $labaRow = fs1mGetSfpLabaTahunBerjalan($conn2, $tahun_akhir);
 $labaByMonth = fs1mSfpRowToByMonth($labaRow, $months);
 
+// Samakan dgn FS2: Laba Tahun Berjalan dihitung mulai bulan awal filter,
+// laba sebelum itu masuk Saldo laba di tahan. Jumlah Ekuitas tetap sama.
+$labaSebelumAwal = fs1mGetSfpLabaSebelumAwal($conn2, $months[0]['bulan_key'], $tahun_akhir);
+foreach ($months as $m) {
+    $labaByMonth[$m['label']] -= $labaSebelumAwal;
+    $lineByMonth['318'][$m['label']] += $labaSebelumAwal;
+}
+
 $zeroByMonth = [];
 foreach ($months as $m) {
     $zeroByMonth[$m['label']] = 0.0;

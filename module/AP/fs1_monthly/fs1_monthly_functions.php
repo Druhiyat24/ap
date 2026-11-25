@@ -670,6 +670,15 @@ function fs1mGetSfpLabaTahunBerjalan($conn2, $tahun_akhir) {
     return $row ?: array_fill_keys(['saldo_awal', 'saldo_jan', 'saldo_feb', 'saldo_mar', 'saldo_apr', 'saldo_may', 'saldo_jun', 'saldo_jul', 'saldo_aug', 'saldo_sep', 'saldo_oct', 'saldo_nov', 'saldo_dec'], 0);
 }
 
+// Laba bulan-bulan SEBELUM bulan awal filter = saldo awal COA >= 3.40.01
+// di bulan awal. Dipindah ke "Saldo laba di tahan" supaya sama dgn FS2.
+function fs1mGetSfpLabaSebelumAwal($conn2, $bulanKey, $tahun) {
+    $kolom = $bulanKey . '_' . $tahun;
+    $result = mysqli_query($conn2, "select sum(COALESCE($kolom,0)) total from saldo_awal_tb where no_coa >= '3.40.01'");
+    $row = $result ? mysqli_fetch_assoc($result) : null;
+    return (float) ($row['total'] ?? 0);
+}
+
 // Baris "saldo_jan".."saldo_dec" (dari fs1mGetSfpLineTotal/
 // fs1mGetSfpLabaTahunBerjalan, 1 tahun penuh) -> [month_label] => float,
 // dipotong ke bulan2 yang ditampilkan ($months) saja.
