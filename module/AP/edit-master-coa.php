@@ -451,7 +451,7 @@
                     // Bank In / Bank Out tipe None tanpa approval (langsung Post) kalau
                     // SEMUA COA detailnya ber-flag Y - dipakai bank_post_rule.php.
                     $no_coa = base64_decode($_GET['no_coa']);
-                    $sqlApv = mysqli_query($conn2,"select bankin_no_approve, bankout_no_approve from mastercoa_v2 where no_coa = '".mysqli_real_escape_string($conn2, $no_coa)."'");
+                    $sqlApv = mysqli_query($conn2,"select bankin_no_approve, bankout_no_approve, forex_ap, forex_ar from mastercoa_v2 where no_coa = '".mysqli_real_escape_string($conn2, $no_coa)."'");
                     $rowApv = $sqlApv ? mysqli_fetch_array($sqlApv) : [];
                     foreach (['bankin_no_approve' => 'Bank In Approval', 'bankout_no_approve' => 'Bank Out Approval'] as $kolom => $label) {
                         $tanpa = ($rowApv[$kolom] ?? 'N') === 'Y';
@@ -464,7 +464,33 @@
                 </div>
                 </br>';
                     }
+
+                    // Penanda COA utang valas yang direvaluasi auto jurnal selisih
+                    // kurs AP (fxap_functions.php). Sengaja di master, bukan daftar
+                    // di kode, supaya menambah COA cukup dari layar ini.
+                    $fxap = ($rowApv['forex_ap'] ?? 'N') === 'Y';
+
+                    // Kembarannya untuk sisi PIUTANG (fxar_functions.php).
+                    $fxar = ($rowApv['forex_ar'] ?? 'N') === 'Y';
                 ?>
+                <div class="input-group" >
+                    <label for="forex_ap" class="col-form-label" style="width: 150px;"><b>AP Forex Revaluation</b></label>
+                    <select class="form-control" name="forex_ap" id="forex_ap">
+                        <option value="N"<?php echo $fxap ? '' : ' selected'; ?>>Not included</option>
+                        <option value="Y"<?php echo $fxap ? ' selected' : ''; ?>>Included (revalue FX balance)</option>
+                    </select>
+                </div>
+                <span class="coa-ket">Hanya untuk COA utang usaha / GR-IR yang bisa bersaldo valas.</span>
+                </br>
+                <div class="input-group" >
+                    <label for="forex_ar" class="col-form-label" style="width: 150px;"><b>AR Forex Revaluation</b></label>
+                    <select class="form-control" name="forex_ar" id="forex_ar">
+                        <option value="N"<?php echo $fxar ? '' : ' selected'; ?>>Not included</option>
+                        <option value="Y"<?php echo $fxar ? ' selected' : ''; ?>>Included (revalue FX balance)</option>
+                    </select>
+                </div>
+                <span class="coa-ket">Hanya untuk COA piutang usaha yang bisa bersaldo valas.</span>
+                </br>
             </div>
 
         <hr>
@@ -941,7 +967,9 @@ function addListener(elm,index){
                    'prod':            $('#prod').is(':checked')            ? 'Y' : 'N',
                    'support_sell':    $('#support_sell').is(':checked')    ? 'Y' : 'N',
                    'kode_cash':       $.trim($('#kode_cash').val()).toUpperCase(),
-                   'bankin_no_approve':$('#bankin_no_approve').val(), 'bankout_no_approve':$('#bankout_no_approve').val()},
+                   'bankin_no_approve':$('#bankin_no_approve').val(), 'bankout_no_approve':$('#bankout_no_approve').val(),
+                   'forex_ap':         $('#forex_ap').val(),
+                   'forex_ar':         $('#forex_ar').val()},
             cache: 'false',
             close: function(e){
                 e.preventDefault();
