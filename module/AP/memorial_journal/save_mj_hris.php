@@ -243,6 +243,44 @@ try {
     }
 }
 
+    // ================= THR =================
+    // Penahan jurnal ganda untuk ACCRUAL RELIGIOUS HOLIDAY ALLOWANCE.
+    // Dua kategori di atas menandai tabel HRIS-nya sendiri; THR tidak bisa,
+    // karena thr_jurnals milik HRIS dan hanya boleh dibaca. Catatannya
+    // disimpan di ERP ($conn2) — justru lebih aman: tabel ini ikut dalam
+    // transaksi yang sama, jadi kalau penyimpanan jurnal gagal catatannya
+    // ikut dibatalkan, tidak seperti stempel di $conn3 yang harus dicabut
+    // sendiri di blok catch.
+    if ($mj_type == 'CMJ004') {
+
+        $periode_thr = date('Y-m-01', strtotime($tgl_hris_input));
+
+        $cek_thr = mysqli_query($conn2, "
+        SELECT no_journal FROM log_jurnal_thr
+        WHERE periode = '$periode_thr' AND status = 'POST' LIMIT 1
+    ");
+
+        if(!$cek_thr){
+            throw new Exception("ERROR cek log_jurnal_thr: ".mysqli_error($conn2));
+        }
+
+        if($row_thr = mysqli_fetch_assoc($cek_thr)){
+            throw new Exception("Periode THR " . date('F Y', strtotime($periode_thr))
+                . " sudah dijurnal sebagai " . $row_thr['no_journal'] . ".");
+        }
+
+        $q = mysqli_query($conn2, "
+        INSERT INTO log_jurnal_thr
+        (no_journal, periode, status, created_by, created_date)
+        VALUES
+        ('$no_mj', '$periode_thr', 'POST', '$user', '$create_date')
+        ");
+
+        if(!$q){
+            throw new Exception("DB ERROR: INSERT log_jurnal_thr => ".mysqli_error($conn2));
+        }
+    }
+
     // ================= DETAIL =================
     $detail = json_decode($_POST['detail'], true);
 

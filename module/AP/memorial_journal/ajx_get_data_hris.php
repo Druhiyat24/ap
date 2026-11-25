@@ -247,6 +247,93 @@ UNION ALL
 select * from total_bpjs_tk
 UNION
 select * from total_bpjs_ks) a";
+} elseif ($mj_type2 == 'CMJ004') {
+    // ========================================================================
+    // ACCRUAL RELIGIOUS HOLIDAY ALLOWANCE (THR) — patokannya berkas
+    // "Template Accrual Journal - THR.xlsx" dari bagian Accounting.
+    //
+    // Sumbernya SATU tabel saja, thr_jurnals, satu baris per karyawan per
+    // periode. Nilai satu baris = thr + adj_level + adj_resign, lalu
+    // dijumlahkan per sub departemen. Sub departemen itulah cost center-nya.
+    //
+    // KENAPA ROUND() DI TIAP BARIS, BUKAN DI HASIL JUMLAHNYA
+    // Ketiga kolom itu bertipe float(15,2): yang tersimpan hanya hampiran,
+    // sedangkan yang ditampilkan (dan yang diekspor ke Excel) sudah dibulatkan
+    // 2 angka. Menjumlah nilai mentahnya lebih dulu membuat kesalahan hampiran
+    // itu menumpuk - selisihnya memang kecil, tapi nyata: pada Okt 2026
+    // hasilnya 937.594.778,92 padahal template memberi 937.594.777,11.
+    // Dengan ROUND per baris, angkanya sama persis dengan template.
+    //
+    // COA BEBAN DIPILIH DARI group2 (kolom "Group" di template), karena
+    // b_master_cc belum punya kolom coa_thr seperti coa_gaji/coa_meals.
+    // Sub departemen yang group2-nya di luar keempat ini TIDAK ikut terbentuk
+    // - sengaja, supaya tidak ada beban yang diam-diam masuk ke COA tebakan.
+    //
+    // Baris bernilai 0 dibuang (WHERE net <> 0). Template memang memuatnya,
+    // tetapi di sana itu daftar seluruh sub departemen; di jurnal, baris 0
+    // tidak membawa apa-apa.
+    // ========================================================================
+    $sql = "WITH thr AS (
+    SELECT b.id_pc, b.profit_center, b.no_cc, b.cc_name, b.group2,
+           SUM(ROUND(COALESCE(t.thr,0),2)
+             + ROUND(COALESCE(t.adj_level,0),2)
+             + ROUND(COALESCE(t.adj_resign,0),2)) net
+    FROM thr_jurnals t
+    LEFT  JOIN employee_atribut ea ON ea.enroll_id = t.enroll_id
+    INNER JOIN b_master_cc      b  ON b.no_cc      = t.sub_dept_id
+    WHERE CONCAT(t.periode_tahun,'-',LPAD(t.periode_bulan,2,'0')) = DATE_FORMAT('$tgl_hris','%Y-%m')
+      AND (ea.join_date IS NULL OR ea.join_date < DATE_FORMAT('$tgl_hris','%Y-%m-25'))
+    GROUP BY b.no_cc, b.id_pc
+),
+beban AS (
+    SELECT a.id_pc, a.profit_center, c.no_coa, c.nama_coa, a.no_cc, a.cc_name, a.net,
+           IF(a.net > 0,  a.net, 0) debit,
+           IF(a.net < 0, -a.net, 0) credit,
+           CONCAT('AKRUAL THR NON STAFF ', UPPER(a.cc_name), ' ',
+                  UPPER(DATE_FORMAT('$tgl_hris','%M %Y')), ' (',
+                  IF(a.id_pc = 'NAG','GARMENT','KNITTING'), ')') deskripsi
+    FROM thr a
+    INNER JOIN mastercoa_v2 c ON c.no_coa = CASE a.group2
+            WHEN 'PRODUCTION'                          THEN '5.54.01'
+            WHEN 'SUPPORTING PRODUCTION'               THEN '5.64.01'
+            WHEN 'SUPPORTING SELLING'                  THEN '6.05.01'
+            WHEN 'SUPPORTING GENERAL & ADMINISTRATION' THEN '7.34.01' END
+    WHERE a.net <> 0
+),
+akrual AS (
+    SELECT id_pc, profit_center, '2.51.22' no_coa,
+           'BIAYA YANG MASIH HARUS DIBAYAR - THR' nama_coa, '-' no_cc, '-' cc_name, SUM(net) net,
+           IF(SUM(net) < 0, -SUM(net), 0) debit,
+           IF(SUM(net) > 0,  SUM(net), 0) credit,
+           CONCAT('AKRUAL THR NON STAFF ', IF(id_pc = 'NAG','GARMENT','KNITTING'), ' ',
+                  UPPER(DATE_FORMAT('$tgl_hris','%M %Y'))) deskripsi
+    FROM beban GROUP BY id_pc
+)
+select '' no_journal, id_pc, profit_center, no_coa, nama_coa, no_cc, cc_name,
+       '-' reff_number, '' reff_date, '-' buyer, '-' ws, 'IDR' curr, debit, credit, deskripsi
+from (select id_pc, profit_center, no_coa, nama_coa, no_cc, cc_name, debit, credit, deskripsi, 1 urut from beban
+      UNION ALL
+      select id_pc, profit_center, no_coa, nama_coa, no_cc, cc_name, debit, credit, deskripsi, 2 urut from akrual) a
+order by urut, id_pc, no_cc";
+
+    // PENAHAN JURNAL GANDA. Dua kategori lain menandai tabel HRIS-nya sendiri
+    // (jurnal.no_journal, log_jurnal_bpjs) lalu menyaring "yang belum
+    // ditandai". THR tidak bisa begitu: thr_jurnals milik HRIS dan hanya boleh
+    // DIBACA, tidak boleh ditulisi. Jadi catatannya disimpan di sisi ERP,
+    // tabel log_jurnal_thr — lihat save_mj_hris.php.
+    $per_thr = date('Y-m-01', strtotime($tgl_hris));
+    $cek_thr = mysqli_query($conn2, "select no_journal from log_jurnal_thr
+                                      where periode = '$per_thr' and status = 'POST' limit 1");
+    $row_thr = $cek_thr ? mysqli_fetch_assoc($cek_thr) : null;
+    if ($row_thr) {
+        echo json_encode([
+            "data" => [],
+            "info" => "Period " . date('F Y', strtotime($per_thr))
+                    . " has already been journalised as " . $row_thr['no_journal']
+                    . ". Cancel that journal first if you need to create it again."
+        ]);
+        exit;
+    }
 } else {
     $sql = "";
 }

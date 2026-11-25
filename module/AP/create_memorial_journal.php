@@ -1824,6 +1824,18 @@ function syncHrisSource() {
             'Reversing journal <b>' + hrisFmtTgl(tgl.balik) + '</b> (debit &harr; credit)'
         );
         getRate2();
+    } else if ($('#mj_type2').val() === 'CMJ004') {
+        // THR TIDAK memakai rentang 26-25 seperti payroll: sumbernya
+        // thr_jurnals yang sudah per bulan kalender. Menulis "26 Sep s/d 25
+        // Okt" di sini akan menyesatkan, jadi yang ditampilkan bulannya
+        // sendiri. Penyaringan tanggal masuk karyawan (join_date < tanggal 25)
+        // SENGAJA tidak ikut ditulis - permintaan user, keterangannya cukup
+        // periode saja. Penyaringnya sendiri tetap jalan di server.
+        $('#mj_date2').prop('readonly', false);
+        $hint.addClass('is-on').removeClass('is-accrual').html(
+            'Period <b>' + hrisFmtTgl(new Date(tgl.akhir.getFullYear(), tgl.akhir.getMonth(), 1)) +
+            '</b> to <b>' + hrisFmtTgl(tgl.akhir) + '</b>'
+        );
     } else {
         $('#mj_date2').prop('readonly', false);
         $hint.addClass('is-on').removeClass('is-accrual').html(
@@ -1892,7 +1904,11 @@ let datatable;
             }
         },
         dataSrc: function(res){
-            return res.data;
+            // Server boleh menerangkan kenapa tabelnya kosong — mis. periode
+            // THR itu sudah pernah dijurnal. Tanpa ini layarnya hanya
+            // "No data available in table", tanpa petunjuk apa pun.
+            if (res.info) { Swal.fire('Information', res.info, 'info'); }
+            return res.data || [];
         }
     },
 
