@@ -21,6 +21,12 @@ if(isset($no_mj)){
     $sql_upt2 = "update log_jurnal_bpjs set status = 'CANCEL' where no_journal = '$no_mj'";
     $execute_upt2 = mysqli_query($conn3,$sql_upt2);
 
+    // Penahan periode THR ada di ERP ($conn2), bukan di HRIS — thr_jurnals
+    // hanya boleh dibaca. Tanpa baris ini periodenya terkunci selamanya
+    // setelah jurnal pertama dibatalkan.
+    $sql_upt3 = "update log_jurnal_thr set status = 'CANCEL' where no_journal = '$no_mj'";
+    $execute_upt3 = mysqli_query($conn2,$sql_upt3);
+
     $sql2 = "insert into tbl_list_journal_cancel (select * from tbl_list_journal where no_journal='$no_mj')";
     $query2 = mysqli_query($conn2,$sql2);
 

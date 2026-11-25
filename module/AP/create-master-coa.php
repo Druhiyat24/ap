@@ -334,6 +334,22 @@
               <option value="Y">Not required (auto Post)</option>
             </select>
           </div>
+          <div class="col-lg-3 col-md-6 mb-2">
+            <label for="forex_ap"><b>AP Forex Revaluation</b></label>
+            <select class="form-control select2bs4" name="forex_ap" id="forex_ap">
+              <option value="N" selected>Not included</option>
+              <option value="Y">Included (revalue FX balance)</option>
+            </select>
+            <span class="coa-ket">Hanya untuk COA utang usaha / GR-IR yang bisa bersaldo valas.</span>
+          </div>
+          <div class="col-lg-3 col-md-6 mb-2">
+            <label for="forex_ar"><b>AR Forex Revaluation</b></label>
+            <select class="form-control select2bs4" name="forex_ar" id="forex_ar">
+              <option value="N" selected>Not included</option>
+              <option value="Y">Included (revalue FX balance)</option>
+            </select>
+            <span class="coa-ket">Hanya untuk COA piutang usaha yang bisa bersaldo valas.</span>
+          </div>
         </div>
 
         <hr>
@@ -811,7 +827,9 @@ function addListener(elm,index){
                    'prod':            $('#prod').is(':checked')            ? 'Y' : 'N',
                    'support_sell':    $('#support_sell').is(':checked')    ? 'Y' : 'N',
                    'kode_cash':       $.trim($('#kode_cash').val()).toUpperCase(),
-                   'bankin_no_approve':$('#bankin_no_approve').val(), 'bankout_no_approve':$('#bankout_no_approve').val()},
+                   'bankin_no_approve':$('#bankin_no_approve').val(), 'bankout_no_approve':$('#bankout_no_approve').val(),
+                   'forex_ap':         $('#forex_ap').val(),
+                   'forex_ar':         $('#forex_ar').val()},
             cache: 'false',
             close: function(e){
                 e.preventDefault();

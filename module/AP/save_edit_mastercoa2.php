@@ -17,6 +17,10 @@ $txt_indirect = $_POST['txt_indirect'];
 // kalau dikirim, supaya form lama yang belum punya field ini tidak mereset.
 $set_approve = '';
 foreach (['bankin_no_approve', 'bankout_no_approve',
+          /* Penanda COA yang direvaluasi auto jurnal selisih kurs AP / AR -
+             dibaca fxap_functions.php lewat fxApDaftarCoa() dan
+             fxar_functions.php lewat fxArDaftarCoa(). */
+          'forex_ap', 'forex_ar',
           /* Kelompok Cost Center - dibaca get_coa_wajib_cc.php &
              getCostCenter.php. Bisa diisi dari layar sejak 10 Nov 2026. */
           'support_gen_adm', 'support_prod', 'prod', 'support_sell'] as $kolom) {
