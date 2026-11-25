@@ -1122,7 +1122,7 @@
     document.getElementById('btnsync_fx').onclick = function() {
         Swal.fire({
             title: "Sync FX Revaluation Journal?",
-            text: "This will recalculate and post (insert/update) the FX revaluation journal for every USD account up to today. Continue?",
+            text: "This recalculates and posts (insert/update) all three FX revaluation journals up to today - BANK accounts, AP payables and AR receivables. Safe to repeat; existing journals are rewritten, never duplicated. Continue?",
             icon: "warning",
             showCancelButton: true,
             confirmButtonText: "Yes, Sync",
@@ -1144,23 +1144,46 @@
                 data: { user: '<?php echo $user; ?>' },
                 dataType: 'json',
                 success: function(res) {
-                    if (!res.ok) {
-                        Swal.fire('Sebagian Gagal', (res.errors || []).join('\n') || 'Terjadi kesalahan.', 'error');
-                        dataTableReload();
-                        return;
+                    // Satu ringkasan untuk TIGA bagian - bank, AP, AR. Bagian
+                    // yang gagal ikut ditulis di tempatnya sendiri, jadi yang
+                    // berhasil tetap kelihatan walau ada satu yang gagal.
+                    function barisBagian(nama, d) {
+                        if (!d) return '';
+                        if (!d.ok) {
+                            return '<div style="margin-top:8px"><b>' + nama + '</b> &mdash; ' +
+                                '<span style="color:#c00000">gagal: ' + (d.message || '-') + '</span></div>';
+                        }
+                        var n = d.insert + d.update + d.removed;
+                        var isi = (n === 0) ? 'tidak ada selisih'
+                            : (d.insert + ' baru, ' + d.update + ' update' +
+                               (d.removed ? ', ' + d.removed + ' dihapus' : ''));
+                        var html = '<div style="margin-top:8px"><b>' + nama + '</b> &mdash; ' + isi + '</div>';
+                        if (d.closed && d.closed.length) {
+                            html += '<div style="color:#8a6d3b;font-size:12px">periode tertutup, dilewati: ' +
+                                d.closed.join(', ') + '</div>';
+                        }
+                        if (d.tanpa_coa && d.tanpa_coa.length) {
+                            html += '<div style="color:#8a6d3b;font-size:12px">faktur tanpa COA, tidak ikut saldo awal: ' +
+                                d.tanpa_coa.join(', ') + '</div>';
+                        }
+                        return html;
                     }
 
                     var detail = (res.per_account || []).map(function(a) {
-                        return a.account + ': ' + a.count + ' jurnal';
+                        return '&nbsp;&nbsp;' + a.account + ': ' + a.count + ' jurnal';
                     }).join('<br>');
 
+                    var html = 'Sampai dengan <b>' + res.end_date + '</b>' +
+                        '<div style="margin-top:8px"><b>BANK</b> &mdash; ' + res.total_jurnal + ' jurnal (' +
+                        res.total_insert + ' baru, ' + res.total_update + ' update)</div>' +
+                        (detail ? '<div style="font-size:12px">' + detail + '</div>' : '') +
+                        barisBagian('AP (utang usaha)', res.ap) +
+                        barisBagian('AR (piutang usaha)', res.ar);
+
                     Swal.fire({
-                        icon: 'success',
-                        title: 'Sync Selesai',
-                        html: 'Sampai dengan <b>' + res.end_date + '</b><br>' +
-                            'Total <b>' + res.total_jurnal + '</b> jurnal diproses ' +
-                            '(' + res.total_insert + ' baru, ' + res.total_update + ' update)' +
-                            (detail ? '<br><br>' + detail : '')
+                        icon: res.ok ? 'success' : 'warning',
+                        title: res.ok ? 'Sync Selesai' : 'Sebagian Gagal',
+                        html: '<div style="text-align:left">' + html + '</div>'
                     });
                     dataTableReload();
                 },
