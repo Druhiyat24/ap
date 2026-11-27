@@ -10,7 +10,7 @@
    kartu .pco-, bagian Header / Find / hasil, warna baris menurut Supplier
    Priority, tombol .app-btn. Dua hal yang beda:
      - kolom Cash Flow Category TEKS MATI, tidak bisa diubah dari sini;
-     - Due Date & Payment Plan SEBELAHAN (permintaan pemakai) supaya
+     - Payment Date & Payment Plan SEBELAHAN (permintaan pemakai) supaya
        pergeseran tanggalnya kelihatan sebaris.
 
    header.php tidak memuat satu pun pustaka JS, jadi halaman ini memuat
@@ -132,7 +132,7 @@ if ($qSup) { while ($r = mysqli_fetch_assoc($qSup)) { $supplierList[] = $r['nama
         <div class="col-12 col-sm-6 col-xl-2 mb-2">
           <label for="dasar" class="form-label"><b>Date Basis</b></label>
           <select class="form-control app-select2" id="dasar">
-            <option value="tempo">Due Date</option>
+            <option value="tempo">Payment Date</option>
             <option value="pv">PV Date</option>
           </select>
         </div>
@@ -183,7 +183,7 @@ if ($qSup) { while ($r = mysqli_fetch_assoc($qSup)) { $supplierList[] = $r['nama
                 <th style="text-align:center;">Payment Voucher No</th>
                 <th style="text-align:center;">PV Date</th>
                 <th style="text-align:center;">Supplier</th>
-                <th style="text-align:center;">Due Date</th>
+                <th style="text-align:center;">Payment Date</th>
                 <th style="text-align:center;">Payment Plan</th>
                 <th style="text-align:center;">Cash Flow Category</th>
                 <th style="text-align:center;">Bank</th>

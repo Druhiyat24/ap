@@ -11,6 +11,21 @@
     #mytable {
         table-layout: fixed;
     }
+    /* Kolom "Due date" di baris detail DISEMBUNYIKAN (permintaan pemakai
+       27 Nov 2026). Tanggalnya sekarang selalu ikut Payment Date di header,
+       jadi tidak perlu diisi per baris lagi - dan laporan Update Payment
+       Date & Cash Flow Projection pun sudah membaca pay_date, bukan due_date.
+
+       Kolomnya SENGAJA tidak dihapus: JS halaman ini mengambil isi baris
+       lewat urutan kolom (td:eq(11), td:eq(12), ...), jadi menghapus satu
+       <td> akan menggeser semua kolom sesudahnya. Disembunyikan lewat CSS,
+       bukan atribut hidden, supaya baris yang dibuat Add Row & Interject Row
+       ikut tersembunyi juga - InsertRow membuat <td> baru yang tidak mewarisi
+       atribut sel aslinya. Kolom ke-12 = Due date. */
+    #mytable > thead > tr > th:nth-child(12),
+    #mytable > tbody > tr > td:nth-child(12) {
+        display: none;
+    }
     /* Tema admin (AdminLTE) ngasih border/box-shadow default ke .box/.box-header/
        .box-body yang bikin garis pemisah nongol di antara section - di-nol-in
        semua di sini biar bersih, ganti sama shadow+radius punya .pv-card sendiri. */
@@ -1911,7 +1926,10 @@ if (!valid_detail) {
             var tgl_faktur_pajak = $(this).closest('tr').find('td:eq(7) input').val();
             var deskripsi = $(this).closest('tr').find('td:eq(8) input').val();
             var amount = $(this).closest('tr').find('td:eq(9) input').val() || 0;
-            var due_date = $(this).closest('tr').find('td:eq(11) input').val();
+            // Due date tidak diisi pemakai lagi (kolomnya disembunyikan),
+            // jadi yang disimpan = Payment Date di header. Bentuk tanggalnya
+            // sama persis (dd-mm-yyyy), jadi insertpv_h.php tidak berubah.
+            var due_date = pay_date;
             var ded_add = $(this).closest('tr').find('td:eq(10) input').val() || 0;
             var d_pph = $(this).closest('tr').find('td:eq(12)').find('select[name=pphh] option').filter(':selected').val() || 0;
             var idtax = $(this).closest('tr').find('td:eq(12)').find('select[name=pphh] option').filter(':selected').attr('data-idtax');
