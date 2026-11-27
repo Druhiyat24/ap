@@ -360,7 +360,12 @@ foreach ($cfpArRinci as $cfpR) {
 
 /* 5b. UTANG USAHA (AP) - dari mesin proyeksi AP yang dipanggil di atas.
    Rekening pembayarnya tidak ikut di keluaran mesin itu, jadi dicari di sini
-   lewat dokumen induknya (nomor cicilan berakhiran " - 7"). */
+   lewat dokumen induknya. Nomor cicilan ada DUA bentuk (sama dgn
+   ajx_ap_projection_report.php):
+     'SI/APR/NAG/2025/12/02515 - 10'    -> induk 'SI/APR/NAG/2025/12/02515'
+     'PV-AP/INS/NAG/2026/08/00001-002'  -> induk 'PV-AP/INS/NAG/2026/08/00001'
+   Bentuk kedua dulu tidak dikenali (27 Nov 2026): PC, Bank & Creator di
+   lembar PV AP kosong, dan nilainya masuk kolom "(none)", bukan rekeningnya. */
 if ($cfpApBaris) {
     $cfpDaftar = array();
     foreach ($cfpApBaris as $cfpB) {
@@ -379,20 +384,18 @@ if ($cfpApBaris) {
                       bukan lewat query sendiri: dokumen induknya sudah di-join
                       untuk rekening & profit center. */
                    coalesce(k.create_user, i.create_user, s.create_user, si.create_user)         create_user
-              from (select distinct no_kbon,
-                           case when no_kbon like '% - %' then substring_index(no_kbon,' - ',1)
-                                else no_kbon end induk
-                      from ap_payment_plan_det where no_kbon in ($cfpIn)
-                     union
-                    select distinct no_kbon,
-                           case when no_kbon like '% - %' then substring_index(no_kbon,' - ',1)
-                                else no_kbon end induk
-                      from kontrabon_h where no_kbon in ($cfpIn)
-                     union
-                    select distinct no_kbon,
-                           case when no_kbon like '% - %' then substring_index(no_kbon,' - ',1)
-                                else no_kbon end induk
-                      from ap_saldo_payment_voucher where no_kbon in ($cfpIn)) x
+              from (select u.no_kbon,
+                           case when u.no_kbon like '% - %' then substring_index(u.no_kbon, ' - ', 1)
+                                when u.no_kbon regexp '-[0-9]{3}\$' then left(u.no_kbon, char_length(u.no_kbon) - 4)
+                                else u.no_kbon end induk
+                      from (select no_kbon from ap_payment_plan_det where no_kbon in ($cfpIn)
+                             union
+                            select no_kbon from kontrabon_h where no_kbon in ($cfpIn)
+                             union
+                            select no_kbon from ap_saldo_payment_voucher where no_kbon in ($cfpIn)
+                             union
+                            /* anak cicilan yang belum masuk Payment Plan */
+                            select no_kbon_det from kontrabon_h_installment_detail where no_kbon_det in ($cfpIn)) u) x
               left join kontrabon_h k on k.no_kbon = x.no_kbon
               left join kontrabon_h i on i.no_kbon = x.induk
               left join ap_saldo_payment_voucher s on s.no_kbon = x.no_kbon
