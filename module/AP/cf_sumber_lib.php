@@ -113,7 +113,7 @@ function cf_sumber_lembar()
         ),
         'PV_EXP' => array(
             'judul' => 'PV EXP', 'warna' => 'C00000',
-            'catatan' => 'Expense payments: scheduled ones from Update Payment Date, unscheduled ones placed on the Thursday of their due week, plus PV Expense lines from Cash Flow Projection (Other).',
+            'catatan' => 'Expense payments: scheduled ones from Update Payment Date, unscheduled ones placed on the Thursday of their payment-date week, plus PV Expense lines from Cash Flow Projection (Other).',
             'kolom' => array(
                 array('Payment Voucher No', 'no_pv', 't'),
                 array('Supplier Name', 'supplier', 't'),
@@ -568,7 +568,7 @@ function cf_kumpul_sumber($conn, $cfg)
                 'akun' => cfs_nama_bank($petaBank, $r['frm_akun']),
                 /* Sumbernya ditulis BEDA dari yang sudah dijadwalkan - supaya
                    pembacanya tahu tanggal ini hitungan, bukan keputusan. */
-                'sumber' => 'Not scheduled yet (due-date Thursday) - ' . (string) $r['jenis'],
+                'sumber' => 'Not scheduled yet (payment-date Thursday) - ' . (string) $r['jenis'],
                 'rate_simpan' => null, 'idr_simpan' => null,
             );
         }

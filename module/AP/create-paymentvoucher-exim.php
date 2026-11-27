@@ -1,6 +1,19 @@
 <?php include '../header.php' ?>
 
 <style>
+    /* Kolom "Due date" di baris detail DISEMBUNYIKAN (permintaan pemakai
+       27 Nov 2026). Tanggalnya sekarang selalu ikut Payment Date di header,
+       jadi tidak perlu diisi per baris lagi.
+
+       Kolomnya SENGAJA tidak dihapus: JS halaman ini mengambil isi baris
+       lewat urutan kolom (td:eq(13), td:eq(14), ...), jadi menghapus satu
+       <td> akan menggeser semua kolom sesudahnya. Disembunyikan lewat CSS,
+       bukan atribut hidden, supaya baris yang dibuat Add Row & Interject Row
+       ikut tersembunyi juga. Kolom ke-14 = Due date. */
+    #mytable > thead > tr > th:nth-child(14),
+    #mytable > tbody > tr > td:nth-child(14) {
+        display: none;
+    }
     /* Tema admin (AdminLTE) ngasih border/box-shadow default ke .box/.box-header/
        .box-body yang bikin garis pemisah nongol di antara section - di-nol-in
        semua di sini biar bersih, ganti sama shadow+radius punya .pv-card sendiri. */
@@ -2120,7 +2133,9 @@ $.getJSON('get_coa_wajib_cc.php', function(data){
             var no_ref = $(this).closest('tr').find('td:eq(1) input').val();
             var deskripsi = $(this).closest('tr').find('td:eq(10) textarea').val();
             var amount = $(this).closest('tr').find('td:eq(11) input').val() || 0;
-            var due_date = $(this).closest('tr').find('td:eq(13) input').val();
+            // Due date tidak diisi pemakai lagi (kolomnya disembunyikan),
+            // jadi yang disimpan = Payment Date di header.
+            var due_date = pay_date;
             var ded_add = $(this).closest('tr').find('td:eq(12) input').val() || 0;
             var pph_row = $(this).closest('tr').find('td:eq(14)').find('select[name=pphh] option').filter(':selected').val() || 0;
             var idtax = $(this).closest('tr').find('td:eq(14)').find('select[name=pphh] option').filter(':selected').attr('data-idtax');

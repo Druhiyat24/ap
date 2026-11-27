@@ -365,6 +365,18 @@ if (!function_exists('pvb_biaya_sql')) {
      * Query sisa PV biaya. $where dipasang pemanggilnya - kolom yang boleh
      * dipakai: a.no_pv, a.pv_date, a.due_date, a.nama_supp, dan
      * (a.total - COALESCE(b.total_pv,0)) untuk sisanya.
+     *
+     * TANGGALNYA = tbl_pv_h.pay_date, BUKAN tbl_pv.due_date (27 Nov 2026,
+     * permintaan pemakai: "untuk menu update payment plan PV biaya dan masuk
+     * proyeksi cashflow jangan ambil duedate tapi ambil yang payment date").
+     * Due date per baris detail sudah tidak diisi lagi di form create PV -
+     * kolomnya disembunyikan - jadi satu-satunya tanggal bayar yang benar
+     * tinggal pay_date di kepalanya.
+     *
+     * Aliasnya SENGAJA tetap bernama due_date supaya pemanggilnya tidak perlu
+     * berubah; yang berubah isinya, bukan namanya. Diukur di produksi
+     * 27 Nov 2026: dari 153 baris outstanding, 142 pay_date-nya memang sudah
+     * sama dgn due_date, 11 berbeda, dan tidak satu pun pay_date yang kosong.
      */
     function pvb_biaya_sql($where)
     {
@@ -372,7 +384,7 @@ if (!function_exists('pvb_biaya_sql')) {
         return "
 with total_pv as (
   select b.profit_center,
-         a.nama_supp, a.no_pv, a.pv_date, max(b.due_date) due_date, a.curr,
+         a.nama_supp, a.no_pv, a.pv_date, a.pay_date due_date, a.curr,
          a.frm_akun, a.id_cash_flow, a.deskripsi,
          (SUM(b.amount - b.ded_add)
           + SUM((b.amount * b.ppn/100) - (b.ded_add * b.ppn/100))
