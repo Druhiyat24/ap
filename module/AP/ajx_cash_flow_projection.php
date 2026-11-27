@@ -571,15 +571,10 @@ if ($cfpMintaSumber) {
 $cfpPinjam = array();
 foreach ($cfpAkun as $cfpK => $cfpA) {
     if (!$cfpA['loan'] || !cfpIkut($cfpA, $cfpPc, $cfpKunciBank)) { continue; }
-    /* SALDO SISTEM, BUKAN angka manual (ditegaskan pemakai 20 Nov 2026:
-       "opening balance ngga ngaruh ke situ, itu hanya ngaruh untuk
-       perhitungan yang atas saja"). Menu Opening Balance menyetel saldo awal
-       KAS & BANK; blok pinjaman punya arti sendiri - besarnya pinjaman yang
-       masih berjalan - dan itu tidak boleh ikut berubah hanya karena ada
-       yang menekan Save di modal saldo awal. Kejadiannya nyata: kotak
-       rekening pinjaman terisi bawaan 0, lalu satu kali Save membuat SALDO
-       AWAL PINJAMAN BANK jatuh dari -49,6 M jadi 0. */
-    $jalan = $cfpSaldo[$cfpK]['tarik'];
+    /* Saldo awal rekening pinjaman = SATU angka (manual kalau diisi, kalau
+       tidak hitungan sistem), dibagi dua spt Realisasi Cash Flow (27 Nov 2026):
+       minus -> saldo awal pinjaman, plus -> kas (lihat cfpAwalKas). */
+    $jalan = min(0, $cfpSaldo[$cfpK]['pakai']);
     $cfpPinjam[$cfpK] = array();
     foreach ($cfpTanggal as $t) {
         $keluar = 0; $masuk = 0;
@@ -624,16 +619,13 @@ foreach ($cfpTanggal as $t) {
 /* ---------------------------------------------------------------------------
    SALDO AWAL KAS & BANK per rekening.
 
-   Rekening pinjaman: saldo SISTEM-nya tidak pernah ikut - angka itu besarnya
-   pinjaman yang masih berjalan, bukan uang yang bisa dipakai. TAPI angka yang
-   DIKETIK TANGAN ikut (permintaan pemakai 19 Nov 2026: &quot;kalau user isi,
-   totalnya nambah&quot;): kalau seseorang sengaja menuliskan saldo awal rekening
-   itu, yang ditulisnya memang saldo rekening - dan kotak yang nilainya diketik
-   lalu tidak mengubah apa pun jauh lebih membingungkan daripada aturan ini.
+   Rekening pinjaman: hanya bagian PLUS-nya yang kas; bagian minus adalah
+   pinjaman dan masuk blok pinjaman (bagian 6). Sama dgn Realisasi Cash Flow:
+   plus -> pinjaman 0, minus -> kas 0, diisi 0 -> dua-duanya 0.
    --------------------------------------------------------------------------- */
 function cfpAwalKas($a, $saldo, $rate)
 {
-    if ($a['loan'] && $saldo['manual'] === null) { return 0; }
+    if ($a['loan']) { return cfpIdr($a, max(0, $saldo['pakai']), $rate); }
     return cfpIdr($a, $saldo['pakai'], $rate);
 }
 

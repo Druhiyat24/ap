@@ -89,12 +89,10 @@ $cfoRate = (float) $cfoHasil['info']['rate'];
    milik blok pinjaman; akibatnya pemakai tidak punya satu pun tempat untuk
    melihat, apalagi menyetel, saldo awal kedua rekening itu.
 
-   SALDO SISTEMNYA tidak ikut dijumlahkan - angka itu besarnya pinjaman yang
-   masih berjalan, bukan uang yang bisa dipakai - TAPI ANGKA YANG DIKETIK
-   TANGAN IKUT (permintaan pemakai 19 Nov 2026: &quot;kalau user isi, totalnya
-   nambah&quot;). Aturan yang sama persis dipakai mesin laporan di
-   cfpAwalKas(), jadi TOTAL IN IDR di modal ini dan baris OPENING di laporan
-   tidak bisa berbeda. */
+   Rekening pinjaman hanya menyumbang bagian PLUS-nya ke total (27 Nov 2026);
+   bagian minus adalah saldo awal pinjaman. Aturan yang sama persis dipakai
+   cfpAwalKas() di mesin laporan, jadi TOTAL IN IDR di modal ini dan baris
+   OPENING di laporan tidak bisa berbeda. */
 foreach ($cfoHasil['bank'] as $b) {
     if ($cfoKunciBank && !in_array((string) $b['kunci'], $cfoKunciBank, true)) { continue; }
     $pinjaman = !empty($b['loan']);
@@ -109,11 +107,11 @@ foreach ($cfoHasil['bank'] as $b) {
         /* manual sudah RUPIAH apa adanya - tidak dikalikan lagi */
         'manual' => (isset($b['manual']) && $b['manual'] !== null) ? (float) $b['manual'] : null,
     );
-    /* Rekening pinjaman tanpa angka tangan menyumbang 0 ke dua-duanya. */
-    $adaManual = (isset($b['manual']) && $b['manual'] !== null);
-    if ($pinjaman && !$adaManual) { continue; }
-    if (!$pinjaman) { $cfoJumSistem += (float) $b['saldo_tarik'] * $kurs; }
-    $cfoJumPakai  += (float) $b['saldo_pakai'] * $kurs;
+    $sistem = (float) $b['saldo_tarik'] * $kurs;
+    $pakai  = (float) $b['saldo_pakai'] * $kurs;
+    if ($pinjaman) { $sistem = max(0, $sistem); $pakai = max(0, $pakai); }
+    $cfoJumSistem += $sistem;
+    $cfoJumPakai  += $pakai;
 }
 
 /* Keterangan + penulis terakhir - tidak ikut lewat mesin. */

@@ -878,15 +878,13 @@ $(function () {
         var t = 0;
         $('#cfo-tbl tbody .cfo-nilai').each(function () {
             var m = cfoAngka(this.value);
-            /* REKENING PINJAMAN: yang dihitung HANYA angka yang diketik.
-               Saldo sistemnya besarnya pinjaman yang masih berjalan, bukan
-               uang yang bisa dipakai, jadi kotak kosong berarti 0 - bukan
-               "ikut sistem" seperti rekening biasa. Aturan yang sama persis
-               ada di cfpAwalKas() di mesin laporan. */
-            if ($(this).attr('data-loan') === '1') { t += (m === null) ? 0 : m; return; }
             var sis = parseFloat($(this).attr('data-sistem'));
             if (isNaN(sis)) { sis = 0; }
-            t += (m === null) ? sis : m;
+            var v = (m === null) ? sis : m;
+            /* Rekening pinjaman: hanya bagian plus yang kas, bagian minus
+               adalah pinjaman - sama dgn cfpAwalKas() di mesin laporan. */
+            if ($(this).attr('data-loan') === '1' && v < 0) { v = 0; }
+            t += v;
         });
         $('#cfo-jum-pakai').text(cfoRupiah(t));
     }
@@ -904,22 +902,16 @@ $(function () {
            sbg kosong, jadi tidak ada baris ap_cf_opening yang lahir dan
            riwayatnya tidak penuh oleh rekening yang sebenarnya tidak
            disentuh. Lihat penjaganya di tombol Save. */
-        /* REKENING PINJAMAN: isian bawaannya 0, BUKAN saldo sistem
-           (permintaan pemakai 19 Nov 2026). Saldo sistemnya minus sebesar
-           pinjaman yang masih berjalan, dan angka itu bukan uang yang bisa
-           dipakai - dipakai sbg saldo awal, laporannya mulai dari minus.
-           Saldo sistemnya tetap DITAMPILKAN di kolom sebelahnya, jadi yang
-           mau memakainya tinggal mengetik ulang. */
+        /* REKENING PINJAMAN: isian bawaannya juga saldo sistem (27 Nov 2026).
+           Dulu bawaannya 0 - dan sejak angka ini ikut menggeser saldo awal
+           pinjaman, bawaan 0 berarti satu kali Save tanpa mengetik apa pun
+           membuat pinjamannya jadi 0. */
         var pinjaman = (a.loan == 1);
         var bawaan = Number(a.sistem).toFixed(2);
-        /* Isian bawaan rekening pinjaman 0, dan 0 itu SENGAJA dianggap angka
-           manual beneran: data-sistem tetap saldo sistem yg minus, jadi
-           penjaga "sama dgn sistem -> jangan simpan" di tombol Save tidak
-           menelannya. Kalau data-sistem ikut dibuat 0, nilainya cuma hiasan -
-           tersimpan tidak, dan diketik 0 pun tetap tidak tersimpan. */
-        var isiBawaan = pinjaman ? '0.00' : bawaan;
         return '<tr>'
-             + '<td>' + cfdAman(a.label) + '</td>'
+             + '<td>' + cfdAman(a.label)
+             + (pinjaman ? '<div class="cfo-kecil">Loan account: a negative balance is the opening loan, a positive balance is cash.</div>' : '')
+             + '</td>'
              + '<td>' + cfdAman(a.curr) + '</td>'
              + '<td class="cfo-num">' + cfoRupiah(a.sistem) + '</td>'
              /* data-semula = nilai yang DILIHAT pemakai waktu modal dibuka.
@@ -929,15 +921,12 @@ $(function () {
                 bawaan di atas cuma bantuan mengetik, bukan angka tersimpan.
                 data-sistem dipakai menghitung total & menandai baris yang
                 benar-benar diubah. */
-             /* Penanda biru juga untuk rekening pinjaman yang belum pernah
-                disimpan: isian bawaannya 0 memang BERBEDA dari saldo sistem,
-                dan penanda itu artinya persis "berbeda dari sistem". */
-             + '<td><input type="text" class="cfo-nilai' + ((terisi || pinjaman) ? ' cfo-isi' : '') + '"'
+             + '<td><input type="text" class="cfo-nilai' + (terisi ? ' cfo-isi' : '') + '"'
              + ' data-akun="' + cfdAman(a.kunci) + '"'
              + ' data-loan="' + (pinjaman ? 1 : 0) + '"'
              + ' data-sistem="' + bawaan + '"'
              + ' data-semula="' + (terisi ? Number(a.manual).toFixed(2) : '') + '"'
-             + ' value="' + (terisi ? Number(a.manual).toFixed(2) : isiBawaan) + '"></td>'
+             + ' value="' + (terisi ? Number(a.manual).toFixed(2) : bawaan) + '"></td>'
              + '<td><input type="text" class="cfo-ket" maxlength="200" value="'
              + cfdAman(a.keterangan || '') + '"></td>'
              + '</tr>';
